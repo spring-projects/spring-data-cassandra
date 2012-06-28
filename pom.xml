@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<version>1.1.0.BUILD-SNAPSHOT</version>
+	<groupId>org.springframework.data</groupId>
+	<artifactId>spring-data-cassandra</artifactId>
+	<name>Spring Data Cassandra</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- versions for commonly-used dependencies -->
+    <junit.version>4.10</junit.version>
+    <log4j.version>1.2.16</log4j.version>
+    <org.slf4j.version>1.6.1</org.slf4j.version>
+    <org.codehaus.jackson.version>1.6.1</org.codehaus.jackson.version>
+    <org.springframework.version.30>3.0.7.RELEASE</org.springframework.version.30>
+    <org.springframework.version.40>4.0.0.RELEASE</org.springframework.version.40>
+    <org.springframework.version.range>[${org.springframework.version.30}, ${org.springframework.version.40})</org.springframework.version.range>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <comments>
+        Copyright 2010 the original author or authors.
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+        implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+      </comments>
+    </license>
+  </licenses>
+
+	<dependencies>
+
+		<!--  Spring -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${org.springframework.version.range}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${org.springframework.version.range}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${org.springframework.version.range}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${org.springframework.version.range}</version>
+			<exclusions>
+				<exclusion>
+          			<groupId>commons-logging</groupId>
+          			<artifactId>commons-logging</artifactId>
+        		</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+			<version>${org.springframework.version.range}</version>
+		</dependency>
+
+		<!--  Spring Data -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons-core</artifactId>
+			<version>${data.commons.version}</version>
+		</dependency>
+
+		<!-- MongoDB -->
+                <dependency>
+                        <groupId>org.apache.cassandra</groupId>
+                        <artifactId>cassandra-all</artifactId>
+                        <version>1.0.7</version>
+                </dependency>
+	</dependencies>
+	
+</project>
