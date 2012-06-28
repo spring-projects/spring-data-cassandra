@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.mongodb.repository;
+package org.springframework.data.cassandra.repository;
 
 import java.io.Serializable;
 import java.util.List;
@@ -23,12 +23,12 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
- * Mongo specific {@link org.springframework.data.repository.Repository} interface.
+ * Cassandra specific {@link org.springframework.data.repository.Repository} interface.
  * 
- * @author Oliver Gierke
+ * @author Brian O'Neill
  */
 @NoRepositoryBean
-public interface MongoRepository<T, ID extends Serializable> extends PagingAndSortingRepository<T, ID> {
+public interface CassandraRepository<T, ID extends Serializable> extends PagingAndSortingRepository<T, ID> {
 
 	/*
 	 * (non-Javadoc)
