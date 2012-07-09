@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<version>1.1.0-SNAPSHOT</version>
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-cassandra</artifactId>
 	<name>Spring Data Cassandra</name>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- versions for commonly-used dependencies -->
-    <junit.version>4.10</junit.version>
-    <log4j.version>1.2.16</log4j.version>
-    <org.slf4j.version>1.6.1</org.slf4j.version>
-    <org.codehaus.jackson.version>1.6.1</org.codehaus.jackson.version>
-    <org.springframework.version>3.1.1.RELEASE</org.springframework.version>
-    <data.commons.version>1.1.0.RELEASE</data.commons.version>
-  </properties>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- versions for commonly-used dependencies -->
+		<junit.version>4.10</junit.version>
+		<log4j.version>1.2.16</log4j.version>
+		<org.slf4j.version>1.6.1</org.slf4j.version>
+		<org.codehaus.jackson.version>1.6.1</org.codehaus.jackson.version>
+		<org.springframework.version>3.1.1.RELEASE</org.springframework.version>
+		<data.commons.version>1.1.0.RELEASE</data.commons.version>
+	</properties>
 
-  <licenses>
-    <license>
-      <name>Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-      <comments>
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<comments>
         Copyright 2010 the original author or authors.
 
         Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,12 +38,65 @@
         See the License for the specific language governing permissions and
         limitations under the License.
       </comments>
-    </license>
-  </licenses>
+		</license>
+	</licenses>
+
+	<repositories>
+		<repository>
+			<id>sonatype-nexus</id>
+			<name>Kundera Public Repository</name>
+			<url>https://oss.sonatype.org/content/repositories/releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>terracotta-repository</id>
+			<url>http://www.terracotta.org/download/reflector/releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.scale7.org</id>
+			<name>Scale7 Maven Repo</name>
+			<url>https://github.com/s7/mvnrepo/raw/master</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>kundera-missing</id>
+			<name>Kundera Public Missing Resources Repository</name>
+			<url>http://kundera.googlecode.com/svn/maven2/maven-missing-resources</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>1.1.0.RELEASE</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>org.springframework</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
-		<!--  Spring -->
+		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
@@ -58,15 +112,20 @@
 			<artifactId>spring-beans</artifactId>
 			<version>${org.springframework.version}</version>
 		</dependency>
+                <dependency>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-orm</artifactId>
+                        <version>${org.springframework.version}</version>
+                </dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>${org.springframework.version}</version>
 			<exclusions>
 				<exclusion>
-          			<groupId>commons-logging</groupId>
-          			<artifactId>commons-logging</artifactId>
-        		</exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -75,19 +134,19 @@
 			<version>${org.springframework.version}</version>
 		</dependency>
 
-		<!--  Spring Data -->
+		<dependency>
+			<groupId>com.impetus.client</groupId>
+			<artifactId>kundera-cassandra</artifactId>
+			<version>2.0.6</version>
+		</dependency>
+
+		<!-- Spring Data -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-commons-core</artifactId>
 			<version>${data.commons.version}</version>
 		</dependency>
 
-		<!-- MongoDB -->
-                <dependency>
-                        <groupId>org.apache.cassandra</groupId>
-                        <artifactId>cassandra-all</artifactId>
-                        <version>1.0.7</version>
-                </dependency>
 	</dependencies>
-	
+
 </project>

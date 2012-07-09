@@ -32,12 +32,6 @@ public interface CassandraRepository<T, ID extends Serializable> extends PagingA
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
-	 */
-	<S extends T> List<S> save(Iterable<S> entites);
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#findAll()
 	 */
 	List<T> findAll();
