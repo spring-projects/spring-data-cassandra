@@ -35,8 +35,8 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
         }
     }
 
-    //@PersistenceContext
-    @Autowired 
+    // @PersistenceContext
+    @Autowired
     public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
         this.entityManager = entityManagerFactory.createEntityManager();
     }
@@ -79,9 +79,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      */
     public void delete(ID id) {
         T entity = entityManager.find(this.entityType, id);
-        entityManager.remove(entity);
-        entityManager.flush();       
-        //        this.delete(entity);
+        this.delete(entity);
     }
 
     /*
@@ -93,7 +91,6 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      */
     public void delete(T entity) {
         entityManager.remove(entity);
-        //entityManager.flush();       
     }
 
     /*

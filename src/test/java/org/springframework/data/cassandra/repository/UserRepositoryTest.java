@@ -47,7 +47,19 @@ public class UserRepositoryTest {
     }
 
     @Test
+    public void testDeleteByID() throws InterruptedException {        
+        User user = this.getUser1();
+        userRepository.save(user);
+        assert(userRepository.exists(user.getUserId()));
+        userRepository.delete(USER_ID);
+        assertFalse(userRepository.exists(USER_ID));        
+    }
+
+    @Test
     public void testDelete() throws InterruptedException {        
+        User user = this.getUser1();
+        userRepository.save(user);
+        assert(userRepository.exists(user.getUserId()));
         userRepository.delete(USER_ID);
         assertFalse(userRepository.exists(USER_ID));        
     }
