@@ -1,6 +1,8 @@
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -20,12 +22,22 @@ import org.springframework.data.domain.Sort;
 public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
 
     private EntityManager entityManager;
-    
+    private Class<T> entityType = null;
+
+    @SuppressWarnings("unchecked")
+    public SimpleCassandraRepository() {
+        Type returnType = getClass().getGenericSuperclass();
+        if (returnType instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) returnType;
+            this.entityType = (Class<T>) pt.getActualTypeArguments()[0];
+        }
+    }
+
     @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
-        this. entityManager = entityManager;
+        this.entityManager = entityManager;
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -42,8 +54,9 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * @see org.springframework.data.repository.CrudRepository#exists(java.io.
      * Serializable)
      */
-    public boolean exists(ID id) {
-        throw new NotImplementedException();
+    public boolean exists(ID id) { 
+        T entity = entityManager.find(this.entityType, id);
+        return (entity != null);
     }
 
     /*
@@ -62,7 +75,8 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * Serializable)
      */
     public void delete(ID id) {
-        throw new NotImplementedException();
+        T entity = entityManager.find(this.entityType, id);
+        entityManager.remove(entity);
     }
 
     /*
@@ -73,7 +87,8 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * )
      */
     public void delete(T entity) {
-        throw new NotImplementedException();
+        entityManager.remove(entity);
+        entityManager.flush();
     }
 
     /*

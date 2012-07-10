@@ -7,6 +7,7 @@ import org.springframework.data.cassandra.repository.example.User;
 import org.springframework.data.cassandra.repository.example.UserRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:beans.xml")
@@ -18,19 +19,25 @@ public class UserRepositoryTest {
         User user = new User();
         user.setUserId("0001");
         user.setFirstName("Brian");
-        user.setLastName("ONeill");
+        user.setLastName("Kelley");
         user.setCity("Philly");
         return user;
     }
     
     @Test
-    public void testSave() {        
-        userRepository.save(this.getUser1());
+    public void testSave() {   
+        User user = this.getUser1();
+        userRepository.save(user);
+        assert(userRepository.exists(user.getUserId()));
     }
 
     @Test
     public void testDelete() {        
-        userRepository.save(this.getUser1());
+        User user = this.getUser1();
+        userRepository.save(user);
+        assert(userRepository.exists(user.getUserId()));
+        userRepository.delete(user);
+        assertFalse(userRepository.exists(user.getUserId()));        
     }
 
 }
