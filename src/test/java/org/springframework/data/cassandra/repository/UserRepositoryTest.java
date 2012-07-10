@@ -13,15 +13,24 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class UserRepositoryTest {
     @Autowired
     UserRepository userRepository;
-    
-    @Test
-    public void testWrite() {
+
+    private User getUser1(){
         User user = new User();
         user.setUserId("0001");
         user.setFirstName("Brian");
-        user.setLastName("Smith");
-        user.setCity("London");        
-        userRepository.save(user);
+        user.setLastName("ONeill");
+        user.setCity("Philly");
+        return user;
+    }
+    
+    @Test
+    public void testSave() {        
+        userRepository.save(this.getUser1());
+    }
+
+    @Test
+    public void testDelete() {        
+        userRepository.save(this.getUser1());
     }
 
 }

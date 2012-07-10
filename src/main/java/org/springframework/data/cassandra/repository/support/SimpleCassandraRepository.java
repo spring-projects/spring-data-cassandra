@@ -4,10 +4,9 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +19,13 @@ import org.springframework.data.domain.Sort;
  */
 public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
 
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
+    private EntityManager entityManager;
+    
+    @PersistenceContext
+    public void setEntityManager(EntityManager entityManager) {
+        this. entityManager = entityManager;
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -141,11 +144,9 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * @see
      * org.springframework.data.repository.CrudRepository#save(java.lang.Object)
      */
-    public T save(T arg0) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        em.persist(arg0);
-        em.close();
-        return arg0;
+    public T save(T entity) {
+        this.entityManager.persist(entity);
+        return entity;
     }
 
     /*
