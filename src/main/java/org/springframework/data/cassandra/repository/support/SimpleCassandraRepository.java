@@ -6,9 +6,10 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.EntityManagerFactory;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Sort;
  */
 public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
 
+    EntityManagerFactory entityManagerFactory;
     private EntityManager entityManager;
     private Class<T> entityType = null;
 
@@ -33,9 +35,10 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
         }
     }
 
-    @PersistenceContext
-    public void setEntityManager(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    //@PersistenceContext
+    @Autowired 
+    public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
+        this.entityManager = entityManagerFactory.createEntityManager();
     }
 
     /*
@@ -45,7 +48,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * Serializable)
      */
     public T findOne(ID id) {
-        throw new NotImplementedException();
+        return entityManager.find(this.entityType, id);
     }
 
     /*
@@ -54,7 +57,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * @see org.springframework.data.repository.CrudRepository#exists(java.io.
      * Serializable)
      */
-    public boolean exists(ID id) { 
+    public boolean exists(ID id) {
         T entity = entityManager.find(this.entityType, id);
         return (entity != null);
     }
@@ -77,6 +80,8 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
     public void delete(ID id) {
         T entity = entityManager.find(this.entityType, id);
         entityManager.remove(entity);
+        entityManager.flush();       
+        //        this.delete(entity);
     }
 
     /*
@@ -88,7 +93,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      */
     public void delete(T entity) {
         entityManager.remove(entity);
-        entityManager.flush();
+        //entityManager.flush();       
     }
 
     /*
