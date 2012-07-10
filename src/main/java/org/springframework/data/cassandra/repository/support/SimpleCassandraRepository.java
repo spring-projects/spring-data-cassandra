@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,10 @@ import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import com.impetus.kundera.metadata.KunderaMetadataManager;
+import com.impetus.kundera.metadata.model.EntityMetadata;
+import com.impetus.kundera.persistence.EntityManagerFactoryImpl;
 
 /**
  * Repository base implementation for Cassandra.
@@ -68,7 +73,14 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * @see org.springframework.data.repository.CrudRepository#count()
      */
     public long count() {
-        throw new NotImplementedException();
+        // TODO: Use count() syntax here, doesn't appear to be working... 
+        //       need to check on status of count() in CQL.  
+        //       Still costly across the entire cluster?
+        //EntityMetadata metadata = KunderaMetadataManager.getEntityMetadata(this.entityType);
+        String jpqQuery = "select u from " + this.entityType.getSimpleName() + " u";
+        Query query = entityManager.createQuery(jpqQuery);
+        List<Long> result = query.getResultList();
+        return result.size();
     }
 
     /*
