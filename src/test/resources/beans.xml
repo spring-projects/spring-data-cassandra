@@ -18,17 +18,11 @@
 
 	<context:component-scan base-package="org.springframework.data.cassandra" />
 
-	<bean id="cassandraExceptionTranslator"
-		class="org.springframework.data.cassandra.repository.CassandraPersistenceExceptionTranslator" />
-
 	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
 
 	<bean id="entityManagerFactory"
 		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
 		<property name="persistenceUnitName" value="cassandra_pu" />
 	</bean>
-
-	<bean id="userRepository"
-		class="org.springframework.data.cassandra.repository.example.UserRepository" />
 
 </beans>

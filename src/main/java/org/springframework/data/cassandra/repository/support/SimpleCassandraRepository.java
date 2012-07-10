@@ -1,23 +1,14 @@
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import javax.management.Query;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.hibernate.Criteria;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.query.QueryUtils;
-import org.springframework.util.Assert;
+import org.springframework.stereotype.Repository;
 
 /**
  * Repository base implementation for Cassandra.
@@ -33,14 +24,6 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * Serializable)
      */
     public T findOne(ID id) {
-        throw new NotImplementedException();
-    }
-
-    private Query getIdQuery(Object id) {
-        throw new NotImplementedException();
-    }
-
-    private Criteria getIdCriteria(Object id) {
         throw new NotImplementedException();
     }
 

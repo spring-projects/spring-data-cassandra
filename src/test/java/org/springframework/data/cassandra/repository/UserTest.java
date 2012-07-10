@@ -5,6 +5,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import org.junit.Test;
+import org.springframework.data.cassandra.repository.example.User;
 
 public class UserTest {
     

@@ -27,7 +27,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  * 
  * @author Brian O'Neill
  */
-@NoRepositoryBean
 public interface CassandraRepository<T, ID extends Serializable> extends PagingAndSortingRepository<T, ID> {
 
 	/*
