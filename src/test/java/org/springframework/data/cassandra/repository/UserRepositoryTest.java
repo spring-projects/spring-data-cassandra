@@ -18,7 +18,7 @@ public class UserRepositoryTest {
     public void testWrite() {
         User user = new User();
         user.setUserId("0001");
-        user.setFirstName("John");
+        user.setFirstName("Brian");
         user.setLastName("Smith");
         user.setCity("London");        
         userRepository.save(user);

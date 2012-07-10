@@ -3,12 +3,15 @@ package org.springframework.data.cassandra.repository.support;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Repository;
 
 /**
  * Repository base implementation for Cassandra.
@@ -17,6 +20,9 @@ import org.springframework.stereotype.Repository;
  */
 public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
 
+    @Autowired 
+    EntityManagerFactory entityManagerFactory;
+    
     /*
      * (non-Javadoc)
      * 
@@ -136,8 +142,10 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * org.springframework.data.repository.CrudRepository#save(java.lang.Object)
      */
     public T save(T arg0) {
-        // TODO Auto-generated method stub
-        return null;
+        EntityManager em = entityManagerFactory.createEntityManager();
+        em.persist(arg0); 
+        em.close();
+        return arg0;
     }
 
     /*
