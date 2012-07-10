@@ -9,9 +9,11 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.cassandra.EmbeddedCassandra;
 import org.springframework.data.cassandra.repository.example.User;
 import org.springframework.data.cassandra.repository.example.UserRepository;
 import org.springframework.test.context.ContextConfiguration;
@@ -22,6 +24,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class UserRepositoryTest {
     @Autowired
     UserRepository userRepository;
+    
+    @Autowired
+    EmbeddedCassandra cassandra;
     
     private final static String USER1_ID = "0001";
     private final static String USER2_ID = "0002";

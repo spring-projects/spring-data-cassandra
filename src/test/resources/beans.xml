@@ -14,9 +14,9 @@
                       http://www.springframework.org/schema/data/jpa 
                       http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
 
-	<jpa:repositories base-package="org.springframework.data.cassandra" />
-
 	<context:component-scan base-package="org.springframework.data.cassandra" />
+	
+	<jpa:repositories base-package="org.springframework.data.cassandra" />
 
 	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
 
