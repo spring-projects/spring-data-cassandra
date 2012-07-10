@@ -101,7 +101,10 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * )
      */
     public void delete(Iterable<? extends T> entities) {
-        throw new NotImplementedException();
+        // TODO: Come back and potentially use ranges here.
+        for (T entity: entities){
+            this.delete(entity);
+        }
     }
 
     /*
