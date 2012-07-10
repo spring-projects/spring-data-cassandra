@@ -20,9 +20,9 @@ import org.springframework.data.domain.Sort;
  */
 public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
 
-    @Autowired 
+    @Autowired
     EntityManagerFactory entityManagerFactory;
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -143,7 +143,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      */
     public T save(T arg0) {
         EntityManager em = entityManagerFactory.createEntityManager();
-        em.persist(arg0); 
+        em.persist(arg0);
         em.close();
         return arg0;
     }
@@ -156,8 +156,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * )
      */
     public Iterable<T> save(Iterable<? extends T> arg0) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new NotImplementedException();
     }
 
 }
