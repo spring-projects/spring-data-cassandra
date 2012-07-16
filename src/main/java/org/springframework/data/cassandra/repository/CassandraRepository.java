@@ -19,15 +19,14 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.NoRepositoryBean;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * Cassandra specific {@link org.springframework.data.repository.Repository} interface.
  * 
  * @author Brian O'Neill
  */
-public interface CassandraRepository<T, ID extends Serializable> extends PagingAndSortingRepository<T, ID> {
+public interface CassandraRepository<T, ID extends Serializable> extends JpaRepository<T, ID> {
 
 	/*
 	 * (non-Javadoc)

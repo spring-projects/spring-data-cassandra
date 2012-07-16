@@ -14,15 +14,24 @@
                       http://www.springframework.org/schema/data/jpa 
                       http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
 
-	<context:component-scan base-package="org.springframework.data.cassandra" />
-	
+	<context:component-scan
+		base-package="org.springframework.data.cassandra.repository.example" />
+
 	<jpa:repositories base-package="org.springframework.data.cassandra" />
 
-	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+	<bean
+		class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
 
 	<bean id="entityManagerFactory"
 		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
 		<property name="persistenceUnitName" value="cassandra_pu" />
+		<property name="packagesToScan">
+			<list>
+				<value>org.springframework.data.cassandra.repository.example</value>
+			</list>
+		</property>
+		<property name="persistenceProviderClass"
+			value="com.impetus.kundera.KunderaPersistence" />
 	</bean>
 
 </beans>

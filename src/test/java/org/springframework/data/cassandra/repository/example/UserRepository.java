@@ -1,8 +1,8 @@
 package org.springframework.data.cassandra.repository.example;
 
-import org.springframework.data.cassandra.repository.support.SimpleCassandraRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserRepository extends SimpleCassandraRepository<User, String> {
+public interface UserRepository extends JpaRepository<User, String> {
 }

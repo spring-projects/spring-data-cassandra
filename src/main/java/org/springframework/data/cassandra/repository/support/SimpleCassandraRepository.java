@@ -25,7 +25,7 @@ import com.impetus.kundera.persistence.EntityManagerFactoryImpl;
  * 
  * @author Brian O'Neill
  */
-public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
+public class SimpleCassandraRepository<T, ID extends Serializable> {
 
     EntityManagerFactory entityManagerFactory;
     private EntityManager entityManager;
@@ -125,7 +125,9 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
      * @see org.springframework.data.repository.CrudRepository#deleteAll()
      */
     public void deleteAll() {
-        throw new NotImplementedException();
+        String jpqQuery = "delete from " + this.entityType.getSimpleName() + " u";
+        Query query = entityManager.createQuery(jpqQuery);
+        query.executeUpdate();
     }
 
     /*
@@ -191,5 +193,25 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
     public Iterable<T> save(Iterable<? extends T> arg0) {
         throw new NotImplementedException();
     }
+
+	public void deleteAllInBatch() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void deleteInBatch(Iterable<T> arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void flush() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public T saveAndFlush(T arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

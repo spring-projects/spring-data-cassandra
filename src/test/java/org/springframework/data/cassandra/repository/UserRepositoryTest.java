@@ -9,7 +9,6 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,5 +117,23 @@ public class UserRepositoryTest {
         assertFalse(userRepository.exists(USER1_ID));        
         assertFalse(userRepository.exists(USER2_ID));        
     }
-    
+
+    @Test
+    public void testDeleteAll() throws InterruptedException {        
+        User user1 = this.getUser1();
+        User user2 = this.getUser2();
+        userRepository.save(user1);
+        userRepository.save(user2);
+        assertTrue(userRepository.exists(USER1_ID));
+        assertTrue(userRepository.exists(USER2_ID));
+        
+        List<User> users = new ArrayList<User>();
+        users.add(user1);
+        users.add(user2);
+        Assert.assertEquals(2, userRepository.count());
+        
+        userRepository.deleteAll();
+        Assert.assertEquals(0, userRepository.count());
+    }
+
 }
