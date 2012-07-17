@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.netflix.astyanax.AstyanaxContext;
@@ -31,11 +30,12 @@ import com.netflix.astyanax.thrift.ThriftFamilyFactory;
  * 
  * @author Brian O'Neill
  */
-public class CassandraFactoryBean implements InitializingBean, DisposableBean {
+public class CassandraFactoryBean implements InitializingBean {
 	private String host;
 	private Integer port;
 	private String keyspaceName;
-    protected Keyspace keyspace;
+	protected Keyspace keyspace;
+	protected AstyanaxContext<Keyspace> context;
 
 	public void setHost(String host) {
 		this.host = host;
@@ -44,7 +44,7 @@ public class CassandraFactoryBean implements InitializingBean, DisposableBean {
 	public void setPort(int port) {
 		this.port = port;
 	}
-	
+
 	public void setKeyspace(String keyspace) {
 		this.keyspaceName = keyspace;
 	}
@@ -75,7 +75,7 @@ public class CassandraFactoryBean implements InitializingBean, DisposableBean {
 	 */
 	public void afterPropertiesSet() throws Exception {
 		try {
-			AstyanaxContext<Keyspace> context = new AstyanaxContext.Builder()
+			context = new AstyanaxContext.Builder()
 					.forCluster("ClusterName")
 					.forKeyspace(this.keyspaceName)
 					.withAstyanaxConfiguration(
@@ -83,12 +83,9 @@ public class CassandraFactoryBean implements InitializingBean, DisposableBean {
 									.setDiscoveryType(NodeDiscoveryType.NONE))
 					.withConnectionPoolConfiguration(
 							new ConnectionPoolConfigurationImpl(
-									"MyConnectionPool")
-									.setPort(this.port)
+									"MyConnectionPool").setPort(this.port)
 									.setMaxConnsPerHost(1)
-									.setSeeds(
-											this.host + ":"
-													+ this.port))
+									.setSeeds(this.host + ":" + this.port))
 					.withConnectionPoolMonitor(
 							new CountingConnectionPoolMonitor())
 					.buildKeyspace(ThriftFamilyFactory.getInstance());
@@ -99,14 +96,5 @@ public class CassandraFactoryBean implements InitializingBean, DisposableBean {
 			throw new IllegalStateException("Failed to prepare CassandraBolt",
 					e);
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
-	 */
-	public void destroy() throws Exception {
-		this.mongo.close();
 	}
 }

@@ -15,7 +15,7 @@
 		<org.slf4j.version>1.6.1</org.slf4j.version>
 		<org.codehaus.jackson.version>1.6.1</org.codehaus.jackson.version>
 		<org.springframework.version>3.1.1.RELEASE</org.springframework.version>
-		<data.commons.version>1.1.0.RELEASE</data.commons.version>
+		<data.commons.version>1.3.1.RELEASE</data.commons.version>
 	</properties>
 
 	<licenses>
@@ -97,10 +97,15 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>3.1.2.RELEASE</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.netflix.astyanax</groupId>
 			<artifactId>astyanax</artifactId>
 			<version>1.0.1</version>
-			<scope>test</scope>
 		</dependency>
 
 		<!-- Spring -->
@@ -148,6 +153,12 @@
 		</dependency>
 
 		<!-- Spring Data -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons-core</artifactId>
+			<version>${data.commons.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
