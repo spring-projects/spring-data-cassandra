@@ -1,1 +1,1 @@
-Spring Data JPA layer for Cassandra.
+Spring Data layer for Cassandra.
