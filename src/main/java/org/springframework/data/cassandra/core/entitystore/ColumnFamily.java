@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.mapping;
+package org.springframework.data.cassandra.core.entitystore;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -34,5 +34,9 @@ import org.springframework.data.annotation.Persistent;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
 public @interface ColumnFamily {
-	String columnFamilyName() default "";
+	
+	/**
+	 * The ColumnFamily Name in Cassandra
+	 */
+	String name() default "";
 }

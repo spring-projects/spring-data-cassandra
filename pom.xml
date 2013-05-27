@@ -98,12 +98,12 @@
 			<groupId>com.netflix.astyanax</groupId>
 			<artifactId>astyanax</artifactId>
 			<version>${astyanax.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.hectorclient</groupId>
-			<artifactId>hector-core</artifactId>
-			<version>${hector.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>astyanax-entity-mapper</artifactId>
+					<groupId>com.netflix.astyanax</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Spring -->
@@ -177,11 +177,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.10</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.datastax.cassandra</groupId>
-			<artifactId>cassandra-driver-core</artifactId>
-			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 

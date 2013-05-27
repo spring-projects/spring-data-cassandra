@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.core.mapping;
+package org.springframework.data.cassandra.core.entitystore;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -12,7 +12,18 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Column {
+	
+    /**
+     * (Optional) The name of the column. Defaults to 
+     * the property or field name.
+     */
+    String name() default "";
 
+    /**
+     * (Optional) Whether the database column is nullable.
+     */
+    boolean nullable() default true;
+    
 	/**
 	 * The key to be used to store the field inside the document.
 	 * 

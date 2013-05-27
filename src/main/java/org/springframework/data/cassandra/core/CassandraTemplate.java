@@ -15,26 +15,19 @@
  */
 package org.springframework.data.cassandra.core;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.cassandra.core.entitystore.DefaultCassandraEntityManager;
+import org.springframework.data.cassandra.core.entitystore.CassandraEntityManager;
+import org.springframework.data.cassandra.core.exception.MappingException;
 
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.TokenRange;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
-import com.netflix.astyanax.entitystore.DefaultEntityManager;
-import com.netflix.astyanax.entitystore.EntityManager;
-import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnFamily;
-import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.serializers.StringSerializer;
 
 /**
@@ -48,8 +41,6 @@ public class CassandraTemplate implements CassandraOperations {
 			.getLogger(CassandraTemplate.class);
 	
 	private CassandraFactoryBean cassandraFactory;
-	private CassandraConverter converter;
-	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 	
 //	private ApplicationEventPublisher eventPublisher;
 //	private ResourceLoader resourceLoader;
@@ -60,46 +51,15 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @param cassandraFactory
 	 */
 	public CassandraTemplate(CassandraFactoryBean cassandraFactory) {
-		this(cassandraFactory, null);
-	}
-
-	/**
-	 * Constructor used for a basic template configuration.
-	 * 
-	 * @param mongoDbFactory
-	 * @param mongoConverter
-	 */
-	public CassandraTemplate(CassandraFactoryBean cassandraFactory,
-			CassandraConverter converter) {
 		this.cassandraFactory = cassandraFactory;
-		this.converter = converter == null ? getDefaultCassandraConverter(cassandraFactory) : converter;
-		this.mappingContext = new CassandraMappingContext();
 	}
 
 	/**
-	 * Returns the default
-	 * {@link org.springframework.data.cassandra.core.convert.CassandraConverter}
-	 * .
-	 * 
+	 * Returne the keyspace client
 	 * @return
 	 */
-	public CassandraConverter getConverter() {
-		return this.converter;
-	}
-	
 	public Keyspace getClient() {
 		return cassandraFactory.getClient();
-	}
-
-	/**
-	 * Returns the default
-	 * {@link org.springframework.data.cassandra.core.convert.CassandraConverter}
-	 * .
-	 * 
-	 * @return
-	 */
-	public CassandraConverter getDefaultCassandraConverter(CassandraFactoryBean cassandraFactory) {
-		return this.converter;
 	}
 
 	public Set<String> getKeyspaceNames() {
@@ -145,14 +105,19 @@ public class CassandraTemplate implements CassandraOperations {
 				    StringSerializer.get(), 
 				    StringSerializer.get());
 		
-		final EntityManager<T, String> entityManager = 
-				new DefaultEntityManager.Builder<T, String>()
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
 				.withKeyspace(cassandraFactory.getClient())
 				.withColumnFamily(CF_JOBS)
 				.build();
 
-		T t = entityManager.get(id.toString());
+		T t = null;
+		try {
+			t = entityManager.get(id.toString());
+		} catch (MappingException e) {
+			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findById.", e);
+		}
 			
 		LOGGER.info("t -> " + t);
 		
