@@ -1,0 +1,10 @@
+{
+    "name":"test_keyspace",
+    "replicationFactor":1,
+    "strategy":"org.apache.cassandra.locator.SimpleStrategy",
+    "columnFamilies":[
+        {
+            "name":"Jobs"
+        }
+    ]
+}

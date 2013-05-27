@@ -99,7 +99,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	public <T> T findById(Object id, Class<T> entityClass, String columnFamilyName) {
 		
-		ColumnFamily<String, String> CF_JOBS =
+		ColumnFamily<String, String> CF =
 				  new ColumnFamily<String, String>(
 					columnFamilyName,              
 				    StringSerializer.get(), 
@@ -109,7 +109,7 @@ public class CassandraTemplate implements CassandraOperations {
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
 				.withKeyspace(cassandraFactory.getClient())
-				.withColumnFamily(CF_JOBS)
+				.withColumnFamily(CF)
 				.build();
 
 		T t = null;
