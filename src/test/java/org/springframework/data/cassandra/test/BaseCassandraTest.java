@@ -1,8 +1,9 @@
 package org.springframework.data.cassandra.test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.List;
 
 import lombok.extern.apachecommons.CommonsLog;
 
@@ -19,12 +20,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.test.cf.Jobs;
 import org.springframework.data.cassandra.test.config.TestConfig;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import com.netflix.astyanax.Keyspace;
+import com.netflix.astyanax.connectionpool.TokenRange;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 
 /**
@@ -67,13 +70,43 @@ public class BaseCassandraTest {
     	
     	assertNotNull(keyspace);
     	
+    }
+    
+    @Test
+    public void ringTest() {
+    	
     	try {
-			log.info(keyspace.describeRing().toString());
+    		
+    		List<TokenRange> ringTokens = keyspace.describeRing();
+			
+    		/*
+    		 * There must be 1 node in the cluster if the embedded server is running.
+    		 */
+    		assertNotNull(ringTokens);
+    		
+    		
+    		log.info(ringTokens.toString());
+			
 		} catch (ConnectionException e) {
 			e.printStackTrace();
 		}
-    	
+
     }
+    
+    /**
+     * Test the findById in the CassandraTemplate
+     */
+    @Test
+    public void findByIdTest() {
+    	
+    	Jobs found = cassandraTemplate.findById("1", Jobs.class, "Jobs");
+    	
+    	assertNotNull(found);
+    	
+    	assertEquals(found.getJobTitle(), "Spring Data Cassandra Developer");
+    }
+    
+    
 
     @After
     public void clearCassandra() {

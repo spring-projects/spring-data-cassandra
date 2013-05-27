@@ -4,7 +4,39 @@
     "strategy":"org.apache.cassandra.locator.SimpleStrategy",
     "columnFamilies":[
         {
-            "name":"Jobs"
+            "name":"Jobs",
+            "type" : "STANDARD",
+        	"keyType" : "UTF8Type",
+        	"comparatorType" : "UTF8Type",
+        	"defaultColumnValueType" : "UTF8Type",
+            "rows": [
+            	{
+            		"key": "1",
+            		"columns": [
+            			{
+            				"name": "job_title",
+            				"value": "Spring Data Cassandra Developer"
+            			},
+            			{
+            				"name": "pay_rate",
+            				"value": "100.00"
+            			}
+            		]
+            	},
+            	{
+            		"key": "2",
+            		"columns": [
+            			{
+            				"name": "job_title",
+            				"value": "Spring Data Cassandra User"
+            			},
+            			{
+            				"name": "pay_rate",
+            				"value": "10.00"
+            			}
+            		]
+            	}
+            ]
         }
     ]
 }
