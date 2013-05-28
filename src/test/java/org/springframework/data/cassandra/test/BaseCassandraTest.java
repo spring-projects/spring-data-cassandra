@@ -1,6 +1,8 @@
 package org.springframework.data.cassandra.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -106,6 +108,47 @@ public class BaseCassandraTest {
     	assertEquals(found.getJobTitle(), "Spring Data Cassandra Developer");
     }
     
+    /**
+     * Test the findAll in the CassandraTemplate
+     */
+    @Test
+    public void findAllTest() {
+    	
+    	List<Jobs> found = cassandraTemplate.findAll(Jobs.class, "Jobs");
+    	
+    	assertNotNull(found);
+    	
+    	assertEquals(found.size(), 3);
+    }
+    
+    @Test
+    public void insertOneTest() {
+    	
+    	String testKey = "TEST-904";
+    	String testTitle = "TEST-904-Title";
+    	String testPayRate = "75.00";
+    	
+    	Jobs job1 = new Jobs();
+    	job1.setKey(testKey);
+    	job1.setJobTitle(testTitle);
+    	job1.setPayRate(testPayRate);
+    	
+    	cassandraTemplate.insert(job1, Jobs.class, "Jobs");
+    	
+    	Jobs jobGet = cassandraTemplate.findById("TEST-904", Jobs.class, "Jobs");
+    	
+    	assertNotNull(jobGet);
+    	assertEquals(job1.getKey(), jobGet.getKey());
+    	assertEquals(job1.getJobTitle(), jobGet.getJobTitle());
+    	assertEquals(job1.getPayRate(), jobGet.getPayRate());
+    	
+    	cassandraTemplate.remove(jobGet, Jobs.class, "Jobs");
+    	
+    	jobGet = cassandraTemplate.findById("TEST-904", Jobs.class, "Jobs");
+    	
+    	assertNull(jobGet);
+
+    }
     
 
     @After

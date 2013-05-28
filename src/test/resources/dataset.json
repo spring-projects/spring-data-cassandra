@@ -35,6 +35,19 @@
             				"value": "10.00"
             			}
             		]
+            	},
+            	{
+            		"key": "3",
+            		"columns": [
+            			{
+            				"name": "job_title",
+            				"value": "Spring WebMVC Developer"
+            			},
+            			{
+            				"name": "pay_rate",
+            				"value": "50.00"
+            			}
+            		]
             	}
             ]
         }

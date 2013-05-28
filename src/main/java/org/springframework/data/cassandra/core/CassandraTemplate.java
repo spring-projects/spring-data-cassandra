@@ -15,13 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.cassandra.core.entitystore.DefaultCassandraEntityManager;
 import org.springframework.data.cassandra.core.entitystore.CassandraEntityManager;
+import org.springframework.data.cassandra.core.entitystore.DefaultCassandraEntityManager;
 import org.springframework.data.cassandra.core.exception.MappingException;
 
 import com.netflix.astyanax.Keyspace;
@@ -116,12 +118,212 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			t = entityManager.get(id.toString());
 		} catch (MappingException e) {
-			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findById.", e);
+			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findById().", e);
 		}
 			
 		LOGGER.info("t -> " + t);
 		
 		return t;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#findAll(java.lang.Class)
+	 */
+	public <T> List<T> findAll(Class<T> entityClass, String columnFamilyName) {
+		
+		/*
+		 * Return var
+		 */
+		List<T> results = new ArrayList<T>();
+		
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
+				.withEntityType(entityClass)
+				.withKeyspace(cassandraFactory.getClient())
+				.withColumnFamily(CF)
+				.build();
+		
+		try {
+			results = entityManager.getAll();
+		} catch (MappingException e) {
+			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findAll().", e);
+		}
+		
+		/*
+		 * Return
+		 */
+		return results;
 	
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, java.lang.Class, java.lang.String)
+	 */
+	public <T> void insert(T objectToSave, Class<T> entityClass, String columnFamilyName) {
+
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
+				.withEntityType(entityClass)
+				.withKeyspace(cassandraFactory.getClient())
+				.withColumnFamily(CF)
+				.build();
+		
+		try {
+			entityManager.put(objectToSave);
+		} catch (MappingException e) {
+			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findAll().", e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.util.Collection, java.lang.Class, java.lang.String)
+	 */
+	public <T> void insert(Collection<T> batchToSave, Class<T> entityClass,
+			String columnFamilyName) {
+
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
+				.withEntityType(entityClass)
+				.withKeyspace(cassandraFactory.getClient())
+				.withColumnFamily(CF)
+				.build();
+		
+		try {
+			entityManager.put(batchToSave);
+		} catch (MappingException e) {
+			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
+		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#save(java.lang.Object, java.lang.Class, java.lang.String)
+	 */
+	public <T> void save(T objectToSave, Class<T> entityClass,
+			String columnFamilyName) {
+
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
+				.withEntityType(entityClass)
+				.withKeyspace(cassandraFactory.getClient())
+				.withColumnFamily(CF)
+				.build();
+		
+		try {
+			entityManager.put(objectToSave);
+		} catch (MappingException e) {
+			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
+		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#save(java.util.Collection, java.lang.Class, java.lang.String)
+	 */
+	public <T> void save(Collection<T> batchToSave, Class<T> entityClass,
+			String columnFamilyName) {
+
+
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
+				.withEntityType(entityClass)
+				.withKeyspace(cassandraFactory.getClient())
+				.withColumnFamily(CF)
+				.build();
+		
+		try {
+			entityManager.put(batchToSave);
+		} catch (MappingException e) {
+			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#remove(java.lang.Object, java.lang.Class, java.lang.String)
+	 */
+	public <T> void remove(T objectToRemove, Class<T> entityClass,
+			String columnFamilyName) {
+
+
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
+				.withEntityType(entityClass)
+				.withKeyspace(cassandraFactory.getClient())
+				.withColumnFamily(CF)
+				.build();
+		
+		try {
+			entityManager.remove(objectToRemove);
+		} catch (MappingException e) {
+			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.remove().", e);
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#remove(java.util.Collection, java.lang.Class, java.lang.String)
+	 */
+	public <T> void remove(Collection<T> batchToRemove, Class<T> entityClass,
+			String columnFamilyName) {
+
+
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
+				.withEntityType(entityClass)
+				.withKeyspace(cassandraFactory.getClient())
+				.withColumnFamily(CF)
+				.build();
+		
+		try {
+			entityManager.remove(batchToRemove);
+		} catch (MappingException e) {
+			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.remove().", e);
+		}
+
+	}
+
+
+
 }
