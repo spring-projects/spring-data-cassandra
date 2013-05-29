@@ -49,8 +49,8 @@ public class CassandraTemplate implements CassandraOperations {
 	 * 
 	 * @param cassandraFactory
 	 */
-	public CassandraTemplate(CassandraFactoryBean cassandraFactory) {
-		this.cassandraFactory = cassandraFactory;
+	public CassandraTemplate(CassandraFactoryBean cassandra) {
+		this.cassandraFactory = cassandra;
 	}
 
 	/**

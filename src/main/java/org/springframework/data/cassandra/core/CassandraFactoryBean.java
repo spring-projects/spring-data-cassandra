@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2012 the original author or authors.
+ * Copyright 2010-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j;
+
 import org.springframework.beans.factory.InitializingBean;
 
 import com.netflix.astyanax.AstyanaxContext;
@@ -32,16 +32,17 @@ import com.netflix.astyanax.thrift.ThriftFamilyFactory;
  * Convenient factory for configuring Cassandra Keyspace.
  * 
  * @author Brian O'Neill
+ * @author David Webb
  */
+@Log4j
 public class CassandraFactoryBean implements InitializingBean {
-	private String host;
+	
+	private String host = "localhost";
 	private Integer port = 9160;
 	private String keyspaceName;
+	
 	protected Keyspace keyspace;
 	protected AstyanaxContext<Keyspace> context;
-
-	private static final Logger LOG = LoggerFactory
-			.getLogger(CassandraFactoryBean.class);
 
 	public void setHost(String host) {
 		this.host = host;
@@ -81,9 +82,9 @@ public class CassandraFactoryBean implements InitializingBean {
 	 */
 	public void afterPropertiesSet() throws Exception {
 		
-		LOG.info("Host -> " + this.host);
-		LOG.info("Port -> " + this.port);
-		LOG.info("Keyspace -> " + this.keyspaceName);
+		log.info("Host -> " + this.host);
+		log.info("Port -> " + this.port);
+		log.info("Keyspace -> " + this.keyspaceName);
 		
 		try {
 			context = new AstyanaxContext.Builder()
@@ -124,7 +125,7 @@ public class CassandraFactoryBean implements InitializingBean {
 		try {
 			this.keyspace.describeKeyspace();
 		} catch (ConnectionException e) {
-			LOG.warn("Connection to Cassandra is not available...reinitializing pool.");
+			log.warn("Connection to Cassandra is not available...reinitializing pool.");
 			try {
 				afterPropertiesSet();
 			} catch (Exception e1) {
