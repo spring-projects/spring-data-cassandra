@@ -18,10 +18,11 @@ package org.springframework.data.cassandra.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j;
+
 import org.springframework.data.cassandra.core.entitystore.CassandraEntityManager;
 import org.springframework.data.cassandra.core.entitystore.DefaultCassandraEntityManager;
 import org.springframework.data.cassandra.core.exception.MappingException;
@@ -29,6 +30,7 @@ import org.springframework.data.cassandra.core.exception.MappingException;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.TokenRange;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
+import com.netflix.astyanax.ddl.KeyspaceDefinition;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.serializers.StringSerializer;
 
@@ -37,16 +39,11 @@ import com.netflix.astyanax.serializers.StringSerializer;
  * 
  * @author David Webb
  */
+@Log4j
 public class CassandraTemplate implements CassandraOperations {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(CassandraTemplate.class);
-	
 	private CassandraFactoryBean cassandraFactory;
 	
-//	private ApplicationEventPublisher eventPublisher;
-//	private ResourceLoader resourceLoader;
-
 	/**
 	 * Constructor used for a basic template configuration
 	 * 
@@ -57,17 +54,23 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/**
-	 * Returne the keyspace client
+	 * Return the keyspace client
 	 * @return
 	 */
 	public Keyspace getClient() {
 		return cassandraFactory.getClient();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#getKeyspaceNames()
+	 */
 	public Set<String> getKeyspaceNames() {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#describeRing()
+	 */
 	public List<TokenRange> describeRing() {
 		
 		List<TokenRange> ring = null;
@@ -88,7 +91,8 @@ public class CassandraTemplate implements CassandraOperations {
 		String name = null;
 		
 		try {
-			name = cassandraFactory.getClient().describeKeyspace().getName();
+			KeyspaceDefinition ksd = cassandraFactory.getClient().describeKeyspace();
+			name = ksd.getName();
 		} catch (ConnectionException e) {
 			e.printStackTrace();
 		}
@@ -118,10 +122,10 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			t = entityManager.get(id.toString());
 		} catch (MappingException e) {
-			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findById().", e);
+			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findById().", e);
 		}
 			
-		LOGGER.info("t -> " + t);
+		log.info("t -> " + t);
 		
 		return t;
 	}
@@ -152,7 +156,7 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			results = entityManager.getAll();
 		} catch (MappingException e) {
-			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findAll().", e);
+			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findAll().", e);
 		}
 		
 		/*
@@ -183,7 +187,7 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			entityManager.put(objectToSave);
 		} catch (MappingException e) {
-			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findAll().", e);
+			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findAll().", e);
 		}
 	}
 
@@ -209,7 +213,7 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			entityManager.put(batchToSave);
 		} catch (MappingException e) {
-			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
+			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
 		}
 		
 	}
@@ -236,7 +240,7 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			entityManager.put(objectToSave);
 		} catch (MappingException e) {
-			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
+			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
 		}
 		
 	}
@@ -264,7 +268,7 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			entityManager.put(batchToSave);
 		} catch (MappingException e) {
-			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
+			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
 		}
 	}
 
@@ -291,7 +295,7 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			entityManager.remove(objectToRemove);
 		} catch (MappingException e) {
-			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.remove().", e);
+			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.remove().", e);
 		}
 
 	}
@@ -319,11 +323,54 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			entityManager.remove(batchToRemove);
 		} catch (MappingException e) {
-			LOGGER.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.remove().", e);
+			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.remove().", e);
 		}
 
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#createColumnFamily(java.lang.String)
+	 */
+	public void createColumnFamily(String columnFamilyName) {
+		
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		try {
+
+			/*
+			 * Make this debug.  Definitely required if the create fails.
+			 */
+			Map<String, List<String>> schemas = cassandraFactory.getClient().describeSchemaVersions();
+			for (String a: schemas.keySet()) {
+				log.info("Schema:" + a);
+				for (String b: schemas.get(a)) {
+					log.info(b);
+				}
+			}
+			
+			cassandraFactory.getClient().createColumnFamily(CF, null);
+		} catch (ConnectionException e) {
+			log.error("Caught ConnectionException trying to create new column family.", e);
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#dropColumnFamily(java.lang.String)
+	 */
+	public void dropColumnFamily(String columnFamilyName) {
+
+		try {
+			cassandraFactory.getClient().dropColumnFamily(columnFamilyName);
+		} catch (ConnectionException e) {
+			log.error("Caught ConnectionException trying to create new column family.", e);
+		}
+		
+	}
 
 }

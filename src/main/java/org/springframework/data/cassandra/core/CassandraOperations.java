@@ -2,7 +2,6 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import com.netflix.astyanax.connectionpool.TokenRange;
 
@@ -15,21 +14,33 @@ import com.netflix.astyanax.connectionpool.TokenRange;
 public interface CassandraOperations {
 
 	/**
-	 * Get a list of the keyspaces.
-	 * 
-	 * @return a list of keyspace names
-	 */
-	Set<String> getKeyspaceNames();
-	
-	/**
 	 * Describe the current Ring
+	 * 
+	 * @return The list of ring tokens that are active in the cluster
 	 */
 	List<TokenRange> describeRing();
 	
 	/**
 	 * Describe the Keyspace
+	 * 
+	 * @return	The Keyspace Name
+	 * 
+	 * TODO - Expand this to include all meta-data about the keyspace
 	 */
 	String describeKeyspace();
+	
+	/**
+	 * Creates a new column family in the current keyspace with the default 
+	 * UTF8Type validation, key and comparator classes
+	 * 
+	 * @param columnFamilyName
+	 */
+	void createColumnFamily(String columnFamilyName);
+	
+	/**
+	 * Drop a column family with the supplied name
+	 */
+	void dropColumnFamily(String columnFamilyName);
 	
 	/**
 	 * Returns a Row with the given id mapped onto the given class. 

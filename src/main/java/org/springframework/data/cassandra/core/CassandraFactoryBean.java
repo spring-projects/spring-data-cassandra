@@ -22,10 +22,9 @@ import org.springframework.beans.factory.InitializingBean;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
-import com.netflix.astyanax.connectionpool.exceptions.ConnectionAbortedException;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
-import com.netflix.astyanax.connectionpool.impl.Slf4jConnectionPoolMonitorImpl;
+import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
 import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
 import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 
@@ -102,8 +101,8 @@ public class CassandraFactoryBean implements InitializingBean {
 								.setInitConnsPerHost(5)
 								.setSeeds(this.host + ":" + this.port)
 							)
-					//.withConnectionPoolMonitor(new CountingConnectionPoolMonitor())
-					.withConnectionPoolMonitor(new Slf4jConnectionPoolMonitorImpl())
+					.withConnectionPoolMonitor(new CountingConnectionPoolMonitor())
+					//.withConnectionPoolMonitor(new Slf4jConnectionPoolMonitorImpl())
 					
 					.buildKeyspace(ThriftFamilyFactory.getInstance());
 
