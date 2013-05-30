@@ -92,7 +92,7 @@ public class CassandraFactoryBean implements InitializingBean {
 					.forKeyspace(this.keyspaceName)
 					.withAstyanaxConfiguration(
 							new AstyanaxConfigurationImpl()
-									.setDiscoveryType(NodeDiscoveryType.NONE))
+									.setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE))
 					.withConnectionPoolConfiguration(
 							new ConnectionPoolConfigurationImpl("MyConnectionPool")
 								.setPort(this.port)
