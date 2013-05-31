@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import lombok.Data;
 import lombok.extern.log4j.Log4j;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -35,26 +36,18 @@ import com.netflix.astyanax.thrift.ThriftFamilyFactory;
  * @author David Webb
  */
 @Log4j
+@Data
 public class CassandraFactoryBean implements InitializingBean {
 	
 	private String host = "localhost";
 	private Integer port = 9160;
-	private String keyspaceName;
+	private String keyspaceName = "test_keyspace";
+	private String poolName = "myConnectionPool";
+	private NodeDiscoveryType nodeDiscoveryType = NodeDiscoveryType.NONE;
+	private int socketTimeout = 30000;
 	
 	protected Keyspace keyspace;
 	protected AstyanaxContext<Keyspace> context;
-
-	public void setHost(String host) {
-		this.host = host;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
-	}
-
-	public void setKeyspace(String keyspace) {
-		this.keyspaceName = keyspace;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -92,19 +85,17 @@ public class CassandraFactoryBean implements InitializingBean {
 					.forKeyspace(this.keyspaceName)
 					.withAstyanaxConfiguration(
 							new AstyanaxConfigurationImpl()
-									.setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE))
+									.setDiscoveryType(this.nodeDiscoveryType))
 					.withConnectionPoolConfiguration(
-							new ConnectionPoolConfigurationImpl("MyConnectionPool")
+							new ConnectionPoolConfigurationImpl(this.poolName)
 								.setPort(this.port)
-								.setSocketTimeout(30000)
+								.setSocketTimeout(this.socketTimeout)
 								.setMaxTimeoutWhenExhausted(2000)
 								.setMaxConnsPerHost(20)
 								.setInitConnsPerHost(5)
 								.setSeeds(this.host + ":" + this.port)
 							)
 					.withConnectionPoolMonitor(new CountingConnectionPoolMonitor())
-					//.withConnectionPoolMonitor(new Slf4jConnectionPoolMonitorImpl())
-					
 					.buildKeyspace(ThriftFamilyFactory.getInstance());
 
 			context.start();

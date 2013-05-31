@@ -18,7 +18,7 @@ public class TestConfig {
 		CassandraFactoryBean cfb = new CassandraFactoryBean();
 		cfb.setHost("127.0.0.1");
 		cfb.setPort(9160);
-		cfb.setKeyspace("test_keyspace");
+		cfb.setKeyspaceName("test_keyspace");
 		
 		return cfb;
 	}

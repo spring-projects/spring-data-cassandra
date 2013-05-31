@@ -62,6 +62,17 @@ public interface CassandraOperations {
 	<T> List<T> findAll(Class<T> entityClass, String columnFamilyName);
 	
 	/**
+	 * Query Cassandra with a CQL Expression
+	 * 
+	 * @param cql
+	 * @param entityClass
+	 * @param columnFamilyName
+	 * @return
+	 */
+	<T> List<T> findByCQL(String cql, Class<T> entityClass, String columnFamilyName);
+	
+	
+	/**
 	 * Insert the object into the specified columnFamily.
 	 * <p/>
 	 * Insert is used to initially store the object into the database. To update an existing object use the save method.
@@ -113,5 +124,13 @@ public interface CassandraOperations {
 	 * @param columnFamilyName name of the columnFamily to remove the objects from
 	 */
 	<T> void remove(Collection<T> batchToRemove, Class<T> entityClass, String columnFamilyName);	
+	
+	/**
+	 * delete a list of objects from the specified columnFamily in a single batch write to the database.
+	 * 
+	 * @param batchToRemove the list of objects to save.
+	 * @param columnFamilyName name of the columnFamily to remove the objects from
+	 */
+	<T> void delete(List<String> rowKeys, Class<T> entityClass, String columnFamilyName);	
 	
 }

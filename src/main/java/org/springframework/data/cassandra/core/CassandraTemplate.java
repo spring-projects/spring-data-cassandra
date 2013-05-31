@@ -187,7 +187,7 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 			entityManager.put(objectToSave);
 		} catch (MappingException e) {
-			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findAll().", e);
+			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
 		}
 	}
 
@@ -371,6 +371,68 @@ public class CassandraTemplate implements CassandraOperations {
 			log.error("Caught ConnectionException trying to create new column family.", e);
 		}
 		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#findByCQL(java.lang.String, java.lang.Class, java.lang.String)
+	 */
+	public <T> List<T> findByCQL(String cql, Class<T> entityClass,
+			String columnFamilyName) {
+		
+		List<T> results = new ArrayList<T>();
+		
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
+				.withEntityType(entityClass)
+				.withKeyspace(cassandraFactory.getClient())
+				.withColumnFamily(CF)
+				.build();
+		
+		try {
+			
+			results = entityManager.find(cql);
+			
+			log.info("FindByCQL Results Size => " + results.size());
+			
+		} catch (MappingException e) {
+			log.error("Caught MappingException trying to findByCQL().", e);
+		}
+		
+		return results;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#remove(java.util.List, java.lang.Class, java.lang.String)
+	 */
+	public <T> void delete(List<String> rowKeys, Class<T> entityClass,
+			String columnFamilyName) {
+		
+		ColumnFamily<String, String> CF =
+				  new ColumnFamily<String, String>(
+					columnFamilyName,              
+				    StringSerializer.get(), 
+				    StringSerializer.get());	
+		
+		final CassandraEntityManager<T, String> entityManager = 
+				new DefaultCassandraEntityManager.Builder<T, String>()
+				.withEntityType(entityClass)
+				.withKeyspace(cassandraFactory.getClient())
+				.withColumnFamily(CF)
+				.build();
+		
+		try {
+			
+			entityManager.delete(rowKeys);
+			
+		} catch (MappingException e) {
+			log.error("Caught MappingException trying to findByCQL().", e);
+		}
 	}
 
 }
