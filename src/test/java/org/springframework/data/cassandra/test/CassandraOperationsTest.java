@@ -20,14 +20,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.test.cf.Jobs;
-import org.springframework.data.cassandra.test.config.TestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.TokenRange;
@@ -37,13 +32,14 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
  * Bring up the embedded Cassandra server for unit testing
  * 
  * Test the Operations Interface
- *
+ * 
+ * All tests should be created in this abstract class, and it is up to the extending class to define the
+ * Spring Configuration for the test cases.
+ * 
  * @author	David Webb
  */
 @Log4j
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration (classes = {TestConfig.class}, loader = AnnotationConfigContextLoader.class)
-public class CassandraOperationsTest {
+public abstract class CassandraOperationsTest {
 
 	@Autowired
 	private CassandraTemplate cassandraTemplate;
