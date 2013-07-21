@@ -61,7 +61,7 @@ public abstract class CassandraOperationsTest {
         DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:9160");
         dataLoader.load(new ClassPathJsonDataSet("dataset.json"));
 
-        keyspace = cassandraTemplate.getClient();
+        keyspace = cassandraTemplate.getKeyspace();
         
     }
     

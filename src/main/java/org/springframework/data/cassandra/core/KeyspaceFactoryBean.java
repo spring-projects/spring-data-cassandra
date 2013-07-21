@@ -18,27 +18,35 @@ package org.springframework.data.cassandra.core;
 import lombok.Data;
 import lombok.extern.log4j.Log4j;
 
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
 
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
-import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
 import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
 import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
 import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 
 /**
- * Convenient factory for configuring Cassandra Keyspace.
+ * Manages Connection Pool for each Keyspace.
  * 
- * @author Brian O'Neill
  * @author David Webb
  */
 @Log4j
-@Data
-public class CassandraFactoryBean implements InitializingBean {
+@Data 
+public class KeyspaceFactoryBean implements FactoryBean<Keyspace>, InitializingBean, DisposableBean,
+	PersistenceExceptionTranslator {
 	
+	/*
+	 * Connection Pool parameters with defaults.
+	 * 
+	 * All of these should be set when the Factory is initialized by the Spring Configuration method of choice.
+	 */
 	private String host = "localhost";
 	private Integer port = 9160;
 	private String keyspaceName = "test_keyspace";
@@ -46,8 +54,10 @@ public class CassandraFactoryBean implements InitializingBean {
 	private NodeDiscoveryType nodeDiscoveryType = NodeDiscoveryType.NONE;
 	private int socketTimeout = 30000;
 	
-	protected Keyspace keyspace;
-	protected AstyanaxContext<Keyspace> context;
+	private Keyspace keyspace;
+	private AstyanaxContext<Keyspace> context;
+	private ThriftExceptionTranslator exceptionTranslator = new ThriftExceptionTranslator();
+	
 
 	/*
 	 * (non-Javadoc)
@@ -67,14 +77,20 @@ public class CassandraFactoryBean implements InitializingBean {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
+	public Keyspace getObject() throws Exception {
+
+		return this.context.getClient();
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	public void afterPropertiesSet() throws Exception {
-		
+
 		log.info("Host -> " + this.host);
 		log.info("Port -> " + this.port);
 		log.info("Keyspace -> " + this.keyspaceName);
@@ -99,31 +115,26 @@ public class CassandraFactoryBean implements InitializingBean {
 					.buildKeyspace(ThriftFamilyFactory.getInstance());
 
 			context.start();
-			this.keyspace = context.getClient();
 		} catch (Throwable e) {
 			throw new IllegalStateException("Failed to prepare CassandraBolt",
 					e);
 		}
+		
 	}
-	
-	/**
-	 * Return the Client Connection for interfacing with Cassandra
-	 * 
-	 * @return
+
+	/* (non-Javadoc)
+	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
 	 */
-	public Keyspace getClient() {
-		
-		try {
-			this.keyspace.describeKeyspace();
-		} catch (ConnectionException e) {
-			log.warn("Connection to Cassandra is not available...reinitializing pool.");
-			try {
-				afterPropertiesSet();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		}
-		
-		return this.keyspace;
+	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
+		return exceptionTranslator.translateExceptionIfPossible(ex);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
+	public void destroy() throws Exception {
+		this.context.getConnectionPool().shutdown();
+		this.context = null;
+		this.keyspace = null;
 	}
 }

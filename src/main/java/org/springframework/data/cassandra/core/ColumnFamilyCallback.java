@@ -21,6 +21,6 @@ import com.netflix.astyanax.model.ColumnFamily;
 
 public interface ColumnFamilyCallback<T> {
 
-	T doInColumnFamily(ColumnFamily<String, String> cf) throws Exception, DataAccessException;
+	T doInColumnFamily(ColumnFamily<?, ?> cf) throws Exception, DataAccessException;
 
 }

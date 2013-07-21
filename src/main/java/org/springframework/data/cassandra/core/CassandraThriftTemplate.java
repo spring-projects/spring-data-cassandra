@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import lombok.extern.log4j.Log4j;
 
@@ -33,85 +32,103 @@ import org.springframework.util.Assert;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.TokenRange;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
-import com.netflix.astyanax.ddl.KeyspaceDefinition;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.serializers.StringSerializer;
 
 /**
- * Primary implementation of {@link CassandraOperations}.
+ * Thrift Protocol implementation of {@link CassandraOperations} using the Astyanax Client.
  * 
  * @author David Webb
  */
 @Log4j
 public class CassandraThriftTemplate implements CassandraOperations {
 
-	private CassandraFactoryBean cassandraFactory;
 	private ThriftExceptionTranslator exceptionTranslator = new ThriftExceptionTranslator();
+	private Keyspace keyspace;
 	
 	/**
 	 * Constructor used for a basic template configuration
 	 * 
 	 * @param cassandraFactory
 	 */
-	public CassandraThriftTemplate(CassandraFactoryBean cassandra) {
-		this.cassandraFactory = cassandra;
+	public CassandraThriftTemplate(Keyspace keyspace) {
+		this.keyspace = keyspace;
 	}
 
 	/**
 	 * Return the keyspace client
 	 * @return
 	 */
-	public Keyspace getClient() {
-		return cassandraFactory.getClient();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#getKeyspaceNames()
-	 */
-	public Set<String> getKeyspaceNames() {
-		return null;
+	public Keyspace getKeyspace() {
+		return keyspace;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#describeRing()
 	 */
 	public List<RingMember> describeRing() {
-		
+	
+		/*
+		 * Return variable
+		 */
 		List<RingMember> ring = new ArrayList<RingMember>();
-		
-		try {
-			List<TokenRange> nodes = cassandraFactory.getClient().describeRing();
-			RingMember member = null;
-			for (TokenRange token: nodes) {
-				member = new RingMember();
-				member.setStartToken(token.getStartToken());
-				member.setEndToken(token.getEndToken());
-				member.setEndpoints(token.getEndpoints());
-				
-				ring.add(member);
-			}
-		} catch (ConnectionException e) {
-			e.printStackTrace();
-		} finally {}
-		
-		return ring;
 
+		/*
+		 * Get list of token ranges from the Keyspace
+		 */
+		List<TokenRange> nodes = execute(new KeyspaceCallback<List<TokenRange>>() {
+
+			/* (non-Javadoc)
+			 * @see org.springframework.data.cassandra.core.KeyspaceCallback#doInKeyspace(com.netflix.astyanax.Keyspace)
+			 */
+			public List<TokenRange> doInKeyspace(
+					Keyspace ks) throws DataAccessException {
+
+				try {
+					return keyspace.describeRing();
+				} catch (Exception e) {
+					throw potentiallyConvertRuntimeException(e);
+				}
+			
+			}
+		});
+		
+		/*
+		 * Convert them to generic beans for future implementations.
+		 */
+		RingMember member = null;
+		for (TokenRange token: nodes) {
+			member = new RingMember();
+			member.setStartToken(token.getStartToken());
+			member.setEndToken(token.getEndToken());
+			member.setEndpoints(token.getEndpoints());
+			
+			ring.add(member);
+		}
+		
+		/*
+		 * Return
+		 */
+		return ring;
+		
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#describeKeyspace()
 	 */
 	public String describeKeyspace() {
-		String name = null;
 		
-		try {
-			KeyspaceDefinition ksd = cassandraFactory.getClient().describeKeyspace();
-			name = ksd.getName();
-		} catch (ConnectionException e) {
-			e.printStackTrace();
-		}
-		
-		return name;
+		return execute(new KeyspaceCallback<String>() {
+
+			public String doInKeyspace(Keyspace ks) throws DataAccessException {
+				try {
+					return ks.getKeyspaceName();
+				} catch (Exception e) {
+					throw potentiallyConvertRuntimeException(e);
+				}
+			}
+		});
+
 	}
 
 	/* (non-Javadoc)
@@ -128,7 +145,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		final CassandraEntityManager<T, String> entityManager = 
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
+				.withKeyspace(keyspace)
 				.withColumnFamily(CF)
 				.build();
 
@@ -163,7 +180,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		final CassandraEntityManager<T, String> entityManager = 
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
+				.withKeyspace(keyspace)
 				.withColumnFamily(CF)
 				.build();
 		
@@ -204,7 +221,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		final CassandraEntityManager<T, String> entityManager = 
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
+				.withKeyspace(keyspace)
 				.withColumnFamily(CF)
 				.build();
 		
@@ -231,7 +248,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		final CassandraEntityManager<T, String> entityManager = 
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
+				.withKeyspace(keyspace)
 				.withColumnFamily(CF)
 				.build();
 		
@@ -259,7 +276,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		final CassandraEntityManager<T, String> entityManager = 
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
+				.withKeyspace(keyspace)
 				.withColumnFamily(CF)
 				.build();
 		
@@ -286,7 +303,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		final CassandraEntityManager<T, String> entityManager = 
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
+				.withKeyspace(keyspace)
 				.withColumnFamily(CF)
 				.build();
 		
@@ -314,7 +331,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		final CassandraEntityManager<T, String> entityManager = 
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
+				.withKeyspace(keyspace)
 				.withColumnFamily(CF)
 				.build();
 		
@@ -343,7 +360,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 			/*
 			 * Make this debug.  Definitely required if the create fails.
 			 */
-			Map<String, List<String>> schemas = cassandraFactory.getClient().describeSchemaVersions();
+			Map<String, List<String>> schemas = keyspace.describeSchemaVersions();
 			for (String a: schemas.keySet()) {
 				log.info("Schema:" + a);
 				for (String b: schemas.get(a)) {
@@ -351,7 +368,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 				}
 			}
 			
-			cassandraFactory.getClient().createColumnFamily(CF, null);
+			keyspace.createColumnFamily(CF, null);
 		} catch (ConnectionException e) {
 			log.error("Caught ConnectionException trying to create new column family.", e);
 		}
@@ -364,7 +381,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 	public void dropColumnFamily(String columnFamilyName) {
 
 		try {
-			cassandraFactory.getClient().dropColumnFamily(columnFamilyName);
+			keyspace.dropColumnFamily(columnFamilyName);
 		} catch (ConnectionException e) {
 			log.error("Caught ConnectionException trying to create new column family.", e);
 		}
@@ -388,7 +405,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		final CassandraEntityManager<T, String> entityManager = 
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
+				.withKeyspace(keyspace)
 				.withColumnFamily(CF)
 				.build();
 		
@@ -420,7 +437,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		final CassandraEntityManager<T, String> entityManager = 
 				new DefaultCassandraEntityManager.Builder<T, String>()
 				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
+				.withKeyspace(keyspace)
 				.withColumnFamily(CF)
 				.build();
 		
@@ -442,7 +459,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		Assert.notNull(action);
 
 		try {
-			Keyspace ks = this.getClient();
+			Keyspace ks = this.getKeyspace();
 			return action.doInKeyspace(ks);
 		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
@@ -450,7 +467,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 	}
 	
 	/**
-	 * Generic dbInsert that wraps CF Defition, Callback and ExceptionTranslation
+	 * Generic dbInsert that wraps CF Definition, Callback and ExceptionTranslation
 	 * 
 	 * @param cfName
 	 * @param objectToSave
@@ -461,13 +478,13 @@ public class CassandraThriftTemplate implements CassandraOperations {
 	throws DataAccessException {
 		return execute(cfName, new ColumnFamilyCallback<T>() {
 			
-			public T doInColumnFamily(ColumnFamily<String, String> CF) throws Exception, DataAccessException {
+			public T doInColumnFamily(ColumnFamily<?, ?> CF) throws Exception, DataAccessException {
 			
 				final CassandraEntityManager<T, String> entityManager = 
 						new DefaultCassandraEntityManager.Builder<T, String>()
 						.withEntityType((Class<T>) entityClass)
-						.withKeyspace(cassandraFactory.getClient())
-						.withColumnFamily(CF)
+						.withKeyspace(keyspace)
+						.withColumnFamily((ColumnFamily<String, String>) CF)
 						.build();
 				
 				entityManager.put(objectToSave);

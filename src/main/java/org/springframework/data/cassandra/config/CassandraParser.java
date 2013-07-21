@@ -25,7 +25,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.cassandra.core.CassandraFactoryBean;
+import org.springframework.data.cassandra.core.KeyspaceFactoryBean;
 import org.springframework.data.config.BeanComponentDefinitionBuilder;
 import org.springframework.data.config.ParsingUtils;
 import org.springframework.util.StringUtils;
@@ -49,7 +49,7 @@ public class CassandraParser implements BeanDefinitionParser {
 
 		BeanComponentDefinitionBuilder helper = new BeanComponentDefinitionBuilder(element, parserContext);
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(CassandraFactoryBean.class);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(KeyspaceFactoryBean.class);
 		ParsingUtils.setPropertyValue(builder, element, "port", "port");
 		ParsingUtils.setPropertyValue(builder, element, "host", "host");
 		ParsingUtils.setPropertyValue(builder, element, "keyspaceName", "keyspaceName");
