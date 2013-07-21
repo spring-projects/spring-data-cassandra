@@ -35,6 +35,10 @@ import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 /**
  * Manages Connection Pool for each Keyspace.
  * 
+ * This class depends specifically on teh Astyanax Thrift Dirver.  
+ * 
+ * TODO - Rename once C* Native Binary protocol is implemented
+ * 
  * @author David Webb
  */
 @Log4j
