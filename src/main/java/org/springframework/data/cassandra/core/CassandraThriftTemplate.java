@@ -121,11 +121,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 		return execute(new KeyspaceCallback<String>() {
 
 			public String doInKeyspace(Keyspace ks) throws DataAccessException {
-				try {
-					return ks.getKeyspaceName();
-				} catch (Exception e) {
-					throw potentiallyConvertRuntimeException(e);
-				}
+				return ks.getKeyspaceName();
 			}
 		});
 
@@ -134,28 +130,25 @@ public class CassandraThriftTemplate implements CassandraOperations {
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#findById(java.lang.Object, java.lang.String)
 	 */
-	public <T> T findById(Object id, Class<T> entityClass, String columnFamilyName) {
+	public <T> T findById(final Object id, final Class<T> entityClass, String columnFamilyName) {
 		
-		ColumnFamily<String, String> CF =
-				  new ColumnFamily<String, String>(
-					columnFamilyName,              
-				    StringSerializer.get(), 
-				    StringSerializer.get());
-		
-		final CassandraEntityManager<T, String> entityManager = 
-				new DefaultCassandraEntityManager.Builder<T, String>()
-				.withEntityType(entityClass)
-				.withKeyspace(keyspace)
-				.withColumnFamily(CF)
-				.build();
+		T t = execute(columnFamilyName, new ColumnFamilyCallback<T>() {
 
-		T t = null;
-		try {
-			t = entityManager.get(id.toString());
-		} catch (Exception e) {
-			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findById().", e);
-		}
-			
+			public T doInColumnFamily(ColumnFamily<?, ?> cf) throws Exception,
+					DataAccessException {
+
+				final CassandraEntityManager<T, String> entityManager = 
+						new DefaultCassandraEntityManager.Builder<T, String>()
+						.withEntityType(entityClass)
+						.withKeyspace(keyspace)
+						.withColumnFamily((ColumnFamily<String, String>) cf)
+						.build();
+
+				return entityManager.get(id.toString());
+
+			}
+		});
+		
 		log.info("t -> " + t);
 		
 		return t;
@@ -164,31 +157,28 @@ public class CassandraThriftTemplate implements CassandraOperations {
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#findAll(java.lang.Class)
 	 */
-	public <T> List<T> findAll(Class<T> entityClass, String columnFamilyName) {
+	public <T> List<T> findAll(final Class<T> entityClass, String columnFamilyName) {
 		
 		/*
 		 * Return var
 		 */
-		List<T> results = new ArrayList<T>();
-		
-		ColumnFamily<String, String> CF =
-				  new ColumnFamily<String, String>(
-					columnFamilyName,              
-				    StringSerializer.get(), 
-				    StringSerializer.get());	
-		
-		final CassandraEntityManager<T, String> entityManager = 
-				new DefaultCassandraEntityManager.Builder<T, String>()
-				.withEntityType(entityClass)
-				.withKeyspace(keyspace)
-				.withColumnFamily(CF)
-				.build();
-		
-		try {
-			results = entityManager.getAll();
-		} catch (MappingException e) {
-			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findAll().", e);
-		}
+		List<T> results = execute(columnFamilyName, new ColumnFamilyCallback<List<T>>() {
+
+			public List<T> doInColumnFamily(ColumnFamily<?, ?> cf)
+					throws Exception, DataAccessException {
+
+				final CassandraEntityManager<T, String> entityManager = 
+						new DefaultCassandraEntityManager.Builder<T, String>()
+						.withEntityType(entityClass)
+						.withKeyspace(keyspace)
+						.withColumnFamily((ColumnFamily<String, String>) cf)
+						.build();
+				
+				return entityManager.getAll();
+			
+			}
+			
+		});
 		
 		/*
 		 * Return
@@ -209,55 +199,55 @@ public class CassandraThriftTemplate implements CassandraOperations {
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.util.Collection, java.lang.Class, java.lang.String)
 	 */
-	public <T> void insert(Collection<T> batchToSave, Class<T> entityClass,
+	public <T> void insert(final Collection<T> batchToSave, final Class<T> entityClass,
 			String columnFamilyName) {
 
-		ColumnFamily<String, String> CF =
-				  new ColumnFamily<String, String>(
-					columnFamilyName,              
-				    StringSerializer.get(), 
-				    StringSerializer.get());	
-		
-		final CassandraEntityManager<T, String> entityManager = 
-				new DefaultCassandraEntityManager.Builder<T, String>()
-				.withEntityType(entityClass)
-				.withKeyspace(keyspace)
-				.withColumnFamily(CF)
-				.build();
-		
-		try {
-			entityManager.put(batchToSave);
-		} catch (MappingException e) {
-			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
-		}
+		execute(columnFamilyName, new ColumnFamilyCallback<T>() {
+
+			public T doInColumnFamily(ColumnFamily<?, ?> cf) throws Exception,
+					DataAccessException {
+
+				final CassandraEntityManager<T, String> entityManager = 
+						new DefaultCassandraEntityManager.Builder<T, String>()
+						.withEntityType(entityClass)
+						.withKeyspace(keyspace)
+						.withColumnFamily((ColumnFamily<String, String>) cf)
+						.build();
+				
+				entityManager.put(batchToSave);
+				
+				return null;
+
+			}
+			
+		});
 		
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#save(java.lang.Object, java.lang.Class, java.lang.String)
 	 */
-	public <T> void save(T objectToSave, Class<T> entityClass,
+	public <T> void save(final T objectToSave, final Class<T> entityClass,
 			String columnFamilyName) {
 
-		ColumnFamily<String, String> CF =
-				  new ColumnFamily<String, String>(
-					columnFamilyName,              
-				    StringSerializer.get(), 
-				    StringSerializer.get());	
-		
-		final CassandraEntityManager<T, String> entityManager = 
-				new DefaultCassandraEntityManager.Builder<T, String>()
-				.withEntityType(entityClass)
-				.withKeyspace(keyspace)
-				.withColumnFamily(CF)
-				.build();
-		
-		try {
-			entityManager.put(objectToSave);
-		} catch (Exception e) {
-			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
-		}
-		
+		execute(columnFamilyName, new ColumnFamilyCallback<T>() {
+
+			public T doInColumnFamily(ColumnFamily<?, ?> cf) throws Exception,
+					DataAccessException {
+
+				final CassandraEntityManager<T, String> entityManager = 
+						new DefaultCassandraEntityManager.Builder<T, String>()
+						.withEntityType(entityClass)
+						.withKeyspace(keyspace)
+						.withColumnFamily((ColumnFamily<String, String>) cf)
+						.build();
+
+				entityManager.put(objectToSave);
+				
+				return null;
+
+			}
+		});
 	}
 
 	/* (non-Javadoc)
@@ -500,6 +490,7 @@ public class CassandraThriftTemplate implements CassandraOperations {
 
 	public <T> T execute(String cfName, ColumnFamilyCallback<T> callback) {
 
+		Assert.notNull(cfName);
 		Assert.notNull(callback);
 
 		try {
