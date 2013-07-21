@@ -80,7 +80,7 @@ public interface CassandraOperations {
 	 * @param objectToSave the object to store in the collection
 	 * @param columnFamilyName name of the columnFamily to insert the object in
 	 */
-	<T> void insert(T objectToSave, String columnFamilyName);
+	<T> void insert(T objectToSave, Class<T> entityClass, String columnFamilyName);
 
 	/**
 	 * Insert a list of objects into the specified collection in a single batch write to the database.

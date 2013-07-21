@@ -133,7 +133,7 @@ public abstract class CassandraOperationsTest {
     	job1.setJobTitle(testTitle);
     	job1.setPayRate(testPayRate);
     	
-    	cassandraTemplate.insert(job1, CF_NAME_JOBS);
+    	cassandraTemplate.insert(job1, Jobs.class, CF_NAME_JOBS);
     	
     	Jobs jobGet = cassandraTemplate.findById(testKey, Jobs.class, CF_NAME_JOBS);
     	

@@ -21,5 +21,5 @@ import com.netflix.astyanax.Keyspace;
 
 public interface KeyspaceCallback<T> {
 
-	T doInKeyspace(Keyspace ks) throws DataAccessException;
+	T doInKeyspace(Keyspace ks) throws Exception, DataAccessException;
 }
