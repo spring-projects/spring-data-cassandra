@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.CassandraThriftTemplate;
 import org.springframework.data.cassandra.test.cf.Jobs;
 
 import com.netflix.astyanax.Keyspace;
@@ -42,7 +42,7 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 public abstract class CassandraOperationsTest {
 
 	@Autowired
-	private CassandraTemplate cassandraTemplate;
+	private CassandraThriftTemplate cassandraTemplate;
 	
     protected Keyspace keyspace;
     
@@ -133,7 +133,7 @@ public abstract class CassandraOperationsTest {
     	job1.setJobTitle(testTitle);
     	job1.setPayRate(testPayRate);
     	
-    	cassandraTemplate.insert(job1, Jobs.class, CF_NAME_JOBS);
+    	cassandraTemplate.insert(job1, CF_NAME_JOBS);
     	
     	Jobs jobGet = cassandraTemplate.findById(testKey, Jobs.class, CF_NAME_JOBS);
     	

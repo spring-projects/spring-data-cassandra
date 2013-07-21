@@ -18,14 +18,14 @@ public interface CassandraEntityManager<T, K> {
 	 * write entity to cassandra with mapped rowId and columns
 	 * @param entity entity object
 	 */
-	public void put(T entity) throws MappingException;
+	public void put(T entity) throws Exception;
 	
 	/**
 	 * fetch whole row and construct entity object mapping from columns
 	 * @param id row key
 	 * @return entity object. null if not exist
 	 */
-	public T get(K id) throws MappingException;
+	public T get(K id) throws Exception;
 	
     /**
      * delete the whole row by id

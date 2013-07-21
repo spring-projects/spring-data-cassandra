@@ -23,9 +23,12 @@ import java.util.Set;
 
 import lombok.extern.log4j.Log4j;
 
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.cassandra.core.bean.RingMember;
 import org.springframework.data.cassandra.core.entitystore.CassandraEntityManager;
 import org.springframework.data.cassandra.core.entitystore.DefaultCassandraEntityManager;
 import org.springframework.data.cassandra.core.exception.MappingException;
+import org.springframework.util.Assert;
 
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.TokenRange;
@@ -40,16 +43,17 @@ import com.netflix.astyanax.serializers.StringSerializer;
  * @author David Webb
  */
 @Log4j
-public class CassandraTemplate implements CassandraOperations {
+public class CassandraThriftTemplate implements CassandraOperations {
 
 	private CassandraFactoryBean cassandraFactory;
+	private ThriftExceptionTranslator exceptionTranslator = new ThriftExceptionTranslator();
 	
 	/**
 	 * Constructor used for a basic template configuration
 	 * 
 	 * @param cassandraFactory
 	 */
-	public CassandraTemplate(CassandraFactoryBean cassandra) {
+	public CassandraThriftTemplate(CassandraFactoryBean cassandra) {
 		this.cassandraFactory = cassandra;
 	}
 
@@ -71,11 +75,21 @@ public class CassandraTemplate implements CassandraOperations {
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#describeRing()
 	 */
-	public List<TokenRange> describeRing() {
+	public List<RingMember> describeRing() {
 		
-		List<TokenRange> ring = null;
+		List<RingMember> ring = new ArrayList<RingMember>();
+		
 		try {
-			ring = cassandraFactory.getClient().describeRing();
+			List<TokenRange> nodes = cassandraFactory.getClient().describeRing();
+			RingMember member = null;
+			for (TokenRange token: nodes) {
+				member = new RingMember();
+				member.setStartToken(token.getStartToken());
+				member.setEndToken(token.getEndToken());
+				member.setEndpoints(token.getEndpoints());
+				
+				ring.add(member);
+			}
 		} catch (ConnectionException e) {
 			e.printStackTrace();
 		} finally {}
@@ -101,7 +115,7 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#findById(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#findById(java.lang.Object, java.lang.String)
 	 */
 	public <T> T findById(Object id, Class<T> entityClass, String columnFamilyName) {
 		
@@ -121,7 +135,7 @@ public class CassandraTemplate implements CassandraOperations {
 		T t = null;
 		try {
 			t = entityManager.get(id.toString());
-		} catch (MappingException e) {
+		} catch (Exception e) {
 			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.findById().", e);
 		}
 			
@@ -169,26 +183,10 @@ public class CassandraTemplate implements CassandraOperations {
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, java.lang.Class, java.lang.String)
 	 */
-	public <T> void insert(T objectToSave, Class<T> entityClass, String columnFamilyName) {
+	public <T> void insert(T objectToSave, String columnFamilyName) {
 
-		ColumnFamily<String, String> CF =
-				  new ColumnFamily<String, String>(
-					columnFamilyName,              
-				    StringSerializer.get(), 
-				    StringSerializer.get());	
+		insertDBObject(columnFamilyName, objectToSave, objectToSave.getClass());
 		
-		final CassandraEntityManager<T, String> entityManager = 
-				new DefaultCassandraEntityManager.Builder<T, String>()
-				.withEntityType(entityClass)
-				.withKeyspace(cassandraFactory.getClient())
-				.withColumnFamily(CF)
-				.build();
-		
-		try {
-			entityManager.put(objectToSave);
-		} catch (MappingException e) {
-			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
-		}
 	}
 
 	/* (non-Javadoc)
@@ -239,7 +237,7 @@ public class CassandraTemplate implements CassandraOperations {
 		
 		try {
 			entityManager.put(objectToSave);
-		} catch (MappingException e) {
+		} catch (Exception e) {
 			log.error("Caught MappingException trying to lookup type [" + entityClass.getName() + "] in CassandraTemplate.insert().", e);
 		}
 		
@@ -434,5 +432,82 @@ public class CassandraTemplate implements CassandraOperations {
 			log.error("Caught MappingException trying to findByCQL().", e);
 		}
 	}
+	
+	/**
+	 * @param action
+	 * @return
+	 */
+	public <T> T execute(KeyspaceCallback<T> action) {
 
+		Assert.notNull(action);
+
+		try {
+			Keyspace ks = this.getClient();
+			return action.doInKeyspace(ks);
+		} catch (RuntimeException e) {
+			throw potentiallyConvertRuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Generic dbInsert that wraps CF Defition, Callback and ExceptionTranslation
+	 * 
+	 * @param cfName
+	 * @param objectToSave
+	 * @param entityClass
+	 * @return
+	 */
+	protected <T> Object insertDBObject(final String cfName, final T objectToSave, final Class<?> entityClass) 
+	throws DataAccessException {
+		return execute(cfName, new ColumnFamilyCallback<T>() {
+			
+			public T doInColumnFamily(ColumnFamily<String, String> CF) throws Exception, DataAccessException {
+			
+				final CassandraEntityManager<T, String> entityManager = 
+						new DefaultCassandraEntityManager.Builder<T, String>()
+						.withEntityType((Class<T>) entityClass)
+						.withKeyspace(cassandraFactory.getClient())
+						.withColumnFamily(CF)
+						.build();
+				
+				entityManager.put(objectToSave);
+
+				return objectToSave;
+			}
+		});
+	}
+
+//	public <T> T execute(Class<?> entityClass, CollectionCallback<T> callback) {
+//		return execute(determineCollectionName(entityClass), callback);
+//	}
+
+	public <T> T execute(String cfName, ColumnFamilyCallback<T> callback) {
+
+		Assert.notNull(callback);
+
+		try {
+			ColumnFamily<String, String> CF =
+					  new ColumnFamily<String, String>(
+							  cfName,              
+							  StringSerializer.get(), 
+							  StringSerializer.get());
+			
+			return callback.doInColumnFamily(CF);
+			
+		} catch (Exception e) {
+			throw potentiallyConvertRuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Tries to convert the given {@link RuntimeException} into a {@link DataAccessException} but returns the original
+	 * exception if the conversation failed. Thus allows safe rethrowing of the return value.
+	 * 
+	 * @param ex
+	 * @return
+	 */
+	private RuntimeException potentiallyConvertRuntimeException(Exception ex) {
+		RuntimeException resolved = this.exceptionTranslator.translateExceptionIfPossible(new RuntimeException(ex));
+		return resolved == null ? new RuntimeException(ex) : resolved;
+	}
 }

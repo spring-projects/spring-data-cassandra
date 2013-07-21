@@ -50,7 +50,7 @@ The name of the Cassandra object that determines what server to monitor. (by def
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
-					<tool:assignable-to type="org.springframework.data.cassandra.core.CassandraTemplate"/>
+					<tool:assignable-to type="org.springframework.data.cassandra.core.CassandraThriftTemplate"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>

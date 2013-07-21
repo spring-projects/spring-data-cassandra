@@ -18,6 +18,7 @@
 		<data.commons.version>1.5.1.RELEASE</data.commons.version>
 		<astyanax.version>1.56.37</astyanax.version>
 		<cassandra.unit.version>1.1.2.1</cassandra.unit.version>
+		<datastax.driver.version>1.0.0</datastax.driver.version>
 	</properties>
 	<licenses>
 		<license>
@@ -86,7 +87,7 @@
 	</repositories>
 
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
@@ -99,6 +100,14 @@
 			<version>3.1.2.RELEASE</version>
 		</dependency>
 
+		<!-- 
+		<dependency>
+			<groupId>com.datastax.cassandra</groupId>
+			<artifactId>cassandra-driver-core</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		-->
+		
 		<dependency>
 			<groupId>com.netflix.astyanax</groupId>
 			<artifactId>astyanax</artifactId>
@@ -189,33 +198,24 @@
 			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
-		
-        <dependency>
-            <groupId>org.cassandraunit</groupId>
-            <artifactId>cassandra-unit</artifactId>
-            <version>${cassandra.unit.version}</version>
-            <scope>test</scope>
-            <!-- 
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
-            -->
-        </dependency>	
-        
-        <dependency>
+
+		<dependency>
+			<groupId>org.cassandraunit</groupId>
+			<artifactId>cassandra-unit</artifactId>
+			<version>${cassandra.unit.version}</version>
+			<scope>test</scope>
+			<!-- <exclusions> <exclusion> <artifactId>slf4j-log4j12</artifactId> <groupId>org.slf4j</groupId> 
+				</exclusion> <exclusion> <artifactId>slf4j-api</artifactId> <groupId>org.slf4j</groupId> 
+				</exclusion> </exclusions> -->
+		</dependency>
+
+		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
 			<version>2.2.2</version>
 			<scope>test</scope>
 		</dependency>
-        	
+
 	</dependencies>
 
 	<build>

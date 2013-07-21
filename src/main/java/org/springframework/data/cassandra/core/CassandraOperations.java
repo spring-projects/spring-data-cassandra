@@ -3,10 +3,10 @@ package org.springframework.data.cassandra.core;
 import java.util.Collection;
 import java.util.List;
 
-import com.netflix.astyanax.connectionpool.TokenRange;
+import org.springframework.data.cassandra.core.bean.RingMember;
 
 /**
- * Interface for specifying the operations that need to be implemented by {@link CassandraTemplate}.
+ * Interface for specifying the operations that need to be implemented by {@link CassandraThriftTemplate}.
  * 
  * @author David Webb
  *
@@ -18,7 +18,7 @@ public interface CassandraOperations {
 	 * 
 	 * @return The list of ring tokens that are active in the cluster
 	 */
-	List<TokenRange> describeRing();
+	List<RingMember> describeRing();
 	
 	/**
 	 * Describe the Keyspace
@@ -80,7 +80,7 @@ public interface CassandraOperations {
 	 * @param objectToSave the object to store in the collection
 	 * @param columnFamilyName name of the columnFamily to insert the object in
 	 */
-	<T> void insert(T objectToSave, Class<T> entityClass, String columnFamilyName);
+	<T> void insert(T objectToSave, String columnFamilyName);
 
 	/**
 	 * Insert a list of objects into the specified collection in a single batch write to the database.

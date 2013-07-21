@@ -3,7 +3,7 @@ package org.springframework.data.cassandra.test.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraFactoryBean;
-import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.CassandraThriftTemplate;
 
 /**
  * Setup any spring configuration for unit tests
@@ -23,8 +23,8 @@ public class TestConfig {
 		return cfb;
 	}
 	
-	public @Bean CassandraTemplate cassandraTemplate() {
-		CassandraTemplate template = new CassandraTemplate(cassandra());
+	public @Bean CassandraThriftTemplate cassandraTemplate() {
+		CassandraThriftTemplate template = new CassandraThriftTemplate(cassandra());
 		return template;
 	}
 
