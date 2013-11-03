@@ -22,7 +22,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.cassandra.core.CassandraThriftTemplate;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.config.BeanComponentDefinitionBuilder;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -57,7 +57,7 @@ class CassandraTemplateParser extends AbstractBeanDefinitionParser {
 
 		String dbFactoryRef = element.getAttribute("db-factory-ref");
 
-		BeanDefinitionBuilder cassandraTemplateBuilder = BeanDefinitionBuilder.genericBeanDefinition(CassandraThriftTemplate.class);
+		BeanDefinitionBuilder cassandraTemplateBuilder = BeanDefinitionBuilder.genericBeanDefinition(CassandraTemplate.class);
 
 		if (StringUtils.hasText(dbFactoryRef)) {
 			cassandraTemplateBuilder.addConstructorArgReference(dbFactoryRef);

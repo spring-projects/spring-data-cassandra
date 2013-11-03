@@ -17,10 +17,8 @@ package org.springframework.data.cassandra.core;
 
 import org.springframework.dao.DataAccessException;
 
-import com.netflix.astyanax.model.ColumnFamily;
-
 public interface ColumnFamilyCallback<T> {
 
-	T doInColumnFamily(ColumnFamily<?, ?> cf) throws Exception, DataAccessException;
+	T doInColumnFamily(String cf) throws Exception, DataAccessException;
 
 }

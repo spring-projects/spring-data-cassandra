@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.data.cassandra.core.bean.RingMember;
 
 /**
- * Interface for specifying the operations that need to be implemented by {@link CassandraThriftTemplate}.
+ * Interface for specifying the operations that need to be implemented by {@link CassandraTemplate}.
  * 
  * @author David Webb
  *

@@ -26,10 +26,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author David Webb
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration (locations = "classpath:application-context.xml")
-public class XMLConfigurationCassandraOperationsTest extends
-		CassandraOperationsTest {
+//@RunWith(SpringJUnit4ClassRunner.class)
+//@ContextConfiguration (locations = "classpath:application-context.xml")
+public class XMLConfigurationCassandraOperationsTest 
+//extends CassandraOperationsTest 
+{
 
 	/**
 	 * 

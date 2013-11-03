@@ -4,6 +4,14 @@ The primary goal of the [Spring Data](http://www.springsource.org/spring-data) p
 
 The Spring Data Cassandra project aims to provide a familiar and consistent Spring-based programming model for new datastores while retaining store-specific features and capabilities. The Spring Data Cassandra project provides integration with the Cassandra BigTable/Columnar database. Key functional areas of Spring Data Cassandra are a POJO centric model for interacting with a Cassandra Column Families and easily writing a repository style data access layer using the famailiar "Template" API.
 
+## Recent Changes
+
+The Spring Data Cassandra project is now using only the CQL DataStax Java Driver.  There is no longer Thrift Support.
+
+## Contributing
+
+Please contact David Webb (dwebb@prowaveconsulting.com) about contributing to this project.
+
 ## Getting Help
 
 For a comprehensive list of all the Spring Data Cassandra features, please refer to:
@@ -63,9 +71,15 @@ Java @Configuration support is very straight forward as in this example:
 
     package org.springframework.data.cassandra.test.config;
     
+    import java.util.ArrayList;
+    import java.util.Arrays;
+    import java.util.List;
+    
+    import lombok.extern.log4j.Log4j;
+    
     import org.springframework.context.annotation.Bean;
     import org.springframework.context.annotation.Configuration;
-    import org.springframework.data.cassandra.core.CassandraFactoryBean;
+    import org.springframework.data.cassandra.core.CassandraConnectionFactoryBean;
     import org.springframework.data.cassandra.core.CassandraTemplate;
     
     /**
@@ -74,20 +88,30 @@ Java @Configuration support is very straight forward as in this example:
      * @author David Webb
      *
      */
+    @Log4j
     @Configuration
     public class TestConfig {
     	
-    	public @Bean CassandraFactoryBean cassandra() {
-    		CassandraFactoryBean cfb = new CassandraFactoryBean();
-    		cfb.setHost("127.0.0.1");
-    		cfb.setPort(9160);
-    		cfb.setKeyspaceName("test_keyspace");
+    	public @Bean CassandraConnectionFactoryBean cassandra() {
+    
+    		List<String> seeds = new ArrayList<String>();
+    		seeds.add("127.0.0.1");
+    		
+    		CassandraConnectionFactoryBean cfb = new CassandraConnectionFactoryBean();
+    		
+    		cfb.setSeeds(seeds);
+    		cfb.setPort(9042);
     		
     		return cfb;
     	}
     	
     	public @Bean CassandraTemplate cassandraTemplate() {
-    		CassandraTemplate template = new CassandraTemplate(cassandra());
+    		CassandraTemplate template = null;
+    		try {
+    			template = new CassandraTemplate(cassandra().getObject());
+    		} catch (Exception e) {
+    			log.error(e);
+    		}
     		return template;
     	}
     

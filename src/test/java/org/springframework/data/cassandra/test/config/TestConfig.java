@@ -1,11 +1,15 @@
 package org.springframework.data.cassandra.test.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import lombok.extern.log4j.Log4j;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.core.KeyspaceFactoryBean;
-import org.springframework.data.cassandra.core.CassandraThriftTemplate;
+import org.springframework.data.cassandra.core.CassandraConnectionFactoryBean;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 
 /**
  * Setup any spring configuration for unit tests
@@ -17,19 +21,23 @@ import org.springframework.data.cassandra.core.CassandraThriftTemplate;
 @Configuration
 public class TestConfig {
 	
-	public @Bean KeyspaceFactoryBean cassandra() {
-		KeyspaceFactoryBean cfb = new KeyspaceFactoryBean();
-		cfb.setHost("127.0.0.1");
-		cfb.setPort(9160);
-		cfb.setKeyspaceName("test_keyspace");
+	public @Bean CassandraConnectionFactoryBean cassandra() {
+
+		List<String> seeds = new ArrayList<String>();
+		seeds.add("127.0.0.1");
+		
+		CassandraConnectionFactoryBean cfb = new CassandraConnectionFactoryBean();
+		
+		cfb.setSeeds(seeds);
+		cfb.setPort(9042);
 		
 		return cfb;
 	}
 	
-	public @Bean CassandraThriftTemplate cassandraTemplate() {
-		CassandraThriftTemplate template = null;
+	public @Bean CassandraTemplate cassandraTemplate() {
+		CassandraTemplate template = null;
 		try {
-			template = new CassandraThriftTemplate(cassandra().getObject());
+			template = new CassandraTemplate(cassandra().getObject());
 		} catch (Exception e) {
 			log.error(e);
 		}

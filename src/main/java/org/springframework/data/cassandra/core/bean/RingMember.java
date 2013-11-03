@@ -37,8 +37,5 @@ public class RingMember implements Serializable {
 	private String state;
 	private String load;
 	private String owns;
-	private String startToken;
-	private String endToken;
-	private List<String> endpoints;
 
 }

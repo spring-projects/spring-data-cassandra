@@ -17,9 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import org.springframework.dao.DataAccessException;
 
-import com.netflix.astyanax.Keyspace;
-
 public interface KeyspaceCallback<T> {
 
-	T doInKeyspace(Keyspace ks) throws Exception, DataAccessException;
+	T doInKeyspace(String ks) throws Exception, DataAccessException;
 }
