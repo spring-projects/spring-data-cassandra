@@ -1,0 +1,4 @@
+# Tooling related information for the Cassandra namespace
+http\://www.springframework.org/schema/data/cassandra@name=Cassandra Namespace
+http\://www.springframework.org/schema/data/cassandra@prefix=cassandra
+http\://www.springframework.org/schema/data/cassandra@icon=org/springframework/jdbc/config/spring-jdbc.gif

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns="http://www.springframework.org/schema/data/cassandra"
+						xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+						xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+						xmlns:beans="http://www.springframework.org/schema/beans"
+						xmlns:tool="http://www.springframework.org/schema/tool"
+						xmlns:context="http://www.springframework.org/schema/context"
+						xmlns:repository="http://www.springframework.org/schema/data/repository"
+						targetNamespace="http://www.springframework.org/schema/data/cassandra"
+						elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/beans" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+	<xsd:import namespace="http://www.springframework.org/schema/context" />
+	<xsd:import namespace="http://www.springframework.org/schema/data/repository"
+				schemaLocation="http://www.springframework.org/schema/data/repository/spring-repository.xsd" />
+
+	<xsd:element name="cassandra" type="cassandraType">
+		<xsd:annotation>
+			<xsd:documentation source="org.springframework.data.cassandra.core.KeyspaceFactoryBean"><![CDATA[
+Defines a Cassandra instance used for accessing Cassandra.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.netflix.astyanax.AstyanaxContext"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+
+
+
+	<xsd:element name="jmx">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Defines a JMX Model MBeans for monitoring a Cassandra server'.
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="cassandra-ref" type="cassandraRef" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The name of the Cassandra object that determines what server to monitor. (by default "cassandra").]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:simpleType name="cassandraTemplateRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to type="org.springframework.data.cassandra.core.CassandraThriftTemplate"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="cassandraRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to type="org.springframework.data.cassandra.core.KeyspaceFactoryBean"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="writeConsistencyEnumeration">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="ANY" />
+			<xsd:enumeration value="ONE" />
+			<xsd:enumeration value="QUORUM" />
+			<xsd:enumeration value="LOCAL_QUORUM" />
+			<xsd:enumeration value="EACH_QUORUM" />
+			<xsd:enumeration value="ALL" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="cassandraType">
+		<xsd:attribute name="id" type="xsd:string" use="optional" default="cassandra">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the cassandra definition (by default "cassandra").]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="port" type="xsd:string" use="optional" default="9160">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The port to connect to Cassandra server.  Default is 9160
+							]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="host" type="xsd:string" use="optional" default="localhost">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The host to connect to a Cassandra server.  Default is localhost
+							]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="keyspace" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The Cassandra Keyspace to connect to. Default is MyKeyspace
+							]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<!-- TODO - Need to fillout all the connection options for the cassandra pool  -->
+	<xsd:complexType name="optionsType">
+		<xsd:attribute name="cluster-name" type="xsd:string" use="optional" default="Test Cluster">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+					The name of the Cassandra Cluster to connect to. Default is Test Cluster	
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:group name="beanElementGroup">
+		<xsd:choice>
+			<xsd:element ref="beans:bean"/>
+			<xsd:element ref="beans:ref"/>
+		</xsd:choice>
+	</xsd:group>
+
+	<xsd:element name="template">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+	Defines a CassandraTemplate for connecting to a specific database
+			]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="id" type="cassandraRef" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+			The name of the cassandra definition (by default "cassandra").]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="write-consistency">
+				<xsd:annotation>
+					<xsd:documentation>
+					The Write Consistency that will be the default value used when asking the CassandraDbFactory for a DB object
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:union memberTypes="writeConsistencyEnumeration xsd:string"/>
+				</xsd:simpleType>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	
+</xsd:schema>
