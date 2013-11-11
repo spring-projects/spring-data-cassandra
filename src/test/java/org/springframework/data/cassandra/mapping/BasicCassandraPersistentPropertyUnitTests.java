@@ -18,10 +18,17 @@ package org.springframework.data.cassandra.mapping;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Date;
 
+import org.apache.cassandra.exceptions.ConfigurationException;
+import org.apache.thrift.transport.TTransportException;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -37,6 +44,12 @@ import org.springframework.util.ReflectionUtils;
 public class BasicCassandraPersistentPropertyUnitTests {
 
 	CassandraPersistentEntity<Timeline> entity;
+	
+    @BeforeClass
+    public static void startCassandra()
+            throws IOException, TTransportException, ConfigurationException, InterruptedException {
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+    }
 
 	@Before
 	public void setup() {
@@ -69,6 +82,16 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		assertThat(property.isColumnId(), is(true));
 	}
 
+    @After
+    public void clearCassandra() {
+        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+    }
+
+    @AfterClass
+    public static void stopCassandra() {
+    	EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
+    }
+    
 	private CassandraPersistentProperty getPropertyFor(Field field) {
 		return new BasicCassandraPersistentProperty(field, null, entity, new SimpleTypeHolder());
 	}
