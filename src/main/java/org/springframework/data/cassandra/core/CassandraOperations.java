@@ -18,15 +18,23 @@ package org.springframework.data.cassandra.core;
 import java.util.List;
 
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.vo.RingMember;
 
 import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * @author Alex Shvid
  */
 public interface CassandraOperations {
 
+	
+	/**
+	 * Describe the current Ring
+	 * 
+	 * @return The list of ring tokens that are active in the cluster
+	 */
+	List<RingMember> describeRing();
+	
 	/**
 	 * The table name used for the specified class by this template.
 	 * 
