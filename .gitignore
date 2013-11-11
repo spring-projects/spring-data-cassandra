@@ -1,1 +1,15 @@
-/bin
+.DS_Store
+target
+bin
+build
+.gradle
+.springBeans
+pom.xml
+*.iml
+*.ipr
+*.iws
+*.log
+.classpath
+.project
+.settings
+.cassandra
