@@ -1,12 +1,7 @@
 package org.springframework.data.cassandra.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.core.CassandraKeyspaceFactoryBean;
-import org.springframework.data.cassandra.core.CassandraTemplate;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
