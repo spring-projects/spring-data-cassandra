@@ -18,17 +18,22 @@ package org.springframework.data.cassandra.core;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.vo.RingMember;
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -55,6 +60,54 @@ public class CassandraTemplate implements CassandraOperations {
 		this.cassandraConverter = keyspace.getCassandraConverter();
 		this.mappingContext = this.cassandraConverter.getMappingContext();
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#describeRing()
+	 */
+	@Override
+	public List<RingMember> describeRing() {
+
+		/*
+		 * Initialize the return variable
+		 */
+		List<RingMember> ring = new ArrayList<RingMember>();
+		
+		/*
+		 * Get the cluster metadata for this session
+		 */
+		Metadata clusterMetadata = session.getCluster().getMetadata();
+		
+		/*
+		 * Get all hosts in the cluster
+		 */
+		Set<Host> hosts = clusterMetadata.getAllHosts();
+		
+		/*
+		 * Loop variables
+		 */
+		RingMember member = null;
+		
+		/*
+		 * Populate Ring with Host Metadata
+		 */
+		for (Host h: hosts) {
+			
+			member = new RingMember();
+			member.hostName = h.getAddress().getHostName();
+			member.address = h.getAddress().getHostAddress();
+			member.DC = h.getDatacenter();
+			member.rack = h.getRack();
+			
+			ring.add(member);
+		}
+		
+		/*
+		 * Return
+		 */
+		return ring;
+	
+	}
+
 	
 	public String getTableName(Class<?> entityClass) {
 		return determineTableName(entityClass);
@@ -224,6 +277,26 @@ public class CassandraTemplate implements CassandraOperations {
 			RuntimeException ex) {
 		RuntimeException resolved = this.exceptionTranslator.translateExceptionIfPossible(ex);
 		return resolved == null ? ex : resolved;
+	}
+
+	
+	/**
+	 * Execute a command at the Session Level
+	 * 
+	 * @param callback
+	 * @return
+	 */
+	protected <T> T execute(SessionCallback<T> callback) {
+		
+		Assert.notNull(callback);
+
+		try {
+			
+			return callback.doInSession(session);
+			
+		} catch (DataAccessException e) {
+			throw potentiallyConvertRuntimeException(e);
+		} 
 	}
 
 }
