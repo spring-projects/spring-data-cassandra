@@ -34,7 +34,7 @@ def customizePom(pom, gradleProject) {
             url = 'http://github.com/shvid/spring-data-cassandra'
             organization {
                 name = 'Mirantis'
-                url = 'http://www.mirantis.com/spring-data/cassnadra'
+                url = 'http://www.mirantis.com/spring-data/cassandra'
             }
             licenses {
                 license {
