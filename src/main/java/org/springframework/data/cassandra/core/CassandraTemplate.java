@@ -75,7 +75,14 @@ public class CassandraTemplate implements CassandraOperations {
 		/*
 		 * Get the cluster metadata for this session
 		 */
-		Metadata clusterMetadata = session.getCluster().getMetadata();
+		Metadata clusterMetadata = execute(new SessionCallback<Metadata>() {
+
+			@Override
+			public Metadata doInSession(Session s) throws DataAccessException {
+				return s.getCluster().getMetadata();
+			}
+			
+		});
 		
 		/*
 		 * Get all hosts in the cluster
