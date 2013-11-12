@@ -19,19 +19,35 @@ package org.springframework.data.cassandra.core.exceptions;
 import org.springframework.dao.TransientDataAccessException;
 
 /**
- * Spring data access exception for a Cassandra truncate exception.
+ * Spring data access exception for Cassandra when insufficient replicas are
+ * available for a given consistency level.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraTruncateException extends TransientDataAccessException {
+public class CassandraInsufficientReplicasAvailableException extends
+		TransientDataAccessException {
 
-	private static final long serialVersionUID = 5730642491362430311L;
+	private static final long serialVersionUID = 6415130674604814905L;
 
-	public CassandraTruncateException(String msg) {
+	private int numberRequired;
+	private int numberAlive;
+
+	public CassandraInsufficientReplicasAvailableException(String msg) {
 		super(msg);
 	}
 
-	public CassandraTruncateException(String msg, Throwable cause) {
+	public CassandraInsufficientReplicasAvailableException(int numberRequired,
+			int numberAlive, String msg, Throwable cause) {
 		super(msg, cause);
+		this.numberRequired = numberRequired;
+		this.numberAlive = numberAlive;
+	}
+
+	public int getNumberRequired() {
+		return numberRequired;
+	}
+
+	public int getNumberAlive() {
+		return numberAlive;
 	}
 }

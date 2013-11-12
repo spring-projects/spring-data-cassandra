@@ -16,25 +16,23 @@
 
 package org.springframework.data.cassandra.core.exceptions;
 
-import org.springframework.dao.InvalidDataAccessApiUsageException;
-
 /**
- * Spring data access exception for a Cassandra query that is syntactically
- * correct but has an invalid configuration clause.
+ * Spring data access exception for Cassandra when a keyspace being created
+ * already exists.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraInvalidConfigurationInQueryException extends
-		InvalidDataAccessApiUsageException {
+public class CassandraKeyspaceExistsException extends
+		CassandraSchemaElementExistsException {
 
-	private static final long serialVersionUID = 4594321191806182918L;
+	private static final long serialVersionUID = 6032967419751410352L;
 
-	public CassandraInvalidConfigurationInQueryException(String msg) {
-		super(msg);
+	public CassandraKeyspaceExistsException(String keyspaceName, String msg,
+			Throwable cause) {
+		super(keyspaceName, ElementType.KEYSPACE, msg, cause);
 	}
 
-	public CassandraInvalidConfigurationInQueryException(String msg,
-			Throwable cause) {
-		super(msg, cause);
+	public String getKeyspaceName() {
+		return getElementName();
 	}
 }
