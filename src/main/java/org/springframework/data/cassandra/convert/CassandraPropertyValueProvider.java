@@ -67,6 +67,16 @@ public class CassandraPropertyValueProvider implements PropertyValueProvider<Cas
 			return null;
 		}
 		DataType columnType = source.getColumnDefinitions().getType(columnName);
+		
+		/*
+		 * Dave Webb - Added handler for text since getBytes was throwing 
+		 * InvalidTypeException when using getBytes on a text column. 
+		 */
+		//TODO Might need to qualify all DataTypes as we encounter them.
+		if (columnType.equals(DataType.text())) {
+			return (T) source.getString(columnName);
+		}
+		
 		ByteBuffer bytes = source.getBytes(columnName);
 		return (T) columnType.deserialize(bytes);
 	}

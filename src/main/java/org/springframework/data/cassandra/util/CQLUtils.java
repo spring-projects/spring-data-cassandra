@@ -7,9 +7,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
@@ -31,6 +34,13 @@ public abstract class CQLUtils {
 	
 	private static Logger log = LoggerFactory.getLogger(CQLUtils.class);
 
+	/**
+	 * Generates the CQL String to create a table in Cassandra
+	 * 
+	 * @param tableName
+	 * @param entity
+	 * @return	The CQL that can be passed to session.execute()
+	 */
 	public static String createTable(String tableName, final CassandraPersistentEntity<?> entity) {
 
 		final StringBuilder str = new StringBuilder();
@@ -101,6 +111,13 @@ public abstract class CQLUtils {
 		return str.toString();
 	}
 	
+	/**
+	 * Create the List of CQL for the indexes required for Cassandra mapped Table.
+	 * 
+	 * @param tableName
+	 * @param entity
+	 * @return The list of CQL statements to run with session.execute()
+	 */
 	public static List<String> createIndexes(final String tableName, final CassandraPersistentEntity<?> entity) {
 		final List<String> result = new ArrayList<String>();
 
@@ -126,6 +143,14 @@ public abstract class CQLUtils {
 		return result;
 	}
 
+	/**
+	 * Alter the table to refelct the entity annotations
+	 * 
+	 * @param tableName
+	 * @param entity
+	 * @param table
+	 * @return
+	 */
 	public static List<String> alterTable(final String tableName, final CassandraPersistentEntity<?> entity, final TableMetadata table) {
 		final List<String> result = new ArrayList<String>();
 		
@@ -171,9 +196,24 @@ public abstract class CQLUtils {
 		return result;
 	}
 
-	public static Query toInsertQuery(String keyspaceName, String tableName, final CassandraPersistentEntity<?> entity, final Object objectToSave) {
+	/**
+	 * Generates a Query Object for an insert
+	 * 
+	 * @param keyspaceName
+	 * @param tableName
+	 * @param entity
+	 * @param objectToSave
+	 * @param mappingContext 
+	 * @param beanClassLoader 
+	 * 
+	 * @return The Query object to run with session.execute();
+	 * @throws EntityWriterException 
+	 */
+	public static Query toInsertQuery(String keyspaceName, String tableName, 
+			final Object objectToSave, CassandraPersistentEntity<?> entity) throws EntityWriterException {
 		
 		final Insert q = QueryBuilder.insertInto(keyspaceName, tableName);
+		final Exception innerException = new Exception();
 				
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
@@ -191,15 +231,19 @@ public abstract class CQLUtils {
 					}
 					
 				} catch (IllegalAccessException e) {
-					e.printStackTrace();
+					innerException.initCause(e);
 				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
+					innerException.initCause(e);		
 				} catch (InvocationTargetException e) {
-					e.printStackTrace();
+					innerException.initCause(e);				
 				}
 			}
 		});
 
+		if (innerException.getCause() != null) {
+			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
+		}
+		
 		return q;
 		
 	}
