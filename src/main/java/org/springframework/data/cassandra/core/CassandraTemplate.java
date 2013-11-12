@@ -99,12 +99,7 @@ public class CassandraTemplate implements CassandraOperations {
 		 */
 		for (Host h: hosts) {
 			
-			member = new RingMember();
-			member.hostName = h.getAddress().getHostName();
-			member.address = h.getAddress().getHostAddress();
-			member.DC = h.getDatacenter();
-			member.rack = h.getRack();
-			
+			member = new RingMember(h);
 			ring.add(member);
 		}
 		
