@@ -30,6 +30,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.util.CQLUtils;
@@ -142,11 +143,39 @@ public class CassandraTemplate implements CassandraOperations {
 	
 	}
 
-	
+	/**
+	 * Determines the PersistentEntityType for a given Object
+	 * 
+	 * @param o
+	 * @return
+	 */
+	protected CassandraPersistentEntity<?> getEntity(Object o) {
+		
+		CassandraPersistentEntity<?> entity = null;
+		
+		try {
+			String entityClassName = o.getClass().getName();
+			Class<?> entityClass = ClassUtils.forName(entityClassName, this.beanClassLoader);
+			entity = mappingContext.getPersistentEntity(entityClass);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (LinkageError e) {
+			e.printStackTrace();
+		} finally {}
+		
+		return entity;
+		
+	}
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableName(java.lang.Class)
+	 */
 	public String getTableName(Class<?> entityClass) {
 		return determineTableName(entityClass);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#executeQuery(java.lang.String)
+	 */
 	public ResultSet executeQuery(String query) {
 		try {
 			return session.execute(query);
@@ -157,29 +186,25 @@ public class CassandraTemplate implements CassandraOperations {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(java.lang.String, java.lang.Class)
+	 */
 	public <T> List<T> select(String query, Class<T> selectClass) {
 		return selectInternal(query, new ReadRowCallback<T>(cassandraConverter, selectClass));
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(java.lang.String, java.lang.Class)
+	 */
 	public <T> T selectOne(String query, Class<T> selectClass) {
 		return selectOneInternal(query, new ReadRowCallback<T>(cassandraConverter, selectClass));
 	}
 	
-	
-
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#getConverter()
+	 */
 	public CassandraConverter getConverter() {
 		return cassandraConverter;
-	}
-	
-	/**
-	 * Simple internal callback to allow operations on a {@link Row}.
-	 * 
-	 * @author Alex Shvid
-	 */
-
-	private interface RowCallback<T> {
-
-		T doWith(Row object);
 	}
 	
 	/**
@@ -206,6 +231,11 @@ public class CassandraTemplate implements CassandraOperations {
 		}
 	}	
 	
+	/**
+	 * @param query
+	 * @param readRowCallback
+	 * @return
+	 */
 	<T> List<T> selectInternal(String query, ReadRowCallback<T> readRowCallback) {
 		try {
 			ResultSet resultSet = session.execute(query);
@@ -281,43 +311,37 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
     /**
-     * Insert a row into a Cassandra ColumnFamily
+     * Insert a row into a Cassandra CQL Table
      * 
      * @param tableName
      * @param objectToSave
-     * @throws LinkageError 
-     * @throws ClassNotFoundException 
      */
     protected <T> T doInsert(final String tableName, final T objectToSave) {
 
+    	CassandraPersistentEntity<?> entity = getEntity(objectToSave);
+    	
+    	Assert.notNull(entity);
+    	
     	try {
     		
-			final String entityClassName = objectToSave.getClass().getName();
-			final Class<?> entityClass = ClassUtils.forName(entityClassName, this.beanClassLoader);
-			final CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
-			final String useTableName = tableName != null ? tableName : entity.getTable();
+			final Query q = CQLUtils.toInsertQuery(keyspace.getKeyspace(), tableName, objectToSave, entity);
+			log.info(q.toString());
 	
 	    	return execute(new SessionCallback<T>() {
 	
 	    		public T doInSession(Session s) throws DataAccessException {
+	
+	    			s.execute(q);
 					
-					Query q = CQLUtils.toInsertQuery(keyspace.getKeyspace(), useTableName, entity, objectToSave);
-					log.info(q.toString());
-					
-					ResultSet rs = s.execute(q);
-					
-					return null;
+					return objectToSave;
 					
 				}
 			});
 	    	
-    	} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (LinkageError e) {
-			e.printStackTrace();
-		} finally {}
-    	
-		return objectToSave;
+    	} catch (EntityWriterException e) {
+    		throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException("Failed to translate Object to Query", e));
+    	}
+	    	
     }
 	
 	/**

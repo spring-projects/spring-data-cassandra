@@ -89,8 +89,17 @@ public class CassandraOperationsTest {
 		}
     }
     
+    /**
+     * This test inserts and selects users from the test.users table
+     * This is testing the CassandraTemplate:
+     * <ul>
+     * <li>insert()</li>
+     * <li>selectOne()</li>
+     * <li>select()</li>
+     * </ul>
+     */
     @Test
-    public void insertTest() {
+    public void UsersTest() {
     	
     	User u = new User();
     	u.setUsername("cassandra");
@@ -98,6 +107,20 @@ public class CassandraOperationsTest {
     	u.setLastName("Cassnadra");
     	
     	cassandraTemplate.insert(u, "users");
+    	
+    	User us = cassandraTemplate.selectOne("select * from test.users where username='cassandra';" , User.class);
+    	
+    	log.debug("Output from select One");
+    	log.debug(us.getFirstName());
+    	log.debug(us.getLastName());
+    	
+    	List<User> users = cassandraTemplate.select("Select * from test.users", User.class);
+
+    	log.debug("Output from select All");
+    	for (User x: users) {
+        	log.debug(x.getFirstName());
+        	log.debug(x.getLastName());
+    	}
     	
     }
     
