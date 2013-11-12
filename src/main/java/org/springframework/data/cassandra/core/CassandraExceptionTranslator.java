@@ -16,37 +16,83 @@
 package org.springframework.data.cassandra.core;
 
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.data.cassandra.core.exceptions.*;
 
-import com.datastax.driver.core.exceptions.InvalidQueryException;
+import com.datastax.driver.core.exceptions.*;
 
 /**
- * Simple {@link PersistenceExceptionTranslator} for Cassandra. Convert the given runtime exception to an appropriate
- * exception from the {@code org.springframework.dao} hierarchy. Return {@literal null} if no translation is
- * appropriate: any other exception may have resulted from user code, and should not be translated.
+ * Simple {@link PersistenceExceptionTranslator} for Cassandra. Convert the
+ * given runtime exception to an appropriate exception from the
+ * {@code org.springframework.dao} hierarchy. Return {@literal null} if no
+ * translation is appropriate: any other exception may have resulted from user
+ * code, and should not be translated.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 
-public class CassandraExceptionTranslator implements PersistenceExceptionTranslator {
+public class CassandraExceptionTranslator implements
+		PersistenceExceptionTranslator {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
+	 * 
+	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#
+	 * translateExceptionIfPossible(java.lang.RuntimeException)
 	 */
-	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
+	public DataAccessException translateExceptionIfPossible(RuntimeException x) {
 
-		// Check for well-known Cassandra subclasses.
-		
-		if (ex instanceof InvalidQueryException) {
-			return new DataAccessResourceFailureException(ex.getMessage(), ex);
+		if (!(x instanceof DriverException)) {
+			return null;
 		}
-		
-		// If we get here, we have an exception that resulted from user code,
-		// rather than the persistence provider, so we return null to indicate
-		// that translation should not occur.
-		return null;
+
+		if (x instanceof AuthenticationException) {
+			return new CassandraAuthenticationException(x.getMessage(), x);
+		}
+		if (x instanceof DriverInternalError) {
+			return new CassandraDriverInternalErrorException(x.getMessage(), x);
+		}
+		if (x instanceof InvalidTypeException) {
+			return new CassandraInvalidTypeException(x.getMessage(), x);
+		}
+		if (x instanceof NoHostAvailableException) {
+			return new CassandraNoHostAvailableException(x.getMessage(), x);
+		}
+		if (x instanceof ReadTimeoutException) {
+			return new CassandraReadTimeoutException(x.getMessage(), x);
+		}
+		if (x instanceof WriteTimeoutException) {
+			return new CassandraWriteTimeoutException(x.getMessage(), x);
+		}
+		if (x instanceof TruncateException) {
+			return new CassandraTruncateException(x.getMessage(), x);
+		}
+		if (x instanceof UnavailableException) {
+			return new CassandraUnavailableException(x.getMessage(), x);
+		}
+		if (x instanceof AlreadyExistsException) {
+			return new CassandraAlreadyExistsException(x.getMessage(), x);
+		}
+		if (x instanceof InvalidConfigurationInQueryException) {
+			return new CassandraInvalidConfigurationInQueryException(
+					x.getMessage(), x);
+		}
+		// this must come after cases for subclasses
+		if (x instanceof InvalidQueryException) {
+			return new CassandraInvalidQueryException(x.getMessage(), x);
+		}
+		if (x instanceof SyntaxError) {
+			return new CassandraSyntaxErrorException(x.getMessage(), x);
+		}
+		if (x instanceof UnauthorizedException) {
+			return new CassandraUnauthorizedException(x.getMessage(), x);
+		}
+		if (x instanceof TraceRetrievalException) {
+			return new CassandraTraceRetrievalException(x.getMessage(), x);
+		}
+
+		// unknown or unhandled exception
+		return new CassandraUncategorizedException(x.getMessage(), x);
 	}
-	
 }

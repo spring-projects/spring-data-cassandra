@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
+package org.springframework.data.cassandra.core.exceptions;
 
-import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.UncategorizedDataAccessException;
 
 /**
- * Cassandra connection exception.
- * 
+ * Exception thrown when we can't classify a Cassandra exception into one of Spring generic data access exceptions.
+ *  
  * @author Alex Shvid
  */
-public class CassandraConnectionFailureException extends DataAccessResourceFailureException {
 
-	public CassandraConnectionFailureException(String msg) {
-		super(msg);
-	}
+public class CassandraUncategorizedException extends UncategorizedDataAccessException {
 
-	public CassandraConnectionFailureException(String msg, Throwable cause) {
+	private static final long serialVersionUID = 1029525121238025444L;
+
+	public CassandraUncategorizedException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
-	
 }
