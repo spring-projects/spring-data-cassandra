@@ -1,8 +1,11 @@
 package org.springframework.data.cassandra.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -10,10 +13,15 @@ import org.springframework.data.mapping.PropertyHandler;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.Query;
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 
 public abstract class CQLUtils {
+	
+	private static Logger log = LoggerFactory.getLogger(CQLUtils.class);
 
 	public static String createTable(String tableName, final CassandraPersistentEntity<?> entity) {
 
@@ -154,6 +162,85 @@ public abstract class CQLUtils {
 		
 		return result;
 	}
+
+	public static Query toInsertQuery(String keyspaceName, String tableName, final CassandraPersistentEntity<?> entity, final Object objectToSave) {
+		
+		final Insert q = QueryBuilder.insertInto(keyspaceName, tableName);
+				
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+				
+				/*
+				 * See if the object has a value for that column, and if so, add it to the Query
+				 */
+				try {
+					Object o = (String)prop.getGetter().invoke(objectToSave, new Object[0]);
+					
+					log.info("Getter Invoke [" + prop.getColumnName() + " => " + o);
+					
+					if (o != null) {
+						q.value(prop.getColumnName(), o);
+					}
+					
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+
+		return q;
+		
+	}
+	
+	/**
+	 * Generate the CQL for insert
+	 * 
+	 * @param tableName
+	 * @param entity
+	 * @return
+	 */
+	public static String toInsertCQL(String tableName, final CassandraPersistentEntity<?> entity) {
+		
+		final StringBuilder str = new StringBuilder();
+		str.append("INSERT INTO ");
+		str.append(tableName);
+		str.append(" (");
+
+		final List<String> cols = new ArrayList<String>();
+
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+				
+				if (str.charAt(str.length()-1) != '(') {
+					str.append(", ");
+				}
+				
+				String columnName = prop.getColumnName();
+				cols.add(columnName);
+				
+				str.append(columnName);
+				
+			}
+		});
+
+		str.append(") VALUES (");
+		
+		for (int i = 0; i < cols.size(); i++) {
+			if (i > 0) {
+				str.append(", ");
+			}
+			str.append("?");
+		}
+		
+		str.append(")");
+
+		return str.toString();
+	}
+
 	
 	public static String toCQL(DataType dataType) {
 		if (dataType.getTypeArguments().isEmpty()) {

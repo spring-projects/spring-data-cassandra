@@ -16,10 +16,15 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -27,13 +32,16 @@ import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.util.CQLUtils;
 import org.springframework.data.cassandra.vo.RingMember;
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -43,12 +51,28 @@ import com.datastax.driver.core.exceptions.NoHostAvailableException;
  * @author Alex Shvid
  */
 public class CassandraTemplate implements CassandraOperations {
+	
+	private static Logger log = LoggerFactory.getLogger(CassandraTemplate.class);
+	
+    private static final Collection<String> ITERABLE_CLASSES;
+    static {
 
+            Set<String> iterableClasses = new HashSet<String>();
+            iterableClasses.add(List.class.getName());
+            iterableClasses.add(Collection.class.getName());
+            iterableClasses.add(Iterator.class.getName());
+
+            ITERABLE_CLASSES = Collections.unmodifiableCollection(iterableClasses);
+    }
+
+    private final Keyspace keyspace;
 	private final Session session;
 	private final CassandraConverter cassandraConverter;
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+	
+	private ClassLoader beanClassLoader;
 
 	/**
 	 * Constructor used for a basic template configuration
@@ -56,9 +80,17 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @param keyspace must not be {@literal null}.
 	 */
 	public CassandraTemplate(Keyspace keyspace) {
+		this.keyspace = keyspace;
 		this.session = keyspace.getSession();
 		this.cassandraConverter = keyspace.getCassandraConverter();
 		this.mappingContext = this.cassandraConverter.getMappingContext();
+	}
+	
+    /**
+     * @param classLoader
+     */
+    public void setBeanClassLoader(ClassLoader classLoader) {
+    	this.beanClassLoader = classLoader;
 	}
 	
 	/* (non-Javadoc)
@@ -139,55 +171,6 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 	
 	
-	public void insert(Object entity) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void insert(Object entity, String tableName) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void remove(Object object) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void remove(Object object, String tableName) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void createTable(Class<?> entityClass) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void createTable(Class<?> entityClass, String tableName) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void alterTable(Class<?> entityClass) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void alterTable(Class<?> entityClass, String tableName) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void dropTable(Class<?> entityClass) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void dropTable(String tableName) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	public CassandraConverter getConverter() {
 		return cassandraConverter;
@@ -265,6 +248,22 @@ public class CassandraTemplate implements CassandraOperations {
 		}
 	}
 	
+    /**
+     * @param obj
+     * @return
+     */
+    private <T> String determineTableName(T obj) {
+        if (null != obj) {
+                return determineTableName(obj.getClass());
+        }
+
+        return null;
+}
+	
+	/**
+	 * @param entityClass
+	 * @return
+	 */
 	String determineTableName(Class<?> entityClass) {
 
 		if (entityClass == null) {
@@ -286,6 +285,45 @@ public class CassandraTemplate implements CassandraOperations {
 		return resolved == null ? ex : resolved;
 	}
 
+    /**
+     * Insert a row into a Cassandra ColumnFamily
+     * 
+     * @param tableName
+     * @param objectToSave
+     * @throws LinkageError 
+     * @throws ClassNotFoundException 
+     */
+    protected <T> T doInsert(final String tableName, final T objectToSave) {
+
+    	try {
+    		
+			final String entityClassName = objectToSave.getClass().getName();
+			final Class<?> entityClass = ClassUtils.forName(entityClassName, this.beanClassLoader);
+			final CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+			final String useTableName = tableName != null ? tableName : entity.getTable();
+	
+	    	return execute(new SessionCallback<T>() {
+	
+	    		public T doInSession(Session s) throws DataAccessException {
+					
+					Query q = CQLUtils.toInsertQuery(keyspace.getKeyspace(), useTableName, entity, objectToSave);
+					log.info(q.toString());
+					
+					ResultSet rs = s.execute(q);
+					
+					return null;
+					
+				}
+			});
+	    	
+    	} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (LinkageError e) {
+			e.printStackTrace();
+		} finally {}
+    	
+		return objectToSave;
+    }
 	
 	/**
 	 * Execute a command at the Session Level
@@ -304,6 +342,141 @@ public class CassandraTemplate implements CassandraOperations {
 		} catch (DataAccessException e) {
 			throw potentiallyConvertRuntimeException(e);
 		} 
+	}
+
+    /* (non-Javadoc)
+     * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object)
+     */
+    public void insert(Object objectToSave) {
+            ensureNotIterable(objectToSave);
+            insert(objectToSave, determineTableName(objectToSave));
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, java.lang.String)
+     */
+    public void insert(Object objectToSave, String tableName) {
+            ensureNotIterable(objectToSave);
+            doInsert(tableName, objectToSave);
+    }
+
+    /**
+     * Verify the object is not an iterable type
+     * @param o
+     */
+    protected void ensureNotIterable(Object o) {
+            if (null != o) {
+                    if (o.getClass().isArray() || ITERABLE_CLASSES.contains(o.getClass().getName())) {
+                            throw new IllegalArgumentException("Cannot use a collection here.");
+                    }
+            }
+    }
+
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#remove(java.lang.Object)
+	 */
+	@Override
+	public void remove(Object object) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#remove(java.lang.Object, java.lang.String)
+	 */
+	@Override
+	public void remove(Object object, String tableName) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#createTable(java.lang.Class)
+	 */
+	@Override
+	public void createTable(Class<?> entityClass) {
+
+
+    	try {
+    		
+			final CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+			final String useTableName = entity.getTable();
+	
+	    	createTable(entityClass, useTableName);
+
+		} catch (LinkageError e) {
+			e.printStackTrace();
+		} finally {}
+
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#createTable(java.lang.Class, java.lang.String)
+	 */
+	@Override
+	public void createTable(Class<?> entityClass, final String tableName) {
+
+    	try {
+    		
+			final CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+	
+	    	execute(new SessionCallback<Object>() {
+	
+	    		public Object doInSession(Session s) throws DataAccessException {
+	    			
+	    			String cql = CQLUtils.createTable(tableName, entity);
+	    			
+	    			log.info("CREATE TABLE CQL -> " + cql);
+					
+					s.execute(cql);
+					
+					return null;
+					
+				}
+			});
+	    	
+		} catch (LinkageError e) {
+			e.printStackTrace();
+		} finally {}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#alterTable(java.lang.Class)
+	 */
+	@Override
+	public void alterTable(Class<?> entityClass) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#alterTable(java.lang.Class, java.lang.String)
+	 */
+	@Override
+	public void alterTable(Class<?> entityClass, String tableName) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#dropTable(java.lang.Class)
+	 */
+	@Override
+	public void dropTable(Class<?> entityClass) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#dropTable(java.lang.String)
+	 */
+	@Override
+	public void dropTable(String tableName) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

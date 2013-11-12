@@ -18,6 +18,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.config.TestConfig;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.test.User;
 import org.springframework.data.cassandra.vo.RingMember;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -53,6 +55,24 @@ public class CassandraOperationsTest {
             throws IOException, TTransportException, ConfigurationException, InterruptedException {
         EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
     }
+    
+    @Before
+    public void setupKeyspace() {
+    	
+    	log.info("Creating Keyspace...");
+    	
+    	cassandraTemplate.executeQuery("CREATE KEYSPACE test WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
+
+    	log.info("Using Keyspace...");
+
+    	cassandraTemplate.executeQuery("use test;");
+
+    	log.info("Creating Table...");
+
+    	cassandraTemplate.createTable(User.class);
+
+    	
+    }
 	
     @Test
     public void ringTest() {
@@ -67,6 +87,18 @@ public class CassandraOperationsTest {
 		for (RingMember h: ring) {
 			log.info(h.address);
 		}
+    }
+    
+    @Test
+    public void insertTest() {
+    	
+    	User u = new User();
+    	u.setUsername("cassandra");
+    	u.setFirstName("Apache");
+    	u.setLastName("Cassnadra");
+    	
+    	cassandraTemplate.insert(u, "users");
+    	
     }
     
     @After
