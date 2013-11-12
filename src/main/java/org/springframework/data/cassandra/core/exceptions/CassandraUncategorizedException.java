@@ -18,11 +18,11 @@ package org.springframework.data.cassandra.core.exceptions;
 import org.springframework.dao.UncategorizedDataAccessException;
 
 /**
- * Exception thrown when we can't classify a Cassandra exception into one of Spring generic data access exceptions.
- *  
+ * Spring data access exception for an uncategorized Cassandra exception.
+ * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
-
 public class CassandraUncategorizedException extends UncategorizedDataAccessException {
 
 	private static final long serialVersionUID = 1029525121238025444L;

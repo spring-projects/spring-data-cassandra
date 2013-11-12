@@ -25,7 +25,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.exceptions.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.vo.RingMember;
@@ -38,7 +37,6 @@ import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
 
 /**
  * @author Alex Shvid
@@ -124,8 +122,6 @@ public class CassandraTemplate implements CassandraOperations {
 	public ResultSet executeQuery(String query) {
 		try {
 			return session.execute(query);
-		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException("no host available", e);
 		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}
@@ -239,8 +235,6 @@ public class CassandraTemplate implements CassandraOperations {
 				result.add(readRowCallback.doWith(row));
 			}
 			return result;
-		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException("no host available", e);
 		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}
@@ -259,8 +253,6 @@ public class CassandraTemplate implements CassandraOperations {
 				return result;
 			}
 			return null;
-		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException("no host available", e);
 		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}

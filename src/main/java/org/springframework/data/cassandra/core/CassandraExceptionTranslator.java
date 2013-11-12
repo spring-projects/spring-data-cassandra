@@ -17,9 +17,39 @@ package org.springframework.data.cassandra.core;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.data.cassandra.core.exceptions.*;
+import org.springframework.data.cassandra.core.exceptions.CassandraAuthenticationException;
+import org.springframework.data.cassandra.core.exceptions.CassandraInternalException;
+import org.springframework.data.cassandra.core.exceptions.CassandraInvalidConfigurationInQueryException;
+import org.springframework.data.cassandra.core.exceptions.CassandraInvalidQueryException;
+import org.springframework.data.cassandra.core.exceptions.CassandraTypeMismatchException;
+import org.springframework.data.cassandra.core.exceptions.CassandraKeyspaceExistsException;
+import org.springframework.data.cassandra.core.exceptions.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.core.exceptions.CassandraReadTimeoutException;
+import org.springframework.data.cassandra.core.exceptions.CassandraQuerySyntaxException;
+import org.springframework.data.cassandra.core.exceptions.CassandraTableExistsException;
+import org.springframework.data.cassandra.core.exceptions.CassandraTraceRetrievalException;
+import org.springframework.data.cassandra.core.exceptions.CassandraTruncateException;
+import org.springframework.data.cassandra.core.exceptions.CassandraUnauthorizedException;
+import org.springframework.data.cassandra.core.exceptions.CassandraInsufficientReplicasAvailableException;
+import org.springframework.data.cassandra.core.exceptions.CassandraUncategorizedException;
+import org.springframework.data.cassandra.core.exceptions.CassandraWriteTimeoutException;
 
-import com.datastax.driver.core.exceptions.*;
+import com.datastax.driver.core.WriteType;
+import com.datastax.driver.core.exceptions.AlreadyExistsException;
+import com.datastax.driver.core.exceptions.AuthenticationException;
+import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.exceptions.DriverInternalError;
+import com.datastax.driver.core.exceptions.InvalidConfigurationInQueryException;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
+import com.datastax.driver.core.exceptions.InvalidTypeException;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.datastax.driver.core.exceptions.ReadTimeoutException;
+import com.datastax.driver.core.exceptions.SyntaxError;
+import com.datastax.driver.core.exceptions.TraceRetrievalException;
+import com.datastax.driver.core.exceptions.TruncateException;
+import com.datastax.driver.core.exceptions.UnauthorizedException;
+import com.datastax.driver.core.exceptions.UnavailableException;
+import com.datastax.driver.core.exceptions.WriteTimeoutException;
 
 /**
  * Simple {@link PersistenceExceptionTranslator} for Cassandra. Convert the
@@ -47,43 +77,60 @@ public class CassandraExceptionTranslator implements
 			return null;
 		}
 
+		// Remember: subclasses must come before superclasses, otherwise the
+		// superclass would match before the subclass!
+
 		if (x instanceof AuthenticationException) {
-			return new CassandraAuthenticationException(x.getMessage(), x);
+			return new CassandraAuthenticationException(
+					((AuthenticationException) x).getHost(), x.getMessage(), x);
 		}
 		if (x instanceof DriverInternalError) {
-			return new CassandraDriverInternalErrorException(x.getMessage(), x);
+			return new CassandraInternalException(x.getMessage(), x);
 		}
 		if (x instanceof InvalidTypeException) {
-			return new CassandraInvalidTypeException(x.getMessage(), x);
+			return new CassandraTypeMismatchException(x.getMessage(), x);
 		}
 		if (x instanceof NoHostAvailableException) {
-			return new CassandraNoHostAvailableException(x.getMessage(), x);
+			return new CassandraConnectionFailureException(
+					((NoHostAvailableException) x).getErrors(), x.getMessage(),
+					x);
 		}
 		if (x instanceof ReadTimeoutException) {
-			return new CassandraReadTimeoutException(x.getMessage(), x);
+			return new CassandraReadTimeoutException(
+					((ReadTimeoutException) x).wasDataRetrieved(),
+					x.getMessage(), x);
 		}
 		if (x instanceof WriteTimeoutException) {
-			return new CassandraWriteTimeoutException(x.getMessage(), x);
+			WriteType writeType = ((WriteTimeoutException) x).getWriteType();
+			return new CassandraWriteTimeoutException(writeType == null ? null
+					: writeType.name(), x.getMessage(), x);
 		}
 		if (x instanceof TruncateException) {
 			return new CassandraTruncateException(x.getMessage(), x);
 		}
 		if (x instanceof UnavailableException) {
-			return new CassandraUnavailableException(x.getMessage(), x);
+			UnavailableException ux = (UnavailableException) x;
+			return new CassandraInsufficientReplicasAvailableException(
+					ux.getRequiredReplicas(), ux.getAliveReplicas(),
+					x.getMessage(), x);
 		}
 		if (x instanceof AlreadyExistsException) {
-			return new CassandraAlreadyExistsException(x.getMessage(), x);
+			AlreadyExistsException aex = (AlreadyExistsException) x;
+
+			return aex.wasTableCreation() ? new CassandraTableExistsException(
+					aex.getTable(), x.getMessage(), x)
+					: new CassandraKeyspaceExistsException(aex.getKeyspace(),
+							x.getMessage(), x);
 		}
 		if (x instanceof InvalidConfigurationInQueryException) {
 			return new CassandraInvalidConfigurationInQueryException(
 					x.getMessage(), x);
 		}
-		// this must come after cases for subclasses
 		if (x instanceof InvalidQueryException) {
 			return new CassandraInvalidQueryException(x.getMessage(), x);
 		}
 		if (x instanceof SyntaxError) {
-			return new CassandraSyntaxErrorException(x.getMessage(), x);
+			return new CassandraQuerySyntaxException(x.getMessage(), x);
 		}
 		if (x instanceof UnauthorizedException) {
 			return new CassandraUnauthorizedException(x.getMessage(), x);
