@@ -19,7 +19,22 @@ import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.Session;
 
+/**
+ * Interface for operations on a Cassnadra Session.
+ * 
+ * @author David Webb (dwebb@brightmove.com)
+ *
+ * @param <T>
+ */
 public interface SessionCallback<T> {
 
+	/**
+	 * Perform the operation in the given Session
+	 * 
+	 * @param s
+	 * @return
+	 * @throws DataAccessException
+	 */
 	T doInSession(Session s) throws DataAccessException;
+	
 }
