@@ -13,6 +13,8 @@ import static org.junit.Assert.assertNotNull;
 import java.io.IOException;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
@@ -96,6 +98,7 @@ public class CassandraOperationsTest {
      * <li>insert()</li>
      * <li>selectOne()</li>
      * <li>select()</li>
+     * <li>remove()</li>
      * </ul>
      */
     @Test
@@ -105,6 +108,7 @@ public class CassandraOperationsTest {
     	u.setUsername("cassandra");
     	u.setFirstName("Apache");
     	u.setLastName("Cassnadra");
+    	u.setAge(40);
     	
     	cassandraTemplate.insert(u, "users");
     	
@@ -121,6 +125,15 @@ public class CassandraOperationsTest {
         	log.debug(x.getFirstName());
         	log.debug(x.getLastName());
     	}
+    	
+    	cassandraTemplate.remove(u);
+    	
+    	User delUser = cassandraTemplate.selectOne("select * from test.users where username='cassandra';" , User.class);
+    	
+    	log.info("delUser => " + delUser);
+    	
+    	Assert.assertNull(delUser);
+    	
     	
     }
     

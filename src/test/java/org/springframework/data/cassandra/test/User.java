@@ -63,6 +63,11 @@ public class User {
 	private String password;
 	
 	/*
+	 * Age 
+	 */
+	private int age;
+	
+	/*
 	 * Following other users in userline
 	 */
 	private Set<String> following;
@@ -134,6 +139,20 @@ public class User {
 
 	public void setFriends(Set<String> friends) {
 		this.friends = friends;
+	}
+
+	/**
+	 * @return Returns the age.
+	 */
+	public int getAge() {
+		return age;
+	}
+
+	/**
+	 * @param age The age to set.
+	 */
+	public void setAge(int age) {
+		this.age = age;
 	}
 
 }

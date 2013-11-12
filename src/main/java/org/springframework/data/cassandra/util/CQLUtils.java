@@ -11,13 +11,14 @@ import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
@@ -222,7 +223,8 @@ public abstract class CQLUtils {
 				 * See if the object has a value for that column, and if so, add it to the Query
 				 */
 				try {
-					Object o = (String)prop.getGetter().invoke(objectToSave, new Object[0]);
+					
+					Object o = prop.getGetter().invoke(objectToSave, new Object[0]);
 					
 					log.info("Getter Invoke [" + prop.getColumnName() + " => " + o);
 					
@@ -247,6 +249,60 @@ public abstract class CQLUtils {
 		return q;
 		
 	}
+	
+	/**
+	 * @param keyspace
+	 * @param tableName
+	 * @param objectToRemove
+	 * @param entity
+	 * @return
+	 * @throws EntityWriterException 
+	 */
+	public static Query toDeleteQuery(String keyspace, String tableName,
+			final Object objectToRemove, CassandraPersistentEntity<?> entity) throws EntityWriterException {
+
+		final Delete.Selection ds = QueryBuilder.delete();
+		final Delete q = ds.from(keyspace, tableName);
+		final Where w = q.where();
+		
+		final Exception innerException = new Exception();
+				
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+				
+				/*
+				 * See if the object has a value for that column, and if so, add it to the Query
+				 */
+				try {
+					
+					if (prop.isIdProperty()) {
+						Object o = (String)prop.getGetter().invoke(objectToRemove, new Object[0]);
+						
+						log.info("Getter Invoke [" + prop.getColumnName() + " => " + o);
+						
+						if (o != null) {
+							w.and(QueryBuilder.eq(prop.getColumnName(), o));
+						}
+					}
+					
+				} catch (IllegalAccessException e) {
+					innerException.initCause(e);
+				} catch (IllegalArgumentException e) {
+					innerException.initCause(e);		
+				} catch (InvocationTargetException e) {
+					innerException.initCause(e);				
+				}
+			}
+		});
+
+		if (innerException.getCause() != null) {
+			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
+		}
+		
+		return q;
+
+	}
+
 	
 	/**
 	 * Generate the CQL for insert
@@ -313,5 +369,4 @@ public abstract class CQLUtils {
 		}
 	}
 
-	
 }

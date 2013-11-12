@@ -152,10 +152,9 @@ public class CassandraTemplate implements CassandraOperations {
 	protected CassandraPersistentEntity<?> getEntity(Object o) {
 		
 		CassandraPersistentEntity<?> entity = null;
-		
 		try {
 			String entityClassName = o.getClass().getName();
-			Class<?> entityClass = ClassUtils.forName(entityClassName, this.beanClassLoader);
+			Class<?> entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
 			entity = mappingContext.getPersistentEntity(entityClass);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -397,7 +396,8 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void remove(Object object) {
-		// TODO Auto-generated method stub
+		
+		remove(object, determineTableName(object.getClass()));
 		
 	}
 
@@ -406,8 +406,38 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void remove(Object object, String tableName) {
-		// TODO Auto-generated method stub
+
+		CassandraPersistentEntity<?> entityClass = getEntity(object);
 		
+		Assert.notNull(entityClass);
+		
+		doRemove(object, tableName);
+		
+	}
+	
+	protected <T> void doRemove(final Object objectToRemove, final String tableName) {
+	 
+    	CassandraPersistentEntity<?> entity = getEntity(objectToRemove);
+    	
+    	Assert.notNull(entity);
+    	
+    	try {
+    		
+			final Query q = CQLUtils.toDeleteQuery(keyspace.getKeyspace(), tableName, objectToRemove, entity);
+			log.info(q.toString());
+	
+	    	execute(new SessionCallback<ResultSet>() {
+	
+	    		public ResultSet doInSession(Session s) throws DataAccessException {
+	
+	    			return s.execute(q);
+					
+				}
+			});
+	    	
+    	} catch (EntityWriterException e) {
+    		throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException("Failed to translate Object to Query", e));
+    	}
 	}
 
 	/* (non-Javadoc)
@@ -415,7 +445,6 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void createTable(Class<?> entityClass) {
-
 
     	try {
     		
