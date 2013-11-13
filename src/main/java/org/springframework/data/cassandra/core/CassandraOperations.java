@@ -21,7 +21,6 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.TableMetadata;
 
 /**
  * @author Alex Shvid
@@ -42,14 +41,6 @@ public interface CassandraOperations {
 	 * @return
 	 */
 	String getTableName(Class<?> entityClass);
-
-	/**
-	 * Get the metatdata for the given entityClass table mapping
-	 * 
-	 * @param entityClass
-	 * @return The table metadata
-	 */
-	TableMetadata getTableMetadata(Class<?> entityClass, final String tableName);
 
 	/**
 	 * Execute query and return Cassandra ResultSet
@@ -90,21 +81,126 @@ public interface CassandraOperations {
 	 * 
 	 * @param object
 	 */
-	void insert(Object entity);
+	<T> T insert(T entity);
 
 	/**
 	 * Insert the given object to the table by id.
 	 * 
 	 * @param object
 	 */
-	void insert(Object entity, String tableName);
+	<T> List<T> insert(List<T> entities);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T insert(T entity, String tableName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> insert(List<T> entities, String tableName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T insertAsynchronously(T entity);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> insertAsynchronously(List<T> entities);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T insertAsynchronously(T entity, String tableName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> insertAsynchronously(List<T> entities, String tableName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T update(T entity);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> update(List<T> entities);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T update(T entity, String tableName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> update(List<T> entities, String tableName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T updateAsynchronously(T entity);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> updateAsynchronously(List<T> entities);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T updateAsynchronously(T entity, String tableName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> updateAsynchronously(List<T> entities, String tableName);
 
 	/**
 	 * Remove the given object from the table by id.
 	 * 
 	 * @param object
 	 */
-	void delete(Object object);
+	<T> void delete(T entity);
+
+	/**
+	 * Remove the given object from the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> void delete(List<T> entities);
 
 	/**
 	 * Removes the given object from the given table.
@@ -112,7 +208,45 @@ public interface CassandraOperations {
 	 * @param object
 	 * @param table must not be {@literal null} or empty.
 	 */
-	void delete(Object object, String tableName);
+	<T> void delete(T entity, String tableName);
+
+	/**
+	 * Removes the given object from the given table.
+	 * 
+	 * @param object
+	 * @param table must not be {@literal null} or empty.
+	 */
+	<T> void delete(List<T> entities, String tableName);
+
+	/**
+	 * Remove the given object from the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> void deleteAsychronously(T entity);
+
+	/**
+	 * Remove the given object from the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> void deleteAsychronously(List<T> entities);
+
+	/**
+	 * Removes the given object from the given table.
+	 * 
+	 * @param object
+	 * @param table must not be {@literal null} or empty.
+	 */
+	<T> void deleteAsychronously(T entity, String tableName);
+
+	/**
+	 * Removes the given object from the given table.
+	 * 
+	 * @param object
+	 * @param table must not be {@literal null} or empty.
+	 */
+	<T> void deleteAsychronously(List<T> entities, String tableName);
 
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
