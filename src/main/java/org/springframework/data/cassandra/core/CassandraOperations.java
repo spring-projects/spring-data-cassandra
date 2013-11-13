@@ -21,20 +21,20 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.dto.RingMember;
 
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 
 /**
  * @author Alex Shvid
  */
 public interface CassandraOperations {
 
-	
 	/**
 	 * Describe the current Ring
 	 * 
 	 * @return The list of ring tokens that are active in the cluster
 	 */
 	List<RingMember> describeRing();
-	
+
 	/**
 	 * The table name used for the specified class by this template.
 	 * 
@@ -42,15 +42,23 @@ public interface CassandraOperations {
 	 * @return
 	 */
 	String getTableName(Class<?> entityClass);
-	
+
 	/**
 	 * Execute query and return Cassandra ResultSet
 	 * 
 	 * @param query must not be {@literal null}.
 	 * @return
 	 */
-	ResultSet executeQuery(String query);
-	
+	ResultSet executeQuery(final String query);
+
+	/**
+	 * Execute async query and return Cassandra ResultSetFuture
+	 * 
+	 * @param query must not be {@literal null}.
+	 * @return
+	 */
+	ResultSetFuture executeQueryAsync(final String query);
+
 	/**
 	 * Execute query and convert ResultSet to the list of entities
 	 * 
@@ -58,8 +66,8 @@ public interface CassandraOperations {
 	 * @param selectClass must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-    <T> List<T> select(String query, Class<T> selectClass);
-    
+	<T> List<T> select(String query, Class<T> selectClass);
+
 	/**
 	 * Execute query and convert ResultSet to the entity
 	 * 
@@ -67,22 +75,22 @@ public interface CassandraOperations {
 	 * @param selectClass must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-    <T> T selectOne(String query, Class<T> selectClass);
-    
-	/**
-	 * Insert the given object to the table by id.
-	 * 
-	 * @param object
-	 */
-    void insert(Object entity);
+	<T> T selectOne(String query, Class<T> selectClass);
 
 	/**
 	 * Insert the given object to the table by id.
 	 * 
 	 * @param object
 	 */
-    void insert(Object entity, String tableName);
-    
+	void insert(Object entity);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	void insert(Object entity, String tableName);
+
 	/**
 	 * Remove the given object from the table by id.
 	 * 
@@ -97,55 +105,55 @@ public interface CassandraOperations {
 	 * @param table must not be {@literal null} or empty.
 	 */
 	void remove(Object object, String tableName);
-    
+
 	/**
 	 * Create a table with the name and fields indicated by the entity class
 	 * 
 	 * @param entityClass class that determines metadata of the table to create/drop.
 	 */
-    void createTable(Class<?> entityClass);
-    
+	void createTable(Class<?> entityClass);
+
 	/**
 	 * Create a table with the name and fields indicated by the entity class
 	 * 
 	 * @param entityClass class that determines metadata of the table to create/drop.
 	 * @param tableName explicit name of the table
 	 */
-    void createTable(Class<?> entityClass, String tableName);
-    
-	/**
-	 * Alter table with the name and fields indicated by the entity class
-	 * 
-	 * @param entityClass class that determines metadata of the table to create/drop.
-	 */    
-    void alterTable(Class<?> entityClass);
-    
-	/**
-	 * Alter table with the name and fields indicated by the entity class
-	 * 
-	 * @param entityClass class that determines metadata of the table to create/drop.
-	 * @param tableName explicit name of the table
-	 */    
-    void alterTable(Class<?> entityClass, String tableName);    
+	void createTable(Class<?> entityClass, String tableName);
 
 	/**
 	 * Alter table with the name and fields indicated by the entity class
 	 * 
 	 * @param entityClass class that determines metadata of the table to create/drop.
-	 */   
-    void dropTable(Class<?> entityClass);
+	 */
+	void alterTable(Class<?> entityClass);
+
+	/**
+	 * Alter table with the name and fields indicated by the entity class
+	 * 
+	 * @param entityClass class that determines metadata of the table to create/drop.
+	 * @param tableName explicit name of the table
+	 */
+	void alterTable(Class<?> entityClass, String tableName);
+
+	/**
+	 * Alter table with the name and fields indicated by the entity class
+	 * 
+	 * @param entityClass class that determines metadata of the table to create/drop.
+	 */
+	void dropTable(Class<?> entityClass);
 
 	/**
 	 * Alter table with the name and fields indicated by the entity class
 	 * 
 	 * @param tableName explicit name of the table.
-	 */   
-    void dropTable(String tableName);
-    
+	 */
+	void dropTable(String tableName);
+
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
 	 * 
 	 * @return
 	 */
-    CassandraConverter getConverter();
+	CassandraConverter getConverter();
 }
