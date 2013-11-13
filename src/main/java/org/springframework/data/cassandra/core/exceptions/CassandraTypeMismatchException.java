@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2010-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
 
-import org.springframework.dao.UncategorizedDataAccessException;
+package org.springframework.data.cassandra.core.exceptions;
+
+import org.springframework.dao.TypeMismatchDataAccessException;
 
 /**
- * Exception thrown when we can't classify a Cassandra exception into one of Spring generic data access exceptions.
- *  
- * @author Alex Shvid
+ * Spring data access exception for a Cassandra type mismatch exception.
+ * 
+ * @author Matthew T. Adams
  */
+public class CassandraTypeMismatchException extends
+		TypeMismatchDataAccessException {
 
-public class CassandraSystemException extends UncategorizedDataAccessException {
+	private static final long serialVersionUID = -7420058975444905629L;
 
-	public CassandraSystemException(String msg, Throwable cause) {
+	public CassandraTypeMismatchException(String msg) {
+		super(msg);
+	}
+
+	public CassandraTypeMismatchException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
-	
 }
