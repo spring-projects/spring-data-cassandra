@@ -86,9 +86,9 @@ public abstract class CQLUtils {
 
 		str.append(",PRIMARY KEY(");
 		
-		if (ids.size() > 1) {
-			str.append('(');
-		}
+//		if (ids.size() > 1) {
+//			str.append('(');
+//		}
 		
 		for (String id: ids) {
 			if (str.charAt(str.length()-1) != '(') {
@@ -97,9 +97,9 @@ public abstract class CQLUtils {
 			str.append(id);
 		}
 		
-		if (ids.size() > 1) {
-			str.append(')');
-		}
+//		if (ids.size() > 1) {
+//			str.append(')');
+//		}
 
 		for (String id: idColumns) {
 			str.append(',');

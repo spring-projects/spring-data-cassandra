@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core;
 import java.util.List;
 
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.vo.RingMember;
+import org.springframework.data.cassandra.dto.RingMember;
 
 import com.datastax.driver.core.ResultSet;
 
