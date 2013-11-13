@@ -34,7 +34,7 @@ import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.util.CQLUtils;
+import org.springframework.data.cassandra.util.CqlUtils;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -214,7 +214,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, Init
 							createNewTable(session, useTableName, entity);
 						} else {
 							// alter table columns
-							for (String cql : CQLUtils.alterTable(useTableName, entity, table)) {
+							for (String cql : CqlUtils.alterTable(useTableName, entity, table)) {
 								log.info("Execute on keyspace " + keyspace + " CQL " + cql);
 								session.execute(cql);
 							}
@@ -226,7 +226,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, Init
 									+ entityClassName);
 						}
 						// validate columns
-						List<String> alter = CQLUtils.alterTable(useTableName, entity, table);
+						List<String> alter = CqlUtils.alterTable(useTableName, entity, table);
 						if (!alter.isEmpty()) {
 							throw new InvalidDataAccessApiUsageException("invalid table " + useTableName + " for entity "
 									+ entityClassName + ". modify it by " + alter);
@@ -248,10 +248,10 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, Init
 
 	private void createNewTable(Session session, String useTableName, CassandraPersistentEntity<?> entity)
 			throws NoHostAvailableException {
-		String cql = CQLUtils.createTable(useTableName, entity);
+		String cql = CqlUtils.createTable(useTableName, entity);
 		log.info("Execute on keyspace " + keyspace + " CQL " + cql);
 		session.execute(cql);
-		for (String indexCQL : CQLUtils.createIndexes(useTableName, entity)) {
+		for (String indexCQL : CqlUtils.createIndexes(useTableName, entity)) {
 			log.info("Execute on keyspace " + keyspace + " CQL " + indexCQL);
 			session.execute(indexCQL);
 		}

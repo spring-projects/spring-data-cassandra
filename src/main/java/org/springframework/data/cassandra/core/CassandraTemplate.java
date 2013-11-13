@@ -34,7 +34,7 @@ import org.springframework.data.cassandra.dto.RingMember;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.util.CQLUtils;
+import org.springframework.data.cassandra.util.CqlUtils;
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
@@ -350,7 +350,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		try {
 
-			final Query q = CQLUtils.toInsertQuery(keyspace.getKeyspace(), tableName, objectToSave, entity);
+			final Query q = CqlUtils.toInsertQuery(keyspace.getKeyspace(), tableName, objectToSave, entity);
 			log.info(q.toString());
 
 			return execute(new SessionCallback<T>() {
@@ -457,7 +457,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		try {
 
-			final Query q = CQLUtils.toDeleteQuery(keyspace.getKeyspace(), tableName, objectToRemove, entity);
+			final Query q = CqlUtils.toDeleteQuery(keyspace.getKeyspace(), tableName, objectToRemove, entity);
 			log.info(q.toString());
 
 			execute(new SessionCallback<ResultSet>() {
@@ -509,7 +509,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 				public Object doInSession(Session s) throws DataAccessException {
 
-					String cql = CQLUtils.createTable(tableName, entity);
+					String cql = CqlUtils.createTable(tableName, entity);
 
 					log.info("CREATE TABLE CQL -> " + cql);
 
@@ -559,7 +559,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		final TableMetadata tableMetadata = getTableMetadata(entityClass, tableName);
 
-		final List<String> queryList = CQLUtils.alterTable(tableName, entity, tableMetadata);
+		final List<String> queryList = CqlUtils.alterTable(tableName, entity, tableMetadata);
 
 		execute(new SessionCallback<Object>() {
 
@@ -582,7 +582,10 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void dropTable(Class<?> entityClass) {
-		// TODO Auto-generated method stub
+
+		final String tableName = getTableName(entityClass);
+
+		dropTable(tableName);
 
 	}
 
@@ -591,7 +594,22 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void dropTable(String tableName) {
-		// TODO Auto-generated method stub
+
+		log.info("Dropping table => " + tableName);
+
+		final String q = CqlUtils.dropTable(tableName);
+		log.info(q);
+
+		execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+
+				return s.execute(q);
+
+			}
+
+		});
 
 	}
 

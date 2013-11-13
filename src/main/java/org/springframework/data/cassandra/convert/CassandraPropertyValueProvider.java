@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.util.CQLUtils;
+import org.springframework.data.cassandra.util.CqlUtils;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
