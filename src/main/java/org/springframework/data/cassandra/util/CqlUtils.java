@@ -16,12 +16,10 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-
 
 /**
  * 
@@ -29,18 +27,18 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  * 
  * @author Alex Shvid
  * @author David Webb (dwebb@brightmove.com)
- *
+ * 
  */
-public abstract class CQLUtils {
-	
-	private static Logger log = LoggerFactory.getLogger(CQLUtils.class);
+public abstract class CqlUtils {
+
+	private static Logger log = LoggerFactory.getLogger(CqlUtils.class);
 
 	/**
 	 * Generates the CQL String to create a table in Cassandra
 	 * 
 	 * @param tableName
 	 * @param entity
-	 * @return	The CQL that can be passed to session.execute()
+	 * @return The CQL that can be passed to session.execute()
 	 */
 	public static String createTable(String tableName, final CassandraPersistentEntity<?> entity) {
 
@@ -51,67 +49,66 @@ public abstract class CQLUtils {
 
 		final List<String> ids = new ArrayList<String>();
 		final List<String> idColumns = new ArrayList<String>();
-		
+
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-				
-				if (str.charAt(str.length()-1) != '(') {
+
+				if (str.charAt(str.length() - 1) != '(') {
 					str.append(',');
 				}
-				
+
 				String columnName = prop.getColumnName();
-				
+
 				str.append(columnName);
 				str.append(' ');
-				
+
 				DataType dataType = prop.getDataType();
-				
+
 				str.append(toCQL(dataType));
-				
+
 				if (prop.isIdProperty()) {
 					ids.add(prop.getColumnName());
 				}
-				
+
 				if (prop.isColumnId()) {
 					idColumns.add(prop.getColumnName());
 				}
-				
+
 			}
 
 		});
-		
+
 		if (ids.isEmpty()) {
 			throw new InvalidDataAccessApiUsageException("not found primary ID in the entity " + entity.getType());
 		}
 
 		str.append(",PRIMARY KEY(");
-		
-//		if (ids.size() > 1) {
-//			str.append('(');
-//		}
-		
-		for (String id: ids) {
-			if (str.charAt(str.length()-1) != '(') {
+
+		// if (ids.size() > 1) {
+		// str.append('(');
+		// }
+
+		for (String id : ids) {
+			if (str.charAt(str.length() - 1) != '(') {
 				str.append(',');
 			}
 			str.append(id);
 		}
-		
-//		if (ids.size() > 1) {
-//			str.append(')');
-//		}
 
-		for (String id: idColumns) {
+		// if (ids.size() > 1) {
+		// str.append(')');
+		// }
+
+		for (String id : idColumns) {
 			str.append(',');
 			str.append(id);
 		}
 
 		str.append("));");
-		
-		
+
 		return str.toString();
 	}
-	
+
 	/**
 	 * Create the List of CQL for the indexes required for Cassandra mapped Table.
 	 * 
@@ -124,23 +121,22 @@ public abstract class CQLUtils {
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-				
+
 				if (prop.isIndexed()) {
-					
+
 					final StringBuilder str = new StringBuilder();
 					str.append("CREATE INDEX ON ");
 					str.append(tableName);
 					str.append(" (");
 					str.append(prop.getColumnName());
-					str.append(");");	
-					
+					str.append(");");
+
 					result.add(str.toString());
 				}
-				
+
 			}
 		});
-		
-		
+
 		return result;
 	}
 
@@ -152,30 +148,30 @@ public abstract class CQLUtils {
 	 * @param table
 	 * @return
 	 */
-	public static List<String> alterTable(final String tableName, final CassandraPersistentEntity<?> entity, final TableMetadata table) {
+	public static List<String> alterTable(final String tableName, final CassandraPersistentEntity<?> entity,
+			final TableMetadata table) {
 		final List<String> result = new ArrayList<String>();
-		
+
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
 				String columnName = prop.getColumnName();
 				DataType columnDataType = prop.getDataType();
 				ColumnMetadata columnMetadata = table.getColumn(columnName.toLowerCase());
-				
+
 				if (columnMetadata != null && columnDataType.equals(columnMetadata.getType())) {
 					return;
 				}
-				
+
 				final StringBuilder str = new StringBuilder();
 				str.append("ALTER TABLE ");
 				str.append(tableName);
 				if (columnMetadata == null) {
 					str.append(" ADD ");
-				}
-				else {
+				} else {
 					str.append(" ALTER ");
 				}
-				
+
 				str.append(columnName);
 				str.append(' ');
 
@@ -187,13 +183,12 @@ public abstract class CQLUtils {
 
 				str.append(';');
 				result.add(str.toString());
-				
+
 			}
 		});
-		
-		
-		//System.out.println("CQL=" + table.asCQLQuery());
-		
+
+		// System.out.println("CQL=" + table.asCQLQuery());
+
 		return result;
 	}
 
@@ -204,40 +199,40 @@ public abstract class CQLUtils {
 	 * @param tableName
 	 * @param entity
 	 * @param objectToSave
-	 * @param mappingContext 
-	 * @param beanClassLoader 
+	 * @param mappingContext
+	 * @param beanClassLoader
 	 * 
 	 * @return The Query object to run with session.execute();
-	 * @throws EntityWriterException 
+	 * @throws EntityWriterException
 	 */
-	public static Query toInsertQuery(String keyspaceName, String tableName, 
-			final Object objectToSave, CassandraPersistentEntity<?> entity) throws EntityWriterException {
-		
+	public static Query toInsertQuery(String keyspaceName, String tableName, final Object objectToSave,
+			CassandraPersistentEntity<?> entity) throws EntityWriterException {
+
 		final Insert q = QueryBuilder.insertInto(keyspaceName, tableName);
 		final Exception innerException = new Exception();
-				
+
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-				
+
 				/*
 				 * See if the object has a value for that column, and if so, add it to the Query
 				 */
 				try {
-					
+
 					Object o = prop.getGetter().invoke(objectToSave, new Object[0]);
-					
+
 					log.info("Getter Invoke [" + prop.getColumnName() + " => " + o);
-					
+
 					if (o != null) {
 						q.value(prop.getColumnName(), o);
 					}
-					
+
 				} catch (IllegalAccessException e) {
 					innerException.initCause(e);
 				} catch (IllegalArgumentException e) {
-					innerException.initCause(e);		
+					innerException.initCause(e);
 				} catch (InvocationTargetException e) {
-					innerException.initCause(e);				
+					innerException.initCause(e);
 				}
 			}
 		});
@@ -245,52 +240,52 @@ public abstract class CQLUtils {
 		if (innerException.getCause() != null) {
 			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
 		}
-		
+
 		return q;
-		
+
 	}
-	
+
 	/**
 	 * @param keyspace
 	 * @param tableName
 	 * @param objectToRemove
 	 * @param entity
 	 * @return
-	 * @throws EntityWriterException 
+	 * @throws EntityWriterException
 	 */
-	public static Query toDeleteQuery(String keyspace, String tableName,
-			final Object objectToRemove, CassandraPersistentEntity<?> entity) throws EntityWriterException {
+	public static Query toDeleteQuery(String keyspace, String tableName, final Object objectToRemove,
+			CassandraPersistentEntity<?> entity) throws EntityWriterException {
 
 		final Delete.Selection ds = QueryBuilder.delete();
 		final Delete q = ds.from(keyspace, tableName);
 		final Where w = q.where();
-		
+
 		final Exception innerException = new Exception();
-				
+
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-				
+
 				/*
 				 * See if the object has a value for that column, and if so, add it to the Query
 				 */
 				try {
-					
+
 					if (prop.isIdProperty()) {
-						Object o = (String)prop.getGetter().invoke(objectToRemove, new Object[0]);
-						
+						Object o = (String) prop.getGetter().invoke(objectToRemove, new Object[0]);
+
 						log.info("Getter Invoke [" + prop.getColumnName() + " => " + o);
-						
+
 						if (o != null) {
 							w.and(QueryBuilder.eq(prop.getColumnName(), o));
 						}
 					}
-					
+
 				} catch (IllegalAccessException e) {
 					innerException.initCause(e);
 				} catch (IllegalArgumentException e) {
-					innerException.initCause(e);		
+					innerException.initCause(e);
 				} catch (InvocationTargetException e) {
-					innerException.initCause(e);				
+					innerException.initCause(e);
 				}
 			}
 		});
@@ -298,12 +293,11 @@ public abstract class CQLUtils {
 		if (innerException.getCause() != null) {
 			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
 		}
-		
+
 		return q;
 
 	}
 
-	
 	/**
 	 * Generate the CQL for insert
 	 * 
@@ -312,7 +306,7 @@ public abstract class CQLUtils {
 	 * @return
 	 */
 	public static String toInsertCQL(String tableName, final CassandraPersistentEntity<?> entity) {
-		
+
 		final StringBuilder str = new StringBuilder();
 		str.append("INSERT INTO ");
 		str.append(tableName);
@@ -322,44 +316,42 @@ public abstract class CQLUtils {
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-				
-				if (str.charAt(str.length()-1) != '(') {
+
+				if (str.charAt(str.length() - 1) != '(') {
 					str.append(", ");
 				}
-				
+
 				String columnName = prop.getColumnName();
 				cols.add(columnName);
-				
+
 				str.append(columnName);
-				
+
 			}
 		});
 
 		str.append(") VALUES (");
-		
+
 		for (int i = 0; i < cols.size(); i++) {
 			if (i > 0) {
 				str.append(", ");
 			}
 			str.append("?");
 		}
-		
+
 		str.append(")");
 
 		return str.toString();
 	}
 
-	
 	public static String toCQL(DataType dataType) {
 		if (dataType.getTypeArguments().isEmpty()) {
 			return dataType.getName().name();
-		}
-		else {
+		} else {
 			StringBuilder str = new StringBuilder();
 			str.append(dataType.getName().name());
 			str.append('<');
 			for (DataType argDataType : dataType.getTypeArguments()) {
-				if (str.charAt(str.length()-1) != '<') {
+				if (str.charAt(str.length() - 1) != '<') {
 					str.append(',');
 				}
 				str.append(argDataType.getName().name());
@@ -367,6 +359,21 @@ public abstract class CQLUtils {
 			str.append('>');
 			return str.toString();
 		}
+	}
+
+	/**
+	 * @param tableName
+	 * @return
+	 */
+	public static String dropTable(String tableName) {
+
+		if (tableName == null) {
+			return null;
+		}
+
+		StringBuilder str = new StringBuilder();
+		str.append("DROP TABLE " + tableName + ";");
+		return str.toString();
 	}
 
 }
