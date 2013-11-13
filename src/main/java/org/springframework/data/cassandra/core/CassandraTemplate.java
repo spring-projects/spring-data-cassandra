@@ -30,7 +30,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.dto.RingMember;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -56,7 +55,6 @@ import com.datastax.driver.core.exceptions.NoHostAvailableException;
 public class CassandraTemplate implements CassandraOperations {
 
 	private static Logger log = LoggerFactory.getLogger(CassandraTemplate.class);
-
 	private static final Collection<String> ITERABLE_CLASSES;
 	static {
 
@@ -198,7 +196,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#executeQueryAsync(java.lang.String)
 	 */
 	@Override
-	public ResultSetFuture executeQueryAsync(final String query) {
+	public ResultSetFuture executeQueryAsynchronously(final String query) {
 
 		return execute(new SessionCallback<ResultSetFuture>() {
 
@@ -316,7 +314,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @param entityClass
 	 * @return
 	 */
-	String determineTableName(Class<?> entityClass) {
+	public String determineTableName(Class<?> entityClass) {
 
 		if (entityClass == null) {
 			throw new InvalidDataAccessApiUsageException(
@@ -371,25 +369,6 @@ public class CassandraTemplate implements CassandraOperations {
 
 	}
 
-	/**
-	 * Execute a command at the Session Level
-	 * 
-	 * @param callback
-	 * @return
-	 */
-	protected <T> T execute(SessionCallback<T> callback) {
-
-		Assert.notNull(callback);
-
-		try {
-
-			return callback.doInSession(session);
-
-		} catch (DataAccessException e) {
-			throw potentiallyConvertRuntimeException(e);
-		}
-	}
-
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object)
 	 */
@@ -423,9 +402,9 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#remove(java.lang.Object)
 	 */
 	@Override
-	public void remove(Object object) {
+	public void delete(Object object) {
 
-		remove(object, determineTableName(object.getClass()));
+		delete(object, determineTableName(object.getClass()));
 
 	}
 
@@ -433,7 +412,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#remove(java.lang.Object, java.lang.String)
 	 */
 	@Override
-	public void remove(Object object, String tableName) {
+	public void delete(Object object, String tableName) {
 
 		CassandraPersistentEntity<?> entityClass = getEntity(object);
 
@@ -475,172 +454,31 @@ public class CassandraTemplate implements CassandraOperations {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#createTable(java.lang.Class)
-	 */
-	@Override
-	public void createTable(Class<?> entityClass) {
-
-		try {
-
-			final CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
-			final String useTableName = entity.getTable();
-
-			createTable(entityClass, useTableName);
-
-		} catch (LinkageError e) {
-			e.printStackTrace();
-		} finally {
-		}
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#createTable(java.lang.Class, java.lang.String)
-	 */
-	@Override
-	public void createTable(Class<?> entityClass, final String tableName) {
-
-		try {
-
-			final CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
-
-			execute(new SessionCallback<Object>() {
-
-				public Object doInSession(Session s) throws DataAccessException {
-
-					String cql = CqlUtils.createTable(tableName, entity);
-
-					log.info("CREATE TABLE CQL -> " + cql);
-
-					s.execute(cql);
-
-					return null;
-
-				}
-			});
-
-		} catch (LinkageError e) {
-			e.printStackTrace();
-		} finally {
-		}
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#alterTable(java.lang.Class)
-	 */
-	@Override
-	public void alterTable(Class<?> entityClass) {
-		alterTable(entityClass, getTableName(entityClass));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#alterTable(java.lang.Class, java.lang.String)
-	 */
-	@Override
-	public void alterTable(Class<?> entityClass, String tableName) {
-
-		doAlterTable(entityClass, tableName);
-
-	}
-
 	/**
-	 * Create a list of query operations to alter the table for the given entity
+	 * Execute a command at the Session Level
 	 * 
-	 * @param entityClass
-	 * @param tableName
+	 * @param callback
+	 * @return
 	 */
-	protected void doAlterTable(Class<?> entityClass, String tableName) {
+	protected <T> T execute(SessionCallback<T> callback) {
 
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+		Assert.notNull(callback);
 
-		Assert.notNull(entity);
+		try {
 
-		final TableMetadata tableMetadata = getTableMetadata(entityClass, tableName);
+			return callback.doInSession(session);
 
-		final List<String> queryList = CqlUtils.alterTable(tableName, entity, tableMetadata);
-
-		execute(new SessionCallback<Object>() {
-
-			public Object doInSession(Session s) throws DataAccessException {
-
-				for (String q : queryList) {
-					log.info(q);
-					s.execute(q);
-				}
-
-				return null;
-
-			}
-		});
-
+		} catch (DataAccessException e) {
+			throw potentiallyConvertRuntimeException(e);
+		}
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#dropTable(java.lang.Class)
-	 */
-	@Override
-	public void dropTable(Class<?> entityClass) {
-
-		final String tableName = getTableName(entityClass);
-
-		dropTable(tableName);
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#dropTable(java.lang.String)
-	 */
-	@Override
-	public void dropTable(String tableName) {
-
-		log.info("Dropping table => " + tableName);
-
-		final String q = CqlUtils.dropTable(tableName);
-		log.info(q);
-
-		execute(new SessionCallback<ResultSet>() {
-
-			@Override
-			public ResultSet doInSession(Session s) throws DataAccessException {
-
-				return s.execute(q);
-
-			}
-
-		});
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableMetadata(java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableMetadata(java.lang.Class, java.lang.String)
 	 */
 	@Override
 	public TableMetadata getTableMetadata(Class<?> entityClass, String tableName) {
-
-		/*
-		 * Determine the table name if not provided
-		 */
-		if (tableName == null) {
-			tableName = getTableName(entityClass);
-		}
-
-		Assert.notNull(tableName);
-
-		final String metadataTableName = tableName;
-
-		return execute(new SessionCallback<TableMetadata>() {
-
-			public TableMetadata doInSession(Session s) throws DataAccessException {
-
-				log.info("Keyspace => " + keyspace.getKeyspace());
-
-				return s.getCluster().getMetadata().getKeyspace(keyspace.getKeyspace()).getTable(metadataTableName);
-
-			}
-
-		});
-
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

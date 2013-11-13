@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.config.TestConfig;
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.dto.RingMember;
+import org.springframework.data.cassandra.core.RingMember;
 import org.springframework.data.cassandra.test.LogEntry;
 import org.springframework.data.cassandra.test.User;
 import org.springframework.test.context.ContextConfiguration;
@@ -80,9 +80,9 @@ public class CassandraOperationsTest {
 
 		log.info("Creating Table...");
 
-		cassandraTemplate.createTable(User.class);
+		// cassandraTemplate.createTable(User.class);
 
-		cassandraTemplate.createTable(LogEntry.class);
+		// cassandraTemplate.createTable(LogEntry.class);
 
 	}
 
@@ -136,7 +136,7 @@ public class CassandraOperationsTest {
 			log.debug(x.getLastName());
 		}
 
-		cassandraTemplate.remove(u);
+		cassandraTemplate.delete(u);
 
 		User delUser = cassandraTemplate.selectOne("select * from test.users where username='cassandra';", User.class);
 

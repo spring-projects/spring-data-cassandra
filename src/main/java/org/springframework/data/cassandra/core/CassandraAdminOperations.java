@@ -10,11 +10,22 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Map;
 
+import com.datastax.driver.core.TableMetadata;
+
 /**
  * @author David Webb (dwebb@brightmove.com)
  * 
  */
 public interface CassandraAdminOperations {
+
+	/**
+	 * Get the Table Meta Data from Cassandra
+	 * 
+	 * @param entityClass
+	 * @param tableName
+	 * @return
+	 */
+	TableMetadata getTableMetadata(Class<?> entityClass, String tableName);
 
 	/**
 	 * Create a table with the name and fields indicated by the entity class
