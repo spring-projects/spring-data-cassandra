@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.dto;
+package org.springframework.data.cassandra.core;
 
 import java.io.Serializable;
 

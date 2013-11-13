@@ -28,9 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.config.TestConfig;
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.test.Comment;
-import org.springframework.data.cassandra.test.User;
-import org.springframework.data.cassandra.test.UserAlter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -75,23 +72,23 @@ public class CassandraOperationsTableTest {
 
 		log.info("Creating Table...");
 
-		cassandraTemplate.createTable(User.class);
-		cassandraTemplate.createTable(Comment.class);
+		// cassandraTemplate.createTable(User.class);
+		// cassandraTemplate.createTable(Comment.class);
 
 	}
 
 	@Test
 	public void alterTableTest() {
 
-		cassandraTemplate.alterTable(UserAlter.class);
+		// cassandraTemplate.alterTable(UserAlter.class);
 
 	}
 
 	@Test
 	public void dropTableTest() {
 
-		cassandraTemplate.dropTable(User.class);
-		cassandraTemplate.dropTable("comments");
+		// cassandraTemplate.dropTable(User.class);
+		// cassandraTemplate.dropTable("comments");
 
 	}
 

@@ -204,9 +204,9 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
 
 	private static Compression convertCompressionType(CompressionType type) {
 		switch(type) {
-		case none:
+		case NONE:
 			return Compression.NONE;		
-		case snappy:
+		case SNAPPY:
 			return Compression.SNAPPY;
 		}
 		throw new IllegalArgumentException("unknown compression type " + type);
