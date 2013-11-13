@@ -16,6 +16,7 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -246,6 +247,39 @@ public abstract class CqlUtils {
 	}
 
 	/**
+	 * Generates a Batch Object for multiple inserts
+	 * 
+	 * @param keyspaceName
+	 * @param tableName
+	 * @param entity
+	 * @param objectsToSave
+	 * @param mappingContext
+	 * @param beanClassLoader
+	 * 
+	 * @return The Query object to run with session.execute();
+	 * @throws EntityWriterException
+	 */
+	public static <T> Batch toInsertBatchQuery(final String keyspaceName, final String tableName,
+			final List<T> objectsToSave, CassandraPersistentEntity<?> entity) throws EntityWriterException {
+
+		/*
+		 * Return variable is a Batch statement
+		 */
+		final Batch b = QueryBuilder.batch();
+
+		List<Query> queries = new ArrayList<Query>();
+
+		for (final T objectToSave : objectsToSave) {
+
+			queries.add(toInsertQuery(keyspaceName, tableName, objectToSave, entity));
+
+		}
+
+		return b;
+
+	}
+
+	/**
 	 * @param keyspace
 	 * @param tableName
 	 * @param objectToRemove
@@ -343,6 +377,10 @@ public abstract class CqlUtils {
 		return str.toString();
 	}
 
+	/**
+	 * @param dataType
+	 * @return
+	 */
 	public static String toCQL(DataType dataType) {
 		if (dataType.getTypeArguments().isEmpty()) {
 			return dataType.getName().name();
@@ -374,6 +412,34 @@ public abstract class CqlUtils {
 		StringBuilder str = new StringBuilder();
 		str.append("DROP TABLE " + tableName + ";");
 		return str.toString();
+	}
+
+	/**
+	 * @param keyspace
+	 * @param tableName
+	 * @param entities
+	 * @param cPEntity
+	 * @return
+	 * @throws EntityWriterException
+	 */
+	public static <T> Batch toDeleteBatchQuery(String keyspaceName, String tableName, List<T> entities,
+			CassandraPersistentEntity<?> entity) throws EntityWriterException {
+
+		/*
+		 * Return variable is a Batch statement
+		 */
+		final Batch b = QueryBuilder.batch();
+
+		List<Query> queries = new ArrayList<Query>();
+
+		for (final T objectToSave : entities) {
+
+			queries.add(toDeleteQuery(keyspaceName, tableName, objectToSave, entity));
+
+		}
+
+		return b;
+
 	}
 
 }

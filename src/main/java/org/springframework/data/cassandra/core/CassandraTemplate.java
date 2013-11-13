@@ -47,6 +47,7 @@ import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.datastax.driver.core.querybuilder.Batch;
 
 /**
  * The Cassandra Template is a convenience API for all Cassnadta DML Operations.
@@ -346,7 +347,47 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @param tableName
 	 * @param entity
 	 */
-	protected <T> T doInsert(final String tableName, final T entity) {
+	protected <T> List<T> doBatchInsert(final String tableName, final List<T> entities, final boolean insertAsychronously) {
+
+		Assert.notEmpty(entities);
+
+		CassandraPersistentEntity<?> CPEntity = getEntity(entities.get(0));
+
+		Assert.notNull(CPEntity);
+
+		try {
+
+			final Batch b = CqlUtils.toInsertBatchQuery(keyspace.getKeyspace(), tableName, entities, CPEntity);
+			log.info(b.toString());
+
+			return execute(new SessionCallback<List<T>>() {
+
+				public List<T> doInSession(Session s) throws DataAccessException {
+
+					if (insertAsychronously) {
+						s.executeAsync(b);
+					} else {
+						s.execute(b);
+					}
+
+					return entities;
+
+				}
+			});
+
+		} catch (EntityWriterException e) {
+			throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException(
+					"Failed to translate Object to Query", e));
+		}
+	}
+
+	/**
+	 * Insert a row into a Cassandra CQL Table
+	 * 
+	 * @param tableName
+	 * @param entity
+	 */
+	protected <T> T doInsert(final String tableName, final T entity, final boolean insertAsychronously) {
 
 		CassandraPersistentEntity<?> CPEntity = getEntity(entity);
 
@@ -361,7 +402,11 @@ public class CassandraTemplate implements CassandraOperations {
 
 				public T doInSession(Session s) throws DataAccessException {
 
-					s.execute(q);
+					if (insertAsychronously) {
+						s.executeAsync(q);
+					} else {
+						s.execute(q);
+					}
 
 					return entity;
 
@@ -394,7 +439,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @param objectToRemove
 	 * @param tableName
 	 */
-	protected <T> void doRemove(final Object objectToRemove, final String tableName) {
+	protected void doDelete(final Object objectToRemove, final String tableName, final boolean deleteAsynchronously) {
 
 		CassandraPersistentEntity<?> entity = getEntity(objectToRemove);
 
@@ -405,11 +450,57 @@ public class CassandraTemplate implements CassandraOperations {
 			final Query q = CqlUtils.toDeleteQuery(keyspace.getKeyspace(), tableName, objectToRemove, entity);
 			log.info(q.toString());
 
-			execute(new SessionCallback<ResultSet>() {
+			execute(new SessionCallback<Object>() {
 
-				public ResultSet doInSession(Session s) throws DataAccessException {
+				public Object doInSession(Session s) throws DataAccessException {
 
-					return s.execute(q);
+					if (deleteAsynchronously) {
+						s.executeAsync(q);
+					} else {
+						s.execute(q);
+					}
+
+					return null;
+
+				}
+			});
+
+		} catch (EntityWriterException e) {
+			throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException(
+					"Failed to translate Object to Query", e));
+		}
+	}
+
+	/**
+	 * Perform the deletion on a list of objects
+	 * 
+	 * @param objectToRemove
+	 * @param tableName
+	 */
+	protected <T> void doBatchDelete(final String tableName, final List<T> entities, final boolean deleteAsynchronously) {
+
+		Assert.notEmpty(entities);
+
+		CassandraPersistentEntity<?> CPEntity = getEntity(entities.get(0));
+
+		Assert.notNull(CPEntity);
+
+		try {
+
+			final Batch b = CqlUtils.toDeleteBatchQuery(keyspace.getKeyspace(), tableName, entities, CPEntity);
+			log.info(b.toString());
+
+			execute(new SessionCallback<Object>() {
+
+				public Object doInSession(Session s) throws DataAccessException {
+
+					if (deleteAsynchronously) {
+						s.executeAsync(b);
+					} else {
+						s.execute(b);
+					}
+
+					return null;
 
 				}
 			});
@@ -445,7 +536,12 @@ public class CassandraTemplate implements CassandraOperations {
 	@Override
 	public <T> T insert(T entity) {
 		ensureNotIterable(entity);
-		return insert(entity, determineTableName(entity));
+
+		String tableName = determineTableName(entity);
+
+		Assert.notNull(tableName);
+
+		return insert(entity, tableName);
 	}
 
 	/* (non-Javadoc)
@@ -453,8 +549,15 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> List<T> insert(List<T> entities) {
-		// TODO Auto-generated method stub
-		return null;
+
+		Assert.notNull(entities);
+		Assert.notEmpty(entities);
+
+		String tableName = getTableName(entities.get(0).getClass());
+
+		Assert.notNull(tableName);
+
+		return insert(entities, tableName);
 	}
 
 	/* (non-Javadoc)
@@ -463,7 +566,7 @@ public class CassandraTemplate implements CassandraOperations {
 	@Override
 	public <T> T insert(T entity, String tableName) {
 		ensureNotIterable(entity);
-		return doInsert(tableName, entity);
+		return doInsert(tableName, entity, false);
 	}
 
 	/* (non-Javadoc)
@@ -471,8 +574,13 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> List<T> insert(List<T> entities, String tableName) {
-		// TODO Auto-generated method stub
-		return null;
+
+		Assert.notNull(entities);
+		Assert.notEmpty(entities);
+		Assert.notNull(tableName);
+
+		return doBatchInsert(tableName, entities, false);
+
 	}
 
 	/* (non-Javadoc)
@@ -480,8 +588,14 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> T insertAsynchronously(T entity) {
-		// TODO Auto-generated method stub
-		return null;
+
+		ensureNotIterable(entity);
+
+		String tableName = determineTableName(entity);
+
+		Assert.notNull(tableName);
+
+		return insertAsynchronously(entity, tableName);
 	}
 
 	/* (non-Javadoc)
@@ -489,8 +603,15 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities) {
-		// TODO Auto-generated method stub
-		return null;
+
+		Assert.notNull(entities);
+		Assert.notEmpty(entities);
+
+		String tableName = getTableName(entities.get(0).getClass());
+
+		Assert.notNull(tableName);
+
+		return insertAsynchronously(entities, tableName);
 	}
 
 	/* (non-Javadoc)
@@ -498,8 +619,10 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> T insertAsynchronously(T entity, String tableName) {
-		// TODO Auto-generated method stub
-		return null;
+
+		ensureNotIterable(entity);
+
+		return doInsert(tableName, entity, true);
 	}
 
 	/* (non-Javadoc)
@@ -507,8 +630,13 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities, String tableName) {
-		// TODO Auto-generated method stub
-		return null;
+
+		Assert.notNull(entities);
+		Assert.notEmpty(entities);
+		Assert.notNull(tableName);
+
+		return doBatchInsert(tableName, entities, true);
+
 	}
 
 	/* (non-Javadoc)
@@ -524,7 +652,15 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> void delete(List<T> entities) {
-		// TODO Auto-generated method stub
+
+		Assert.notNull(entities);
+		Assert.notEmpty(entities);
+
+		String tableName = getTableName(entities.get(0).getClass());
+
+		Assert.notNull(tableName);
+
+		delete(entities, tableName);
 
 	}
 
@@ -538,7 +674,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entityClass);
 
-		doRemove(entity, tableName);
+		doDelete(entity, tableName, false);
 
 	}
 
@@ -547,8 +683,12 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> void delete(List<T> entities, String tableName) {
-		// TODO Auto-generated method stub
 
+		Assert.notNull(entities);
+		Assert.notEmpty(entities);
+		Assert.notNull(tableName);
+
+		doBatchDelete(tableName, entities, false);
 	}
 
 	/* (non-Javadoc)
