@@ -22,6 +22,7 @@ import org.springframework.data.cassandra.dto.RingMember;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
+import com.datastax.driver.core.TableMetadata;
 
 /**
  * @author Alex Shvid
@@ -42,6 +43,14 @@ public interface CassandraOperations {
 	 * @return
 	 */
 	String getTableName(Class<?> entityClass);
+
+	/**
+	 * Get the metatdata for the given entityClass table mapping
+	 * 
+	 * @param entityClass
+	 * @return The table metadata
+	 */
+	TableMetadata getTableMetadata(Class<?> entityClass, final String tableName);
 
 	/**
 	 * Execute query and return Cassandra ResultSet

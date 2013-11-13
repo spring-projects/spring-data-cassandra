@@ -47,6 +47,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 
 /**
@@ -531,8 +532,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void alterTable(Class<?> entityClass) {
-		// TODO Auto-generated method stub
-
+		alterTable(entityClass, getTableName(entityClass));
 	}
 
 	/* (non-Javadoc)
@@ -540,7 +540,40 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void alterTable(Class<?> entityClass, String tableName) {
-		// TODO Auto-generated method stub
+
+		doAlterTable(entityClass, tableName);
+
+	}
+
+	/**
+	 * Create a list of query operations to alter the table for the given entity
+	 * 
+	 * @param entityClass
+	 * @param tableName
+	 */
+	protected void doAlterTable(Class<?> entityClass, String tableName) {
+
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+
+		Assert.notNull(entity);
+
+		final TableMetadata tableMetadata = getTableMetadata(entityClass, tableName);
+
+		final List<String> queryList = CQLUtils.alterTable(tableName, entity, tableMetadata);
+
+		execute(new SessionCallback<Object>() {
+
+			public Object doInSession(Session s) throws DataAccessException {
+
+				for (String q : queryList) {
+					log.info(q);
+					s.execute(q);
+				}
+
+				return null;
+
+			}
+		});
 
 	}
 
@@ -562,4 +595,34 @@ public class CassandraTemplate implements CassandraOperations {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableMetadata(java.lang.Class)
+	 */
+	@Override
+	public TableMetadata getTableMetadata(Class<?> entityClass, String tableName) {
+
+		/*
+		 * Determine the table name if not provided
+		 */
+		if (tableName == null) {
+			tableName = getTableName(entityClass);
+		}
+
+		Assert.notNull(tableName);
+
+		final String metadataTableName = tableName;
+
+		return execute(new SessionCallback<TableMetadata>() {
+
+			public TableMetadata doInSession(Session s) throws DataAccessException {
+
+				log.info("Keyspace => " + keyspace.getKeyspace());
+
+				return s.getCluster().getMetadata().getKeyspace(keyspace.getKeyspace()).getTable(metadataTableName);
+
+			}
+
+		});
+
+	}
 }
