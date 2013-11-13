@@ -47,45 +47,43 @@ import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 
 /**
- * Convenient factory for configuring a Cassandra Session.
- * Session is a thread safe singleton and created per a keyspace.
- * So, it is enough to have one session per application.
+ * Convenient factory for configuring a Cassandra Session. Session is a thread safe singleton and created per a
+ * keyspace. So, it is enough to have one session per application.
  * 
  * @author Alex Shvid
  */
 
-public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>,
-InitializingBean, DisposableBean, BeanClassLoaderAware, PersistenceExceptionTranslator  {
+public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, InitializingBean, DisposableBean,
+		BeanClassLoaderAware, PersistenceExceptionTranslator {
 
 	private static final Logger log = LoggerFactory.getLogger(CassandraKeyspaceFactoryBean.class);
-    
+
 	public static final String DEFAULT_REPLICATION_STRATEGY = "SimpleStrategy";
 	public static final int DEFAULT_REPLICATION_FACTOR = 1;
-	
+
 	private ClassLoader beanClassLoader;
-	
+
 	private Cluster cluster;
 	private Session session;
 	private String keyspace;
-	
+
 	private CassandraConverter converter;
 	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
-	
+
 	private Keyspace keyspaceBean;
-	
+
 	private KeyspaceAttributes keyspaceAttributes;
-	
+
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
-	
-    public void setBeanClassLoader(ClassLoader classLoader) {
-    	this.beanClassLoader = classLoader;
+
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
 	}
 
-    
-	public Keyspace getObject() throws Exception {
+	public Keyspace getObject() {
 		return keyspaceBean;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
@@ -101,7 +99,7 @@ InitializingBean, DisposableBean, BeanClassLoaderAware, PersistenceExceptionTran
 	public boolean isSingleton() {
 		return true;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
@@ -109,149 +107,146 @@ InitializingBean, DisposableBean, BeanClassLoaderAware, PersistenceExceptionTran
 	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 		return exceptionTranslator.translateExceptionIfPossible(ex);
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	public void afterPropertiesSet() throws Exception {
-		
+
 		if (this.converter == null) {
 			this.converter = getDefaultCassandraConverter();
 		}
 		this.mappingContext = this.converter.getMappingContext();
 
-		
 		if (cluster == null) {
-			throw new IllegalArgumentException(
-					"at least one cluster is required");
+			throw new IllegalArgumentException("at least one cluster is required");
 		}
 
 		Session session = null;
 		session = cluster.connect();
-		
+
 		if (StringUtils.hasText(keyspace)) {
-			
+
 			KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace.toLowerCase());
 			boolean keyspaceExists = keyspaceMetadata != null;
 			boolean keyspaceCreated = false;
-			
+
 			if (keyspaceExists) {
 				log.info("keyspace exists " + keyspaceMetadata.asCQLQuery());
 			}
-			
+
 			if (keyspaceAttributes == null) {
 				keyspaceAttributes = new KeyspaceAttributes();
 			}
-				
+
 			// drop the old keyspace if needed
 			if (keyspaceExists && (keyspaceAttributes.isCreate() || keyspaceAttributes.isCreateDrop())) {
 				log.info("Drop keyspace " + keyspace + " on afterPropertiesSet");
 				session.execute("DROP KEYSPACE " + keyspace);
 				keyspaceExists = false;
-			}	
-			
-			// create the new keyspace if needed
-			if (!keyspaceExists && (keyspaceAttributes.isCreate() || keyspaceAttributes.isCreateDrop() || keyspaceAttributes.isUpdate())) {
+			}
 
-				String query = String.format("CREATE KEYSPACE %1$s WITH replication = { 'class' : '%2$s', 'replication_factor' : %3$d } AND DURABLE_WRITES = %4$b", 
-						keyspace, 
-						keyspaceAttributes.getReplicationStrategy(), 
-						keyspaceAttributes.getReplicationFactor(), 
-						keyspaceAttributes.isDurableWrites());
-				
+			// create the new keyspace if needed
+			if (!keyspaceExists
+					&& (keyspaceAttributes.isCreate() || keyspaceAttributes.isCreateDrop() || keyspaceAttributes.isUpdate())) {
+
+				String query = String
+						.format(
+								"CREATE KEYSPACE %1$s WITH replication = { 'class' : '%2$s', 'replication_factor' : %3$d } AND DURABLE_WRITES = %4$b",
+								keyspace, keyspaceAttributes.getReplicationStrategy(), keyspaceAttributes.getReplicationFactor(),
+								keyspaceAttributes.isDurableWrites());
+
 				log.info("Create keyspace " + keyspace + " on afterPropertiesSet " + query);
-				
+
 				session.execute(query);
 				keyspaceCreated = true;
 			}
-			
+
 			// update keyspace if needed
 			if (keyspaceAttributes.isUpdate() && !keyspaceCreated) {
-				
+
 				if (compareKeyspaceAttributes(keyspaceAttributes, keyspaceMetadata) != null) {
-				
-					String query = String.format("ALTER KEYSPACE %1$s WITH replication = { 'class' : '%2$s', 'replication_factor' : %3$d } AND DURABLE_WRITES = %4$b", 
-							keyspace, 
-							keyspaceAttributes.getReplicationStrategy(), 
-							keyspaceAttributes.getReplicationFactor(), 
-							keyspaceAttributes.isDurableWrites());
-					
+
+					String query = String
+							.format(
+									"ALTER KEYSPACE %1$s WITH replication = { 'class' : '%2$s', 'replication_factor' : %3$d } AND DURABLE_WRITES = %4$b",
+									keyspace, keyspaceAttributes.getReplicationStrategy(), keyspaceAttributes.getReplicationFactor(),
+									keyspaceAttributes.isDurableWrites());
+
 					log.info("Update keyspace " + keyspace + " on afterPropertiesSet " + query);
 					session.execute(query);
 				}
-				
+
 			}
-			
+
 			// validate keyspace if needed
 			if (keyspaceAttributes.isValidate()) {
-				
+
 				if (!keyspaceExists) {
 					throw new InvalidDataAccessApiUsageException("keyspace '" + keyspace + "' not found in the Cassandra");
 				}
-				
+
 				String errorField = compareKeyspaceAttributes(keyspaceAttributes, keyspaceMetadata);
 				if (errorField != null) {
-					throw new InvalidDataAccessApiUsageException(errorField + " attribute is not much in the keyspace '" + keyspace + "'");
+					throw new InvalidDataAccessApiUsageException(errorField + " attribute is not much in the keyspace '"
+							+ keyspace + "'");
 				}
-			
+
 			}
-			
+
 			session.execute("USE " + keyspace);
-			
+
 			if (!CollectionUtils.isEmpty(keyspaceAttributes.getTables())) {
-				
+
 				for (TableAttributes tableAttributes : keyspaceAttributes.getTables()) {
-					
+
 					String entityClassName = tableAttributes.getEntity();
 					Class<?> entityClass = ClassUtils.forName(entityClassName, this.beanClassLoader);
 					CassandraPersistentEntity<?> entity = determineEntity(entityClass);
 					String useTableName = tableAttributes.getName() != null ? tableAttributes.getName() : entity.getTable();
-					
+
 					if (keyspaceCreated) {
 						createNewTable(session, useTableName, entity);
-					}
-					else if (keyspaceAttributes.isUpdate()) {
+					} else if (keyspaceAttributes.isUpdate()) {
 						TableMetadata table = keyspaceMetadata.getTable(useTableName.toLowerCase());
 						if (table == null) {
 							createNewTable(session, useTableName, entity);
-						}
-						else {
+						} else {
 							// alter table columns
 							for (String cql : CQLUtils.alterTable(useTableName, entity, table)) {
 								log.info("Execute on keyspace " + keyspace + " CQL " + cql);
 								session.execute(cql);
 							}
 						}
-					}
-					else if (keyspaceAttributes.isValidate()) {
+					} else if (keyspaceAttributes.isValidate()) {
 						TableMetadata table = keyspaceMetadata.getTable(useTableName.toLowerCase());
 						if (table == null) {
-							throw new InvalidDataAccessApiUsageException("not found table " + useTableName + " for entity " + entityClassName);
+							throw new InvalidDataAccessApiUsageException("not found table " + useTableName + " for entity "
+									+ entityClassName);
 						}
 						// validate columns
 						List<String> alter = CQLUtils.alterTable(useTableName, entity, table);
 						if (!alter.isEmpty()) {
-							throw new InvalidDataAccessApiUsageException("invalid table " + useTableName + " for entity " + entityClassName + ". modify it by " + alter);
+							throw new InvalidDataAccessApiUsageException("invalid table " + useTableName + " for entity "
+									+ entityClassName + ". modify it by " + alter);
 						}
 					}
-					
-					//System.out.println("tableAttributes, entityClass=" + entityClass + ", table = " + entity.getTable());
-					
+
+					// System.out.println("tableAttributes, entityClass=" + entityClass + ", table = " + entity.getTable());
+
 				}
 			}
-			
-	    }
-			
+
+		}
+
 		// initialize property
 		this.session = session;
-		
+
 		this.keyspaceBean = new Keyspace(keyspace, session, converter);
 	}
 
-
-	private void createNewTable(Session session, String useTableName,
-			CassandraPersistentEntity<?> entity)
+	private void createNewTable(Session session, String useTableName, CassandraPersistentEntity<?> entity)
 			throws NoHostAvailableException {
 		String cql = CQLUtils.createTable(useTableName, entity);
 		log.info("Execute on keyspace " + keyspace + " CQL " + cql);
@@ -261,13 +256,13 @@ InitializingBean, DisposableBean, BeanClassLoaderAware, PersistenceExceptionTran
 			session.execute(indexCQL);
 		}
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
 	 */
 	public void destroy() throws Exception {
-		
+
 		if (StringUtils.hasText(keyspace) && keyspaceAttributes != null && keyspaceAttributes.isCreateDrop()) {
 			log.info("Drop keyspace " + keyspace + " on destroy");
 			session.execute("USE system");
@@ -287,12 +282,13 @@ InitializingBean, DisposableBean, BeanClassLoaderAware, PersistenceExceptionTran
 	public void setKeyspaceAttributes(KeyspaceAttributes keyspaceAttributes) {
 		this.keyspaceAttributes = keyspaceAttributes;
 	}
-	
+
 	public void setConverter(CassandraConverter converter) {
 		this.converter = converter;
 	}
 
-	private static String compareKeyspaceAttributes(KeyspaceAttributes keyspaceAttributes, KeyspaceMetadata keyspaceMetadata) {
+	private static String compareKeyspaceAttributes(KeyspaceAttributes keyspaceAttributes,
+			KeyspaceMetadata keyspaceMetadata) {
 		if (keyspaceAttributes.isDurableWrites() != keyspaceMetadata.isDurableWrites()) {
 			return "durableWrites";
 		}
@@ -306,11 +302,10 @@ InitializingBean, DisposableBean, BeanClassLoaderAware, PersistenceExceptionTran
 			if (keyspaceAttributes.getReplicationFactor() != replicationFactor) {
 				return "replication_factor";
 			}
-		}
-		catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			return "replication_factor";
 		}
-		
+
 		String attributesStrategy = keyspaceAttributes.getReplicationStrategy();
 		if (attributesStrategy.indexOf('.') == -1) {
 			attributesStrategy = "org.apache.cassandra.locator." + attributesStrategy;
@@ -321,7 +316,7 @@ InitializingBean, DisposableBean, BeanClassLoaderAware, PersistenceExceptionTran
 		}
 		return null;
 	}
-	
+
 	CassandraPersistentEntity<?> determineEntity(Class<?> entityClass) {
 
 		if (entityClass == null) {
@@ -336,7 +331,7 @@ InitializingBean, DisposableBean, BeanClassLoaderAware, PersistenceExceptionTran
 		}
 		return entity;
 	}
-	
+
 	private static final CassandraConverter getDefaultCassandraConverter() {
 		MappingCassandraConverter converter = new MappingCassandraConverter(new CassandraMappingContext());
 		converter.afterPropertiesSet();
