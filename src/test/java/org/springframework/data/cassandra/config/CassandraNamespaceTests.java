@@ -25,13 +25,13 @@ public class CassandraNamespaceTests {
 
 	@Autowired
 	private ApplicationContext ctx;
-	
-    @BeforeClass
-    public static void startCassandra()
-            throws IOException, TTransportException, ConfigurationException, InterruptedException {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
-    }
-	
+
+	@BeforeClass
+	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
+			InterruptedException {
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+	}
+
 	@Test
 	public void testSingleton() throws Exception {
 		Object cluster = ctx.getBean("cassandra-cluster");
@@ -41,19 +41,18 @@ public class CassandraNamespaceTests {
 		Assert.notNull(ks);
 		Assert.isInstanceOf(Keyspace.class, ks);
 
-		
 		Cluster c = (Cluster) cluster;
 		System.out.println(org.apache.commons.beanutils.BeanUtils.describe(c.getConfiguration()));
 	}
-	
-    @After
-    public void clearCassandra() {
-        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-    }
 
-    @AfterClass
-    public static void stopCassandra() {
-    	EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
-    }
-	
+	@After
+	public void clearCassandra() {
+		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+	}
+
+	@AfterClass
+	public static void stopCassandra() {
+		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
+	}
+
 }
