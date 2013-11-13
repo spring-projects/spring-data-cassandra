@@ -111,7 +111,7 @@ public class CassandraOperationsTest {
 	 * <li>remove()</li>
 	 * </ul>
 	 */
-	@Test
+	// @Test
 	public void UsersTest() {
 
 		User u = new User();
