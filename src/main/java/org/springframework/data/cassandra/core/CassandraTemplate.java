@@ -644,7 +644,14 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> void delete(T entity) {
-		delete(entity, determineTableName(entity.getClass()));
+
+		Assert.notNull(entity);
+
+		String tableName = getTableName(entity.getClass());
+
+		Assert.notNull(tableName);
+
+		delete(entity, tableName);
 	}
 
 	/* (non-Javadoc)
@@ -696,8 +703,14 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> void deleteAsychronously(T entity) {
-		// TODO Auto-generated method stub
 
+		Assert.notNull(entity);
+
+		String tableName = getTableName(entity.getClass());
+
+		Assert.notNull(tableName);
+
+		deleteAsychronously(entity, tableName);
 	}
 
 	/* (non-Javadoc)
@@ -705,8 +718,15 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> void deleteAsychronously(List<T> entities) {
-		// TODO Auto-generated method stub
 
+		Assert.notNull(entities);
+		Assert.notEmpty(entities);
+
+		String tableName = getTableName(entities.get(0).getClass());
+
+		Assert.notNull(tableName);
+
+		deleteAsychronously(entities, tableName);
 	}
 
 	/* (non-Javadoc)
@@ -714,8 +734,12 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> void deleteAsychronously(T entity, String tableName) {
-		// TODO Auto-generated method stub
 
+		CassandraPersistentEntity<?> entityClass = getEntity(entity);
+
+		Assert.notNull(entityClass);
+
+		doDelete(entity, tableName, true);
 	}
 
 	/* (non-Javadoc)
@@ -723,8 +747,12 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> void deleteAsychronously(List<T> entities, String tableName) {
-		// TODO Auto-generated method stub
 
+		Assert.notNull(entities);
+		Assert.notEmpty(entities);
+		Assert.notNull(tableName);
+
+		doBatchDelete(tableName, entities, true);
 	}
 
 	/* (non-Javadoc)
