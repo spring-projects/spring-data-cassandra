@@ -17,21 +17,31 @@ package org.springframework.data.cassandra.vo;
 
 import java.io.Serializable;
 
+import com.datastax.driver.core.Host;
+
 /**
  * @author David Webb
  *
  */
-public class RingMember implements Serializable {
+public final class RingMember implements Serializable {
+
+	private static final long serialVersionUID = 1345346346L;
 	
 	/*
 	 * Ring attributes
 	 */
-	public String hostName;
-	public String address;
-	public String DC;
-	public String rack;
-	public String status;
-	public String state;
+	public final String hostName;
+	public final String address;
+	public final String DC;
+	public final String rack;
+	//public final String status;
+	//public final String state;
 
+	public RingMember(Host h) {
+		this.hostName = h.getAddress().getHostName();
+		this.address = h.getAddress().getHostAddress();
+		this.DC = h.getDatacenter();
+		this.rack = h.getRack();
+	}
 
 }
