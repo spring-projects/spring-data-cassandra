@@ -80,7 +80,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, Init
 		this.beanClassLoader = classLoader;
 	}
 
-	public Keyspace getObject() throws Exception {
+	public Keyspace getObject() {
 		return keyspaceBean;
 	}
 

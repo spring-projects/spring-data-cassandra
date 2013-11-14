@@ -16,25 +16,29 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.vo.RingMember;
 
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 
 /**
  * @author Alex Shvid
  */
+/**
+ * @author David Webb
+ * 
+ */
 public interface CassandraOperations {
 
-	
 	/**
 	 * Describe the current Ring
 	 * 
 	 * @return The list of ring tokens that are active in the cluster
 	 */
 	List<RingMember> describeRing();
-	
+
 	/**
 	 * The table name used for the specified class by this template.
 	 * 
@@ -42,15 +46,23 @@ public interface CassandraOperations {
 	 * @return
 	 */
 	String getTableName(Class<?> entityClass);
-	
+
 	/**
 	 * Execute query and return Cassandra ResultSet
 	 * 
 	 * @param query must not be {@literal null}.
 	 * @return
 	 */
-	ResultSet executeQuery(String query);
-	
+	ResultSet executeQuery(final String query);
+
+	/**
+	 * Execute async query and return Cassandra ResultSetFuture
+	 * 
+	 * @param query must not be {@literal null}.
+	 * @return
+	 */
+	ResultSetFuture executeQueryAsynchronously(final String query);
+
 	/**
 	 * Execute query and convert ResultSet to the list of entities
 	 * 
@@ -58,8 +70,8 @@ public interface CassandraOperations {
 	 * @param selectClass must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-    <T> List<T> select(String query, Class<T> selectClass);
-    
+	<T> List<T> select(String query, Class<T> selectClass);
+
 	/**
 	 * Execute query and convert ResultSet to the entity
 	 * 
@@ -67,28 +79,259 @@ public interface CassandraOperations {
 	 * @param selectClass must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-    <T> T selectOne(String query, Class<T> selectClass);
-    
+	<T> T selectOne(String query, Class<T> selectClass);
+
 	/**
 	 * Insert the given object to the table by id.
 	 * 
-	 * @param object
+	 * @param entity
 	 */
-    void insert(Object entity);
+	<T> T insert(T entity);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param entity
+	 * @param tableName
+	 * @return
+	 */
+	<T> T insert(T entity, String tableName);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> T insert(T entity, String tableName, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> T insert(T entity, String tableName, Map<String, Object> optionsByName);
+
+	/**
+	 * Insert the given list of objects to the table by annotation table name.
+	 * 
+	 * @param entities
+	 * @return
+	 */
+	<T> List<T> insert(List<T> entities);
+
+	/**
+	 * Insert the given list of objects to the table by name.
+	 * 
+	 * @param entities
+	 * @param tableName
+	 * @return
+	 */
+	<T> List<T> insert(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> List<T> insert(List<T> entities, String tableName, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> List<T> insert(List<T> entities, String tableName, Map<String, Object> optionsByName);
 
 	/**
 	 * Insert the given object to the table by id.
 	 * 
 	 * @param object
 	 */
-    void insert(Object entity, String tableName);
-    
+	<T> T insertAsynchronously(T entity);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T insertAsynchronously(T entity, String tableName);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> T insertAsynchronously(T entity, String tableName, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> T insertAsynchronously(T entity, String tableName, Map<String, Object> optionsByName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> insertAsynchronously(List<T> entities);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> insertAsynchronously(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> List<T> insertAsynchronously(List<T> entities, String tableName, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> List<T> insertAsynchronously(List<T> entities, String tableName, Map<String, Object> optionsByName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T update(T entity);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T update(T entity, String tableName);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> T update(T entity, String tableName, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> T update(T entity, String tableName, Map<String, Object> optionsByName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> update(List<T> entities);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> update(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> List<T> update(List<T> entities, String tableName, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> List<T> update(List<T> entities, String tableName, Map<String, Object> optionsByName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T updateAsynchronously(T entity);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> T updateAsynchronously(T entity, String tableName);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> T updateAsynchronously(T entity, String tableName, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> T updateAsynchronously(T entity, String tableName, Map<String, Object> optionsByName);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> updateAsynchronously(List<T> entities);
+
+	/**
+	 * Insert the given object to the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> List<T> updateAsynchronously(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> List<T> updateAsynchronously(List<T> entities, String tableName, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> List<T> updateAsynchronously(List<T> entities, String tableName, Map<String, Object> optionsByName);
+
 	/**
 	 * Remove the given object from the table by id.
 	 * 
 	 * @param object
 	 */
-	void remove(Object object);
+	<T> void delete(T entity);
 
 	/**
 	 * Removes the given object from the given table.
@@ -96,56 +339,113 @@ public interface CassandraOperations {
 	 * @param object
 	 * @param table must not be {@literal null} or empty.
 	 */
-	void remove(Object object, String tableName);
-    
-	/**
-	 * Create a table with the name and fields indicated by the entity class
-	 * 
-	 * @param entityClass class that determines metadata of the table to create/drop.
-	 */
-    void createTable(Class<?> entityClass);
-    
-	/**
-	 * Create a table with the name and fields indicated by the entity class
-	 * 
-	 * @param entityClass class that determines metadata of the table to create/drop.
-	 * @param tableName explicit name of the table
-	 */
-    void createTable(Class<?> entityClass, String tableName);
-    
-	/**
-	 * Alter table with the name and fields indicated by the entity class
-	 * 
-	 * @param entityClass class that determines metadata of the table to create/drop.
-	 */    
-    void alterTable(Class<?> entityClass);
-    
-	/**
-	 * Alter table with the name and fields indicated by the entity class
-	 * 
-	 * @param entityClass class that determines metadata of the table to create/drop.
-	 * @param tableName explicit name of the table
-	 */    
-    void alterTable(Class<?> entityClass, String tableName);    
+	<T> void delete(T entity, String tableName);
 
 	/**
-	 * Alter table with the name and fields indicated by the entity class
-	 * 
-	 * @param entityClass class that determines metadata of the table to create/drop.
-	 */   
-    void dropTable(Class<?> entityClass);
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 */
+	<T> void delete(T entity, String tableName, QueryOptions options);
 
 	/**
-	 * Alter table with the name and fields indicated by the entity class
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 */
+	<T> void delete(T entity, String tableName, Map<String, Object> optionsByName);
+
+	/**
+	 * Remove the given object from the table by id.
 	 * 
-	 * @param tableName explicit name of the table.
-	 */   
-    void dropTable(String tableName);
-    
+	 * @param object
+	 */
+	<T> void delete(List<T> entities);
+
+	/**
+	 * Removes the given object from the given table.
+	 * 
+	 * @param object
+	 * @param table must not be {@literal null} or empty.
+	 */
+	<T> void delete(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 */
+	<T> void delete(List<T> entities, String tableName, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 */
+	<T> void delete(List<T> entities, String tableName, Map<String, Object> optionsByName);
+
+	/**
+	 * Remove the given object from the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> void deleteAsychronously(T entity);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 */
+	<T> void deleteAsychronously(T entity, String tableName, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 */
+	<T> void deleteAsychronously(T entity, String tableName, Map<String, Object> optionsByName);
+
+	/**
+	 * Removes the given object from the given table.
+	 * 
+	 * @param object
+	 * @param table must not be {@literal null} or empty.
+	 */
+	<T> void deleteAsychronously(T entity, String tableName);
+
+	/**
+	 * Remove the given object from the table by id.
+	 * 
+	 * @param object
+	 */
+	<T> void deleteAsychronously(List<T> entities);
+
+	/**
+	 * Removes the given object from the given table.
+	 * 
+	 * @param object
+	 * @param table must not be {@literal null} or empty.
+	 */
+	<T> void deleteAsychronously(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 */
+	<T> void deleteAsychronously(List<T> entities, String tableName, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 */
+	<T> void deleteAsychronously(List<T> entities, String tableName, Map<String, Object> optionsByName);
+
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
 	 * 
 	 * @return
 	 */
-    CassandraConverter getConverter();
+	CassandraConverter getConverter();
 }

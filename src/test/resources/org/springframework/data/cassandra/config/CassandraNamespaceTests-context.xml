@@ -11,7 +11,7 @@
 
         <cassandra:cluster id="cassandra-cluster"
                 contactPoints="${cassandra.contactPoints}" port="${cassandra.port}"
-                compression="snappy">
+                compression="SNAPPY">
                 <cassandra:local-pooling-options
                         min-simultaneous-requests="25" max-simultaneous-requests="100"
                         core-connections="2" max-connections="8" />

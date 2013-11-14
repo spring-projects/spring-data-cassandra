@@ -15,21 +15,14 @@
  */
 package org.springframework.data.cassandra.util;
 
-
 /**
- * Helper class featuring helper methods for working with Cassandra tables.
- * Mainly intended for internal use within the framework.
+ * Helper class featuring helper methods for working with Cassandra tables. Mainly intended for internal use within the
+ * framework.
  * 
  * @author Alex Shvid
  */
 public abstract class CassandraNamingUtils {
 
-	/**
-	 * Private constructor to prevent instantiation.
-	 */
-	private CassandraNamingUtils() {
-	}
-	
 	/**
 	 * Obtains the table name to use for the provided class
 	 * 
@@ -39,5 +32,5 @@ public abstract class CassandraNamingUtils {
 	public static String getPreferredTableName(Class<?> entityClass) {
 		return entityClass.getSimpleName().toLowerCase();
 	}
-	
+
 }
