@@ -27,6 +27,7 @@ import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * 
@@ -260,6 +261,112 @@ public abstract class CqlUtils {
 		}
 
 		return q;
+
+	}
+
+	/**
+	 * Generates a Query Object for an Update
+	 * 
+	 * @param keyspaceName
+	 * @param tableName
+	 * @param entity
+	 * @param objectToSave
+	 * @param optionsByName
+	 * @param mappingContext
+	 * @param beanClassLoader
+	 * 
+	 * @return The Query object to run with session.execute();
+	 * @throws EntityWriterException
+	 */
+	public static Query toUpdateQuery(String keyspaceName, String tableName, final Object objectToSave,
+			CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName) throws EntityWriterException {
+
+		final Update q = QueryBuilder.update(keyspaceName, tableName);
+		final Exception innerException = new Exception();
+
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+
+				/*
+				 * See if the object has a value for that column, and if so, add it to the Query
+				 */
+				try {
+
+					Object o = prop.getGetter().invoke(objectToSave, new Object[0]);
+
+					log.info("Getter Invoke [" + prop.getColumnName() + " => " + o);
+
+					if (o != null) {
+						if (prop.isIdProperty()) {
+							q.where(QueryBuilder.eq(prop.getColumnName(), o));
+						} else {
+							q.with(QueryBuilder.add(prop.getColumnName(), o));
+						}
+					}
+
+				} catch (IllegalAccessException e) {
+					innerException.initCause(e);
+				} catch (IllegalArgumentException e) {
+					innerException.initCause(e);
+				} catch (InvocationTargetException e) {
+					innerException.initCause(e);
+				}
+			}
+		});
+
+		if (innerException.getCause() != null) {
+			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
+		}
+
+		/*
+		 * Add Query Options
+		 */
+		addQueryOptions(q, optionsByName);
+
+		/*
+		 * Add TTL to Insert object
+		 */
+		if (optionsByName.get(QueryOptions.QueryOptionMapKeys.TTL) != null) {
+			q.using(QueryBuilder.ttl((Integer) optionsByName.get(QueryOptions.QueryOptionMapKeys.TTL)));
+		}
+
+		return q;
+
+	}
+
+	/**
+	 * Generates a Batch Object for multiple Updates
+	 * 
+	 * @param keyspaceName
+	 * @param tableName
+	 * @param entity
+	 * @param objectsToSave
+	 * @param mappingContext
+	 * @param beanClassLoader
+	 * 
+	 * @return The Query object to run with session.execute();
+	 * @throws EntityWriterException
+	 */
+	public static <T> Batch toUpdateBatchQuery(final String keyspaceName, final String tableName,
+			final List<T> objectsToSave, CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName)
+			throws EntityWriterException {
+
+		/*
+		 * Return variable is a Batch statement
+		 */
+		final Batch b = QueryBuilder.batch();
+
+		List<Query> queries = new ArrayList<Query>();
+
+		for (final T objectToSave : objectsToSave) {
+
+			queries.add(toUpdateQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+
+		}
+
+		addQueryOptions(b, optionsByName);
+
+		return b;
 
 	}
 

@@ -24,9 +24,9 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 
 /**
+ * Main Inteface that should be used for Cassandra interactions
+ * 
  * @author Alex Shvid
- */
-/**
  * @author David Webb
  * 
  */
