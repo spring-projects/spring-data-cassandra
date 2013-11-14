@@ -79,28 +79,33 @@ public interface CassandraOperations {
 	/**
 	 * Insert the given object to the table by id.
 	 * 
-	 * @param object
+	 * @param entity
 	 */
 	<T> T insert(T entity);
 
 	/**
 	 * Insert the given object to the table by id.
 	 * 
-	 * @param object
-	 */
-	<T> List<T> insert(List<T> entities);
-
-	/**
-	 * Insert the given object to the table by id.
-	 * 
-	 * @param object
+	 * @param entity
+	 * @param tableName
+	 * @return
 	 */
 	<T> T insert(T entity, String tableName);
 
 	/**
-	 * Insert the given object to the table by id.
+	 * Insert the given list of objects to the table by annotation table name.
 	 * 
-	 * @param object
+	 * @param entities
+	 * @return
+	 */
+	<T> List<T> insert(List<T> entities);
+
+	/**
+	 * Insert the given list of objects to the table by name.
+	 * 
+	 * @param entities
+	 * @param tableName
+	 * @return
 	 */
 	<T> List<T> insert(List<T> entities, String tableName);
 
