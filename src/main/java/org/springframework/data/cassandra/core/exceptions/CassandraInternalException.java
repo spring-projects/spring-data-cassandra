@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2010-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
 
-import org.springframework.dao.DataAccessResourceFailureException;
+package org.springframework.data.cassandra.core.exceptions;
+
+import org.springframework.dao.DataAccessException;
 
 /**
- * Cassandra connection exception.
+ * Spring data access exception for a Cassandra internal error.
  * 
- * @author Alex Shvid
+ * @author Matthew T. Adams
  */
-public class CassandraConnectionFailureException extends DataAccessResourceFailureException {
+public class CassandraInternalException extends DataAccessException {
 
-	public CassandraConnectionFailureException(String msg) {
+	private static final long serialVersionUID = 433061676465346338L;
+
+	public CassandraInternalException(String msg) {
 		super(msg);
 	}
 
-	public CassandraConnectionFailureException(String msg, Throwable cause) {
+	public CassandraInternalException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
-	
 }

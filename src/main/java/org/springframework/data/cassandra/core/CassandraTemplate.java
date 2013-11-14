@@ -37,7 +37,6 @@ import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
 
 /**
  * @author Alex Shvid
@@ -99,12 +98,7 @@ public class CassandraTemplate implements CassandraOperations {
 		 */
 		for (Host h: hosts) {
 			
-			member = new RingMember();
-			member.hostName = h.getAddress().getHostName();
-			member.address = h.getAddress().getHostAddress();
-			member.DC = h.getDatacenter();
-			member.rack = h.getRack();
-			
+			member = new RingMember(h);
 			ring.add(member);
 		}
 		
@@ -123,8 +117,6 @@ public class CassandraTemplate implements CassandraOperations {
 	public ResultSet executeQuery(String query) {
 		try {
 			return session.execute(query);
-		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException("no host available", e);
 		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}
@@ -238,8 +230,6 @@ public class CassandraTemplate implements CassandraOperations {
 				result.add(readRowCallback.doWith(row));
 			}
 			return result;
-		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException("no host available", e);
 		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}
@@ -258,8 +248,6 @@ public class CassandraTemplate implements CassandraOperations {
 				return result;
 			}
 			return null;
-		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException("no host available", e);
 		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}
