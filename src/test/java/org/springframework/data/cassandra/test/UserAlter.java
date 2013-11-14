@@ -22,56 +22,53 @@ import org.springframework.data.cassandra.mapping.Index;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
- * This is an example of the Users statis table, where all fields are columns
- * in Cassandra row. Some fields can be Set,List,Map like emails.
+ * This is an example of the Users statis table, where all fields are columns in Cassandra row. Some fields can be
+ * Set,List,Map like emails.
  * 
- * User contains base information related for separate user, like
- * names, additional information, emails, following users, friends.
+ * User contains base information related for separate user, like names, additional information, emails, following
+ * users, friends.
  * 
  * @author Alex Shvid
  */
-@Table(name="users")
-public class User {
+@Table(name = "users")
+public class UserAlter {
 
 	/*
 	 * Primary Row ID
 	 */
 	@Id
 	private String username;
-	
+
 	/*
 	 * Public information
 	 */
 	private String firstName;
 	private String lastName;
-	
+
 	/*
 	 * Secondary index, used only on fields with common information,
 	 * not effective on email, username
 	 */
 	@Index
 	private String place;
-	
-	/*
-	 * User emails
-	 */
-	private Set<String> emails;
-	
+
+	private String nickName;
+
 	/*
 	 * Password
 	 */
 	private String password;
-	
+
 	/*
 	 * Age 
 	 */
 	private int age;
-	
+
 	/*
 	 * Following other users in userline
 	 */
 	private Set<String> following;
-	
+
 	/*
 	 * Friends of the user
 	 */
@@ -107,14 +104,6 @@ public class User {
 
 	public void setPlace(String place) {
 		this.place = place;
-	}
-
-	public Set<String> getEmails() {
-		return emails;
-	}
-
-	public void setEmails(Set<String> emails) {
-		this.emails = emails;
 	}
 
 	public String getPassword() {
@@ -153,6 +142,20 @@ public class User {
 	 */
 	public void setAge(int age) {
 		this.age = age;
+	}
+
+	/**
+	 * @return Returns the nickName.
+	 */
+	public String getNickName() {
+		return nickName;
+	}
+
+	/**
+	 * @param nickName The nickName to set.
+	 */
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
 	}
 
 }

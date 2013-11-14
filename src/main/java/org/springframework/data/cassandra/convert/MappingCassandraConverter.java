@@ -133,13 +133,25 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		return result;
 	}
 
-	public void write(Object source, Row sink) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public void setUseFieldAccessOnly(boolean useFieldAccessOnly) {
 		this.useFieldAccessOnly = useFieldAccessOnly;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.convert.EntityWriter#write(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public void write(Object source, Row sink) {
+		
+		/*
+		 * There is no concept of passing a Row into Cassandra for Writing.
+		 * This must be done with Query
+		 * 
+		 * See the CQLUtils.
+		 */
+		
+	}
+
+
 	
 }

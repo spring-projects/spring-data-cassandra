@@ -1,29 +1,29 @@
 /*
- * Copyright (c) 2011 by the original author(s).
- *
+ * Copyright 2011-2013 the original author or authors.
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config;
+package org.springframework.data.cassandra.core;
+
+import com.datastax.driver.core.Row;
 
 /**
+ * Simple internal callback to allow operations on a {@link Row}.
+ * 
  * @author Alex Shvid
  */
-public final class BeanNames {
 
-	private BeanNames() {
-	}
+public interface RowCallback<T> {
 
-	public static final String CASSANDRA_CLUSTER = "cassandra-cluster";
-	public static final String CASSANDRA_KEYSPACE = "cassandra-keyspace";
-
+	T doWith(Row object);
 }

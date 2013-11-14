@@ -61,7 +61,7 @@ The port to connect to Cassandra server as native CQL client.  Default is 9042
 							]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="compression" default="none"
+		<xsd:attribute name="compression" default="NONE"
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -70,14 +70,14 @@ The protocol options compression. Default is 'none'.
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="none">
+					<xsd:enumeration value="NONE">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 No compression.
 							]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:enumeration>
-					<xsd:enumeration value="snappy">
+					<xsd:enumeration value="SNAPPY">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Uses SNAPPY compression algorithm.
