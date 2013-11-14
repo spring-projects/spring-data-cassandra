@@ -26,12 +26,10 @@ import org.springframework.data.cassandra.mapping.Table;
 import com.datastax.driver.core.DataType;
 
 /**
- * This is an example of dynamic table that creates each time new column
- * with Post timestamp annotated by @ColumnId.
+ * This is an example of dynamic table that creates each time new column with Post timestamp annotated by @ColumnId.
  * 
- * It is possible to use a static table for posts and identify them by PostId(UUID),
- * but in this case we need to use MapReduce for Big Data to find posts for
- * particular user, so it is better to have index (userId) -> index (post time)
+ * It is possible to use a static table for posts and identify them by PostId(UUID), but in this case we need to use
+ * MapReduce for Big Data to find posts for particular user, so it is better to have index (userId) -> index (post time)
  * architecture. It helps a lot to build eventually a search index for the particular user.
  * 
  * @author Alex Shvid
@@ -49,12 +47,12 @@ public class Comment {
 	 * Column ID
 	 */
 	@ColumnId
-	@Qualify(type=DataType.Name.TIMESTAMP)
+	@Qualify(type = DataType.Name.TIMESTAMP)
 	private Date time;
 
 	private String text;
-	
-	@Qualify(type=DataType.Name.SET, typeArguments={DataType.Name.TEXT})
+
+	@Qualify(type = DataType.Name.SET, typeArguments = { DataType.Name.TEXT })
 	private Set<String> likes;
 
 	/*

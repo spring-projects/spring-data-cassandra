@@ -19,5 +19,5 @@ public @interface Column {
 	 * @return
 	 */
 	String value() default "";
-	
+
 }

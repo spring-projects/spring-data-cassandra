@@ -35,7 +35,6 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
-
 /**
  * Unit test for {@link BasicCassandraPersistentProperty}.
  * 
@@ -44,12 +43,12 @@ import org.springframework.util.ReflectionUtils;
 public class BasicCassandraPersistentPropertyUnitTests {
 
 	CassandraPersistentEntity<Timeline> entity;
-	
-    @BeforeClass
-    public static void startCassandra()
-            throws IOException, TTransportException, ConfigurationException, InterruptedException {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
-    }
+
+	@BeforeClass
+	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
+			InterruptedException {
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+	}
 
 	@Before
 	public void setup() {
@@ -82,16 +81,16 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		assertThat(property.isColumnId(), is(true));
 	}
 
-    @After
-    public void clearCassandra() {
-        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-    }
+	@After
+	public void clearCassandra() {
+		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+	}
 
-    @AfterClass
-    public static void stopCassandra() {
-    	EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
-    }
-    
+	@AfterClass
+	public static void stopCassandra() {
+		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
+	}
+
 	private CassandraPersistentProperty getPropertyFor(Field field) {
 		return new BasicCassandraPersistentProperty(field, null, entity, new SimpleTypeHolder());
 	}
@@ -103,10 +102,10 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 		@ColumnId
 		Date time;
-		
+
 		@Column("message")
 		String text;
 
 	}
-	
+
 }

@@ -46,36 +46,38 @@ import com.datastax.driver.core.Row;
 public class MappingCassandraConverter extends AbstractCassandraConverter implements ApplicationContextAware {
 
 	protected static final Logger log = LoggerFactory.getLogger(MappingCassandraConverter.class);
-	
+
 	protected final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 	protected ApplicationContext applicationContext;
 	private SpELContext spELContext;
 	private boolean useFieldAccessOnly = true;
-	
+
 	/**
 	 * Creates a new {@link MappingCassandraConverter} given the new {@link MappingContext}.
 	 * 
 	 * @param mappingContext must not be {@literal null}.
 	 */
-	public MappingCassandraConverter(MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+	public MappingCassandraConverter(
+			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
 		super(new DefaultConversionService());
 		this.mappingContext = mappingContext;
 		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <R> R read(Class<R> clazz, Row row) {
-		
+
 		TypeInformation<? extends R> type = ClassTypeInformation.from(clazz);
-		//TypeInformation<? extends R> typeToUse = typeMapper.readType(row, type);
+		// TypeInformation<? extends R> typeToUse = typeMapper.readType(row, type);
 		TypeInformation<? extends R> typeToUse = type;
 		Class<? extends R> rawType = typeToUse.getType();
 
 		if (Row.class.isAssignableFrom(rawType)) {
 			return (R) row;
 		}
-		
-		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>) mappingContext.getPersistentEntity(typeToUse);
+
+		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>) mappingContext
+				.getPersistentEntity(typeToUse);
 		if (persistentEntity == null) {
 			throw new MappingException("No mapping metadata found for " + rawType.getName());
 		}
@@ -99,15 +101,16 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		this.applicationContext = applicationContext;
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
 	}
-	
+
 	private <S extends Object> S read(final CassandraPersistentEntity<S> entity, final Row row) {
 
 		final DefaultSpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
 
-		final PropertyValueProvider<CassandraPersistentProperty> propertyProvider = new CassandraPropertyValueProvider(row, evaluator);
+		final PropertyValueProvider<CassandraPersistentProperty> propertyProvider = new CassandraPropertyValueProvider(row,
+				evaluator);
 		PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterProvider = new PersistentEntityParameterValueProvider<CassandraPersistentProperty>(
 				entity, propertyProvider, null);
-		
+
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 		S instance = instantiator.createInstance(entity, parameterProvider);
 
@@ -129,7 +132,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 				wrapper.setProperty(prop, obj, useFieldAccessOnly);
 			}
 		});
-		
+
 		return result;
 	}
 
@@ -142,16 +145,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	 */
 	@Override
 	public void write(Object source, Row sink) {
-		
+
 		/*
 		 * There is no concept of passing a Row into Cassandra for Writing.
 		 * This must be done with Query
 		 * 
 		 * See the CQLUtils.
 		 */
-		
+
 	}
 
-
-	
 }

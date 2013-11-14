@@ -35,7 +35,7 @@ import org.w3c.dom.Element;
  * @author Alex Shvid
  */
 
-public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser  {
+public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
@@ -55,27 +55,26 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser  
 	}
 
 	@Override
-	protected void doParse(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder) {
-		
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		String contactPoints = element.getAttribute("contactPoints");
 		if (StringUtils.hasText(contactPoints)) {
 			builder.addPropertyValue("contactPoints", contactPoints);
 		}
-		
+
 		String port = element.getAttribute("port");
 		if (StringUtils.hasText(port)) {
 			builder.addPropertyValue("port", port);
 		}
-		
+
 		String compression = element.getAttribute("compression");
 		if (StringUtils.hasText(compression)) {
 			builder.addPropertyValue("compressionType", CompressionType.valueOf(compression));
 		}
-		
+
 		postProcess(builder, element);
 	}
-	
+
 	@Override
 	protected void postProcess(BeanDefinitionBuilder builder, Element element) {
 		List<Element> subElements = DomUtils.getChildElements(element);
@@ -86,17 +85,15 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser  
 
 			if ("local-pooling-options".equals(name)) {
 				builder.addPropertyValue("localPoolingOptions", parsePoolingOptions(subElement));
-			}
-			else if ("remote-pooling-options".equals(name)) {
+			} else if ("remote-pooling-options".equals(name)) {
 				builder.addPropertyValue("remotePoolingOptions", parsePoolingOptions(subElement));
-			}
-			else if ("socket-options".equals(name)) {
+			} else if ("socket-options".equals(name)) {
 				builder.addPropertyValue("socketOptions", parseSocketOptions(subElement));
 			}
 		}
-	
-	}	
-	
+
+	}
+
 	private BeanDefinition parsePoolingOptions(Element element) {
 		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(PoolingOptionsConfig.class);
 		ParsingUtils.setPropertyValue(defBuilder, element, "min-simultaneous-requests", "minSimultaneousRequests");
@@ -104,8 +101,8 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser  
 		ParsingUtils.setPropertyValue(defBuilder, element, "core-connections", "coreConnections");
 		ParsingUtils.setPropertyValue(defBuilder, element, "max-connections", "maxConnections");
 		return defBuilder.getBeanDefinition();
-	}	
-	
+	}
+
 	private BeanDefinition parseSocketOptions(Element element) {
 		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(SocketOptionsConfig.class);
 		ParsingUtils.setPropertyValue(defBuilder, element, "connect-timeout-mls", "connectTimeoutMls");
@@ -116,6 +113,6 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser  
 		ParsingUtils.setPropertyValue(defBuilder, element, "receive-buffer-size", "receiveBufferSize");
 		ParsingUtils.setPropertyValue(defBuilder, element, "send-buffer-size", "sendBufferSize");
 		return defBuilder.getBeanDefinition();
-	}		
+	}
 
 }

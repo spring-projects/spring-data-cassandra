@@ -5,5 +5,5 @@ public abstract class CQLBuilder {
 	public static CreateTable createTable(String tableName) {
 		return null;
 	}
-	
+
 }

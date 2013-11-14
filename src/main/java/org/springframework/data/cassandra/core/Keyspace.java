@@ -20,7 +20,7 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import com.datastax.driver.core.Session;
 
 /**
- * Simple Cassandra Keyspace object 
+ * Simple Cassandra Keyspace object
  * 
  * @author Alex Shvid
  */
@@ -29,7 +29,7 @@ public class Keyspace {
 	private final String keyspace;
 	private final Session session;
 	private final CassandraConverter cassandraConverter;
-	
+
 	/**
 	 * Constructor used for a basic keyspace configuration
 	 * 
@@ -42,7 +42,7 @@ public class Keyspace {
 		this.session = session;
 		this.cassandraConverter = cassandraConverter;
 	}
-	
+
 	public String getKeyspace() {
 		return keyspace;
 	}

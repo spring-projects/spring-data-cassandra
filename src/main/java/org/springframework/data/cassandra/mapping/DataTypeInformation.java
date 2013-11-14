@@ -24,8 +24,8 @@ import com.datastax.driver.core.DataType;
  */
 public class DataTypeInformation {
 
-	public static DataType.Name[] EMPTY_ATTRIBUTES = {}; 
-	
+	public static DataType.Name[] EMPTY_ATTRIBUTES = {};
+
 	private DataType.Name typeName;
 	private DataType.Name[] typeAttributes;
 
@@ -57,8 +57,7 @@ public class DataTypeInformation {
 	public String toCQL() {
 		if (typeAttributes.length == 0) {
 			return typeName.name();
-		}
-		else {
+		} else {
 			StringBuilder str = new StringBuilder();
 			str.append(typeName.name());
 			str.append('<');

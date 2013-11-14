@@ -29,8 +29,7 @@ public class CassandraWriteTimeoutException extends QueryTimeoutException {
 
 	private String writeType;
 
-	public CassandraWriteTimeoutException(String writeType, String msg,
-			Throwable cause) {
+	public CassandraWriteTimeoutException(String writeType, String msg, Throwable cause) {
 		super(msg, cause);
 		this.writeType = writeType;
 	}

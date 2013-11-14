@@ -27,8 +27,8 @@ import org.springframework.data.annotation.Id;
  * 
  * @author Alex Shvid
  */
-@Retention(value=RetentionPolicy.RUNTIME)
-@Target(value={ElementType.FIELD,ElementType.METHOD,ElementType.ANNOTATION_TYPE})
+@Retention(value = RetentionPolicy.RUNTIME)
+@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 @Id
 public @interface RowId {
 

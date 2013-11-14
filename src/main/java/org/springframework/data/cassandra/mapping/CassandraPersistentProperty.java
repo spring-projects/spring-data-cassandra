@@ -27,31 +27,31 @@ import com.datastax.driver.core.DataType;
 public interface CassandraPersistentProperty extends PersistentProperty<CassandraPersistentProperty> {
 
 	/**
-	 * For dynamic tables returns true if property value is used as column name. 
+	 * For dynamic tables returns true if property value is used as column name.
 	 * 
 	 * @return
 	 */
 	boolean isColumnId();
-	
+
 	/**
 	 * Returns the name of the field a property is persisted to.
 	 * 
 	 * @return
 	 */
 	String getColumnName();
-	
+
 	/**
 	 * Returns the data type.
 	 * 
 	 * @return
 	 */
 	DataType getDataType();
-	
+
 	/**
-	 * Returns true if the property has secondary index on this column. 
+	 * Returns true if the property has secondary index on this column.
 	 * 
 	 * @return
 	 */
 	boolean isIndexed();
-	
+
 }

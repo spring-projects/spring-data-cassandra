@@ -53,7 +53,7 @@ public abstract class AbstractCassandraConfiguration {
 	 * @return must not be {@literal null}.
 	 */
 	protected abstract String getKeyspaceName();
-	
+
 	/**
 	 * Return the {@link Cluster} instance to connect to.
 	 * 
@@ -62,10 +62,10 @@ public abstract class AbstractCassandraConfiguration {
 	 */
 	@Bean
 	public abstract Cluster cluster() throws Exception;
-	
+
 	/**
-	 * Creates a {@link Session} to be used by the {@link Keyspace}. Will use the {@link Cluster} instance
-	 * configured in {@link #cluster()}.
+	 * Creates a {@link Session} to be used by the {@link Keyspace}. Will use the {@link Cluster} instance configured in
+	 * {@link #cluster()}.
 	 * 
 	 * @see #cluster()
 	 * @see #Keyspace()
@@ -77,12 +77,11 @@ public abstract class AbstractCassandraConfiguration {
 		String keyspace = getKeyspaceName();
 		if (StringUtils.hasText(keyspace)) {
 			return cluster().connect(keyspace);
-		}
-		else {
+		} else {
 			return cluster().connect();
 		}
 	}
-	
+
 	/**
 	 * Creates a {@link Keyspace} to be used by the {@link CassandraTemplate}. Will use the {@link Session} instance
 	 * configured in {@link #session()} and {@link CassandraConverter} configured in {@link #converter()}.
@@ -96,9 +95,10 @@ public abstract class AbstractCassandraConfiguration {
 	public Keyspace keyspace() throws Exception {
 		return new Keyspace(getKeyspaceName(), session(), converter());
 	}
+
 	/**
-	 * Return the base package to scan for mapped {@link Table}s. Will return the package name of the configuration
-	 * class' (the concrete class, not this one here) by default. So if you have a {@code com.acme.AppConfig} extending
+	 * Return the base package to scan for mapped {@link Table}s. Will return the package name of the configuration class'
+	 * (the concrete class, not this one here) by default. So if you have a {@code com.acme.AppConfig} extending
 	 * {@link AbstractCassandraConfiguration} the base package will be considered {@code com.acme} unless the method is
 	 * overriden to implement alternate behaviour.
 	 * 
@@ -108,7 +108,7 @@ public abstract class AbstractCassandraConfiguration {
 	protected String getMappingBasePackage() {
 		return getClass().getPackage().getName();
 	}
-	
+
 	/**
 	 * Creates a {@link CassandraTemplate}.
 	 * 
@@ -119,7 +119,7 @@ public abstract class AbstractCassandraConfiguration {
 	public CassandraTemplate cassandraTemplate() throws Exception {
 		return new CassandraTemplate(keyspace());
 	}
-	
+
 	/**
 	 * Return the {@link MappingContext} instance to map Entities to properties.
 	 * 
@@ -130,7 +130,7 @@ public abstract class AbstractCassandraConfiguration {
 	public MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext() {
 		return new CassandraMappingContext();
 	}
-	
+
 	/**
 	 * Return the {@link CassandraConverter} instance to convert Rows to Objects.
 	 * 
@@ -141,7 +141,7 @@ public abstract class AbstractCassandraConfiguration {
 	public CassandraConverter converter() {
 		return new MappingCassandraConverter(mappingContext());
 	}
-	
+
 	/**
 	 * Scans the mapping base package for classes annotated with {@link Table}.
 	 * 
@@ -168,5 +168,5 @@ public abstract class AbstractCassandraConfiguration {
 
 		return initialEntitySet;
 	}
-	
+
 }

@@ -28,15 +28,13 @@ import org.springframework.dao.DataAccessResourceFailureException;
  * 
  * @author Matthew T. Adams
  */
-public class CassandraConnectionFailureException extends
-		DataAccessResourceFailureException {
+public class CassandraConnectionFailureException extends DataAccessResourceFailureException {
 
 	private static final long serialVersionUID = 6299912054261646552L;
 
 	private final Map<InetAddress, String> messagesByHost = new HashMap<InetAddress, String>();
 
-	public CassandraConnectionFailureException(
-			Map<InetAddress, String> messagesByHost, String msg, Throwable cause) {
+	public CassandraConnectionFailureException(Map<InetAddress, String> messagesByHost, String msg, Throwable cause) {
 		super(msg, cause);
 		this.messagesByHost.putAll(messagesByHost);
 	}

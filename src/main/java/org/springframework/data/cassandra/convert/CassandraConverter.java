@@ -26,6 +26,7 @@ import com.datastax.driver.core.Row;
  * 
  * @author Alex Shvid
  */
-public interface CassandraConverter extends EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Row> {
+public interface CassandraConverter extends
+		EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Row> {
 
 }

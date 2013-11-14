@@ -26,10 +26,10 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
 
 	public void init() {
-		
+
 		registerBeanDefinitionParser("cluster", new CassandraClusterParser());
 		registerBeanDefinitionParser("keyspace", new CassandraKeyspaceParser());
-		
+
 	}
-	
+
 }

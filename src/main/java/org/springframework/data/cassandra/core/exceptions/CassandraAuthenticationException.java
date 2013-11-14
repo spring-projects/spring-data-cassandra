@@ -25,15 +25,13 @@ import org.springframework.dao.PermissionDeniedDataAccessException;
  * 
  * @author Matthew T. Adams
  */
-public class CassandraAuthenticationException extends
-		PermissionDeniedDataAccessException {
+public class CassandraAuthenticationException extends PermissionDeniedDataAccessException {
 
 	private static final long serialVersionUID = 8556304586797273927L;
 
 	private InetAddress host;
 
-	public CassandraAuthenticationException(InetAddress host, String msg,
-			Throwable cause) {
+	public CassandraAuthenticationException(InetAddress host, String msg, Throwable cause) {
 		super(msg, cause);
 		this.host = host;
 	}

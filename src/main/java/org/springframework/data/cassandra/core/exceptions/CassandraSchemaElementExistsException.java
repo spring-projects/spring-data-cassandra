@@ -19,13 +19,11 @@ package org.springframework.data.cassandra.core.exceptions;
 import org.springframework.dao.NonTransientDataAccessException;
 
 /**
- * Spring data access exception for when Cassandra schema element being created
- * already exists.
+ * Spring data access exception for when Cassandra schema element being created already exists.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraSchemaElementExistsException extends
-		NonTransientDataAccessException {
+public class CassandraSchemaElementExistsException extends NonTransientDataAccessException {
 
 	private static final long serialVersionUID = 7798361273692300162L;
 
@@ -36,8 +34,7 @@ public class CassandraSchemaElementExistsException extends
 	private String elementName;
 	private ElementType elementType;
 
-	public CassandraSchemaElementExistsException(String elementName,
-			ElementType elementType, String msg, Throwable cause) {
+	public CassandraSchemaElementExistsException(String elementName, ElementType elementType, String msg, Throwable cause) {
 		super(msg, cause);
 		this.elementName = elementName;
 		this.elementType = elementType;

@@ -36,8 +36,7 @@ import org.w3c.dom.Element;
  * @author Alex Shvid
  */
 
-
-public class CassandraKeyspaceParser extends AbstractSimpleBeanDefinitionParser  {
+public class CassandraKeyspaceParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
@@ -55,16 +54,15 @@ public class CassandraKeyspaceParser extends AbstractSimpleBeanDefinitionParser 
 		String id = super.resolveId(element, definition, parserContext);
 		return StringUtils.hasText(id) ? id : BeanNames.CASSANDRA_KEYSPACE;
 	}
-	
+
 	@Override
-	protected void doParse(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder) {
-		
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		String name = element.getAttribute("name");
 		if (StringUtils.hasText(name)) {
 			builder.addPropertyValue("keyspace", name);
 		}
-		
+
 		String clusterRef = element.getAttribute("cassandra-cluster-ref");
 		if (!StringUtils.hasText(clusterRef)) {
 			clusterRef = BeanNames.CASSANDRA_CLUSTER;
@@ -78,7 +76,7 @@ public class CassandraKeyspaceParser extends AbstractSimpleBeanDefinitionParser 
 
 		postProcess(builder, element);
 	}
-	
+
 	@Override
 	protected void postProcess(BeanDefinitionBuilder builder, Element element) {
 		List<Element> subElements = DomUtils.getChildElements(element);
@@ -86,28 +84,28 @@ public class CassandraKeyspaceParser extends AbstractSimpleBeanDefinitionParser 
 		// parse nested elements
 		for (Element subElement : subElements) {
 			String name = subElement.getLocalName();
-			
+
 			if ("keyspace-attributes".equals(name)) {
 				builder.addPropertyValue("keyspaceAttributes", parseKeyspaceAttributes(subElement));
 			}
 		}
-	
-	}	
-	
+
+	}
+
 	private BeanDefinition parseKeyspaceAttributes(Element element) {
 		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(KeyspaceAttributes.class);
 		ParsingUtils.setPropertyValue(defBuilder, element, "auto", "auto");
 		ParsingUtils.setPropertyValue(defBuilder, element, "replication-strategy", "replicationStrategy");
 		ParsingUtils.setPropertyValue(defBuilder, element, "replication-factor", "replicationFactor");
 		ParsingUtils.setPropertyValue(defBuilder, element, "durable-writes", "durableWrites");
-		
+
 		List<Element> subElements = DomUtils.getChildElements(element);
 		ManagedList<Object> tables = new ManagedList<Object>(subElements.size());
-		
+
 		// parse nested elements
 		for (Element subElement : subElements) {
 			String name = subElement.getLocalName();
-			
+
 			if ("table".equals(name)) {
 				tables.add(parseTable(subElement));
 			}
@@ -115,10 +113,10 @@ public class CassandraKeyspaceParser extends AbstractSimpleBeanDefinitionParser 
 		if (!tables.isEmpty()) {
 			defBuilder.addPropertyValue("tables", tables);
 		}
-		
+
 		return defBuilder.getBeanDefinition();
-	}	
-	
+	}
+
 	private BeanDefinition parseTable(Element element) {
 		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(TableAttributes.class);
 		ParsingUtils.setPropertyValue(defBuilder, element, "entity", "entity");

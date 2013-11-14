@@ -23,8 +23,8 @@ import java.lang.annotation.Target;
 import org.springframework.data.annotation.Id;
 
 /**
- * Identifies composite row ID in the Cassandra table that contains several
- * fields. Same as @org.springframework.data.annotation.Id
+ * Identifies composite row ID in the Cassandra table that contains several fields. Same as
+ * @org.springframework.data.annotation.Id
  * 
  * Example:
  * 

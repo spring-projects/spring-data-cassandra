@@ -38,11 +38,11 @@ public class CassandraSimpleTypes {
 	private static final Map<Class<?>, Class<?>> primitiveWrapperTypeMap = new HashMap<Class<?>, Class<?>>(8);
 
 	private static final Map<Class<?>, DataType> javaClassToDataType = new HashMap<Class<?>, DataType>();
-	
+
 	private static final Map<DataType.Name, DataType> nameToDataType = new HashMap<DataType.Name, DataType>();
-	
+
 	static {
-		
+
 		primitiveWrapperTypeMap.put(Boolean.class, boolean.class);
 		primitiveWrapperTypeMap.put(Byte.class, byte.class);
 		primitiveWrapperTypeMap.put(Character.class, char.class);
@@ -51,7 +51,7 @@ public class CassandraSimpleTypes {
 		primitiveWrapperTypeMap.put(Integer.class, int.class);
 		primitiveWrapperTypeMap.put(Long.class, long.class);
 		primitiveWrapperTypeMap.put(Short.class, short.class);
-		
+
 		Set<Class<?>> simpleTypes = new HashSet<Class<?>>();
 		for (DataType dataType : DataType.allPrimitiveTypes()) {
 			simpleTypes.add(dataType.asJavaClass());
@@ -72,26 +72,27 @@ public class CassandraSimpleTypes {
 
 	private CassandraSimpleTypes() {
 	}
-	
+
 	public static DataType resolvePrimitive(DataType.Name name) {
 		return nameToDataType.get(name);
 	}
-	
+
 	public static DataType autodetectPrimitive(Class<?> javaClass) {
 		return javaClassToDataType.get(javaClass);
 	}
-	
+
 	public static DataType.Name[] convertPrimitiveTypeArguments(List<TypeInformation<?>> arguments) {
 		DataType.Name[] result = new DataType.Name[arguments.size()];
 		for (int i = 0; i != result.length; ++i) {
 			TypeInformation<?> type = arguments.get(i);
 			DataType dataType = autodetectPrimitive(type.getType());
 			if (dataType == null) {
-				throw new InvalidDataAccessApiUsageException("not found appropriate primitive DataType for type = '" + type.getType());
+				throw new InvalidDataAccessApiUsageException("not found appropriate primitive DataType for type = '"
+						+ type.getType());
 			}
 			result[i] = dataType.getName();
 		}
 		return result;
 	}
-	
+
 }
