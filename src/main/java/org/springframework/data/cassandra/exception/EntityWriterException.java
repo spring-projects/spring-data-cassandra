@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.exception;
 /**
  * Exception to handle failing to write a PersistedEntity to a CQL String or Query object
  * 
- * @author David Webb (dwebb@brightmove.com)
+ * @author David Webb
  * 
  */
 public class EntityWriterException extends Exception {

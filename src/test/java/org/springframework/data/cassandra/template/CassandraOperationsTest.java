@@ -49,7 +49,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import com.datastax.driver.core.Session;
 
 /**
- * @author David Webb (dwebb@brightmove.com)
+ * @author David Webb
  * 
  */
 @RunWith(SpringJUnit4ClassRunner.class)
