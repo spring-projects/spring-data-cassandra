@@ -3,10 +3,16 @@ package org.springframework.data.cassandra.util;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.cassandra.core.ConsistencyLevel;
+import org.springframework.data.cassandra.core.ConsistencyLevelResolver;
+import org.springframework.data.cassandra.core.QueryOptions;
+import org.springframework.data.cassandra.core.RetryPolicy;
+import org.springframework.data.cassandra.core.RetryPolicyResolver;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -188,8 +194,6 @@ public abstract class CqlUtils {
 			}
 		});
 
-		// System.out.println("CQL=" + table.asCQLQuery());
-
 		return result;
 	}
 
@@ -200,6 +204,7 @@ public abstract class CqlUtils {
 	 * @param tableName
 	 * @param entity
 	 * @param objectToSave
+	 * @param optionsByName
 	 * @param mappingContext
 	 * @param beanClassLoader
 	 * 
@@ -207,7 +212,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static Query toInsertQuery(String keyspaceName, String tableName, final Object objectToSave,
-			CassandraPersistentEntity<?> entity) throws EntityWriterException {
+			CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName) throws EntityWriterException {
 
 		final Insert q = QueryBuilder.insertInto(keyspaceName, tableName);
 		final Exception innerException = new Exception();
@@ -242,6 +247,18 @@ public abstract class CqlUtils {
 			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
 		}
 
+		/*
+		 * Add Query Options
+		 */
+		addQueryOptions(q, optionsByName);
+
+		/*
+		 * Add TTL to Insert object
+		 */
+		if (optionsByName.get(QueryOptions.QueryOptionMapKeys.TTL) != null) {
+			q.using(QueryBuilder.ttl((Integer) optionsByName.get(QueryOptions.QueryOptionMapKeys.TTL)));
+		}
+
 		return q;
 
 	}
@@ -260,7 +277,8 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static <T> Batch toInsertBatchQuery(final String keyspaceName, final String tableName,
-			final List<T> objectsToSave, CassandraPersistentEntity<?> entity) throws EntityWriterException {
+			final List<T> objectsToSave, CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName)
+			throws EntityWriterException {
 
 		/*
 		 * Return variable is a Batch statement
@@ -271,9 +289,11 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : objectsToSave) {
 
-			queries.add(toInsertQuery(keyspaceName, tableName, objectToSave, entity));
+			queries.add(toInsertQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
 
 		}
+
+		addQueryOptions(b, optionsByName);
 
 		return b;
 
@@ -288,7 +308,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static Query toDeleteQuery(String keyspace, String tableName, final Object objectToRemove,
-			CassandraPersistentEntity<?> entity) throws EntityWriterException {
+			CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName) throws EntityWriterException {
 
 		final Delete.Selection ds = QueryBuilder.delete();
 		final Delete q = ds.from(keyspace, tableName);
@@ -328,53 +348,10 @@ public abstract class CqlUtils {
 			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
 		}
 
+		addQueryOptions(q, optionsByName);
+
 		return q;
 
-	}
-
-	/**
-	 * Generate the CQL for insert
-	 * 
-	 * @param tableName
-	 * @param entity
-	 * @return
-	 */
-	public static String toInsertCQL(String tableName, final CassandraPersistentEntity<?> entity) {
-
-		final StringBuilder str = new StringBuilder();
-		str.append("INSERT INTO ");
-		str.append(tableName);
-		str.append(" (");
-
-		final List<String> cols = new ArrayList<String>();
-
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-
-				if (str.charAt(str.length() - 1) != '(') {
-					str.append(", ");
-				}
-
-				String columnName = prop.getColumnName();
-				cols.add(columnName);
-
-				str.append(columnName);
-
-			}
-		});
-
-		str.append(") VALUES (");
-
-		for (int i = 0; i < cols.size(); i++) {
-			if (i > 0) {
-				str.append(", ");
-			}
-			str.append("?");
-		}
-
-		str.append(")");
-
-		return str.toString();
 	}
 
 	/**
@@ -423,7 +400,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static <T> Batch toDeleteBatchQuery(String keyspaceName, String tableName, List<T> entities,
-			CassandraPersistentEntity<?> entity) throws EntityWriterException {
+			CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName) throws EntityWriterException {
 
 		/*
 		 * Return variable is a Batch statement
@@ -434,11 +411,39 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : entities) {
 
-			queries.add(toDeleteQuery(keyspaceName, tableName, objectToSave, entity));
+			queries.add(toDeleteQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
 
 		}
 
+		addQueryOptions(b, optionsByName);
+
 		return b;
+
+	}
+
+	/**
+	 * Add common Query options for all types of queries.
+	 * 
+	 * @param q
+	 * @param optionsByName
+	 */
+	private static void addQueryOptions(Query q, Map<String, Object> optionsByName) {
+
+		if (optionsByName == null) {
+			return;
+		}
+
+		/*
+		 * Add Query Options
+		 */
+		if (optionsByName.get(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL) != null) {
+			q.setConsistencyLevel(ConsistencyLevelResolver.resolve((ConsistencyLevel) optionsByName
+					.get(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL)));
+		}
+		if (optionsByName.get(QueryOptions.QueryOptionMapKeys.RETRY_POLICY) != null) {
+			q.setRetryPolicy(RetryPolicyResolver.resolve((RetryPolicy) optionsByName
+					.get(QueryOptions.QueryOptionMapKeys.RETRY_POLICY)));
+		}
 
 	}
 
