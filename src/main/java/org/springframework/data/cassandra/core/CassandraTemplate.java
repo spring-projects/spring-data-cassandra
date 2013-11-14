@@ -32,6 +32,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.exceptions.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -207,7 +208,6 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> void deleteAsychronously(List<T> entities, String tableName) {
-		deleteAsychronously(entities, tableName, new HashMap<String, Object>());
 	}
 
 	/* (non-Javadoc)
@@ -227,7 +227,8 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> void deleteAsychronously(List<T> entities, String tableName, QueryOptions options) {
-		deleteAsychronously(entities, tableName, options.toMap());
+		// TODO Auto-generated method stub
+
 	}
 
 	/* (non-Javadoc)
@@ -963,7 +964,7 @@ public class CassandraTemplate implements CassandraOperations {
 			}
 			return result;
 		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException("no host available", e);
+			throw new CassandraConnectionFailureException(null, "no host available", e);
 		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}
@@ -988,7 +989,7 @@ public class CassandraTemplate implements CassandraOperations {
 			}
 			return null;
 		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException("no host available", e);
+			throw new CassandraConnectionFailureException(null, "no host available", e);
 		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}
