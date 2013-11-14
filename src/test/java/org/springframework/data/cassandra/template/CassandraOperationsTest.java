@@ -25,28 +25,28 @@ import junit.framework.Assert;
 
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
+import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.DataLoader;
+import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.cassandraunit.dataset.yaml.ClassPathYamlDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.config.TestConfig;
-import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.RingMember;
 import org.springframework.data.cassandra.table.LogEntry;
 import org.springframework.data.cassandra.table.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import com.datastax.driver.core.Session;
 
 /**
  * @author David Webb
@@ -57,23 +57,27 @@ import com.datastax.driver.core.Session;
 public class CassandraOperationsTest {
 
 	@Autowired
-	private CassandraTemplate cassandraTemplate;
+	private CassandraOperations cassandraTemplate;
 
 	private static Logger log = LoggerFactory.getLogger(CassandraOperationsTest.class);
 
-	protected Session session;
+	private final static String KEYSPACE_NAME = "test";
+
+	@Rule
+	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet("cql-dataload.cql", "test"),
+			"cassandra.yaml", "localhost", 9042);
 
 	@BeforeClass
 	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
 			InterruptedException {
+
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
 
 		/*
 		 * Load data file to creat the test keyspace before we init the template
 		 */
 		DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:9160");
-		dataLoader.load(new ClassPathYamlDataSet("cassandra-data.yaml"));
-
+		dataLoader.load(new ClassPathYamlDataSet("cassandra-keyspace.yaml"));
 	}
 
 	@Before
@@ -82,15 +86,20 @@ public class CassandraOperationsTest {
 		/*
 		 * Load data file to creat the test keyspace before we init the template
 		 */
-		DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:9160");
-		dataLoader.load(new ClassPathYamlDataSet("cassandra-data.yaml"));
+		// DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:9160");
+		// dataLoader.load(new ClassPathYamlDataSet("cassandra-keyspace.yaml"));
 
 		log.info("Creating Table...");
+		createTables();
 
-		// cassandraTemplate.createTable(User.class);
+	}
 
-		// cassandraTemplate.createTable(LogEntry.class);
+	private void createTables() {
 
+		// cassandraTemplate
+		// .executeQuery("create table users (username text, firstName text, lastName text, PRIMARY KEY (username));");
+
+		// cassandraCQLUnit.
 	}
 
 	@Test
@@ -109,16 +118,7 @@ public class CassandraOperationsTest {
 		}
 	}
 
-	/**
-	 * This test inserts and selects users from the test.users table This is testing the CassandraTemplate:
-	 * <ul>
-	 * <li>insert()</li>
-	 * <li>selectOne()</li>
-	 * <li>select()</li>
-	 * <li>remove()</li>
-	 * </ul>
-	 */
-	// @Test
+	@Test
 	public void UsersTest() {
 
 		User u = new User();
@@ -165,7 +165,7 @@ public class CassandraOperationsTest {
 
 	}
 
-	@After
+	// @After
 	public void clearCassandra() {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 
@@ -173,6 +173,7 @@ public class CassandraOperationsTest {
 
 	@AfterClass
 	public static void stopCassandra() {
+		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
 	}
 }
