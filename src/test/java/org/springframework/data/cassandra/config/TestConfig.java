@@ -3,6 +3,7 @@ package org.springframework.data.cassandra.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraKeyspaceFactoryBean;
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 
 import com.datastax.driver.core.Cluster;
@@ -51,9 +52,9 @@ public class TestConfig extends AbstractCassandraConfiguration {
 	}
 
 	@Bean
-	public CassandraTemplate cassandraTemplate() {
+	public CassandraOperations cassandraTemplate() {
 
-		CassandraTemplate template = new CassandraTemplate(keyspaceFactoryBean().getObject());
+		CassandraOperations template = new CassandraTemplate(keyspaceFactoryBean().getObject());
 
 		return template;
 

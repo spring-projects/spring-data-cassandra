@@ -1,0 +1,1 @@
+create table users (username text, firstName text, lastName text, age int, PRIMARY KEY (username));
