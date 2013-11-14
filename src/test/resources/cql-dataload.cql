@@ -1,1 +1,1 @@
-create table users (username text, firstName text, lastName text, age int, PRIMARY KEY (username));
+create table book (isbn text, title text, author text, pages int, PRIMARY KEY (isbn));
