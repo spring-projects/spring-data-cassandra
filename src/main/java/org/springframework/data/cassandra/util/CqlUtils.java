@@ -300,7 +300,7 @@ public abstract class CqlUtils {
 						if (prop.isIdProperty()) {
 							q.where(QueryBuilder.eq(prop.getColumnName(), o));
 						} else {
-							q.with(QueryBuilder.add(prop.getColumnName(), o));
+							q.with(QueryBuilder.set(prop.getColumnName(), o));
 						}
 					}
 
