@@ -19,13 +19,12 @@ package org.springframework.data.cassandra.core.exceptions;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
- * Spring data access exception for a Cassandra query that is syntactically
- * correct but has an invalid configuration clause.
+ * Spring data access exception for a Cassandra query that is syntactically correct but has an invalid configuration
+ * clause.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraInvalidConfigurationInQueryException extends
-		InvalidDataAccessApiUsageException {
+public class CassandraInvalidConfigurationInQueryException extends InvalidDataAccessApiUsageException {
 
 	private static final long serialVersionUID = 4594321191806182918L;
 
@@ -33,8 +32,7 @@ public class CassandraInvalidConfigurationInQueryException extends
 		super(msg);
 	}
 
-	public CassandraInvalidConfigurationInQueryException(String msg,
-			Throwable cause) {
+	public CassandraInvalidConfigurationInQueryException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 }

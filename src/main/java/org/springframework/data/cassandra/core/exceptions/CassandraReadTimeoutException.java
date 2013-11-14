@@ -29,8 +29,7 @@ public class CassandraReadTimeoutException extends QueryTimeoutException {
 
 	private boolean wasDataReceived;
 
-	public CassandraReadTimeoutException(boolean wasDataReceived, String msg,
-			Throwable cause) {
+	public CassandraReadTimeoutException(boolean wasDataReceived, String msg, Throwable cause) {
 		super(msg);
 		this.wasDataReceived = wasDataReceived;
 	}

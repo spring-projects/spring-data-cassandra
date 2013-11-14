@@ -23,12 +23,11 @@ import org.springframework.data.cassandra.mapping.Index;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
- * This is an example of dynamic table that creates each time new column
- * with Notification timestamp annotated by @ColumnId.
+ * This is an example of dynamic table that creates each time new column with Notification timestamp annotated by
+ * @ColumnId.
  * 
- * By default it is active Notification until user deactivate it.
- * This table uses index on the field active to access in WHERE cause only 
- * for active notifications.
+ * By default it is active Notification until user deactivate it. This table uses index on the field active to access in
+ * WHERE cause only for active notifications.
  * 
  * @author Alex Shvid
  */

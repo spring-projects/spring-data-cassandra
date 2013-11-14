@@ -34,7 +34,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.util.ClassTypeInformation;
 
-
 /**
  * Unit tests for {@link BasicCassandraPersistentEntity}.
  * 
@@ -43,15 +42,14 @@ import org.springframework.data.util.ClassTypeInformation;
 @RunWith(MockitoJUnitRunner.class)
 public class BasicCassandraPersistentEntityUnitTests {
 
-
 	@Mock
 	ApplicationContext context;
-	
-    @BeforeClass
-    public static void startCassandra()
-            throws IOException, TTransportException, ConfigurationException, InterruptedException {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
-    }
+
+	@BeforeClass
+	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
+			InterruptedException {
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+	}
 
 	@Test
 	public void subclassInheritsAtDocumentAnnotation() {
@@ -84,16 +82,16 @@ public class BasicCassandraPersistentEntityUnitTests {
 
 		assertThat(entity.getTable(), is("user_line"));
 	}
-	
-    @After
-    public void clearCassandra() {
-        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-    }
 
-    @AfterClass
-    public static void stopCassandra() {
-    	EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
-    }
+	@After
+	public void clearCassandra() {
+		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+	}
+
+	@AfterClass
+	public static void stopCassandra() {
+		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
+	}
 
 	@Table(name = "messages")
 	class Message {
@@ -115,12 +113,12 @@ public class BasicCassandraPersistentEntityUnitTests {
 	}
 
 	class MappingBean {
-		
+
 		String userLine;
 
 		public String getUserLine() {
 			return userLine;
 		}
 	}
-	
+
 }

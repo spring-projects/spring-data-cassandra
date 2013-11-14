@@ -31,7 +31,7 @@ import com.datastax.driver.core.DataType;
 public @interface Qualify {
 
 	DataType.Name type();
-	
+
 	DataType.Name[] typeArguments() default {};
-	
+
 }

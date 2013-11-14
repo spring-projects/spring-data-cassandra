@@ -35,5 +35,5 @@ import org.springframework.data.annotation.Persistent;
 public @interface Table {
 
 	String name() default "";
-	
+
 }

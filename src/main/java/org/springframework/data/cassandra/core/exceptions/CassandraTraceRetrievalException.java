@@ -23,8 +23,7 @@ import org.springframework.dao.TransientDataAccessException;
  * 
  * @author Matthew T. Adams
  */
-public class CassandraTraceRetrievalException extends
-		TransientDataAccessException {
+public class CassandraTraceRetrievalException extends TransientDataAccessException {
 
 	private static final long serialVersionUID = -3163557220324700239L;
 

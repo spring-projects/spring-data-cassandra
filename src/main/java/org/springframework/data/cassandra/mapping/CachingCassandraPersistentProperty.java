@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
-
 /**
  * {@link CassandraPersistentProperty} caching access to {@link #isIdProperty()} and {@link #getColumnName()}.
  * 
@@ -32,7 +31,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	private Boolean isColumnId;
 	private String columnName;
 	private Boolean isIndexed;
-	
+
 	/**
 	 * Creates a new {@link CachingCassandraPersistentProperty}.
 	 * 
@@ -45,7 +44,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 			CassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#isIdProperty()
@@ -59,7 +58,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 
 		return this.isIdProperty;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#isColumnId()
@@ -73,7 +72,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 
 		return this.isColumnId;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#getFieldName()
@@ -87,7 +86,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 
 		return this.columnName;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#isIndexed()

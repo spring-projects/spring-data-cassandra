@@ -22,15 +22,15 @@ import org.springframework.data.cassandra.mapping.Index;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
- * This is an example of the Users statis table, where all fields are columns
- * in Cassandra row. Some fields can be Set,List,Map like emails.
+ * This is an example of the Users statis table, where all fields are columns in Cassandra row. Some fields can be
+ * Set,List,Map like emails.
  * 
- * User contains base information related for separate user, like
- * names, additional information, emails, following users, friends.
+ * User contains base information related for separate user, like names, additional information, emails, following
+ * users, friends.
  * 
  * @author Alex Shvid
  */
-@Table(name="users")
+@Table(name = "users")
 public class User {
 
 	/*
@@ -38,40 +38,40 @@ public class User {
 	 */
 	@Id
 	private String username;
-	
+
 	/*
 	 * Public information
 	 */
 	private String firstName;
 	private String lastName;
-	
+
 	/*
 	 * Secondary index, used only on fields with common information,
 	 * not effective on email, username
 	 */
 	@Index
 	private String place;
-	
+
 	/*
 	 * User emails
 	 */
 	private Set<String> emails;
-	
+
 	/*
 	 * Password
 	 */
 	private String password;
-	
+
 	/*
 	 * Age 
 	 */
 	private int age;
-	
+
 	/*
 	 * Following other users in userline
 	 */
 	private Set<String> following;
-	
+
 	/*
 	 * Friends of the user
 	 */

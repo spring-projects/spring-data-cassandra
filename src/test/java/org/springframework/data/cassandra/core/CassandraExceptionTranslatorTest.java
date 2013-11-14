@@ -32,8 +32,7 @@ public class CassandraExceptionTranslatorTest {
 		CassandraTableExistsException x = (CassandraTableExistsException) dax;
 		assertEquals(table, x.getTableName());
 		assertEquals(x.getTableName(), x.getElementName());
-		assertEquals(CassandraSchemaElementExistsException.ElementType.TABLE,
-				x.getElementType());
+		assertEquals(CassandraSchemaElementExistsException.ElementType.TABLE, x.getElementType());
 		assertEquals(cx, x.getCause());
 	}
 
@@ -49,9 +48,7 @@ public class CassandraExceptionTranslatorTest {
 		CassandraKeyspaceExistsException x = (CassandraKeyspaceExistsException) dax;
 		assertEquals(keyspace, x.getKeyspaceName());
 		assertEquals(x.getKeyspaceName(), x.getElementName());
-		assertEquals(
-				CassandraSchemaElementExistsException.ElementType.KEYSPACE,
-				x.getElementType());
+		assertEquals(CassandraSchemaElementExistsException.ElementType.KEYSPACE, x.getElementType());
 		assertEquals(cx, x.getCause());
 	}
 

@@ -30,5 +30,5 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 * @return
 	 */
 	String getTable();
-	
+
 }

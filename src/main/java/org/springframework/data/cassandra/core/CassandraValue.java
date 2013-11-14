@@ -25,10 +25,10 @@ import com.datastax.driver.core.DataType;
  * @author Alex Shvid
  */
 public class CassandraValue {
-	
+
 	private final ByteBuffer value;
 	private final DataType type;
-	
+
 	public CassandraValue(ByteBuffer value, DataType type) {
 		this.value = value;
 		this.type = type;
@@ -41,5 +41,5 @@ public class CassandraValue {
 	public DataType getType() {
 		return type;
 	}
-	
+
 }

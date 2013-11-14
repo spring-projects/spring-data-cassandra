@@ -15,37 +15,36 @@ import com.datastax.driver.core.Session;
 
 public class DriverTests {
 
-    @BeforeClass
-    public static void startCassandra()
-            throws IOException, TTransportException, ConfigurationException, InterruptedException {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
-    }
-    
+	@BeforeClass
+	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
+			InterruptedException {
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+	}
+
 	@Test
 	public void test() throws Exception {
-		
+
 		Cluster.Builder builder = Cluster.builder().addContactPoint("127.0.0.1");
 
-		//builder.withCompression(ProtocolOptions.Compression.SNAPPY);
-		
-		Cluster cluster = builder.build();
-		
-		Session session = cluster.connect();
-		
-		session.shutdown();
-		
-		cluster.shutdown();
-		
-		
-	}
-	
-    @After
-    public void clearCassandra() {
-        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-    }
+		// builder.withCompression(ProtocolOptions.Compression.SNAPPY);
 
-    @AfterClass
-    public static void stopCassandra() {
-    	EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
-    }
+		Cluster cluster = builder.build();
+
+		Session session = cluster.connect();
+
+		session.shutdown();
+
+		cluster.shutdown();
+
+	}
+
+	@After
+	public void clearCassandra() {
+		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+	}
+
+	@AfterClass
+	public static void stopCassandra() {
+		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
+	}
 }

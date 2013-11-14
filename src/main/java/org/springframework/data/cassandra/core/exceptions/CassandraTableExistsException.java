@@ -17,18 +17,15 @@
 package org.springframework.data.cassandra.core.exceptions;
 
 /**
- * Spring data access exception for when a Cassandra table being created already
- * exists.
+ * Spring data access exception for when a Cassandra table being created already exists.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraTableExistsException extends
-		CassandraSchemaElementExistsException {
+public class CassandraTableExistsException extends CassandraSchemaElementExistsException {
 
 	private static final long serialVersionUID = 6032967419751410352L;
 
-	public CassandraTableExistsException(String tableName, String msg,
-			Throwable cause) {
+	public CassandraTableExistsException(String tableName, String msg, Throwable cause) {
 		super(tableName, ElementType.TABLE, msg, cause);
 	}
 

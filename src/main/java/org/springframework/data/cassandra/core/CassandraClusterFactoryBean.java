@@ -41,34 +41,34 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author Alex Shvid
  */
 
-public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
-		InitializingBean, DisposableBean, PersistenceExceptionTranslator {
+public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, InitializingBean, DisposableBean,
+		PersistenceExceptionTranslator {
 
 	private static final int DEFAULT_PORT = 9042;
-	
+
 	private Cluster cluster;
-	
+
 	private String contactPoints;
 	private int port = DEFAULT_PORT;
 	private CompressionType compressionType;
-	
+
 	private PoolingOptionsConfig localPoolingOptions;
 	private PoolingOptionsConfig remotePoolingOptions;
 	private SocketOptionsConfig socketOptions;
-	
+
 	private AuthProvider authProvider;
 	private LoadBalancingPolicy loadBalancingPolicy;
 	private ReconnectionPolicy reconnectionPolicy;
 	private RetryPolicy retryPolicy;
-	
+
 	private boolean metricsEnabled = true;
-	
+
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	public Cluster getObject() throws Exception {
 		return cluster;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
@@ -84,7 +84,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
 	public boolean isSingleton() {
 		return true;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
@@ -92,22 +92,21 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
 	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 		return exceptionTranslator.translateExceptionIfPossible(ex);
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	public void afterPropertiesSet() throws Exception {
-		
+
 		if (!StringUtils.hasText(contactPoints)) {
-			throw new IllegalArgumentException(
-					"at least one server is required");
+			throw new IllegalArgumentException("at least one server is required");
 		}
-		
+
 		Cluster.Builder builder = Cluster.builder();
 
 		builder.addContactPoints(StringUtils.commaDelimitedListToStringArray(contactPoints)).withPort(port);
-		
+
 		if (compressionType != null) {
 			builder.withCompression(convertCompressionType(compressionType));
 		}
@@ -123,33 +122,33 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
 		if (socketOptions != null) {
 			builder.withSocketOptions(configSocketOptions(socketOptions));
 		}
-		
+
 		if (authProvider != null) {
 			builder.withAuthProvider(authProvider);
 		}
-		
+
 		if (loadBalancingPolicy != null) {
 			builder.withLoadBalancingPolicy(loadBalancingPolicy);
 		}
-		
+
 		if (reconnectionPolicy != null) {
 			builder.withReconnectionPolicy(reconnectionPolicy);
 		}
-		
+
 		if (retryPolicy != null) {
 			builder.withRetryPolicy(retryPolicy);
 		}
-		
+
 		if (!metricsEnabled) {
 			builder.withoutMetrics();
-		}	
-		
+		}
+
 		Cluster cluster = builder.build();
-		
+
 		// initialize property
 		this.cluster = cluster;
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
@@ -169,7 +168,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
 	public void setCompressionType(CompressionType compressionType) {
 		this.compressionType = compressionType;
 	}
-	
+
 	public void setLocalPoolingOptions(PoolingOptionsConfig localPoolingOptions) {
 		this.localPoolingOptions = localPoolingOptions;
 	}
@@ -185,7 +184,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
 	public void setAuthProvider(AuthProvider authProvider) {
 		this.authProvider = authProvider;
 	}
-	
+
 	public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
 		this.loadBalancingPolicy = loadBalancingPolicy;
 	}
@@ -203,23 +202,25 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
 	}
 
 	private static Compression convertCompressionType(CompressionType type) {
-		switch(type) {
+		switch (type) {
 		case NONE:
-			return Compression.NONE;		
+			return Compression.NONE;
 		case SNAPPY:
 			return Compression.SNAPPY;
 		}
 		throw new IllegalArgumentException("unknown compression type " + type);
 	}
-	
+
 	private static PoolingOptions configPoolingOptions(HostDistance hostDistance, PoolingOptionsConfig config) {
 		PoolingOptions poolingOptions = new PoolingOptions();
 
 		if (config.getMinSimultaneousRequests() != null) {
-			poolingOptions.setMinSimultaneousRequestsPerConnectionThreshold(hostDistance, config.getMinSimultaneousRequests());
+			poolingOptions
+					.setMinSimultaneousRequestsPerConnectionThreshold(hostDistance, config.getMinSimultaneousRequests());
 		}
 		if (config.getMaxSimultaneousRequests() != null) {
-			poolingOptions.setMaxSimultaneousRequestsPerConnectionThreshold(hostDistance, config.getMaxSimultaneousRequests());
+			poolingOptions
+					.setMaxSimultaneousRequestsPerConnectionThreshold(hostDistance, config.getMaxSimultaneousRequests());
 		}
 		if (config.getCoreConnections() != null) {
 			poolingOptions.setCoreConnectionsPerHost(hostDistance, config.getCoreConnections());
@@ -227,13 +228,13 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
 		if (config.getMaxConnections() != null) {
 			poolingOptions.setMaxConnectionsPerHost(hostDistance, config.getMaxConnections());
 		}
-		
+
 		return poolingOptions;
 	}
-	
+
 	private static SocketOptions configSocketOptions(SocketOptionsConfig config) {
 		SocketOptions socketOptions = new SocketOptions();
-		
+
 		if (config.getConnectTimeoutMls() != null) {
 			socketOptions.setConnectTimeoutMillis(config.getConnectTimeoutMls());
 		}
@@ -255,7 +256,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>,
 		if (config.getSendBufferSize() != null) {
 			socketOptions.setSendBufferSize(config.getSendBufferSize());
 		}
-		
+
 		return socketOptions;
 	}
 }

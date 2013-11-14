@@ -23,15 +23,15 @@ import org.springframework.data.cassandra.mapping.RowId;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
- * This is an example of the Users statis table, where all fields are columns
- * in Cassandra row. Some fields can be Set,List,Map like emails.
+ * This is an example of the Users statis table, where all fields are columns in Cassandra row. Some fields can be
+ * Set,List,Map like emails.
  * 
- * User contains base information related for separate user, like
- * names, additional information, emails, following users, friends.
+ * User contains base information related for separate user, like names, additional information, emails, following
+ * users, friends.
  * 
  * @author Alex Shvid
  */
-@Table(name="log_entry")
+@Table(name = "log_entry")
 public class LogEntry {
 
 	/*
@@ -39,9 +39,9 @@ public class LogEntry {
 	 */
 	@RowId
 	private Date logDate;
-	
+
 	private String hostname;
-	
+
 	private String logData;
 
 	/**
@@ -85,5 +85,5 @@ public class LogEntry {
 	public void setLogData(String logData) {
 		this.logData = logData;
 	}
-	
+
 }

@@ -32,8 +32,9 @@ import org.springframework.data.util.TypeInformation;
  * 
  * @author Alex Shvid
  */
-public class CassandraMappingContext extends AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty>
-implements ApplicationContextAware  {
+public class CassandraMappingContext extends
+		AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty> implements
+		ApplicationContextAware {
 
 	private ApplicationContext context;
 
@@ -80,5 +81,5 @@ implements ApplicationContextAware  {
 		this.context = applicationContext;
 		super.setApplicationContext(applicationContext);
 	}
-	
+
 }

@@ -19,13 +19,11 @@ package org.springframework.data.cassandra.core.exceptions;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
- * Spring data access exception for a Cassandra query that's syntactically
- * correct but invalid.
+ * Spring data access exception for a Cassandra query that's syntactically correct but invalid.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraInvalidQueryException extends
-		InvalidDataAccessApiUsageException {
+public class CassandraInvalidQueryException extends InvalidDataAccessApiUsageException {
 
 	private static final long serialVersionUID = 4594321191806182918L;
 

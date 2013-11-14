@@ -19,13 +19,11 @@ package org.springframework.data.cassandra.core.exceptions;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 
 /**
- * Spring data access exception for when access to a Cassandra element is
- * denied.
+ * Spring data access exception for when access to a Cassandra element is denied.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraUnauthorizedException extends
-		PermissionDeniedDataAccessException {
+public class CassandraUnauthorizedException extends PermissionDeniedDataAccessException {
 
 	private static final long serialVersionUID = 4618185356687726647L;
 

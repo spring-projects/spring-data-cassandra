@@ -38,15 +38,15 @@ import org.springframework.util.StringUtils;
  * @author Alex Shvid
  */
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty> implements
-CassandraPersistentEntity<T>, ApplicationContextAware {
+		CassandraPersistentEntity<T>, ApplicationContextAware {
 
 	private final String table;
 	private final SpelExpressionParser parser;
 	private final StandardEvaluationContext context;
-	
+
 	/**
-	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the
-	 * table name to the entities simple type name.
+	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
+	 * name to the entities simple type name.
 	 * 
 	 * @param typeInformation
 	 */
@@ -67,7 +67,7 @@ CassandraPersistentEntity<T>, ApplicationContextAware {
 			this.table = fallback;
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -78,7 +78,7 @@ CassandraPersistentEntity<T>, ApplicationContextAware {
 		context.setBeanResolver(new BeanFactoryResolver(applicationContext));
 		context.setRootObject(applicationContext);
 	}
-	
+
 	/**
 	 * Returns the table the entity shall be persisted to.
 	 * 
@@ -88,7 +88,7 @@ CassandraPersistentEntity<T>, ApplicationContextAware {
 		Expression expression = parser.parseExpression(table, ParserContext.TEMPLATE_EXPRESSION);
 		return expression.getValue(context, String.class);
 	}
-	
+
 	/**
 	 * {@link Comparator} implementation inspecting the {@link CassandraPersistentProperty}'s order.
 	 * 
@@ -113,8 +113,8 @@ CassandraPersistentEntity<T>, ApplicationContextAware {
 			}
 
 			return o1.getColumnName().compareTo(o2.getColumnName());
-			
+
 		}
 	}
-	
+
 }

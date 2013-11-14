@@ -21,12 +21,12 @@ import com.datastax.driver.core.Host;
 
 /**
  * @author David Webb
- *
+ * 
  */
 public final class RingMember implements Serializable {
 
 	private static final long serialVersionUID = 1345346346L;
-	
+
 	/*
 	 * Ring attributes
 	 */
@@ -34,8 +34,9 @@ public final class RingMember implements Serializable {
 	public final String address;
 	public final String DC;
 	public final String rack;
-	//public final String status;
-	//public final String state;
+
+	// public final String status;
+	// public final String state;
 
 	public RingMember(Host h) {
 		this.hostName = h.getAddress().getHostName();
