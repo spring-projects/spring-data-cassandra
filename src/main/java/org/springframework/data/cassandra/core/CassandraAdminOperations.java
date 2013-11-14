@@ -20,7 +20,7 @@ import java.util.Map;
 import com.datastax.driver.core.TableMetadata;
 
 /**
- * @author David Webb (dwebb@brightmove.com)
+ * @author David Webb
  * 
  */
 public interface CassandraAdminOperations {

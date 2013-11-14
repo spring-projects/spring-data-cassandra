@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra;
 
 /**
- * @author David Webb (dwebb@brightmove.com)
+ * @author David Webb
  * 
  */
 public interface Constants {

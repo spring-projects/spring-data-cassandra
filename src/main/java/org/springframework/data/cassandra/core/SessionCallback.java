@@ -22,8 +22,8 @@ import com.datastax.driver.core.Session;
 /**
  * Interface for operations on a Cassnadra Session.
  * 
- * @author David Webb (dwebb@brightmove.com)
- *
+ * @author David Webb
+ * 
  * @param <T>
  */
 public interface SessionCallback<T> {
@@ -36,5 +36,5 @@ public interface SessionCallback<T> {
 	 * @throws DataAccessException
 	 */
 	T doInSession(Session s) throws DataAccessException;
-	
+
 }

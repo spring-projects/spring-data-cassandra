@@ -27,7 +27,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  * Utilties to convert Cassandra Annotated objects to Queries and CQL.
  * 
  * @author Alex Shvid
- * @author David Webb (dwebb@brightmove.com)
+ * @author David Webb
  * 
  */
 public abstract class CqlUtils {
