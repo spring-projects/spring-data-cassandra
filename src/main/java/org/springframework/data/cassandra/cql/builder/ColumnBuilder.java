@@ -10,6 +10,8 @@ import org.springframework.data.cassandra.cql.CqlStringUtils;
 import org.springframework.data.cassandra.mapping.KeyType;
 import org.springframework.data.cassandra.mapping.Ordering;
 
+import com.datastax.driver.core.DataType;
+
 /**
  * Builder class to help construct CQL statements that involve column manipulation. Not threadsafe.
  * <p/>
@@ -28,7 +30,7 @@ public class ColumnBuilder {
 	public static final Ordering DFAULT_ORDERING = ASCENDING;
 
 	private String name;
-	private String type;
+	private DataType type;
 	private KeyType keyType;
 	private Ordering ordering;
 
@@ -51,7 +53,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	public ColumnBuilder type(String type) {
+	public ColumnBuilder type(DataType type) {
 		this.type = type;
 		return this;
 	}
@@ -136,7 +138,7 @@ public class ColumnBuilder {
 		return name;
 	}
 
-	public String getType() {
+	public DataType getType() {
 		return type;
 	}
 
@@ -158,6 +160,7 @@ public class ColumnBuilder {
 
 	@Override
 	public String toString() {
-		return toCql(null).append(" /* key=").append(keyType).append(", order=").append(ordering).append(" */").toString();
+		return toCql(null).append(" /* keyType=").append(keyType).append(", ordering=").append(ordering).append(" */ ")
+				.toString();
 	}
 }

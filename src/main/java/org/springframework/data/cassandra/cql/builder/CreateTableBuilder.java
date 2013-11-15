@@ -17,6 +17,8 @@ import org.springframework.data.cassandra.cql.CqlStringUtils;
 import org.springframework.data.cassandra.mapping.KeyType;
 import org.springframework.data.cassandra.mapping.Ordering;
 
+import com.datastax.driver.core.DataType;
+
 /**
  * Builder class to construct CQL for a <code>CREATE TABLE</code> statement. Not threadsafe.
  * 
@@ -129,24 +131,24 @@ public class CreateTableBuilder {
 		return this;
 	}
 
-	public CreateTableBuilder column(String name, String type) {
+	public CreateTableBuilder column(String name, DataType type) {
 		return column(name, type, null, null);
 	}
 
-	public CreateTableBuilder partitionColumn(String name, String type) {
+	public CreateTableBuilder partitionKeyColumn(String name, DataType type) {
 		return column(name, type, PARTITION, null);
 	}
 
-	public CreateTableBuilder primaryKeyColumn(String name, String type) {
+	public CreateTableBuilder primaryKeyColumn(String name, DataType type) {
 		return primaryKeyColumn(name, type, ASCENDING);
 	}
 
-	public CreateTableBuilder primaryKeyColumn(String name, String type, Ordering order) {
+	public CreateTableBuilder primaryKeyColumn(String name, DataType type, Ordering order) {
 		return column(name, type, PRIMARY, order);
 	}
 
-	protected CreateTableBuilder column(String name, String type, KeyType key, Ordering order) {
-		columns().add(new ColumnBuilder().name(name).type(type).keyType(key).ordering(order));
+	protected CreateTableBuilder column(String name, DataType type, KeyType keyType, Ordering ordering) {
+		columns().add(new ColumnBuilder().name(name).type(type).keyType(keyType).ordering(ordering));
 		return this;
 	}
 
@@ -309,10 +311,10 @@ public class CreateTableBuilder {
 								cql.append(", ");
 							}
 
-							cql.append("'").append(entry.getKey()).append("'"); // 'name'
+							cql.append(singleQuote(entry.getKey())); // 'name'
 							cql.append(" : ");
 							Object entryValue = entry.getValue();
-							cql.append("'").append(entryValue == null ? "" : entryValue.toString()).append("'"); // 'value'
+							cql.append(singleQuote(entryValue == null ? "" : entryValue.toString())); // 'value'
 						}
 						cql.append(" }");
 
