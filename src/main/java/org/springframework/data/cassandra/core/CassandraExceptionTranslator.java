@@ -18,19 +18,19 @@ package org.springframework.data.cassandra.core;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.core.exceptions.CassandraAuthenticationException;
+import org.springframework.data.cassandra.core.exceptions.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.core.exceptions.CassandraInsufficientReplicasAvailableException;
 import org.springframework.data.cassandra.core.exceptions.CassandraInternalException;
 import org.springframework.data.cassandra.core.exceptions.CassandraInvalidConfigurationInQueryException;
 import org.springframework.data.cassandra.core.exceptions.CassandraInvalidQueryException;
-import org.springframework.data.cassandra.core.exceptions.CassandraTypeMismatchException;
 import org.springframework.data.cassandra.core.exceptions.CassandraKeyspaceExistsException;
-import org.springframework.data.cassandra.core.exceptions.CassandraConnectionFailureException;
-import org.springframework.data.cassandra.core.exceptions.CassandraReadTimeoutException;
 import org.springframework.data.cassandra.core.exceptions.CassandraQuerySyntaxException;
+import org.springframework.data.cassandra.core.exceptions.CassandraReadTimeoutException;
 import org.springframework.data.cassandra.core.exceptions.CassandraTableExistsException;
 import org.springframework.data.cassandra.core.exceptions.CassandraTraceRetrievalException;
 import org.springframework.data.cassandra.core.exceptions.CassandraTruncateException;
+import org.springframework.data.cassandra.core.exceptions.CassandraTypeMismatchException;
 import org.springframework.data.cassandra.core.exceptions.CassandraUnauthorizedException;
-import org.springframework.data.cassandra.core.exceptions.CassandraInsufficientReplicasAvailableException;
 import org.springframework.data.cassandra.core.exceptions.CassandraUncategorizedException;
 import org.springframework.data.cassandra.core.exceptions.CassandraWriteTimeoutException;
 
@@ -72,6 +72,10 @@ public class CassandraExceptionTranslator implements PersistenceExceptionTransla
 
 		if (!(x instanceof DriverException)) {
 			return null;
+		}
+
+		if (x instanceof DataAccessException) {
+			return (DataAccessException) x;
 		}
 
 		// Remember: subclasses must come before superclasses, otherwise the

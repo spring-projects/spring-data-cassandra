@@ -20,56 +20,60 @@ import java.util.Map;
 import com.datastax.driver.core.TableMetadata;
 
 /**
- * @author David Webb
+ * Operations for managing a Cassandra keyspace.
  * 
+ * @author David Webb
+ * @author Matthew T. Adams
  */
 public interface CassandraAdminOperations {
 
 	/**
-	 * Get the Table Meta Data from Cassandra
+	 * Get the given table's metadata.
 	 * 
-	 * @param entityClass
-	 * @param tableName
-	 * @return
+	 * @param tableName The name of the table.
 	 */
-	TableMetadata getTableMetadata(Class<?> entityClass, String tableName);
+	TableMetadata getTableMetadata(String tableName);
 
 	/**
-	 * Create a table with the name and fields indicated by the entity class
+	 * Create a table with the name given and fields corresponding to the given class. If the table already exists and
+	 * parameter <code>ifNotExists</code> is {@literal true}, this is a no-op and {@literal false} is returned. If the
+	 * table doesn't exist, parameter <code>ifNotExists</code> is ignored, the table is created and {@literal true} is
+	 * returned.
 	 * 
-	 * @param ifNotExists
-	 * @param tableName
-	 * @param entityClass
-	 * @param optionsByName
+	 * @param ifNotExists If true, will only create the table if it doesn't exist, else the create operation will be
+	 *          ignored and the method will return {@literal false}.
+	 * @param tableName The name of the table.
+	 * @param entityClass The class whose fields determine the columns created.
+	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
+	 * @return Returns true if a table was created, false if not.
 	 */
-	void createTable(boolean ifNotExists, String tableName, Class<?> entityClass, Map<String, Object> optionsByName);
+	boolean createTable(boolean ifNotExists, String tableName, Class<?> entityClass, Map<String, Object> optionsByName);
 
 	/**
-	 * Alter table with the name and fields indicated by the entity class
+	 * Add columns to the given table from the given class. If parameter dropRemovedAttributColumns is true, then this
+	 * effectively becomes a synchronization operation between the class's fields and the existing table's columns.
 	 * 
-	 * @param entityClass class that determines metadata of the table to create/drop.
-	 * @param tableName explicit name of the table
+	 * @param tableName The name of the existing table.
+	 * @param entityClass The class whose fields determine the columns added.
+	 * @param dropRemovedAttributeColumns Whether to drop columns that exist on the table but that don't have
+	 *          corresponding fields in the class. If true, this effectively becomes a synchronziation operation.
 	 */
 	void alterTable(String tableName, Class<?> entityClass, boolean dropRemovedAttributeColumns);
 
 	/**
-	 * @param tableName
-	 * @param entityClass
+	 * Drops the existing table with the given name and creates a new one; basically a {@link #dropTable(String)} followed
+	 * by a {@link #createTable(boolean, String, Class, Map)}.
+	 * 
+	 * @param tableName The name of the table.
+	 * @param entityClass The class whose fields determine the new table's columns.
+	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
 	 */
-	void replaceTable(String tableName, Class<?> entityClass);
+	void replaceTable(String tableName, Class<?> entityClass, Map<String, Object> optionsByName);
 
 	/**
-	 * Alter table with the name and fields indicated by the entity class
+	 * Drops the named table.
 	 * 
-	 * @param entityClass class that determines metadata of the table to create/drop.
-	 */
-	void dropTable(Class<?> entityClass);
-
-	/**
-	 * Alter table with the name and fields indicated by the entity class
-	 * 
-	 * @param tableName explicit name of the table.
+	 * @param tableName The name of the table.
 	 */
 	void dropTable(String tableName);
-
 }

@@ -9,6 +9,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.exceptions.CassandraTableExistsException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.util.CqlUtils;
@@ -20,16 +21,16 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
 /**
- *
+ * Default implementation of {@link CassandraAdminOperations}.
  */
-public class CassandraAdmin implements CassandraAdminOperations {
+public class CassandraAdminTemplate implements CassandraAdminOperations {
 
-	private static Logger log = LoggerFactory.getLogger(CassandraAdmin.class);
+	private static Logger log = LoggerFactory.getLogger(CassandraAdminTemplate.class);
 
-	private final Keyspace keyspace;
-	private final Session session;
-	private final CassandraConverter cassandraConverter;
-	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+	private Keyspace keyspace;
+	private Session session;
+	private CassandraConverter converter;
+	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
@@ -40,18 +41,38 @@ public class CassandraAdmin implements CassandraAdminOperations {
 	 * 
 	 * @param keyspace must not be {@literal null}.
 	 */
-	public CassandraAdmin(Keyspace keyspace) {
+	public CassandraAdminTemplate(Keyspace keyspace) {
+		setKeyspace(keyspace);
+	}
+
+	protected CassandraAdminTemplate setKeyspace(Keyspace keyspace) {
+		Assert.notNull(keyspace);
 		this.keyspace = keyspace;
-		this.session = keyspace.getSession();
-		this.cassandraConverter = keyspace.getCassandraConverter();
-		this.mappingContext = this.cassandraConverter.getMappingContext();
+		return setSession(keyspace.getSession()).setCassandraConverter(keyspace.getCassandraConverter());
+	}
+
+	protected CassandraAdminTemplate setSession(Session session) {
+		Assert.notNull(session);
+		return this;
+	}
+
+	protected CassandraAdminTemplate setCassandraConverter(CassandraConverter converter) {
+		Assert.notNull(converter);
+		this.converter = converter;
+		return setMappingContext(converter.getMappingContext());
+	}
+
+	protected CassandraAdminTemplate setMappingContext(
+			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+		Assert.notNull(mappingContext);
+		return this;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, java.lang.String, java.lang.Class, java.util.Map)
 	 */
 	@Override
-	public void createTable(boolean ifNotExists, final String tableName, Class<?> entityClass,
+	public boolean createTable(boolean ifNotExists, final String tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
 
 		try {
@@ -59,25 +80,21 @@ public class CassandraAdmin implements CassandraAdminOperations {
 			final CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
 
 			execute(new SessionCallback<Object>() {
-
 				public Object doInSession(Session s) throws DataAccessException {
 
 					String cql = CqlUtils.createTable(tableName, entity);
-
 					log.info("CREATE TABLE CQL -> " + cql);
-
 					s.execute(cql);
-
 					return null;
-
 				}
 			});
+			return true;
 
-		} catch (LinkageError e) {
-			e.printStackTrace();
-		} finally {
+		} catch (CassandraTableExistsException ctex) {
+			return !ifNotExists;
+		} catch (RuntimeException x) {
+			throw tryToConvert(x);
 		}
-
 	}
 
 	/* (non-Javadoc)
@@ -86,16 +103,14 @@ public class CassandraAdmin implements CassandraAdminOperations {
 	@Override
 	public void alterTable(String tableName, Class<?> entityClass, boolean dropRemovedAttributeColumns) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#replaceTable(java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public void replaceTable(String tableName, Class<?> entityClass) {
-		// TODO Auto-generated method stub
-
+	public void replaceTable(String tableName, Class<?> entityClass, Map<String, Object> optionsByName) {
+		// TODO
 	}
 
 	/**
@@ -110,7 +125,7 @@ public class CassandraAdmin implements CassandraAdminOperations {
 
 		Assert.notNull(entity);
 
-		final TableMetadata tableMetadata = getTableMetadata(entityClass, tableName);
+		final TableMetadata tableMetadata = getTableMetadata(tableName);
 
 		final List<String> queryList = CqlUtils.alterTable(tableName, entity, tableMetadata);
 
@@ -133,7 +148,6 @@ public class CassandraAdmin implements CassandraAdminOperations {
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#dropTable(java.lang.Class)
 	 */
-	@Override
 	public void dropTable(Class<?> entityClass) {
 
 		final String tableName = determineTableName(entityClass);
@@ -170,18 +184,9 @@ public class CassandraAdmin implements CassandraAdminOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableMetadata(java.lang.Class)
 	 */
 	@Override
-	public TableMetadata getTableMetadata(Class<?> entityClass, String tableName) {
-
-		/*
-		 * Determine the table name if not provided
-		 */
-		if (tableName == null) {
-			tableName = determineTableName(entityClass);
-		}
+	public TableMetadata getTableMetadata(final String tableName) {
 
 		Assert.notNull(tableName);
-
-		final String metadataTableName = tableName;
 
 		return execute(new SessionCallback<TableMetadata>() {
 
@@ -189,12 +194,9 @@ public class CassandraAdmin implements CassandraAdminOperations {
 
 				log.info("Keyspace => " + keyspace.getKeyspace());
 
-				return s.getCluster().getMetadata().getKeyspace(keyspace.getKeyspace()).getTable(metadataTableName);
-
+				return s.getCluster().getMetadata().getKeyspace(keyspace.getKeyspace()).getTable(tableName);
 			}
-
 		});
-
 	}
 
 	/**
@@ -208,17 +210,15 @@ public class CassandraAdmin implements CassandraAdminOperations {
 		Assert.notNull(callback);
 
 		try {
-
 			return callback.doInSession(session);
-
-		} catch (DataAccessException e) {
-			throw potentiallyConvertRuntimeException(e);
+		} catch (RuntimeException x) {
+			throw tryToConvert(x);
 		}
 	}
 
-	private RuntimeException potentiallyConvertRuntimeException(RuntimeException ex) {
-		RuntimeException resolved = this.exceptionTranslator.translateExceptionIfPossible(ex);
-		return resolved == null ? ex : resolved;
+	protected RuntimeException tryToConvert(RuntimeException x) {
+		RuntimeException resolved = exceptionTranslator.translateExceptionIfPossible(x);
+		return resolved == null ? x : resolved;
 	}
 
 	/**
