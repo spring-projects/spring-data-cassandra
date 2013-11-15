@@ -8,18 +8,20 @@ import java.util.Map;
 import org.junit.Test;
 import org.springframework.data.cassandra.cql.builder.CreateTableBuilder;
 
+import com.datastax.driver.core.DataType;
+
 public class CreateTableBuilderTest {
 
 	@Test
 	public void createTableTest() {
 		String name = "mytable";
-		String type0 = "text";
+		DataType type0 = DataType.text();
 		String partition0 = "partitionKey0";
 		String partition1 = "partitionKey1";
 		String primary0 = "primary0";
-		String type1 = "text";
+		DataType type1 = DataType.text();
 		String column1 = "column1";
-		String type2 = "text";
+		DataType type2 = DataType.bigint();
 		String column2 = "column2";
 		Object value2 = "this is a comment";
 		String option2 = "comment";
@@ -29,8 +31,8 @@ public class CreateTableBuilderTest {
 		value4.put("class", "LeveledCompactionStrategy");
 		String option4 = "compaction";
 
-		CreateTableBuilder builder = createTable().ifNotExists().name(name).partitionColumn(partition0, type0)
-				.partitionColumn(partition1, type0).primaryKeyColumn(primary0, type0).column(column1, type1)
+		CreateTableBuilder builder = createTable().ifNotExists().name(name).partitionKeyColumn(partition0, type0)
+				.partitionKeyColumn(partition1, type0).primaryKeyColumn(primary0, type0).column(column1, type1)
 				.column(column2, type2).withQuoted(option2, value2).withUnquoted(option3, value3).with(option4, value4)
 				.withCompactStorage();
 
