@@ -1,14 +1,14 @@
 package org.springframework.data.cassandra.cql;
 
-import static org.springframework.data.cassandra.cql.CqlBuilder.createTable;
+import static org.springframework.data.cassandra.cql.builder.CqlBuilder.createTable;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
-import org.springframework.data.cassandra.cql.CreateTable.Column.Order;
+import org.springframework.data.cassandra.cql.builder.CreateTableBuilder;
 
-public class CreateTableTest {
+public class CreateTableBuilderTest {
 
 	@Test
 	public void createTableTest() {
@@ -21,8 +21,6 @@ public class CreateTableTest {
 		String column1 = "column1";
 		String type2 = "text";
 		String column2 = "column2";
-		Object value1 = null;
-		String option1 = "COMPACT STORAGE";
 		Object value2 = "this is a comment";
 		String option2 = "comment";
 		Object value3 = "0.00075";
@@ -31,12 +29,12 @@ public class CreateTableTest {
 		value4.put("class", "LeveledCompactionStrategy");
 		String option4 = "compaction";
 
-		CreateTable builder = createTable().ifNotExists().name(name).partition(partition0, type0, Order.ASCENDING)
-				.partition(partition1, type0, Order.DESCENDING).primary(primary0, type0).column(column1, type1)
-				.column(column2, type2).option(option1, value1).option(option2, value2).option(option3, value3)
-				.option(option4, value4);
+		CreateTableBuilder builder = createTable().ifNotExists().name(name).partitionColumn(partition0, type0)
+				.partitionColumn(partition1, type0).primaryKeyColumn(primary0, type0).column(column1, type1)
+				.column(column2, type2).withQuoted(option2, value2).withUnquoted(option3, value3).with(option4, value4)
+				.withCompactStorage();
 
-		String cql = builder.cql();
+		String cql = builder.toCql();
 		System.out.println(cql);
 	}
 }
