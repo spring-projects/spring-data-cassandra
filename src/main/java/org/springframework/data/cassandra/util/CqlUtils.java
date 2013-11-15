@@ -357,11 +357,9 @@ public abstract class CqlUtils {
 		 */
 		final Batch b = QueryBuilder.batch();
 
-		List<Query> queries = new ArrayList<Query>();
-
 		for (final T objectToSave : objectsToSave) {
 
-			queries.add(toUpdateQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+			b.add((Statement) toUpdateQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
 
 		}
 
@@ -393,19 +391,10 @@ public abstract class CqlUtils {
 		 */
 		final Batch b = QueryBuilder.batch();
 
-		List<Query> queries = new ArrayList<Query>();
-
 		for (final T objectToSave : objectsToSave) {
 
-			queries.add(toInsertQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+			b.add((Statement) toInsertQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
 
-		}
-
-		/*
-		 * Add all the Queries to the batch
-		 */
-		for (Query query : queries) {
-			b.add((Statement) query);
 		}
 
 		addQueryOptions(b, optionsByName);
@@ -522,11 +511,9 @@ public abstract class CqlUtils {
 		 */
 		final Batch b = QueryBuilder.batch();
 
-		List<Query> queries = new ArrayList<Query>();
-
 		for (final T objectToSave : entities) {
 
-			queries.add(toDeleteQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+			b.add((Statement) toDeleteQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
 
 		}
 
