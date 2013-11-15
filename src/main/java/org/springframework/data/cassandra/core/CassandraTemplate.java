@@ -1036,7 +1036,7 @@ public class CassandraTemplate implements CassandraOperations {
 		try {
 
 			final Batch b = CqlUtils.toInsertBatchQuery(keyspace.getKeyspace(), tableName, entities, CPEntity, optionsByName);
-			log.info(b.toString());
+			log.info(b.getQueryString());
 
 			return execute(new SessionCallback<List<T>>() {
 

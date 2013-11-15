@@ -21,6 +21,7 @@ import org.springframework.data.mapping.PropertyHandler;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Query;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Delete;
@@ -398,6 +399,13 @@ public abstract class CqlUtils {
 
 			queries.add(toInsertQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
 
+		}
+
+		/*
+		 * Add all the Queries to the batch
+		 */
+		for (Query query : queries) {
+			b.add((Statement) query);
 		}
 
 		addQueryOptions(b, optionsByName);
