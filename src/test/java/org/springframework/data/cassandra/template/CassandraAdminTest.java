@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.config.TestConfig;
-import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -45,15 +45,15 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfig.class }, loader = AnnotationConfigContextLoader.class)
-public class CassandraOperationsTableTest {
+public class CassandraAdminTest {
 
 	@Autowired
-	private CassandraTemplate cassandraTemplate;
+	private CassandraOperations cassandraTemplate;
 
 	@Mock
 	ApplicationContext context;
 
-	private static Logger log = LoggerFactory.getLogger(CassandraOperationsTableTest.class);
+	private static Logger log = LoggerFactory.getLogger(CassandraAdminTest.class);
 
 	@BeforeClass
 	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
@@ -76,11 +76,6 @@ public class CassandraOperationsTableTest {
 		 */
 		DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:9160");
 		dataLoader.load(new ClassPathYamlDataSet("cassandra-keyspace.yaml"));
-
-		log.info("Creating Table...");
-
-		// cassandraTemplate.createTable(User.class);
-		// cassandraTemplate.createTable(Comment.class);
 
 	}
 
