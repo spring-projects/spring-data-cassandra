@@ -26,6 +26,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.Keyspace;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -116,7 +117,7 @@ public abstract class AbstractCassandraConfiguration {
 	 * @throws Exception
 	 */
 	@Bean
-	public CassandraTemplate cassandraTemplate() throws Exception {
+	public CassandraOperations cassandraTemplate() throws Exception {
 		return new CassandraTemplate(keyspace());
 	}
 

@@ -64,7 +64,7 @@ public class CassandraOperationsTableTest {
 		 * Load data file to creat the test keyspace before we init the template
 		 */
 		DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:9160");
-		dataLoader.load(new ClassPathYamlDataSet("cassandra-data.yaml"));
+		dataLoader.load(new ClassPathYamlDataSet("cassandra-keyspace.yaml"));
 
 	}
 
@@ -75,7 +75,7 @@ public class CassandraOperationsTableTest {
 		 * Load data file to creat the test keyspace before we init the template
 		 */
 		DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:9160");
-		dataLoader.load(new ClassPathYamlDataSet("cassandra-data.yaml"));
+		dataLoader.load(new ClassPathYamlDataSet("cassandra-keyspace.yaml"));
 
 		log.info("Creating Table...");
 
