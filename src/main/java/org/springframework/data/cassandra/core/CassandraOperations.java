@@ -108,6 +108,22 @@ public interface CassandraOperations {
 	/**
 	 * @param entity
 	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> T insert(T entity, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> T insert(T entity, Map<String, Object> optionsByName);
+
+	/**
+	 * @param entity
+	 * @param tableName
 	 * @param optionsByName
 	 * @return
 	 */
@@ -129,6 +145,22 @@ public interface CassandraOperations {
 	 * @return
 	 */
 	<T> List<T> insert(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> List<T> insert(List<T> entities, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> List<T> insert(List<T> entities, Map<String, Object> optionsByName);
 
 	/**
 	 * @param entities
@@ -166,6 +198,22 @@ public interface CassandraOperations {
 	 * @param options
 	 * @return
 	 */
+	<T> T insertAsynchronously(T entity, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> T insertAsynchronously(T entity, Map<String, Object> optionsByName);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
 	<T> T insertAsynchronously(T entity, String tableName, QueryOptions options);
 
 	/**
@@ -189,6 +237,22 @@ public interface CassandraOperations {
 	 * @param object
 	 */
 	<T> List<T> insertAsynchronously(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> List<T> insertAsynchronously(List<T> entities, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> List<T> insertAsynchronously(List<T> entities, Map<String, Object> optionsByName);
 
 	/**
 	 * @param entities
@@ -226,6 +290,22 @@ public interface CassandraOperations {
 	 * @param options
 	 * @return
 	 */
+	<T> T update(T entity, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> T update(T entity, Map<String, Object> optionsByName);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
 	<T> T update(T entity, String tableName, QueryOptions options);
 
 	/**
@@ -249,6 +329,22 @@ public interface CassandraOperations {
 	 * @param object
 	 */
 	<T> List<T> update(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> List<T> update(List<T> entities, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> List<T> update(List<T> entities, Map<String, Object> optionsByName);
 
 	/**
 	 * @param entities
@@ -286,6 +382,22 @@ public interface CassandraOperations {
 	 * @param options
 	 * @return
 	 */
+	<T> T updateAsynchronously(T entity, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> T updateAsynchronously(T entity, Map<String, Object> optionsByName);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
 	<T> T updateAsynchronously(T entity, String tableName, QueryOptions options);
 
 	/**
@@ -309,6 +421,22 @@ public interface CassandraOperations {
 	 * @param object
 	 */
 	<T> List<T> updateAsynchronously(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 * @return
+	 */
+	<T> List<T> updateAsynchronously(List<T> entities, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 * @return
+	 */
+	<T> List<T> updateAsynchronously(List<T> entities, Map<String, Object> optionsByName);
 
 	/**
 	 * @param entities
@@ -346,6 +474,20 @@ public interface CassandraOperations {
 	 * @param tableName
 	 * @param options
 	 */
+	<T> void delete(T entity, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 */
+	<T> void delete(T entity, Map<String, Object> optionsByName);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 */
 	<T> void delete(T entity, String tableName, QueryOptions options);
 
 	/**
@@ -375,6 +517,20 @@ public interface CassandraOperations {
 	 * @param tableName
 	 * @param options
 	 */
+	<T> void delete(List<T> entities, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 */
+	<T> void delete(List<T> entities, Map<String, Object> optionsByName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 */
 	<T> void delete(List<T> entities, String tableName, QueryOptions options);
 
 	/**
@@ -390,6 +546,20 @@ public interface CassandraOperations {
 	 * @param object
 	 */
 	<T> void deleteAsychronously(T entity);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param options
+	 */
+	<T> void deleteAsychronously(T entity, QueryOptions options);
+
+	/**
+	 * @param entity
+	 * @param tableName
+	 * @param optionsByName
+	 */
+	<T> void deleteAsychronously(T entity, Map<String, Object> optionsByName);
 
 	/**
 	 * @param entity
@@ -427,6 +597,20 @@ public interface CassandraOperations {
 	 * @param table must not be {@literal null} or empty.
 	 */
 	<T> void deleteAsychronously(List<T> entities, String tableName);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param options
+	 */
+	<T> void deleteAsychronously(List<T> entities, QueryOptions options);
+
+	/**
+	 * @param entities
+	 * @param tableName
+	 * @param optionsByName
+	 */
+	<T> void deleteAsychronously(List<T> entities, Map<String, Object> optionsByName);
 
 	/**
 	 * @param entities
