@@ -31,7 +31,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Update;
 
 /**
- * 
  * Utilties to convert Cassandra Annotated objects to Queries and CQL.
  * 
  * @author Alex Shvid
@@ -204,11 +203,9 @@ public abstract class CqlUtils {
 	 * 
 	 * @param keyspaceName
 	 * @param tableName
-	 * @param entity
 	 * @param objectToSave
+	 * @param entity
 	 * @param optionsByName
-	 * @param mappingContext
-	 * @param beanClassLoader
 	 * 
 	 * @return The Query object to run with session.execute();
 	 * @throws EntityWriterException
@@ -270,11 +267,9 @@ public abstract class CqlUtils {
 	 * 
 	 * @param keyspaceName
 	 * @param tableName
-	 * @param entity
 	 * @param objectToSave
+	 * @param entity
 	 * @param optionsByName
-	 * @param mappingContext
-	 * @param beanClassLoader
 	 * 
 	 * @return The Query object to run with session.execute();
 	 * @throws EntityWriterException
@@ -340,10 +335,9 @@ public abstract class CqlUtils {
 	 * 
 	 * @param keyspaceName
 	 * @param tableName
-	 * @param entity
 	 * @param objectsToSave
-	 * @param mappingContext
-	 * @param beanClassLoader
+	 * @param entity
+	 * @param optionsByName
 	 * 
 	 * @return The Query object to run with session.execute();
 	 * @throws EntityWriterException
@@ -374,10 +368,9 @@ public abstract class CqlUtils {
 	 * 
 	 * @param keyspaceName
 	 * @param tableName
-	 * @param entity
 	 * @param objectsToSave
-	 * @param mappingContext
-	 * @param beanClassLoader
+	 * @param entity
+	 * @param optionsByName
 	 * 
 	 * @return The Query object to run with session.execute();
 	 * @throws EntityWriterException
@@ -404,10 +397,13 @@ public abstract class CqlUtils {
 	}
 
 	/**
+	 * Create a Delete Query Object from an annotated POJO
+	 * 
 	 * @param keyspace
 	 * @param tableName
 	 * @param objectToRemove
 	 * @param entity
+	 * @param optionsByName
 	 * @return
 	 * @throws EntityWriterException
 	 */
@@ -496,10 +492,14 @@ public abstract class CqlUtils {
 	}
 
 	/**
+	 * Create a Batch Query object for multiple deletes.
+	 * 
 	 * @param keyspace
 	 * @param tableName
 	 * @param entities
-	 * @param cPEntity
+	 * @param entity
+	 * @param optionsByName
+	 * 
 	 * @return
 	 * @throws EntityWriterException
 	 */
