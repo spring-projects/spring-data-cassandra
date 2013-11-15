@@ -21,6 +21,7 @@ import org.springframework.data.mapping.PropertyHandler;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Query;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Delete;
@@ -356,11 +357,9 @@ public abstract class CqlUtils {
 		 */
 		final Batch b = QueryBuilder.batch();
 
-		List<Query> queries = new ArrayList<Query>();
-
 		for (final T objectToSave : objectsToSave) {
 
-			queries.add(toUpdateQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+			b.add((Statement) toUpdateQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
 
 		}
 
@@ -392,11 +391,9 @@ public abstract class CqlUtils {
 		 */
 		final Batch b = QueryBuilder.batch();
 
-		List<Query> queries = new ArrayList<Query>();
-
 		for (final T objectToSave : objectsToSave) {
 
-			queries.add(toInsertQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+			b.add((Statement) toInsertQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
 
 		}
 
@@ -514,11 +511,9 @@ public abstract class CqlUtils {
 		 */
 		final Batch b = QueryBuilder.batch();
 
-		List<Query> queries = new ArrayList<Query>();
-
 		for (final T objectToSave : entities) {
 
-			queries.add(toDeleteQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+			b.add((Statement) toDeleteQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
 
 		}
 

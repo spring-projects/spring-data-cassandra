@@ -19,6 +19,8 @@ import org.springframework.data.cassandra.mapping.RowId;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
+ * Test POJO
+ * 
  * @author David Webb
  * 
  */
