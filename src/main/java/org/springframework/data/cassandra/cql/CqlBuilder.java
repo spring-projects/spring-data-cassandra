@@ -1,9 +1,8 @@
 package org.springframework.data.cassandra.cql;
 
-public abstract class CqlBuilder {
+public class CqlBuilder {
 
-	public static CreateTable createTable(String tableName) {
-		return null;
+	public static CreateTable createTable() {
+		return new CreateTable();
 	}
-
 }
