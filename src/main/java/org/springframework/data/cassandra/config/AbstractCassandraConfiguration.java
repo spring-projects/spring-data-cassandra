@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.config;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -26,6 +27,8 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.CassandraAdminOperations;
+import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.Keyspace;
@@ -46,7 +49,13 @@ import com.datastax.driver.core.Session;
  * @author Alex Shvid
  */
 @Configuration
-public abstract class AbstractCassandraConfiguration {
+public abstract class AbstractCassandraConfiguration implements BeanClassLoaderAware {
+
+	/**
+	 * Used by CassandraTemplate and CassandraAdminTemplate
+	 */
+
+	private ClassLoader beanClassLoader;
 
 	/**
 	 * Return the name of the keyspace to connect to.
@@ -118,7 +127,22 @@ public abstract class AbstractCassandraConfiguration {
 	 */
 	@Bean
 	public CassandraOperations cassandraTemplate() throws Exception {
-		return new CassandraTemplate(keyspace());
+		CassandraTemplate template = new CassandraTemplate(keyspace());
+		template.setBeanClassLoader(beanClassLoader);
+		return template;
+	}
+
+	/**
+	 * Creates a {@link CassandraAdminTemplate}.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	@Bean
+	public CassandraAdminOperations cassandraAdminTemplate() throws Exception {
+		CassandraAdminTemplate adminTemplate = new CassandraAdminTemplate(keyspace());
+		adminTemplate.setBeanClassLoader(beanClassLoader);
+		return adminTemplate;
 	}
 
 	/**
@@ -168,6 +192,14 @@ public abstract class AbstractCassandraConfiguration {
 		}
 
 		return initialEntitySet;
+	}
+
+	/**
+	 * Bean ClassLoader Aware for CassandraTemplate/CassandraAdminTemplate
+	 */
+
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
 	}
 
 }
