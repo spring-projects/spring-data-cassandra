@@ -157,14 +157,16 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	}
 
 	/**
-	 * Return the {@link CassandraConverter} instance to convert Rows to Objects.
+	 * Return the {@link CassandraConverter} instance to convert Rows to Objects, Objects to BuiltStatements
 	 * 
 	 * @return
 	 * @throws Exception
 	 */
 	@Bean
 	public CassandraConverter converter() {
-		return new MappingCassandraConverter(mappingContext());
+		MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext());
+		converter.setBeanClassLoader(beanClassLoader);
+		return converter;
 	}
 
 	/**
