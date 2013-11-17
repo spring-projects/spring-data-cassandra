@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -23,7 +24,7 @@ import com.datastax.driver.core.TableMetadata;
 /**
  * Default implementation of {@link CassandraAdminOperations}.
  */
-public class CassandraAdminTemplate implements CassandraAdminOperations {
+public class CassandraAdminTemplate implements CassandraAdminOperations, BeanClassLoaderAware {
 
 	private static Logger log = LoggerFactory.getLogger(CassandraAdminTemplate.class);
 
@@ -238,5 +239,10 @@ public class CassandraAdminTemplate implements CassandraAdminOperations {
 					+ entityClass.getName());
 		}
 		return entity.getTable();
+	}
+
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
 	}
 }

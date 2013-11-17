@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -58,7 +59,7 @@ import com.datastax.driver.core.querybuilder.Batch;
  * @author Alex Shvid
  * @author David Webb
  */
-public class CassandraTemplate implements CassandraOperations {
+public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAware {
 
 	/**
 	 * Simple {@link RowCallback} that will transform {@link Row} into the given target type using the given
@@ -79,8 +80,8 @@ public class CassandraTemplate implements CassandraOperations {
 		}
 
 		@Override
-		public T doWith(Row object) {
-			T source = reader.read(type, object);
+		public T doWith(Row row) {
+			T source = reader.read(type, row);
 			return source;
 		}
 	}
