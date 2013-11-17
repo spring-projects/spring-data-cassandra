@@ -518,6 +518,146 @@ public class CassandraOperationsTest {
 	}
 
 	@Test
+	public void updateBatchTest() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		List<Book> books = null;
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book_alt");
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, "book_alt");
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", options);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, "book", options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", optionsByName);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, "book", optionsByName);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, options);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, optionsByName);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, optionsByName);
+
+	}
+
+	@Test
+	public void updateBatchAsynchronouslyTest() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		List<Book> books = null;
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book_alt");
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, "book_alt");
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", options);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, "book", options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", optionsByName);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, "book", optionsByName);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, options);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, optionsByName);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, optionsByName);
+
+	}
+
+	/**
+	 * @param books
+	 */
+	private void alterBooks(List<Book> books) {
+
+		for (Book b : books) {
+			b.setAuthor("Ernest Hemmingway");
+			b.setTitle("The Old Man and the Sea");
+			b.setPages(115);
+		}
+	}
+
+	@Test
 	public void deleteTest() {
 
 		insertTest();
@@ -634,6 +774,110 @@ public class CassandraOperationsTest {
 		b6.setIsbn("123456-6");
 
 		cassandraTemplate.deleteAsynchronously(b6, optionsByName);
+	}
+
+	@Test
+	public void deleteBatchTest() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		List<Book> books = null;
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books);
+
+		cassandraTemplate.delete(books);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book_alt");
+
+		cassandraTemplate.delete(books, "book_alt");
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", options);
+
+		cassandraTemplate.delete(books, "book", options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", optionsByName);
+
+		cassandraTemplate.delete(books, "book", optionsByName);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, options);
+
+		cassandraTemplate.delete(books, options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, optionsByName);
+
+		cassandraTemplate.delete(books, optionsByName);
+
+	}
+
+	@Test
+	public void deleteBatchAsynchronouslyTest() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		List<Book> books = null;
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books);
+
+		cassandraTemplate.deleteAsynchronously(books);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book_alt");
+
+		cassandraTemplate.deleteAsynchronously(books, "book_alt");
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", options);
+
+		cassandraTemplate.deleteAsynchronously(books, "book", options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", optionsByName);
+
+		cassandraTemplate.deleteAsynchronously(books, "book", optionsByName);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, options);
+
+		cassandraTemplate.deleteAsynchronously(books, options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, optionsByName);
+
+		cassandraTemplate.deleteAsynchronously(books, optionsByName);
+
 	}
 
 	@After
