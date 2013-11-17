@@ -16,6 +16,7 @@ import org.springframework.data.cassandra.core.RetryPolicyResolver;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.mapping.PropertyHandler;
 
 import com.datastax.driver.core.ColumnMetadata;
@@ -214,40 +215,14 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static Query toInsertQuery(String keyspaceName, String tableName, final Object objectToSave,
-			CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName) throws EntityWriterException {
+			Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		final Insert q = QueryBuilder.insertInto(keyspaceName, tableName);
-		final Exception innerException = new Exception();
 
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-
-				/*
-				 * See if the object has a value for that column, and if so, add it to the Query
-				 */
-				try {
-
-					Object o = prop.getGetter().invoke(objectToSave, new Object[0]);
-
-					log.info("Getter Invoke [" + prop.getColumnName() + " => " + o);
-
-					if (o != null) {
-						q.value(prop.getColumnName(), o);
-					}
-
-				} catch (IllegalAccessException e) {
-					innerException.initCause(e);
-				} catch (IllegalArgumentException e) {
-					innerException.initCause(e);
-				} catch (InvocationTargetException e) {
-					innerException.initCause(e);
-				}
-			}
-		});
-
-		if (innerException.getCause() != null) {
-			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
-		}
+		/*
+		 * Write properties
+		 */
+		entityWriter.write(objectToSave, q);
 
 		/*
 		 * Add Query Options
@@ -280,44 +255,14 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static Query toUpdateQuery(String keyspaceName, String tableName, final Object objectToSave,
-			CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName) throws EntityWriterException {
+			Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		final Update q = QueryBuilder.update(keyspaceName, tableName);
-		final Exception innerException = new Exception();
 
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-
-				/*
-				 * See if the object has a value for that column, and if so, add it to the Query
-				 */
-				try {
-
-					Object o = prop.getGetter().invoke(objectToSave, new Object[0]);
-
-					log.info("Getter Invoke [" + prop.getColumnName() + " => " + o);
-
-					if (o != null) {
-						if (prop.isIdProperty()) {
-							q.where(QueryBuilder.eq(prop.getColumnName(), o));
-						} else {
-							q.with(QueryBuilder.set(prop.getColumnName(), o));
-						}
-					}
-
-				} catch (IllegalAccessException e) {
-					innerException.initCause(e);
-				} catch (IllegalArgumentException e) {
-					innerException.initCause(e);
-				} catch (InvocationTargetException e) {
-					innerException.initCause(e);
-				}
-			}
-		});
-
-		if (innerException.getCause() != null) {
-			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
-		}
+		/*
+		 * Write properties
+		 */
+		entityWriter.write(objectToSave, q);
 
 		/*
 		 * Add Query Options
@@ -349,7 +294,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static <T> Batch toUpdateBatchQuery(final String keyspaceName, final String tableName,
-			final List<T> objectsToSave, CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName)
+			final List<T> objectsToSave, Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter)
 			throws EntityWriterException {
 
 		/*
@@ -359,7 +304,7 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : objectsToSave) {
 
-			b.add((Statement) toUpdateQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+			b.add((Statement) toUpdateQuery(keyspaceName, tableName, objectToSave, optionsByName, entityWriter));
 
 		}
 
@@ -383,7 +328,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static <T> Batch toInsertBatchQuery(final String keyspaceName, final String tableName,
-			final List<T> objectsToSave, CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName)
+			final List<T> objectsToSave, Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter)
 			throws EntityWriterException {
 
 		/*
@@ -393,7 +338,7 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : objectsToSave) {
 
-			b.add((Statement) toInsertQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+			b.add((Statement) toInsertQuery(keyspaceName, tableName, objectToSave, optionsByName, entityWriter));
 
 		}
 
