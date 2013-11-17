@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -41,7 +40,6 @@ import org.springframework.data.cassandra.util.CqlUtils;
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
@@ -59,7 +57,7 @@ import com.datastax.driver.core.querybuilder.Batch;
  * @author Alex Shvid
  * @author David Webb
  */
-public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAware {
+public class CassandraTemplate implements CassandraOperations {
 
 	/**
 	 * Simple {@link RowCallback} that will transform {@link Row} into the given target type using the given
@@ -104,8 +102,6 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 	private final CassandraConverter cassandraConverter;
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
-
-	private ClassLoader beanClassLoader;
 
 	/**
 	 * Constructor used for a basic template configuration
@@ -720,13 +716,6 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 		return selectOneInternal(query, new ReadRowCallback<T>(cassandraConverter, selectClass));
 	}
 
-	/**
-	 * @param classLoader
-	 */
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.beanClassLoader = classLoader;
-	}
-
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.util.List)
 	 */
@@ -985,13 +974,10 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 
 		Assert.notEmpty(entities);
 
-		CassandraPersistentEntity<?> CPEntity = getEntity(entities.get(0));
-
-		Assert.notNull(CPEntity);
-
 		try {
 
-			final Batch b = CqlUtils.toDeleteBatchQuery(keyspace.getKeyspace(), tableName, entities, CPEntity, optionsByName);
+			final Batch b = CqlUtils.toDeleteBatchQuery(keyspace.getKeyspace(), tableName, entities, optionsByName,
+					cassandraConverter);
 			log.info(b.toString());
 
 			execute(new SessionCallback<Object>() {
@@ -1109,13 +1095,10 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 	protected <T> void doDelete(final String tableName, final T objectToRemove, Map<String, Object> optionsByName,
 			final boolean deleteAsynchronously) {
 
-		CassandraPersistentEntity<?> entity = getEntity(objectToRemove);
-
-		Assert.notNull(entity);
-
 		try {
 
-			final Query q = CqlUtils.toDeleteQuery(keyspace.getKeyspace(), tableName, objectToRemove, entity, optionsByName);
+			final Query q = CqlUtils.toDeleteQuery(keyspace.getKeyspace(), tableName, objectToRemove, optionsByName,
+					cassandraConverter);
 			log.info(q.toString());
 
 			execute(new SessionCallback<Object>() {
@@ -1255,30 +1238,6 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 		} catch (DataAccessException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}
-	}
-
-	/**
-	 * Determines the PersistentEntityType for a given Object
-	 * 
-	 * @param o
-	 * @return
-	 */
-	protected CassandraPersistentEntity<?> getEntity(Object o) {
-
-		CassandraPersistentEntity<?> entity = null;
-		try {
-			String entityClassName = o.getClass().getName();
-			Class<?> entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
-			entity = mappingContext.getPersistentEntity(entityClass);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (LinkageError e) {
-			e.printStackTrace();
-		} finally {
-		}
-
-		return entity;
-
 	}
 
 	/**

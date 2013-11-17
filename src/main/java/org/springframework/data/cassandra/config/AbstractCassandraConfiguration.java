@@ -127,9 +127,7 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	 */
 	@Bean
 	public CassandraOperations cassandraTemplate() throws Exception {
-		CassandraTemplate template = new CassandraTemplate(keyspace());
-		template.setBeanClassLoader(beanClassLoader);
-		return template;
+		return new CassandraTemplate(keyspace());
 	}
 
 	/**
@@ -140,9 +138,7 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	 */
 	@Bean
 	public CassandraAdminOperations cassandraAdminTemplate() throws Exception {
-		CassandraAdminTemplate adminTemplate = new CassandraAdminTemplate(keyspace());
-		adminTemplate.setBeanClassLoader(beanClassLoader);
-		return adminTemplate;
+		return new CassandraAdminTemplate(keyspace());
 	}
 
 	/**

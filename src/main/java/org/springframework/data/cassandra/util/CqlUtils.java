@@ -1,6 +1,5 @@
 package org.springframework.data.cassandra.util;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -353,45 +352,16 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static Query toDeleteQuery(String keyspace, String tableName, final Object objectToRemove,
-			CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName) throws EntityWriterException {
+			Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		final Delete.Selection ds = QueryBuilder.delete();
 		final Delete q = ds.from(keyspace, tableName);
 		final Where w = q.where();
 
-		final Exception innerException = new Exception();
-
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-
-				/*
-				 * See if the object has a value for that column, and if so, add it to the Query
-				 */
-				try {
-
-					if (prop.isIdProperty()) {
-						Object o = (String) prop.getGetter().invoke(objectToRemove, new Object[0]);
-
-						log.info("Getter Invoke [" + prop.getColumnName() + " => " + o);
-
-						if (o != null) {
-							w.and(QueryBuilder.eq(prop.getColumnName(), o));
-						}
-					}
-
-				} catch (IllegalAccessException e) {
-					innerException.initCause(e);
-				} catch (IllegalArgumentException e) {
-					innerException.initCause(e);
-				} catch (InvocationTargetException e) {
-					innerException.initCause(e);
-				}
-			}
-		});
-
-		if (innerException.getCause() != null) {
-			throw new EntityWriterException("Failed to convert Persistent Entity to CQL/Query", innerException.getCause());
-		}
+		/*
+		 * Write where condition to find by Id
+		 */
+		entityWriter.write(objectToRemove, w);
 
 		addQueryOptions(q, optionsByName);
 
@@ -449,7 +419,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static <T> Batch toDeleteBatchQuery(String keyspaceName, String tableName, List<T> entities,
-			CassandraPersistentEntity<?> entity, Map<String, Object> optionsByName) throws EntityWriterException {
+			Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		/*
 		 * Return variable is a Batch statement
@@ -458,7 +428,7 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : entities) {
 
-			b.add((Statement) toDeleteQuery(keyspaceName, tableName, objectToSave, entity, optionsByName));
+			b.add((Statement) toDeleteQuery(keyspaceName, tableName, objectToSave, optionsByName, entityWriter));
 
 		}
 
