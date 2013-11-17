@@ -19,14 +19,12 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.EntityConverter;
 
-import com.datastax.driver.core.Row;
-
 /**
  * Central Cassandra specific converter interface from Object to Row.
  * 
  * @author Alex Shvid
  */
 public interface CassandraConverter extends
-		EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Row> {
+		EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Object> {
 
 }

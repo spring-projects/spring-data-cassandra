@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.convert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -34,8 +35,13 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.querybuilder.Delete.Where;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * {@link CassandraConverter} that uses a {@link MappingContext} to do sophisticated mapping of domain objects to
@@ -43,7 +49,8 @@ import com.datastax.driver.core.Row;
  * 
  * @author Alex Shvid
  */
-public class MappingCassandraConverter extends AbstractCassandraConverter implements ApplicationContextAware {
+public class MappingCassandraConverter extends AbstractCassandraConverter implements ApplicationContextAware,
+		BeanClassLoaderAware {
 
 	protected static final Logger log = LoggerFactory.getLogger(MappingCassandraConverter.class);
 
@@ -51,6 +58,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	protected ApplicationContext applicationContext;
 	private SpELContext spELContext;
 	private boolean useFieldAccessOnly = true;
+
+	private ClassLoader beanClassLoader;
 
 	/**
 	 * Creates a new {@link MappingCassandraConverter} given the new {@link MappingContext}.
@@ -65,9 +74,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	@SuppressWarnings("unchecked")
-	public <R> R read(Class<R> clazz, Row row) {
+	public <R> R readRow(Class<R> clazz, Row row) {
 
-		TypeInformation<? extends R> type = ClassTypeInformation.from(clazz);
+		Class<R> beanClassLoaderClass = transformClassToBeanClassLoaderClass(clazz);
+
+		TypeInformation<? extends R> type = ClassTypeInformation.from(beanClassLoaderClass);
 		// TypeInformation<? extends R> typeToUse = typeMapper.readType(row, type);
 		TypeInformation<? extends R> typeToUse = type;
 		Class<? extends R> rawType = typeToUse.getType();
@@ -82,7 +93,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			throw new MappingException("No mapping metadata found for " + rawType.getName());
 		}
 
-		return read(persistentEntity, row);
+		return readRowInternal(persistentEntity, row);
 	}
 
 	/*
@@ -102,7 +113,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
 	}
 
-	private <S extends Object> S read(final CassandraPersistentEntity<S> entity, final Row row) {
+	private <S extends Object> S readRowInternal(final CassandraPersistentEntity<S> entity, final Row row) {
 
 		final DefaultSpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
 
@@ -144,14 +155,122 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	 * @see org.springframework.data.convert.EntityWriter#write(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void write(Object source, Row sink) {
+	public <R> R read(Class<R> type, Object row) {
+		if (row instanceof Row) {
+			return readRow(type, (Row) row);
+		}
+		throw new MappingException("Unknown row object " + row.getClass().getName());
+	}
 
-		/*
-		 * There is no concept of passing a Row into Cassandra for Writing.
-		 * This must be done with Query
-		 * 
-		 * See the CQLUtils.
-		 */
+	/* (non-Javadoc)
+	 * @see org.springframework.data.convert.EntityWriter#write(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public void write(Object obj, Object builtStatement) {
+
+		if (obj == null) {
+			return;
+		}
+
+		Class<?> beanClassLoaderClass = transformClassToBeanClassLoaderClass(obj.getClass());
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(beanClassLoaderClass);
+
+		if (entity == null) {
+			throw new MappingException("No mapping metadata found for " + obj.getClass());
+		}
+
+		if (builtStatement instanceof Insert) {
+			writeInsertInternal(obj, (Insert) builtStatement, entity);
+		} else if (builtStatement instanceof Update) {
+			writeUpdateInternal(obj, (Update) builtStatement, entity);
+		} else if (builtStatement instanceof Where) {
+			writeDeleteWhereInternal(obj, (Where) builtStatement, entity);
+		} else {
+			throw new MappingException("Unknown buildStatement " + builtStatement.getClass().getName());
+		}
+	}
+
+	private void writeInsertInternal(final Object objectToSave, final Insert insert, CassandraPersistentEntity<?> entity) {
+
+		final BeanWrapper<CassandraPersistentEntity<Object>, Object> wrapper = BeanWrapper.create(objectToSave,
+				conversionService);
+
+		// Write the properties
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+
+				Object propertyObj = wrapper.getProperty(prop, prop.getType(), useFieldAccessOnly);
+
+				if (propertyObj != null) {
+					insert.value(prop.getColumnName(), propertyObj);
+				}
+
+			}
+		});
+
+	}
+
+	private void writeUpdateInternal(final Object objectToSave, final Update update, CassandraPersistentEntity<?> entity) {
+
+		final BeanWrapper<CassandraPersistentEntity<Object>, Object> wrapper = BeanWrapper.create(objectToSave,
+				conversionService);
+
+		// Write the properties
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+
+				Object propertyObj = wrapper.getProperty(prop, prop.getType(), useFieldAccessOnly);
+
+				if (propertyObj != null) {
+					if (prop.isIdProperty()) {
+						update.where(QueryBuilder.eq(prop.getColumnName(), propertyObj));
+					} else {
+						update.with(QueryBuilder.set(prop.getColumnName(), propertyObj));
+					}
+				}
+
+			}
+		});
+
+	}
+
+	private void writeDeleteWhereInternal(final Object objectToSave, final Where whereId, CassandraPersistentEntity<?> entity) {
+
+		final BeanWrapper<CassandraPersistentEntity<Object>, Object> wrapper = BeanWrapper.create(objectToSave,
+				conversionService);
+
+		// Write the properties
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+
+				if (prop.isIdProperty()) {
+
+					Object propertyObj = wrapper.getProperty(prop, prop.getType(), useFieldAccessOnly);
+
+					if (propertyObj != null) {
+						whereId.and(QueryBuilder.eq(prop.getColumnName(), propertyObj));
+					}
+				}
+
+			}
+		});
+
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> Class<T> transformClassToBeanClassLoaderClass(Class<T> entity) {
+		try {
+			return (Class<T>) ClassUtils.forName(entity.getName(), beanClassLoader);
+		} catch (ClassNotFoundException e) {
+			return entity;
+		} catch (LinkageError e) {
+			return entity;
+		}
+	}
+
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
 
 	}
 
