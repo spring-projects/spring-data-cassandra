@@ -69,10 +69,10 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 	 */
 	private static class ReadRowCallback<T> implements RowCallback<T> {
 
-		private final EntityReader<? super T, Row> reader;
+		private final EntityReader<? super T, Object> reader;
 		private final Class<T> type;
 
-		public ReadRowCallback(EntityReader<? super T, Row> reader, Class<T> type) {
+		public ReadRowCallback(EntityReader<? super T, Object> reader, Class<T> type) {
 			Assert.notNull(reader);
 			Assert.notNull(type);
 			this.reader = reader;
@@ -1030,13 +1030,10 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 
 		Assert.notEmpty(entities);
 
-		CassandraPersistentEntity<?> CPEntity = getEntity(entities.get(0));
-
-		Assert.notNull(CPEntity);
-
 		try {
 
-			final Batch b = CqlUtils.toInsertBatchQuery(keyspace.getKeyspace(), tableName, entities, CPEntity, optionsByName);
+			final Batch b = CqlUtils.toInsertBatchQuery(keyspace.getKeyspace(), tableName, entities, optionsByName,
+					cassandraConverter);
 			log.info(b.getQueryString());
 
 			return execute(new SessionCallback<List<T>>() {
@@ -1075,13 +1072,10 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 
 		Assert.notEmpty(entities);
 
-		CassandraPersistentEntity<?> CPEntity = getEntity(entities.get(0));
-
-		Assert.notNull(CPEntity);
-
 		try {
 
-			final Batch b = CqlUtils.toUpdateBatchQuery(keyspace.getKeyspace(), tableName, entities, CPEntity, optionsByName);
+			final Batch b = CqlUtils.toUpdateBatchQuery(keyspace.getKeyspace(), tableName, entities, optionsByName,
+					cassandraConverter);
 			log.info(b.toString());
 
 			return execute(new SessionCallback<List<T>>() {
@@ -1155,13 +1149,10 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 	protected <T> T doInsert(final String tableName, final T entity, final Map<String, Object> optionsByName,
 			final boolean insertAsychronously) {
 
-		CassandraPersistentEntity<?> CPEntity = getEntity(entity);
-
-		Assert.notNull(CPEntity);
-
 		try {
 
-			final Query q = CqlUtils.toInsertQuery(keyspace.getKeyspace(), tableName, entity, CPEntity, optionsByName);
+			final Query q = CqlUtils.toInsertQuery(keyspace.getKeyspace(), tableName, entity, optionsByName,
+					cassandraConverter);
 			log.info(q.toString());
 			if (q.getConsistencyLevel() != null) {
 				log.info(q.getConsistencyLevel().name());
@@ -1205,13 +1196,10 @@ public class CassandraTemplate implements CassandraOperations, BeanClassLoaderAw
 	protected <T> T doUpdate(final String tableName, final T entity, final Map<String, Object> optionsByName,
 			final boolean updateAsychronously) {
 
-		CassandraPersistentEntity<?> CPEntity = getEntity(entity);
-
-		Assert.notNull(CPEntity);
-
 		try {
 
-			final Query q = CqlUtils.toUpdateQuery(keyspace.getKeyspace(), tableName, entity, CPEntity, optionsByName);
+			final Query q = CqlUtils.toUpdateQuery(keyspace.getKeyspace(), tableName, entity, optionsByName,
+					cassandraConverter);
 			log.info(q.toString());
 
 			return execute(new SessionCallback<T>() {
