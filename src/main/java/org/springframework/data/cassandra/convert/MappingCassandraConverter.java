@@ -234,7 +234,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 	}
 
-	private void writeDeleteWhereInternal(final Object objectToSave, final Where whereId, CassandraPersistentEntity<?> entity) {
+	private void writeDeleteWhereInternal(final Object objectToSave, final Where whereId,
+			CassandraPersistentEntity<?> entity) {
 
 		final BeanWrapper<CassandraPersistentEntity<Object>, Object> wrapper = BeanWrapper.create(objectToSave,
 				conversionService);
