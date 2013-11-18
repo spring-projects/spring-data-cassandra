@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Contains Query Options for Cassnadra queries. This controls the Consistency Tuning and Retry Policy for a Query.
+ * Contains Query Options for Cassandra queries. This controls the Consistency Tuning and Retry Policy for a Query.
  * 
  * @author David Webb
  * 

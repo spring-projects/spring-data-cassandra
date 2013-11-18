@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.CassandraCQLUnit;
@@ -51,8 +53,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+
 /**
- * Unit Tests for CassnadraTemplate
+ * Unit Tests for CassandraTemplate
  * 
  * @author David Webb
  * 
@@ -877,6 +882,33 @@ public class CassandraOperationsTest {
 		cassandraTemplate.insert(books, optionsByName);
 
 		cassandraTemplate.deleteAsynchronously(books, optionsByName);
+
+	}
+
+	@Test
+	public void selectTest() {
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b1 = new Book();
+		b1.setIsbn("123456-1");
+		b1.setTitle("Spring Data Cassandra Guide");
+		b1.setAuthor("Cassandra Guru");
+		b1.setPages(521);
+
+		cassandraTemplate.insert(b1);
+
+		Select select = QueryBuilder.select().all().from("book");
+		select.where(QueryBuilder.eq("isbn", "123456-1"));
+
+		Book b = cassandraTemplate.selectOne(select, Book.class);
+
+		log.info("SingleSelect Book Title -> " + b.getTitle());
+		log.info("SingleSelect Book Author -> " + b.getAuthor());
+
+		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
+		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
 
 	}
 
