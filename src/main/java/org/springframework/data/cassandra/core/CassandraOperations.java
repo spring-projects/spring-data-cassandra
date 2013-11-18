@@ -22,9 +22,11 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
+import com.datastax.driver.core.querybuilder.Select;
 
 /**
- * Main Inteface that should be used for Cassandra interactions
+ * Operations for interacting with Cassandra. These operations are used by the Repository implementation, but can also
+ * be used directly when that is desired by the developer.
  * 
  * @author Alex Shvid
  * @author David Webb
@@ -70,7 +72,7 @@ public interface CassandraOperations {
 	 * @param selectClass must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-	<T> List<T> select(String query, Class<T> selectClass);
+	<T> List<T> selectByCQL(String query, Class<T> selectClass);
 
 	/**
 	 * Execute query and convert ResultSet to the entity
@@ -79,7 +81,11 @@ public interface CassandraOperations {
 	 * @param selectClass must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-	<T> T selectOne(String query, Class<T> selectClass);
+	<T> T selectOneByCQL(String query, Class<T> selectClass);
+
+	<T> List<T> select(Select selectQuery, Class<T> selectClass);
+
+	<T> T selectOne(Select selectQuery, Class<T> selectClass);
 
 	/**
 	 * Insert the given object to the table by id.
@@ -545,35 +551,35 @@ public interface CassandraOperations {
 	 * 
 	 * @param object
 	 */
-	<T> void deleteAsychronously(T entity);
+	<T> void deleteAsynchronously(T entity);
 
 	/**
 	 * @param entity
 	 * @param tableName
 	 * @param options
 	 */
-	<T> void deleteAsychronously(T entity, QueryOptions options);
+	<T> void deleteAsynchronously(T entity, QueryOptions options);
 
 	/**
 	 * @param entity
 	 * @param tableName
 	 * @param optionsByName
 	 */
-	<T> void deleteAsychronously(T entity, Map<String, Object> optionsByName);
+	<T> void deleteAsynchronously(T entity, Map<String, Object> optionsByName);
 
 	/**
 	 * @param entity
 	 * @param tableName
 	 * @param options
 	 */
-	<T> void deleteAsychronously(T entity, String tableName, QueryOptions options);
+	<T> void deleteAsynchronously(T entity, String tableName, QueryOptions options);
 
 	/**
 	 * @param entity
 	 * @param tableName
 	 * @param optionsByName
 	 */
-	<T> void deleteAsychronously(T entity, String tableName, Map<String, Object> optionsByName);
+	<T> void deleteAsynchronously(T entity, String tableName, Map<String, Object> optionsByName);
 
 	/**
 	 * Removes the given object from the given table.
@@ -581,14 +587,14 @@ public interface CassandraOperations {
 	 * @param object
 	 * @param table must not be {@literal null} or empty.
 	 */
-	<T> void deleteAsychronously(T entity, String tableName);
+	<T> void deleteAsynchronously(T entity, String tableName);
 
 	/**
 	 * Remove the given object from the table by id.
 	 * 
 	 * @param object
 	 */
-	<T> void deleteAsychronously(List<T> entities);
+	<T> void deleteAsynchronously(List<T> entities);
 
 	/**
 	 * Removes the given object from the given table.
@@ -596,35 +602,35 @@ public interface CassandraOperations {
 	 * @param object
 	 * @param table must not be {@literal null} or empty.
 	 */
-	<T> void deleteAsychronously(List<T> entities, String tableName);
+	<T> void deleteAsynchronously(List<T> entities, String tableName);
 
 	/**
 	 * @param entities
 	 * @param tableName
 	 * @param options
 	 */
-	<T> void deleteAsychronously(List<T> entities, QueryOptions options);
+	<T> void deleteAsynchronously(List<T> entities, QueryOptions options);
 
 	/**
 	 * @param entities
 	 * @param tableName
 	 * @param optionsByName
 	 */
-	<T> void deleteAsychronously(List<T> entities, Map<String, Object> optionsByName);
+	<T> void deleteAsynchronously(List<T> entities, Map<String, Object> optionsByName);
 
 	/**
 	 * @param entities
 	 * @param tableName
 	 * @param options
 	 */
-	<T> void deleteAsychronously(List<T> entities, String tableName, QueryOptions options);
+	<T> void deleteAsynchronously(List<T> entities, String tableName, QueryOptions options);
 
 	/**
 	 * @param entities
 	 * @param tableName
 	 * @param optionsByName
 	 */
-	<T> void deleteAsychronously(List<T> entities, String tableName, Map<String, Object> optionsByName);
+	<T> void deleteAsynchronously(List<T> entities, String tableName, Map<String, Object> optionsByName);
 
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
