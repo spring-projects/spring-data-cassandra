@@ -8,12 +8,12 @@ package org.springframework.data.cassandra.mapping;
 public enum KeyType {
 
 	/**
-	 * Used for a column that is a primary key that also is or is part of the partition key.
+	 * Used for a column that is a primary key and that also is or is part of the partition key.
 	 */
 	PARTITION,
 
 	/**
-	 * Use for a primary key column that is not part of the partition key and, therefore, may also be ordered.
+	 * Used for a primary key column that is not part of the partition key.
 	 */
 	PRIMARY
 }

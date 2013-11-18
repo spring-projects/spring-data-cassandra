@@ -9,7 +9,7 @@ import static org.springframework.data.cassandra.mapping.KeyType.PRIMARY;
 import static org.springframework.data.cassandra.mapping.Ordering.ASCENDING;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +29,7 @@ public class CreateTableBuilder {
 	private boolean ifNotExists = false;
 	private String name;
 	private List<ColumnBuilder> columns = new ArrayList<ColumnBuilder>();
-	private Map<String, Object> options = new HashMap<String, Object>();
+	private Map<String, Object> options = new LinkedHashMap<String, Object>();
 
 	/**
 	 * Causes the inclusion of an <code>IF NOT EXISTS</code> clause.
@@ -65,40 +65,27 @@ public class CreateTableBuilder {
 	}
 
 	/**
-	 * Adds the given single-string option with no value to this table's options. Convenient overload of
-	 * <code>with(string, null, false, false)</code>.
+	 * Convenience method that calls <code>with(option, null)</code>.
 	 * 
-	 * @param singleStringOption
-	 * @return
+	 * @return this
 	 */
-	public CreateTableBuilder with(String string) {
-		return with(string, null, false, false);
+	public CreateTableBuilder with(TableOption option) {
+		return with(option, null);
 	}
 
 	/**
-	 * Adds the given single-quote-escaped then single-quoted option value by name to this table's options. Convenient
-	 * overload of <code>with(name, value, true, true)</code>
+	 * Sets the given table option. This is a convenience method that calls
+	 * {@link #with(String, Object, boolean, boolean)} appropriately from the given {@link TableOption} and value for that
+	 * option.
 	 * 
-	 * @see #with(String, Object, boolean, boolean)
+	 * @param option The option to set.
+	 * @param value The value of the option. Must be type-compatible with the {@link TableOption}.
 	 * @return this
-	 */
-	public CreateTableBuilder withQuoted(String name, Object value) {
-		return with(name, value, true, true);
-	}
-
-	/**
-	 * Adds the given option value by name with no quoting or escaping to this table's options. Convenient overload of
-	 * <code>with(name, value, false, false)</code>
-	 * 
 	 * @see #with(String, Object, boolean, boolean)
-	 * @return this
 	 */
-	public CreateTableBuilder withUnquoted(String name, Object value) {
-		return with(name, value, false, false);
-	}
-
-	public CreateTableBuilder with(String name, Map<String, Object> valueMap) {
-		return with(name, valueMap, false, false);
+	public CreateTableBuilder with(TableOption option, Object value) {
+		option.checkValue(value);
+		return with(option.getName(), value, option.escapesValue(), option.quotesValue());
 	}
 
 	/**
@@ -152,22 +139,12 @@ public class CreateTableBuilder {
 		return this;
 	}
 
-	/**
-	 * Convenient method that calls <code>with("COMPACT STORAGE", null)</code>.
-	 * 
-	 * @see #with(String, Object)
-	 * @return this
-	 */
-	public CreateTableBuilder withCompactStorage() {
-		return with("COMPACT STORAGE");
-	}
-
 	protected List<ColumnBuilder> columns() {
 		return columns == null ? columns = new ArrayList<ColumnBuilder>() : columns;
 	}
 
 	protected Map<String, Object> options() {
-		return options == null ? options = new HashMap<String, Object>() : options;
+		return options == null ? options = new LinkedHashMap<String, Object>() : options;
 	}
 
 	public String toCql() {
@@ -269,10 +246,11 @@ public class CreateTableBuilder {
 		// begin options
 		// begin option clause
 		if (clustering != null || !options.isEmpty()) {
+
 			// option preamble
 			first = true;
-
 			cql.append(" WITH ");
+			// end option preamble
 
 			if (clustering != null) {
 				cql.append(clustering);
@@ -297,24 +275,32 @@ public class CreateTableBuilder {
 
 					cql.append(" = ");
 
-					Map<String, Object> valueMap = null;
-					if ((value instanceof Map) && !(valueMap = (Map<String, Object>) value).isEmpty()) {
+					Map<Option, Object> valueMap = null;
+					if ((value instanceof Map) && !(valueMap = (Map<Option, Object>) value).isEmpty()) {
 						// then option value is a non-empty map
 
 						// append { 'name' : 'value', ... }
 						cql.append("{ ");
 						boolean mapFirst = true;
-						for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
+						for (Map.Entry<Option, Object> entry : valueMap.entrySet()) {
 							if (mapFirst) {
 								mapFirst = false;
 							} else {
 								cql.append(", ");
 							}
 
-							cql.append(singleQuote(entry.getKey())); // 'name'
+							Option option = entry.getKey();
+							cql.append(singleQuote(option.getName())); // entries in map keys are always quoted
 							cql.append(" : ");
 							Object entryValue = entry.getValue();
-							cql.append(singleQuote(entryValue == null ? "" : entryValue.toString())); // 'value'
+							entryValue = entryValue == null ? "" : entryValue.toString();
+							if (option.escapesValue()) {
+								entryValue = escapeSingle(value);
+							}
+							if (option.quotesValue()) {
+								entryValue = singleQuote(value);
+							}
+							cql.append(entryValue);
 						}
 						cql.append(" }");
 
