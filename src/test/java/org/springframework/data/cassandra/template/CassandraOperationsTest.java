@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.CassandraCQLUnit;
@@ -51,8 +53,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+
 /**
- * Unit Tests for CassnadraTemplate
+ * Unit Tests for CassandraTemplate
  * 
  * @author David Webb
  * 
@@ -357,6 +362,554 @@ public class CassandraOperationsTest {
 		}
 
 		return books;
+	}
+
+	@Test
+	public void updateTest() {
+
+		insertTest();
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b1 = new Book();
+		b1.setIsbn("123456-1");
+		b1.setTitle("Spring Data Cassandra Book");
+		b1.setAuthor("Cassandra Guru");
+		b1.setPages(521);
+
+		cassandraTemplate.update(b1);
+
+		Book b2 = new Book();
+		b2.setIsbn("123456-2");
+		b2.setTitle("Spring Data Cassandra Book");
+		b2.setAuthor("Cassandra Guru");
+		b2.setPages(521);
+
+		cassandraTemplate.update(b2, "book_alt");
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b3 = new Book();
+		b3.setIsbn("123456-3");
+		b3.setTitle("Spring Data Cassandra Book");
+		b3.setAuthor("Cassandra Guru");
+		b3.setPages(265);
+
+		cassandraTemplate.update(b3, "book", options);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b4 = new Book();
+		b4.setIsbn("123456-4");
+		b4.setTitle("Spring Data Cassandra Book");
+		b4.setAuthor("Cassandra Guru");
+		b4.setPages(465);
+
+		cassandraTemplate.update(b4, "book", optionsByName);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b5 = new Book();
+		b5.setIsbn("123456-5");
+		b5.setTitle("Spring Data Cassandra Book");
+		b5.setAuthor("Cassandra Guru");
+		b5.setPages(265);
+
+		cassandraTemplate.update(b5, options);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b6 = new Book();
+		b6.setIsbn("123456-6");
+		b6.setTitle("Spring Data Cassandra Book");
+		b6.setAuthor("Cassandra Guru");
+		b6.setPages(465);
+
+		cassandraTemplate.update(b6, optionsByName);
+
+	}
+
+	@Test
+	public void updateAsynchronouslyTest() {
+
+		insertTest();
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b1 = new Book();
+		b1.setIsbn("123456-1");
+		b1.setTitle("Spring Data Cassandra Book");
+		b1.setAuthor("Cassandra Guru");
+		b1.setPages(521);
+
+		cassandraTemplate.updateAsynchronously(b1);
+
+		Book b2 = new Book();
+		b2.setIsbn("123456-2");
+		b2.setTitle("Spring Data Cassandra Book");
+		b2.setAuthor("Cassandra Guru");
+		b2.setPages(521);
+
+		cassandraTemplate.updateAsynchronously(b2, "book_alt");
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b3 = new Book();
+		b3.setIsbn("123456-3");
+		b3.setTitle("Spring Data Cassandra Book");
+		b3.setAuthor("Cassandra Guru");
+		b3.setPages(265);
+
+		cassandraTemplate.updateAsynchronously(b3, "book", options);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b4 = new Book();
+		b4.setIsbn("123456-4");
+		b4.setTitle("Spring Data Cassandra Book");
+		b4.setAuthor("Cassandra Guru");
+		b4.setPages(465);
+
+		cassandraTemplate.updateAsynchronously(b4, "book", optionsByName);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b5 = new Book();
+		b5.setIsbn("123456-5");
+		b5.setTitle("Spring Data Cassandra Book");
+		b5.setAuthor("Cassandra Guru");
+		b5.setPages(265);
+
+		cassandraTemplate.updateAsynchronously(b5, options);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b6 = new Book();
+		b6.setIsbn("123456-6");
+		b6.setTitle("Spring Data Cassandra Book");
+		b6.setAuthor("Cassandra Guru");
+		b6.setPages(465);
+
+		cassandraTemplate.updateAsynchronously(b6, optionsByName);
+
+	}
+
+	@Test
+	public void updateBatchTest() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		List<Book> books = null;
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book_alt");
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, "book_alt");
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", options);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, "book", options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", optionsByName);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, "book", optionsByName);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, options);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, optionsByName);
+
+		alterBooks(books);
+
+		cassandraTemplate.update(books, optionsByName);
+
+	}
+
+	@Test
+	public void updateBatchAsynchronouslyTest() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		List<Book> books = null;
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book_alt");
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, "book_alt");
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", options);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, "book", options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", optionsByName);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, "book", optionsByName);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, options);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, optionsByName);
+
+		alterBooks(books);
+
+		cassandraTemplate.updateAsynchronously(books, optionsByName);
+
+	}
+
+	/**
+	 * @param books
+	 */
+	private void alterBooks(List<Book> books) {
+
+		for (Book b : books) {
+			b.setAuthor("Ernest Hemmingway");
+			b.setTitle("The Old Man and the Sea");
+			b.setPages(115);
+		}
+	}
+
+	@Test
+	public void deleteTest() {
+
+		insertTest();
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b1 = new Book();
+		b1.setIsbn("123456-1");
+
+		cassandraTemplate.delete(b1);
+
+		Book b2 = new Book();
+		b2.setIsbn("123456-2");
+
+		cassandraTemplate.delete(b2, "book_alt");
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b3 = new Book();
+		b3.setIsbn("123456-3");
+
+		cassandraTemplate.delete(b3, "book", options);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b4 = new Book();
+		b4.setIsbn("123456-4");
+
+		cassandraTemplate.delete(b4, "book", optionsByName);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b5 = new Book();
+		b5.setIsbn("123456-5");
+
+		cassandraTemplate.delete(b5, options);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b6 = new Book();
+		b6.setIsbn("123456-6");
+
+		cassandraTemplate.delete(b6, optionsByName);
+
+	}
+
+	@Test
+	public void deleteAsynchronouslyTest() {
+
+		insertTest();
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b1 = new Book();
+		b1.setIsbn("123456-1");
+
+		cassandraTemplate.deleteAsynchronously(b1);
+
+		Book b2 = new Book();
+		b2.setIsbn("123456-2");
+
+		cassandraTemplate.deleteAsynchronously(b2, "book_alt");
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b3 = new Book();
+		b3.setIsbn("123456-3");
+
+		cassandraTemplate.deleteAsynchronously(b3, "book", options);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b4 = new Book();
+		b4.setIsbn("123456-4");
+
+		cassandraTemplate.deleteAsynchronously(b4, "book", optionsByName);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b5 = new Book();
+		b5.setIsbn("123456-5");
+
+		cassandraTemplate.deleteAsynchronously(b5, options);
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b6 = new Book();
+		b6.setIsbn("123456-6");
+
+		cassandraTemplate.deleteAsynchronously(b6, optionsByName);
+	}
+
+	@Test
+	public void deleteBatchTest() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		List<Book> books = null;
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books);
+
+		cassandraTemplate.delete(books);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book_alt");
+
+		cassandraTemplate.delete(books, "book_alt");
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", options);
+
+		cassandraTemplate.delete(books, "book", options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", optionsByName);
+
+		cassandraTemplate.delete(books, "book", optionsByName);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, options);
+
+		cassandraTemplate.delete(books, options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, optionsByName);
+
+		cassandraTemplate.delete(books, optionsByName);
+
+	}
+
+	@Test
+	public void deleteBatchAsynchronouslyTest() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+		Map<String, Object> optionsByName = new HashMap<String, Object>();
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL, ConsistencyLevel.ALL);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.RETRY_POLICY, RetryPolicy.FALLTHROUGH);
+		optionsByName.put(QueryOptions.QueryOptionMapKeys.TTL, 30);
+
+		List<Book> books = null;
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books);
+
+		cassandraTemplate.deleteAsynchronously(books);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book_alt");
+
+		cassandraTemplate.deleteAsynchronously(books, "book_alt");
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", options);
+
+		cassandraTemplate.deleteAsynchronously(books, "book", options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, "book", optionsByName);
+
+		cassandraTemplate.deleteAsynchronously(books, "book", optionsByName);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, options);
+
+		cassandraTemplate.deleteAsynchronously(books, options);
+
+		books = getBookList(20);
+
+		cassandraTemplate.insert(books, optionsByName);
+
+		cassandraTemplate.deleteAsynchronously(books, optionsByName);
+
+	}
+
+	@Test
+	public void selectTest() {
+
+		/*
+		 * Test Single Insert with entity
+		 */
+		Book b1 = new Book();
+		b1.setIsbn("123456-1");
+		b1.setTitle("Spring Data Cassandra Guide");
+		b1.setAuthor("Cassandra Guru");
+		b1.setPages(521);
+
+		cassandraTemplate.insert(b1);
+
+		Select select = QueryBuilder.select().all().from("book");
+		select.where(QueryBuilder.eq("isbn", "123456-1"));
+
+		Book b = cassandraTemplate.selectOne(select, Book.class);
+
+		log.info("SingleSelect Book Title -> " + b.getTitle());
+		log.info("SingleSelect Book Author -> " + b.getAuthor());
+
+		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
+		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
+
 	}
 
 	@After

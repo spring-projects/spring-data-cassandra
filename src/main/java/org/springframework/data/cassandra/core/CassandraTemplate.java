@@ -32,12 +32,10 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.exceptions.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.util.CqlUtils;
-import org.springframework.data.convert.EntityReader;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 
@@ -48,8 +46,8 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.querybuilder.Batch;
+import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * The Cassandra Template is a convenience API for all Cassnadra DML Operations.
@@ -58,31 +56,6 @@ import com.datastax.driver.core.querybuilder.Batch;
  * @author David Webb
  */
 public class CassandraTemplate implements CassandraOperations {
-
-	/**
-	 * Simple {@link RowCallback} that will transform {@link Row} into the given target type using the given
-	 * {@link EntityReader}.
-	 * 
-	 * @author Alex Shvid
-	 */
-	private static class ReadRowCallback<T> implements RowCallback<T> {
-
-		private final EntityReader<? super T, Object> reader;
-		private final Class<T> type;
-
-		public ReadRowCallback(EntityReader<? super T, Object> reader, Class<T> type) {
-			Assert.notNull(reader);
-			Assert.notNull(type);
-			this.reader = reader;
-			this.type = type;
-		}
-
-		@Override
-		public T doWith(Row row) {
-			T source = reader.read(type, row);
-			return source;
-		}
-	}
 
 	private static Logger log = LoggerFactory.getLogger(CassandraTemplate.class);
 	public static final Collection<String> ITERABLE_CLASSES;
@@ -231,48 +204,48 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.util.List)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List)
 	 */
 	@Override
-	public <T> void deleteAsychronously(List<T> entities) {
+	public <T> void deleteAsynchronously(List<T> entities) {
 		String tableName = getTableName(entities.get(0).getClass());
 		Assert.notNull(tableName);
-		deleteAsychronously(entities, tableName);
+		deleteAsynchronously(entities, tableName);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.util.List, java.util.Map)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List, java.util.Map)
 	 */
 	@Override
-	public <T> void deleteAsychronously(List<T> entities, Map<String, Object> optionsByName) {
+	public <T> void deleteAsynchronously(List<T> entities, Map<String, Object> optionsByName) {
 		String tableName = getTableName(entities.get(0).getClass());
 		Assert.notNull(tableName);
-		deleteAsychronously(entities, tableName, optionsByName);
+		deleteAsynchronously(entities, tableName, optionsByName);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.util.List, org.springframework.data.cassandra.core.QueryOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List, org.springframework.data.cassandra.core.QueryOptions)
 	 */
 	@Override
-	public <T> void deleteAsychronously(List<T> entities, QueryOptions options) {
+	public <T> void deleteAsynchronously(List<T> entities, QueryOptions options) {
 		String tableName = getTableName(entities.get(0).getClass());
 		Assert.notNull(tableName);
-		deleteAsychronously(entities, tableName, options);
+		deleteAsynchronously(entities, tableName, options);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.util.List, java.lang.String)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List, java.lang.String)
 	 */
 	@Override
-	public <T> void deleteAsychronously(List<T> entities, String tableName) {
+	public <T> void deleteAsynchronously(List<T> entities, String tableName) {
 		insertAsynchronously(entities, tableName, new HashMap<String, Object>());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.util.List, java.lang.String, java.util.Map)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List, java.lang.String, java.util.Map)
 	 */
 	@Override
-	public <T> void deleteAsychronously(List<T> entities, String tableName, Map<String, Object> optionsByName) {
+	public <T> void deleteAsynchronously(List<T> entities, String tableName, Map<String, Object> optionsByName) {
 		Assert.notNull(entities);
 		Assert.notEmpty(entities);
 		Assert.notNull(tableName);
@@ -281,56 +254,56 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.util.List, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
 	 */
 	@Override
-	public <T> void deleteAsychronously(List<T> entities, String tableName, QueryOptions options) {
-		deleteAsychronously(entities, tableName, options.toMap());
+	public <T> void deleteAsynchronously(List<T> entities, String tableName, QueryOptions options) {
+		deleteAsynchronously(entities, tableName, options.toMap());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.lang.Object)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object)
 	 */
 	@Override
-	public <T> void deleteAsychronously(T entity) {
+	public <T> void deleteAsynchronously(T entity) {
 		String tableName = getTableName(entity.getClass());
 		Assert.notNull(tableName);
-		deleteAsychronously(entity, tableName);
+		deleteAsynchronously(entity, tableName);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.lang.Object, java.util.Map)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object, java.util.Map)
 	 */
 	@Override
-	public <T> void deleteAsychronously(T entity, Map<String, Object> optionsByName) {
+	public <T> void deleteAsynchronously(T entity, Map<String, Object> optionsByName) {
 		String tableName = getTableName(entity.getClass());
 		Assert.notNull(tableName);
-		deleteAsychronously(entity, tableName, optionsByName);
+		deleteAsynchronously(entity, tableName, optionsByName);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.lang.Object, org.springframework.data.cassandra.core.QueryOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object, org.springframework.data.cassandra.core.QueryOptions)
 	 */
 	@Override
-	public <T> void deleteAsychronously(T entity, QueryOptions options) {
+	public <T> void deleteAsynchronously(T entity, QueryOptions options) {
 		String tableName = getTableName(entity.getClass());
 		Assert.notNull(tableName);
-		deleteAsychronously(entity, tableName, options);
+		deleteAsynchronously(entity, tableName, options);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.lang.Object, java.lang.String)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object, java.lang.String)
 	 */
 	@Override
-	public <T> void deleteAsychronously(T entity, String tableName) {
-		deleteAsychronously(entity, tableName, new HashMap<String, Object>());
+	public <T> void deleteAsynchronously(T entity, String tableName) {
+		deleteAsynchronously(entity, tableName, new HashMap<String, Object>());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.lang.Object, java.lang.String, java.util.Map)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object, java.lang.String, java.util.Map)
 	 */
 	@Override
-	public <T> void deleteAsychronously(T entity, String tableName, Map<String, Object> optionsByName) {
+	public <T> void deleteAsynchronously(T entity, String tableName, Map<String, Object> optionsByName) {
 		Assert.notNull(entity);
 		Assert.notNull(tableName);
 		Assert.notNull(optionsByName);
@@ -338,11 +311,11 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsychronously(java.lang.Object, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
 	 */
 	@Override
-	public <T> void deleteAsychronously(T entity, String tableName, QueryOptions options) {
-		deleteAsychronously(entity, tableName, options.toMap());
+	public <T> void deleteAsynchronously(T entity, String tableName, QueryOptions options) {
+		deleteAsynchronously(entity, tableName, options.toMap());
 	}
 
 	/* (non-Javadoc)
@@ -701,19 +674,35 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(com.datastax.driver.core.querybuilder.Select, java.lang.Class)
+	 */
+	@Override
+	public <T> List<T> select(Select selectQuery, Class<T> selectClass) {
+		return selectByCQL(selectQuery.getQueryString(), selectClass);
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public <T> List<T> select(String query, Class<T> selectClass) {
-		return selectInternal(query, new ReadRowCallback<T>(cassandraConverter, selectClass));
+	public <T> List<T> selectByCQL(String query, Class<T> selectClass) {
+		return doSelect(query, new ReadRowCallback<T>(cassandraConverter, selectClass));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(com.datastax.driver.core.querybuilder.Select, java.lang.Class)
+	 */
+	@Override
+	public <T> T selectOne(Select selectQuery, Class<T> selectClass) {
+		return selectOneByCQL(selectQuery.getQueryString(), selectClass);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public <T> T selectOne(String query, Class<T> selectClass) {
-		return selectOneInternal(query, new ReadRowCallback<T>(cassandraConverter, selectClass));
+	public <T> T selectOneByCQL(String query, Class<T> selectClass) {
+		return doSelectOne(query, new ReadRowCallback<T>(cassandraConverter, selectClass));
 	}
 
 	/* (non-Javadoc)
@@ -953,6 +942,70 @@ public class CassandraTemplate implements CassandraOperations {
 	private <T> String determineTableName(T obj) {
 		if (null != obj) {
 			return determineTableName(obj.getClass());
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param query
+	 * @param readRowCallback
+	 * @return
+	 */
+	private <T> List<T> doSelect(final String query, ReadRowCallback<T> readRowCallback) {
+
+		ResultSet resultSet = execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(query);
+			}
+		});
+
+		if (resultSet == null) {
+			return null;
+		}
+
+		List<T> result = new ArrayList<T>();
+		Iterator<Row> iterator = resultSet.iterator();
+		while (iterator.hasNext()) {
+			Row row = iterator.next();
+			result.add(readRowCallback.doWith(row));
+		}
+
+		return result;
+	}
+
+	/**
+	 * @param query
+	 * @param readRowCallback
+	 * @return
+	 */
+	private <T> T doSelectOne(final String query, ReadRowCallback<T> readRowCallback) {
+
+		/*
+		 * Run the Query
+		 */
+		ResultSet resultSet = execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(query);
+			}
+		});
+
+		if (resultSet == null) {
+			return null;
+		}
+
+		Iterator<Row> iterator = resultSet.iterator();
+		if (iterator.hasNext()) {
+			Row row = iterator.next();
+			T result = readRowCallback.doWith(row);
+			if (iterator.hasNext()) {
+				throw new DuplicateKeyException("found two or more results in query " + query);
+			}
+			return result;
 		}
 
 		return null;
@@ -1236,53 +1289,6 @@ public class CassandraTemplate implements CassandraOperations {
 			return callback.doInSession(session);
 
 		} catch (DataAccessException e) {
-			throw potentiallyConvertRuntimeException(e);
-		}
-	}
-
-	/**
-	 * @param query
-	 * @param readRowCallback
-	 * @return
-	 */
-	<T> List<T> selectInternal(String query, ReadRowCallback<T> readRowCallback) {
-		try {
-			ResultSet resultSet = session.execute(query);
-			List<T> result = new ArrayList<T>();
-			Iterator<Row> iterator = resultSet.iterator();
-			while (iterator.hasNext()) {
-				Row row = iterator.next();
-				result.add(readRowCallback.doWith(row));
-			}
-			return result;
-		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException(null, "no host available", e);
-		} catch (RuntimeException e) {
-			throw potentiallyConvertRuntimeException(e);
-		}
-	}
-
-	/**
-	 * @param query
-	 * @param readRowCallback
-	 * @return
-	 */
-	<T> T selectOneInternal(String query, ReadRowCallback<T> readRowCallback) {
-		try {
-			ResultSet resultSet = session.execute(query);
-			Iterator<Row> iterator = resultSet.iterator();
-			if (iterator.hasNext()) {
-				Row row = iterator.next();
-				T result = readRowCallback.doWith(row);
-				if (iterator.hasNext()) {
-					throw new DuplicateKeyException("found two or more results in query " + query);
-				}
-				return result;
-			}
-			return null;
-		} catch (NoHostAvailableException e) {
-			throw new CassandraConnectionFailureException(null, "no host available", e);
-		} catch (RuntimeException e) {
 			throw potentiallyConvertRuntimeException(e);
 		}
 	}
