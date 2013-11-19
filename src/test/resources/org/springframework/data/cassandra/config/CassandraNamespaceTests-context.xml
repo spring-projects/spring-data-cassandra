@@ -46,7 +46,7 @@
 		</cassandra:keyspace-attributes>
 	</cassandra:keyspace>
 	
-	<cassandra:session/>
+	<cassandra:session id="cassandra-session" cassandra-keyspace-ref="cassandra-keyspace"/>
 	
 	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CassandraTemplate">
 		<constructor-arg ref="cassandra-session" />
