@@ -14,29 +14,27 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
+package org.springframework.cassandra.support.exception;
 
-import java.net.InetAddress;
-
-import org.springframework.dao.PermissionDeniedDataAccessException;
+import org.springframework.dao.QueryTimeoutException;
 
 /**
- * Spring data access exception for a Cassandra authentication failure.
+ * Spring data access exception for a Cassandra write timeout.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraAuthenticationException extends PermissionDeniedDataAccessException {
+public class CassandraWriteTimeoutException extends QueryTimeoutException {
 
-	private static final long serialVersionUID = 8556304586797273927L;
+	private static final long serialVersionUID = -4374826375213670718L;
 
-	private InetAddress host;
+	private String writeType;
 
-	public CassandraAuthenticationException(InetAddress host, String msg, Throwable cause) {
+	public CassandraWriteTimeoutException(String writeType, String msg, Throwable cause) {
 		super(msg, cause);
-		this.host = host;
+		this.writeType = writeType;
 	}
 
-	public InetAddress getHost() {
-		return host;
+	public String getWriteType() {
+		return writeType;
 	}
 }

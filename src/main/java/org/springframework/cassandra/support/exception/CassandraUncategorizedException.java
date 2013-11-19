@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
+package org.springframework.cassandra.support.exception;
 
-import org.springframework.dao.DataAccessException;
-
-import com.datastax.driver.core.Session;
+import org.springframework.dao.UncategorizedDataAccessException;
 
 /**
- * Interface for operations on a Cassnadra Session.
+ * Spring data access exception for an uncategorized Cassandra exception.
  * 
- * @author David Webb
- * 
- * @param <T>
+ * @author Alex Shvid
+ * @author Matthew T. Adams
  */
-public interface SessionCallback<T> {
+public class CassandraUncategorizedException extends UncategorizedDataAccessException {
 
-	/**
-	 * Perform the operation in the given Session
-	 * 
-	 * @param s
-	 * @return
-	 * @throws DataAccessException
-	 */
-	T doInSession(Session s) throws DataAccessException;
+	private static final long serialVersionUID = 1029525121238025444L;
 
+	public CassandraUncategorizedException(String msg, Throwable cause) {
+		super(msg, cause);
+	}
 }

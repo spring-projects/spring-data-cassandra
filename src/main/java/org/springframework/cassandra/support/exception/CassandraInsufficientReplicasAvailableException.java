@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
+package org.springframework.cassandra.support.exception;
 
 import org.springframework.dao.TransientDataAccessException;
 

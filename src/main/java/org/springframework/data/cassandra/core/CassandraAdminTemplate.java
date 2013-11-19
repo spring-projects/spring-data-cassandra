@@ -5,11 +5,13 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.support.CassandraExceptionTranslator;
+import org.springframework.cassandra.support.exception.CassandraTableExistsException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.exceptions.CassandraTableExistsException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.util.CqlUtils;

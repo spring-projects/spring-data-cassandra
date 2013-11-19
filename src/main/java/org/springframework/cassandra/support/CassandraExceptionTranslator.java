@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
+package org.springframework.cassandra.support;
 
+import org.springframework.cassandra.support.exception.CassandraAuthenticationException;
+import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
+import org.springframework.cassandra.support.exception.CassandraInsufficientReplicasAvailableException;
+import org.springframework.cassandra.support.exception.CassandraInternalException;
+import org.springframework.cassandra.support.exception.CassandraInvalidConfigurationInQueryException;
+import org.springframework.cassandra.support.exception.CassandraInvalidQueryException;
+import org.springframework.cassandra.support.exception.CassandraKeyspaceExistsException;
+import org.springframework.cassandra.support.exception.CassandraQuerySyntaxException;
+import org.springframework.cassandra.support.exception.CassandraReadTimeoutException;
+import org.springframework.cassandra.support.exception.CassandraTableExistsException;
+import org.springframework.cassandra.support.exception.CassandraTraceRetrievalException;
+import org.springframework.cassandra.support.exception.CassandraTruncateException;
+import org.springframework.cassandra.support.exception.CassandraTypeMismatchException;
+import org.springframework.cassandra.support.exception.CassandraUnauthorizedException;
+import org.springframework.cassandra.support.exception.CassandraUncategorizedException;
+import org.springframework.cassandra.support.exception.CassandraWriteTimeoutException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.data.cassandra.core.exceptions.CassandraAuthenticationException;
-import org.springframework.data.cassandra.core.exceptions.CassandraConnectionFailureException;
-import org.springframework.data.cassandra.core.exceptions.CassandraInsufficientReplicasAvailableException;
-import org.springframework.data.cassandra.core.exceptions.CassandraInternalException;
-import org.springframework.data.cassandra.core.exceptions.CassandraInvalidConfigurationInQueryException;
-import org.springframework.data.cassandra.core.exceptions.CassandraInvalidQueryException;
-import org.springframework.data.cassandra.core.exceptions.CassandraKeyspaceExistsException;
-import org.springframework.data.cassandra.core.exceptions.CassandraQuerySyntaxException;
-import org.springframework.data.cassandra.core.exceptions.CassandraReadTimeoutException;
-import org.springframework.data.cassandra.core.exceptions.CassandraTableExistsException;
-import org.springframework.data.cassandra.core.exceptions.CassandraTraceRetrievalException;
-import org.springframework.data.cassandra.core.exceptions.CassandraTruncateException;
-import org.springframework.data.cassandra.core.exceptions.CassandraTypeMismatchException;
-import org.springframework.data.cassandra.core.exceptions.CassandraUnauthorizedException;
-import org.springframework.data.cassandra.core.exceptions.CassandraUncategorizedException;
-import org.springframework.data.cassandra.core.exceptions.CassandraWriteTimeoutException;
 
 import com.datastax.driver.core.WriteType;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;

@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
+package org.springframework.cassandra.support.exception;
+
+import org.springframework.dao.TypeMismatchDataAccessException;
 
 /**
- * Spring data access exception for Cassandra when a keyspace being created already exists.
+ * Spring data access exception for a Cassandra type mismatch exception.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraKeyspaceExistsException extends CassandraSchemaElementExistsException {
+public class CassandraTypeMismatchException extends TypeMismatchDataAccessException {
 
-	private static final long serialVersionUID = 6032967419751410352L;
+	private static final long serialVersionUID = -7420058975444905629L;
 
-	public CassandraKeyspaceExistsException(String keyspaceName, String msg, Throwable cause) {
-		super(keyspaceName, ElementType.KEYSPACE, msg, cause);
+	public CassandraTypeMismatchException(String msg) {
+		super(msg);
 	}
 
-	public String getKeyspaceName() {
-		return getElementName();
+	public CassandraTypeMismatchException(String msg, Throwable cause) {
+		super(msg, cause);
 	}
 }

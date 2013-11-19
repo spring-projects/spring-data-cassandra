@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
+package org.springframework.cassandra.support.exception;
 
 import org.springframework.dao.QueryTimeoutException;
 
 /**
- * Spring data access exception for a Cassandra write timeout.
+ * Spring data access exception for a Cassandra read timeout.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraWriteTimeoutException extends QueryTimeoutException {
+public class CassandraReadTimeoutException extends QueryTimeoutException {
 
-	private static final long serialVersionUID = -4374826375213670718L;
+	private static final long serialVersionUID = -787022307935203387L;
 
-	private String writeType;
+	private boolean wasDataReceived;
 
-	public CassandraWriteTimeoutException(String writeType, String msg, Throwable cause) {
-		super(msg, cause);
-		this.writeType = writeType;
+	public CassandraReadTimeoutException(boolean wasDataReceived, String msg, Throwable cause) {
+		super(msg);
+		this.wasDataReceived = wasDataReceived;
 	}
 
-	public String getWriteType() {
-		return writeType;
+	public boolean getWasDataReceived() {
+		return wasDataReceived;
 	}
 }
