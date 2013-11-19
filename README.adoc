@@ -1,0 +1,54 @@
+= Spring Data Cassandra Project Info
+
+== Current Status
+
+This community-led http://projects.spring.io/spring-data[Spring Data]
+subproject is underway.
+
+A first milestone (M1) is expected sometime in early 1Q14 built on the
+following artifacts (or more recent versions thereof):
+
+* Spring Data Commons 1.7.x
+* Cassandra 1.x
+* Datastax Java Driver 1.x
+
+The GA release is expected as part of the as-yet unnamed fourth Spring
+Data Release Train "D", following Spring Data Release Train
+https://github.com/spring-projects/spring-data-commons/wiki/Release-Train-Codd[Codd].
+
+== Cassandra 2.x
+
+We are anticipating support for Cassandra 2.x and Datastax Java Driver
+2.x in a parallel branch after the 1.x-based support has been
+released.
+
+== Source Repository & Issue Tracking
+
+In the next few weeks, we will be transferring the source repository
+on GitHub to the https://github.com/spring-projects[Spring]
+organization.  Once it's there, we can begin taking contributions from
+interested parties.  In the meantime, the Spring Data Cassandra JIRA
+can be found at https://jira.springsource.org/browse/DATACASS.
+
+== Contact
+
+For more information, feel free to contact the individuals listed
+below:
+
+* David Webb:  dwebb <at> prowaveconsulting <dot> com
+* Matthew Adams:  matthew <dot> adams <at> scispike <dot> com
+
+== Sponsoring Companies
+
+Spring Data Cassandra is being led and supported by the following
+companies and individuals:
+
+* http://www.prowaveconsulting.com[Prowave Consulting]
+* http://www.scispike.com[SciSpike]
+* Alexander Shvid
+
+The following companies and individuals are also generously providing
+support:
+
+* http://www.datastax.com[DataStax]
+* http://www.spring.io[Spring] @ http://www.gopivotal.com[Pivotal]
