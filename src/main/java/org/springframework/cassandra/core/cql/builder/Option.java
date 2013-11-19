@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.cql.builder;
+package org.springframework.cassandra.core.cql.builder;
 
 /**
  * Interface to represent option types.

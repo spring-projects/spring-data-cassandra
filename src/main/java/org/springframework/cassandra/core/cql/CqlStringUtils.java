@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.cql;
+package org.springframework.cassandra.core.cql;
 
 import java.util.regex.Pattern;
 

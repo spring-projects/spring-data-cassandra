@@ -1,6 +1,6 @@
-package org.springframework.data.cassandra.cql.builder;
+package org.springframework.cassandra.core.cql.builder;
 
-import static org.springframework.data.cassandra.cql.CqlStringUtils.noNull;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
 public class DropColumn extends ColumnChange {
 

@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.cql.builder;
+package org.springframework.cassandra.cql.builder;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -7,6 +7,8 @@ import static junit.framework.Assert.assertTrue;
 import java.lang.annotation.RetentionPolicy;
 
 import org.junit.Test;
+import org.springframework.cassandra.core.cql.builder.DefaultOption;
+import org.springframework.cassandra.core.cql.builder.Option;
 
 public class OptionTest {
 

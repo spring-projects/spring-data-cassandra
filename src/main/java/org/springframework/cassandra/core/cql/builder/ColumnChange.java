@@ -1,7 +1,7 @@
-package org.springframework.data.cassandra.cql.builder;
+package org.springframework.cassandra.core.cql.builder;
 
-import static org.springframework.data.cassandra.cql.CqlStringUtils.checkIdentifier;
-import static org.springframework.data.cassandra.cql.CqlStringUtils.identifize;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
 
 public abstract class ColumnChange {
 

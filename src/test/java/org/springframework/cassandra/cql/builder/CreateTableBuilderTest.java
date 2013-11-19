@@ -1,16 +1,17 @@
-package org.springframework.data.cassandra.cql.builder;
+package org.springframework.cassandra.cql.builder;
 
 import static junit.framework.Assert.assertEquals;
-import static org.springframework.data.cassandra.cql.builder.CqlBuilder.createTable;
-import static org.springframework.data.cassandra.cql.builder.MapBuilder.map;
-import static org.springframework.data.cassandra.cql.builder.TableOption.BLOOM_FILTER_FP_CHANCE;
-import static org.springframework.data.cassandra.cql.builder.TableOption.CACHING;
-import static org.springframework.data.cassandra.cql.builder.TableOption.COMMENT;
-import static org.springframework.data.cassandra.cql.builder.TableOption.COMPACTION;
-import static org.springframework.data.cassandra.cql.builder.TableOption.CompactionOption.TOMBSTONE_THRESHOLD;
+import static org.springframework.cassandra.core.cql.builder.CqlBuilder.createTable;
+import static org.springframework.cassandra.core.cql.builder.MapBuilder.map;
+import static org.springframework.cassandra.core.cql.builder.TableOption.BLOOM_FILTER_FP_CHANCE;
+import static org.springframework.cassandra.core.cql.builder.TableOption.CACHING;
+import static org.springframework.cassandra.core.cql.builder.TableOption.COMMENT;
+import static org.springframework.cassandra.core.cql.builder.TableOption.COMPACTION;
+import static org.springframework.cassandra.core.cql.builder.TableOption.CompactionOption.TOMBSTONE_THRESHOLD;
 
 import org.junit.Test;
-import org.springframework.data.cassandra.cql.builder.TableOption.CachingOption;
+import org.springframework.cassandra.core.cql.builder.CreateTableBuilder;
+import org.springframework.cassandra.core.cql.builder.TableOption.CachingOption;
 
 import com.datastax.driver.core.DataType;
 

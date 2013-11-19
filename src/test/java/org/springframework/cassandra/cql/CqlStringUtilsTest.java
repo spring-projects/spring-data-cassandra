@@ -1,9 +1,9 @@
-package org.springframework.data.cassandra.cql;
+package org.springframework.cassandra.cql;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.springframework.data.cassandra.cql.CqlStringUtils.isQuotedIdentifier;
-import static org.springframework.data.cassandra.cql.CqlStringUtils.isUnquotedIdentifier;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.isQuotedIdentifier;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.isUnquotedIdentifier;
 
 import org.junit.Test;
 
