@@ -7,7 +7,7 @@ import java.util.Set;
 
 /**
  * Builder for maps, which also conveniently implements {@link Map} via delegation for convenience so you don't have to
- * actually {@link #build()} it if you don't want to (or forget).
+ * actually {@link #build()} it (or forget to).
  * 
  * @author Matthew T. Adams
  * @param <K> The key type of the map.

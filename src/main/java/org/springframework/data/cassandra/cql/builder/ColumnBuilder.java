@@ -1,12 +1,12 @@
 package org.springframework.data.cassandra.cql.builder;
 
-import static org.springframework.data.cassandra.cql.CqlStringUtils.checkQuotedIdentifier;
-import static org.springframework.data.cassandra.cql.CqlStringUtils.ensureNotNull;
+import static org.springframework.data.cassandra.cql.CqlStringUtils.checkIdentifier;
+import static org.springframework.data.cassandra.cql.CqlStringUtils.identifize;
+import static org.springframework.data.cassandra.cql.CqlStringUtils.noNull;
 import static org.springframework.data.cassandra.mapping.KeyType.PARTITION;
 import static org.springframework.data.cassandra.mapping.KeyType.PRIMARY;
 import static org.springframework.data.cassandra.mapping.Ordering.ASCENDING;
 
-import org.springframework.data.cassandra.cql.CqlStringUtils;
 import org.springframework.data.cassandra.mapping.KeyType;
 import org.springframework.data.cassandra.mapping.Ordering;
 
@@ -35,15 +35,12 @@ public class ColumnBuilder {
 	private Ordering ordering;
 
 	/**
-	 * Sets the column's name. Quotes are not escaped.
-	 * 
-	 * @see CqlStringUtils#escape(CharSequence)
-	 * @see CqlStringUtils#scrub(CharSequence)
+	 * Sets the column's name.
 	 * 
 	 * @return this
 	 */
 	public ColumnBuilder name(String name) {
-		checkQuotedIdentifier(name);
+		checkIdentifier(name);
 		this.name = name;
 		return this;
 	}
@@ -138,6 +135,10 @@ public class ColumnBuilder {
 		return name;
 	}
 
+	public String getNameAsIdentifier() {
+		return identifize(name);
+	}
+
 	public DataType getType() {
 		return type;
 	}
@@ -155,7 +156,7 @@ public class ColumnBuilder {
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return (cql = ensureNotNull(cql)).append(name).append(" ").append(type);
+		return (cql = noNull(cql)).append(name).append(" ").append(type);
 	}
 
 	@Override
