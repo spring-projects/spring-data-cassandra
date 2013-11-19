@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.config;
 
 /**
  * @author Alex Shvid
+ * @author David Webb
  */
 public final class BeanNames {
 
@@ -25,5 +26,6 @@ public final class BeanNames {
 
 	public static final String CASSANDRA_CLUSTER = "cassandra-cluster";
 	public static final String CASSANDRA_KEYSPACE = "cassandra-keyspace";
+	public static final String CASSANDRA_SESSION = "cassandra-session";
 
 }

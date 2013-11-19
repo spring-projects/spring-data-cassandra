@@ -14,27 +14,25 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
+package org.springframework.cassandra.support.exception;
 
-import org.springframework.dao.QueryTimeoutException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
- * Spring data access exception for a Cassandra read timeout.
+ * Spring data access exception for a Cassandra query that is syntactically correct but has an invalid configuration
+ * clause.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraReadTimeoutException extends QueryTimeoutException {
+public class CassandraInvalidConfigurationInQueryException extends InvalidDataAccessApiUsageException {
 
-	private static final long serialVersionUID = -787022307935203387L;
+	private static final long serialVersionUID = 4594321191806182918L;
 
-	private boolean wasDataReceived;
-
-	public CassandraReadTimeoutException(boolean wasDataReceived, String msg, Throwable cause) {
+	public CassandraInvalidConfigurationInQueryException(String msg) {
 		super(msg);
-		this.wasDataReceived = wasDataReceived;
 	}
 
-	public boolean getWasDataReceived() {
-		return wasDataReceived;
+	public CassandraInvalidConfigurationInQueryException(String msg, Throwable cause) {
+		super(msg, cause);
 	}
 }

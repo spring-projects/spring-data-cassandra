@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
-
-import org.springframework.dao.TransientDataAccessException;
+package org.springframework.cassandra.support.exception;
 
 /**
- * Spring data access exception for a Cassandra truncate exception.
+ * Spring data access exception for when a Cassandra table being created already exists.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraTruncateException extends TransientDataAccessException {
+public class CassandraTableExistsException extends CassandraSchemaElementExistsException {
 
-	private static final long serialVersionUID = 5730642491362430311L;
+	private static final long serialVersionUID = 6032967419751410352L;
 
-	public CassandraTruncateException(String msg) {
-		super(msg);
+	public CassandraTableExistsException(String tableName, String msg, Throwable cause) {
+		super(tableName, ElementType.TABLE, msg, cause);
 	}
 
-	public CassandraTruncateException(String msg, Throwable cause) {
-		super(msg, cause);
+	public String getTableName() {
+		return getElementName();
 	}
 }

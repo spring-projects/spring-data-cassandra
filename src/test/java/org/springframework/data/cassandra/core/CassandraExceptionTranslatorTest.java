@@ -5,12 +5,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.springframework.cassandra.support.CassandraExceptionTranslator;
+import org.springframework.cassandra.support.exception.CassandraInvalidConfigurationInQueryException;
+import org.springframework.cassandra.support.exception.CassandraInvalidQueryException;
+import org.springframework.cassandra.support.exception.CassandraKeyspaceExistsException;
+import org.springframework.cassandra.support.exception.CassandraSchemaElementExistsException;
+import org.springframework.cassandra.support.exception.CassandraTableExistsException;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.cassandra.core.exceptions.CassandraInvalidConfigurationInQueryException;
-import org.springframework.data.cassandra.core.exceptions.CassandraInvalidQueryException;
-import org.springframework.data.cassandra.core.exceptions.CassandraKeyspaceExistsException;
-import org.springframework.data.cassandra.core.exceptions.CassandraSchemaElementExistsException;
-import org.springframework.data.cassandra.core.exceptions.CassandraTableExistsException;
 
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.exceptions.InvalidConfigurationInQueryException;
