@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
-
-import org.springframework.dao.TransientDataAccessException;
+package org.springframework.cassandra.support.exception;
 
 /**
- * Spring data access exception for a Cassandra trace retrieval exception.
+ * Spring data access exception for Cassandra when a keyspace being created already exists.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraTraceRetrievalException extends TransientDataAccessException {
+public class CassandraKeyspaceExistsException extends CassandraSchemaElementExistsException {
 
-	private static final long serialVersionUID = -3163557220324700239L;
+	private static final long serialVersionUID = 6032967419751410352L;
 
-	public CassandraTraceRetrievalException(String msg) {
-		super(msg);
+	public CassandraKeyspaceExistsException(String keyspaceName, String msg, Throwable cause) {
+		super(keyspaceName, ElementType.KEYSPACE, msg, cause);
 	}
 
-	public CassandraTraceRetrievalException(String msg, Throwable cause) {
-		super(msg, cause);
+	public String getKeyspaceName() {
+		return getElementName();
 	}
 }

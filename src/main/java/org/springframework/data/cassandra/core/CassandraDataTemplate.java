@@ -25,12 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
@@ -43,23 +42,29 @@ import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Select;
 
 /**
- * The Cassandra Template is a convenience API for all Cassnadra DML Operations.
+ * The Cassandra Data Template is a convenience API for all Cassandra Operations using POJOs. This is the "Spring Data"
+ * flavor of the template. For low level Cassandra Operations use the {@link CassandraTemplate}
  * 
  * @author Alex Shvid
  * @author David Webb
  */
-public class CassandraTemplate implements CassandraOperations {
+public class CassandraDataTemplate extends CassandraTemplate implements CassandraDataOperations {
 
-	private static Logger log = LoggerFactory.getLogger(CassandraTemplate.class);
+	/*
+	 * Default Keyspace if none is passed in.
+	 */
+	private static final String KEYSPACE_DEFAULT = "system";
+
+	/*
+	 * List of iterable classes when testing POJOs for specific operations.
+	 */
 	public static final Collection<String> ITERABLE_CLASSES;
-
 	static {
 
 		Set<String> iterableClasses = new HashSet<String>();
@@ -70,22 +75,61 @@ public class CassandraTemplate implements CassandraOperations {
 		ITERABLE_CLASSES = Collections.unmodifiableCollection(iterableClasses);
 
 	}
-	private final Keyspace keyspace;
-	private final Session session;
-	private final CassandraConverter cassandraConverter;
-	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
-	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+
+	/*
+	 * Required elements for successful Template Operations.  These can be set with the Constructor, or wired in
+	 * later.
+	 * 
+	 * TODO - DW - Discuss Autowiring these.
+	 */
+	private String keyspace;
+	private CassandraConverter cassandraConverter;
+	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
+	/**
+	 * Default Constructor for wiring in the required components later
+	 */
+	public CassandraDataTemplate() {
+	}
+
+	/**
+	 * Constructor if only session is known at time of Template Creation
+	 * 
+	 * @param session must not be {@literal null}
+	 */
+	public CassandraDataTemplate(Session session) {
+		this(session, null, null);
+	}
+
+	/**
+	 * Constructor if only session and converter are known at time of Template Creation
+	 * 
+	 * @param session must not be {@literal null}
+	 * @param converter must not be {@literal null}.
+	 */
+	public CassandraDataTemplate(Session session, CassandraConverter converter) {
+		this(session, converter, null);
+	}
 
 	/**
 	 * Constructor used for a basic template configuration
 	 * 
-	 * @param keyspace must not be {@literal null}.
+	 * @param session must not be {@literal null}.
+	 * @param converter must not be {@literal null}.
 	 */
-	public CassandraTemplate(Keyspace keyspace) {
-		this.keyspace = keyspace;
-		this.session = keyspace.getSession();
-		this.cassandraConverter = keyspace.getCassandraConverter();
+	public CassandraDataTemplate(Session session, CassandraConverter converter, String keyspace) {
+		setSession(session);
+		this.keyspace = keyspace == null ? KEYSPACE_DEFAULT : keyspace;
+		this.cassandraConverter = converter;
 		this.mappingContext = this.cassandraConverter.getMappingContext();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectCount(com.datastax.driver.core.querybuilder.Select)
+	 */
+	@Override
+	public Long count(Select selectQuery) {
+		return doSelectCount(selectQuery);
 	}
 
 	/* (non-Javadoc)
@@ -332,7 +376,7 @@ public class CassandraTemplate implements CassandraOperations {
 		/*
 		 * Get the cluster metadata for this session
 		 */
-		Metadata clusterMetadata = execute(new SessionCallback<Metadata>() {
+		Metadata clusterMetadata = doExecute(new SessionCallback<Metadata>() {
 
 			@Override
 			public Metadata doInSession(Session s) throws DataAccessException {
@@ -384,44 +428,6 @@ public class CassandraTemplate implements CassandraOperations {
 					+ entityClass.getName());
 		}
 		return entity.getTable();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#executeQuery(java.lang.String)
-	 */
-	@Override
-	public ResultSet executeQuery(final String query) {
-
-		return execute(new SessionCallback<ResultSet>() {
-
-			@Override
-			public ResultSet doInSession(Session s) throws DataAccessException {
-
-				return s.execute(query);
-
-			}
-
-		});
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#executeQueryAsync(java.lang.String)
-	 */
-	@Override
-	public ResultSetFuture executeQueryAsynchronously(final String query) {
-
-		return execute(new SessionCallback<ResultSetFuture>() {
-
-			@Override
-			public ResultSetFuture doInSession(Session s) throws DataAccessException {
-
-				return s.executeAsync(query);
-
-			}
-
-		});
-
 	}
 
 	/* (non-Javadoc)
@@ -677,16 +683,16 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(com.datastax.driver.core.querybuilder.Select, java.lang.Class)
 	 */
 	@Override
-	public <T> List<T> select(Select selectQuery, Class<T> selectClass) {
-		return selectByCQL(selectQuery.getQueryString(), selectClass);
+	public <T> List<T> select(Select cql, Class<T> selectClass) {
+		return select(cql.getQueryString(), selectClass);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public <T> List<T> selectByCQL(String query, Class<T> selectClass) {
-		return doSelect(query, new ReadRowCallback<T>(cassandraConverter, selectClass));
+	public <T> List<T> select(String cql, Class<T> selectClass) {
+		return doSelect(cql, new ReadRowCallback<T>(cassandraConverter, selectClass));
 	}
 
 	/* (non-Javadoc)
@@ -694,15 +700,15 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public <T> T selectOne(Select selectQuery, Class<T> selectClass) {
-		return selectOneByCQL(selectQuery.getQueryString(), selectClass);
+		return selectOne(selectQuery.getQueryString(), selectClass);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public <T> T selectOneByCQL(String query, Class<T> selectClass) {
-		return doSelectOne(query, new ReadRowCallback<T>(cassandraConverter, selectClass));
+	public <T> T selectOne(String cql, Class<T> selectClass) {
+		return doSelectOne(cql, new ReadRowCallback<T>(cassandraConverter, selectClass));
 	}
 
 	/* (non-Javadoc)
@@ -954,7 +960,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	private <T> List<T> doSelect(final String query, ReadRowCallback<T> readRowCallback) {
 
-		ResultSet resultSet = execute(new SessionCallback<ResultSet>() {
+		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
 
 			@Override
 			public ResultSet doInSession(Session s) throws DataAccessException {
@@ -977,6 +983,36 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/**
+	 * @param selectQuery
+	 * @return
+	 */
+	private Long doSelectCount(final Select query) {
+
+		Long count = null;
+
+		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(query);
+			}
+		});
+
+		if (resultSet == null) {
+			return null;
+		}
+
+		Iterator<Row> iterator = resultSet.iterator();
+		while (iterator.hasNext()) {
+			Row row = iterator.next();
+			count = row.getLong(0);
+		}
+
+		return count;
+
+	}
+
+	/**
 	 * @param query
 	 * @param readRowCallback
 	 * @return
@@ -986,7 +1022,7 @@ public class CassandraTemplate implements CassandraOperations {
 		/*
 		 * Run the Query
 		 */
-		ResultSet resultSet = execute(new SessionCallback<ResultSet>() {
+		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
 
 			@Override
 			public ResultSet doInSession(Session s) throws DataAccessException {
@@ -1011,11 +1047,6 @@ public class CassandraTemplate implements CassandraOperations {
 		return null;
 	}
 
-	private RuntimeException potentiallyConvertRuntimeException(RuntimeException ex) {
-		RuntimeException resolved = this.exceptionTranslator.translateExceptionIfPossible(ex);
-		return resolved == null ? ex : resolved;
-	}
-
 	/**
 	 * Perform the deletion on a list of objects
 	 * 
@@ -1029,11 +1060,10 @@ public class CassandraTemplate implements CassandraOperations {
 
 		try {
 
-			final Batch b = CqlUtils.toDeleteBatchQuery(keyspace.getKeyspace(), tableName, entities, optionsByName,
-					cassandraConverter);
-			log.info(b.toString());
+			final Batch b = CqlUtils.toDeleteBatchQuery(keyspace, tableName, entities, optionsByName, cassandraConverter);
+			logger.info(b.toString());
 
-			execute(new SessionCallback<Object>() {
+			doExecute(new SessionCallback<Object>() {
 
 				@Override
 				public Object doInSession(Session s) throws DataAccessException {
@@ -1050,8 +1080,8 @@ public class CassandraTemplate implements CassandraOperations {
 			});
 
 		} catch (EntityWriterException e) {
-			throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException(
-					"Failed to translate Object to Query", e));
+			throw getExceptionTranslator().translateExceptionIfPossible(
+					new RuntimeException("Failed to translate Object to Query", e));
 		}
 	}
 
@@ -1071,11 +1101,10 @@ public class CassandraTemplate implements CassandraOperations {
 
 		try {
 
-			final Batch b = CqlUtils.toInsertBatchQuery(keyspace.getKeyspace(), tableName, entities, optionsByName,
-					cassandraConverter);
-			log.info(b.getQueryString());
+			final Batch b = CqlUtils.toInsertBatchQuery(keyspace, tableName, entities, optionsByName, cassandraConverter);
+			logger.info(b.getQueryString());
 
-			return execute(new SessionCallback<List<T>>() {
+			return doExecute(new SessionCallback<List<T>>() {
 
 				@Override
 				public List<T> doInSession(Session s) throws DataAccessException {
@@ -1092,8 +1121,8 @@ public class CassandraTemplate implements CassandraOperations {
 			});
 
 		} catch (EntityWriterException e) {
-			throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException(
-					"Failed to translate Object to Query", e));
+			throw getExceptionTranslator().translateExceptionIfPossible(
+					new RuntimeException("Failed to translate Object to Query", e));
 		}
 	}
 
@@ -1113,11 +1142,10 @@ public class CassandraTemplate implements CassandraOperations {
 
 		try {
 
-			final Batch b = CqlUtils.toUpdateBatchQuery(keyspace.getKeyspace(), tableName, entities, optionsByName,
-					cassandraConverter);
-			log.info(b.toString());
+			final Batch b = CqlUtils.toUpdateBatchQuery(keyspace, tableName, entities, optionsByName, cassandraConverter);
+			logger.info(b.toString());
 
-			return execute(new SessionCallback<List<T>>() {
+			return doExecute(new SessionCallback<List<T>>() {
 
 				@Override
 				public List<T> doInSession(Session s) throws DataAccessException {
@@ -1134,8 +1162,8 @@ public class CassandraTemplate implements CassandraOperations {
 			});
 
 		} catch (EntityWriterException e) {
-			throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException(
-					"Failed to translate Object to Query", e));
+			throw getExceptionTranslator().translateExceptionIfPossible(
+					new RuntimeException("Failed to translate Object to Query", e));
 		}
 	}
 
@@ -1150,11 +1178,10 @@ public class CassandraTemplate implements CassandraOperations {
 
 		try {
 
-			final Query q = CqlUtils.toDeleteQuery(keyspace.getKeyspace(), tableName, objectToRemove, optionsByName,
-					cassandraConverter);
-			log.info(q.toString());
+			final Query q = CqlUtils.toDeleteQuery(keyspace, tableName, objectToRemove, optionsByName, cassandraConverter);
+			logger.info(q.toString());
 
-			execute(new SessionCallback<Object>() {
+			doExecute(new SessionCallback<Object>() {
 
 				@Override
 				public Object doInSession(Session s) throws DataAccessException {
@@ -1171,8 +1198,27 @@ public class CassandraTemplate implements CassandraOperations {
 			});
 
 		} catch (EntityWriterException e) {
-			throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException(
-					"Failed to translate Object to Query", e));
+			throw getExceptionTranslator().translateExceptionIfPossible(
+					new RuntimeException("Failed to translate Object to Query", e));
+		}
+	}
+
+	/**
+	 * Execute a command at the Session Level
+	 * 
+	 * @param callback
+	 * @return
+	 */
+	protected <T> T doExecute(SessionCallback<T> callback) {
+
+		Assert.notNull(callback);
+
+		try {
+
+			return callback.doInSession(getSession());
+
+		} catch (DataAccessException e) {
+			throw potentiallyConvertRuntimeException(e);
 		}
 	}
 
@@ -1187,17 +1233,16 @@ public class CassandraTemplate implements CassandraOperations {
 
 		try {
 
-			final Query q = CqlUtils.toInsertQuery(keyspace.getKeyspace(), tableName, entity, optionsByName,
-					cassandraConverter);
-			log.info(q.toString());
+			final Query q = CqlUtils.toInsertQuery(keyspace, tableName, entity, optionsByName, cassandraConverter);
+			logger.info(q.toString());
 			if (q.getConsistencyLevel() != null) {
-				log.info(q.getConsistencyLevel().name());
+				logger.info(q.getConsistencyLevel().name());
 			}
 			if (q.getRetryPolicy() != null) {
-				log.info(q.getRetryPolicy().toString());
+				logger.info(q.getRetryPolicy().toString());
 			}
 
-			return execute(new SessionCallback<T>() {
+			return doExecute(new SessionCallback<T>() {
 
 				@Override
 				public T doInSession(Session s) throws DataAccessException {
@@ -1214,8 +1259,8 @@ public class CassandraTemplate implements CassandraOperations {
 			});
 
 		} catch (EntityWriterException e) {
-			throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException(
-					"Failed to translate Object to Query", e));
+			throw getExceptionTranslator().translateExceptionIfPossible(
+					new RuntimeException("Failed to translate Object to Query", e));
 		}
 
 	}
@@ -1234,11 +1279,10 @@ public class CassandraTemplate implements CassandraOperations {
 
 		try {
 
-			final Query q = CqlUtils.toUpdateQuery(keyspace.getKeyspace(), tableName, entity, optionsByName,
-					cassandraConverter);
-			log.info(q.toString());
+			final Query q = CqlUtils.toUpdateQuery(keyspace, tableName, entity, optionsByName, cassandraConverter);
+			logger.info(q.toString());
 
-			return execute(new SessionCallback<T>() {
+			return doExecute(new SessionCallback<T>() {
 
 				@Override
 				public T doInSession(Session s) throws DataAccessException {
@@ -1255,8 +1299,8 @@ public class CassandraTemplate implements CassandraOperations {
 			});
 
 		} catch (EntityWriterException e) {
-			throw exceptionTranslator.translateExceptionIfPossible(new RuntimeException(
-					"Failed to translate Object to Query", e));
+			throw getExceptionTranslator().translateExceptionIfPossible(
+					new RuntimeException("Failed to translate Object to Query", e));
 		}
 
 	}
@@ -1273,24 +1317,4 @@ public class CassandraTemplate implements CassandraOperations {
 			}
 		}
 	}
-
-	/**
-	 * Execute a command at the Session Level
-	 * 
-	 * @param callback
-	 * @return
-	 */
-	protected <T> T execute(SessionCallback<T> callback) {
-
-		Assert.notNull(callback);
-
-		try {
-
-			return callback.doInSession(session);
-
-		} catch (DataAccessException e) {
-			throw potentiallyConvertRuntimeException(e);
-		}
-	}
-
 }

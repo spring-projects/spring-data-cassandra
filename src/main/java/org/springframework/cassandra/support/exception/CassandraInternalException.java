@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
+package org.springframework.cassandra.support.exception;
 
-import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.DataAccessException;
 
 /**
- * Spring data access exception for a Cassandra query that's syntactically correct but invalid.
+ * Spring data access exception for a Cassandra internal error.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraInvalidQueryException extends InvalidDataAccessApiUsageException {
+public class CassandraInternalException extends DataAccessException {
 
-	private static final long serialVersionUID = 4594321191806182918L;
+	private static final long serialVersionUID = 433061676465346338L;
 
-	public CassandraInvalidQueryException(String msg) {
+	public CassandraInternalException(String msg) {
 		super(msg);
 	}
 
-	public CassandraInvalidQueryException(String msg, Throwable cause) {
+	public CassandraInternalException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 }

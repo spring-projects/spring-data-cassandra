@@ -14,24 +14,29 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
+package org.springframework.cassandra.support.exception;
 
-import org.springframework.dao.TypeMismatchDataAccessException;
+import java.net.InetAddress;
+
+import org.springframework.dao.PermissionDeniedDataAccessException;
 
 /**
- * Spring data access exception for a Cassandra type mismatch exception.
+ * Spring data access exception for a Cassandra authentication failure.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraTypeMismatchException extends TypeMismatchDataAccessException {
+public class CassandraAuthenticationException extends PermissionDeniedDataAccessException {
 
-	private static final long serialVersionUID = -7420058975444905629L;
+	private static final long serialVersionUID = 8556304586797273927L;
 
-	public CassandraTypeMismatchException(String msg) {
-		super(msg);
+	private InetAddress host;
+
+	public CassandraAuthenticationException(InetAddress host, String msg, Throwable cause) {
+		super(msg, cause);
+		this.host = host;
 	}
 
-	public CassandraTypeMismatchException(String msg, Throwable cause) {
-		super(msg, cause);
+	public InetAddress getHost() {
+		return host;
 	}
 }

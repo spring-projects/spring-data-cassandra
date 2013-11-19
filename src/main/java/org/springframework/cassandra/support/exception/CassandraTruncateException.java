@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2010-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.exceptions;
 
-import org.springframework.dao.UncategorizedDataAccessException;
+package org.springframework.cassandra.support.exception;
+
+import org.springframework.dao.TransientDataAccessException;
 
 /**
- * Spring data access exception for an uncategorized Cassandra exception.
+ * Spring data access exception for a Cassandra truncate exception.
  * 
- * @author Alex Shvid
  * @author Matthew T. Adams
  */
-public class CassandraUncategorizedException extends UncategorizedDataAccessException {
+public class CassandraTruncateException extends TransientDataAccessException {
 
-	private static final long serialVersionUID = 1029525121238025444L;
+	private static final long serialVersionUID = 5730642491362430311L;
 
-	public CassandraUncategorizedException(String msg, Throwable cause) {
+	public CassandraTruncateException(String msg) {
+		super(msg);
+	}
+
+	public CassandraTruncateException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 }

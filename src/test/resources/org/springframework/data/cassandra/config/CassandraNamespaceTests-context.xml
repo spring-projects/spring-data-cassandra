@@ -1,49 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
-        xmlns:context="http://www.springframework.org/schema/context"
-        xsi:schemaLocation="http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
                          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-        <context:property-placeholder
-                location="classpath:/org/springframework/data/cassandra/config/cassandra.properties" />
+	<context:property-placeholder
+		location="classpath:/org/springframework/data/cassandra/config/cassandra.properties" />
 
-        <cassandra:cluster id="cassandra-cluster"
-                contactPoints="${cassandra.contactPoints}" port="${cassandra.port}"
-                compression="SNAPPY">
-                <cassandra:local-pooling-options
-                        min-simultaneous-requests="25" max-simultaneous-requests="100"
-                        core-connections="2" max-connections="8" />
-                <cassandra:remote-pooling-options
-                        min-simultaneous-requests="25" max-simultaneous-requests="100"
-                        core-connections="1" max-connections="2" />
-                <cassandra:socket-options
-                        connect-timeout-mls="5000" keep-alive="true" reuse-address="true"
-                        so-linger="60" tcp-no-delay="true" receive-buffer-size="65536"
-                        send-buffer-size="65536" />
-        </cassandra:cluster>
+	<cassandra:cluster id="cassandra-cluster"
+		contactPoints="${cassandra.contactPoints}" port="${cassandra.port}"
+		compression="SNAPPY">
+		<cassandra:local-pooling-options
+			min-simultaneous-requests="25" max-simultaneous-requests="100"
+			core-connections="2" max-connections="8" />
+		<cassandra:remote-pooling-options
+			min-simultaneous-requests="25" max-simultaneous-requests="100"
+			core-connections="1" max-connections="2" />
+		<cassandra:socket-options
+			connect-timeout-mls="5000" keep-alive="true" reuse-address="true"
+			so-linger="60" tcp-no-delay="true" receive-buffer-size="65536"
+			send-buffer-size="65536" />
+	</cassandra:cluster>
 
-        <bean id="cassandra-mapping" class=" org.springframework.data.cassandra.mapping.CassandraMappingContext" />
+	<bean id="cassandra-mapping"
+		class=" org.springframework.data.cassandra.mapping.CassandraMappingContext" />
 
-        <bean id="cassandra-converter" class=" org.springframework.data.cassandra.convert.MappingCassandraConverter">
-          <constructor-arg ref="cassandra-mapping" />
-        </bean>
+	<bean id="cassandra-converter"
+		class=" org.springframework.data.cassandra.convert.MappingCassandraConverter">
+		<constructor-arg ref="cassandra-mapping" />
+	</bean>
 
-        <cassandra:keyspace id="cassandra-keyspace" name="${cassandra.keyspace}"
-                cassandra-cluster-ref="cassandra-cluster" cassandra-converter-ref="cassandra-converter">
-                <cassandra:keyspace-attributes auto="update" replication-stategy="SimpleStrategy" replication-factor="1" durable-writes="true">
-                   <cassandra:table entity="org.springframework.data.cassandra.table.Comment" />
-                   <cassandra:table entity="org.springframework.data.cassandra.table.Notification" />
-                   <cassandra:table entity="org.springframework.data.cassandra.table.Post" />
-                   <cassandra:table entity="org.springframework.data.cassandra.table.Timeline" />
-                   <cassandra:table entity="org.springframework.data.cassandra.table.User" />
-                </cassandra:keyspace-attributes>
-        </cassandra:keyspace>
-
-        <bean id="cassandraTemplate"
-                class="org.springframework.data.cassandra.core.CassandraTemplate">
-                <constructor-arg ref="cassandra-keyspace" />
-        </bean>
+	<cassandra:keyspace id="cassandra-keyspace" name="${cassandra.keyspace}"
+		cassandra-cluster-ref="cassandra-cluster" cassandra-converter-ref="cassandra-converter">
+		<cassandra:keyspace-attributes auto="update"
+			replication-stategy="SimpleStrategy" replication-factor="1"
+			durable-writes="true">
+			<cassandra:table entity="org.springframework.data.cassandra.table.Comment" />
+			<cassandra:table
+				entity="org.springframework.data.cassandra.table.Notification" />
+			<cassandra:table entity="org.springframework.data.cassandra.table.Post" />
+			<cassandra:table entity="org.springframework.data.cassandra.table.Timeline" />
+			<cassandra:table entity="org.springframework.data.cassandra.table.User" />
+		</cassandra:keyspace-attributes>
+	</cassandra:keyspace>
+	
+	<cassandra:session/>
+	
+	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CassandraTemplate">
+		<constructor-arg ref="cassandra-session" />
+	</bean>
 
 </beans>
