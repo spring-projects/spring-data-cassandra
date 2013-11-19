@@ -48,8 +48,11 @@ public interface Option {
 	boolean isCoerceable(Object value);
 
 	/**
-	 * Renders the given value to a string according to this option's settings. Given <code>null</code>, returns
-	 * <code>null</code>.
+	 * First ensures that the given value is coerceable into the type expected by this option, then returns the result of
+	 * {@link Object#toString()} called on the given value. If this option is escaping quotes ({@link #escapesValue()} is
+	 * <code>true</code>), then single quotes will be escaped, and if this option is quoting values (
+	 * {@link #quotesValue()} is <code>true</code>), then the value will be surrounded by single quotes. Given
+	 * <code>null</code>, returns <code>null</code>.
 	 * 
 	 * @see #escapesValue()
 	 * @see #quotesValue()

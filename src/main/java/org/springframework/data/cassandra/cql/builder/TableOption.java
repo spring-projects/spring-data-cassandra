@@ -6,6 +6,8 @@ import java.util.Map;
  * Enumeration that represents all known table options. If a table option is not listed here, but is supported by
  * Cassandra, use the method {@link CreateTableBuilder#with(String, Object, boolean, boolean)} to write the raw value.
  * 
+ * Implements {@link Option} via delegation, since {@link Enum}s can't extend anything.
+ * 
  * @author Matthew T. Adams
  * @see CompactionOption
  * @see CompressionOption
@@ -111,7 +113,17 @@ public enum TableOption implements Option {
 	 * @author Matthew T. Adams
 	 */
 	public enum CachingOption {
-		ALL, KEYS_ONLY, ROWS_ONLY, NONE;
+		ALL("all"), KEYS_ONLY("keys_only"), ROWS_ONLY("rows_only"), NONE("none");
+		
+		private String value;
+		
+		private CachingOption(String value) {
+			this.value = value;
+		}
+		
+		public String toString() {
+			return value;
+		}
 	}
 
 	/**
