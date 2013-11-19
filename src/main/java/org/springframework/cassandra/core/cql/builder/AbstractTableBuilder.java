@@ -1,14 +1,14 @@
-package org.springframework.data.cassandra.cql.builder;
+package org.springframework.cassandra.core.cql.builder;
 
-import static org.springframework.data.cassandra.cql.CqlStringUtils.noNull;
-import static org.springframework.data.cassandra.cql.CqlStringUtils.escapeSingle;
-import static org.springframework.data.cassandra.cql.CqlStringUtils.identifize;
-import static org.springframework.data.cassandra.cql.CqlStringUtils.singleQuote;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.escapeSingle;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.singleQuote;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.data.cassandra.cql.CqlStringUtils;
+import org.springframework.cassandra.core.cql.CqlStringUtils;
 
 /**
  * Base class that contains behavior common to table operations.

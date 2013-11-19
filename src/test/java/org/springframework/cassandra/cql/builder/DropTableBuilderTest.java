@@ -1,6 +1,6 @@
-package org.springframework.data.cassandra.cql.builder;
+package org.springframework.cassandra.cql.builder;
 
-import static org.springframework.data.cassandra.cql.builder.CqlBuilder.dropTable;
+import static org.springframework.cassandra.core.cql.builder.CqlBuilder.dropTable;
 
 import org.junit.Test;
 

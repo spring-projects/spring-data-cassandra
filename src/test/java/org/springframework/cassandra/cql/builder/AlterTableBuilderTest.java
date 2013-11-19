@@ -1,6 +1,6 @@
-package org.springframework.data.cassandra.cql.builder;
+package org.springframework.cassandra.cql.builder;
 
-import static org.springframework.data.cassandra.cql.builder.CqlBuilder.alterTable;
+import static org.springframework.cassandra.core.cql.builder.CqlBuilder.alterTable;
 
 import org.junit.Test;
 
