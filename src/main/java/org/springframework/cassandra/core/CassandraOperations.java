@@ -15,6 +15,10 @@
  */
 package org.springframework.cassandra.core;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
@@ -35,6 +39,22 @@ public interface CassandraOperations {
 	void execute(final String cql);
 
 	RuntimeException potentiallyConvertRuntimeException(RuntimeException ex);
+
+	<T> T query(String cql, ResultSetExtractor<T> rse) throws DataAccessException;
+
+	void query(String cql, RowCallbackHandler rch) throws DataAccessException;
+
+	<T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException;
+
+	<T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException;
+
+	<T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
+
+	Map<String, Object> queryForMap(String cql) throws DataAccessException;
+
+	<T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException;
+
+	List<Map<String, Object>> queryForList(String cql) throws DataAccessException;
 
 	/**
 	 * Execute query and return Cassandra ResultSet
