@@ -20,6 +20,8 @@ import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.cassandra.core.CassandraOperations;
+import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
@@ -29,8 +31,6 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
-import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.Keyspace;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
@@ -127,7 +127,7 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	 */
 	@Bean
 	public CassandraOperations cassandraTemplate() throws Exception {
-		return new CassandraTemplate(keyspace());
+		return new CassandraTemplate(session());
 	}
 
 	/**

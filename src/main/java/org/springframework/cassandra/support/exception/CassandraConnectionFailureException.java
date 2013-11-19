@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
+package org.springframework.cassandra.support.exception;
 
 import java.net.InetAddress;
 import java.util.Collections;

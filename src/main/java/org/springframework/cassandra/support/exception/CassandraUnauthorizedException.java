@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-package org.springframework.data.cassandra.core.exceptions;
+package org.springframework.cassandra.support.exception;
 
-import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.PermissionDeniedDataAccessException;
 
 /**
- * Spring data access exception for a Cassandra query that is syntactically correct but has an invalid configuration
- * clause.
+ * Spring data access exception for when access to a Cassandra element is denied.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraInvalidConfigurationInQueryException extends InvalidDataAccessApiUsageException {
+public class CassandraUnauthorizedException extends PermissionDeniedDataAccessException {
 
-	private static final long serialVersionUID = 4594321191806182918L;
+	private static final long serialVersionUID = 4618185356687726647L;
 
-	public CassandraInvalidConfigurationInQueryException(String msg) {
-		super(msg);
-	}
-
-	public CassandraInvalidConfigurationInQueryException(String msg, Throwable cause) {
+	public CassandraUnauthorizedException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 }

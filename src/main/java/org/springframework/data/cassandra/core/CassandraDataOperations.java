@@ -20,8 +20,6 @@ import java.util.Map;
 
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.querybuilder.Select;
 
 /**
@@ -30,9 +28,10 @@ import com.datastax.driver.core.querybuilder.Select;
  * 
  * @author Alex Shvid
  * @author David Webb
+ * @author Matthew Adams
  * 
  */
-public interface CassandraOperations {
+public interface CassandraDataOperations {
 
 	/**
 	 * Describe the current Ring
@@ -50,29 +49,13 @@ public interface CassandraOperations {
 	String getTableName(Class<?> entityClass);
 
 	/**
-	 * Execute query and return Cassandra ResultSet
-	 * 
-	 * @param query must not be {@literal null}.
-	 * @return
-	 */
-	ResultSet executeQuery(final String query);
-
-	/**
-	 * Execute async query and return Cassandra ResultSetFuture
-	 * 
-	 * @param query must not be {@literal null}.
-	 * @return
-	 */
-	ResultSetFuture executeQueryAsynchronously(final String query);
-
-	/**
 	 * Execute query and convert ResultSet to the list of entities
 	 * 
 	 * @param query must not be {@literal null}.
 	 * @param selectClass must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-	<T> List<T> selectByCQL(String query, Class<T> selectClass);
+	<T> List<T> select(String cql, Class<T> selectClass);
 
 	/**
 	 * Execute query and convert ResultSet to the entity
@@ -81,11 +64,13 @@ public interface CassandraOperations {
 	 * @param selectClass must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-	<T> T selectOneByCQL(String query, Class<T> selectClass);
+	<T> T selectOne(String cql, Class<T> selectClass);
 
 	<T> List<T> select(Select selectQuery, Class<T> selectClass);
 
 	<T> T selectOne(Select selectQuery, Class<T> selectClass);
+
+	Long count(Select selectQuery);
 
 	/**
 	 * Insert the given object to the table by id.
