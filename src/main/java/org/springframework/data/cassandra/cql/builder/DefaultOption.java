@@ -5,14 +5,13 @@ import static org.springframework.data.cassandra.cql.CqlStringUtils.singleQuote;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 
+import org.springframework.util.Assert;
+
 /**
- * A default implementation of {@link Option} to which {@link Enum} types can delegate, since they can't extend
- * anything.
+ * A default implementation of {@link Option}.
  * 
  * @author Matthew T. Adams
  */
@@ -23,27 +22,33 @@ public class DefaultOption implements Option {
 	private boolean requiresValue;
 	private boolean escapesValue;
 	private boolean quotesValue;
-	private HashSet<Object> enumConstants; // HACK for enums only
 
 	public DefaultOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
+		setName(name);
+		setType(type);
+		this.requiresValue = requiresValue;
+		this.escapesValue = escapesValue;
+		this.quotesValue = quotesValue;
+
+	}
+
+	protected void setName(String name) {
+		Assert.hasLength(name);
 		this.name = name;
+	}
+
+	protected void setType(Class<?> type) {
 		if (type != null) {
 			if (type.isInterface() && !(Map.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type))) {
 				throw new IllegalArgumentException("given type [" + type.getName() + "] must be a class, Map or Collection");
 			}
-			// HACK for enums only
-			if (type.isEnum()) {
-				enumConstants = new HashSet<Object>(Arrays.asList(type.getEnumConstants()));
-			}
 		}
 		this.type = type;
-		this.requiresValue = requiresValue;
-		this.escapesValue = escapesValue;
-		this.quotesValue = quotesValue;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public boolean isCoerceable(Object value) {
-		if (value == null) {
+		if (value == null || type == null) {
 			return true;
 		}
 
@@ -57,8 +62,15 @@ public class DefaultOption implements Option {
 		}
 		// check enum
 		if (type.isEnum()) {
-			// HACK -- prefer to use Enum.valueOf(type, stringValue), but can't
-			return enumConstants.contains(value.toString());
+			try {
+				String name = value instanceof Enum ? name = ((Enum) value).name() : value.toString();
+				Enum.valueOf((Class<? extends Enum>) type, name);
+				return true;
+			} catch (NullPointerException x) {
+				return false;
+			} catch (IllegalArgumentException x) {
+				return false;
+			}
 		}
 
 		// check class via String constructor
@@ -129,6 +141,8 @@ public class DefaultOption implements Option {
 		if (value == null) {
 			return null;
 		}
+		checkValue(value);
+
 		String string = value.toString();
 		string = escapesValue ? escapeSingle(string) : string;
 		string = quotesValue ? singleQuote(string) : string;
@@ -137,6 +151,7 @@ public class DefaultOption implements Option {
 
 	@Override
 	public String toString() {
-		return getName();
+		return "[name=" + name + ", type=" + type.getName() + ", requiresValue=" + requiresValue + ", escapesValue="
+				+ escapesValue + ", quotesValue=" + quotesValue + "]";
 	}
 }
