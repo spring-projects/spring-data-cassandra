@@ -18,7 +18,7 @@ public class CreateTableBuilderTest {
 
 	@Test
 	public void createTableTest() {
-		String name = "mytable";
+		String name = "my\"\"table";
 		DataType type0 = DataType.text();
 		String partKey0 = "partitionKey0";
 		String partition1 = "partitionKey1";
@@ -38,7 +38,7 @@ public class CreateTableBuilderTest {
 
 		String cql = builder.toCql();
 		assertEquals(
-				"CREATE TABLE IF NOT EXISTS mytable (partitionKey0 text, partitionKey1 text, primary0 text, column1 text, column2 bigint, PRIMARY KEY ((partitionKey0, partitionKey1), primary0) WITH CLUSTERING ORDER BY (primary0 ASC) AND comment = 'this is a comment' AND bloom_filter_fp_chance = 0.00075 AND compaction = { 'tombstone_threshold' : 0.15 } AND caching = keys_only;",
+				"CREATE TABLE IF NOT EXISTS \"my\"\"table\" (partitionKey0 text, partitionKey1 text, primary0 text, column1 text, column2 bigint, PRIMARY KEY ((partitionKey0, partitionKey1), primary0) WITH CLUSTERING ORDER BY (primary0 ASC) AND comment = 'this is a comment' AND bloom_filter_fp_chance = 0.00075 AND compaction = { 'tombstone_threshold' : 0.15 } AND caching = keys_only;",
 				cql);
 	}
 }
