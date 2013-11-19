@@ -25,12 +25,12 @@ import com.datastax.driver.core.DataType;
 public class ColumnBuilder {
 
 	/**
-	 * Default ordering of primary key fields is {@link Ordering#ASCENDING}.
+	 * Default ordering of primary key fields; value is {@link Ordering#ASCENDING}.
 	 */
 	public static final Ordering DFAULT_ORDERING = ASCENDING;
 
 	private String name;
-	private DataType type;
+	private DataType type; // TODO: determining if we should be coupling this to Datastax Java Driver type?
 	private KeyType keyType;
 	private Ordering ordering;
 
