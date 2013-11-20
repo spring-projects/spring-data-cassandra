@@ -1,4 +1,4 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.cql.generator;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
@@ -11,13 +11,17 @@ import org.springframework.cassandra.core.keyspace.ColumnChangeSpecification;
 import org.springframework.cassandra.core.keyspace.DropColumnSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
 
+/**
+ * CQL generator for generating <code>ALTER TABLE</code> statements.
+ * 
+ * @author Matthew T. Adams
+ */
 public class AlterTableCqlGenerator extends AbstractTableOperationCqlGenerator<AlterTableSpecification> {
 
 	public AlterTableCqlGenerator(AlterTableSpecification specification) {
 		super(specification);
 	}
 
-	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		cql = noNull(cql);
 

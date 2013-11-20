@@ -1,4 +1,4 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.cql.generator;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.escapeSingle;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
@@ -11,14 +11,14 @@ import org.springframework.cassandra.core.keyspace.Option;
 import org.springframework.util.Assert;
 
 /**
- * Base class that contains behavior common to table operations.
+ * Base class that contains behavior common to CQL generation for table operations.
  * 
  * @author Matthew T. Adams
- * @param T The subtype of AbstractTableSpecification for which this is a CQL generator.
+ * @param T The subtype of this class for which this is a CQL generator.
  */
 public abstract class AbstractTableOperationCqlGenerator<T extends AbstractTableSpecification<T>> {
 
-	protected abstract StringBuilder toCql(StringBuilder cql);
+	public abstract StringBuilder toCql(StringBuilder cql);
 
 	private AbstractTableSpecification<T> specification;
 

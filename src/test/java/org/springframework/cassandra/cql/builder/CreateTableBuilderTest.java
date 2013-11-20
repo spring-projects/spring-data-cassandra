@@ -1,7 +1,7 @@
 package org.springframework.cassandra.cql.builder;
 
 import static junit.framework.Assert.assertEquals;
-import static org.springframework.cassandra.core.keyspace.CqlBuilder.createTable;
+import static org.springframework.cassandra.core.keyspace.TableOperations.createTable;
 import static org.springframework.cassandra.core.keyspace.MapBuilder.map;
 import static org.springframework.cassandra.core.keyspace.TableOption.BLOOM_FILTER_FP_CHANCE;
 import static org.springframework.cassandra.core.keyspace.TableOption.CACHING;
@@ -10,7 +10,7 @@ import static org.springframework.cassandra.core.keyspace.TableOption.COMPACTION
 import static org.springframework.cassandra.core.keyspace.TableOption.CompactionOption.TOMBSTONE_THRESHOLD;
 
 import org.junit.Test;
-import org.springframework.cassandra.core.cql.builder.CreateTableCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.TableOption.CachingOption;
 
