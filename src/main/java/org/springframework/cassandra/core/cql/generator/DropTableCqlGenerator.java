@@ -1,10 +1,15 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.cql.generator;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.util.Assert;
 
+/**
+ * CQL generator for generating a <code>DROP TABLE</code> statement.
+ * 
+ * @author Matthew T. Adams
+ */
 public class DropTableCqlGenerator {
 
 	protected DropTableSpecification specification;

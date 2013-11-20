@@ -1,8 +1,14 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.cql.generator;
 
 import org.springframework.cassandra.core.keyspace.ColumnChangeSpecification;
 import org.springframework.util.Assert;
 
+/**
+ * Base class for column change CQL generators.
+ * 
+ * @author Matthew T. Adams
+ * @param <T> The corresponding {@link ColumnChangeSpecification} type for this CQL generator.
+ */
 public abstract class ColumnChangeCqlGenerator<T extends ColumnChangeSpecification> {
 
 	public abstract StringBuilder toCql(StringBuilder cql);

@@ -1,9 +1,9 @@
 package org.springframework.cassandra.cql.builder;
 
-import static org.springframework.cassandra.core.keyspace.CqlBuilder.alterTable;
+import static org.springframework.cassandra.core.keyspace.TableOperations.alterTable;
 
 import org.junit.Test;
-import org.springframework.cassandra.core.cql.builder.AlterTableCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.AlterTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
 
 import com.datastax.driver.core.DataType;

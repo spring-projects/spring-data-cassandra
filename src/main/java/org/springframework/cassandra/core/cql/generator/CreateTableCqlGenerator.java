@@ -1,4 +1,4 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.cql.generator;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 import static org.springframework.data.cassandra.mapping.KeyType.PARTITION;
@@ -13,7 +13,7 @@ import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
 
 /**
- * Builder class to construct CQL for a <code>CREATE TABLE</code> statement. Not threadsafe.
+ * CQL generator for generating a <code>CREATE TABLE</code> statement.
  * 
  * @author Matthew T. Adams
  */

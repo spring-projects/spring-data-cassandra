@@ -1,9 +1,9 @@
 package org.springframework.cassandra.cql.builder;
 
-import static org.springframework.cassandra.core.keyspace.CqlBuilder.dropTable;
+import static org.springframework.cassandra.core.keyspace.TableOperations.dropTable;
 
 import org.junit.Test;
-import org.springframework.cassandra.core.cql.builder.DropTableCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 
 public class DropTableBuilderTest {
