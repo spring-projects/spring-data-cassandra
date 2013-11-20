@@ -134,6 +134,7 @@ public class CassandraOperationsTest {
 
 				return list;
 			}
+
 		});
 
 		assertNotNull(ring);
