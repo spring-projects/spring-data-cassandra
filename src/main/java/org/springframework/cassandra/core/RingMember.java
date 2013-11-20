@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
+package org.springframework.cassandra.core;
 
 import java.io.Serializable;
 
@@ -25,18 +25,13 @@ import com.datastax.driver.core.Host;
  */
 public final class RingMember implements Serializable {
 
-	private static final long serialVersionUID = 1345346346L;
-
 	/*
 	 * Ring attributes
 	 */
-	public final String hostName;
-	public final String address;
-	public final String DC;
-	public final String rack;
-
-	// public final String status;
-	// public final String state;
+	public String hostName;
+	public String address;
+	public String DC;
+	public String rack;
 
 	public RingMember(Host h) {
 		this.hostName = h.getAddress().getHostName();
