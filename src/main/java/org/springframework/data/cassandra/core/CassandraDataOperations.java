@@ -34,13 +34,6 @@ import com.datastax.driver.core.querybuilder.Select;
 public interface CassandraDataOperations {
 
 	/**
-	 * Describe the current Ring
-	 * 
-	 * @return The list of ring tokens that are active in the cluster
-	 */
-	List<RingMember> describeRing();
-
-	/**
 	 * The table name used for the specified class by this template.
 	 * 
 	 * @param entityClass must not be {@literal null}.

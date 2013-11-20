@@ -38,8 +38,6 @@ import org.springframework.data.cassandra.util.CqlUtils;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -360,55 +358,6 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	@Override
 	public <T> void deleteAsynchronously(T entity, String tableName, QueryOptions options) {
 		deleteAsynchronously(entity, tableName, options.toMap());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#describeRing()
-	 */
-	@Override
-	public List<RingMember> describeRing() {
-
-		/*
-		 * Initialize the return variable
-		 */
-		List<RingMember> ring = new ArrayList<RingMember>();
-
-		/*
-		 * Get the cluster metadata for this session
-		 */
-		Metadata clusterMetadata = doExecute(new SessionCallback<Metadata>() {
-
-			@Override
-			public Metadata doInSession(Session s) throws DataAccessException {
-				return s.getCluster().getMetadata();
-			}
-
-		});
-
-		/*
-		 * Get all hosts in the cluster
-		 */
-		Set<Host> hosts = clusterMetadata.getAllHosts();
-
-		/*
-		 * Loop variables
-		 */
-		RingMember member = null;
-
-		/*
-		 * Populate Ring with Host Metadata
-		 */
-		for (Host h : hosts) {
-
-			member = new RingMember(h);
-			ring.add(member);
-		}
-
-		/*
-		 * Return
-		 */
-		return ring;
-
 	}
 
 	/**
@@ -1218,7 +1167,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 			return callback.doInSession(getSession());
 
 		} catch (DataAccessException e) {
-			throw potentiallyConvertRuntimeException(e);
+			throw throwTranslated(e);
 		}
 	}
 

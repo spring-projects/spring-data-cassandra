@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.template;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,7 +45,6 @@ import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.core.ConsistencyLevel;
 import org.springframework.data.cassandra.core.QueryOptions;
 import org.springframework.data.cassandra.core.RetryPolicy;
-import org.springframework.data.cassandra.core.RingMember;
 import org.springframework.data.cassandra.table.Book;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -92,22 +89,6 @@ public class CassandraDataOperationsTest {
 		 */
 		DataLoader dataLoader = new DataLoader("Test Cluster", CASSANDRA_HOST + ":" + CASSANDRA_THRIFT_PORT);
 		dataLoader.load(new ClassPathYamlDataSet("cassandra-keyspace.yaml"));
-	}
-
-	@Test
-	public void ringTest() {
-
-		List<RingMember> ring = cassandraDataTemplate.describeRing();
-
-		/*
-		 * There must be 1 node in the cluster if the embedded server is
-		 * running.
-		 */
-		assertNotNull(ring);
-
-		for (RingMember h : ring) {
-			log.info(h.address);
-		}
 	}
 
 	@Test
