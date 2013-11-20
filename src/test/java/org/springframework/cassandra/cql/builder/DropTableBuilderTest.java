@@ -10,7 +10,7 @@ public class DropTableBuilderTest {
 
 	@Test
 	public void testDropTableBuilder() throws Exception {
-		DropTableSpecification drop = dropTable().name("mytable").ifExists();
+		DropTableSpecification drop = dropTable().ifExists().name("mytable");
 
 		DropTableCqlGenerator generator = new DropTableCqlGenerator(drop);
 		System.out.println(generator.toCql());

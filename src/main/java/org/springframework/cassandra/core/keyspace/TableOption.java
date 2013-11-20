@@ -4,7 +4,8 @@ import java.util.Map;
 
 /**
  * Enumeration that represents all known table options. If a table option is not listed here, but is supported by
- * Cassandra, use the method {@link CreateTableSpecification#with(String, Object, boolean, boolean)} to write the raw value.
+ * Cassandra, use the method {@link CreateTableSpecification#with(String, Object, boolean, boolean)} to write the raw
+ * value.
  * 
  * Implements {@link Option} via delegation, since {@link Enum}s can't extend anything.
  * 
@@ -17,7 +18,7 @@ public enum TableOption implements Option {
 	/**
 	 * <code>comment</code>
 	 */
-	COMMENT("comment", String.class, false, true, true),
+	COMMENT("comment", String.class, true, true, true),
 	/**
 	 * <code>COMPACT STORAGE</code>
 	 */
@@ -27,39 +28,39 @@ public enum TableOption implements Option {
 	 * 
 	 * @see CompactionOption
 	 */
-	COMPACTION("compaction", Map.class, false, false, false),
+	COMPACTION("compaction", Map.class, true, false, false),
 	/**
 	 * <code>compression</code>. Value is a <code>Map&lt;CompressionOption,Object&gt;</code>.
 	 * 
 	 * @see {@link CompressionOption}
 	 */
-	COMPRESSION("compression", Map.class, false, false, false),
+	COMPRESSION("compression", Map.class, true, false, false),
 	/**
 	 * <code>replicate_on_write</code>
 	 */
-	REPLICATE_ON_WRITE("replicate_on_write", Boolean.class, false, false, false),
+	REPLICATE_ON_WRITE("replicate_on_write", Boolean.class, true, false, false),
 	/**
 	 * <code>caching</code>
 	 * 
 	 * @see CachingOption
 	 */
-	CACHING("caching", CachingOption.class, false, false, false),
+	CACHING("caching", CachingOption.class, true, false, false),
 	/**
 	 * <code>bloom_filter_fp_chance</code>
 	 */
-	BLOOM_FILTER_FP_CHANCE("bloom_filter_fp_chance", Double.class, false, false, false),
+	BLOOM_FILTER_FP_CHANCE("bloom_filter_fp_chance", Double.class, true, false, false),
 	/**
 	 * <code>read_repair_chance</code>
 	 */
-	READ_REPAIR_CHANCE("read_repair_chance", Double.class, false, false, false),
+	READ_REPAIR_CHANCE("read_repair_chance", Double.class, true, false, false),
 	/**
 	 * <code>dclocal_read_repair_chance</code>
 	 */
-	DCLOCAL_READ_REPAIR_CHANCE("dclocal_read_repair_chance", Double.class, false, false, false),
+	DCLOCAL_READ_REPAIR_CHANCE("dclocal_read_repair_chance", Double.class, true, false, false),
 	/**
 	 * <code>gc_grace_seconds</code>
 	 */
-	GC_GRACE_SECONDS("gc_grace_seconds", Long.class, false, false, false);
+	GC_GRACE_SECONDS("gc_grace_seconds", Long.class, true, false, false);
 
 	private Option delegate;
 
@@ -114,13 +115,13 @@ public enum TableOption implements Option {
 	 */
 	public enum CachingOption {
 		ALL("all"), KEYS_ONLY("keys_only"), ROWS_ONLY("rows_only"), NONE("none");
-		
+
 		private String value;
-		
+
 		private CachingOption(String value) {
 			this.value = value;
 		}
-		
+
 		public String toString() {
 			return value;
 		}
@@ -135,35 +136,35 @@ public enum TableOption implements Option {
 		/**
 		 * <code>tombstone_threshold</code>
 		 */
-		TOMBSTONE_THRESHOLD("tombstone_threshold", Double.class, false, false, false),
+		TOMBSTONE_THRESHOLD("tombstone_threshold", Double.class, true, false, false),
 		/**
 		 * <code>tombstone_compaction_interval</code>
 		 */
-		TOMBSTONE_COMPACTION_INTERVAL("tombstone_compaction_interval", Double.class, false, false, false),
+		TOMBSTONE_COMPACTION_INTERVAL("tombstone_compaction_interval", Double.class, true, false, false),
 		/**
 		 * <code>min_sstable_size</code>
 		 */
-		MIN_SSTABLE_SIZE("min_sstable_size", Long.class, false, false, false),
+		MIN_SSTABLE_SIZE("min_sstable_size", Long.class, true, false, false),
 		/**
 		 * <code>min_threshold</code>
 		 */
-		MIN_THRESHOLD("min_threshold", Long.class, false, false, false),
+		MIN_THRESHOLD("min_threshold", Long.class, true, false, false),
 		/**
 		 * <code>max_threshold</code>
 		 */
-		MAX_THRESHOLD("max_threshold", Long.class, false, false, false),
+		MAX_THRESHOLD("max_threshold", Long.class, true, false, false),
 		/**
 		 * <code>bucket_low</code>
 		 */
-		BUCKET_LOW("bucket_low", Double.class, false, false, false),
+		BUCKET_LOW("bucket_low", Double.class, true, false, false),
 		/**
 		 * <code>bucket_high</code>
 		 */
-		BUCKET_HIGH("bucket_high", Double.class, false, false, false),
+		BUCKET_HIGH("bucket_high", Double.class, true, false, false),
 		/**
 		 * <code>sstable_size_in_mb</code>
 		 */
-		SSTABLE_SIZE_IN_MB("sstable_size_in_mb", Long.class, false, false, false);
+		SSTABLE_SIZE_IN_MB("sstable_size_in_mb", Long.class, true, false, false);
 
 		private Option delegate;
 
@@ -222,15 +223,15 @@ public enum TableOption implements Option {
 		/**
 		 * <code>sstable_compression</code>
 		 */
-		STABLE_COMPRESSION("sstable_compression", String.class, false, false, false),
+		STABLE_COMPRESSION("sstable_compression", String.class, true, false, false),
 		/**
 		 * <code>chunk_length_kb</code>
 		 */
-		CHUNK_LENGTH_KB("chunk_length_kb", Long.class, false, false, false),
+		CHUNK_LENGTH_KB("chunk_length_kb", Long.class, true, false, false),
 		/**
 		 * <code>crc_check_chance</code>
 		 */
-		CRC_CHECK_CHANCE("crc_check_chance", Double.class, false, false, false);
+		CRC_CHECK_CHANCE("crc_check_chance", Double.class, true, false, false);
 
 		private Option delegate;
 

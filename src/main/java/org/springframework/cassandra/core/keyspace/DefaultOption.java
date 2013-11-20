@@ -52,11 +52,11 @@ public class DefaultOption implements Option {
 			return true;
 		}
 
-		// check collections
+		// check map
 		if (Map.class.isAssignableFrom(type)) {
 			return Map.class.isAssignableFrom(value.getClass());
 		}
-		// check map
+		// check collection
 		if (Collection.class.isAssignableFrom(type)) {
 			return Collection.class.isAssignableFrom(value.getClass());
 		}

@@ -1,8 +1,8 @@
 package org.springframework.cassandra.cql.builder;
 
 import static junit.framework.Assert.assertEquals;
-import static org.springframework.cassandra.core.keyspace.TableOperations.createTable;
 import static org.springframework.cassandra.core.keyspace.MapBuilder.map;
+import static org.springframework.cassandra.core.keyspace.TableOperations.createTable;
 import static org.springframework.cassandra.core.keyspace.TableOption.BLOOM_FILTER_FP_CHANCE;
 import static org.springframework.cassandra.core.keyspace.TableOption.CACHING;
 import static org.springframework.cassandra.core.keyspace.TableOption.COMMENT;
