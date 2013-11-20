@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.test.unit.config;
+package org.springframework.data.cassandra.test.integration.config;
 
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;

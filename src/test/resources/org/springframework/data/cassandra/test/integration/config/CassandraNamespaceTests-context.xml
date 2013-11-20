@@ -37,12 +37,12 @@
 		<cassandra:keyspace-attributes auto="update"
 			replication-stategy="SimpleStrategy" replication-factor="1"
 			durable-writes="true">
-			<cassandra:table entity="org.springframework.data.cassandra.test.unit.table.Comment" />
+			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.Comment" />
 			<cassandra:table
-				entity="org.springframework.data.cassandra.test.unit.table.Notification" />
-			<cassandra:table entity="org.springframework.data.cassandra.test.unit.table.Post" />
-			<cassandra:table entity="org.springframework.data.cassandra.test.unit.table.Timeline" />
-			<cassandra:table entity="org.springframework.data.cassandra.test.unit.table.User" />
+				entity="org.springframework.data.cassandra.test.integration.table.Notification" />
+			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.Post" />
+			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.Timeline" />
+			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.User" />
 		</cassandra:keyspace-attributes>
 	</cassandra:keyspace>
 	

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.unit.template;
+package org.springframework.data.cassandra.test.integration.template;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -44,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.HostMapper;
 import org.springframework.cassandra.core.RingMember;
-import org.springframework.data.cassandra.test.unit.config.TestConfig;
+import org.springframework.data.cassandra.test.integration.config.TestConfig;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;

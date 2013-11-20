@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.unit.mapping;
+package org.springframework.data.cassandra.test.integration.mapping;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -37,12 +37,12 @@ import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
- * Unit tests for {@link BasicCassandraPersistentEntity}.
+ * Integration tests for {@link BasicCassandraPersistentEntity}.
  * 
  * @author Alex Shvid
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BasicCassandraPersistentEntityUnitTests {
+public class BasicCassandraPersistentEntityIntegrationTests {
 
 	@Mock
 	ApplicationContext context;
