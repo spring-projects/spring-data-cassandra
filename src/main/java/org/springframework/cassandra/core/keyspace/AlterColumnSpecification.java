@@ -1,12 +1,12 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.keyspace;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
 import com.datastax.driver.core.DataType;
 
-public class AlterColumn extends ColumnTypeChange {
+public class AlterColumnSpecification extends ColumnTypeChangeSpecification {
 
-	public AlterColumn(String name, DataType type) {
+	public AlterColumnSpecification(String name, DataType type) {
 		super(name, type);
 	}
 

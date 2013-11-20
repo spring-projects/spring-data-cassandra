@@ -1,4 +1,4 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.keyspace;
 
 /**
  * Interface to represent option types.

@@ -1,8 +1,10 @@
 package org.springframework.cassandra.cql.builder;
 
-import static org.springframework.cassandra.core.cql.builder.CqlBuilder.alterTable;
+import static org.springframework.cassandra.core.keyspace.CqlBuilder.alterTable;
 
 import org.junit.Test;
+import org.springframework.cassandra.core.cql.builder.AlterTableCqlGenerator;
+import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
 
 import com.datastax.driver.core.DataType;
 
@@ -17,8 +19,9 @@ public class AlterTableBuilderTest {
 		String alteredName = "altered_column";
 		String droppedName = "dropped";
 
-		String cql = alterTable().name(name).add(addedName, addedType).alter(alteredName, alteredType).drop(droppedName)
-				.toCql();
-		System.out.println(cql);
+		AlterTableSpecification alter = alterTable().name(name).add(addedName, addedType).alter(alteredName, alteredType)
+				.drop(droppedName);
+		AlterTableCqlGenerator generator = new AlterTableCqlGenerator(alter);
+		System.out.println(generator.toCql());
 	}
 }

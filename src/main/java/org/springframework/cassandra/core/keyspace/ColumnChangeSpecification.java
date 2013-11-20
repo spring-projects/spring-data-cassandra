@@ -1,20 +1,14 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.keyspace;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
 
-public abstract class ColumnChange {
-
-	public abstract StringBuilder toCql(StringBuilder cql);
+public abstract class ColumnChangeSpecification {
 
 	private String name;
 
-	public ColumnChange(String name) {
+	public ColumnChangeSpecification(String name) {
 		setName(name);
-	}
-
-	public String toString() {
-		return toCql(null).toString();
 	}
 
 	private void setName(String name) {

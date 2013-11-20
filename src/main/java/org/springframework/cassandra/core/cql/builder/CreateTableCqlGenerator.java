@@ -3,69 +3,24 @@ package org.springframework.cassandra.core.cql.builder;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 import static org.springframework.data.cassandra.mapping.KeyType.PARTITION;
 import static org.springframework.data.cassandra.mapping.KeyType.PRIMARY;
-import static org.springframework.data.cassandra.mapping.Ordering.ASCENDING;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.cassandra.mapping.KeyType;
-import org.springframework.data.cassandra.mapping.Ordering;
-
-import com.datastax.driver.core.DataType;
+import org.springframework.cassandra.core.keyspace.ColumnSpecification;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.cassandra.core.keyspace.Option;
 
 /**
  * Builder class to construct CQL for a <code>CREATE TABLE</code> statement. Not threadsafe.
  * 
  * @author Matthew T. Adams
  */
-public class CreateTableBuilder extends AbstractTableBuilder<CreateTableBuilder> {
+public class CreateTableCqlGenerator extends AbstractTableOperationCqlGenerator<CreateTableSpecification> {
 
-	private boolean ifNotExists = false;
-	private List<ColumnBuilder> columns = new ArrayList<ColumnBuilder>();
-
-	/**
-	 * Causes the inclusion of an <code>IF NOT EXISTS</code> clause.
-	 * 
-	 * @return this
-	 */
-	public CreateTableBuilder ifNotExists() {
-		return ifNotExists(true);
-	}
-
-	/**
-	 * Toggles the inclusion of an <code>IF NOT EXISTS</code> clause.
-	 * 
-	 * @return this
-	 */
-	public CreateTableBuilder ifNotExists(boolean ifNotExists) {
-		this.ifNotExists = ifNotExists;
-		return this;
-	}
-
-	public CreateTableBuilder column(String name, DataType type) {
-		return column(name, type, null, null);
-	}
-
-	public CreateTableBuilder partitionKeyColumn(String name, DataType type) {
-		return column(name, type, PARTITION, null);
-	}
-
-	public CreateTableBuilder primaryKeyColumn(String name, DataType type) {
-		return primaryKeyColumn(name, type, ASCENDING);
-	}
-
-	public CreateTableBuilder primaryKeyColumn(String name, DataType type, Ordering order) {
-		return column(name, type, PRIMARY, order);
-	}
-
-	protected CreateTableBuilder column(String name, DataType type, KeyType keyType, Ordering ordering) {
-		columns().add(new ColumnBuilder().name(name).type(type).keyType(keyType).ordering(ordering));
-		return this;
-	}
-
-	protected List<ColumnBuilder> columns() {
-		return columns == null ? columns = new ArrayList<ColumnBuilder>() : columns;
+	public CreateTableCqlGenerator(CreateTableSpecification specification) {
+		super(specification);
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
@@ -81,8 +36,8 @@ public class CreateTableBuilder extends AbstractTableBuilder<CreateTableBuilder>
 	}
 
 	protected StringBuilder preambleCql(StringBuilder cql) {
-		return noNull(cql).append("CREATE TABLE ").append(ifNotExists ? "IF NOT EXISTS " : "")
-				.append(getNameAsIdentifier());
+		return noNull(cql).append("CREATE TABLE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
+				.append(spec().getNameAsIdentifier());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -93,9 +48,9 @@ public class CreateTableBuilder extends AbstractTableBuilder<CreateTableBuilder>
 		// begin columns
 		cql.append(" (");
 
-		List<ColumnBuilder> partitionKeys = new ArrayList<ColumnBuilder>();
-		List<ColumnBuilder> primaryKeys = new ArrayList<ColumnBuilder>();
-		for (ColumnBuilder col : columns) {
+		List<ColumnSpecification> partitionKeys = new ArrayList<ColumnSpecification>();
+		List<ColumnSpecification> primaryKeys = new ArrayList<ColumnSpecification>();
+		for (ColumnSpecification col : spec().getColumns()) {
 			col.toCql(cql).append(", ");
 
 			if (col.getKeyType() == PARTITION) {
@@ -115,7 +70,7 @@ public class CreateTableBuilder extends AbstractTableBuilder<CreateTableBuilder>
 		}
 
 		boolean first = true;
-		for (ColumnBuilder col : partitionKeys) {
+		for (ColumnSpecification col : partitionKeys) {
 			if (first) {
 				first = false;
 			} else {
@@ -131,7 +86,7 @@ public class CreateTableBuilder extends AbstractTableBuilder<CreateTableBuilder>
 		StringBuilder clustering = null;
 		boolean clusteringFirst = true;
 		first = true;
-		for (ColumnBuilder col : primaryKeys) {
+		for (ColumnSpecification col : primaryKeys) {
 			if (first) {
 				first = false;
 			} else {
@@ -167,6 +122,8 @@ public class CreateTableBuilder extends AbstractTableBuilder<CreateTableBuilder>
 
 		// begin options
 		// begin option clause
+		Map<String, Object> options = spec().getOptions();
+
 		if (clustering != null || !options.isEmpty()) {
 
 			// option preamble

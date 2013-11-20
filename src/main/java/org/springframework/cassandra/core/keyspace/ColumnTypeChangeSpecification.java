@@ -1,14 +1,14 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.keyspace;
 
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.DataType;
 
-public abstract class ColumnTypeChange extends ColumnChange {
+public abstract class ColumnTypeChangeSpecification extends ColumnChangeSpecification {
 
 	private DataType type;
 
-	public ColumnTypeChange(String name, DataType type) {
+	public ColumnTypeChangeSpecification(String name, DataType type) {
 		super(name);
 		setType(type);
 	}
