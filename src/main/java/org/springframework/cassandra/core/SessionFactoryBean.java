@@ -64,7 +64,7 @@ public class SessionFactoryBean implements FactoryBean<Session>, InitializingBea
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
 	@Override
-	public Session getObject() throws Exception {
+	public Session getObject() {
 		return keyspace.getSession();
 	}
 

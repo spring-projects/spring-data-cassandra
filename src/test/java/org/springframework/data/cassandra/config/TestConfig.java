@@ -1,5 +1,8 @@
 package org.springframework.data.cassandra.config;
 
+import org.springframework.cassandra.core.CassandraOperations;
+import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.SessionFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
@@ -34,9 +37,7 @@ public class TestConfig extends AbstractCassandraConfiguration {
 	public Cluster cluster() {
 
 		Builder builder = Cluster.builder();
-
 		builder.addContactPoint("127.0.0.1");
-
 		return builder.build();
 	}
 
@@ -49,6 +50,21 @@ public class TestConfig extends AbstractCassandraConfiguration {
 
 		return bean;
 
+	}
+
+	@Bean
+	public SessionFactoryBean sessionFactoryBean() {
+
+		SessionFactoryBean bean = new SessionFactoryBean(keyspaceFactoryBean().getObject());
+		return bean;
+
+	}
+
+	@Bean
+	public CassandraOperations cassandraTemplate() {
+
+		CassandraOperations template = new CassandraTemplate(sessionFactoryBean().getObject());
+		return template;
 	}
 
 	@Bean
