@@ -7,8 +7,8 @@ import static junit.framework.Assert.assertTrue;
 import java.lang.annotation.RetentionPolicy;
 
 import org.junit.Test;
-import org.springframework.cassandra.core.cql.builder.DefaultOption;
-import org.springframework.cassandra.core.cql.builder.Option;
+import org.springframework.cassandra.core.keyspace.DefaultOption;
+import org.springframework.cassandra.core.keyspace.Option;
 
 public class OptionTest {
 

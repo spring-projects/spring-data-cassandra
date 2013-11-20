@@ -1,10 +1,11 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.keyspace;
 
+import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.escapeSingle;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
-import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.singleQuote;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -16,9 +17,7 @@ import org.springframework.cassandra.core.cql.CqlStringUtils;
  * @author Matthew T. Adams
  * @param T The subtype of AbstractTableBuilder.
  */
-public abstract class AbstractTableBuilder<T extends AbstractTableBuilder<T>> {
-
-	protected abstract StringBuilder toCql(StringBuilder cql);
+public abstract class AbstractTableSpecification<T extends AbstractTableSpecification<T>> {
 
 	private String name;
 
@@ -31,9 +30,13 @@ public abstract class AbstractTableBuilder<T extends AbstractTableBuilder<T>> {
 	 */
 	@SuppressWarnings("unchecked")
 	public T name(String name) {
-		CqlStringUtils.checkIdentifier(name);
-		this.name = name;
+		setName(name);
 		return (T) this;
+	}
+
+	public void setName(String name) {
+		checkIdentifier(name);
+		this.name = name;
 	}
 
 	public String getName() {
@@ -95,55 +98,11 @@ public abstract class AbstractTableBuilder<T extends AbstractTableBuilder<T>> {
 				value = singleQuote(value);
 			}
 		}
-		options().put(name, value);
+		options.put(name, value);
 		return (T) this;
 	}
 
-	protected Map<String, Object> options() {
-		return options == null ? options = new LinkedHashMap<String, Object>() : options;
-	}
-
-	protected StringBuilder optionValueMap(Map<Option, Object> valueMap, StringBuilder cql) {
-		cql = noNull(cql);
-
-		if (valueMap == null || valueMap.isEmpty()) {
-			return cql;
-		}
-		// else option value is a non-empty map
-
-		// append { 'name' : 'value', ... }
-		cql.append("{ ");
-		boolean mapFirst = true;
-		for (Map.Entry<Option, Object> entry : valueMap.entrySet()) {
-			if (mapFirst) {
-				mapFirst = false;
-			} else {
-				cql.append(", ");
-			}
-
-			Option option = entry.getKey();
-			cql.append(singleQuote(option.getName())); // entries in map keys are always quoted
-			cql.append(" : ");
-			Object entryValue = entry.getValue();
-			entryValue = entryValue == null ? "" : entryValue.toString();
-			if (option.escapesValue()) {
-				entryValue = escapeSingle(entryValue);
-			}
-			if (option.quotesValue()) {
-				entryValue = singleQuote(entryValue);
-			}
-			cql.append(entryValue);
-		}
-		cql.append(" }");
-
-		return cql;
-	}
-
-	public String toCql() {
-		return toCql(null).toString();
-	}
-
-	public String toString() {
-		return toCql(null).toString();
+	public Map<String, Object> getOptions() {
+		return Collections.unmodifiableMap(options);
 	}
 }

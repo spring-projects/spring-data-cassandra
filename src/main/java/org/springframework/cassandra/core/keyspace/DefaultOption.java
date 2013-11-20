@@ -1,4 +1,4 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.keyspace;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.escapeSingle;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.singleQuote;

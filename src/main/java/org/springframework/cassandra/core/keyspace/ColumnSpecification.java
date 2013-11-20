@@ -1,4 +1,4 @@
-package org.springframework.cassandra.core.cql.builder;
+package org.springframework.cassandra.core.keyspace;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
@@ -22,7 +22,7 @@ import com.datastax.driver.core.DataType;
  * 
  * @author Matthew T. Adams
  */
-public class ColumnBuilder {
+public class ColumnSpecification {
 
 	/**
 	 * Default ordering of primary key fields; value is {@link Ordering#ASCENDING}.
@@ -39,7 +39,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	public ColumnBuilder name(String name) {
+	public ColumnSpecification name(String name) {
 		checkIdentifier(name);
 		this.name = name;
 		return this;
@@ -50,7 +50,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	public ColumnBuilder type(DataType type) {
+	public ColumnSpecification type(DataType type) {
 		this.type = type;
 		return this;
 	}
@@ -61,7 +61,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	public ColumnBuilder partition() {
+	public ColumnSpecification partition() {
 		return partition(true);
 	}
 
@@ -72,7 +72,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	public ColumnBuilder partition(boolean partition) {
+	public ColumnSpecification partition(boolean partition) {
 		this.keyType = partition ? PARTITION : null;
 		this.ordering = null;
 		return this;
@@ -84,7 +84,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	public ColumnBuilder primary() {
+	public ColumnSpecification primary() {
 		return primary(DFAULT_ORDERING);
 	}
 
@@ -94,7 +94,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	public ColumnBuilder primary(Ordering order) {
+	public ColumnSpecification primary(Ordering order) {
 		return primary(order, true);
 	}
 
@@ -105,7 +105,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	public ColumnBuilder primary(Ordering order, boolean primary) {
+	public ColumnSpecification primary(Ordering order, boolean primary) {
 		this.keyType = primary ? PRIMARY : null;
 		this.ordering = primary ? order : null;
 		return this;
@@ -116,7 +116,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	/* package */ColumnBuilder keyType(KeyType keyType) {
+	/* package */ColumnSpecification keyType(KeyType keyType) {
 		this.keyType = keyType;
 		return this;
 	}
@@ -126,7 +126,7 @@ public class ColumnBuilder {
 	 * 
 	 * @return this
 	 */
-	/* package */ColumnBuilder ordering(Ordering ordering) {
+	/* package */ColumnSpecification ordering(Ordering ordering) {
 		this.ordering = ordering;
 		return this;
 	}
