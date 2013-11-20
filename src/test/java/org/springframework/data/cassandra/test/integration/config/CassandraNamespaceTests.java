@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.test.unit.config;
+package org.springframework.data.cassandra.test.integration.config;
 
 import java.io.IOException;
 

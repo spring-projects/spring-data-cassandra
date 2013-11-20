@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.test.unit.core;
+package org.springframework.cassandra.test.unit.support;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

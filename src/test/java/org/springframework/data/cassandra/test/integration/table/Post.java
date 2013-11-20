@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.unit.table;
+package org.springframework.data.cassandra.test.integration.table;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.ColumnId;
-import org.springframework.data.cassandra.mapping.Qualify;
 import org.springframework.data.cassandra.mapping.Table;
-
-import com.datastax.driver.core.DataType;
 
 /**
  * This is an example of dynamic table that creates each time new column with Post timestamp annotated by @ColumnId.
@@ -34,8 +32,8 @@ import com.datastax.driver.core.DataType;
  * 
  * @author Alex Shvid
  */
-@Table(name = "comments")
-public class Comment {
+@Table(name = "posts")
+public class Post {
 
 	/*
 	 * Primary Row ID
@@ -47,19 +45,15 @@ public class Comment {
 	 * Column ID
 	 */
 	@ColumnId
-	@Qualify(type = DataType.Name.TIMESTAMP)
 	private Date time;
 
+	private String type; // status, share
+
 	private String text;
-
-	@Qualify(type = DataType.Name.SET, typeArguments = { DataType.Name.TEXT })
+	private Set<String> resources;
+	private Map<Date, String> comments;
 	private Set<String> likes;
-
-	/*
-	 * Reference to the Post
-	 */
-	private String postAuthor;
-	private Date postTime;
+	private Set<String> followers;
 
 	public String getAuthor() {
 		return author;
@@ -77,12 +71,36 @@ public class Comment {
 		this.time = time;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
 	public String getText() {
 		return text;
 	}
 
 	public void setText(String text) {
 		this.text = text;
+	}
+
+	public Set<String> getResources() {
+		return resources;
+	}
+
+	public void setResources(Set<String> resources) {
+		this.resources = resources;
+	}
+
+	public Map<Date, String> getComments() {
+		return comments;
+	}
+
+	public void setComments(Map<Date, String> comments) {
+		this.comments = comments;
 	}
 
 	public Set<String> getLikes() {
@@ -93,20 +111,12 @@ public class Comment {
 		this.likes = likes;
 	}
 
-	public String getPostAuthor() {
-		return postAuthor;
+	public Set<String> getFollowers() {
+		return followers;
 	}
 
-	public void setPostAuthor(String postAuthor) {
-		this.postAuthor = postAuthor;
-	}
-
-	public Date getPostTime() {
-		return postTime;
-	}
-
-	public void setPostTime(Date postTime) {
-		this.postTime = postTime;
+	public void setFollowers(Set<String> followers) {
+		this.followers = followers;
 	}
 
 }

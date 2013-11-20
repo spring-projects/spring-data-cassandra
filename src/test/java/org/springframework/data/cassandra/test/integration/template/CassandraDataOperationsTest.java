@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.unit.template;
+package org.springframework.data.cassandra.test.integration.template;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,8 +44,8 @@ import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.core.ConsistencyLevel;
 import org.springframework.data.cassandra.core.QueryOptions;
 import org.springframework.data.cassandra.core.RetryPolicy;
-import org.springframework.data.cassandra.test.unit.config.TestConfig;
-import org.springframework.data.cassandra.test.unit.table.Book;
+import org.springframework.data.cassandra.test.integration.config.TestConfig;
+import org.springframework.data.cassandra.test.integration.table.Book;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;

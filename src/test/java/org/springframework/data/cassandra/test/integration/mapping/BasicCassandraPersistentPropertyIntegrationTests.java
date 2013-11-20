@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.unit.mapping;
+package org.springframework.data.cassandra.test.integration.mapping;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -42,11 +42,11 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Unit test for {@link BasicCassandraPersistentProperty}.
+ * Integration test for {@link BasicCassandraPersistentProperty}.
  * 
  * @author Alex Shvid
  */
-public class BasicCassandraPersistentPropertyUnitTests {
+public class BasicCassandraPersistentPropertyIntegrationTests {
 
 	CassandraPersistentEntity<Timeline> entity;
 
