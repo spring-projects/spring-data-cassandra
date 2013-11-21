@@ -458,7 +458,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementSetter, org.springframework.cassandra.core.ResultSetExtractor)
 	 */
-	public <T> T query(PreparedStatementCreator psc, final PreparedStatementBinder pss, final ResultSetExtractor<T> rse)
+	public <T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse)
 			throws DataAccessException {
 
 		Assert.notNull(rse, "ResultSetExtractor must not be null");
@@ -468,8 +468,8 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 			public T doInPreparedStatement(PreparedStatement ps) throws DriverException {
 				ResultSet rs = null;
 				BoundStatement bs = null;
-				if (pss != null) {
-					bs = pss.bindValues(ps);
+				if (psb != null) {
+					bs = psb.bindValues(ps);
 				} else {
 					bs = ps.bind();
 				}
@@ -483,31 +483,31 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementSetter, org.springframework.cassandra.core.ResultSetExtractor)
 	 */
 	@Override
-	public <T> T query(String cql, PreparedStatementBinder pss, ResultSetExtractor<T> rse) throws DataAccessException {
-		return query(new SimplePreparedStatementCreator(cql), pss, rse);
+	public <T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException {
+		return query(new SimplePreparedStatementCreator(cql), psb, rse);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementSetter, org.springframework.cassandra.core.RowCallbackHandler)
 	 */
 	@Override
-	public void query(String cql, PreparedStatementBinder pss, RowCallbackHandler rch) throws DataAccessException {
-		query(new SimplePreparedStatementCreator(cql), pss, rch);
+	public void query(String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException {
+		query(new SimplePreparedStatementCreator(cql), psb, rch);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementSetter, org.springframework.cassandra.core.RowMapper)
 	 */
 	@Override
-	public <T> List<T> query(String cql, PreparedStatementBinder pss, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(new SimplePreparedStatementCreator(cql), pss, rowMapper);
+	public <T> List<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
+		return query(new SimplePreparedStatementCreator(cql), psb, rowMapper);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler)
 	 */
 	@Override
-	public void query(PreparedStatementCreator psc, final PreparedStatementBinder pss, final RowCallbackHandler rch)
+	public void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch)
 			throws DataAccessException {
 		Assert.notNull(rch, "RowCallbackHandler must not be null");
 		logger.debug("Executing prepared CQL query");
@@ -516,8 +516,8 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 			public Object doInPreparedStatement(PreparedStatement ps) throws DriverException {
 				ResultSet rs = null;
 				BoundStatement bs = null;
-				if (pss != null) {
-					bs = pss.bindValues(ps);
+				if (psb != null) {
+					bs = psb.bindValues(ps);
 				} else {
 					bs = ps.bind();
 				}
@@ -532,7 +532,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
 	 */
 	@Override
-	public <T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder pss, final RowMapper<T> rowMapper)
+	public <T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowMapper<T> rowMapper)
 			throws DataAccessException {
 		Assert.notNull(rowMapper, "RowMapper must not be null");
 		logger.debug("Executing prepared CQL query");
@@ -541,8 +541,8 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 			public List<T> doInPreparedStatement(PreparedStatement ps) throws DriverException {
 				ResultSet rs = null;
 				BoundStatement bs = null;
-				if (pss != null) {
-					bs = pss.bindValues(ps);
+				if (psb != null) {
+					bs = psb.bindValues(ps);
 				} else {
 					bs = ps.bind();
 				}

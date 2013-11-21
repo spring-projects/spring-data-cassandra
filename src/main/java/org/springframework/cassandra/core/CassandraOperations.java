@@ -107,11 +107,11 @@ public interface CassandraOperations {
 
 	<T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action) throws DataAccessException;
 
-	<T> T query(final String cql, PreparedStatementBinder pss, ResultSetExtractor<T> rse) throws DataAccessException;
+	<T> T query(final String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException;
 
-	void query(final String cql, PreparedStatementBinder pss, RowCallbackHandler rch) throws DataAccessException;
+	void query(final String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException;
 
-	<T> List<T> query(final String cql, PreparedStatementBinder pss, RowMapper<T> rowMapper) throws DataAccessException;
+	<T> List<T> query(final String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException;
 
 	<T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse) throws DataAccessException;
 
@@ -119,13 +119,13 @@ public interface CassandraOperations {
 
 	<T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper) throws DataAccessException;
 
-	<T> T query(PreparedStatementCreator psc, final PreparedStatementBinder pss, final ResultSetExtractor<T> rse)
+	<T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse)
 			throws DataAccessException;
 
-	void query(PreparedStatementCreator psc, final PreparedStatementBinder pss, final RowCallbackHandler rch)
+	void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch)
 			throws DataAccessException;
 
-	<T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder pss, final RowMapper<T> rowMapper)
+	<T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowMapper<T> rowMapper)
 			throws DataAccessException;
 
 	/**
