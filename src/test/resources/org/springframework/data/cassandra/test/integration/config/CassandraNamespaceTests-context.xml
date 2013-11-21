@@ -7,7 +7,7 @@
                          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
 	<context:property-placeholder
-		location="classpath:/org/springframework/data/cassandra/config/cassandra.properties" />
+		location="classpath:/org/springframework/data/cassandra/test/integration/config/cassandra.properties" />
 
 	<cassandra:cluster id="cassandra-cluster"
 		contactPoints="${cassandra.contactPoints}" port="${cassandra.port}"
