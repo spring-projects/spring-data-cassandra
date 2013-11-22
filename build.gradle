@@ -73,13 +73,14 @@ javadoc {
   ext.tmpDir = file("${buildDir}/api-work")
 
   configure(options) {
-      stylesheetFile = file("${srcDir}/spring-javadoc.css")
-      overview = "${srcDir}/overview.html"
+      //stylesheetFile = file("${srcDir}/spring-javadoc.css")
+      //overview = "${srcDir}/overview.html"
       docFilesSubDirs = true
       outputLevel = org.gradle.external.javadoc.JavadocOutputLevel.QUIET
       breakIterator = true
       showFromProtected()
       groups = [
+        'Spring Cassandra' : ['org.springframework.cassandra*'],
         'Spring Data Cassandra' : ['org.springframework.data.cassandra*'],
       ]
 
