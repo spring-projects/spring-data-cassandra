@@ -41,15 +41,31 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.interceptor.DefaultKeyGenerator;
+import org.springframework.cassandra.core.CachedPreparedStatementCreator;
 import org.springframework.cassandra.core.CassandraOperations;
+import org.springframework.cassandra.core.CqlParameter;
+import org.springframework.cassandra.core.CqlParameterValue;
 import org.springframework.cassandra.core.HostMapper;
+import org.springframework.cassandra.core.PreparedStatementBinder;
+import org.springframework.cassandra.core.PreparedStatementCreatorFactory;
+import org.springframework.cassandra.core.ResultSetExtractor;
 import org.springframework.cassandra.core.RingMember;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.test.integration.config.TestConfig;
+import org.springframework.data.cassandra.test.integration.table.Book;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Host;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
 
 /**
@@ -84,8 +100,9 @@ public class CassandraOperationsTest {
 	private final static int CASSANDRA_THRIFT_PORT = 9160;
 
 	@Rule
-	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet("cql-dataload.cql",
-			KEYSPACE_NAME), CASSANDRA_CONFIG, CASSANDRA_HOST, CASSANDRA_NATIVE_PORT);
+	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
+			"cassandraOperationsTest-cql-dataload.cql", KEYSPACE_NAME), CASSANDRA_CONFIG, CASSANDRA_HOST,
+			CASSANDRA_NATIVE_PORT);
 
 	@BeforeClass
 	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
@@ -146,6 +163,129 @@ public class CassandraOperationsTest {
 
 	}
 
+	@Test
+	public void preparedStatementFactoryTest() {
+
+		String cql = "select * from book where isbn = ?";
+
+		List<CqlParameter> parameters = new LinkedList<CqlParameter>();
+		parameters.add(new CqlParameter("isbn", DataType.text()));
+
+		PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(cql, parameters);
+
+		List<CqlParameterValue> values = new LinkedList<CqlParameterValue>();
+		values.add(new CqlParameterValue(DataType.text(), "999999999"));
+
+		Book b = cassandraTemplate.query(factory.newPreparedStatementCreator(values),
+				factory.newPreparedStatementBinder(values), new ResultSetExtractor<Book>() {
+
+					@Override
+					public Book extractData(ResultSet rs) throws DriverException, DataAccessException {
+						Row r = rs.one();
+						Book b = new Book();
+						b.setIsbn(r.getString("isbn"));
+						b.setTitle(r.getString("title"));
+						b.setAuthor(r.getString("author"));
+						b.setPages(r.getInt("pages"));
+						return b;
+					}
+				});
+
+		log.info(b.toString());
+
+	}
+
+	// @Test
+	public void cachedPreparedStatementTest() {
+
+		log.info(echoString("Hello"));
+		log.info(echoString("Hello"));
+
+		String cql = "select * from book where isbn = ?";
+
+		CachedPreparedStatementCreator cpsc = new CachedPreparedStatementCreator(cql);
+
+		Book b = cassandraTemplate.query(cpsc, new PreparedStatementBinder() {
+
+			@Override
+			public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
+				return ps.bind("999999999");
+			}
+		}, new ResultSetExtractor<Book>() {
+
+			@Override
+			public Book extractData(ResultSet rs) throws DriverException, DataAccessException {
+				Row r = rs.one();
+				Book b = new Book();
+				b.setIsbn(r.getString("isbn"));
+				b.setTitle(r.getString("title"));
+				b.setAuthor(r.getString("author"));
+				b.setPages(r.getInt("pages"));
+				return b;
+			}
+		});
+
+		assertNotNull(b);
+
+		log.info(b.toString());
+
+		try {
+			DefaultKeyGenerator generator = new DefaultKeyGenerator();
+
+			// TODO Why does method have to be public to work? Options?
+			Object cacheKey = generator.generate(CachedPreparedStatementCreator.class,
+					CachedPreparedStatementCreator.class.getMethod("getCachedPreparedStatement", Session.class, String.class),
+					cassandraTemplate.getSession(), cql);
+
+			log.info("cacheKey -> " + cacheKey);
+
+			// ConcurrentMapCache cache = (ConcurrentMapCache) cacheManager.getCache("sdc-pstmts");
+			// ConcurrentMap cacheMap = cache.getNativeCache();
+			// assertNotNull(cacheMap);
+			// log.info("CacheMap.size() -> " + cacheMap.size());
+			// ValueWrapper vw = cache.get(cacheKey);
+			// PreparedStatement pstmt = (PreparedStatement) vw.get();
+			// assertNotNull(pstmt);
+			// log.info(pstmt.getQueryString());
+			// assertEquals(pstmt.getQueryString(), cql);
+		} catch (NoSuchMethodException e) {
+			log.error("Failed to find method", e);
+		}
+
+		CachedPreparedStatementCreator cpsc2 = new CachedPreparedStatementCreator(cql);
+
+		Book b2 = cassandraTemplate.query(cpsc2, new PreparedStatementBinder() {
+
+			@Override
+			public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
+				return ps.bind("999999999");
+			}
+		}, new ResultSetExtractor<Book>() {
+
+			@Override
+			public Book extractData(ResultSet rs) throws DriverException, DataAccessException {
+				Row r = rs.one();
+				Book b = new Book();
+				b.setIsbn(r.getString("isbn"));
+				b.setTitle(r.getString("title"));
+				b.setAuthor(r.getString("author"));
+				b.setPages(r.getInt("pages"));
+				return b;
+			}
+		});
+
+		assertNotNull(b2);
+
+		log.info(b2.toString());
+
+	}
+
+	@Cacheable("sdc-pstmts")
+	public String echoString(String s) {
+		log.info("In EchoString");
+		return s;
+	}
+
 	@After
 	public void clearCassandra() {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
@@ -154,6 +294,6 @@ public class CassandraOperationsTest {
 
 	@AfterClass
 	public static void stopCassandra() {
-		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
+		// EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
 	}
 }
