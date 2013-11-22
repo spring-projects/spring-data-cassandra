@@ -40,8 +40,15 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
 
 /**
- * The CassandraTemplate is a Spring convenience wrapper for low level and explicit operations on the Cassandra
- * Database. For working with POJOs, use the {@link CassandraDataTemplate}
+ * <b>This is the Central class in the Cassandra core package.</b> It simplifies the use of Cassandra and helps to avoid
+ * common errors. It executes the core Cassandra workflow, leaving application code to provide CQL and result
+ * extraction. This class execute CQL Queries, provides different ways to extract/map results, and provides Exception
+ * translation to the generic, more informative exception hierarchy defined in the <code>org.springframework.dao</code>
+ * package.
+ * 
+ * <p>
+ * For working with POJOs, use the {@link CassandraDataTemplate}.
+ * </p>
  * 
  * @author David Webb
  * @author Matthew Adams
