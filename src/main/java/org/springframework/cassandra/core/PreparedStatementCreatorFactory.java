@@ -33,6 +33,8 @@ import com.datastax.driver.core.exceptions.DriverException;
 /**
  * @author David Webb
  * 
+ * @deprecated - Pattern from JDBC Template, but DW doesn't like it. Use {@link BoundStatementFactory}
+ * 
  */
 public class PreparedStatementCreatorFactory {
 

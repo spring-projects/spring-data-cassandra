@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.interceptor.DefaultKeyGenerator;
+import org.springframework.cassandra.core.BoundStatementFactory;
 import org.springframework.cassandra.core.CachedPreparedStatementCreator;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CqlParameter;
@@ -193,6 +194,19 @@ public class CassandraOperationsTest {
 
 		log.info(b.toString());
 
+	}
+
+	@Test
+	public void boundStatementFactoryTest() {
+
+		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
+
+		BoundStatementFactory bsf = new BoundStatementFactory(cql);
+		bsf.addValues(new Object[] { "1234", "Moby Dick", "Herman Manville", new Integer(456) }, new Object[] { "2345",
+				"War and Peace", "Russian Dude", new Integer(456) }, new Object[] { "3456", "Jane Ayre", "Charlotte",
+				new Integer(456) });
+
+		cassandraTemplate.execute(bsf);
 	}
 
 	// @Test

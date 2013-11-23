@@ -48,6 +48,8 @@ public interface CassandraOperations {
 	 */
 	void execute(final String cql) throws DataAccessException;
 
+	void execute(BoundStatementFactory bsf);
+
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
