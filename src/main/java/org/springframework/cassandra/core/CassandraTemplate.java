@@ -559,4 +559,20 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 			}
 		});
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CassandraOperations#execute(org.springframework.cassandra.core.BoundStatementFactory)
+	 */
+	@Override
+	public void execute(BoundStatementFactory bsf) {
+
+		bsf.createPreparedStatement(getSession());
+
+		List<BoundStatement> statements = bsf.bindValues();
+
+		for (BoundStatement bs : statements) {
+			getSession().execute(bs);
+		}
+
+	}
 }
