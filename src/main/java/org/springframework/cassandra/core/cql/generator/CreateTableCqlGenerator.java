@@ -17,7 +17,7 @@ import org.springframework.cassandra.core.keyspace.Option;
  * 
  * @author Matthew T. Adams
  */
-public class CreateTableCqlGenerator extends AbstractTableOperationCqlGenerator<CreateTableSpecification> {
+public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecification> {
 
 	public CreateTableCqlGenerator(CreateTableSpecification specification) {
 		super(specification);
@@ -110,7 +110,7 @@ public class CreateTableCqlGenerator extends AbstractTableOperationCqlGenerator<
 			clustering.append(")");
 		}
 
-		boolean parenthesize = partitionKeys.size() + primaryKeys.size() > 1;
+		boolean parenthesize = true;// partitionKeys.size() + primaryKeys.size() > 1;
 
 		cql.append(parenthesize ? "(" : "");
 		cql.append(partitions);
@@ -118,6 +118,8 @@ public class CreateTableCqlGenerator extends AbstractTableOperationCqlGenerator<
 		cql.append(primaries);
 		cql.append(parenthesize ? ")" : "");
 		// end primary key clause
+
+		cql.append(")");
 		// end columns
 
 		// begin options

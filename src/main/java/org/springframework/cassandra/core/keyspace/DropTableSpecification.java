@@ -1,18 +1,13 @@
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
-import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
+/**
+ * Builder class that supports the construction of <code>DROP TABLE</code> specifications.
+ * 
+ * @author Matthew T. Adams
+ */
+public class DropTableSpecification extends TableNameSpecification<DropTableSpecification> {
 
-public class DropTableSpecification {
-
-	private String name;
 	private boolean ifExists;
-
-	public DropTableSpecification name(String name) {
-		checkIdentifier(name);
-		this.name = name;
-		return this;
-	}
 
 	public DropTableSpecification ifExists() {
 		return ifExists(true);
@@ -25,9 +20,5 @@ public class DropTableSpecification {
 
 	public boolean getIfExists() {
 		return ifExists;
-	}
-
-	public String getNameAsIdentifier() {
-		return identifize(name);
 	}
 }

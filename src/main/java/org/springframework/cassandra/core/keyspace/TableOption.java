@@ -122,8 +122,12 @@ public enum TableOption implements Option {
 			this.value = value;
 		}
 
-		public String toString() {
+		public String getValue() {
 			return value;
+		}
+
+		public String toString() {
+			return getValue();
 		}
 	}
 

@@ -1,8 +1,6 @@
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.escapeSingle;
-import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.singleQuote;
 
 import java.util.Collections;
@@ -12,39 +10,26 @@ import java.util.Map;
 import org.springframework.cassandra.core.cql.CqlStringUtils;
 
 /**
- * Base class that contains behavior common to table operations.
+ * Abstract builder class to support the construction of table specifications that have table options, that is, those
+ * options normally specified by <code>WITH ... AND ...</code>.
+ * <p/>
+ * It is important to note that although this class depends on {@link TableOption} for convenient and typesafe use, it
+ * ultimately stores its options in a <code>Map<String,Object></code> for flexibility. This means that
+ * {@link #with(TableOption)} and {@link #with(TableOption, Object)} delegate to
+ * {@link #with(String, Object, boolean, boolean)}. This design allows the API to support new Cassandra options as they
+ * are introduced without having to update the code immediately.
  * 
  * @author Matthew T. Adams
- * @param T The subtype of AbstractTableBuilder.
+ * @param <T> The subtype of the {@link TableOptionsSpecification}.
  */
-public abstract class AbstractTableSpecification<T extends AbstractTableSpecification<T>> {
-
-	private String name;
+public abstract class TableOptionsSpecification<T extends TableOptionsSpecification<T>> extends
+		TableNameSpecification<TableOptionsSpecification<T>> {
 
 	protected Map<String, Object> options = new LinkedHashMap<String, Object>();
 
-	/**
-	 * Sets the table name.
-	 * 
-	 * @return this
-	 */
 	@SuppressWarnings("unchecked")
 	public T name(String name) {
-		setName(name);
-		return (T) this;
-	}
-
-	public void setName(String name) {
-		checkIdentifier(name);
-		this.name = name;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getNameAsIdentifier() {
-		return identifize(name);
+		return (T) super.name(name);
 	}
 
 	/**

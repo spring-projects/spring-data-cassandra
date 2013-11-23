@@ -16,7 +16,7 @@ import org.springframework.cassandra.core.keyspace.Option;
  * 
  * @author Matthew T. Adams
  */
-public class AlterTableCqlGenerator extends AbstractTableOperationCqlGenerator<AlterTableSpecification> {
+public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableSpecification> {
 
 	public AlterTableCqlGenerator(AlterTableSpecification specification) {
 		super(specification);
