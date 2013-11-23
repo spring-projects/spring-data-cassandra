@@ -77,5 +77,4 @@ public class TestConfig extends AbstractCassandraConfiguration {
 		return template;
 
 	}
-
 }
