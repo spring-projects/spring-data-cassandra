@@ -90,4 +90,15 @@ public class Book {
 		this.pages = pages;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("isbn -> " + isbn).append("\n");
+		sb.append("tile -> " + title).append("\n");
+		sb.append("author -> " + author).append("\n");
+		sb.append("pages -> " + pages).append("\n");
+		return sb.toString();
+	}
 }
