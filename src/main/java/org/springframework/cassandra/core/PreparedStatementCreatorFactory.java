@@ -120,6 +120,8 @@ public class PreparedStatementCreatorFactory {
 
 		private final List<?> parameters;
 
+		private PreparedStatement preparedStatement;
+
 		public PreparedStatementCreatorImpl(List<?> parameters) {
 			this(cql, parameters);
 		}
@@ -147,6 +149,7 @@ public class PreparedStatementCreatorFactory {
 							+ " parameters but expected " + declaredParameters.size());
 				}
 			}
+
 		}
 
 		/* (non-Javadoc)
