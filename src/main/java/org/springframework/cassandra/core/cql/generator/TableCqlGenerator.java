@@ -6,9 +6,8 @@ import static org.springframework.cassandra.core.cql.CqlStringUtils.singleQuote;
 
 import java.util.Map;
 
-import org.springframework.cassandra.core.keyspace.AbstractTableSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
-import org.springframework.util.Assert;
+import org.springframework.cassandra.core.keyspace.TableSpecification;
 
 /**
  * Base class that contains behavior common to CQL generation for table operations.
@@ -16,31 +15,16 @@ import org.springframework.util.Assert;
  * @author Matthew T. Adams
  * @param T The subtype of this class for which this is a CQL generator.
  */
-public abstract class AbstractTableOperationCqlGenerator<T extends AbstractTableSpecification<T>> {
+public abstract class TableCqlGenerator<T extends TableSpecification<T>> extends
+		TableOptionsCqlGenerator<TableSpecification<T>> {
 
-	public abstract StringBuilder toCql(StringBuilder cql);
-
-	private AbstractTableSpecification<T> specification;
-
-	public AbstractTableOperationCqlGenerator(AbstractTableSpecification<T> specification) {
-		setSpecification(specification);
-	}
-
-	protected void setSpecification(AbstractTableSpecification<T> specification) {
-		Assert.notNull(specification);
-		this.specification = specification;
+	public TableCqlGenerator(TableSpecification<T> specification) {
+		super(specification);
 	}
 
 	@SuppressWarnings("unchecked")
-	public T getSpecification() {
-		return (T) specification;
-	}
-
-	/**
-	 * Convenient synonymous method of {@link #getSpecification()}.
-	 */
 	protected T spec() {
-		return getSpecification();
+		return (T) getSpecification();
 	}
 
 	protected StringBuilder optionValueMap(Map<Option, Object> valueMap, StringBuilder cql) {
@@ -77,9 +61,5 @@ public abstract class AbstractTableOperationCqlGenerator<T extends AbstractTable
 		cql.append(" }");
 
 		return cql;
-	}
-
-	public String toCql() {
-		return toCql(null).toString();
 	}
 }

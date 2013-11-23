@@ -1,4 +1,4 @@
-package org.springframework.cassandra.core.keyspace;
+package org.springframework.cassandra.core.util;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;

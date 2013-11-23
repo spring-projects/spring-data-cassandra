@@ -144,7 +144,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, Init
 			// drop the old keyspace if needed
 			if (keyspaceExists && (keyspaceAttributes.isCreate() || keyspaceAttributes.isCreateDrop())) {
 				log.info("Drop keyspace " + keyspace + " on afterPropertiesSet");
-				session.execute("DROP KEYSPACE " + keyspace);
+				session.execute("DROP KEYSPACE " + keyspace + ";");
 				keyspaceExists = false;
 			}
 
