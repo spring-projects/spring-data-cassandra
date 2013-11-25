@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -22,10 +21,6 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
 	}
 
-	/**
-	 * Whether to clear the cluster before the next test.
-	 */
-	protected boolean clear = true;
 	/**
 	 * Whether to connect to Cassandra.
 	 */
@@ -71,13 +66,6 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 					session.execute("USE " + keyspace + ";");
 				} // else keyspace already exists
 			}
-		}
-	}
-
-	@After
-	public void after() {
-		if (clear && connected()) {
-			EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 		}
 	}
 }
