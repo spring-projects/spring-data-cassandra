@@ -37,10 +37,15 @@ public class CreateTableCqlGeneratorTests {
 	}
 
 	/**
-	 * Convenient base class that other test classes can use so as not to repeat the generics declarations.
+	 * Convenient base class that other test classes can use so as not to repeat the generics declarations or
+	 * {@link #generator()} method.
 	 */
 	public static abstract class CreateTableTest extends
 			TableOperationCqlGeneratorTest<CreateTableSpecification, CreateTableCqlGenerator> {
+
+		public CreateTableCqlGenerator generator() {
+			return new CreateTableCqlGenerator(specification);
+		}
 	}
 
 	public static class BasicTest extends CreateTableTest {
@@ -55,8 +60,30 @@ public class CreateTableCqlGeneratorTests {
 			return createTable().name(name).partitionKeyColumn(partitionKey0, partitionKeyType0).column(column1, columnType1);
 		}
 
-		public CreateTableCqlGenerator generator() {
-			return new CreateTableCqlGenerator(specification);
+		@Test
+		public void test() {
+			prepare();
+
+			assertPreamble(name, cql);
+			assertColumns(String.format("%s %s, %s %s", partitionKey0, partitionKeyType0, column1, columnType1), cql);
+			assertPrimaryKey(partitionKey0, cql);
+		}
+	}
+
+	public static class CompositePartitionKeyTest extends CreateTableTest {
+
+		public String name = "composite_partition_key_table";
+		public DataType partKeyType0 = DataType.text();
+		public String partKey0 = "partKey0";
+		public DataType partKeyType1 = DataType.text();
+		public String partKey1 = "partKey1";
+		public String column0 = "column0";
+		public DataType columnType0 = DataType.text();
+
+		@Override
+		public CreateTableSpecification specification() {
+			return createTable().name(name).partitionKeyColumn(partKey0, partKeyType0)
+					.partitionKeyColumn(partKey1, partKeyType1).column(column0, columnType0);
 		}
 
 		@Test
@@ -64,8 +91,10 @@ public class CreateTableCqlGeneratorTests {
 			prepare();
 
 			assertPreamble(name, cql);
-			assertColumns(partitionKey0 + " " + partitionKeyType0 + ", " + column1 + " " + columnType1, cql);
-			assertPrimaryKey(partitionKey0, cql);
+			assertColumns(
+					String.format("%s %s, %s %s, %s %s", partKey0, partKeyType0, partKey1, partKeyType1, column0, columnType0),
+					cql);
+			assertPrimaryKey(String.format("(%s, %s)", partKey0, partKey1), cql);
 		}
 	}
 }
