@@ -46,7 +46,7 @@ public class CassandraAccessor implements InitializingBean {
 	/**
 	 * Return the exception translator for this instance.
 	 */
-	public synchronized CassandraExceptionTranslator getExceptionTranslator() {
+	public CassandraExceptionTranslator getExceptionTranslator() {
 		return this.exceptionTranslator;
 	}
 
