@@ -190,11 +190,6 @@ public class CassandraOperationsTest {
 	}
 
 	@Test
-	public void failingTest() {
-		assertNotNull(null);
-	}
-
-	@Test
 	public void boundStatementFactoryTest() {
 
 		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
