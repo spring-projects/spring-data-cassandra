@@ -9,7 +9,7 @@ A first milestone (M1) is expected sometime in early 1Q14 built on the
 following artifacts (or more recent versions thereof):
 
 * Spring Data Commons 1.7.x
-* Cassandra 1.x
+* Cassandra 1.2
 * Datastax Java Driver 1.x
 
 The GA release is expected as part of the as-yet unnamed fourth Spring
