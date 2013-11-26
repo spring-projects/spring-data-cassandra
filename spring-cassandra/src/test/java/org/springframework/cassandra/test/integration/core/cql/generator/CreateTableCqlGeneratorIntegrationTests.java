@@ -3,6 +3,7 @@ package org.springframework.cassandra.test.integration.core.cql.generator;
 import static org.springframework.cassandra.test.integration.core.cql.generator.CqlTableSpecificationAssertions.assertTable;
 
 import org.junit.Test;
+import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.BasicTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.CompositePartitionKeyTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.CreateTableTest;

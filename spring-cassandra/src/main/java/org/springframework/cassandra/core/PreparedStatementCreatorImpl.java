@@ -47,7 +47,7 @@ public class PreparedStatementCreatorImpl implements PreparedStatementCreator, C
 	public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
 		// Nothing to set if there are no values
 		if (values == null) {
-			return null;
+			return new BoundStatement(ps);
 		}
 
 		return ps.bind(values.toArray());
