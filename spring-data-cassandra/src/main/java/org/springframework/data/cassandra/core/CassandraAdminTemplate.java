@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.core.Keyspace;
+import org.springframework.data.cassandra.core.SpringDataKeyspace;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.cassandra.support.exception.CassandraTableExistsException;
@@ -30,7 +30,7 @@ public class CassandraAdminTemplate implements CassandraAdminOperations {
 
 	private static Logger log = LoggerFactory.getLogger(CassandraAdminTemplate.class);
 
-	private Keyspace keyspace;
+	private SpringDataKeyspace keyspace;
 	private Session session;
 	private CassandraConverter converter;
 	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
@@ -42,11 +42,11 @@ public class CassandraAdminTemplate implements CassandraAdminOperations {
 	 * 
 	 * @param keyspace must not be {@literal null}.
 	 */
-	public CassandraAdminTemplate(Keyspace keyspace) {
+	public CassandraAdminTemplate(SpringDataKeyspace keyspace) {
 		setKeyspace(keyspace);
 	}
 
-	protected CassandraAdminTemplate setKeyspace(Keyspace keyspace) {
+	protected CassandraAdminTemplate setKeyspace(SpringDataKeyspace keyspace) {
 		Assert.notNull(keyspace);
 		this.keyspace = keyspace;
 		return setSession(keyspace.getSession()).setCassandraConverter(keyspace.getCassandraConverter());

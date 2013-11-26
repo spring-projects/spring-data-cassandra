@@ -24,7 +24,7 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cassandra.core.Keyspace;
+import org.springframework.data.cassandra.core.SpringDataKeyspace;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -55,7 +55,7 @@ import com.datastax.driver.core.exceptions.NoHostAvailableException;
  * @author Alex Shvid
  */
 
-public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, InitializingBean, DisposableBean,
+public class CassandraKeyspaceFactoryBean implements FactoryBean<SpringDataKeyspace>, InitializingBean, DisposableBean,
 		BeanClassLoaderAware, PersistenceExceptionTranslator {
 
 	private static final Logger log = LoggerFactory.getLogger(CassandraKeyspaceFactoryBean.class);
@@ -72,7 +72,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, Init
 	private CassandraConverter converter;
 	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
-	private Keyspace keyspaceBean;
+	private SpringDataKeyspace keyspaceBean;
 
 	private KeyspaceAttributes keyspaceAttributes;
 
@@ -82,7 +82,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, Init
 		this.beanClassLoader = classLoader;
 	}
 
-	public Keyspace getObject() {
+	public SpringDataKeyspace getObject() {
 		return keyspaceBean;
 	}
 
@@ -245,7 +245,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<Keyspace>, Init
 		// initialize property
 		this.session = session;
 
-		this.keyspaceBean = new Keyspace(keyspace, session, converter);
+		this.keyspaceBean = new SpringDataKeyspace(keyspace, session, converter);
 	}
 
 	private void createNewTable(Session session, String useTableName, CassandraPersistentEntity<?> entity)
