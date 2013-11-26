@@ -21,7 +21,9 @@ import com.datastax.driver.core.Session;
  * Simple Cassandra Keyspace object
  * 
  * @author Alex Shvid
+ * @deprecated This needs more thought.
  */
+@Deprecated
 public class Keyspace {
 
 	private final String keyspace;
