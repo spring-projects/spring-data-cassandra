@@ -15,14 +15,14 @@
  */
 package org.springframework.cassandra.test.integration.core.template;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
-import junit.framework.Assert;
 
 import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
@@ -118,7 +118,7 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		});
 
 		assertNotNull(ring);
-		Assert.assertTrue(ring.size() > 0);
+		assertTrue(ring.size() > 0);
 
 		for (MyHost h : ring) {
 			log.info("hostMapperTest Host -> " + h.someName);
@@ -157,8 +157,8 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		Book b1 = getBook("1234");
 		Book b2 = getBook("2345");
 
-		Assert.assertEquals(b1.getIsbn(), l1.get(0));
-		Assert.assertEquals(b2.getIsbn(), l2.get(0));
+		assertEquals(b1.getIsbn(), l1.get(0));
+		assertEquals(b2.getIsbn(), l2.get(0));
 	}
 
 	@Test
@@ -178,9 +178,9 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		Book b2 = getBook("2345");
 		Book b3 = getBook("3456");
 
-		Assert.assertEquals(b1.getIsbn(), values[0][0]);
-		Assert.assertEquals(b2.getTitle(), values[1][1]);
-		Assert.assertEquals(b3.getAuthor(), values[2][2]);
+		assertEquals(b1.getIsbn(), values[0][0]);
+		assertEquals(b2.getTitle(), values[1][1]);
+		assertEquals(b3.getAuthor(), values[2][2]);
 	}
 
 	/**
@@ -234,9 +234,9 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		Book b2 = getBook("2345");
 		Book b3 = getBook("3456");
 
-		Assert.assertEquals(b1.getIsbn(), o1[0]);
-		Assert.assertEquals(b2.getTitle(), o2[1]);
-		Assert.assertEquals(b3.getAuthor(), o3[2]);
+		assertEquals(b1.getIsbn(), o1[0]);
+		assertEquals(b2.getTitle(), o2[1]);
+		assertEquals(b3.getAuthor(), o3[2]);
 	}
 
 	public Book getBook(final String isbn) {
