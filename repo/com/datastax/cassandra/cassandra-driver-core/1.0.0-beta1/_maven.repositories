@@ -1,6 +1,0 @@
-#NOTE: This is an internal implementation file, its format can be changed without prior notice.
-#Sun Feb 24 13:09:33 AMT 2013
-cassandra-driver-core-1.0.0-beta1-javadoc.jar>=
-cassandra-driver-core-1.0.0-beta1.jar>=
-cassandra-driver-core-1.0.0-beta1.pom>=
-cassandra-driver-core-1.0.0-beta1-sources.jar>=
