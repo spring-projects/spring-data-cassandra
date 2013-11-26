@@ -22,7 +22,7 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
-import org.springframework.cassandra.core.Keyspace;
+import org.springframework.data.cassandra.core.SpringDataKeyspace;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
@@ -74,7 +74,7 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	public abstract Cluster cluster() throws Exception;
 
 	/**
-	 * Creates a {@link Session} to be used by the {@link Keyspace}. Will use the {@link Cluster} instance configured in
+	 * Creates a {@link Session} to be used by the {@link SpringDataKeyspace}. Will use the {@link Cluster} instance configured in
 	 * {@link #cluster()}.
 	 * 
 	 * @see #cluster()
@@ -93,7 +93,7 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	}
 
 	/**
-	 * Creates a {@link Keyspace} to be used by the {@link CassandraTemplate}. Will use the {@link Session} instance
+	 * Creates a {@link SpringDataKeyspace} to be used by the {@link CassandraTemplate}. Will use the {@link Session} instance
 	 * configured in {@link #session()} and {@link CassandraConverter} configured in {@link #converter()}.
 	 * 
 	 * @see #cluster()
@@ -102,8 +102,8 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	 * @throws Exception
 	 */
 	@Bean
-	public Keyspace keyspace() throws Exception {
-		return new Keyspace(getKeyspaceName(), session(), converter());
+	public SpringDataKeyspace keyspace() throws Exception {
+		return new SpringDataKeyspace(getKeyspaceName(), session(), converter());
 	}
 
 	/**
