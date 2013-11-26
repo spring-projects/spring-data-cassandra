@@ -1,4 +1,4 @@
-package org.springframework.cassandra.test.integration.core.cql.generator;
+package org.springframework.cassandra.test.integration;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -16,10 +16,14 @@ import com.datastax.driver.core.Session;
 
 public abstract class AbstractEmbeddedCassandraIntegrationTest {
 
+	protected final static String CASSANDRA_CONFIG = "cassandra.yaml";
+	protected final static String CASSANDRA_HOST = "localhost";
+	protected final static int CASSANDRA_NATIVE_PORT = 9042;
+
 	@BeforeClass
 	public static void beforeClass() throws ConfigurationException, TTransportException, IOException,
 			InterruptedException {
-		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
 	}
 
 	/**
@@ -51,7 +55,7 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	}
 
 	public Cluster cluster() {
-		return Cluster.builder().addContactPoint("localhost").withPort(9042).build();
+		return Cluster.builder().addContactPoint(CASSANDRA_HOST).withPort(CASSANDRA_NATIVE_PORT).build();
 	}
 
 	@Before
@@ -69,7 +73,9 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 					session.execute("CREATE KEYSPACE " + keyspace
 							+ " WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};");
 					session.execute("USE " + keyspace + ";");
-				} // else keyspace already exists
+				} else {// else keyspace already exists
+					session = cluster.connect(keyspace);
+				}
 			}
 		}
 	}
