@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd=org/springframework/data/cassandra/config/spring-cassandra-1.0.xsd
+http\://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd=org/springframework/data/cassandra/config/spring-cassandra-1.0.xsd
