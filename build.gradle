@@ -70,7 +70,7 @@ targetCompatibility = 1.6
 
 javadoc {
   ext.srcDir = file("${projectDir}/src/main/doc")
-  ext.destinationDir = file("${buildDir}/api")
+  ext.destinationDir = file("${buildDir}/docs/javadoc")
   ext.tmpDir = file("${buildDir}/api-work")
 
   configure(options) {
