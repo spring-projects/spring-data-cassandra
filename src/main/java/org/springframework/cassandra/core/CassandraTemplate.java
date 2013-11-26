@@ -559,4 +559,60 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 			}
 		});
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CassandraOperations#execute(java.lang.String, org.springframework.cassandra.core.RowProvider, int)
+	 */
+	@Override
+	public void ingest(String cql, RowIterator rowIterator) {
+
+		PreparedStatement preparedStatement = getSession().prepare(cql);
+
+		while (rowIterator.hasNext()) {
+			getSession().execute(preparedStatement.bind(rowIterator.next()));
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CassandraOperations#execute(java.lang.String, java.util.List)
+	 */
+	@Override
+	public void ingest(String cql, List<List<?>> rows) {
+
+		Assert.notNull(rows);
+		Assert.notEmpty(rows);
+
+		Object[][] values = new Object[rows.size()][];
+		int i = 0;
+		for (List<?> row : rows) {
+			values[i++] = row.toArray();
+		}
+
+		ingest(cql, values);
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CassandraOperations#execute(java.lang.String, java.lang.Object[][])
+	 */
+	@Override
+	public void ingest(String cql, final Object[][] rows) {
+
+		ingest(cql, new RowIterator() {
+
+			int index = 0;
+
+			@Override
+			public Object[] next() {
+				return rows[index++];
+			}
+
+			@Override
+			public boolean hasNext() {
+				return index < rows.length;
+			}
+
+		});
+	}
 }
