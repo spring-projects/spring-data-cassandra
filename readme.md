@@ -11,8 +11,8 @@ Cloning
 When cloning this repo, it's a good idea to also clone two others from Spring Data that this project depends on.  Assuming your current working directory is the root of this repository, issue the following commands:
 
 	cd ..
-	git clone git@github.com:spring-projects/spring-data-build.git
-	git clone git@github.com:spring-projects/spring-data-commons.git
+	git clone https://github.com/spring-projects/spring-data-build.git
+	git clone https://github.com/spring-projects/spring-data-commons.git
 
 
 Building
