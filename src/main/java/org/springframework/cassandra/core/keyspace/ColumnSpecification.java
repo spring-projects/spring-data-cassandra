@@ -27,7 +27,7 @@ public class ColumnSpecification {
 	/**
 	 * Default ordering of primary key fields; value is {@link Ordering#ASCENDING}.
 	 */
-	public static final Ordering DFAULT_ORDERING = ASCENDING;
+	public static final Ordering DEFAULT_ORDERING = ASCENDING;
 
 	private String name;
 	private DataType type; // TODO: determining if we should be coupling this to Datastax Java Driver type?
@@ -80,12 +80,12 @@ public class ColumnSpecification {
 
 	/**
 	 * Identifies this column as a primary key column with default ordering. Sets the column's {@link #keyType} to
-	 * {@link KeyType#PRIMARY} and its {@link #ordering} to {@link #DFAULT_ORDERING}.
+	 * {@link KeyType#PRIMARY} and its {@link #ordering} to {@link #DEFAULT_ORDERING}.
 	 * 
 	 * @return this
 	 */
 	public ColumnSpecification primary() {
-		return primary(DFAULT_ORDERING);
+		return primary(DEFAULT_ORDERING);
 	}
 
 	/**
