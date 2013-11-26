@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
@@ -36,8 +37,10 @@ import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.cassandra.core.HostMapper;
 import org.springframework.cassandra.core.PreparedStatementBinder;
 import org.springframework.cassandra.core.ResultSetExtractor;
+import org.springframework.cassandra.core.ResultSetFutureExtractor;
 import org.springframework.cassandra.core.RingMember;
 import org.springframework.cassandra.core.RowIterator;
+import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.dao.DataAccessException;
 
@@ -45,7 +48,9 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
 
 /**
@@ -157,8 +162,8 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		Book b1 = getBook("1234");
 		Book b2 = getBook("2345");
 
-		assertEquals(b1.getIsbn(), l1.get(0));
-		assertEquals(b2.getIsbn(), l2.get(0));
+		assertBook(b1, listToBook(l1));
+		assertBook(b2, listToBook(l2));
 	}
 
 	@Test
@@ -178,9 +183,9 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		Book b2 = getBook("2345");
 		Book b3 = getBook("3456");
 
-		assertEquals(b1.getIsbn(), values[0][0]);
-		assertEquals(b2.getTitle(), values[1][1]);
-		assertEquals(b3.getAuthor(), values[2][2]);
+		assertBook(b1, objectToBook(values[0]));
+		assertBook(b2, objectToBook(values[1]));
+		assertBook(b3, objectToBook(values[2]));
 	}
 
 	/**
@@ -234,11 +239,209 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		Book b2 = getBook("2345");
 		Book b3 = getBook("3456");
 
-		assertEquals(b1.getIsbn(), o1[0]);
-		assertEquals(b2.getTitle(), o2[1]);
-		assertEquals(b3.getAuthor(), o3[2]);
+		assertBook(b1, objectToBook(v[0]));
+		assertBook(b2, objectToBook(v[1]));
+		assertBook(b3, objectToBook(v[2]));
+
 	}
 
+	@Test
+	public void executeTestSessionCallback() {
+
+		final String isbn = UUID.randomUUID().toString();
+		final String title = "Spring Data Cassandra Cookbook";
+		final String author = "David Webb";
+		final Integer pages = 1;
+
+		cassandraTemplate.execute(new SessionCallback<Object>() {
+
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+
+				String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
+
+				PreparedStatement ps = s.prepare(cql);
+				BoundStatement bs = ps.bind(isbn, title, author, pages);
+
+				s.execute(bs);
+
+				return null;
+
+			}
+		});
+
+		Book b = getBook(isbn);
+
+		assertBook(b, isbn, title, author, pages);
+
+	}
+
+	@Test
+	public void executeTestCqlString() {
+
+		final String isbn = UUID.randomUUID().toString();
+		final String title = "Spring Data Cassandra Cookbook";
+		final String author = "David Webb";
+		final Integer pages = 1;
+
+		cassandraTemplate.execute("insert into book (isbn, title, author, pages) values ('" + isbn + "', '" + title
+				+ "', '" + author + "', " + pages + ")");
+
+		Book b = getBook(isbn);
+
+		assertBook(b, isbn, title, author, pages);
+
+	}
+
+	@Test
+	public void executeAsynchronouslyTestCqlString() {
+
+		final String isbn = UUID.randomUUID().toString();
+		final String title = "Spring Data Cassandra Cookbook";
+		final String author = "David Webb";
+		final Integer pages = 1;
+
+		cassandraTemplate.executeAsynchronously("insert into book (isbn, title, author, pages) values ('" + isbn + "', '"
+				+ title + "', '" + author + "', " + pages + ")");
+
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		Book b = getBook(isbn);
+
+		assertBook(b, isbn, title, author, pages);
+
+	}
+
+	@Test
+	public void queryTestCqlStringResultSetExtractor() {
+
+		final String isbn = "999999999";
+
+		Book b1 = cassandraTemplate.query("select * from book where isbn='" + isbn + "'", new ResultSetExtractor<Book>() {
+
+			@Override
+			public Book extractData(ResultSet rs) throws DriverException, DataAccessException {
+				Row r = rs.one();
+				assertNotNull(r);
+
+				Book b = new Book();
+				b.setIsbn(r.getString("isbn"));
+				b.setTitle(r.getString("title"));
+				b.setAuthor(r.getString("author"));
+				b.setPages(r.getInt("pages"));
+
+				return b;
+			}
+		});
+
+		Book b2 = getBook(isbn);
+
+		assertBook(b1, b2);
+
+	}
+
+	@Test
+	public void queryAsynchronouslyTestCqlStringResultSetExtractor() {
+
+		final String isbn = "999999999";
+
+		Book b1 = cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'",
+				new ResultSetFutureExtractor<Book>() {
+
+					@Override
+					public Book extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
+
+						ResultSet frs = rs.getUninterruptibly();
+						Row r = frs.one();
+						assertNotNull(r);
+
+						Book b = new Book();
+						b.setIsbn(r.getString("isbn"));
+						b.setTitle(r.getString("title"));
+						b.setAuthor(r.getString("author"));
+						b.setPages(r.getInt("pages"));
+
+						return b;
+					}
+				});
+
+		Book b2 = getBook(isbn);
+
+		assertBook(b1, b2);
+
+	}
+
+	/**
+	 * Assert that a Book matches the arguments expected
+	 * 
+	 * @param b
+	 * @param orderedElements
+	 */
+	private void assertBook(Book b, Object... orderedElements) {
+
+		assertEquals(b.getIsbn(), orderedElements[0]);
+		assertEquals(b.getTitle(), orderedElements[1]);
+		assertEquals(b.getAuthor(), orderedElements[2]);
+		assertEquals(b.getPages(), orderedElements[3]);
+
+	}
+
+	/**
+	 * Convert Object[] to a Book
+	 * 
+	 * @param bookElements
+	 * @return
+	 */
+	private Book objectToBook(Object... bookElements) {
+		Book b = new Book();
+		b.setIsbn((String) bookElements[0]);
+		b.setTitle((String) bookElements[1]);
+		b.setAuthor((String) bookElements[2]);
+		b.setPages((Integer) bookElements[3]);
+		return b;
+	}
+
+	/**
+	 * Convert List<Object> to a Book
+	 * 
+	 * @param bookElements
+	 * @return
+	 */
+	private Book listToBook(List<Object> bookElements) {
+		Book b = new Book();
+		b.setIsbn((String) bookElements.get(0));
+		b.setTitle((String) bookElements.get(1));
+		b.setAuthor((String) bookElements.get(2));
+		b.setPages((Integer) bookElements.get(3));
+		return b;
+
+	}
+
+	/**
+	 * Assert that 2 Book objects are the same
+	 * 
+	 * @param b
+	 * @param orderedElements
+	 */
+	private void assertBook(Book b1, Book b2) {
+
+		assertEquals(b1.getIsbn(), b2.getIsbn());
+		assertEquals(b1.getTitle(), b2.getTitle());
+		assertEquals(b1.getAuthor(), b2.getAuthor());
+		assertEquals(b1.getPages(), b2.getPages());
+
+	}
+
+	/**
+	 * Get a Book from Cassandra for assertions.
+	 * 
+	 * @param isbn
+	 * @return
+	 */
 	public Book getBook(final String isbn) {
 
 		Book b = this.cassandraTemplate.query("select * from book where isbn = ?", new PreparedStatementBinder() {
