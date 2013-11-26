@@ -64,7 +64,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 		if (change instanceof AlterColumnSpecification) {
 			return new AlterColumnCqlGenerator((AlterColumnSpecification) change);
 		}
-		throw new Error("unknown ColumnChangeSpecification type: " + change.getClass().getName());
+		throw new IllegalArgumentException("unknown ColumnChangeSpecification type: " + change.getClass().getName());
 	}
 
 	@SuppressWarnings("unchecked")
