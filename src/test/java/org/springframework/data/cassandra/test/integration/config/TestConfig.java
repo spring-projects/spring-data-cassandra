@@ -22,12 +22,14 @@ import com.datastax.driver.core.Cluster.Builder;
 @Configuration
 public class TestConfig extends AbstractCassandraConfiguration {
 
+	public static final String keyspace = "test";
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.config.AbstractCassandraConfiguration#getKeyspaceName()
 	 */
 	@Override
 	protected String getKeyspaceName() {
-		return "test";
+		return keyspace;
 	}
 
 	/* (non-Javadoc)
