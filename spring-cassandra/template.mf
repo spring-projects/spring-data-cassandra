@@ -1,5 +1,6 @@
 Bundle-SymbolicName: org.springframework.cassandra
 Bundle-Name: Spring Cassandra
+Bundle-Vendor: Spring Data Cassandra Community
 Bundle-ManifestVersion: 2
 Import-Package:
  sun.reflect;version="0";resolution:=optional
