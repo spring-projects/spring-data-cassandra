@@ -48,8 +48,6 @@ public interface CassandraOperations {
 	 */
 	void execute(final String cql) throws DataAccessException;
 
-	void execute(BoundStatementFactory bsf);
-
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
@@ -399,5 +397,45 @@ public interface CassandraOperations {
 	 * @return The DataStax Driver Session Object
 	 */
 	Session getSession();
+
+	/**
+	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * all row values are bound to the single PreparedStatement and executed against the Session.
+	 * 
+	 * <p>
+	 * This is used internally by the other ingest() methods, but can be used if you want to write your own RowIterator.
+	 * The Object[] length returned by the next() implementation must match the number of bind variables in the CQL.
+	 * </p>
+	 * 
+	 * @param cql The CQL
+	 * @param rowIterator Implementation to provide the Object[] to be bound to the CQL.
+	 */
+	void ingest(String cql, RowIterator rowIterator);
+
+	/**
+	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * all row values are bound to the single PreparedStatement and executed against the Session.
+	 * 
+	 * <p>
+	 * The List<?> length must match the number of bind variables in the CQL.
+	 * </p>
+	 * 
+	 * @param cql The CQL
+	 * @param rows List of List<?> with data to bind to the CQL.
+	 */
+	void ingest(String cql, List<List<?>> rows);
+
+	/**
+	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * all row values are bound to the single PreparedStatement and executed against the Session.
+	 * 
+	 * <p>
+	 * The Object[] length of the nested array must match the number of bind variables in the CQL.
+	 * </p>
+	 * 
+	 * @param cql The CQL
+	 * @param rows Object array of Object array of values to bind to the CQL.
+	 */
+	void ingest(String cql, Object[][] rows);
 
 }
