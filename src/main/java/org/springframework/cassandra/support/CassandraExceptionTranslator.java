@@ -70,12 +70,12 @@ public class CassandraExceptionTranslator implements PersistenceExceptionTransla
 	 */
 	public DataAccessException translateExceptionIfPossible(RuntimeException x) {
 
-		if (!(x instanceof DriverException)) {
-			return null;
-		}
-
 		if (x instanceof DataAccessException) {
 			return (DataAccessException) x;
+		}
+
+		if (!(x instanceof DriverException)) {
+			return null;
 		}
 
 		// Remember: subclasses must come before superclasses, otherwise the
