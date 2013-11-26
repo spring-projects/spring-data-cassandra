@@ -39,6 +39,7 @@ import org.springframework.cassandra.core.PreparedStatementBinder;
 import org.springframework.cassandra.core.ResultSetExtractor;
 import org.springframework.cassandra.core.ResultSetFutureExtractor;
 import org.springframework.cassandra.core.RingMember;
+import org.springframework.cassandra.core.RowCallbackHandler;
 import org.springframework.cassandra.core.RowIterator;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
@@ -372,6 +373,73 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		Book b2 = getBook(isbn);
 
 		assertBook(b1, b2);
+
+	}
+
+	@Test
+	public void queryTestCqlStringRowCallbackHandler() {
+
+		final String isbn = "999999999";
+
+		final Book b1 = getBook(isbn);
+
+		cassandraTemplate.query("select * from book where isbn='" + isbn + "'", new RowCallbackHandler() {
+
+			@Override
+			public void processRow(Row row) throws DriverException {
+
+				assertNotNull(row);
+
+				Book b = new Book();
+				b.setIsbn(row.getString("isbn"));
+				b.setTitle(row.getString("title"));
+				b.setAuthor(row.getString("author"));
+				b.setPages(row.getInt("pages"));
+
+				assertBook(b1, b);
+
+			}
+		});
+
+	}
+
+	@Test
+	public void processTestResultSetRowCallbackHandler() {
+
+		final String isbn = "999999999";
+
+		final Book b1 = getBook(isbn);
+
+		ResultSet rs = cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'",
+				new ResultSetFutureExtractor<ResultSet>() {
+
+					@Override
+					public ResultSet extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
+
+						ResultSet frs = rs.getUninterruptibly();
+						return frs;
+					}
+				});
+
+		assertNotNull(rs);
+
+		cassandraTemplate.process(rs, new RowCallbackHandler() {
+
+			@Override
+			public void processRow(Row row) throws DriverException {
+
+				assertNotNull(row);
+
+				Book b = new Book();
+				b.setIsbn(row.getString("isbn"));
+				b.setTitle(row.getString("title"));
+				b.setAuthor(row.getString("author"));
+				b.setPages(row.getInt("pages"));
+
+				assertBook(b1, b);
+
+			}
+		});
 
 	}
 
