@@ -31,7 +31,6 @@ import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Truncate;
 
 /**
  * Repository base implementation for Cassandra.
@@ -172,7 +171,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
 	 */
 	public void deleteAll() {
-		// cassandraDataTemplate.truncate(entityInformation.getTableName());
+		cassandraDataTemplate.truncate(entityInformation.getTableName());
 	}
 
 	/*
