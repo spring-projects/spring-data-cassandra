@@ -187,6 +187,8 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	protected ResultSet doExecute(final String cql) {
 
+		logger.info(cql);
+
 		return doExecute(new SessionCallback<ResultSet>() {
 
 			@Override
