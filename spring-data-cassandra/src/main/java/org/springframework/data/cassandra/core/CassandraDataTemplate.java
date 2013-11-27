@@ -1204,6 +1204,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 		try {
 
 			final Query q = CqlUtils.toInsertQuery(keyspace, tableName, entity, optionsByName, cassandraConverter);
+
 			logger.info(q.toString());
 			if (q.getConsistencyLevel() != null) {
 				logger.info(q.getConsistencyLevel().name());

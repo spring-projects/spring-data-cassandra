@@ -17,8 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 
-import org.springframework.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.CassandraDataOperations;
+import org.springframework.data.cassandra.core.CassandraDataTemplate;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -34,31 +33,21 @@ import org.springframework.util.Assert;
 public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends
 		RepositoryFactoryBeanSupport<T, S, ID> {
 
-	private CassandraOperations operations;
-	private CassandraDataOperations dataOperations;
+	private CassandraDataTemplate cassandraDataTemplate;
 
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
-		return new CassandraRepositoryFactory(operations, dataOperations);
+		return new CassandraRepositoryFactory(cassandraDataTemplate);
 	}
 
 	/**
-	 * Configures the {@link CassandraOperations} to be used.
+	 * Configures the {@link CassandraDataTemplate} to be used.
 	 * 
 	 * @param operations the operations to set
 	 */
-	public void setCassandraOperations(CassandraOperations operations) {
-		this.operations = operations;
-	}
-
-	/**
-	 * Configures the {@link CassandraDataOperations} to be used.
-	 * 
-	 * @param operations the operations to set
-	 */
-	public void setCassandraDataOperations(CassandraDataOperations dataOperations) {
-		this.dataOperations = dataOperations;
-		setMappingContext(dataOperations.getConverter().getMappingContext());
+	public void setCassandraDataTemplate(CassandraDataTemplate cassandraDataTemplate) {
+		this.cassandraDataTemplate = cassandraDataTemplate;
+		setMappingContext(cassandraDataTemplate.getConverter().getMappingContext());
 	}
 
 	/*
@@ -71,7 +60,7 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID e
 	@Override
 	public void afterPropertiesSet() {
 		super.afterPropertiesSet();
-		Assert.notNull(dataOperations, "CassandraDataOperations must not be null!");
+		Assert.notNull(cassandraDataTemplate, "cassandraDataTemplate must not be null!");
 	}
 
 }

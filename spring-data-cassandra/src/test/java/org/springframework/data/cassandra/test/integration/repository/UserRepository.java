@@ -16,13 +16,14 @@
 package org.springframework.data.cassandra.test.integration.repository;
 
 import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.test.integration.table.User;
 
 /**
- * Sample repository managing {@link Profile} entities.
+ * Sample repository managing {@link User} entities.
  * 
  * @author Alex Shvid
  * 
  */
-public interface ProfileRepository extends CassandraRepository<Profile, Long> {
+public interface UserRepository extends CassandraRepository<User, String> {
 
 }
