@@ -15,7 +15,15 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import java.io.Serializable;
+
+import org.springframework.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
+import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.util.Assert;
 
 /**
  * {@link org.springframework.beans.factory.FactoryBean} to create {@link CassandraRepository} instances.
@@ -23,6 +31,47 @@ import org.springframework.data.cassandra.repository.CassandraRepository;
  * @author Alex Shvid
  * 
  */
-public class CassandraRepositoryFactoryBean {
+public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends
+		RepositoryFactoryBeanSupport<T, S, ID> {
+
+	private CassandraOperations operations;
+	private CassandraDataOperations dataOperations;
+
+	@Override
+	protected RepositoryFactorySupport createRepositoryFactory() {
+		return new CassandraRepositoryFactory(operations, dataOperations);
+	}
+
+	/**
+	 * Configures the {@link CassandraOperations} to be used.
+	 * 
+	 * @param operations the operations to set
+	 */
+	public void setCassandraOperations(CassandraOperations operations) {
+		this.operations = operations;
+	}
+
+	/**
+	 * Configures the {@link CassandraDataOperations} to be used.
+	 * 
+	 * @param operations the operations to set
+	 */
+	public void setCassandraDataOperations(CassandraDataOperations dataOperations) {
+		this.dataOperations = dataOperations;
+		setMappingContext(dataOperations.getConverter().getMappingContext());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.springframework.data.repository.support.RepositoryFactoryBeanSupport
+	 * #afterPropertiesSet()
+	 */
+	@Override
+	public void afterPropertiesSet() {
+		super.afterPropertiesSet();
+		Assert.notNull(dataOperations, "CassandraDataOperations must not be null!");
+	}
 
 }
