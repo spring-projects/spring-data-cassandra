@@ -2,9 +2,11 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
                          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-                         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+                         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+                         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<context:property-placeholder
 		location="classpath:/org/springframework/data/cassandra/test/integration/repository/cassandra.properties" />
@@ -56,6 +58,19 @@
 		<constructor-arg ref="cassandra-session" />
 		<constructor-arg ref="cassandra-converter" />
 		<constructor-arg value="${cassandra.keyspace}" />
+	</bean>
+	
+	<bean class="org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean">
+		<property name="cassandraOperations" ref="cassandraTemplate"/>
+		<property name="cassandraDataOperations" ref="cassandraDataTemplate"/>
+		<property name="repositoryInterface" value="org.springframework.data.cassandra.test.integration.repository.ProfileRepository"/>
+		<property name="namedQueries">
+			<bean class="org.springframework.data.repository.core.support.PropertiesBasedNamedQueries">
+				<constructor-arg>
+					<util:properties location="classpath:/META-INF/cassandra-named-queries.properties" />
+				</constructor-arg>
+			</bean>
+		</property>
 	</bean>
 	
 </beans>
