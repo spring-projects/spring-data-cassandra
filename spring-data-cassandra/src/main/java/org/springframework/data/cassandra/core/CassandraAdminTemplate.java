@@ -28,7 +28,7 @@ import com.datastax.driver.core.TableMetadata;
  */
 public class CassandraAdminTemplate implements CassandraAdminOperations {
 
-	private static Logger log = LoggerFactory.getLogger(CassandraAdminTemplate.class);
+	private static final Logger log = LoggerFactory.getLogger(CassandraAdminTemplate.class);
 
 	private SpringDataKeyspace keyspace;
 	private Session session;

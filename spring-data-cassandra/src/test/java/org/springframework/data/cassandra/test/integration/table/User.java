@@ -22,7 +22,7 @@ import org.springframework.data.cassandra.mapping.Index;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
- * This is an example of the Users statis table, where all fields are columns in Cassandra row. Some fields can be
+ * This is an example of the Users status table, where all fields are columns in Cassandra row. Some fields can be
  * Set,List,Map like emails.
  * 
  * User contains base information related for separate user, like names, additional information, emails, following
@@ -63,9 +63,9 @@ public class User {
 	private String password;
 
 	/*
-	 * Age 
+	 * Birth Year 
 	 */
-	private int age;
+	private int birthYear;
 
 	/*
 	 * Following other users in userline
@@ -142,17 +142,42 @@ public class User {
 	}
 
 	/**
-	 * @return Returns the age.
+	 * @return Returns the birthYear.
 	 */
-	public int getAge() {
-		return age;
+	public int getBirthYear() {
+		return birthYear;
 	}
 
 	/**
-	 * @param age The age to set.
+	 * @param birthYear The birthYear to set.
 	 */
-	public void setAge(int age) {
-		this.age = age;
+	public void setBirthYear(int birthYear) {
+		this.birthYear = birthYear;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((username == null) ? 0 : username.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		if (username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!username.equals(other.username))
+			return false;
+		return true;
 	}
 
 }

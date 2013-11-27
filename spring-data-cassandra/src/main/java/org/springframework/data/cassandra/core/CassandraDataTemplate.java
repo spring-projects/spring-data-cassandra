@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +42,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Batch;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
 /**
@@ -123,11 +123,20 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectCount(com.datastax.driver.core.querybuilder.Select)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(com.datastax.driver.core.querybuilder.Select)
 	 */
 	@Override
 	public Long count(Select selectQuery) {
 		return doSelectCount(selectQuery);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(java.lang.String)
+	 */
+	@Override
+	public Long count(String tableName) {
+		Select select = QueryBuilder.select().countAll().from(tableName);
+		return doSelectCount(select);
 	}
 
 	/* (non-Javadoc)
@@ -165,7 +174,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> void delete(List<T> entities, String tableName) {
-		delete(entities, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		delete(entities, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -223,7 +233,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> void delete(T entity, String tableName) {
-		delete(entity, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		delete(entity, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -280,7 +291,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> void deleteAsynchronously(List<T> entities, String tableName) {
-		insertAsynchronously(entities, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		insertAsynchronously(entities, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -338,7 +350,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> void deleteAsynchronously(T entity, String tableName) {
-		deleteAsynchronously(entity, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		deleteAsynchronously(entity, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -430,7 +443,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> List<T> insert(List<T> entities, String tableName) {
-		return insert(entities, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		return insert(entities, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -488,7 +502,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> T insert(T entity, String tableName) {
-		return insert(entity, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		return insert(entity, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -545,7 +560,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities, String tableName) {
-		return insertAsynchronously(entities, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		return insertAsynchronously(entities, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -603,7 +619,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> T insertAsynchronously(T entity, String tableName) {
-		return insertAsynchronously(entity, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		return insertAsynchronously(entity, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -695,7 +712,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> List<T> update(List<T> entities, String tableName) {
-		return update(entities, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		return update(entities, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -753,7 +771,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> T update(T entity, String tableName) {
-		return update(entity, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		return update(entity, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -810,7 +829,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities, String tableName) {
-		return updateAsynchronously(entities, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		return updateAsynchronously(entities, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -868,7 +888,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	@Override
 	public <T> T updateAsynchronously(T entity, String tableName) {
-		return updateAsynchronously(entity, tableName, new HashMap<String, Object>());
+		Map<String, Object> defaultOptions = Collections.emptyMap();
+		return updateAsynchronously(entity, tableName, defaultOptions);
 	}
 
 	/* (non-Javadoc)
@@ -967,6 +988,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 * @return
 	 */
 	private <T> T doSelectOne(final String query, ReadRowCallback<T> readRowCallback) {
+
+		logger.info(query);
 
 		/*
 		 * Run the Query
@@ -1183,6 +1206,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 		try {
 
 			final Query q = CqlUtils.toInsertQuery(keyspace, tableName, entity, optionsByName, cassandraConverter);
+
 			logger.info(q.toString());
 			if (q.getConsistencyLevel() != null) {
 				logger.info(q.getConsistencyLevel().name());
