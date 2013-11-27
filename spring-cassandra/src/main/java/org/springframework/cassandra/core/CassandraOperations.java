@@ -438,4 +438,11 @@ public interface CassandraOperations {
 	 */
 	void ingest(String cql, Object[][] rows);
 
+	/**
+	 * Delete all rows in the table
+	 * 
+	 * @param tableName
+	 */
+	void truncate(String tableName);
+
 }

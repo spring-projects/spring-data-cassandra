@@ -38,6 +38,8 @@ import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Truncate;
 
 /**
  * <b>This is the Central class in the Cassandra core package.</b> It simplifies the use of Cassandra and helps to avoid
@@ -615,5 +617,14 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 			}
 
 		});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CassandraOperations#truncate(java.lang.String)
+	 */
+	@Override
+	public void truncate(String tableName) throws DataAccessException {
+		Truncate truncate = QueryBuilder.truncate(tableName);
+		doExecute(truncate.getQueryString());
 	}
 }
