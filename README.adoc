@@ -45,7 +45,10 @@ companies and individuals:
 
 * http://www.prowaveconsulting.com[Prowave Consulting]
 * http://www.scispike.com[SciSpike]
+<<<<<<< HEAD
 * http://www.vha.com[VHA]
+=======
+>>>>>>> 826da5317d6312d09071d1184d74327a6fae6e93
 * Alexander Shvid
 
 The following companies and individuals are also generously providing
