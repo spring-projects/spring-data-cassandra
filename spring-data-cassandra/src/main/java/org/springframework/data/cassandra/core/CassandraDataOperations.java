@@ -51,6 +51,16 @@ public interface CassandraDataOperations {
 	<T> List<T> select(String cql, Class<T> selectClass);
 
 	/**
+	 * Execute query and convert ResultSet to the list of entities
+	 * 
+	 * @param selectQuery must not be {@literal null}.
+	 * @param selectClass must not be {@literal null}, mapped entity type.
+	 * @return
+	 */
+
+	<T> List<T> select(Select selectQuery, Class<T> selectClass);
+
+	/**
 	 * Execute query and convert ResultSet to the entity
 	 * 
 	 * @param query must not be {@literal null}.
@@ -59,11 +69,25 @@ public interface CassandraDataOperations {
 	 */
 	<T> T selectOne(String cql, Class<T> selectClass);
 
-	<T> List<T> select(Select selectQuery, Class<T> selectClass);
-
 	<T> T selectOne(Select selectQuery, Class<T> selectClass);
 
+	/**
+	 * Counts rows for given query
+	 * 
+	 * @param selectQuery
+	 * @return
+	 */
+
 	Long count(Select selectQuery);
+
+	/**
+	 * Counts all rows for given table
+	 * 
+	 * @param tableName
+	 * @return
+	 */
+
+	Long count(String tableName);
 
 	/**
 	 * Insert the given object to the table by id.
