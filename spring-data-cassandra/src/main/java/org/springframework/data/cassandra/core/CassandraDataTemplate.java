@@ -989,6 +989,8 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	private <T> T doSelectOne(final String query, ReadRowCallback<T> readRowCallback) {
 
+		logger.info(query);
+
 		/*
 		 * Run the Query
 		 */

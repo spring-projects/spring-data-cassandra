@@ -64,6 +64,7 @@
 			<name>Alex Shvid</name>
 			<email>a at shvid.com</email>
 			<roles>
+			    <role>Project Lead</role>
 				<role>Developer</role>
 			</roles>
 			<timezone>-8</timezone>
