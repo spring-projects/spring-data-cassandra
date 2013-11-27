@@ -17,8 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 
-import org.springframework.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.CassandraDataOperations;
+import org.springframework.data.cassandra.core.CassandraDataTemplate;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.CassandraRepository;
@@ -38,8 +37,7 @@ import org.springframework.util.Assert;
 
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
-	private final CassandraOperations operations;
-	private final CassandraDataOperations dataOperations;
+	private final CassandraDataTemplate cassandraDataTemplate;
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	/**
@@ -47,14 +45,12 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	 * 
 	 * @param mongoOperations must not be {@literal null}
 	 */
-	public CassandraRepositoryFactory(CassandraOperations operations, CassandraDataOperations dataOperations) {
+	public CassandraRepositoryFactory(CassandraDataTemplate cassandraDataTemplate) {
 
-		Assert.notNull(operations);
-		Assert.notNull(dataOperations);
+		Assert.notNull(cassandraDataTemplate);
 
-		this.operations = operations;
-		this.dataOperations = dataOperations;
-		this.mappingContext = dataOperations.getConverter().getMappingContext();
+		this.cassandraDataTemplate = cassandraDataTemplate;
+		this.mappingContext = cassandraDataTemplate.getConverter().getMappingContext();
 	}
 
 	@Override
@@ -68,7 +64,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainType());
 
-		return new SimpleCassandraRepository(entityInformation, operations, dataOperations);
+		return new SimpleCassandraRepository(entityInformation, cassandraDataTemplate);
 
 	}
 

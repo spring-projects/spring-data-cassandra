@@ -28,24 +28,27 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
+import org.springframework.data.cassandra.test.integration.table.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * Base class for tests for {@link ProfileRepository}.
+ * Base class for tests for {@link UserRepository}.
  * 
  * @author Alex Shvid
  * 
  */
 @ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
-public class ProfileRepositoryIntegrationTests {
-
-	// @Autowired
-	// protected ProfileRepository repository;
+public class UserRepositoryIntegrationTests {
 
 	@Autowired
-	CassandraDataOperations operations;
+	protected UserRepository repository;
+
+	@Autowired
+	protected CassandraDataOperations dataOperations;
+
+	User alex;
 
 	@BeforeClass
 	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
@@ -56,7 +59,16 @@ public class ProfileRepositoryIntegrationTests {
 	@Before
 	public void setUp() throws InterruptedException {
 
-		// repository.deleteAll();
+		repository.deleteAll();
+
+		alex = new User();
+		alex.setUsername("alex");
+		alex.setFirstName("Alex");
+		alex.setLastName("Shvid");
+		alex.setPassword("123");
+		alex.setPlace("SF");
+
+		dataOperations.insert(alex);
 
 	}
 
