@@ -29,7 +29,7 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	/**
 	 * Whether to clear the cluster before the next test.
 	 */
-	protected boolean clear = true;
+	protected boolean clear = false;
 	/**
 	 * Whether to connect to Cassandra.
 	 */
