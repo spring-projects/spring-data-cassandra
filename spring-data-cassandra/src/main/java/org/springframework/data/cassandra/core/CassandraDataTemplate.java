@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
