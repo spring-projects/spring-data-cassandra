@@ -66,6 +66,11 @@ public interface CassandraOperations {
 	 */
 	<T> T query(final String cql, ResultSetExtractor<T> rse) throws DataAccessException;
 
+	<T> T query(final String cql, ResultSetExtractor<T> rse, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	<T> T query(final String cql, ResultSetExtractor<T> rse, final QueryOptions options) throws DataAccessException;
+
 	/**
 	 * Executes the provided CQL Query asynchronously, and extracts the results with the ResultSetFutureExtractor
 	 * 
@@ -76,6 +81,12 @@ public interface CassandraOperations {
 	 */
 	<T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse) throws DataAccessException;
 
+	<T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	<T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse, final QueryOptions options)
+			throws DataAccessException;
+
 	/**
 	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
 	 * 
@@ -84,6 +95,11 @@ public interface CassandraOperations {
 	 * @throws DataAccessException
 	 */
 	void query(final String cql, RowCallbackHandler rch) throws DataAccessException;
+
+	void query(final String cql, RowCallbackHandler rch, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	void query(final String cql, RowCallbackHandler rch, final QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Processes the ResultSet through the RowCallbackHandler and return nothing. This is used internal to the Template
@@ -105,6 +121,11 @@ public interface CassandraOperations {
 	 * @throws DataAccessException
 	 */
 	<T> List<T> query(final String cql, RowMapper<T> rowMapper) throws DataAccessException;
+
+	<T> List<T> query(final String cql, RowMapper<T> rowMapper, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	<T> List<T> query(final String cql, RowMapper<T> rowMapper, final QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Processes the ResultSet through the RowMapper and returns the List of mapped Rows. This is used internal to the
@@ -270,6 +291,12 @@ public interface CassandraOperations {
 	 */
 	<T> T query(final String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException;
 
+	<T> T query(final String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	<T> T query(final String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse, final QueryOptions options)
+			throws DataAccessException;
+
 	/**
 	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
@@ -281,6 +308,12 @@ public interface CassandraOperations {
 	 * @throws DataAccessException
 	 */
 	void query(final String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException;
+
+	void query(final String cql, PreparedStatementBinder psb, RowCallbackHandler rch,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	void query(final String cql, PreparedStatementBinder psb, RowCallbackHandler rch, final QueryOptions options)
+			throws DataAccessException;
 
 	/**
 	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
@@ -296,6 +329,12 @@ public interface CassandraOperations {
 	 */
 	<T> List<T> query(final String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException;
 
+	<T> List<T> query(final String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	<T> List<T> query(final String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper, final QueryOptions options)
+			throws DataAccessException;
+
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
@@ -308,6 +347,12 @@ public interface CassandraOperations {
 	 */
 	<T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse) throws DataAccessException;
 
+	<T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	<T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse, final QueryOptions options)
+			throws DataAccessException;
+
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
@@ -318,6 +363,12 @@ public interface CassandraOperations {
 	 * @throws DataAccessException
 	 */
 	void query(PreparedStatementCreator psc, RowCallbackHandler rch) throws DataAccessException;
+
+	void query(PreparedStatementCreator psc, RowCallbackHandler rch, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	void query(PreparedStatementCreator psc, RowCallbackHandler rch, final QueryOptions options)
+			throws DataAccessException;
 
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
@@ -331,6 +382,12 @@ public interface CassandraOperations {
 	 */
 	<T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper) throws DataAccessException;
 
+	<T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	<T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper, final QueryOptions options)
+			throws DataAccessException;
+
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
 	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
@@ -342,6 +399,12 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
+	<T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	<T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse,
+			final QueryOptions options) throws DataAccessException;
+
 	<T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse)
 			throws DataAccessException;
 
@@ -356,6 +419,12 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
+	void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch,
+			final QueryOptions options) throws DataAccessException;
+
 	void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch)
 			throws DataAccessException;
 
@@ -370,6 +439,12 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
+	<T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowMapper<T> rowMapper,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	<T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowMapper<T> rowMapper,
+			final QueryOptions options) throws DataAccessException;
+
 	<T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowMapper<T> rowMapper)
 			throws DataAccessException;
 
