@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.cassandra.core.Ordering;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
@@ -83,6 +84,16 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	public String getColumnName() {
 		Column annotation = getField().getAnnotation(Column.class);
 		return annotation != null && StringUtils.hasText(annotation.value()) ? annotation.value() : field.getName();
+	}
+
+	/**
+	 * Returns ordering for the column. Valid only for clustered columns.
+	 * 
+	 * @return
+	 */
+	public Ordering getOrdering() {
+		Order annotation = getField().getAnnotation(Order.class);
+		return annotation != null ? annotation.value() : null;
 	}
 
 	/**

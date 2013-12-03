@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -255,6 +256,52 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 			}
 		});
+
+	}
+
+	public CreateTableSpecification getCreateTableSpecification(CassandraPersistentEntity<?> entity) {
+
+		final CreateTableSpecification spec = new CreateTableSpecification();
+
+		spec.name(entity.getTable());
+
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+
+				if (prop.isCompositePrimaryKey()) {
+
+					CassandraPersistentEntity<?> pkEntity = mappingContext.getPersistentEntity(prop.getRawType());
+
+					pkEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+						public void doWithPersistentProperty(CassandraPersistentProperty pkProp) {
+
+							if (pkProp.isPartitioned()) {
+								spec.partitionKeyColumn(pkProp.getColumnName(), pkProp.getDataType());
+							} else {
+								spec.clusteredKeyColumn(pkProp.getColumnName(), pkProp.getDataType(), pkProp.getOrdering());
+							}
+
+						}
+					});
+
+				} else {
+
+					if (prop.isIdProperty()) {
+						spec.partitionKeyColumn(prop.getColumnName(), prop.getDataType());
+					} else {
+						spec.column(prop.getColumnName(), prop.getDataType());
+					}
+
+				}
+			}
+
+		});
+
+		if (spec.getPartitionKeyColumns().isEmpty()) {
+			throw new MappingException("not found partition key in the entity " + entity.getType());
+		}
+
+		return spec;
 
 	}
 

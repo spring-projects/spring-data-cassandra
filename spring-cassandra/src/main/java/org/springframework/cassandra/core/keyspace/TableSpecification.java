@@ -15,16 +15,15 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
 import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
-import static org.springframework.cassandra.core.Ordering.ASCENDING;
+import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.Ordering;
+import org.springframework.cassandra.core.PrimaryKeyType;
 
 import com.datastax.driver.core.DataType;
 
@@ -87,7 +86,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @return this
 	 */
 	public T clusteredKeyColumn(String name, DataType type) {
-		return clusteredKeyColumn(name, type, ASCENDING);
+		return clusteredKeyColumn(name, type, null);
 	}
 
 	/**

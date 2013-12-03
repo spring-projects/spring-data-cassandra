@@ -249,7 +249,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<SpringDataKeysp
 
 	private void createNewTable(Session session, String useTableName, CassandraPersistentEntity<?> entity)
 			throws NoHostAvailableException {
-		String cql = CqlUtils.createTable(useTableName, entity, mappingContext);
+		String cql = CqlUtils.createTable(useTableName, entity, converter);
 		log.info("Execute on keyspace " + keyspace + " CQL " + cql);
 		session.execute(cql);
 		for (String indexCQL : CqlUtils.createIndexes(useTableName, entity)) {

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.convert;
 
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.EntityConverter;
@@ -26,5 +27,7 @@ import org.springframework.data.convert.EntityConverter;
  */
 public interface CassandraConverter extends
 		EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Object> {
+
+	CreateTableSpecification getCreateTableSpecification(CassandraPersistentEntity<?> entity);
 
 }
