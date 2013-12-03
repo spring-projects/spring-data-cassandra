@@ -1,14 +1,29 @@
+/*
+ * Copyright 2011-2013 the original author or authors.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.KeyType.PARTITION;
-import static org.springframework.cassandra.core.KeyType.PRIMARY;
+import static org.springframework.cassandra.core.PrimaryKeyType.PARTITION;
+import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
 import static org.springframework.cassandra.core.Ordering.ASCENDING;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.cassandra.core.KeyType;
+import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.Ordering;
 
 import com.datastax.driver.core.DataType;
@@ -83,7 +98,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @return this
 	 */
 	public T primaryKeyColumn(String name, DataType type, Ordering ordering) {
-		return column(name, type, PRIMARY, ordering);
+		return column(name, type, CLUSTERED, ordering);
 	}
 
 	/**
@@ -93,23 +108,23 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @param name The column name; must be a valid unquoted or quoted identifier without the surrounding double quotes.
 	 * @param type The data type of the column.
 	 * @param keyType Indicates key type. Null means that the column is not a key column.
-	 * @param ordering If the given {@link KeyType} is {@link KeyType#PRIMARY}, then the given ordering is used, else
-	 *          ignored.
+	 * @param ordering If the given {@link PrimaryKeyType} is {@link PrimaryKeyType#CLUSTERED}, then the given ordering is
+	 *          used, else ignored.
 	 * @return this
 	 */
 	@SuppressWarnings("unchecked")
-	protected T column(String name, DataType type, KeyType keyType, Ordering ordering) {
+	protected T column(String name, DataType type, PrimaryKeyType keyType, Ordering ordering) {
 
 		ColumnSpecification column = new ColumnSpecification().name(name).type(type).keyType(keyType)
-				.ordering(keyType == PRIMARY ? ordering : null);
+				.ordering(keyType == CLUSTERED ? ordering : null);
 
 		columns.add(column);
 
-		if (keyType == KeyType.PARTITION) {
+		if (keyType == PrimaryKeyType.PARTITION) {
 			partitionKeyColumns.add(column);
 		}
 
-		if (keyType == KeyType.PRIMARY) {
+		if (keyType == PrimaryKeyType.CLUSTERED) {
 			primaryKeyColumns.add(column);
 		}
 
