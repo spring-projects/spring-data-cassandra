@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import org.springframework.cassandra.core.Ordering;
 import org.springframework.data.mapping.PersistentProperty;
 
 import com.datastax.driver.core.DataType;
@@ -39,6 +40,13 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 	 * @return
 	 */
 	String getColumnName();
+
+	/**
+	 * Returns ordering for the column. Valid only for clustered columns.
+	 * 
+	 * @return
+	 */
+	Ordering getOrdering();
 
 	/**
 	 * Returns the data type.

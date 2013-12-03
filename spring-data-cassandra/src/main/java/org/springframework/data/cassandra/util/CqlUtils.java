@@ -11,13 +11,14 @@ import org.springframework.cassandra.core.ConsistencyLevelResolver;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.RetryPolicyResolver;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.mapping.context.MappingContext;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
@@ -50,101 +51,14 @@ public abstract class CqlUtils {
 	 * @return The CQL that can be passed to session.execute()
 	 */
 	public static String createTable(String tableName, final CassandraPersistentEntity<?> entity,
-			final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+			CassandraConverter cassandraConverter) {
 
-		final StringBuilder str = new StringBuilder();
-		str.append("CREATE TABLE ");
-		str.append(tableName);
-		str.append('(');
+		CreateTableSpecification spec = cassandraConverter.getCreateTableSpecification(entity);
+		spec.name(tableName);
 
-		final List<String> clusteredIds = new ArrayList<String>();
-		final List<String> partitionedIds = new ArrayList<String>();
+		CreateTableCqlGenerator generator = new CreateTableCqlGenerator(spec);
 
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-
-				if (prop.isCompositePrimaryKey()) {
-
-					CassandraPersistentEntity<?> pkEntity = mappingContext.getPersistentEntity(prop.getRawType());
-
-					pkEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-						public void doWithPersistentProperty(CassandraPersistentProperty pkProp) {
-
-							if (pkProp.isPartitioned()) {
-								partitionedIds.add(pkProp.getColumnName());
-							} else {
-								clusteredIds.add(pkProp.getColumnName());
-							}
-
-							if (str.charAt(str.length() - 1) != '(') {
-								str.append(',');
-							}
-
-							String columnName = pkProp.getColumnName();
-
-							str.append(columnName);
-							str.append(' ');
-
-							DataType dataType = pkProp.getDataType();
-
-							str.append(toCQL(dataType));
-
-						}
-					});
-
-				} else {
-
-					if (str.charAt(str.length() - 1) != '(') {
-						str.append(',');
-					}
-
-					String columnName = prop.getColumnName();
-
-					str.append(columnName);
-					str.append(' ');
-
-					DataType dataType = prop.getDataType();
-
-					str.append(toCQL(dataType));
-
-					if (prop.isIdProperty()) {
-						partitionedIds.add(prop.getColumnName());
-					}
-				}
-
-			}
-
-		});
-
-		if (partitionedIds.isEmpty()) {
-			throw new InvalidDataAccessApiUsageException("not found partition key in the entity " + entity.getType());
-		}
-
-		str.append(",PRIMARY KEY(");
-
-		if (partitionedIds.size() > 1) {
-			str.append('(');
-		}
-
-		for (String id : partitionedIds) {
-			if (str.charAt(str.length() - 1) != '(') {
-				str.append(',');
-			}
-			str.append(id);
-		}
-
-		if (partitionedIds.size() > 1) {
-			str.append(')');
-		}
-
-		for (String id : clusteredIds) {
-			str.append(',');
-			str.append(id);
-		}
-
-		str.append("));");
-
-		return str.toString();
+		return generator.toCql();
 	}
 
 	/**

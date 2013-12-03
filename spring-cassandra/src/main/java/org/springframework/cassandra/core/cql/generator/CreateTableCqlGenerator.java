@@ -91,6 +91,10 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 			// end partition key clause
 		}
 
+		if (!clusteredKeys.isEmpty()) {
+			cql.append(", ");
+		}
+
 		appendColumnNames(cql, clusteredKeys);
 
 		cql.append(")");
