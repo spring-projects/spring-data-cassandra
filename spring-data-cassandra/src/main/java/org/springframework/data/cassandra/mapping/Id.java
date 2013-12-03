@@ -21,12 +21,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Identifies partition key in the Cassandra compound key class.
+ * Identifies primary key or ID in the Cassandra table. Same as @org.springframework.data.annotation.Id
  * 
  * @author Alex Shvid
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-public @interface PartitionKey {
-
+@org.springframework.data.annotation.Id
+public @interface Id {
 }

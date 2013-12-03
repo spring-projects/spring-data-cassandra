@@ -36,7 +36,6 @@ import org.springframework.data.cassandra.mapping.BasicCassandraPersistentProper
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.Column;
-import org.springframework.data.cassandra.mapping.ColumnId;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
@@ -81,12 +80,6 @@ public class BasicCassandraPersistentPropertyIntegrationTests {
 		assertThat(getPropertyFor(field).getColumnName(), is("time"));
 	}
 
-	@Test
-	public void checksColumnIdProperty() {
-		CassandraPersistentProperty property = getPropertyFor(ReflectionUtils.findField(Timeline.class, "time"));
-		assertThat(property.isColumnId(), is(true));
-	}
-
 	@After
 	public void clearCassandra() {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
@@ -106,7 +99,6 @@ public class BasicCassandraPersistentPropertyIntegrationTests {
 		@Id
 		String id;
 
-		@ColumnId
 		Date time;
 
 		@Column("message")

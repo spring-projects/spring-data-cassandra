@@ -35,7 +35,6 @@ import org.springframework.data.cassandra.core.SpringDataKeyspace;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.mapping.CompoundKey;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.ClassUtils;

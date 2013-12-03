@@ -28,9 +28,9 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 public class CachingCassandraPersistentProperty extends BasicCassandraPersistentProperty {
 
 	private Boolean isIdProperty;
-	private Boolean isColumnId;
 	private String columnName;
 	private Boolean isIndexed;
+	private Boolean isPartitioned;
 
 	/**
 	 * Creates a new {@link CachingCassandraPersistentProperty}.
@@ -61,20 +61,6 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#isColumnId()
-	 */
-	@Override
-	public boolean isColumnId() {
-
-		if (this.isColumnId == null) {
-			this.isColumnId = super.isColumnId();
-		}
-
-		return this.isColumnId;
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#getFieldName()
 	 */
 	@Override
@@ -100,4 +86,19 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 
 		return this.isIndexed;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#isPartitioned()
+	 */
+	@Override
+	public boolean isPartitioned() {
+
+		if (this.isPartitioned == null) {
+			this.isPartitioned = super.isPartitioned();
+		}
+
+		return this.isPartitioned;
+	}
+
 }

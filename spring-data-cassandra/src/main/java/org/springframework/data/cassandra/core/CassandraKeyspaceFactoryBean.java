@@ -24,7 +24,6 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.cassandra.core.SpringDataKeyspace;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -250,7 +249,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<SpringDataKeysp
 
 	private void createNewTable(Session session, String useTableName, CassandraPersistentEntity<?> entity)
 			throws NoHostAvailableException {
-		String cql = CqlUtils.createTable(useTableName, entity);
+		String cql = CqlUtils.createTable(useTableName, entity, mappingContext);
 		log.info("Execute on keyspace " + keyspace + " CQL " + cql);
 		session.execute(cql);
 		for (String indexCQL : CqlUtils.createIndexes(useTableName, entity)) {

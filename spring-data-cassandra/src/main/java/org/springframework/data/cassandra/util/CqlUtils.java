@@ -17,6 +17,7 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.context.MappingContext;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
@@ -48,66 +49,95 @@ public abstract class CqlUtils {
 	 * @param entity
 	 * @return The CQL that can be passed to session.execute()
 	 */
-	public static String createTable(String tableName, final CassandraPersistentEntity<?> entity) {
+	public static String createTable(String tableName, final CassandraPersistentEntity<?> entity,
+			final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
 
 		final StringBuilder str = new StringBuilder();
 		str.append("CREATE TABLE ");
 		str.append(tableName);
 		str.append('(');
 
-		final List<String> ids = new ArrayList<String>();
-		final List<String> idColumns = new ArrayList<String>();
+		final List<String> clusteredIds = new ArrayList<String>();
+		final List<String> partitionedIds = new ArrayList<String>();
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				if (str.charAt(str.length() - 1) != '(') {
-					str.append(',');
-				}
+				if (prop.isCompositePrimaryKey()) {
 
-				String columnName = prop.getColumnName();
+					CassandraPersistentEntity<?> pkEntity = mappingContext.getPersistentEntity(prop.getRawType());
 
-				str.append(columnName);
-				str.append(' ');
+					pkEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+						public void doWithPersistentProperty(CassandraPersistentProperty pkProp) {
 
-				DataType dataType = prop.getDataType();
+							if (pkProp.isPartitioned()) {
+								partitionedIds.add(pkProp.getColumnName());
+							} else {
+								clusteredIds.add(pkProp.getColumnName());
+							}
 
-				str.append(toCQL(dataType));
+							if (str.charAt(str.length() - 1) != '(') {
+								str.append(',');
+							}
 
-				if (prop.isIdProperty()) {
-					ids.add(prop.getColumnName());
-				}
+							String columnName = pkProp.getColumnName();
 
-				if (prop.isColumnId()) {
-					idColumns.add(prop.getColumnName());
+							str.append(columnName);
+							str.append(' ');
+
+							DataType dataType = pkProp.getDataType();
+
+							str.append(toCQL(dataType));
+
+						}
+					});
+
+				} else {
+
+					if (str.charAt(str.length() - 1) != '(') {
+						str.append(',');
+					}
+
+					String columnName = prop.getColumnName();
+
+					str.append(columnName);
+					str.append(' ');
+
+					DataType dataType = prop.getDataType();
+
+					str.append(toCQL(dataType));
+
+					if (prop.isIdProperty()) {
+						partitionedIds.add(prop.getColumnName());
+					}
 				}
 
 			}
 
 		});
 
-		if (ids.isEmpty()) {
-			throw new InvalidDataAccessApiUsageException("not found primary ID in the entity " + entity.getType());
+		if (partitionedIds.isEmpty()) {
+			throw new InvalidDataAccessApiUsageException("not found partition key in the entity " + entity.getType());
 		}
 
 		str.append(",PRIMARY KEY(");
 
-		// if (ids.size() > 1) {
-		// str.append('(');
-		// }
+		if (partitionedIds.size() > 1) {
+			str.append('(');
+		}
 
-		for (String id : ids) {
+		for (String id : partitionedIds) {
 			if (str.charAt(str.length() - 1) != '(') {
 				str.append(',');
 			}
 			str.append(id);
 		}
 
-		// if (ids.size() > 1) {
-		// str.append(')');
-		// }
+		if (partitionedIds.size() > 1) {
+			str.append(')');
+		}
 
-		for (String id : idColumns) {
+		for (String id : clusteredIds) {
 			str.append(',');
 			str.append(id);
 		}

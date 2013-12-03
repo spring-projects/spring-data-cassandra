@@ -17,15 +17,12 @@ package org.springframework.data.cassandra.test.integration.table;
 
 import java.util.Date;
 
-import org.springframework.data.cassandra.mapping.PrimaryKey;
+import org.springframework.data.cassandra.mapping.Id;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
- * This is an example of the Users statis table, where all fields are columns in Cassandra row. Some fields can be
- * Set,List,Map like emails.
+ * This is an example of the LogEntry static table, where all fields are columns in Cassandra row.
  * 
- * User contains base information related for separate user, like names, additional information, emails, following
- * users, friends.
  * 
  * @author Alex Shvid
  */
@@ -33,9 +30,9 @@ import org.springframework.data.cassandra.mapping.Table;
 public class LogEntry {
 
 	/*
-	 * Primary Row ID
+	 * Primary Key
 	 */
-	@PrimaryKey
+	@Id
 	private Date logDate;
 
 	private String hostname;

@@ -21,13 +21,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Uses in dynamic tables where column names are values of this field. Usually it is a Date/Time field or UUIDTime
- * field.
+ * Identifies a secondary index in the table. Usually it is a field with common dublicate values for the hole table.
+ * such as city, place, educationType, state flags ant etc.
+ * 
+ * Using unique fields is not common and has overhead, such as email, username and etc.
  * 
  * @author Alex Shvid
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-public @interface ColumnId {
+public @interface Indexed {
 
 }

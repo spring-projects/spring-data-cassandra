@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.test.integration.table;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.mapping.Index;
+import org.springframework.data.cassandra.mapping.Indexed;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
@@ -49,7 +49,7 @@ public class User {
 	 * Secondary index, used only on fields with common information,
 	 * not effective on email, username
 	 */
-	@Index
+	@Indexed
 	private String place;
 
 	/*

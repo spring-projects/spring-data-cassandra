@@ -16,19 +16,26 @@
 package org.springframework.data.cassandra.mapping;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.data.annotation.Id;
-
 /**
- * Identifies row ID in the Cassandra table. Same as @org.springframework.data.annotation.Id
+ * Defines composite primary key class in the Cassandra table that contains several fields. Example:
+ * 
+ * @CompositePrimaryKey class AccountPK { String account; String region; }
+ * 
+ * @Table class Account {
+ * @Id AccountPK pk; }
+ * 
  * 
  * @author Alex Shvid
  */
-@Retention(value = RetentionPolicy.RUNTIME)
-@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-@Id
-public @interface PrimaryKey {
+
+@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE })
+public @interface CompositePrimaryKey {
+
 }
