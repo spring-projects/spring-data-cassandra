@@ -22,7 +22,6 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.core.SpringDataKeyspace;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +31,7 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
+import org.springframework.data.cassandra.core.SpringDataKeyspace;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -74,8 +74,8 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	public abstract Cluster cluster() throws Exception;
 
 	/**
-	 * Creates a {@link Session} to be used by the {@link SpringDataKeyspace}. Will use the {@link Cluster} instance configured in
-	 * {@link #cluster()}.
+	 * Creates a {@link Session} to be used by the {@link SpringDataKeyspace}. Will use the {@link Cluster} instance
+	 * configured in {@link #cluster()}.
 	 * 
 	 * @see #cluster()
 	 * @see #Keyspace()
@@ -93,8 +93,8 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	}
 
 	/**
-	 * Creates a {@link SpringDataKeyspace} to be used by the {@link CassandraTemplate}. Will use the {@link Session} instance
-	 * configured in {@link #session()} and {@link CassandraConverter} configured in {@link #converter()}.
+	 * Creates a {@link SpringDataKeyspace} to be used by the {@link CassandraTemplate}. Will use the {@link Session}
+	 * instance configured in {@link #session()} and {@link CassandraConverter} configured in {@link #converter()}.
 	 * 
 	 * @see #cluster()
 	 * @see #Keyspace()

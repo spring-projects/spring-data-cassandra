@@ -51,7 +51,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	/**
-	 * Also considers fields that has a RowId annotation.
+	 * Also considers fields that has an Id annotation.
 	 * 
 	 */
 	@Override
@@ -61,16 +61,18 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return true;
 		}
 
-		return getField().isAnnotationPresent(RowId.class);
+		return getField().isAnnotationPresent(Id.class);
 	}
 
 	/**
-	 * For dynamic tables returns true if property value is used as column name.
+	 * Returns the true if the field composite primary key.
 	 * 
 	 * @return
 	 */
-	public boolean isColumnId() {
-		return getField().isAnnotationPresent(ColumnId.class);
+	@Override
+	public boolean isCompositePrimaryKey() {
+		Class<?> fieldType = getField().getType();
+		return fieldType.isAnnotationPresent(CompositePrimaryKey.class);
 	}
 
 	/**
@@ -146,7 +148,16 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 * @return
 	 */
 	public boolean isIndexed() {
-		return getField().isAnnotationPresent(Index.class);
+		return getField().isAnnotationPresent(Indexed.class);
+	}
+
+	/**
+	 * Returns true if the property has Partitioned annotation on this column.
+	 * 
+	 * @return
+	 */
+	public boolean isPartitioned() {
+		return getField().isAnnotationPresent(Partitioned.class);
 	}
 
 	/*

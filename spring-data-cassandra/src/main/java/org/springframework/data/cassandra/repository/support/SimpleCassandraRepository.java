@@ -110,6 +110,20 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.CassandraRepository#findByPartitionKey(java.io.Serializable)
+	 */
+	@Override
+	public List<T> findByPartitionKey(ID id) {
+		Assert.notNull(id, "The given id must not be null!");
+
+		Select select = QueryBuilder.select().all().from(entityInformation.getTableName());
+		select.where(getIdClause(id));
+
+		return cassandraDataTemplate.select(select, entityInformation.getJavaType());
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
 	 */
 	public boolean exists(ID id) {

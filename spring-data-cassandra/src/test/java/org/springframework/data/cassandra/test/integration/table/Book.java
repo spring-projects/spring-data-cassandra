@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.table;
 
-import org.springframework.data.cassandra.mapping.RowId;
+import org.springframework.data.cassandra.mapping.Id;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
@@ -27,7 +27,7 @@ import org.springframework.data.cassandra.mapping.Table;
 @Table(name = "book")
 public class Book {
 
-	@RowId
+	@Id
 	private String isbn;
 
 	private String title;
