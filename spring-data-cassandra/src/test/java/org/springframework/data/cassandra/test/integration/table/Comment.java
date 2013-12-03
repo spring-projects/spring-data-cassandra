@@ -18,19 +18,15 @@ package org.springframework.data.cassandra.test.integration.table;
 import java.util.Date;
 import java.util.Set;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.mapping.ColumnId;
+import org.springframework.data.cassandra.mapping.Id;
 import org.springframework.data.cassandra.mapping.Qualify;
 import org.springframework.data.cassandra.mapping.Table;
 
 import com.datastax.driver.core.DataType;
 
 /**
- * This is an example of dynamic table that creates each time new column with Post timestamp annotated by @ColumnId.
- * 
- * It is possible to use a static table for posts and identify them by PostId(UUID), but in this case we need to use
- * MapReduce for Big Data to find posts for particular user, so it is better to have index (userId) -> index (post time)
- * architecture. It helps a lot to build eventually a search index for the particular user.
+ * This is an example of dynamic table (wide row). PartitionKey (former RowId) is pk.author. ClusteredColumn (former
+ * Column Id) is pk.time
  * 
  * @author Alex Shvid
  */
@@ -38,17 +34,10 @@ import com.datastax.driver.core.DataType;
 public class Comment {
 
 	/*
-	 * Primary Row ID
+	 * Primary Key
 	 */
 	@Id
-	private String author;
-
-	/*
-	 * Column ID
-	 */
-	@ColumnId
-	@Qualify(type = DataType.Name.TIMESTAMP)
-	private Date time;
+	private CommentPK pk;
 
 	private String text;
 
@@ -61,20 +50,12 @@ public class Comment {
 	private String postAuthor;
 	private Date postTime;
 
-	public String getAuthor() {
-		return author;
+	public CommentPK getPk() {
+		return pk;
 	}
 
-	public void setAuthor(String author) {
-		this.author = author;
-	}
-
-	public Date getTime() {
-		return time;
-	}
-
-	public void setTime(Date time) {
-		this.time = time;
+	public void setPk(CommentPK pk) {
+		this.pk = pk;
 	}
 
 	public String getText() {

@@ -17,9 +17,11 @@ package org.springframework.data.cassandra.test.integration.table;
 
 import java.util.Date;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.mapping.Indexed;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.mapping.CompositePrimaryKey;
+import org.springframework.data.cassandra.mapping.Partitioned;
+import org.springframework.data.cassandra.mapping.Qualify;
+
+import com.datastax.driver.core.DataType;
 
 /**
  * This is an example of dynamic table that creates each time new column with Notification timestamp.
@@ -29,64 +31,35 @@ import org.springframework.data.cassandra.mapping.Table;
  * 
  * @author Alex Shvid
  */
-@Table(name = "notifications")
-public class Notification {
+@CompositePrimaryKey
+public class NotificationPK {
 
 	/*
-	 * Primary Key
+	 * Row ID
 	 */
-	@Id
-	private NotificationPK pk;
-
-	@Indexed
-	private boolean active;
+	@Partitioned
+	private String username;
 
 	/*
-	 * Reference data
+	 * Clustered Column
 	 */
+	@Qualify(type = DataType.Name.TIMESTAMP)
+	private Date time;
 
-	private String type; // comment, post
-	private String refAuthor;
-	private Date refTime;
-
-	public NotificationPK getPk() {
-		return pk;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setPk(NotificationPK pk) {
-		this.pk = pk;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
-	public boolean isActive() {
-		return active;
+	public Date getTime() {
+		return time;
 	}
 
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public String getRefAuthor() {
-		return refAuthor;
-	}
-
-	public void setRefAuthor(String refAuthor) {
-		this.refAuthor = refAuthor;
-	}
-
-	public Date getRefTime() {
-		return refTime;
-	}
-
-	public void setRefTime(Date refTime) {
-		this.refTime = refTime;
+	public void setTime(Date time) {
+		this.time = time;
 	}
 
 }
