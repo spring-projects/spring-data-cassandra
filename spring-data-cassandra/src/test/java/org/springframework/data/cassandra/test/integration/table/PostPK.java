@@ -17,40 +17,32 @@ package org.springframework.data.cassandra.test.integration.table;
 
 import java.util.Date;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.mapping.CompositePrimaryKey;
+import org.springframework.data.cassandra.mapping.Partitioned;
 
 /**
- * This is an example of the users timeline dynamic table, where all columns are dynamically created by @ColumnId field
- * value. The rest fields are places in Cassandra value.
+ * This is an example of dynamic table that creates each time new column with Post timestamp.
  * 
- * Timeline entity is used to store user's status updates that it follows in the site. Timeline always ordered by @ColumnId
- * field and we can retrieve last top status updates by using limits.
+ * It is possible to use a static table for posts and identify them by PostId(UUID), but in this case we need to use
+ * MapReduce for Big Data to find posts for particular user, so it is better to have index (userId) -> index (post time)
+ * architecture. It helps a lot to build eventually a search index for the particular user.
  * 
  * @author Alex Shvid
  */
-@Table(name = "timeline")
-public class Timeline {
+
+@CompositePrimaryKey
+public class PostPK {
 
 	/*
 	 * Row ID
 	 */
-	@Id
-	private TimelinePK pk;
+	@Partitioned
+	private String author;
 
 	/*
-	 * Reference to the post by author and postUID
+	 * Clustered Column
 	 */
-	private String author;
-	private Date postTime;
-
-	public TimelinePK getPk() {
-		return pk;
-	}
-
-	public void setPk(TimelinePK pk) {
-		this.pk = pk;
-	}
+	private Date time;
 
 	public String getAuthor() {
 		return author;
@@ -60,12 +52,12 @@ public class Timeline {
 		this.author = author;
 	}
 
-	public Date getPostTime() {
-		return postTime;
+	public Date getTime() {
+		return time;
 	}
 
-	public void setPostTime(Date postTime) {
-		this.postTime = postTime;
+	public void setTime(Date time) {
+		this.time = time;
 	}
 
 }

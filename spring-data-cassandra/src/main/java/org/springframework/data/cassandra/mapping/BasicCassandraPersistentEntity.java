@@ -104,14 +104,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		 */
 		public int compare(CassandraPersistentProperty o1, CassandraPersistentProperty o2) {
 
-			if (o1.isColumnId()) {
-				return 1;
-			}
-
-			if (o2.isColumnId()) {
-				return -1;
-			}
-
 			return o1.getColumnName().compareTo(o2.getColumnName());
 
 		}

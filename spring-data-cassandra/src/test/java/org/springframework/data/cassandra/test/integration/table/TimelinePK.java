@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.test.integration.table;
 
 import java.util.Date;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.mapping.CompositePrimaryKey;
+import org.springframework.data.cassandra.mapping.Partitioned;
 
 /**
  * This is an example of the users timeline dynamic table, where all columns are dynamically created by @ColumnId field
@@ -29,43 +29,35 @@ import org.springframework.data.cassandra.mapping.Table;
  * 
  * @author Alex Shvid
  */
-@Table(name = "timeline")
-public class Timeline {
+
+@CompositePrimaryKey
+public class TimelinePK {
 
 	/*
 	 * Row ID
 	 */
-	@Id
-	private TimelinePK pk;
+	@Partitioned
+	private String username;
 
 	/*
-	 * Reference to the post by author and postUID
+	 * Clustered Column
 	 */
-	private String author;
-	private Date postTime;
+	private Date time;
 
-	public TimelinePK getPk() {
-		return pk;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setPk(TimelinePK pk) {
-		this.pk = pk;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
-	public String getAuthor() {
-		return author;
+	public Date getTime() {
+		return time;
 	}
 
-	public void setAuthor(String author) {
-		this.author = author;
-	}
-
-	public Date getPostTime() {
-		return postTime;
-	}
-
-	public void setPostTime(Date postTime) {
-		this.postTime = postTime;
+	public void setTime(Date time) {
+		this.time = time;
 	}
 
 }

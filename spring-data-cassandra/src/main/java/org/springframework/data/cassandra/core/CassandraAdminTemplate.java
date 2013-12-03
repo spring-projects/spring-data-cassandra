@@ -83,7 +83,7 @@ public class CassandraAdminTemplate implements CassandraAdminOperations {
 			execute(new SessionCallback<Object>() {
 				public Object doInSession(Session s) throws DataAccessException {
 
-					String cql = CqlUtils.createTable(tableName, entity);
+					String cql = CqlUtils.createTable(tableName, entity, mappingContext);
 					log.info("CREATE TABLE CQL -> " + cql);
 					s.execute(cql);
 					return null;

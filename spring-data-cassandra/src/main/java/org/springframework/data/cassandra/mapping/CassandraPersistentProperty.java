@@ -27,11 +27,11 @@ import com.datastax.driver.core.DataType;
 public interface CassandraPersistentProperty extends PersistentProperty<CassandraPersistentProperty> {
 
 	/**
-	 * For dynamic tables returns true if property value is used as column name.
+	 * Returns the true if the field composite primary key.
 	 * 
 	 * @return
 	 */
-	boolean isColumnId();
+	boolean isCompositePrimaryKey();
 
 	/**
 	 * Returns the name of the field a property is persisted to.
@@ -53,5 +53,12 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 	 * @return
 	 */
 	boolean isIndexed();
+
+	/**
+	 * Returns true if the property has Partitioned annotation.
+	 * 
+	 * @return
+	 */
+	boolean isPartitioned();
 
 }
