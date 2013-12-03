@@ -19,7 +19,7 @@ import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.Column;
-import org.springframework.data.cassandra.mapping.RowId;
+import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
@@ -37,7 +37,7 @@ public class LogEntry {
 	/*
 	 * Primary Row ID
 	 */
-	@RowId
+	@PrimaryKey
 	private Date logDate;
 
 	private String hostname;
