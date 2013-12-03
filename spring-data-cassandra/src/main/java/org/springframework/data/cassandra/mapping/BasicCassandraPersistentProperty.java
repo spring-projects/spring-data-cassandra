@@ -61,7 +61,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return true;
 		}
 
-		return getField().isAnnotationPresent(RowId.class);
+		return getField().isAnnotationPresent(PrimaryKey.class);
 	}
 
 	/**
