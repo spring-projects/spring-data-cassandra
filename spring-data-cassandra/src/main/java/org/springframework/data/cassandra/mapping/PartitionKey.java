@@ -20,25 +20,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.data.annotation.Id;
-
 /**
- * Identifies composite row ID in the Cassandra table that contains several fields. Same as
- * @org.springframework.data.annotation.Id
- * 
- * Example:
- * 
- * class AccountPK { String account; String region; }
- * 
- * @Table class Account {
- * @CompositeRowId Account pk; }
- * 
+ * Identifies partition key in the Cassandra compound key class.
  * 
  * @author Alex Shvid
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-@Id
-public @interface CompositeRowId {
+public @interface PartitionKey {
 
 }
