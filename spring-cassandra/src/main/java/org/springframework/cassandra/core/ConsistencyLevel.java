@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
+package org.springframework.cassandra.core;
 
 /**
- * Retry Policies associated with Cassandra.
+ * Generic Consistency Levels associated with Cassandra.
  * 
  * @author David Webb
  * 
  */
-public enum RetryPolicy {
+public enum ConsistencyLevel {
 
-	DEFAULT, DOWNGRADING_CONSISTENCY, FALLTHROUGH, LOGGING
+	ANY, ONE, TWO, THREE, QUOROM, LOCAL_QUOROM, EACH_QUOROM, ALL
 
 }

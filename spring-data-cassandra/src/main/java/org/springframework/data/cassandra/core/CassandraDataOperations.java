@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
 import com.datastax.driver.core.querybuilder.Select;

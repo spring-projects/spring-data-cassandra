@@ -67,6 +67,31 @@ public interface CassandraOperations {
 	<T> T query(final String cql, ResultSetExtractor<T> rse) throws DataAccessException;
 
 	/**
+	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
+	 * 
+	 * @param cql The Query
+	 * @param rse The implementation for extracting the ResultSet
+	 * @param optionsByName Query Options Map
+	 * 
+	 * @return
+	 * @throws DataAccessException
+	 */
+	<T> T query(final String cql, ResultSetExtractor<T> rse, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
+	 * 
+	 * @param cql The Query
+	 * @param rse The implementation for extracting the ResultSet
+	 * @param options Query Options Object
+	 * 
+	 * @return
+	 * @throws DataAccessException
+	 */
+	<T> T query(final String cql, ResultSetExtractor<T> rse, final QueryOptions options) throws DataAccessException;
+
+	/**
 	 * Executes the provided CQL Query asynchronously, and extracts the results with the ResultSetFutureExtractor
 	 * 
 	 * @param cql The Query
@@ -77,6 +102,30 @@ public interface CassandraOperations {
 	<T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse) throws DataAccessException;
 
 	/**
+	 * Executes the provided CQL Query asynchronously, and extracts the results with the ResultSetFutureExtractor
+	 * 
+	 * @param cql The Query
+	 * @param rse The implementation for extracting the future results
+	 * @param optionsByName Query Options Map
+	 * @return
+	 * @throws DataAccessException
+	 */
+	<T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL Query asynchronously, and extracts the results with the ResultSetFutureExtractor
+	 * 
+	 * @param cql The Query
+	 * @param rse The implementation for extracting the future results
+	 * @param options Query Options Object
+	 * @return
+	 * @throws DataAccessException
+	 */
+	<T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse, final QueryOptions options)
+			throws DataAccessException;
+
+	/**
 	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
 	 * 
 	 * @param cql The Query
@@ -84,6 +133,27 @@ public interface CassandraOperations {
 	 * @throws DataAccessException
 	 */
 	void query(final String cql, RowCallbackHandler rch) throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
+	 * 
+	 * @param cql The Query
+	 * @param rch The implementation for processing the rows returned.
+	 * @param options Query Options Map
+	 * @throws DataAccessException
+	 */
+	void query(final String cql, RowCallbackHandler rch, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
+	 * 
+	 * @param cql The Query
+	 * @param rch The implementation for processing the rows returned.
+	 * @param options Query Options Object
+	 * @throws DataAccessException
+	 */
+	void query(final String cql, RowCallbackHandler rch, final QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Processes the ResultSet through the RowCallbackHandler and return nothing. This is used internal to the Template
@@ -105,6 +175,29 @@ public interface CassandraOperations {
 	 * @throws DataAccessException
 	 */
 	<T> List<T> query(final String cql, RowMapper<T> rowMapper) throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper.
+	 * 
+	 * @param cql The Query
+	 * @param rowMapper The implementation for mapping all rows
+	 * @param optionsByName Query Options Map
+	 * @return List of <T> processed by the RowMapper
+	 * @throws DataAccessException
+	 */
+	<T> List<T> query(final String cql, RowMapper<T> rowMapper, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper.
+	 * 
+	 * @param cql The Query
+	 * @param rowMapper The implementation for mapping all rows
+	 * @param options Query Options Object
+	 * @return List of <T> processed by the RowMapper
+	 * @throws DataAccessException
+	 */
+	<T> List<T> query(final String cql, RowMapper<T> rowMapper, final QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Processes the ResultSet through the RowMapper and returns the List of mapped Rows. This is used internal to the
@@ -270,6 +363,12 @@ public interface CassandraOperations {
 	 */
 	<T> T query(final String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException;
 
+	<T> T query(final String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	<T> T query(final String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse, final QueryOptions options)
+			throws DataAccessException;
+
 	/**
 	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
@@ -281,6 +380,34 @@ public interface CassandraOperations {
 	 * @throws DataAccessException
 	 */
 	void query(final String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException;
+
+	/**
+	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
+	 * processed with the RowCallbackHandler implementation provided and nothing is returned.
+	 * 
+	 * @param cql The Query to Prepare
+	 * @param psb The Binding implementation
+	 * @param rch The RowCallbackHandler for processing the ResultSet
+	 * @param optionsByName The Query Options Map
+	 * @throws DataAccessException
+	 */
+	void query(final String cql, PreparedStatementBinder psb, RowCallbackHandler rch,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	/**
+	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
+	 * processed with the RowCallbackHandler implementation provided and nothing is returned.
+	 * 
+	 * @param cql The Query to Prepare
+	 * @param psb The Binding implementation
+	 * @param rch The RowCallbackHandler for processing the ResultSet
+	 * @param options The Query Options Object
+	 * @throws DataAccessException
+	 */
+	void query(final String cql, PreparedStatementBinder psb, RowCallbackHandler rch, final QueryOptions options)
+			throws DataAccessException;
 
 	/**
 	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
@@ -297,6 +424,38 @@ public interface CassandraOperations {
 	<T> List<T> query(final String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
+	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
+	 * processed with the RowMapper implementation provided and a List is returned with elements of Type <T> for each Row
+	 * returned.
+	 * 
+	 * @param cql The Query to Prepare
+	 * @param psb The Binding implementation
+	 * @param rowMapper The implementation for Mapping a Row to Type <T>
+	 * @param optionsByName The Query Options Map
+	 * @return List of <T> for each Row returned from the Query.
+	 * @throws DataAccessException
+	 */
+	<T> List<T> query(final String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	/**
+	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
+	 * processed with the RowMapper implementation provided and a List is returned with elements of Type <T> for each Row
+	 * returned.
+	 * 
+	 * @param cql The Query to Prepare
+	 * @param psb The Binding implementation
+	 * @param rowMapper The implementation for Mapping a Row to Type <T>
+	 * @param options The Query Options Object
+	 * @return List of <T> for each Row returned from the Query.
+	 * @throws DataAccessException
+	 */
+	<T> List<T> query(final String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper, final QueryOptions options)
+			throws DataAccessException;
+
+	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
 	 * ResultSetExtractor implementation provided by the Application Code.
@@ -311,6 +470,34 @@ public interface CassandraOperations {
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
+	 * ResultSetExtractor implementation provided by the Application Code.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param rse Implementation for extracting from the ResultSet
+	 * @param optionsByName The Query Options Map
+	 * @return Type <T> which is the output of the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
+	<T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
+	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
+	 * ResultSetExtractor implementation provided by the Application Code.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param rse Implementation for extracting from the ResultSet
+	 * @param options The Query Options Object
+	 * @return Type <T> which is the output of the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
+	<T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse, final QueryOptions options)
+			throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
+	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
 	 * RowCallbackHandler and nothing is returned.
 	 * 
 	 * @param psc The implementation to create the PreparedStatement
@@ -318,6 +505,32 @@ public interface CassandraOperations {
 	 * @throws DataAccessException
 	 */
 	void query(PreparedStatementCreator psc, RowCallbackHandler rch) throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
+	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
+	 * RowCallbackHandler and nothing is returned.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param rch The implementation to process Results
+	 * @param optionsByName The Query Options Map
+	 * @throws DataAccessException
+	 */
+	void query(PreparedStatementCreator psc, RowCallbackHandler rch, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
+	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
+	 * RowCallbackHandler and nothing is returned.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param rch The implementation to process Results
+	 * @param options The Query Options Object
+	 * @throws DataAccessException
+	 */
+	void query(PreparedStatementCreator psc, RowCallbackHandler rch, final QueryOptions options)
+			throws DataAccessException;
 
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
@@ -330,6 +543,64 @@ public interface CassandraOperations {
 	 * @throws DataAccessException
 	 */
 	<T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper) throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
+	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with RowMapper
+	 * implementation provided and a List is returned with elements of Type <T> for each Row returned.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param rowMapper The implementation for mapping each Row returned.
+	 * @param optionsByName The Query Options Map
+	 * @return List of Type <T> mapped from each Row in the Results
+	 * @throws DataAccessException
+	 */
+	<T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper, final Map<String, Object> optionsByName)
+			throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
+	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with RowMapper
+	 * implementation provided and a List is returned with elements of Type <T> for each Row returned.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param rowMapper The implementation for mapping each Row returned.
+	 * @param options The Query Options Object
+	 * @return List of Type <T> mapped from each Row in the Results
+	 * @throws DataAccessException
+	 */
+	<T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper, final QueryOptions options)
+			throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
+	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
+	 * ResultSetExtractor implementation provided by the Application Code.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param psb The implementation to bind variables to values
+	 * @param rse Implementation for extracting from the ResultSet
+	 * @param optionsByName The Query Options Map
+	 * @return Type <T> which is the output of the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
+	<T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
+	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
+	 * ResultSetExtractor implementation provided by the Application Code.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param psb The implementation to bind variables to values
+	 * @param rse Implementation for extracting from the ResultSet
+	 * @param options The Query Options Object
+	 * @return Type <T> which is the output of the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
+	<T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse,
+			final QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
@@ -353,11 +624,71 @@ public interface CassandraOperations {
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param psb The implementation to bind variables to values
 	 * @param rch The implementation to process Results
+	 * @param optionsByName The Query Options Map
+	 * @return Type <T> which is the output of the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
+	void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
+	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
+	 * RowCallbackHandler and nothing is returned.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param psb The implementation to bind variables to values
+	 * @param rch The implementation to process Results
+	 * @param options The Query Options Object
+	 * @return Type <T> which is the output of the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
+	void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch,
+			final QueryOptions options) throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
+	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
+	 * RowCallbackHandler and nothing is returned.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param psb The implementation to bind variables to values
+	 * @param rch The implementation to process Results
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
 	void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch)
 			throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
+	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
+	 * RowMapper implementation provided and a List is returned with elements of Type <T> for each Row returned.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param psb The implementation to bind variables to values
+	 * @param rowMapper The implementation for mapping each Row returned.
+	 * @param optionsByName The Query Options Map
+	 * @return Type <T> which is the output of the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
+	<T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowMapper<T> rowMapper,
+			final Map<String, Object> optionsByName) throws DataAccessException;
+
+	/**
+	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
+	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
+	 * RowMapper implementation provided and a List is returned with elements of Type <T> for each Row returned.
+	 * 
+	 * @param psc The implementation to create the PreparedStatement
+	 * @param psb The implementation to bind variables to values
+	 * @param rowMapper The implementation for mapping each Row returned.
+	 * @param options The Query Options Object
+	 * @return Type <T> which is the output of the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
+	<T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowMapper<T> rowMapper,
+			final QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
@@ -409,6 +740,36 @@ public interface CassandraOperations {
 	 * 
 	 * @param cql The CQL
 	 * @param rowIterator Implementation to provide the Object[] to be bound to the CQL.
+	 * @param optionsByName The Query Options Map
+	 */
+	void ingest(String cql, RowIterator rowIterator, Map<String, Object> optionsByName);
+
+	/**
+	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * all row values are bound to the single PreparedStatement and executed against the Session.
+	 * 
+	 * <p>
+	 * This is used internally by the other ingest() methods, but can be used if you want to write your own RowIterator.
+	 * The Object[] length returned by the next() implementation must match the number of bind variables in the CQL.
+	 * </p>
+	 * 
+	 * @param cql The CQL
+	 * @param rowIterator Implementation to provide the Object[] to be bound to the CQL.
+	 * @param options The Query Options Object
+	 */
+	void ingest(String cql, RowIterator rowIterator, QueryOptions options);
+
+	/**
+	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * all row values are bound to the single PreparedStatement and executed against the Session.
+	 * 
+	 * <p>
+	 * This is used internally by the other ingest() methods, but can be used if you want to write your own RowIterator.
+	 * The Object[] length returned by the next() implementation must match the number of bind variables in the CQL.
+	 * </p>
+	 * 
+	 * @param cql The CQL
+	 * @param rowIterator Implementation to provide the Object[] to be bound to the CQL.
 	 */
 	void ingest(String cql, RowIterator rowIterator);
 
@@ -422,8 +783,64 @@ public interface CassandraOperations {
 	 * 
 	 * @param cql The CQL
 	 * @param rows List of List<?> with data to bind to the CQL.
+	 * @param optionsByName The Query Options Map
+	 */
+	void ingest(String cql, List<List<?>> rows, Map<String, Object> optionsByName);
+
+	/**
+	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * all row values are bound to the single PreparedStatement and executed against the Session.
+	 * 
+	 * <p>
+	 * The List<?> length must match the number of bind variables in the CQL.
+	 * </p>
+	 * 
+	 * @param cql The CQL
+	 * @param rows List of List<?> with data to bind to the CQL.
+	 * @param options The Query Options Object
+	 */
+	void ingest(String cql, List<List<?>> rows, QueryOptions options);
+
+	/**
+	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * all row values are bound to the single PreparedStatement and executed against the Session.
+	 * 
+	 * <p>
+	 * The List<?> length must match the number of bind variables in the CQL.
+	 * </p>
+	 * 
+	 * @param cql The CQL
+	 * @param rows List of List<?> with data to bind to the CQL.
 	 */
 	void ingest(String cql, List<List<?>> rows);
+
+	/**
+	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * all row values are bound to the single PreparedStatement and executed against the Session.
+	 * 
+	 * <p>
+	 * The Object[] length of the nested array must match the number of bind variables in the CQL.
+	 * </p>
+	 * 
+	 * @param cql The CQL
+	 * @param rows Object array of Object array of values to bind to the CQL.
+	 * @param optionsByName The Query Options Map
+	 */
+	void ingest(String cql, Object[][] rows, Map<String, Object> optionsByName);
+
+	/**
+	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * all row values are bound to the single PreparedStatement and executed against the Session.
+	 * 
+	 * <p>
+	 * The Object[] length of the nested array must match the number of bind variables in the CQL.
+	 * </p>
+	 * 
+	 * @param cql The CQL
+	 * @param rows Object array of Object array of values to bind to the CQL.
+	 * @param options The Query Options Object
+	 */
+	void ingest(String cql, Object[][] rows, QueryOptions options);
 
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then

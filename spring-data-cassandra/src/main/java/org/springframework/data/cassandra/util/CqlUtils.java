@@ -6,12 +6,12 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.ConsistencyLevel;
+import org.springframework.cassandra.core.ConsistencyLevelResolver;
+import org.springframework.cassandra.core.QueryOptions;
+import org.springframework.cassandra.core.RetryPolicy;
+import org.springframework.cassandra.core.RetryPolicyResolver;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.core.ConsistencyLevel;
-import org.springframework.data.cassandra.core.ConsistencyLevelResolver;
-import org.springframework.data.cassandra.core.QueryOptions;
-import org.springframework.data.cassandra.core.RetryPolicy;
-import org.springframework.data.cassandra.core.RetryPolicyResolver;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
