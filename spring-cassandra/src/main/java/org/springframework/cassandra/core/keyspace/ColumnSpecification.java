@@ -1,13 +1,28 @@
+/*
+ * Copyright 2011-2013 the original author or authors.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.cassandra.core.keyspace;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
-import static org.springframework.cassandra.core.KeyType.PARTITION;
-import static org.springframework.cassandra.core.KeyType.PRIMARY;
+import static org.springframework.cassandra.core.PrimaryKeyType.PARTITION;
+import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
 import static org.springframework.cassandra.core.Ordering.ASCENDING;
 
-import org.springframework.cassandra.core.KeyType;
+import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.Ordering;
 
 import com.datastax.driver.core.DataType;
@@ -31,7 +46,7 @@ public class ColumnSpecification {
 
 	private String name;
 	private DataType type; // TODO: determining if we should be coupling this to Datastax Java Driver type?
-	private KeyType keyType;
+	private PrimaryKeyType keyType;
 	private Ordering ordering;
 
 	/**
@@ -57,7 +72,7 @@ public class ColumnSpecification {
 
 	/**
 	 * Identifies this column as a primary key column that is also part of a partition key. Sets the column's
-	 * {@link #keyType} to {@link KeyType#PARTITION} and its {@link #ordering} to <code>null</code>.
+	 * {@link #keyType} to {@link PrimaryKeyType#PARTITION} and its {@link #ordering} to <code>null</code>.
 	 * 
 	 * @return this
 	 */
@@ -68,7 +83,7 @@ public class ColumnSpecification {
 	/**
 	 * Toggles the identification of this column as a primary key column that also is or is part of a partition key. Sets
 	 * {@link #ordering} to <code>null</code> and, if the given boolean is <code>true</code>, then sets the column's
-	 * {@link #keyType} to {@link KeyType#PARTITION}, else sets it to <code>null</code>.
+	 * {@link #keyType} to {@link PrimaryKeyType#PARTITION}, else sets it to <code>null</code>.
 	 * 
 	 * @return this
 	 */
@@ -80,7 +95,7 @@ public class ColumnSpecification {
 
 	/**
 	 * Identifies this column as a primary key column with default ordering. Sets the column's {@link #keyType} to
-	 * {@link KeyType#PRIMARY} and its {@link #ordering} to {@link #DEFAULT_ORDERING}.
+	 * {@link PrimaryKeyType#CLUSTERED} and its {@link #ordering} to {@link #DEFAULT_ORDERING}.
 	 * 
 	 * @return this
 	 */
@@ -90,7 +105,7 @@ public class ColumnSpecification {
 
 	/**
 	 * Identifies this column as a primary key column with the given ordering. Sets the column's {@link #keyType} to
-	 * {@link KeyType#PRIMARY} and its {@link #ordering} to the given {@link Ordering}.
+	 * {@link PrimaryKeyType#CLUSTERED} and its {@link #ordering} to the given {@link Ordering}.
 	 * 
 	 * @return this
 	 */
@@ -100,13 +115,13 @@ public class ColumnSpecification {
 
 	/**
 	 * Toggles the identification of this column as a primary key column. If the given boolean is <code>true</code>, then
-	 * sets the column's {@link #keyType} to {@link KeyType#PARTITION} and {@link #ordering} to the given {@link Ordering}
-	 * , else sets both {@link #keyType} and {@link #ordering} to <code>null</code>.
+	 * sets the column's {@link #keyType} to {@link PrimaryKeyType#PARTITION} and {@link #ordering} to the given
+	 * {@link Ordering} , else sets both {@link #keyType} and {@link #ordering} to <code>null</code>.
 	 * 
 	 * @return this
 	 */
 	public ColumnSpecification primary(Ordering order, boolean primary) {
-		this.keyType = primary ? PRIMARY : null;
+		this.keyType = primary ? CLUSTERED : null;
 		this.ordering = primary ? order : null;
 		return this;
 	}
@@ -116,7 +131,7 @@ public class ColumnSpecification {
 	 * 
 	 * @return this
 	 */
-	/* package */ColumnSpecification keyType(KeyType keyType) {
+	/* package */ColumnSpecification keyType(PrimaryKeyType keyType) {
 		this.keyType = keyType;
 		return this;
 	}
@@ -143,7 +158,7 @@ public class ColumnSpecification {
 		return type;
 	}
 
-	public KeyType getKeyType() {
+	public PrimaryKeyType getKeyType() {
 		return keyType;
 	}
 

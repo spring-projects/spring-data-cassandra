@@ -13,11 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cassandra.core.keyspace;
+package org.springframework.cassandra.core;
 
-public class DropColumnSpecification extends ColumnChangeSpecification {
+/**
+ * Values representing primary key column types.
+ * 
+ * @author Matthew T. Adams
+ * @author Alex Shvid
+ */
+public enum PrimaryKeyType {
 
-	public DropColumnSpecification(String name) {
-		super(name);
-	}
+	/**
+	 * Used for a column that is part of the partition key.
+	 */
+	PARTITION,
+
+	/**
+	 * Used for a column that is clustered key.
+	 */
+	CLUSTERED
 }

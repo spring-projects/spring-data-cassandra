@@ -1,8 +1,23 @@
+/*
+ * Copyright 2011-2013 the original author or authors.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.cassandra.core.cql.generator;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
-import static org.springframework.cassandra.core.KeyType.PARTITION;
-import static org.springframework.cassandra.core.KeyType.PRIMARY;
+import static org.springframework.cassandra.core.PrimaryKeyType.PARTITION;
+import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +31,7 @@ import org.springframework.cassandra.core.keyspace.Option;
  * CQL generator for generating a <code>CREATE TABLE</code> statement.
  * 
  * @author Matthew T. Adams
+ * @author Alex Shvid
  */
 public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecification> {
 
@@ -49,92 +65,54 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 		cql.append(" (");
 
 		List<ColumnSpecification> partitionKeys = new ArrayList<ColumnSpecification>();
-		List<ColumnSpecification> primaryKeys = new ArrayList<ColumnSpecification>();
+		List<ColumnSpecification> clusteredKeys = new ArrayList<ColumnSpecification>();
 		for (ColumnSpecification col : spec().getColumns()) {
 			col.toCql(cql).append(", ");
 
 			if (col.getKeyType() == PARTITION) {
 				partitionKeys.add(col);
-			} else if (col.getKeyType() == PRIMARY) {
-				primaryKeys.add(col);
+			} else if (col.getKeyType() == CLUSTERED) {
+				clusteredKeys.add(col);
 			}
 		}
 
 		// begin primary key clause
-		cql.append("PRIMARY KEY ");
-		StringBuilder partitions = new StringBuilder();
-		StringBuilder primaries = new StringBuilder();
+		cql.append("PRIMARY KEY (");
 
 		if (partitionKeys.size() > 1) {
-			partitions.append("(");
+			// begin partition key clause
+			cql.append("(");
 		}
 
-		boolean first = true;
-		for (ColumnSpecification col : partitionKeys) {
-			if (first) {
-				first = false;
-			} else {
-				partitions.append(", ");
-			}
-			partitions.append(col.getName());
+		appendColumnNames(cql, partitionKeys);
 
-		}
 		if (partitionKeys.size() > 1) {
-			partitions.append(")");
+			cql.append(")");
+			// end partition key clause
 		}
 
-		StringBuilder clustering = null;
-		boolean clusteringFirst = true;
-		first = true;
-		for (ColumnSpecification col : primaryKeys) {
-			if (first) {
-				first = false;
-			} else {
-				primaries.append(", ");
-			}
-			primaries.append(col.getName());
+		appendColumnNames(cql, clusteredKeys);
 
-			if (col.getOrdering() != null) { // then ordering specified
-				if (clustering == null) { // then initialize clustering clause
-					clustering = new StringBuilder().append("CLUSTERING ORDER BY (");
-				}
-				if (clusteringFirst) {
-					clusteringFirst = false;
-				} else {
-					clustering.append(", ");
-				}
-				clustering.append(col.getName()).append(" ").append(col.getOrdering().cql());
-			}
-		}
-		if (clustering != null) { // then end clustering option
-			clustering.append(")");
-		}
-
-		boolean parenthesize = true;// partitionKeys.size() + primaryKeys.size() > 1;
-
-		cql.append(parenthesize ? "(" : "");
-		cql.append(partitions);
-		cql.append(primaryKeys.size() > 0 ? ", " : "");
-		cql.append(primaries);
-		cql.append(parenthesize ? ")" : "");
+		cql.append(")");
 		// end primary key clause
 
 		cql.append(")");
 		// end columns
 
+		StringBuilder ordering = createOrderingClause(clusteredKeys);
 		// begin options
 		// begin option clause
 		Map<String, Object> options = spec().getOptions();
 
-		if (clustering != null || !options.isEmpty()) {
+		if (ordering != null || !options.isEmpty()) {
 
 			// option preamble
-			first = true;
+			boolean first = true;
 			cql.append(" WITH ");
 			// end option preamble
 
-			if (clustering != null) {
-				cql.append(clustering);
+			if (ordering != null) {
+				cql.append(ordering);
 				first = false;
 			}
 			if (!options.isEmpty()) {
@@ -170,4 +148,43 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 
 		return cql;
 	}
+
+	private static StringBuilder createOrderingClause(List<ColumnSpecification> columns) {
+		StringBuilder ordering = null;
+		boolean first = true;
+		for (ColumnSpecification col : columns) {
+
+			if (col.getOrdering() != null) { // then ordering specified
+				if (ordering == null) { // then initialize ordering clause
+					ordering = new StringBuilder().append("CLUSTERING ORDER BY (");
+				}
+				if (first) {
+					first = false;
+				} else {
+					ordering.append(", ");
+				}
+				ordering.append(col.getName()).append(" ").append(col.getOrdering().cql());
+			}
+		}
+		if (ordering != null) { // then end ordering option
+			ordering.append(")");
+		}
+		return ordering;
+	}
+
+	private static void appendColumnNames(StringBuilder str, List<ColumnSpecification> columns) {
+
+		boolean first = true;
+		for (ColumnSpecification col : columns) {
+			if (first) {
+				first = false;
+			} else {
+				str.append(", ");
+			}
+			str.append(col.getName());
+
+		}
+
+	}
+
 }
