@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.PrimaryKeyType.PARTITION;
+import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
 import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
 import static org.springframework.cassandra.core.Ordering.ASCENDING;
 
@@ -33,6 +33,7 @@ import com.datastax.driver.core.DataType;
  * standalone {@link TableDescriptor}, independent of {@link CreateTableSpecification}.
  * 
  * @author Matthew T. Adams
+ * @author Alex Shvid
  */
 public class TableSpecification<T> extends TableOptionsSpecification<TableSpecification<T>> implements TableDescriptor {
 
@@ -49,7 +50,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	/**
 	 * List of only those columns that comprise the primary key that are not also part of the partition key.
 	 */
-	private List<ColumnSpecification> primaryKeyColumns = new ArrayList<ColumnSpecification>();
+	private List<ColumnSpecification> clusteredKeyColumns = new ArrayList<ColumnSpecification>();
 
 	/**
 	 * List of only those columns that are not partition or primary key columns.
@@ -74,7 +75,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @return this
 	 */
 	public T partitionKeyColumn(String name, DataType type) {
-		return column(name, type, PARTITION, null);
+		return column(name, type, PARTITIONED, null);
 	}
 
 	/**
@@ -85,8 +86,8 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @param type The data type of the column.
 	 * @return this
 	 */
-	public T primaryKeyColumn(String name, DataType type) {
-		return primaryKeyColumn(name, type, ASCENDING);
+	public T clusteredKeyColumn(String name, DataType type) {
+		return clusteredKeyColumn(name, type, ASCENDING);
 	}
 
 	/**
@@ -97,7 +98,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @param type The data type of the column.
 	 * @return this
 	 */
-	public T primaryKeyColumn(String name, DataType type, Ordering ordering) {
+	public T clusteredKeyColumn(String name, DataType type, Ordering ordering) {
 		return column(name, type, CLUSTERED, ordering);
 	}
 
@@ -120,12 +121,12 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 
 		columns.add(column);
 
-		if (keyType == PrimaryKeyType.PARTITION) {
+		if (keyType == PrimaryKeyType.PARTITIONED) {
 			partitionKeyColumns.add(column);
 		}
 
 		if (keyType == PrimaryKeyType.CLUSTERED) {
-			primaryKeyColumns.add(column);
+			clusteredKeyColumns.add(column);
 		}
 
 		if (keyType == null) {
@@ -152,20 +153,20 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	/**
 	 * Returns an unmodifiable list of all primary key columns that are not also partition key columns.
 	 */
-	public List<ColumnSpecification> getPrimaryKeyColumns() {
-		return Collections.unmodifiableList(primaryKeyColumns);
+	public List<ColumnSpecification> getClusteredKeyColumns() {
+		return Collections.unmodifiableList(clusteredKeyColumns);
 	}
 
 	/**
 	 * Returns an unmodifiable list of all primary key columns that are not also partition key columns.
 	 */
-	public List<ColumnSpecification> getKeyColumns() {
+	public List<ColumnSpecification> getPrimaryKeyColumns() {
 
-		ArrayList<ColumnSpecification> keyColumns = new ArrayList<ColumnSpecification>();
-		keyColumns.addAll(partitionKeyColumns);
-		keyColumns.addAll(primaryKeyColumns);
+		ArrayList<ColumnSpecification> primaryKeyColumns = new ArrayList<ColumnSpecification>();
+		primaryKeyColumns.addAll(partitionKeyColumns);
+		primaryKeyColumns.addAll(clusteredKeyColumns);
 
-		return Collections.unmodifiableList(keyColumns);
+		return Collections.unmodifiableList(primaryKeyColumns);
 	}
 
 	/**

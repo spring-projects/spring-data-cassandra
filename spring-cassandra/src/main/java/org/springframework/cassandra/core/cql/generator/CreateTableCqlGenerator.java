@@ -16,7 +16,7 @@
 package org.springframework.cassandra.core.cql.generator;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
-import static org.springframework.cassandra.core.PrimaryKeyType.PARTITION;
+import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
 import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 		for (ColumnSpecification col : spec().getColumns()) {
 			col.toCql(cql).append(", ");
 
-			if (col.getKeyType() == PARTITION) {
+			if (col.getKeyType() == PARTITIONED) {
 				partitionKeys.add(col);
 			} else if (col.getKeyType() == CLUSTERED) {
 				clusteredKeys.add(col);

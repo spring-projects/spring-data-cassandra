@@ -26,7 +26,7 @@ public enum PrimaryKeyType {
 	/**
 	 * Used for a column that is part of the partition key.
 	 */
-	PARTITION,
+	PARTITIONED,
 
 	/**
 	 * Used for a column that is clustered key.

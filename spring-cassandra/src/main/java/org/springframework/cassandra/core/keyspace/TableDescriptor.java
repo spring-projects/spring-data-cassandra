@@ -22,6 +22,7 @@ import java.util.Map;
  * Describes a table.
  * 
  * @author Matthew T. Adams
+ * @author Alex Shvid
  */
 public interface TableDescriptor {
 
@@ -48,12 +49,12 @@ public interface TableDescriptor {
 	/**
 	 * Returns an unmodifiable list of all primary key columns that are not also partition key columns.
 	 */
-	public List<ColumnSpecification> getPrimaryKeyColumns();
+	public List<ColumnSpecification> getClusteredKeyColumns();
 
 	/**
 	 * Returns an unmodifiable list of all partition and primary key columns.
 	 */
-	public List<ColumnSpecification> getKeyColumns();
+	public List<ColumnSpecification> getPrimaryKeyColumns();
 
 	/**
 	 * Returns an unmodifiable list of all non-key columns.
