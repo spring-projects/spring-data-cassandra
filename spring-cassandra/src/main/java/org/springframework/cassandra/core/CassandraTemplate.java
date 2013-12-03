@@ -17,6 +17,7 @@ package org.springframework.cassandra.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +91,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public void execute(final String cql) throws DataAccessException {
-		doExecute(cql, new HashMap<String, Object>());
+		doExecute(cql, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -124,7 +125,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public <T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse) throws DataAccessException {
-		return queryAsynchronously(cql, rse, new HashMap<String, Object>());
+		return queryAsynchronously(cql, rse, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -143,7 +144,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public <T> T query(String cql, ResultSetExtractor<T> rse) throws DataAccessException {
-		return query(cql, rse, new HashMap<String, Object>());
+		return query(cql, rse, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -176,7 +177,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.RowCallbackHandler)
 	 */
 	public void query(String cql, RowCallbackHandler rch) throws DataAccessException {
-		query(cql, rch, new HashMap<String, Object>());
+		query(cql, rch, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -202,42 +203,42 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.RowMapper)
 	 */
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(cql, rowMapper, new HashMap<String, Object>());
+		return query(cql, rowMapper, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.CassandraOperations#queryForList(java.lang.String)
 	 */
 	public List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException {
-		return processListOfMap(doExecute(cql, new HashMap<String, Object>()));
+		return processListOfMap(doExecute(cql, Collections.<String, Object> emptyMap()));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.CassandraOperations#queryForList(java.lang.String, java.lang.Class)
 	 */
 	public <T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException {
-		return processList(doExecute(cql, new HashMap<String, Object>()), elementType);
+		return processList(doExecute(cql, Collections.<String, Object> emptyMap()), elementType);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.CassandraOperations#queryForMap(java.lang.String)
 	 */
 	public Map<String, Object> queryForMap(String cql) throws DataAccessException {
-		return processMap(doExecute(cql, new HashMap<String, Object>()));
+		return processMap(doExecute(cql, Collections.<String, Object> emptyMap()));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.CassandraOperations#queryForObject(java.lang.String, java.lang.Class)
 	 */
 	public <T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
-		return processOne(doExecute(cql, new HashMap<String, Object>()), requiredType);
+		return processOne(doExecute(cql, Collections.<String, Object> emptyMap()), requiredType);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.CassandraOperations#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper)
 	 */
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-		return processOne(doExecute(cql, new HashMap<String, Object>()), rowMapper);
+		return processOne(doExecute(cql, Collections.<String, Object> emptyMap()), rowMapper);
 	}
 
 	/**
@@ -551,7 +552,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public <T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse) throws DataAccessException {
-		return query(psc, rse, new HashMap<String, Object>());
+		return query(psc, rse, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -579,7 +580,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public void query(PreparedStatementCreator psc, RowCallbackHandler rch) throws DataAccessException {
-		query(psc, rch, new HashMap<String, Object>());
+		query(psc, rch, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -607,7 +608,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public <T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(psc, rowMapper, new HashMap<String, Object>());
+		return query(psc, rowMapper, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -659,7 +660,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public <T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException {
-		return query(cql, psb, rse, new HashMap<String, Object>());
+		return query(cql, psb, rse, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -687,7 +688,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public void query(String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException {
-		query(cql, psb, rch, new HashMap<String, Object>());
+		query(cql, psb, rch, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -715,7 +716,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public <T> List<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(cql, psb, rowMapper, new HashMap<String, Object>());
+		return query(cql, psb, rowMapper, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -797,7 +798,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public void ingest(String cql, RowIterator rowIterator) {
-		ingest(cql, rowIterator, new HashMap<String, Object>());
+		ingest(cql, rowIterator, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -834,7 +835,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public void ingest(String cql, List<List<?>> rows) {
-		ingest(cql, rows, new HashMap<String, Object>());
+		ingest(cql, rows, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -876,7 +877,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 */
 	@Override
 	public void ingest(String cql, final Object[][] rows) {
-		ingest(cql, rows, new HashMap<String, Object>());
+		ingest(cql, rows, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -885,7 +886,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	@Override
 	public void truncate(String tableName) throws DataAccessException {
 		Truncate truncate = QueryBuilder.truncate(tableName);
-		doExecute(truncate.getQueryString(), new HashMap<String, Object>());
+		doExecute(truncate.getQueryString(), Collections.<String, Object> emptyMap());
 	}
 
 	/**
@@ -956,7 +957,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	@Override
 	public <T> T query(PreparedStatementCreator psc, PreparedStatementBinder psb, ResultSetExtractor<T> rse)
 			throws DataAccessException {
-		return query(psc, psb, rse, new HashMap<String, Object>());
+		return query(psc, psb, rse, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -975,7 +976,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	@Override
 	public void query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowCallbackHandler rch)
 			throws DataAccessException {
-		query(psc, psb, rch, new HashMap<String, Object>());
+		query(psc, psb, rch, Collections.<String, Object> emptyMap());
 	}
 
 	/* (non-Javadoc)
@@ -994,7 +995,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	@Override
 	public <T> List<T> query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowMapper<T> rowMapper)
 			throws DataAccessException {
-		return query(psc, psb, rowMapper, new HashMap<String, Object>());
+		return query(psc, psb, rowMapper, Collections.<String, Object> emptyMap());
 	}
 
 }
