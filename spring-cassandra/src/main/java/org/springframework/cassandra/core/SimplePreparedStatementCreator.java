@@ -25,7 +25,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author David Webb
  * 
  */
-public class SimplePreparedStatementCreator implements PreparedStatementCreator, CqlProvider {
+public class SimplePreparedStatementCreator implements PreparedStatementCreator {
 
 	private final String cql;
 
@@ -39,10 +39,6 @@ public class SimplePreparedStatementCreator implements PreparedStatementCreator,
 		this.cql = cql;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlProvider#getCql()
-	 */
-	@Override
 	public String getCql() {
 		return this.cql;
 	}
