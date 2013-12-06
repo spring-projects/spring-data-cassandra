@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -805,19 +806,27 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @see org.springframework.cassandra.core.CassandraOperations#execute(java.lang.String, java.util.List)
 	 */
 	@Override
-	public void ingest(String cql, List<List<?>> rows, Map<String, Object> optionsByName) {
+	public void ingest(String cql, final List<List<?>> rows, Map<String, Object> optionsByName) {
 
 		Assert.notNull(optionsByName);
 		Assert.notNull(rows);
 		Assert.notEmpty(rows);
 
-		Object[][] values = new Object[rows.size()][];
-		int i = 0;
-		for (List<?> row : rows) {
-			values[i++] = row.toArray();
-		}
+		ingest(cql, new RowIterator() {
 
-		ingest(cql, values, optionsByName);
+			Iterator<List<?>> i = rows.iterator();
+
+			@Override
+			public Object[] next() {
+				return i.next().toArray();
+			}
+
+			@Override
+			public boolean hasNext() {
+				return i.hasNext();
+			}
+
+		}, optionsByName);
 
 	}
 
@@ -895,7 +904,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @param q
 	 * @param optionsByName
 	 */
-	public static void addQueryOptions(Query q, Map<String, Object> optionsByName) {
+	protected static void addQueryOptions(Query q, Map<String, Object> optionsByName) {
 
 		if (optionsByName == null) {
 			return;
@@ -921,7 +930,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @param q
 	 * @param optionsByName
 	 */
-	public static void addPreparedStatementOptions(PreparedStatement s, Map<String, Object> optionsByName) {
+	protected static void addPreparedStatementOptions(PreparedStatement s, Map<String, Object> optionsByName) {
 
 		if (optionsByName == null) {
 			return;
