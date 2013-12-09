@@ -19,7 +19,7 @@ public abstract class AbstractIntegrationTest {
 
 	@BeforeClass
 	public static void startCassandra() throws ConfigurationException, TTransportException, IOException {
-		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra("spring-cassandra.yaml");
 	}
 
 	@Inject
