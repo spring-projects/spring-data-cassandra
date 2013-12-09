@@ -339,7 +339,7 @@ native_transport_port: 9042
 # transport is used. They are similar to rpc_min_threads and rpc_max_threads,
 # though the defaults differ slightly.
 # native_transport_min_threads: 16
-native_transport_max_threads: 48
+#native_transport_max_threads: 48
 
 # Whether to start the thrift rpc server.
 start_rpc: true
