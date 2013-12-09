@@ -9,13 +9,11 @@ import com.datastax.driver.core.Cluster.Builder;
 @Configuration
 public class Config extends AbstractCassandraConfiguration {
 
-	public static final String KEYSPACE = "testy";
-
 	public Cluster cluster;
 
 	@Override
 	protected String getKeyspaceName() {
-		return KEYSPACE;
+		return null;
 	}
 
 	@Override
