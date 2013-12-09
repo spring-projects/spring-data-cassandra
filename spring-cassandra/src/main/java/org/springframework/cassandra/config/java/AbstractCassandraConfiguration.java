@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cassandra.config;
+package org.springframework.cassandra.config.java;
 
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
