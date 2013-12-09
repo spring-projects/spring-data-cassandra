@@ -20,7 +20,6 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.util.CqlUtils;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
@@ -74,7 +73,7 @@ public class CassandraPropertyValueProvider implements PropertyValueProvider<Cas
 		}
 		DataType columnType = source.getColumnDefinitions().getType(columnName);
 
-		log.info(columnType.getName().name());
+		log.debug(columnType.getName().name());
 
 		/*
 		 * Dave Webb - Added handler for text since getBytes was throwing 
