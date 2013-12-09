@@ -20,8 +20,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.cassandra.config.AbstractCassandraConfiguration;
-import org.springframework.cassandra.core.CassandraOperations;
+import org.springframework.cassandra.config.java.AbstractCassandraConfiguration;
 import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -41,7 +40,6 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 /**
