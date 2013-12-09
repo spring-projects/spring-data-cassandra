@@ -15,20 +15,20 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import org.springframework.cassandra.core.Ordering;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Annotation to define custom order for clustered column.
+ * Identifies the primary key field of the entity, which may be of a basic type or of a type that represents a composite
+ * primary key class. This field corresponds to the <code>PRIMARY KEY</code> of the corresponding Cassandra table.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
-public @interface Order {
-
-	/**
-	 * Ordering of the column in the table.
-	 * 
-	 * @return
-	 */
-	Ordering value() default Ordering.ASCENDING;
-
+@Retention(value = RetentionPolicy.RUNTIME)
+@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+@org.springframework.data.annotation.Id
+public @interface PrimaryKey {
 }

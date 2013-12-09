@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.cassandra.core.Ordering;
+import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
@@ -51,10 +52,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
 	}
 
-	/**
-	 * Also considers fields that has an Id annotation.
-	 * 
-	 */
 	@Override
 	public boolean isIdProperty() {
 
@@ -62,48 +59,40 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return true;
 		}
 
-		return getField().isAnnotationPresent(Id.class);
+		return getField().isAnnotationPresent(PrimaryKey.class);
 	}
 
-	/**
-	 * Returns the true if the field composite primary key.
-	 * 
-	 * @return
-	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
-		Class<?> fieldType = getField().getType();
-		return fieldType.isAnnotationPresent(CompositePrimaryKey.class);
+		return getField().getType().isAnnotationPresent(CompositePrimaryKey.class);
 	}
 
-	/**
-	 * Returns the column name to be used to store the value of the property inside the Cassandra.
-	 * 
-	 * @return
-	 */
 	public String getColumnName() {
+
+		// first check @Column annotation
 		Column annotation = getField().getAnnotation(Column.class);
-		return annotation != null && StringUtils.hasText(annotation.value()) ? annotation.value() : field.getName();
+		if (annotation != null && StringUtils.hasText(annotation.value())) {
+			return annotation.value();
+		}
+
+		// else check @KeyColumn annotation
+		PrimaryKeyColumn anno = getField().getAnnotation(PrimaryKeyColumn.class);
+		if (anno == null || !StringUtils.hasText(anno.value())) {
+			return field.getName();
+		}
+		return anno.value();
 	}
 
-	/**
-	 * Returns ordering for the column. Valid only for clustered columns.
-	 * 
-	 * @return
-	 */
 	public Ordering getOrdering() {
-		Order annotation = getField().getAnnotation(Order.class);
-		return annotation != null ? annotation.value() : null;
+
+		PrimaryKeyColumn anno = getField().getAnnotation(PrimaryKeyColumn.class);
+
+		return anno == null ? null : anno.ordering();
 	}
 
-	/**
-	 * Returns the data type information if exists.
-	 * 
-	 * @return
-	 */
 	public DataType getDataType() {
 		Qualify annotation = getField().getAnnotation(Qualify.class);
-		if (annotation != null && annotation.type() != null) {
+		if (annotation != null) {
 			return qualifyAnnotatedType(annotation);
 		}
 		if (isMap()) {
@@ -153,28 +142,30 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 	}
 
-	/**
-	 * Returns true if the property has secondary index on this column.
-	 * 
-	 * @return
-	 */
 	public boolean isIndexed() {
 		return getField().isAnnotationPresent(Indexed.class);
 	}
 
-	/**
-	 * Returns true if the property has Partitioned annotation on this column.
-	 * 
-	 * @return
-	 */
-	public boolean isPartitioned() {
-		return getField().isAnnotationPresent(Partitioned.class);
+	public boolean isPartitionKeyColumn() {
+
+		PrimaryKeyColumn anno = getField().getAnnotation(PrimaryKeyColumn.class);
+
+		return anno != null && anno.type() == PrimaryKeyType.PARTITIONED;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#createAssociation()
-	 */
+	@Override
+	public boolean isClusterKeyColumn() {
+
+		PrimaryKeyColumn anno = getField().getAnnotation(PrimaryKeyColumn.class);
+
+		return anno != null && anno.type() == PrimaryKeyType.CLUSTERED;
+	}
+
+	@Override
+	public boolean isPrimaryKeyColumn() {
+		return getField().isAnnotationPresent(PrimaryKeyColumn.class);
+	}
+
 	@Override
 	protected Association<CassandraPersistentProperty> createAssociation() {
 		return new Association<CassandraPersistentProperty>(this, null);
@@ -206,5 +197,4 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 					+ this.getName() + "' type is '" + this.getType() + "' in the entity " + this.getOwner().getName());
 		}
 	}
-
 }

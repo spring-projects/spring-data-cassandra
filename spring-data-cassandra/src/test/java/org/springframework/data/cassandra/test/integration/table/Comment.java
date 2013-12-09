@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.test.integration.table;
 import java.util.Date;
 import java.util.Set;
 
-import org.springframework.data.cassandra.mapping.Id;
+import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Qualify;
 import org.springframework.data.cassandra.mapping.Table;
 
@@ -36,7 +36,7 @@ public class Comment {
 	/*
 	 * Primary Key
 	 */
-	@Id
+	@PrimaryKey
 	private CommentPK pk;
 
 	private String text;

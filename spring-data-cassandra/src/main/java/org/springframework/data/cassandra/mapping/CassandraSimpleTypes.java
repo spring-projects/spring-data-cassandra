@@ -53,16 +53,22 @@ public class CassandraSimpleTypes {
 		primitiveWrapperTypeMap.put(Short.class, short.class);
 
 		Set<Class<?>> simpleTypes = new HashSet<Class<?>>();
+
 		for (DataType dataType : DataType.allPrimitiveTypes()) {
-			simpleTypes.add(dataType.asJavaClass());
+
 			Class<?> javaClass = dataType.asJavaClass();
+			simpleTypes.add(javaClass);
+
 			javaClassToDataType.put(javaClass, dataType);
+
 			Class<?> primitiveJavaClass = primitiveWrapperTypeMap.get(javaClass);
 			if (primitiveJavaClass != null) {
 				javaClassToDataType.put(primitiveJavaClass, dataType);
 			}
+
 			nameToDataType.put(dataType.getName(), dataType);
 		}
+
 		javaClassToDataType.put(String.class, DataType.text());
 		CASSANDRA_SIMPLE_TYPES = Collections.unmodifiableSet(simpleTypes);
 	}

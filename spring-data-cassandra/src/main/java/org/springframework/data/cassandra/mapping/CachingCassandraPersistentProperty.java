@@ -92,10 +92,10 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#isPartitioned()
 	 */
 	@Override
-	public boolean isPartitioned() {
+	public boolean isPartitionKeyColumn() {
 
 		if (this.isPartitioned == null) {
-			this.isPartitioned = super.isPartitioned();
+			this.isPartitioned = super.isPartitionKeyColumn();
 		}
 
 		return this.isPartitioned;

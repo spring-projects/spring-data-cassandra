@@ -38,6 +38,7 @@ import java.lang.annotation.RetentionPolicy;
  * Annotation to define custom metadata for document fields.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -45,9 +46,6 @@ public @interface Column {
 
 	/**
 	 * The name of the column in the table.
-	 * 
-	 * @return
 	 */
 	String value() default "";
-
 }

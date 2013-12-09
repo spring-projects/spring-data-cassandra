@@ -24,49 +24,50 @@ import com.datastax.driver.core.DataType;
  * Cassandra specific {@link org.springframework.data.mapping.PersistentProperty} extension.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public interface CassandraPersistentProperty extends PersistentProperty<CassandraPersistentProperty> {
 
 	/**
-	 * Returns the true if the field composite primary key.
-	 * 
-	 * @return
+	 * Whether the property is a composite primary key.
 	 */
 	boolean isCompositePrimaryKey();
 
 	/**
-	 * Returns the name of the field a property is persisted to.
-	 * 
-	 * @return
+	 * The name of the column to which a property is persisted.
 	 */
 	String getColumnName();
 
 	/**
-	 * Returns ordering for the column. Valid only for clustered columns.
-	 * 
-	 * @return
+	 * The ordering for the column. Valid only for clustered columns.
 	 */
 	Ordering getOrdering();
 
 	/**
-	 * Returns the data type.
-	 * 
-	 * @return
+	 * The column's data type.
 	 */
 	DataType getDataType();
 
 	/**
-	 * Returns true if the property has secondary index on this column.
-	 * 
-	 * @return
+	 * Whether the property has secondary index on this column.
 	 */
 	boolean isIndexed();
 
 	/**
-	 * Returns true if the property has Partitioned annotation.
-	 * 
-	 * @return
+	 * Whether the property is a partition key column.
 	 */
-	boolean isPartitioned();
+	boolean isPartitionKeyColumn();
 
+	/**
+	 * Whether the property is a cluster key column.
+	 */
+	boolean isClusterKeyColumn();
+
+	/**
+	 * Whether the property is a partition key column or a cluster key column
+	 * 
+	 * @see #isPartitionKeyColumn()
+	 * @see #isClusterKeyColumn()
+	 */
+	boolean isPrimaryKeyColumn();
 }

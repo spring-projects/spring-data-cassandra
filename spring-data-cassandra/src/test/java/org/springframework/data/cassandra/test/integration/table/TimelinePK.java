@@ -17,8 +17,9 @@ package org.springframework.data.cassandra.test.integration.table;
 
 import java.util.Date;
 
+import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.CompositePrimaryKey;
-import org.springframework.data.cassandra.mapping.Partitioned;
+import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 
 /**
  * This is an example of the users timeline dynamic table, where all columns are dynamically created by @ColumnId field
@@ -36,12 +37,13 @@ public class TimelinePK {
 	/*
 	 * Row ID
 	 */
-	@Partitioned
+	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 	private String username;
 
 	/*
 	 * Clustered Column
 	 */
+	@PrimaryKeyColumn(ordinal = 1)
 	private Date time;
 
 	public String getUsername() {

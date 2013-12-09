@@ -275,7 +275,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 					pkEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 						public void doWithPersistentProperty(CassandraPersistentProperty pkProp) {
 
-							if (pkProp.isPartitioned()) {
+							if (pkProp.isPartitionKeyColumn()) {
 								spec.partitionKeyColumn(pkProp.getColumnName(), pkProp.getDataType());
 							} else {
 								spec.clusteredKeyColumn(pkProp.getColumnName(), pkProp.getDataType(), pkProp.getOrdering());
