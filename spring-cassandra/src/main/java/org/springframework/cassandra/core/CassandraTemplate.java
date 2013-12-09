@@ -690,7 +690,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @param q
 	 * @param optionsByName
 	 */
-	protected static void addQueryOptions(Query q, QueryOptions options) {
+	public static void addQueryOptions(Query q, QueryOptions options) {
 
 		if (options == null) {
 			return;
@@ -714,7 +714,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @param q
 	 * @param optionsByName
 	 */
-	protected static void addPreparedStatementOptions(PreparedStatement s, QueryOptions options) {
+	public static void addPreparedStatementOptions(PreparedStatement s, QueryOptions options) {
 
 		if (options == null) {
 			return;
