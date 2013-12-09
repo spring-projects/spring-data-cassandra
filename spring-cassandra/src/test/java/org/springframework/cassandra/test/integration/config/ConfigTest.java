@@ -32,5 +32,9 @@ public class ConfigTest {
 	@Test
 	public void test() {
 		assertNotNull(session);
+
+		session
+				.execute("CREATE KEYSPACE testy WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
+		session.execute("USE testy");
 	}
 }
