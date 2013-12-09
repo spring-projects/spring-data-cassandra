@@ -36,7 +36,7 @@ public abstract class AbstractCassandraConfiguration {
 	/**
 	 * The name of the keyspace to connect to. If {@literal null} or empty, then the system keyspace will be used.
 	 */
-	protected abstract String getKeyspaceName();
+	protected abstract String getKeyspace();
 
 	/**
 	 * The {@link Cluster} instance to connect to. Must not be null.
@@ -51,7 +51,7 @@ public abstract class AbstractCassandraConfiguration {
 	 */
 	@Bean
 	public Session session() {
-		String keyspace = getKeyspaceName();
+		String keyspace = getKeyspace();
 		if (StringUtils.hasText(keyspace)) {
 			return cluster().connect(keyspace);
 		} else {

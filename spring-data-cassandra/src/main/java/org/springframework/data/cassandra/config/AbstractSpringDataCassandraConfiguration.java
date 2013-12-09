@@ -65,7 +65,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 */
 	@Bean
 	public SpringDataKeyspace keyspace() throws Exception {
-		return new SpringDataKeyspace(getKeyspaceName(), session(), converter());
+		return new SpringDataKeyspace(getKeyspace(), session(), converter());
 	}
 
 	/**

@@ -28,7 +28,7 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 	 * @see org.springframework.data.cassandra.config.AbstractCassandraConfiguration#getKeyspaceName()
 	 */
 	@Override
-	protected String getKeyspaceName() {
+	protected String getKeyspace() {
 		return keyspace;
 	}
 

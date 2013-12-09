@@ -16,9 +16,10 @@
 package org.springframework.cassandra.config;
 
 /**
- * Pooling options POJO. Can be remote or local.
+ * Pooling options.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public class PoolingOptionsConfig {
 
@@ -58,5 +59,4 @@ public class PoolingOptionsConfig {
 	public void setMaxConnections(Integer maxConnections) {
 		this.maxConnections = maxConnections;
 	}
-
 }
