@@ -31,11 +31,12 @@ import java.lang.annotation.Target;
  * 
  * 
  * @author Alex Shvid
+ * @deprecated This class is actually unnecessary and can be inferred by the existence of field(s) with
+ *             {@link PrimaryKeyColumn} annotations on them.
  */
-
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
+@Deprecated
 public @interface CompositePrimaryKey {
-
 }

@@ -20,13 +20,35 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.cassandra.core.Ordering;
+import org.springframework.cassandra.core.PrimaryKeyType;
+
 /**
- * Identifies primary key or ID in the Cassandra table. Same as @org.springframework.data.annotation.Id
- * 
- * @author Alex Shvid
+ * Identifies the annotated field of a composite primary key class as a primary key field that is either a partition or
+ * cluster key field.
  */
 @Retention(value = RetentionPolicy.RUNTIME)
-@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-@org.springframework.data.annotation.Id
-public @interface Id {
+@Target(value = { ElementType.FIELD, ElementType.METHOD })
+public @interface PrimaryKeyColumn {
+
+	/**
+	 * The name of the column in the table.
+	 */
+	String value() default "";
+
+	/**
+	 * The order of this column among all primary key columns.
+	 */
+	int ordinal();
+
+	/**
+	 * The type of this key column. Default is {@link PrimaryKeyType#CLUSTERED}.
+	 */
+	PrimaryKeyType type() default PrimaryKeyType.CLUSTERED;
+
+	/**
+	 * The cluster ordering of this column if {@link #type()} is {@link PrimaryKeyType#CLUSTERED}, otherwise ignored.
+	 * Default is {@link Ordering#ASCENDING}.
+	 */
+	Ordering ordering() default Ordering.ASCENDING;
 }
