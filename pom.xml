@@ -27,11 +27,14 @@
 	</modules>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<project.type>multi</project.type>
 		<dist.id>spring-data-cassandra</dist.id>
 		<springdata.commons>1.6.2.RELEASE</springdata.commons>
 		<cassandra-unit.version>1.2.0.1</cassandra-unit.version>
 		<cassandra-driver-core.version>1.0.4-dse</cassandra-driver-core.version>
+		<failsafe.version>2.16</failsafe.version>
 	</properties>
 
 	<developers>
@@ -123,10 +126,19 @@
 				<version>${spring}</version>
 			</dependency>
 
+			<!--  Logging Dependencies -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.7.4</version>
+				<artifactId>log4j-over-slf4j</artifactId>
+				<version>${slf4j}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>jul-to-slf4j</artifactId>
+				<version>${slf4j}</version>
+				<scope>test</scope>
 			</dependency>
 
 			<!-- CDI -->
@@ -246,6 +258,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${failsafe.version}</version>
 				<configuration>
 					<forkMode>always</forkMode>
 					<argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
