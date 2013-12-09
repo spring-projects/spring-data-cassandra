@@ -5,7 +5,7 @@ import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.cassandra.core.SessionFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.AbstractCassandraConfiguration;
+import org.springframework.data.cassandra.config.AbstractSpringDataCassandraConfiguration;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.core.CassandraDataTemplate;
 import org.springframework.data.cassandra.core.CassandraKeyspaceFactoryBean;
@@ -20,7 +20,7 @@ import com.datastax.driver.core.Cluster.Builder;
  * 
  */
 @Configuration
-public class TestConfig extends AbstractCassandraConfiguration {
+public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 
 	public static final String keyspace = "test";
 

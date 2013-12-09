@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.cassandra.config.AbstractCassandraConfiguration;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.context.annotation.Bean;
@@ -47,50 +48,13 @@ import com.datastax.driver.core.Session;
  * Base class for Spring Data Cassandra configuration using JavaConfig.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 @Configuration
-public abstract class AbstractCassandraConfiguration implements BeanClassLoaderAware {
-
-	/**
-	 * Used by CassandraTemplate and CassandraAdminTemplate
-	 */
+public abstract class AbstractSpringDataCassandraConfiguration extends AbstractCassandraConfiguration implements
+		BeanClassLoaderAware {
 
 	private ClassLoader beanClassLoader;
-
-	/**
-	 * Return the name of the keyspace to connect to.
-	 * 
-	 * @return must not be {@literal null}.
-	 */
-	protected abstract String getKeyspaceName();
-
-	/**
-	 * Return the {@link Cluster} instance to connect to.
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	@Bean
-	public abstract Cluster cluster() throws Exception;
-
-	/**
-	 * Creates a {@link Session} to be used by the {@link SpringDataKeyspace}. Will use the {@link Cluster} instance
-	 * configured in {@link #cluster()}.
-	 * 
-	 * @see #cluster()
-	 * @see #Keyspace()
-	 * @return
-	 * @throws Exception
-	 */
-	@Bean
-	public Session session() throws Exception {
-		String keyspace = getKeyspaceName();
-		if (StringUtils.hasText(keyspace)) {
-			return cluster().connect(keyspace);
-		} else {
-			return cluster().connect();
-		}
-	}
 
 	/**
 	 * Creates a {@link SpringDataKeyspace} to be used by the {@link CassandraTemplate}. Will use the {@link Session}
@@ -109,25 +73,14 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 	/**
 	 * Return the base package to scan for mapped {@link Table}s. Will return the package name of the configuration class'
 	 * (the concrete class, not this one here) by default. So if you have a {@code com.acme.AppConfig} extending
-	 * {@link AbstractCassandraConfiguration} the base package will be considered {@code com.acme} unless the method is
-	 * overriden to implement alternate behaviour.
+	 * {@link AbstractSpringDataCassandraConfiguration} the base package will be considered {@code com.acme} unless the
+	 * method is overriden to implement alternate behaviour.
 	 * 
 	 * @return the base package to scan for mapped {@link Table} classes or {@literal null} to not enable scanning for
 	 *         entities.
 	 */
 	protected String getMappingBasePackage() {
 		return getClass().getPackage().getName();
-	}
-
-	/**
-	 * Creates a {@link CassandraTemplate}.
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	@Bean
-	public CassandraOperations cassandraTemplate() throws Exception {
-		return new CassandraTemplate(session());
 	}
 
 	/**
@@ -185,7 +138,7 @@ public abstract class AbstractCassandraConfiguration implements BeanClassLoaderA
 
 			for (BeanDefinition candidate : componentProvider.findCandidateComponents(basePackage)) {
 				initialEntitySet.add(ClassUtils.forName(candidate.getBeanClassName(),
-						AbstractCassandraConfiguration.class.getClassLoader()));
+						AbstractSpringDataCassandraConfiguration.class.getClassLoader()));
 			}
 		}
 
