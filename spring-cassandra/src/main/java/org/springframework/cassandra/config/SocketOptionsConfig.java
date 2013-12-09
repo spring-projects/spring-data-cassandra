@@ -16,9 +16,10 @@
 package org.springframework.cassandra.config;
 
 /**
- * Socket options POJO. Uses to configure Netty.
+ * Socket options.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public class SocketOptionsConfig {
 
@@ -85,5 +86,4 @@ public class SocketOptionsConfig {
 	public void setSendBufferSize(Integer sendBufferSize) {
 		this.sendBufferSize = sendBufferSize;
 	}
-
 }
