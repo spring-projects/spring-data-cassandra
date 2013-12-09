@@ -16,7 +16,7 @@ import com.datastax.driver.core.Session;
 
 public abstract class AbstractEmbeddedCassandraIntegrationTest {
 
-	protected final static String CASSANDRA_CONFIG = "cassandra.yaml";
+	protected final static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 	protected final static String CASSANDRA_HOST = "localhost";
 	protected final static int CASSANDRA_NATIVE_PORT = 9042;
 
