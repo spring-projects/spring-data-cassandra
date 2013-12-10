@@ -18,9 +18,10 @@ package org.springframework.cassandra.config.xml;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
- * Namespace handler for &lt;cassandra;gt;.
+ * Namespace handler for &lt;cassandra&gt; elements.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 
 public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
@@ -28,9 +29,8 @@ public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
 	public void init() {
 
 		registerBeanDefinitionParser("cluster", new CassandraClusterParser());
-		registerBeanDefinitionParser("keyspace", new CassandraKeyspaceParser());
+		// registerBeanDefinitionParser("keyspace", new CassandraKeyspaceParser());
 		registerBeanDefinitionParser("session", new CassandraSessionParser());
-
+		registerBeanDefinitionParser("template", new CassandraTemplateParser());
 	}
-
 }

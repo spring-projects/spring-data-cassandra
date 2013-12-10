@@ -24,44 +24,34 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;session&gt; definitions.
+ * Parser for &lt;template&gt; definitions.
  * 
  * @author David Webb
  * @author Matthew T. Adams
  */
 
-public class CassandraSessionParser extends AbstractSimpleBeanDefinitionParser {
+public class CassandraTemplateParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return CassandraSessionFactoryBean.class;
+		return CassandraTemplateFactoryBean.class;
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
-	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : BeanNames.CASSANDRA_SESSION;
+		return StringUtils.hasText(id) ? id : BeanNames.CASSANDRA_TEMPLATE;
 	}
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		String keyspaceName = element.getAttribute("keyspace-name");
-		if (!StringUtils.hasText(keyspaceName)) {
-			keyspaceName = null;
+		String sessionRef = element.getAttribute("session-ref");
+		if (!StringUtils.hasText(sessionRef)) {
+			sessionRef = BeanNames.CASSANDRA_SESSION;
 		}
-		builder.addPropertyValue("keyspaceName", keyspaceName);
-
-		String clusterRef = element.getAttribute("cluster-ref");
-		if (!StringUtils.hasText(clusterRef)) {
-			clusterRef = BeanNames.CASSANDRA_CLUSTER;
-		}
-		builder.addPropertyReference("cluster", clusterRef);
+		builder.addPropertyReference("session", sessionRef);
 	}
 }

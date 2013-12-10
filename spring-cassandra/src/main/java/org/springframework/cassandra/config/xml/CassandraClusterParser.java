@@ -74,15 +74,14 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 			builder.addPropertyValue("compressionType", CompressionType.valueOf(compression));
 		}
 
-		postProcess(builder, element);
+		parseChildElements(builder, element);
 	}
 
-	@Override
-	protected void postProcess(BeanDefinitionBuilder builder, Element element) {
-		List<Element> subElements = DomUtils.getChildElements(element);
+	protected void parseChildElements(BeanDefinitionBuilder builder, Element element) {
+		List<Element> elements = DomUtils.getChildElements(element);
 
 		// parse nested elements
-		for (Element subElement : subElements) {
+		for (Element subElement : elements) {
 			String name = subElement.getLocalName();
 
 			if ("local-pooling-options".equals(name)) {
@@ -99,11 +98,10 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 	private BeanDefinition parsePoolingOptions(Element element) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(PoolingOptionsConfig.class);
 
-		// TODO
-		// ParsingUtils.setPropertyValue(builder, element, "min-simultaneous-requests", "minSimultaneousRequests");
-		// ParsingUtils.setPropertyValue(builder, element, "max-simultaneous-requests", "maxSimultaneousRequests");
-		// ParsingUtils.setPropertyValue(builder, element, "core-connections", "coreConnections");
-		// ParsingUtils.setPropertyValue(builder, element, "max-connections", "maxConnections");
+		ParsingUtils.setPropertyValue(builder, element, "min-simultaneous-requests", "minSimultaneousRequests");
+		ParsingUtils.setPropertyValue(builder, element, "max-simultaneous-requests", "maxSimultaneousRequests");
+		ParsingUtils.setPropertyValue(builder, element, "core-connections", "coreConnections");
+		ParsingUtils.setPropertyValue(builder, element, "max-connections", "maxConnections");
 
 		return builder.getBeanDefinition();
 	}
@@ -111,14 +109,13 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 	private BeanDefinition parseSocketOptions(Element element) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SocketOptionsConfig.class);
 
-		// TODO
-		// ParsingUtils.setPropertyValue(builder, element, "connect-timeout-mls", "connectTimeoutMls");
-		// ParsingUtils.setPropertyValue(builder, element, "keep-alive", "keepAlive");
-		// ParsingUtils.setPropertyValue(builder, element, "reuse-address", "reuseAddress");
-		// ParsingUtils.setPropertyValue(builder, element, "so-linger", "soLinger");
-		// ParsingUtils.setPropertyValue(builder, element, "tcp-no-delay", "tcpNoDelay");
-		// ParsingUtils.setPropertyValue(builder, element, "receive-buffer-size", "receiveBufferSize");
-		// ParsingUtils.setPropertyValue(builder, element, "send-buffer-size", "sendBufferSize");
+		ParsingUtils.setPropertyValue(builder, element, "connect-timeout-mls", "connectTimeoutMls");
+		ParsingUtils.setPropertyValue(builder, element, "keep-alive", "keepAlive");
+		ParsingUtils.setPropertyValue(builder, element, "reuse-address", "reuseAddress");
+		ParsingUtils.setPropertyValue(builder, element, "so-linger", "soLinger");
+		ParsingUtils.setPropertyValue(builder, element, "tcp-no-delay", "tcpNoDelay");
+		ParsingUtils.setPropertyValue(builder, element, "receive-buffer-size", "receiveBufferSize");
+		ParsingUtils.setPropertyValue(builder, element, "send-buffer-size", "sendBufferSize");
 
 		return builder.getBeanDefinition();
 	}

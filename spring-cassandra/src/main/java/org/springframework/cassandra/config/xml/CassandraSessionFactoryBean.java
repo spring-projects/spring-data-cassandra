@@ -15,53 +15,40 @@
  */
 package org.springframework.cassandra.config.xml;
 
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cassandra.config.KeyspaceAttributes;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 
 /**
- * Convenient factory for configuring a Cassandra Session. Session is a thread safe singleton and created per a
- * keyspace. So, it is enough to have one session per application.
+ * Factory for configuring a Cassandra {@link Session}, which is a thread-safe singleton. As such, it is sufficient to
+ * have one {@link Session} per application and keyspace.
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
 
 public class CassandraSessionFactoryBean implements FactoryBean<Session>, InitializingBean, DisposableBean,
-		BeanClassLoaderAware, PersistenceExceptionTranslator {
+		PersistenceExceptionTranslator {
 
 	private static final Logger log = LoggerFactory.getLogger(CassandraSessionFactoryBean.class);
 
 	public static final String DEFAULT_REPLICATION_STRATEGY = "SimpleStrategy";
 	public static final int DEFAULT_REPLICATION_FACTOR = 1;
 
-	private ClassLoader beanClassLoader;
-
 	private Cluster cluster;
 	private Session session;
-	private String keyspace;
-
-	private KeyspaceAttributes keyspaceAttributes;
+	private String keyspaceName;
 
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
-
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.beanClassLoader = classLoader;
-	}
 
 	public Session getObject() {
 		return session;
@@ -101,7 +88,7 @@ public class CassandraSessionFactoryBean implements FactoryBean<Session>, Initia
 			throw new IllegalArgumentException("at least one cluster is required");
 		}
 
-		this.session = StringUtils.hasText(this.keyspace) ? cluster.connect(keyspace) : cluster.connect();
+		this.session = StringUtils.hasText(this.keyspaceName) ? cluster.connect(keyspaceName) : cluster.connect();
 	}
 
 	/* 
@@ -109,49 +96,14 @@ public class CassandraSessionFactoryBean implements FactoryBean<Session>, Initia
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
 	 */
 	public void destroy() throws Exception {
-
 		this.session.shutdown();
 	}
 
-	public void setKeyspace(String keyspace) {
-		this.keyspace = keyspace;
+	public void setKeyspaceName(String keyspaceName) {
+		this.keyspaceName = keyspaceName;
 	}
 
 	public void setCluster(Cluster cluster) {
 		this.cluster = cluster;
-	}
-
-	public void setKeyspaceAttributes(KeyspaceAttributes keyspaceAttributes) {
-		this.keyspaceAttributes = keyspaceAttributes;
-	}
-
-	private static String compareKeyspaceAttributes(KeyspaceAttributes keyspaceAttributes,
-			KeyspaceMetadata keyspaceMetadata) {
-		if (keyspaceAttributes.isDurableWrites() != keyspaceMetadata.isDurableWrites()) {
-			return "durableWrites";
-		}
-		Map<String, String> replication = keyspaceMetadata.getReplication();
-		String replicationFactorStr = replication.get("replication_factor");
-		if (replicationFactorStr == null) {
-			return "replication_factor";
-		}
-		try {
-			int replicationFactor = Integer.parseInt(replicationFactorStr);
-			if (keyspaceAttributes.getReplicationFactor() != replicationFactor) {
-				return "replication_factor";
-			}
-		} catch (NumberFormatException e) {
-			return "replication_factor";
-		}
-
-		String attributesStrategy = keyspaceAttributes.getReplicationStrategy();
-		if (attributesStrategy.indexOf('.') == -1) {
-			attributesStrategy = "org.apache.cassandra.locator." + attributesStrategy;
-		}
-		String replicationStrategy = replication.get("class");
-		if (!attributesStrategy.equals(replicationStrategy)) {
-			return "replication_class";
-		}
-		return null;
 	}
 }

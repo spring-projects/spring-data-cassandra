@@ -11,6 +11,6 @@ public class IntegrationTestUtils {
 	}
 
 	public static void assertKeyspaceExists(String keyspace, Session session) {
-		assertNotNull(session.getCluster().getMetadata().getKeyspace(KeyspaceCreatingConfig.KEYSPACE));
+		assertNotNull(session.getCluster().getMetadata().getKeyspace(keyspace));
 	}
 }
