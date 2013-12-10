@@ -31,9 +31,10 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;keyspace;gt; definitions.
+ * Parser for &lt;keyspace&gt; definitions.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 
 public class CassandraKeyspaceParser extends AbstractSimpleBeanDefinitionParser {
@@ -95,11 +96,10 @@ public class CassandraKeyspaceParser extends AbstractSimpleBeanDefinitionParser 
 	private BeanDefinition parseKeyspaceAttributes(Element element) {
 		BeanDefinitionBuilder defBuilder = BeanDefinitionBuilder.genericBeanDefinition(KeyspaceAttributes.class);
 
-		// TODO
-		// ParsingUtils.setPropertyValue(defBuilder, element, "auto", "auto");
-		// ParsingUtils.setPropertyValue(defBuilder, element, "replication-strategy", "replicationStrategy");
-		// ParsingUtils.setPropertyValue(defBuilder, element, "replication-factor", "replicationFactor");
-		// ParsingUtils.setPropertyValue(defBuilder, element, "durable-writes", "durableWrites");
+		ParsingUtils.setPropertyValue(defBuilder, element, "auto", "auto");
+		ParsingUtils.setPropertyValue(defBuilder, element, "replication-strategy", "replicationStrategy");
+		ParsingUtils.setPropertyValue(defBuilder, element, "replication-factor", "replicationFactor");
+		ParsingUtils.setPropertyValue(defBuilder, element, "durable-writes", "durableWrites");
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 		ManagedList<Object> tables = new ManagedList<Object>(subElements.size());
@@ -122,9 +122,8 @@ public class CassandraKeyspaceParser extends AbstractSimpleBeanDefinitionParser 
 	private BeanDefinition parseTable(Element element) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(TableAttributes.class);
 
-		// TODO
-		// ParsingUtils.setPropertyValue(builder, element, "entity", "entity");
-		// ParsingUtils.setPropertyValue(builder, element, "name", "name");
+		ParsingUtils.setPropertyValue(builder, element, "entity", "entity");
+		ParsingUtils.setPropertyValue(builder, element, "name", "name");
 
 		return builder.getBeanDefinition();
 	}

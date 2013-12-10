@@ -1,4 +1,4 @@
-package org.springframework.cassandra.test.integration.config;
+package org.springframework.cassandra.test.integration.config.java;
 
 import org.springframework.cassandra.config.KeyspaceAttributes;
 import org.springframework.cassandra.config.PoolingOptionsConfig;

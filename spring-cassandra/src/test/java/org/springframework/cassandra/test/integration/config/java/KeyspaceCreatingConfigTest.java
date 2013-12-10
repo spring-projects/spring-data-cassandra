@@ -1,6 +1,7 @@
-package org.springframework.cassandra.test.integration.config;
+package org.springframework.cassandra.test.integration.config.java;
 
 import org.junit.Test;
+import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
 import org.springframework.test.context.ContextConfiguration;
 
 @ContextConfiguration(classes = KeyspaceCreatingConfig.class)

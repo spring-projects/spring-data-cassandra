@@ -12,14 +12,14 @@
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
 Defines the configuration elements for Spring Cassandra support.
-    ]]></xsd:documentation>
+		]]></xsd:documentation>
 	</xsd:annotation>
 
 	<xsd:element name="session" type="sessionType">
 		<xsd:annotation>
 			<xsd:documentation
-				source="org.springframework.cassandra.core.SessionFactoryBean"><![CDATA[
-Defines a Cassandra Session instance used for accessing Cassandra Keyspace'.
+				source="org.springframework.cassandra.config.xml.SessionFactoryBean"><![CDATA[
+Defines a Cassandra Session.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
@@ -29,11 +29,25 @@ Defines a Cassandra Session instance used for accessing Cassandra Keyspace'.
 		</xsd:annotation>
 	</xsd:element>
 
+	<xsd:element name="template" type="templateType">
+		<xsd:annotation>
+			<xsd:documentation
+				source="org.springframework.cassandra.config.xml.TemplateFactoryBean"><![CDATA[
+Defines a Cassandra Templat.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="org.springframework.cassandra.CassandraTemplate" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+
 	<xsd:element name="cluster" type="clusterType">
 		<xsd:annotation>
 			<xsd:documentation
-				source="org.springframework.data.cassandra.core.CassandraClusterFactoryBean"><![CDATA[
-Defines a Cassandra Cluster instance used for accessing Cassandra'.
+				source="org.springframework.cassandra.config.xml.CassandraClusterFactoryBean"><![CDATA[
+Defines a Cassandra Cluster.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
@@ -43,6 +57,20 @@ Defines a Cassandra Cluster instance used for accessing Cassandra'.
 		</xsd:annotation>
 	</xsd:element>
 
+	<xsd:element name="keyspace" type="keyspaceType">
+		<xsd:annotation>
+			<xsd:documentation
+				source="org.springframework.data.cassandra.core.CassandraKeyspaceFactoryBean"><![CDATA[
+Defines a Cassandra Session instance used for accessing Cassandra Keyspace'.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.datastax.driver.core.Session" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+	
 	<xsd:complexType name="clusterType">
 		<xsd:sequence>
 			<xsd:element name="local-pooling-options" type="poolingOptionsType"
@@ -62,24 +90,26 @@ Defines a Cassandra Cluster instance used for accessing Cassandra'.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="contactPoints" type="xsd:string">
+		<xsd:attribute name="contactPoints" type="xsd:string"
+			use="optional" default="localhost">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The comma separated hosts to Cassandra servers.  Default is localhost
+The comma separated list of Cassandra servers.  Default is localhost.
 							]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="port" type="xsd:string" use="optional">
+		<xsd:attribute name="port" type="xsd:string" use="optional"
+			default="9042">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The port to connect to Cassandra server as native CQL client.  Default is 9042
+The native CQL port to connect to.  Default is 9042.
 							]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="compression" default="NONE" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The protocol options compression. Default is 'none'.
+The protocol compression option. Default is 'none'.
 							]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
@@ -174,20 +204,6 @@ RetryPolicy implementation.
 		</xsd:attribute>
 	</xsd:complexType>
 
-	<xsd:element name="keyspace" type="keyspaceType">
-		<xsd:annotation>
-			<xsd:documentation
-				source="org.springframework.data.cassandra.core.CassandraKeyspaceFactoryBean"><![CDATA[
-Defines a Cassandra Session instance used for accessing Cassandra Keyspace'.
-			]]></xsd:documentation>
-			<xsd:appinfo>
-				<tool:annotation>
-					<tool:exports type="com.datastax.driver.core.Session" />
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-	</xsd:element>
-
 	<xsd:complexType name="keyspaceType">
 		<xsd:sequence>
 			<xsd:element name="keyspace-attributes" type="keyspaceAttributesType"
@@ -195,35 +211,17 @@ Defines a Cassandra Session instance used for accessing Cassandra Keyspace'.
 		</xsd:sequence>
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
 			<xsd:annotation>
-				<xsd:documentation>
+				<xsd:documentation><![CDATA[
 					The name of the Keyspace definition (by default
 					"cassandra-keyspace")
-				</xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="name" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The keyspace name of the Cassandra database.
-							]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="cassandra-cluster-ref" type="clusterRef"
-			use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The reference to a Cassandra Cluster instance. Will default to 'cassandra-cluster'.
-                                        ]]>
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="cassandra-converter-ref" type="converterRef"
-			use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The reference to a CassandraConverter instance. Default is null.
-                                        ]]>
-				</xsd:documentation>
+The name of the Cassandra keyspace.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
@@ -239,12 +237,11 @@ The reference to a CassandraConverter instance. Default is null.
 		<xsd:union memberTypes="xsd:string" />
 	</xsd:simpleType>
 
-	<xsd:simpleType name="converterRef">
+	<xsd:simpleType name="sessionRef" final="union">
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
-					<tool:assignable-to
-						type="org.springframework.data.cassandra.convert.CassandraConverter" />
+					<tool:assignable-to type="com.datastax.driver.core.Session" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -335,55 +332,12 @@ Sets the SO_SNDBUF socket option.
 	</xsd:complexType>
 
 	<xsd:complexType name="keyspaceAttributesType">
-		<xsd:sequence>
-			<xsd:element name="table" type="tableType" maxOccurs="unbounded"
-				minOccurs="0"></xsd:element>
-		</xsd:sequence>
-		<xsd:attribute name="auto" default="validate">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The keyspace manipulation operation on startup. Default value is 'validate'.
-							]]></xsd:documentation>
-			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="validate">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Validate the keyspace, makes no changes.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="update">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Update the keyspace.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="create">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Creates the keyspace, destroying previous data.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="create-drop">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Creates and then drop the keyspace at the end of the session.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
-		</xsd:attribute>
-		<xsd:attribute name="replication-stategy" type="xsd:string"
+		<xsd:attribute name="replication-strategy" type="xsd:string"
 			use="optional" default="SimpleStrategy">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Replication strategy of the Cassandra keyspace. Default value is 'SimpleStrategy'.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="replication-factor" type="xsd:string"
@@ -391,32 +345,15 @@ Replication strategy of the Cassandra keyspace. Default value is 'SimpleStrategy
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Replication factor used by the Cassandra keyspace. Default value is '1'.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="durable-writes" type="xsd:string"
 			use="optional" default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-Support durable writes in the Cassandra keyspace. Default value is 'true'.
-							]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-
-	<xsd:complexType name="tableType">
-		<xsd:attribute name="entity" type="xsd:string">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Entity class name.
-							]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="name" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Table name override.
-							]]></xsd:documentation>
+Whether to support durable writes in the Cassandra keyspace. Default value is 'true'.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
@@ -425,29 +362,44 @@ Table name override.
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the Session definition; "cassandra-session" by default.
-					]]></xsd:documentation>
+The name of the Session definition; default is 'cassandra-session'.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="cassandra-keyspace-ref" type="keyspaceRef"
+		<xsd:attribute name="cluster-ref" type="clusterRef"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra Cluster; default is 'cassandra-cluster'.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="keyspace-name" type="xsd:string"
 			use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The reference to a Cassandra Keyspace instance. Will default to 'cassandra-keyspace'.
-                                        ]]>
-				</xsd:documentation>
+The name of a Cassandra Keyspace.  No default; for the system keyspace, use the empty string.
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
 
-	<xsd:simpleType name="keyspaceRef">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<tool:annotation kind="ref">
-					<tool:assignable-to type="com.datastax.driver.core.Session" />
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-		<xsd:union memberTypes="xsd:string" />
-	</xsd:simpleType>
+	<xsd:complexType name="templateType">
+		<xsd:attribute name="id" type="xsd:ID" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the template; default is 'cassandra-template'.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="session-ref" type="sessionRef"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra Session; default is 'cassandra-session'.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
 </xsd:schema>
