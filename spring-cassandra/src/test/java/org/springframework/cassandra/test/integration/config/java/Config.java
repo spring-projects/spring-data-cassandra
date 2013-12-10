@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 public class Config extends AbstractIntegrationTestConfiguration {
 
 	@Override
-	protected String getKeyspace() {
+	protected String getKeyspaceName() {
 		return null;
 	}
 }

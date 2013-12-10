@@ -21,7 +21,7 @@ public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractInte
 	}
 
 	protected void createKeyspaceIfNecessary() {
-		String keyspace = getKeyspace();
+		String keyspace = getKeyspaceName();
 		if (!StringUtils.hasText(keyspace)) {
 			return;
 		}

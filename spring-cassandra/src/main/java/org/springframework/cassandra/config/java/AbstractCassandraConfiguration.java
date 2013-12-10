@@ -36,7 +36,7 @@ public abstract class AbstractCassandraConfiguration {
 	/**
 	 * The name of the keyspace to connect to. If {@literal null} or empty, then the system keyspace will be used.
 	 */
-	protected abstract String getKeyspace();
+	protected abstract String getKeyspaceName();
 
 	/**
 	 * The {@link Cluster} instance to connect to. Must not be null.
@@ -51,19 +51,15 @@ public abstract class AbstractCassandraConfiguration {
 	 */
 	@Bean
 	public Session session() {
-		String keyspace = getKeyspace();
-		if (StringUtils.hasText(keyspace)) {
-			return cluster().connect(keyspace);
-		} else {
-			return cluster().connect();
-		}
+		String keyspaceName = getKeyspaceName();
+		return StringUtils.hasText(keyspaceName) ? cluster().connect(keyspaceName) : cluster().connect();
 	}
 
 	/**
 	 * A {@link CassandraTemplate} created from the {@link Session} returned by {@link #session()}.
 	 */
 	@Bean
-	public CassandraOperations cassandraTemplate() {
+	public CassandraOperations template() {
 		return new CassandraTemplate(session());
 	}
 }
