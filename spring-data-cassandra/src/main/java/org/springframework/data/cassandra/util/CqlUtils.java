@@ -355,7 +355,7 @@ public abstract class CqlUtils {
 	/**
 	 * Create a Batch Query object for multiple deletes.
 	 * 
-	 * @param keyspace
+	 * @param keyspaceName
 	 * @param tableName
 	 * @param entities
 	 * @param entity

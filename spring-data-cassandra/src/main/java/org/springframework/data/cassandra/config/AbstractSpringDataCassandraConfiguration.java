@@ -65,7 +65,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 */
 	@Bean
 	public SpringDataKeyspace keyspace() throws Exception {
-		return new SpringDataKeyspace(getKeyspace(), session(), converter());
+		return new SpringDataKeyspace(getKeyspaceName(), session(), converter());
 	}
 
 	/**
@@ -88,7 +88,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * @throws Exception
 	 */
 	@Bean
-	public CassandraAdminOperations cassandraAdminTemplate() throws Exception {
+	public CassandraAdminOperations adminTemplate() throws Exception {
 		return new CassandraAdminTemplate(keyspace());
 	}
 
@@ -150,5 +150,4 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
 	}
-
 }
