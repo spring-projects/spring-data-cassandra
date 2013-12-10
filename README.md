@@ -1,8 +1,8 @@
-= Spring Data Cassandra Project Info
+# Spring Data Cassandra Project Info
 
-== Current Status
+## Current Status
 
-This community-led http://projects.spring.io/spring-data[Spring Data]
+This community-led [Spring Data](http://projects.spring.io/spring-data)
 subproject is underway.
 
 A first milestone (M1) is expected sometime in early 1Q14 built on the
@@ -14,23 +14,23 @@ following artifacts (or more recent versions thereof):
 
 The GA release is expected as part of the as-yet unnamed fourth Spring
 Data Release Train "D", following Spring Data Release Train
-https://github.com/spring-projects/spring-data-commons/wiki/Release-Train-Codd[Codd].
+[Codd](https://github.com/spring-projects/spring-data-commons/wiki/Release-Train-Codd).
 
-== Cassandra 2.x
+## Cassandra 2.x
 
 We are anticipating support for Cassandra 2.x and Datastax Java Driver
 2.x in a parallel branch after the 1.x-based support has been
 released.
 
-== Source Repository & Issue Tracking
+## Source Repository & Issue Tracking
 
 In the next few weeks, we will be transferring the source repository
-on GitHub to the https://github.com/spring-projects[Spring]
+on GitHub to the [Spring](https://github.com/spring-projects)
 organization.  Once it's there, we can begin taking contributions from
 interested parties.  In the meantime, the Spring Data Cassandra JIRA
-can be found at https://jira.springsource.org/browse/DATACASS.
+can be found [here](https://jira.springsource.org/browse/DATACASS).
 
-== Contact
+## Contact
 
 For more information, feel free to contact the individuals listed
 below:
@@ -38,18 +38,18 @@ below:
 * David Webb:  dwebb <at> prowaveconsulting <dot> com
 * Matthew Adams:  matthew <dot> adams <at> scispike <dot> com
 
-== Sponsoring Companies
+## Sponsoring Companies
 
 Spring Data Cassandra is being led and supported by the following
 companies and individuals:
 
-* http://www.prowaveconsulting.com[Prowave Consulting]
-* http://www.scispike.com[SciSpike]
-* http://www.vha.com[VHA]
+* [Prowave Consulting](http://www.prowaveconsulting.com)
+* [SciSpike](http://www.scispike.com)
+* [VHA](http://www.vha.com)
 * Alexander Shvid
 
 The following companies and individuals are also generously providing
 support:
 
-* http://www.datastax.com[DataStax]
-* http://www.spring.io[Spring] @ http://www.gopivotal.com[Pivotal]
+* [DataStax](http://www.datastax.com)
+* [Spring](http://www.spring.io) @ [Pivotal](http://www.gopivotal.com)

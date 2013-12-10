@@ -22,8 +22,10 @@
 
 	<modules>
 		<module>spring-cassandra</module>
+		<!-- 
 		<module>spring-data-cassandra</module>
 		<module>spring-data-cassandra-distribution</module>
+		 -->
 	</modules>
 
 	<properties>
