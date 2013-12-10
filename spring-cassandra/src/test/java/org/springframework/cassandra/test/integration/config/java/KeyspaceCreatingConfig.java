@@ -8,7 +8,7 @@ public class KeyspaceCreatingConfig extends AbstractKeyspaceCreatingConfiguratio
 	public static final String KEYSPACE = "kcc";
 
 	@Override
-	protected String getKeyspace() {
+	protected String getKeyspaceName() {
 		return KEYSPACE;
 	}
 }

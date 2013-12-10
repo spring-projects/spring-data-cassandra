@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
 
 import com.datastax.driver.core.Session;
@@ -28,20 +29,19 @@ import com.datastax.driver.core.Session;
  * 
  * @author Matthew T. Adams
  */
-
-public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTemplate>, InitializingBean {
+public class CassandraTemplateFactoryBean implements FactoryBean<CassandraOperations>, InitializingBean {
 
 	private static final Logger log = LoggerFactory.getLogger(CassandraTemplateFactoryBean.class);
 
 	private CassandraTemplate template;
 	private Session session;
 
-	public CassandraTemplate getObject() {
+	public CassandraOperations getObject() {
 		return template;
 	}
 
-	public Class<? extends CassandraTemplate> getObjectType() {
-		return CassandraTemplate.class;
+	public Class<? extends CassandraOperations> getObjectType() {
+		return CassandraOperations.class;
 	}
 
 	public boolean isSingleton() {
