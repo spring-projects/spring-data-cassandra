@@ -57,20 +57,6 @@ Defines a Cassandra Cluster.
 		</xsd:annotation>
 	</xsd:element>
 
-	<xsd:element name="keyspace" type="keyspaceType">
-		<xsd:annotation>
-			<xsd:documentation
-				source="org.springframework.data.cassandra.core.CassandraKeyspaceFactoryBean"><![CDATA[
-Defines a Cassandra Session instance used for accessing Cassandra Keyspace'.
-			]]></xsd:documentation>
-			<xsd:appinfo>
-				<tool:annotation>
-					<tool:exports type="com.datastax.driver.core.Session" />
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-	</xsd:element>
-	
 	<xsd:complexType name="clusterType">
 		<xsd:sequence>
 			<xsd:element name="local-pooling-options" type="poolingOptionsType"
@@ -204,28 +190,6 @@ RetryPolicy implementation.
 		</xsd:attribute>
 	</xsd:complexType>
 
-	<xsd:complexType name="keyspaceType">
-		<xsd:sequence>
-			<xsd:element name="keyspace-attributes" type="keyspaceAttributesType"
-				maxOccurs="1" minOccurs="0"></xsd:element>
-		</xsd:sequence>
-		<xsd:attribute name="id" type="xsd:ID" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-					The name of the Keyspace definition (by default
-					"cassandra-keyspace")
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="name" type="xsd:string">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The name of the Cassandra keyspace.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-
 	<xsd:simpleType name="clusterRef" final="union">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -327,33 +291,6 @@ Sets the SO_RCVBUF socket option.
 				<xsd:documentation><![CDATA[
 Sets the SO_SNDBUF socket option.
 							]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-
-	<xsd:complexType name="keyspaceAttributesType">
-		<xsd:attribute name="replication-strategy" type="xsd:string"
-			use="optional" default="SimpleStrategy">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Replication strategy of the Cassandra keyspace. Default value is 'SimpleStrategy'.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="replication-factor" type="xsd:string"
-			use="optional" default="1">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Replication factor used by the Cassandra keyspace. Default value is '1'.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="durable-writes" type="xsd:string"
-			use="optional" default="true">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Whether to support durable writes in the Cassandra keyspace. Default value is 'true'.
-				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>

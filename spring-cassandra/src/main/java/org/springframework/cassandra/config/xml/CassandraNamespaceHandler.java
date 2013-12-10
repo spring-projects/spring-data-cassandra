@@ -29,7 +29,6 @@ public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
 	public void init() {
 
 		registerBeanDefinitionParser("cluster", new CassandraClusterParser());
-		// registerBeanDefinitionParser("keyspace", new CassandraKeyspaceParser());
 		registerBeanDefinitionParser("session", new CassandraSessionParser());
 		registerBeanDefinitionParser("template", new CassandraTemplateParser());
 	}
