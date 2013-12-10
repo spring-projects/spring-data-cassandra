@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
+package org.springframework.cassandra.config.xml;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cassandra.config.CompressionType;
+import org.springframework.cassandra.config.PoolingOptionsConfig;
+import org.springframework.cassandra.config.SocketOptionsConfig;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.data.cassandra.config.CompressionType;
-import org.springframework.data.cassandra.config.PoolingOptionsConfig;
-import org.springframework.data.cassandra.config.SocketOptionsConfig;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.AuthProvider;
@@ -40,6 +40,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * Convenient factory for configuring a Cassandra Cluster.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 
 public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, InitializingBean, DisposableBean,

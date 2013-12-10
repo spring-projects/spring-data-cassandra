@@ -69,7 +69,7 @@
 			<name>Alex Shvid</name>
 			<email>a at shvid.com</email>
 			<roles>
-			    <role>Project Lead</role>
+				<role>Project Lead</role>
 				<role>Developer</role>
 			</roles>
 			<timezone>-8</timezone>
@@ -241,7 +241,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-			    	<argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
+					<argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
 					<parallel>methods</parallel>
 					<threadCount>10</threadCount>
 					<useFile>false</useFile>
@@ -262,7 +262,8 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${failsafe.version}</version>
 				<configuration>
-				    <argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
+					<forkMode>always</forkMode>
+					<argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
 					<useFile>false</useFile>
 					<includes>
 						<include>**/test/integration/**/*.java</include>

@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config;
+package org.springframework.cassandra.config.xml;
 
 /**
  * @author Alex Shvid
  * @author David Webb
+ * @author Matthew T. Adams
  */
 public final class BeanNames {
 
@@ -27,5 +28,5 @@ public final class BeanNames {
 	public static final String CASSANDRA_CLUSTER = "cassandra-cluster";
 	public static final String CASSANDRA_KEYSPACE = "cassandra-keyspace";
 	public static final String CASSANDRA_SESSION = "cassandra-session";
-
+	public static final String CASSANDRA_TEMPLATE = "cassandra-template";
 }

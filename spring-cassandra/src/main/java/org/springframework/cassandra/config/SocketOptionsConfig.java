@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config;
+package org.springframework.cassandra.config;
 
 /**
- * Socket options POJO. Uses to configure Netty.
+ * Socket options.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public class SocketOptionsConfig {
 
@@ -85,5 +86,4 @@ public class SocketOptionsConfig {
 	public void setSendBufferSize(Integer sendBufferSize) {
 		this.sendBufferSize = sendBufferSize;
 	}
-
 }

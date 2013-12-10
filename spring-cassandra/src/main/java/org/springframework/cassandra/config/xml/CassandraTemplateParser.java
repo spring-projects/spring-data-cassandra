@@ -13,57 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config;
+package org.springframework.cassandra.config.xml;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.cassandra.core.SessionFactoryBean;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;session;gt; definitions.
+ * Parser for &lt;template&gt; definitions.
  * 
  * @author David Webb
+ * @author Matthew T. Adams
  */
 
-public class CassandraSessionParser extends AbstractSimpleBeanDefinitionParser {
+public class CassandraTemplateParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return SessionFactoryBean.class;
+		return CassandraTemplateFactoryBean.class;
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
-	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : BeanNames.CASSANDRA_SESSION;
+		return StringUtils.hasText(id) ? id : BeanNames.CASSANDRA_TEMPLATE;
 	}
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		String keyspaceRef = element.getAttribute("cassandra-keyspace-ref");
-		if (!StringUtils.hasText(keyspaceRef)) {
-			keyspaceRef = BeanNames.CASSANDRA_KEYSPACE;
+		String sessionRef = element.getAttribute("session-ref");
+		if (!StringUtils.hasText(sessionRef)) {
+			sessionRef = BeanNames.CASSANDRA_SESSION;
 		}
-		builder.addPropertyReference("keyspace", keyspaceRef);
-
-		postProcess(builder, element);
+		builder.addPropertyReference("session", sessionRef);
 	}
-
-	@Override
-	protected void postProcess(BeanDefinitionBuilder builder, Element element) {
-
-	}
-
 }
