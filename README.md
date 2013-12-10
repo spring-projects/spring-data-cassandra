@@ -49,6 +49,10 @@ This Template extends the ``CassnadraTemplate`` to provide even more interaction
 The ``CassandraDataTemplate`` is the customer of the Repository interface that will complete the spring-data-cassandra module.
 This _DataTemplate_ gives the developer the luxury of working with POJOs and the Template pattern without using the Repository interface.
 
+#### Cassandra Repository
+
+The implementation of the standard Spring Data Repository Interface.
+
 #### Official Reference Guide
 
 Once we have all the inner workings of the Repository interface completed, we will publish a full Reference Guide on using all of
