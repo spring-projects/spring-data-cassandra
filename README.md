@@ -49,10 +49,6 @@ This Template extends the ``CassnadraTemplate`` to provide even more interaction
 The ``CassandraDataTemplate`` is the customer of the Repository interface that will complete the spring-data-cassandra module.
 This _DataTemplate_ gives the developer the luxury of working with POJOs and the Template pattern without using the Repository interface.
 
-#### Cassandra Repository
-
-This is the implementation of the familiar Spring Data Repository Interface, which includes all the CRUD methods with which you are already familiar.
-
 #### Official Reference Guide
 
 Once we have all the inner workings of the Repository interface completed, we will publish a full Reference Guide on using all of
@@ -196,20 +192,15 @@ below:
 ## Sponsoring Companies
 
 Spring Data Cassandra is being led and supported by the following
-companies:
+companies and individuals:
 
 * [Prowave Consulting](http://www.prowaveconsulting.com)
 * [SciSpike](http://www.scispike.com)
 * [VHA](http://www.vha.com)
+* Alexander Shvid
 
-The following companies are also generously providing
+The following companies and individuals are also generously providing
 support:
 
 * [DataStax](http://www.datastax.com)
 * [Spring](http://www.spring.io) @ [Pivotal](http://www.gopivotal.com)
-
-## Individual Contributors
-
-The following individuals have dedicated a large part of their time to the success of this project.
-
-* Alexander Shvid
