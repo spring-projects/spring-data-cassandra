@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+	xmlns:cassandra-base="http://www.springframework.org/schema/cassandra"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
@@ -14,13 +15,13 @@
 	<cassandra:cluster id="cassandra-cluster"
 		contactPoints="${cassandra.contactPoints}" port="${cassandra.port}"
 		compression="SNAPPY">
-		<cassandra:local-pooling-options
+		<cassandra-base:local-pooling-options
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="2" max-connections="8" />
-		<cassandra:remote-pooling-options
+		<cassandra-base:remote-pooling-options
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="1" max-connections="2" />
-		<cassandra:socket-options
+		<cassandra-base:socket-options
 			connect-timeout-mls="5000" keep-alive="true" reuse-address="true"
 			so-linger="60" tcp-no-delay="true" receive-buffer-size="65536"
 			send-buffer-size="65536" />
@@ -36,7 +37,7 @@
 
 	<cassandra:keyspace id="cassandra-keyspace" name="${cassandra.keyspace}"
 		cassandra-cluster-ref="cassandra-cluster" cassandra-converter-ref="cassandra-converter">
-		<cassandra:keyspace-attributes auto="update"
+		<cassandra-base:keyspace-attributes auto="update"
 			replication-stategy="SimpleStrategy" replication-factor="1"
 			durable-writes="true">
 			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.Comment" />
@@ -45,7 +46,7 @@
 			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.Post" />
 			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.Timeline" />
 			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.User" />
-		</cassandra:keyspace-attributes>
+		</cassandra-base:keyspace-attributes>
 	</cassandra:keyspace>
 	
 	<cassandra:session id="cassandra-session" cassandra-keyspace-ref="cassandra-keyspace"/>
