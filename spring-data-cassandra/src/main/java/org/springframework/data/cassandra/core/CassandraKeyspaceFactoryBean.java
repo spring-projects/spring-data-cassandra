@@ -205,7 +205,7 @@ public class CassandraKeyspaceFactoryBean implements FactoryBean<SpringDataKeysp
 					String entityClassName = tableAttributes.getEntity();
 					Class<?> entityClass = ClassUtils.forName(entityClassName, this.beanClassLoader);
 					CassandraPersistentEntity<?> entity = determineEntity(entityClass);
-					String useTableName = tableAttributes.getName() != null ? tableAttributes.getName() : entity.getTable();
+					String useTableName = tableAttributes.getName() != null ? tableAttributes.getName() : entity.getTableName();
 
 					if (keyspaceCreated) {
 						createNewTable(session, useTableName, entity);

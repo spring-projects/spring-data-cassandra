@@ -58,7 +58,7 @@ public class BasicCassandraPersistentEntityIntegrationTests {
 
 		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<Notification>(
 				ClassTypeInformation.from(Notification.class));
-		assertThat(entity.getTable(), is("messages"));
+		assertThat(entity.getTableName(), is("messages"));
 	}
 
 	@Test
@@ -66,7 +66,7 @@ public class BasicCassandraPersistentEntityIntegrationTests {
 
 		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<Area>(
 				ClassTypeInformation.from(Area.class));
-		assertThat(entity.getTable(), is("123"));
+		assertThat(entity.getTableName(), is("123"));
 	}
 
 	@Test
@@ -82,7 +82,7 @@ public class BasicCassandraPersistentEntityIntegrationTests {
 				ClassTypeInformation.from(UserLine.class));
 		entity.setApplicationContext(context);
 
-		assertThat(entity.getTable(), is("user_line"));
+		assertThat(entity.getTableName(), is("user_line"));
 	}
 
 	@After

@@ -21,14 +21,12 @@ import org.springframework.data.mapping.PersistentEntity;
  * Cassandra specific {@link PersistentEntity} abstraction.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public interface CassandraPersistentEntity<T> extends PersistentEntity<T, CassandraPersistentProperty> {
 
 	/**
-	 * Returns the table the entity shall be persisted to.
-	 * 
-	 * @return
+	 * Returns the table name to which the entity shall be persisted.
 	 */
-	String getTable();
-
+	String getTableName();
 }

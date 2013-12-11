@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import java.util.Comparator;
-
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -32,7 +30,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.StringUtils;
 
 /**
- * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific meta-data such as the
+ * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific metadata such as the
  * table name.
  * 
  * @author Alex Shvid
@@ -52,7 +50,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
 
-		super(typeInformation, CassandraPersistentPropertyComparator.INSTANCE);
+		super(typeInformation, CassandraPersistentPropertyColumnNameComparator.INSTANCE);
 
 		this.parser = new SpelExpressionParser();
 		this.context = new StandardEvaluationContext();
@@ -68,10 +66,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
 		context.addPropertyAccessor(new BeanFactoryAccessor());
@@ -79,34 +73,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		context.setRootObject(applicationContext);
 	}
 
-	/**
-	 * Returns the table the entity shall be persisted to.
-	 * 
-	 * @return
-	 */
-	public String getTable() {
+	public String getTableName() {
 		Expression expression = parser.parseExpression(table, ParserContext.TEMPLATE_EXPRESSION);
 		return expression.getValue(context, String.class);
 	}
-
-	/**
-	 * {@link Comparator} implementation inspecting the {@link CassandraPersistentProperty}'s order.
-	 * 
-	 * @author Alex Shvid
-	 */
-	static enum CassandraPersistentPropertyComparator implements Comparator<CassandraPersistentProperty> {
-
-		INSTANCE;
-
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-		 */
-		public int compare(CassandraPersistentProperty o1, CassandraPersistentProperty o2) {
-
-			return o1.getColumnName().compareTo(o2.getColumnName());
-
-		}
-	}
-
 }
