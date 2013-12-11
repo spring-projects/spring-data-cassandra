@@ -28,6 +28,6 @@ import org.springframework.data.convert.EntityConverter;
 public interface CassandraConverter extends
 		EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Object> {
 
+	// TODO: move this method to a more appropriate location
 	CreateTableSpecification getCreateTableSpecification(CassandraPersistentEntity<?> entity);
-
 }

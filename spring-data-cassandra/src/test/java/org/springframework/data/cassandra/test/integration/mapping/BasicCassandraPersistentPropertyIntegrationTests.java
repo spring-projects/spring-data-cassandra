@@ -28,9 +28,9 @@ import org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
@@ -81,6 +81,6 @@ public class BasicCassandraPersistentPropertyIntegrationTests {
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Field field) {
-		return new BasicCassandraPersistentProperty(field, null, entity, new SimpleTypeHolder());
+		return new BasicCassandraPersistentProperty(field, null, entity, new CassandraSimpleTypeHolder());
 	}
 }

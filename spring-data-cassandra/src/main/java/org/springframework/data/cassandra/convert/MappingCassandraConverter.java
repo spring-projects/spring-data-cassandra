@@ -50,8 +50,8 @@ import com.datastax.driver.core.querybuilder.Update;
  * 
  * @author Alex Shvid
  */
-public class MappingCassandraConverter extends AbstractCassandraConverter implements ApplicationContextAware,
-		BeanClassLoaderAware {
+public class MappingCassandraConverter extends AbstractCassandraConverter implements CassandraConverter,
+		ApplicationContextAware, BeanClassLoaderAware {
 
 	protected static final Logger log = LoggerFactory.getLogger(MappingCassandraConverter.class);
 
@@ -114,7 +114,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
 	}
 
-	private <S extends Object> S readRowInternal(final CassandraPersistentEntity<S> entity, final Row row) {
+	protected <S extends Object> S readRowInternal(final CassandraPersistentEntity<S> entity, final Row row) {
 
 		final DefaultSpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
 
@@ -127,25 +127,38 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		S instance = instantiator.createInstance(entity, parameterProvider);
 
 		final BeanWrapper<CassandraPersistentEntity<S>, S> wrapper = BeanWrapper.create(instance, conversionService);
-		final S result = wrapper.getBean();
+		S result = wrapper.getBean();
 
-		// Set properties not already set in the constructor
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				boolean isConstructorProperty = entity.isConstructorArgument(prop);
-				boolean hasValueForProperty = row.getColumnDefinitions().contains(prop.getColumnName());
-
-				if (!hasValueForProperty || isConstructorProperty) {
-					return;
-				}
-
-				Object obj = propertyProvider.getPropertyValue(prop);
-				wrapper.setProperty(prop, obj, useFieldAccessOnly);
+				MappingCassandraConverter.this.handlePropertyRead(row, entity, prop, propertyProvider, wrapper);
 			}
 		});
 
 		return result;
+	}
+
+	protected void handlePropertyRead(final Row row, final CassandraPersistentEntity<?> entity,
+			final CassandraPersistentProperty prop,
+			final PropertyValueProvider<CassandraPersistentProperty> propertyProvider, final BeanWrapper<?, ?> wrapper) {
+
+		if (entity.isConstructorArgument(prop)) { // skip 'cause prop was set in ctor
+			return;
+		}
+
+		if (prop.isCompositePrimaryKey()) {
+			// TODO: handle composite primary key properties via recursion into this method
+		}
+
+		boolean hasValueForProperty = row.getColumnDefinitions().contains(prop.getColumnName());
+		if (!hasValueForProperty) {
+			return;
+		}
+
+		Object obj = propertyProvider.getPropertyValue(prop);
+		wrapper.setProperty(prop, obj, useFieldAccessOnly);
 	}
 
 	public void setUseFieldAccessOnly(boolean useFieldAccessOnly) {

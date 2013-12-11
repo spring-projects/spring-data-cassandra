@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.mapping;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
  * Cassandra specific {@link PersistentEntity} abstraction.
@@ -23,7 +24,7 @@ import org.springframework.data.mapping.PersistentEntity;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-public interface CassandraPersistentEntity<T> extends PersistentEntity<T, CassandraPersistentProperty> {
+public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T, CassandraPersistentProperty> {
 
 	/**
 	 * Returns the table name to which the entity shall be persisted.
