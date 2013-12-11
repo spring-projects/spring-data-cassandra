@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
  * table name.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty> implements
 		CassandraPersistentEntity<T>, ApplicationContextAware {
@@ -44,7 +45,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	/**
 	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
-	 * name to the entities simple type name.
+	 * name to the entity's simple type name.
 	 * 
 	 * @param typeInformation
 	 */
@@ -56,14 +57,10 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		this.context = new StandardEvaluationContext();
 
 		Class<?> rawType = typeInformation.getType();
-		String fallback = CassandraNamingUtils.getPreferredTableName(rawType);
+		Table anno = rawType.getAnnotation(Table.class);
 
-		if (rawType.isAnnotationPresent(Table.class)) {
-			Table d = rawType.getAnnotation(Table.class);
-			this.table = StringUtils.hasText(d.name()) ? d.name() : fallback;
-		} else {
-			this.table = fallback;
-		}
+		this.table = anno != null && StringUtils.hasText(anno.name()) ? anno.name() : CassandraNamingUtils
+				.getPreferredTableName(rawType);
 	}
 
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

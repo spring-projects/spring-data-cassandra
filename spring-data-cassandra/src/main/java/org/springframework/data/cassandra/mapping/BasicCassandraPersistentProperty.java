@@ -59,7 +59,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return true;
 		}
 
-		return getField().isAnnotationPresent(PrimaryKey.class);
+		return isAnnotationPresent(PrimaryKey.class);
 	}
 
 	@Override
@@ -70,85 +70,105 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	public String getColumnName() {
 
 		// first check @Column annotation
-		Column annotation = getField().getAnnotation(Column.class);
-		if (annotation != null && StringUtils.hasText(annotation.value())) {
-			return annotation.value();
+		Column column = findAnnotation(Column.class);
+		if (column != null && StringUtils.hasText(column.value())) {
+			return column.value();
 		}
 
 		// else check @KeyColumn annotation
-		PrimaryKeyColumn anno = getField().getAnnotation(PrimaryKeyColumn.class);
-		if (anno == null || !StringUtils.hasText(anno.value())) {
-			return field.getName();
+		PrimaryKeyColumn pk = findAnnotation(PrimaryKeyColumn.class);
+		if (pk != null && StringUtils.hasText(pk.value())) {
+			return pk.value();
 		}
-		return anno.value();
+
+		// else default
+		return field.getName().toLowerCase();
 	}
 
 	public Ordering getOrdering() {
 
-		PrimaryKeyColumn anno = getField().getAnnotation(PrimaryKeyColumn.class);
+		PrimaryKeyColumn anno = findAnnotation(PrimaryKeyColumn.class);
 
 		return anno == null ? null : anno.ordering();
 	}
 
 	public DataType getDataType() {
-		CassandraType annotation = getField().getAnnotation(CassandraType.class);
+
+		CassandraType annotation = findAnnotation(CassandraType.class);
 		if (annotation != null) {
-			return qualifyAnnotatedType(annotation);
+			return getDataTypeFor(annotation);
 		}
+
 		if (isMap()) {
+
 			List<TypeInformation<?>> args = getTypeInformation().getTypeArguments();
 			ensureTypeArguments(args.size(), 2);
-			return DataType.map(autodetectPrimitiveType(args.get(0).getType()),
-					autodetectPrimitiveType(args.get(1).getType()));
+
+			return DataType.map(getDataTypeFor(args.get(0).getType()), getDataTypeFor(args.get(1).getType()));
 		}
+
 		if (isCollectionLike()) {
+
 			List<TypeInformation<?>> args = getTypeInformation().getTypeArguments();
 			ensureTypeArguments(args.size(), 1);
+
 			if (Set.class.isAssignableFrom(getType())) {
-				return DataType.set(autodetectPrimitiveType(args.get(0).getType()));
-			} else if (List.class.isAssignableFrom(getType())) {
-				return DataType.list(autodetectPrimitiveType(args.get(0).getType()));
+				return DataType.set(getDataTypeFor(args.get(0).getType()));
+			}
+			if (List.class.isAssignableFrom(getType())) {
+				return DataType.list(getDataTypeFor(args.get(0).getType()));
 			}
 		}
-		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(this.getType());
+
+		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(getType());
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(
-					"only primitive types and Set,List,Map collections are allowed, unknown type for property '" + this.getName()
-							+ "' type is '" + this.getType() + "' in the entity " + this.getOwner().getName());
+					String
+							.format(
+									"unknown type for property [%s], type [%s] in entity [%s]; only primitive types and collections or maps of primitive types are allowed",
+									getName(), getType(), getOwner().getName()));
 		}
 		return dataType;
 	}
 
-	private DataType qualifyAnnotatedType(CassandraType annotation) {
+	private DataType getDataTypeFor(CassandraType annotation) {
+
 		DataType.Name type = annotation.type();
+
 		if (type.isCollection()) {
 			switch (type) {
+
 			case MAP:
 				ensureTypeArguments(annotation.typeArguments().length, 2);
-				return DataType.map(resolvePrimitiveType(annotation.typeArguments()[0]),
-						resolvePrimitiveType(annotation.typeArguments()[1]));
+				return DataType.map(getDataTypeFor(annotation.typeArguments()[0]),
+						getDataTypeFor(annotation.typeArguments()[1]));
+
 			case LIST:
 				ensureTypeArguments(annotation.typeArguments().length, 1);
-				return DataType.list(resolvePrimitiveType(annotation.typeArguments()[0]));
+				return DataType.list(getDataTypeFor(annotation.typeArguments()[0]));
+
 			case SET:
 				ensureTypeArguments(annotation.typeArguments().length, 1);
-				return DataType.set(resolvePrimitiveType(annotation.typeArguments()[0]));
+				return DataType.set(getDataTypeFor(annotation.typeArguments()[0]));
+
 			default:
-				throw new InvalidDataAccessApiUsageException("unknown collection DataType for property '" + this.getName()
-						+ "' type is '" + this.getType() + "' in the entity " + this.getOwner().getName());
+				throw new InvalidDataAccessApiUsageException(
+						String.format("unknown multivalued DataType [%s] for property [%s] in entity [%s]", type, getType(),
+								getOwner().getName()));
 			}
 		} else {
+
 			return CassandraSimpleTypeHolder.getDataTypeFor(type);
 		}
 	}
 
 	public boolean isIndexed() {
-		return getField().isAnnotationPresent(Indexed.class);
+		return isAnnotationPresent(Indexed.class);
 	}
 
 	public boolean isPartitionKeyColumn() {
 
-		PrimaryKeyColumn anno = getField().getAnnotation(PrimaryKeyColumn.class);
+		PrimaryKeyColumn anno = findAnnotation(PrimaryKeyColumn.class);
 
 		return anno != null && anno.type() == PrimaryKeyType.PARTITIONED;
 	}
@@ -156,14 +176,14 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public boolean isClusterKeyColumn() {
 
-		PrimaryKeyColumn anno = getField().getAnnotation(PrimaryKeyColumn.class);
+		PrimaryKeyColumn anno = findAnnotation(PrimaryKeyColumn.class);
 
 		return anno != null && anno.type() == PrimaryKeyType.CLUSTERED;
 	}
 
 	@Override
 	public boolean isPrimaryKeyColumn() {
-		return getField().isAnnotationPresent(PrimaryKeyColumn.class);
+		return isAnnotationPresent(PrimaryKeyColumn.class);
 	}
 
 	@Override
@@ -171,7 +191,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return new Association<CassandraPersistentProperty>(this, null);
 	}
 
-	DataType resolvePrimitiveType(DataType.Name typeName) {
+	protected DataType getDataTypeFor(DataType.Name typeName) {
 		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(typeName);
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(
@@ -181,7 +201,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return dataType;
 	}
 
-	DataType autodetectPrimitiveType(Class<?> javaType) {
+	protected DataType getDataTypeFor(Class<?> javaType) {
 		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(javaType);
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(
@@ -191,7 +211,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return dataType;
 	}
 
-	void ensureTypeArguments(int args, int expected) {
+	protected void ensureTypeArguments(int args, int expected) {
 		if (args != expected) {
 			throw new InvalidDataAccessApiUsageException("expected " + expected + " of typed arguments for the property  '"
 					+ this.getName() + "' type is '" + this.getType() + "' in the entity " + this.getOwner().getName());

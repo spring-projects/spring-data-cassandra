@@ -20,6 +20,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.data.annotation.Id;
+
 /**
  * Identifies the primary key field of the entity, which may be of a basic type or of a type that represents a composite
  * primary key class. This field corresponds to the <code>PRIMARY KEY</code> of the corresponding Cassandra table.
@@ -29,6 +31,6 @@ import java.lang.annotation.Target;
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
-@org.springframework.data.annotation.Id
+@Id
 public @interface PrimaryKey {
 }

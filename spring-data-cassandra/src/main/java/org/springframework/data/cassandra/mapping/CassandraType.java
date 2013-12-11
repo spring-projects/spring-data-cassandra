@@ -31,8 +31,19 @@ import com.datastax.driver.core.DataType;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CassandraType {
 
+	/**
+	 * The {@link DataType}.{@link Name} of the property.
+	 */
 	DataType.Name type();
 
+	/**
+	 * If the property is collection-like, then this attribute holds a single {@link DataType}.{@link Name}, representing
+	 * the element type of the collection.
+	 * <p/>
+	 * If the property is map, then this attribute holds exactly two {@link DataType}.{@link Name}s: the first is the key
+	 * type, and the second is the value type.
+	 * <p/>
+	 * If the property is neither collection-like or a map, then this attribute is ignored.
+	 */
 	DataType.Name[] typeArguments() default {};
-
 }
