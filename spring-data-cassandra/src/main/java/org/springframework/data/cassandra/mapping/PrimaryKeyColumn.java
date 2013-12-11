@@ -28,7 +28,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
  * cluster key field.
  */
 @Retention(value = RetentionPolicy.RUNTIME)
-@Target(value = { ElementType.FIELD, ElementType.METHOD })
+@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 public @interface PrimaryKeyColumn {
 
 	/**
