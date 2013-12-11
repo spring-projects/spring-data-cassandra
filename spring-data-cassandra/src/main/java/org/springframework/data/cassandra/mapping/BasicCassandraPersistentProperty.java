@@ -25,7 +25,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
-import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
@@ -48,7 +48,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 * @param simpleTypeHolder
 	 */
 	public BasicCassandraPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
-			CassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
+			CassandraPersistentEntity<?> owner, CassandraSimpleTypeHolder simpleTypeHolder) {
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
 	}
 
@@ -65,6 +65,24 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public boolean isCompositePrimaryKey() {
 		return getField().getType().isAnnotationPresent(CompositePrimaryKey.class);
+	}
+
+	@Override
+	public Class<?> getCompositePrimaryKeyType() {
+		if (!isCompositePrimaryKey()) {
+			return null;
+		}
+
+		return getField().getType();
+	}
+
+	@Override
+	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
+		if (!isCompositePrimaryKey()) {
+			return null;
+		}
+
+		return (CassandraPersistentEntity<?>) ClassTypeInformation.from(getCompositePrimaryKeyType());
 	}
 
 	public String getColumnName() {

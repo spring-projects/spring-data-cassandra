@@ -34,6 +34,18 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 	boolean isCompositePrimaryKey();
 
 	/**
+	 * Returns the type of the composite primary key class of this entity, or null if this class does not use a composite
+	 * primary key.
+	 */
+	Class<?> getCompositePrimaryKeyType();
+
+	/**
+	 * Returns a {@link CassandraPersistentEntity} representing the composite primary key class of this entity, or null if
+	 * this class does not use a composite primary key.
+	 */
+	CassandraPersistentEntity<?> getCompositePrimaryKeyEntity();
+
+	/**
 	 * The name of the column to which a property is persisted.
 	 */
 	String getColumnName();

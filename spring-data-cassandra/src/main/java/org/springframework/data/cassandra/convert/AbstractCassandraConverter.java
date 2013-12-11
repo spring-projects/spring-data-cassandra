@@ -22,8 +22,8 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.EntityInstantiators;
 
 /**
- * Base class for {@link CassandraConverter} implementations. Sets up a {@link GenericConversionService} and populates
- * basic converters.
+ * Base class for {@link CassandraConverter} implementations. Sets up a {@link GenericConversionService} and
+ * populates basic converters.
  * 
  * @author Alex Shvid
  */
