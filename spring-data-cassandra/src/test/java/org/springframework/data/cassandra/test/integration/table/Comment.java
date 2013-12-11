@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.Set;
 
 import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.Qualify;
+import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.mapping.Table;
 
 import com.datastax.driver.core.DataType;
@@ -41,7 +41,7 @@ public class Comment {
 
 	private String text;
 
-	@Qualify(type = DataType.Name.SET, typeArguments = { DataType.Name.TEXT })
+	@CassandraType(type = DataType.Name.SET, typeArguments = { DataType.Name.TEXT })
 	private Set<String> likes;
 
 	/*

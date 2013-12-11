@@ -42,7 +42,7 @@ public class CassandraMappingContext extends
 	 * Creates a new {@link CassandraMappingContext}.
 	 */
 	public CassandraMappingContext() {
-		setSimpleTypeHolder(CassandraSimpleTypes.HOLDER);
+		setSimpleTypeHolder(new CassandraSimpleTypeHolder());
 	}
 
 	/*

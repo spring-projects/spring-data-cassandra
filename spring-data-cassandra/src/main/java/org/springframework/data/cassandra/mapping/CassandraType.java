@@ -22,13 +22,14 @@ import java.lang.annotation.RetentionPolicy;
 import com.datastax.driver.core.DataType;
 
 /**
- * Qualifies data type as Cassandra type.
+ * Specifies the Cassandra type of the annotated property.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Qualify {
+public @interface CassandraType {
 
 	DataType.Name type();
 

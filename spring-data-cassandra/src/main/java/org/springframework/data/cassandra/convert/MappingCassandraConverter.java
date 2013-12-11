@@ -263,7 +263,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		final CreateTableSpecification spec = new CreateTableSpecification();
 
-		spec.name(entity.getTable());
+		spec.name(entity.getTableName());
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {

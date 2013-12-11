@@ -17,25 +17,19 @@ package org.springframework.data.cassandra.test.integration.mapping;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Date;
 
-import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.Column;
+import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
@@ -47,13 +41,19 @@ import org.springframework.util.ReflectionUtils;
  */
 public class BasicCassandraPersistentPropertyIntegrationTests {
 
-	CassandraPersistentEntity<Timeline> entity;
+	static class Timeline {
 
-	@BeforeClass
-	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
-			InterruptedException {
-		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+		@PrimaryKey
+		String id;
+
+		Date time;
+
+		@Column("message")
+		String text;
+
 	}
+
+	CassandraPersistentEntity<Timeline> entity;
 
 	@Before
 	public void setup() {
@@ -71,39 +71,16 @@ public class BasicCassandraPersistentPropertyIntegrationTests {
 	public void checksIdProperty() {
 		Field field = ReflectionUtils.findField(Timeline.class, "id");
 		CassandraPersistentProperty property = getPropertyFor(field);
-		assertThat(property.isIdProperty(), is(true));
+		assertTrue(property.isIdProperty());
 	}
 
 	@Test
-	public void returnsPropertyNameForUnannotatedProperties() {
+	public void returnsPropertyNameForUnannotatedProperty() {
 		Field field = ReflectionUtils.findField(Timeline.class, "time");
 		assertThat(getPropertyFor(field).getColumnName(), is("time"));
-	}
-
-	@After
-	public void clearCassandra() {
-		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-	}
-
-	@AfterClass
-	public static void stopCassandra() {
-		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Field field) {
 		return new BasicCassandraPersistentProperty(field, null, entity, new SimpleTypeHolder());
 	}
-
-	class Timeline {
-
-		@Id
-		String id;
-
-		Date time;
-
-		@Column("message")
-		String text;
-
-	}
-
 }

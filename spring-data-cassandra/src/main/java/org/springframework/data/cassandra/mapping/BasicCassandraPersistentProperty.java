@@ -91,7 +91,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	public DataType getDataType() {
-		Qualify annotation = getField().getAnnotation(Qualify.class);
+		CassandraType annotation = getField().getAnnotation(CassandraType.class);
 		if (annotation != null) {
 			return qualifyAnnotatedType(annotation);
 		}
@@ -110,7 +110,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 				return DataType.list(autodetectPrimitiveType(args.get(0).getType()));
 			}
 		}
-		DataType dataType = CassandraSimpleTypes.autodetectPrimitive(this.getType());
+		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(this.getType());
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(
 					"only primitive types and Set,List,Map collections are allowed, unknown type for property '" + this.getName()
@@ -119,7 +119,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return dataType;
 	}
 
-	private DataType qualifyAnnotatedType(Qualify annotation) {
+	private DataType qualifyAnnotatedType(CassandraType annotation) {
 		DataType.Name type = annotation.type();
 		if (type.isCollection()) {
 			switch (type) {
@@ -138,7 +138,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 						+ "' type is '" + this.getType() + "' in the entity " + this.getOwner().getName());
 			}
 		} else {
-			return CassandraSimpleTypes.resolvePrimitive(type);
+			return CassandraSimpleTypeHolder.getDataTypeFor(type);
 		}
 	}
 
@@ -172,7 +172,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	DataType resolvePrimitiveType(DataType.Name typeName) {
-		DataType dataType = CassandraSimpleTypes.resolvePrimitive(typeName);
+		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(typeName);
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(
 					"only primitive types are allowed inside collections for the property  '" + this.getName() + "' type is '"
@@ -182,7 +182,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	DataType autodetectPrimitiveType(Class<?> javaType) {
-		DataType dataType = CassandraSimpleTypes.autodetectPrimitive(javaType);
+		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(javaType);
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(
 					"only primitive types are allowed inside collections for the property  '" + this.getName() + "' type is '"
