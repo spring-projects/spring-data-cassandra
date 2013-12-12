@@ -19,6 +19,11 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.DataType;
 
+/**
+ * Base class for column changes that include {@link DataType} information.
+ * 
+ * @author Matthew T. Adams
+ */
 public abstract class ColumnTypeChangeSpecification extends ColumnChangeSpecification {
 
 	private DataType type;

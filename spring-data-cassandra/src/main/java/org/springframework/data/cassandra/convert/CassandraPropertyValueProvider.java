@@ -73,7 +73,7 @@ public class CassandraPropertyValueProvider implements PropertyValueProvider<Cas
 		}
 		DataType columnType = source.getColumnDefinitions().getType(columnName);
 
-		log.info(columnType.getName().name());
+		log.debug(columnType.getName().name());
 
 		/*
 		 * Dave Webb - Added handler for text since getBytes was throwing 

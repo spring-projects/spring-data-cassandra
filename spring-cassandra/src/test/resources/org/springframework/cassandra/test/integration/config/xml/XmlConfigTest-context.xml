@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/cassandra"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/cassandra http://www.springframework.org/schema/cassandra/spring-cassandra-1.0.xsd
+                         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:property-placeholder
+		location="classpath:/org/springframework/cassandra/test/integration/config/xml/xmlconfigtest.properties" />
+
+	<cassandra:cluster id="cassandra-cluster"
+		contactPoints="${cassandra.contactPoints}" port="${cassandra.port}">
+		<cassandra:local-pooling-options
+			min-simultaneous-requests="25" max-simultaneous-requests="100"
+			core-connections="2" max-connections="8" />
+		<cassandra:remote-pooling-options
+			min-simultaneous-requests="25" max-simultaneous-requests="100"
+			core-connections="1" max-connections="2" />
+		<cassandra:socket-options
+			connect-timeout-mls="5000" keep-alive="true" reuse-address="true"
+			so-linger="60" tcp-no-delay="true" receive-buffer-size="65536"
+			send-buffer-size="65536" />
+	</cassandra:cluster>
+
+	<cassandra:session id="cassandra-session"
+		keyspace-name="${cassandra.keyspace}" />
+
+	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CassandraTemplate">
+		<constructor-arg ref="cassandra-session" />
+	</bean>
+
+</beans>

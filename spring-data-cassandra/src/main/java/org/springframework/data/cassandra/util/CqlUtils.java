@@ -2,15 +2,11 @@ package org.springframework.data.cassandra.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.core.ConsistencyLevel;
-import org.springframework.cassandra.core.ConsistencyLevelResolver;
+import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.RetryPolicy;
-import org.springframework.cassandra.core.RetryPolicyResolver;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.convert.CassandraConverter;
@@ -155,7 +151,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static Query toInsertQuery(String keyspaceName, String tableName, final Object objectToSave,
-			Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
+			QueryOptions options, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		final Insert q = QueryBuilder.insertInto(keyspaceName, tableName);
 
@@ -167,13 +163,13 @@ public abstract class CqlUtils {
 		/*
 		 * Add Query Options
 		 */
-		addQueryOptions(q, optionsByName);
+		CassandraTemplate.addQueryOptions(q, options);
 
 		/*
 		 * Add TTL to Insert object
 		 */
-		if (optionsByName.get(QueryOptions.QueryOptionMapKeys.TTL) != null) {
-			q.using(QueryBuilder.ttl((Integer) optionsByName.get(QueryOptions.QueryOptionMapKeys.TTL)));
+		if (options != null && options.getTtl() != null) {
+			q.using(QueryBuilder.ttl(options.getTtl()));
 		}
 
 		return q;
@@ -193,7 +189,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static Query toUpdateQuery(String keyspaceName, String tableName, final Object objectToSave,
-			Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
+			QueryOptions options, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		final Update q = QueryBuilder.update(keyspaceName, tableName);
 
@@ -205,13 +201,13 @@ public abstract class CqlUtils {
 		/*
 		 * Add Query Options
 		 */
-		addQueryOptions(q, optionsByName);
+		CassandraTemplate.addQueryOptions(q, options);
 
 		/*
 		 * Add TTL to Insert object
 		 */
-		if (optionsByName.get(QueryOptions.QueryOptionMapKeys.TTL) != null) {
-			q.using(QueryBuilder.ttl((Integer) optionsByName.get(QueryOptions.QueryOptionMapKeys.TTL)));
+		if (options != null && options.getTtl() != null) {
+			q.using(QueryBuilder.ttl(options.getTtl()));
 		}
 
 		return q;
@@ -231,7 +227,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static <T> Batch toUpdateBatchQuery(final String keyspaceName, final String tableName,
-			final List<T> objectsToSave, Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter)
+			final List<T> objectsToSave, QueryOptions options, EntityWriter<Object, Object> entityWriter)
 			throws EntityWriterException {
 
 		/*
@@ -241,11 +237,14 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : objectsToSave) {
 
-			b.add((Statement) toUpdateQuery(keyspaceName, tableName, objectToSave, optionsByName, entityWriter));
+			b.add((Statement) toUpdateQuery(keyspaceName, tableName, objectToSave, options, entityWriter));
 
 		}
 
-		addQueryOptions(b, optionsByName);
+		/*
+		 * Add Query Options
+		 */
+		CassandraTemplate.addQueryOptions(b, options);
 
 		return b;
 
@@ -264,7 +263,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static <T> Batch toInsertBatchQuery(final String keyspaceName, final String tableName,
-			final List<T> objectsToSave, Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter)
+			final List<T> objectsToSave, QueryOptions options, EntityWriter<Object, Object> entityWriter)
 			throws EntityWriterException {
 
 		/*
@@ -274,11 +273,14 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : objectsToSave) {
 
-			b.add((Statement) toInsertQuery(keyspaceName, tableName, objectToSave, optionsByName, entityWriter));
+			b.add((Statement) toInsertQuery(keyspaceName, tableName, objectToSave, options, entityWriter));
 
 		}
 
-		addQueryOptions(b, optionsByName);
+		/*
+		 * Add Query Options
+		 */
+		CassandraTemplate.addQueryOptions(b, options);
 
 		return b;
 
@@ -296,7 +298,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static Query toDeleteQuery(String keyspace, String tableName, final Object objectToRemove,
-			Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
+			QueryOptions options, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		final Delete.Selection ds = QueryBuilder.delete();
 		final Delete q = ds.from(keyspace, tableName);
@@ -307,7 +309,7 @@ public abstract class CqlUtils {
 		 */
 		entityWriter.write(objectToRemove, w);
 
-		addQueryOptions(q, optionsByName);
+		CassandraTemplate.addQueryOptions(q, options);
 
 		return q;
 
@@ -353,7 +355,7 @@ public abstract class CqlUtils {
 	/**
 	 * Create a Batch Query object for multiple deletes.
 	 * 
-	 * @param keyspace
+	 * @param keyspaceName
 	 * @param tableName
 	 * @param entities
 	 * @param entity
@@ -363,7 +365,7 @@ public abstract class CqlUtils {
 	 * @throws EntityWriterException
 	 */
 	public static <T> Batch toDeleteBatchQuery(String keyspaceName, String tableName, List<T> entities,
-			Map<String, Object> optionsByName, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
+			QueryOptions options, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		/*
 		 * Return variable is a Batch statement
@@ -372,39 +374,13 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : entities) {
 
-			b.add((Statement) toDeleteQuery(keyspaceName, tableName, objectToSave, optionsByName, entityWriter));
+			b.add((Statement) toDeleteQuery(keyspaceName, tableName, objectToSave, options, entityWriter));
 
 		}
 
-		addQueryOptions(b, optionsByName);
+		CassandraTemplate.addQueryOptions(b, options);
 
 		return b;
-
-	}
-
-	/**
-	 * Add common Query options for all types of queries.
-	 * 
-	 * @param q
-	 * @param optionsByName
-	 */
-	private static void addQueryOptions(Query q, Map<String, Object> optionsByName) {
-
-		if (optionsByName == null) {
-			return;
-		}
-
-		/*
-		 * Add Query Options
-		 */
-		if (optionsByName.get(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL) != null) {
-			q.setConsistencyLevel(ConsistencyLevelResolver.resolve((ConsistencyLevel) optionsByName
-					.get(QueryOptions.QueryOptionMapKeys.CONSISTENCY_LEVEL)));
-		}
-		if (optionsByName.get(QueryOptions.QueryOptionMapKeys.RETRY_POLICY) != null) {
-			q.setRetryPolicy(RetryPolicyResolver.resolve((RetryPolicy) optionsByName
-					.get(QueryOptions.QueryOptionMapKeys.RETRY_POLICY)));
-		}
 
 	}
 

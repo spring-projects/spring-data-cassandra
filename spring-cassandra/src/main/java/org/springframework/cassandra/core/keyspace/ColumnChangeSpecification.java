@@ -18,6 +18,11 @@ package org.springframework.cassandra.core.keyspace;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
 
+/**
+ * Base class for column change specifications.
+ * 
+ * @author Matthew T. Adams
+ */
 public abstract class ColumnChangeSpecification {
 
 	private String name;
