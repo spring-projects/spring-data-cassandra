@@ -31,9 +31,9 @@ import com.datastax.driver.core.DataType;
  * Builder class to help construct CQL statements that involve column manipulation. Not threadsafe.
  * <p/>
  * Use {@link #name(String)} and {@link #type(String)} to set the name and type of the column, respectively. To specify
- * a <code>PRIMARY KEY</code> column, use {@link #primary()} or {@link #primary(Ordering)}. To specify that the
- * <code>PRIMARY KEY</code> column is or is part of the partition key, use {@link #partition()} instead of
- * {@link #primary()} or {@link #primary(Ordering)}.
+ * a <code>PRIMARY KEY</code> column, use {@link #clustered()} or {@link #clustered(Ordering)}. To specify that the
+ * <code>PRIMARY KEY</code> column is or is part of the partition key, use {@link #partitioned()} instead of
+ * {@link #clustered()} or {@link #clustered(Ordering)}.
  * 
  * @author Matthew T. Adams
  * @author Alex Shvid
@@ -77,8 +77,8 @@ public class ColumnSpecification {
 	 * 
 	 * @return this
 	 */
-	public ColumnSpecification partition() {
-		return partition(true);
+	public ColumnSpecification partitioned() {
+		return partitioned(true);
 	}
 
 	/**
@@ -88,20 +88,20 @@ public class ColumnSpecification {
 	 * 
 	 * @return this
 	 */
-	public ColumnSpecification partition(boolean partition) {
-		this.keyType = partition ? PARTITIONED : null;
+	public ColumnSpecification partitioned(boolean partitioned) {
+		this.keyType = partitioned ? PARTITIONED : null;
 		this.ordering = null;
 		return this;
 	}
 
 	/**
-	 * Identifies this column as a primary key column with default ordering. Sets the column's {@link #keyType} to
+	 * Identifies this column as a clustered key column with default ordering. Sets the column's {@link #keyType} to
 	 * {@link PrimaryKeyType#CLUSTERED} and its {@link #ordering} to {@link #DEFAULT_ORDERING}.
 	 * 
 	 * @return this
 	 */
-	public ColumnSpecification primary() {
-		return primary(DEFAULT_ORDERING);
+	public ColumnSpecification clustered() {
+		return clustered(DEFAULT_ORDERING);
 	}
 
 	/**
@@ -110,8 +110,8 @@ public class ColumnSpecification {
 	 * 
 	 * @return this
 	 */
-	public ColumnSpecification primary(Ordering order) {
-		return primary(order, true);
+	public ColumnSpecification clustered(Ordering order) {
+		return clustered(order, true);
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class ColumnSpecification {
 	 * 
 	 * @return this
 	 */
-	public ColumnSpecification primary(Ordering order, boolean primary) {
+	public ColumnSpecification clustered(Ordering order, boolean primary) {
 		this.keyType = primary ? CLUSTERED : null;
 		this.ordering = primary ? order : null;
 		return this;
