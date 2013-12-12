@@ -1,6 +1,5 @@
 package org.springframework.data.cassandra.core;
 
-import org.springframework.cassandra.core.Keyspace;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.util.Assert;
 
