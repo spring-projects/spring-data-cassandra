@@ -21,7 +21,6 @@ import java.util.Set;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.cassandra.config.java.AbstractCassandraConfiguration;
-import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +30,6 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
-import org.springframework.data.cassandra.core.SpringDataKeyspace;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -39,8 +37,6 @@ import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
-
-import com.datastax.driver.core.Session;
 
 /**
  * Base class for Spring Data Cassandra configuration using JavaConfig.
@@ -53,20 +49,6 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 		BeanClassLoaderAware {
 
 	private ClassLoader beanClassLoader;
-
-	/**
-	 * Creates a {@link SpringDataKeyspace} to be used by the {@link CassandraTemplate}. Will use the {@link Session}
-	 * instance configured in {@link #session()} and {@link CassandraConverter} configured in {@link #converter()}.
-	 * 
-	 * @see #cluster()
-	 * @see #Keyspace()
-	 * @return
-	 * @throws Exception
-	 */
-	@Bean
-	public SpringDataKeyspace keyspace() throws Exception {
-		return new SpringDataKeyspace(getKeyspaceName(), session(), converter());
-	}
 
 	/**
 	 * Return the base package to scan for mapped {@link Table}s. Will return the package name of the configuration class'
@@ -89,7 +71,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 */
 	@Bean
 	public CassandraAdminOperations adminTemplate() throws Exception {
-		return new CassandraAdminTemplate(keyspace());
+		return new CassandraAdminTemplate(session());
 	}
 
 	/**
