@@ -65,14 +65,14 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 		cql.append(" (");
 
 		List<ColumnSpecification> partitionKeys = new ArrayList<ColumnSpecification>();
-		List<ColumnSpecification> clusteredKeys = new ArrayList<ColumnSpecification>();
+		List<ColumnSpecification> clusterKeys = new ArrayList<ColumnSpecification>();
 		for (ColumnSpecification col : spec().getColumns()) {
 			col.toCql(cql).append(", ");
 
 			if (col.getKeyType() == PARTITIONED) {
 				partitionKeys.add(col);
 			} else if (col.getKeyType() == CLUSTERED) {
-				clusteredKeys.add(col);
+				clusterKeys.add(col);
 			}
 		}
 
@@ -91,11 +91,11 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 			// end partition key clause
 		}
 
-		if (!clusteredKeys.isEmpty()) {
+		if (!clusterKeys.isEmpty()) {
 			cql.append(", ");
 		}
 
-		appendColumnNames(cql, clusteredKeys);
+		appendColumnNames(cql, clusterKeys);
 
 		cql.append(")");
 		// end primary key clause
@@ -103,7 +103,7 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 		cql.append(")");
 		// end columns
 
-		StringBuilder ordering = createOrderingClause(clusteredKeys);
+		StringBuilder ordering = createOrderingClause(clusterKeys);
 		// begin options
 		// begin option clause
 		Map<String, Object> options = spec().getOptions();

@@ -55,11 +55,6 @@ import com.datastax.driver.core.querybuilder.Select;
 public class CassandraDataTemplate extends CassandraTemplate implements CassandraDataOperations {
 
 	/*
-	 * Default Keyspace if none is passed in.
-	 */
-	private static final String KEYSPACE_DEFAULT = "system";
-
-	/*
 	 * List of iterable classes when testing POJOs for specific operations.
 	 */
 	public static final Collection<String> ITERABLE_CLASSES;
@@ -115,7 +110,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 */
 	public CassandraDataTemplate(Session session, CassandraConverter converter, String keyspace) {
 		setSession(session);
-		this.keyspace = keyspace == null ? KEYSPACE_DEFAULT : keyspace;
+		this.keyspace = keyspace;
 		this.cassandraConverter = converter;
 		this.mappingContext = this.cassandraConverter.getMappingContext();
 	}

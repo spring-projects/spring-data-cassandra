@@ -1,14 +1,16 @@
 package org.springframework.data.cassandra.test.integration.config;
 
+import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
-import org.springframework.cassandra.core.SessionFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.AbstractCassandraConfiguration;
+import org.springframework.data.cassandra.config.AbstractSpringDataCassandraConfiguration;
+import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.core.CassandraDataTemplate;
-import org.springframework.data.cassandra.core.CassandraKeyspaceFactoryBean;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
@@ -17,50 +19,34 @@ import com.datastax.driver.core.Cluster.Builder;
  * Setup any spring configuration for unit tests
  * 
  * @author David Webb
- * 
+ * @author Matthew T. Adams
  */
 @Configuration
-public class TestConfig extends AbstractCassandraConfiguration {
+public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 
-	public static final String keyspace = "test";
+	public static final String keyspaceName = "test";
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.config.AbstractCassandraConfiguration#getKeyspaceName()
-	 */
 	@Override
 	protected String getKeyspaceName() {
-		return keyspace;
+		return keyspaceName;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.config.AbstractCassandraConfiguration#cluster()
-	 */
 	@Override
 	@Bean
 	public Cluster cluster() {
 
 		Builder builder = Cluster.builder();
-		builder.addContactPoint("127.0.0.1");
+		builder.addContactPoint("127.0.0.1").withPort(9042);
 		return builder.build();
 	}
 
 	@Bean
-	public CassandraKeyspaceFactoryBean keyspaceFactoryBean() {
+	public CassandraSessionFactoryBean sessionFactoryBean() {
 
-		CassandraKeyspaceFactoryBean bean = new CassandraKeyspaceFactoryBean();
+		CassandraSessionFactoryBean bean = new CassandraSessionFactoryBean();
 		bean.setCluster(cluster());
-		bean.setKeyspace("test");
-
+		bean.setKeyspaceName(getKeyspaceName());
 		return bean;
-
-	}
-
-	@Bean
-	public SessionFactoryBean sessionFactoryBean() {
-
-		SessionFactoryBean bean = new SessionFactoryBean(keyspaceFactoryBean().getObject());
-		return bean;
-
 	}
 
 	@Bean
@@ -71,10 +57,19 @@ public class TestConfig extends AbstractCassandraConfiguration {
 	}
 
 	@Bean
+	public CassandraConverter cassandraConverter() {
+
+		CassandraConverter converter = new MappingCassandraConverter(new CassandraMappingContext());
+
+		return converter;
+
+	}
+
+	@Bean
 	public CassandraDataOperations cassandraDataTemplate() {
 
-		CassandraDataOperations template = new CassandraDataTemplate(keyspaceFactoryBean().getObject().getSession(),
-				keyspaceFactoryBean().getObject().getCassandraConverter(), keyspaceFactoryBean().getObject().getKeyspace());
+		CassandraDataOperations template = new CassandraDataTemplate(sessionFactoryBean().getObject(), converter(),
+				keyspaceName);
 
 		return template;
 

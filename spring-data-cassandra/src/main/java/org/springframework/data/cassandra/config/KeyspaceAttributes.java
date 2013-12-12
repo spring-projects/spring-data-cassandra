@@ -23,11 +23,7 @@ import java.util.Collection;
  * 
  * @author Alex Shvid
  */
-public class KeyspaceAttributes {
-
-	public static final String DEFAULT_REPLICATION_STRATEGY = "SimpleStrategy";
-	public static final int DEFAULT_REPLICATION_FACTOR = 1;
-	public static final boolean DEFAULT_DURABLE_WRITES = true;
+public class KeyspaceAttributes extends org.springframework.cassandra.config.KeyspaceAttributes {
 
 	/*
 	 * auto possible values:
@@ -42,9 +38,6 @@ public class KeyspaceAttributes {
 	public static final String AUTO_CREATE_DROP = "create-drop";
 
 	private String auto = AUTO_VALIDATE;
-	private String replicationStrategy = DEFAULT_REPLICATION_STRATEGY;
-	private int replicationFactor = DEFAULT_REPLICATION_FACTOR;
-	private boolean durableWrites = DEFAULT_DURABLE_WRITES;
 
 	private Collection<TableAttributes> tables;
 
@@ -70,30 +63,6 @@ public class KeyspaceAttributes {
 
 	public boolean isCreateDrop() {
 		return AUTO_CREATE_DROP.equals(auto);
-	}
-
-	public String getReplicationStrategy() {
-		return replicationStrategy;
-	}
-
-	public void setReplicationStrategy(String replicationStrategy) {
-		this.replicationStrategy = replicationStrategy;
-	}
-
-	public int getReplicationFactor() {
-		return replicationFactor;
-	}
-
-	public void setReplicationFactor(int replicationFactor) {
-		this.replicationFactor = replicationFactor;
-	}
-
-	public boolean isDurableWrites() {
-		return durableWrites;
-	}
-
-	public void setDurableWrites(boolean durableWrites) {
-		this.durableWrites = durableWrites;
 	}
 
 	public Collection<TableAttributes> getTables() {
