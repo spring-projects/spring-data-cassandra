@@ -1,14 +1,14 @@
 package org.springframework.data.cassandra.test.integration.config;
 
+import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
-import org.springframework.cassandra.core.SessionFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.AbstractCassandraConfiguration;
+import org.springframework.data.cassandra.config.AbstractSpringDataCassandraConfiguration;
+import org.springframework.data.cassandra.config.CassandraKeyspaceFactoryBean;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.core.CassandraDataTemplate;
-import org.springframework.data.cassandra.core.CassandraKeyspaceFactoryBean;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
@@ -17,30 +17,24 @@ import com.datastax.driver.core.Cluster.Builder;
  * Setup any spring configuration for unit tests
  * 
  * @author David Webb
- * 
+ * @author Matthew T. Adams
  */
 @Configuration
-public class TestConfig extends AbstractCassandraConfiguration {
+public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 
-	public static final String keyspace = "test";
+	public static final String keyspaceName = "test";
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.config.AbstractCassandraConfiguration#getKeyspaceName()
-	 */
 	@Override
 	protected String getKeyspaceName() {
-		return keyspace;
+		return keyspaceName;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.config.AbstractCassandraConfiguration#cluster()
-	 */
 	@Override
 	@Bean
 	public Cluster cluster() {
 
 		Builder builder = Cluster.builder();
-		builder.addContactPoint("127.0.0.1");
+		builder.addContactPoint("127.0.0.1").withPort(9042);
 		return builder.build();
 	}
 
@@ -52,15 +46,14 @@ public class TestConfig extends AbstractCassandraConfiguration {
 		bean.setKeyspace("test");
 
 		return bean;
-
 	}
 
 	@Bean
-	public SessionFactoryBean sessionFactoryBean() {
+	public CassandraSessionFactoryBean sessionFactoryBean() {
 
-		SessionFactoryBean bean = new SessionFactoryBean(keyspaceFactoryBean().getObject());
+		CassandraSessionFactoryBean bean = new CassandraSessionFactoryBean();
+		bean.setCluster(cluster());
 		return bean;
-
 	}
 
 	@Bean
