@@ -1,6 +1,6 @@
 package org.springframework.data.cassandra.test.integration.config;
 
-import org.springframework.cassandra.config.xml.CassandraSessionFactoryBean;
+import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.context.annotation.Bean;

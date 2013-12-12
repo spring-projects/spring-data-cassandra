@@ -20,6 +20,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 

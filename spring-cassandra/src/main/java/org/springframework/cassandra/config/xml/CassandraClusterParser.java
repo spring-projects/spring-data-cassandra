@@ -23,6 +23,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.cassandra.config.CassandraClusterFactoryBean;
 import org.springframework.cassandra.config.CompressionType;
 import org.springframework.cassandra.config.PoolingOptionsConfig;
 import org.springframework.cassandra.config.SocketOptionsConfig;
