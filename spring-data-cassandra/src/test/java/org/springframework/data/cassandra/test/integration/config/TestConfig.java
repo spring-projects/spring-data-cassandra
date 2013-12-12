@@ -6,9 +6,11 @@ import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.AbstractSpringDataCassandraConfiguration;
-import org.springframework.data.cassandra.config.CassandraKeyspaceFactoryBean;
+import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.core.CassandraDataTemplate;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
@@ -39,20 +41,11 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 	}
 
 	@Bean
-	public CassandraKeyspaceFactoryBean keyspaceFactoryBean() {
-
-		CassandraKeyspaceFactoryBean bean = new CassandraKeyspaceFactoryBean();
-		bean.setCluster(cluster());
-		bean.setKeyspace("test");
-
-		return bean;
-	}
-
-	@Bean
 	public CassandraSessionFactoryBean sessionFactoryBean() {
 
 		CassandraSessionFactoryBean bean = new CassandraSessionFactoryBean();
 		bean.setCluster(cluster());
+		bean.setKeyspaceName(getKeyspaceName());
 		return bean;
 	}
 
@@ -64,10 +57,19 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 	}
 
 	@Bean
+	public CassandraConverter cassandraConverter() {
+
+		CassandraConverter converter = new MappingCassandraConverter(new CassandraMappingContext());
+
+		return converter;
+
+	}
+
+	@Bean
 	public CassandraDataOperations cassandraDataTemplate() {
 
-		CassandraDataOperations template = new CassandraDataTemplate(keyspaceFactoryBean().getObject().getSession(),
-				keyspaceFactoryBean().getObject().getCassandraConverter(), keyspaceFactoryBean().getObject().getKeyspace());
+		CassandraDataOperations template = new CassandraDataTemplate(sessionFactoryBean().getObject(), converter(),
+				keyspaceName);
 
 		return template;
 
