@@ -29,7 +29,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Update;
 
 /**
- * Utilties to convert Cassandra Annotated objects to Queries and CQL.
+ * Utilities to convert Cassandra Annotated objects to Queries and CQL.
  * 
  * @author Alex Shvid
  * @author David Webb

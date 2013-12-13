@@ -1,5 +1,3 @@
-package org.springframework.data.cassandra.test.integration.table;
-
 /*
  * Copyright 2010-2013 the original author or authors.
  *
@@ -15,11 +13,14 @@ package org.springframework.data.cassandra.test.integration.table;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.data.cassandra.test.integration.table;
+
 import java.util.Date;
 
+import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.CompositePrimaryKey;
-import org.springframework.data.cassandra.mapping.Partitioned;
-import org.springframework.data.cassandra.mapping.Qualify;
+import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.mapping.CassandraType;
 
 import com.datastax.driver.core.DataType;
 
@@ -35,13 +36,14 @@ public class CommentPK {
 	/*
 	 * Row ID
 	 */
-	@Partitioned
+	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 	private String author;
 
 	/*
 	 * Clustered Column
 	 */
-	@Qualify(type = DataType.Name.TIMESTAMP)
+	@PrimaryKeyColumn(ordinal = 1)
+	@CassandraType(type = DataType.Name.TIMESTAMP)
 	private Date time;
 
 	public String getAuthor() {

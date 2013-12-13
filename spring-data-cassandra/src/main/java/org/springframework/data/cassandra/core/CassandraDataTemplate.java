@@ -303,7 +303,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 			throw new InvalidDataAccessApiUsageException("No Persitent Entity information found for the class "
 					+ entityClass.getName());
 		}
-		return entity.getTable();
+		return entity.getTableName();
 	}
 
 	/* (non-Javadoc)

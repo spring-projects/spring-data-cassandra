@@ -31,23 +31,24 @@
 package org.springframework.data.cassandra.mapping;
 
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Annotation to define custom metadata for document fields.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 public @interface Column {
 
 	/**
 	 * The name of the column in the table.
-	 * 
-	 * @return
 	 */
 	String value() default "";
-
 }

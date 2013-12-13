@@ -17,8 +17,9 @@ package org.springframework.data.cassandra.test.integration.table;
 
 import java.util.Date;
 
+import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.CompositePrimaryKey;
-import org.springframework.data.cassandra.mapping.Partitioned;
+import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 
 /**
  * This is an example of dynamic table that creates each time new column with Post timestamp.
@@ -36,12 +37,13 @@ public class PostPK {
 	/*
 	 * Row ID
 	 */
-	@Partitioned
+	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 	private String author;
 
 	/*
 	 * Clustered Column
 	 */
+	@PrimaryKeyColumn(ordinal = 1)
 	private Date time;
 
 	public String getAuthor() {

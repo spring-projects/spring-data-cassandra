@@ -18,87 +18,136 @@ package org.springframework.data.cassandra.mapping;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 
-import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.cassandra.core.Ordering;
+
+import com.datastax.driver.core.DataType;
 
 /**
- * {@link CassandraPersistentProperty} caching access to {@link #isIdProperty()} and {@link #getColumnName()}.
+ * {@link BasicCassandraPersistentProperty} subclass that caches call results from the superclass.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public class CachingCassandraPersistentProperty extends BasicCassandraPersistentProperty {
 
 	private Boolean isIdProperty;
-	private String columnName;
 	private Boolean isIndexed;
-	private Boolean isPartitioned;
+	private Boolean isCompositePrimaryKey;
+	private Boolean isPartitionKeyColumn;
+	private Boolean isClusterKeyColumn;
+	private Boolean isPrimaryKeyColumn;
+	private String columnName;
+	private Ordering ordering;
+	private boolean orderingCached = false;
+	private DataType dataType;
+	private Class<?> compositePrimaryKeyType;
+	private CassandraPersistentEntity<?> compositePrimaryKeyEntity;
 
 	/**
 	 * Creates a new {@link CachingCassandraPersistentProperty}.
-	 * 
-	 * @param field
-	 * @param propertyDescriptor
-	 * @param owner
-	 * @param simpleTypeHolder
 	 */
 	public CachingCassandraPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
-			CassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
+			CassandraPersistentEntity<?> owner, CassandraSimpleTypeHolder simpleTypeHolder) {
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#isIdProperty()
-	 */
+	@Override
+	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
+
+		if (compositePrimaryKeyEntity == null) {
+			compositePrimaryKeyEntity = super.getCompositePrimaryKeyEntity();
+		}
+		return compositePrimaryKeyEntity;
+	}
+
+	@Override
+	public Class<?> getCompositePrimaryKeyType() {
+
+		if (compositePrimaryKeyType == null) {
+			compositePrimaryKeyType = super.getCompositePrimaryKeyType();
+		}
+		return compositePrimaryKeyType;
+	}
+
+	@Override
+	public boolean isClusterKeyColumn() {
+
+		if (isClusterKeyColumn == null) {
+			isClusterKeyColumn = super.isClusterKeyColumn();
+		}
+		return isClusterKeyColumn;
+	}
+
+	@Override
+	public boolean isPrimaryKeyColumn() {
+
+		if (isPrimaryKeyColumn == null) {
+			isPrimaryKeyColumn = super.isPrimaryKeyColumn();
+		}
+		return isPrimaryKeyColumn;
+	}
+
+	@Override
+	public DataType getDataType() {
+
+		if (dataType == null) {
+			dataType = super.getDataType();
+		}
+		return dataType;
+	}
+
+	@Override
+	public Ordering getOrdering() {
+
+		if (!orderingCached) {
+			ordering = super.getOrdering();
+			orderingCached = true;
+		}
+		return ordering;
+	}
+
+	@Override
+	public boolean isCompositePrimaryKey() {
+
+		if (isCompositePrimaryKey == null) {
+			isCompositePrimaryKey = super.isCompositePrimaryKey();
+		}
+		return isCompositePrimaryKey;
+	}
+
 	@Override
 	public boolean isIdProperty() {
 
-		if (this.isIdProperty == null) {
-			this.isIdProperty = super.isIdProperty();
+		if (isIdProperty == null) {
+			isIdProperty = super.isIdProperty();
 		}
-
-		return this.isIdProperty;
+		return isIdProperty;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#getFieldName()
-	 */
 	@Override
 	public String getColumnName() {
 
-		if (this.columnName == null) {
-			this.columnName = super.getColumnName();
+		if (columnName == null) {
+			columnName = super.getColumnName();
 		}
-
-		return this.columnName;
+		return columnName;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#isIndexed()
-	 */
 	@Override
 	public boolean isIndexed() {
 
-		if (this.isIndexed == null) {
-			this.isIndexed = super.isIndexed();
+		if (isIndexed == null) {
+			isIndexed = super.isIndexed();
 		}
-
-		return this.isIndexed;
+		return isIndexed;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.mapping.BasicCassandraPersistentProperty#isPartitioned()
-	 */
 	@Override
-	public boolean isPartitioned() {
+	public boolean isPartitionKeyColumn() {
 
-		if (this.isPartitioned == null) {
-			this.isPartitioned = super.isPartitioned();
+		if (isPartitionKeyColumn == null) {
+			isPartitionKeyColumn = super.isPartitionKeyColumn();
 		}
-
-		return this.isPartitioned;
+		return isPartitionKeyColumn;
 	}
-
 }

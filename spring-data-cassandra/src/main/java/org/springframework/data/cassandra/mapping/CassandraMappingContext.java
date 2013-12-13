@@ -27,13 +27,14 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * Default implementation of a {@link MappingContext} for Cassandra using {@link BasicCassandraPersistentEntity} and
- * {@link BasicCassandraPersistentProperty} as primary abstractions.
+ * Default implementation of a {@link MappingContext} for Cassandra using {@link CassandraPersistentEntity} and
+ * {@link CassandraPersistentProperty} as primary abstractions.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public class CassandraMappingContext extends
-		AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty> implements
+		AbstractMappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty> implements
 		ApplicationContextAware {
 
 	private ApplicationContext context;
@@ -42,25 +43,22 @@ public class CassandraMappingContext extends
 	 * Creates a new {@link CassandraMappingContext}.
 	 */
 	public CassandraMappingContext() {
-		setSimpleTypeHolder(CassandraSimpleTypes.HOLDER);
+		setSimpleTypeHolder(new CassandraSimpleTypeHolder());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.AbstractMappingContext#createPersistentProperty(java.lang.reflect.Field, java.beans.PropertyDescriptor, org.springframework.data.mapping.MutablePersistentEntity, org.springframework.data.mapping.SimpleTypeHolder)
-	 */
 	@Override
 	public CassandraPersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
-			BasicCassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
+			CassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
+		return createPersistentProperty(field, descriptor, owner, (CassandraSimpleTypeHolder) simpleTypeHolder);
+	}
+
+	public CassandraPersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
+			CassandraPersistentEntity<?> owner, CassandraSimpleTypeHolder simpleTypeHolder) {
 		return new CachingCassandraPersistentProperty(field, descriptor, owner, simpleTypeHolder);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.BasicMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation, org.springframework.data.mapping.model.MappingContext)
-	 */
 	@Override
-	protected <T> BasicCassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
+	protected <T> CassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 
 		BasicCassandraPersistentEntity<T> entity = new BasicCassandraPersistentEntity<T>(typeInformation);
 
@@ -71,10 +69,6 @@ public class CassandraMappingContext extends
 		return entity;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.context = applicationContext;

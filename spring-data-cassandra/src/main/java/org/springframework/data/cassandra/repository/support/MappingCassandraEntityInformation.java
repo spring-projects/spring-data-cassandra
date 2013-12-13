@@ -94,7 +94,7 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	 */
 	@Override
 	public String getTableName() {
-		return customTableName == null ? entityMetadata.getTable() : customTableName;
+		return customTableName == null ? entityMetadata.getTableName() : customTableName;
 	}
 
 	/* (non-Javadoc)

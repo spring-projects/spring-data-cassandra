@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.test.integration.table;
 
 import java.util.Date;
 
-import org.springframework.data.cassandra.mapping.Id;
+import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
@@ -32,7 +32,7 @@ public class LogEntry {
 	/*
 	 * Primary Key
 	 */
-	@Id
+	@PrimaryKey
 	private Date logDate;
 
 	private String hostname;

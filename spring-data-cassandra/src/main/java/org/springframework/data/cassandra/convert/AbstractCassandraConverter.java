@@ -18,26 +18,24 @@ package org.springframework.data.cassandra.convert;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.EntityInstantiators;
 
 /**
- * Base class for {@link CassandraConverter} implementations. Sets up a {@link GenericConversionService} and populates
- * basic converters.
+ * Base class for {@link CassandraConverter} implementations. Sets up a {@link ConversionService} and populates basic
+ * converters.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public abstract class AbstractCassandraConverter implements CassandraConverter, InitializingBean {
 
-	protected final GenericConversionService conversionService;
+	protected final ConversionService conversionService;
 	protected EntityInstantiators instantiators = new EntityInstantiators();
 
 	/**
-	 * Creates a new {@link AbstractCassandraConverter} using the given {@link GenericConversionService}.
-	 * 
-	 * @param conversionService
+	 * Creates a new {@link AbstractCassandraConverter} using the given {@link ConversionService}.
 	 */
-	public AbstractCassandraConverter(GenericConversionService conversionService) {
+	public AbstractCassandraConverter(ConversionService conversionService) {
 		this.conversionService = conversionService == null ? new DefaultConversionService() : conversionService;
 	}
 
@@ -50,18 +48,12 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 		this.instantiators = instantiators == null ? new EntityInstantiators() : instantiators;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.core.convert.MongoConverter#getConversionService()
-	 */
+	@Override
 	public ConversionService getConversionService() {
 		return conversionService;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
+	@Override
 	public void afterPropertiesSet() {
 	}
-
 }

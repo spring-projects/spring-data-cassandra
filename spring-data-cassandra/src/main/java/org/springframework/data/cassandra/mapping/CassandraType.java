@@ -22,16 +22,28 @@ import java.lang.annotation.RetentionPolicy;
 import com.datastax.driver.core.DataType;
 
 /**
- * Qualifies data type as Cassandra type.
+ * Specifies the Cassandra type of the annotated property.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Qualify {
+public @interface CassandraType {
 
+	/**
+	 * The {@link DataType}.{@link Name} of the property.
+	 */
 	DataType.Name type();
 
+	/**
+	 * If the property is collection-like, then this attribute holds a single {@link DataType}.{@link Name}, representing
+	 * the element type of the collection.
+	 * <p/>
+	 * If the property is map, then this attribute holds exactly two {@link DataType}.{@link Name}s: the first is the key
+	 * type, and the second is the value type.
+	 * <p/>
+	 * If the property is neither collection-like or a map, then this attribute is ignored.
+	 */
 	DataType.Name[] typeArguments() default {};
-
 }

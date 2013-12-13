@@ -50,8 +50,8 @@ import com.datastax.driver.core.querybuilder.Update;
  * 
  * @author Alex Shvid
  */
-public class MappingCassandraConverter extends AbstractCassandraConverter implements ApplicationContextAware,
-		BeanClassLoaderAware {
+public class MappingCassandraConverter extends AbstractCassandraConverter implements CassandraConverter,
+		ApplicationContextAware, BeanClassLoaderAware {
 
 	protected static final Logger log = LoggerFactory.getLogger(MappingCassandraConverter.class);
 
@@ -97,24 +97,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		return readRowInternal(persistentEntity, row);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.EntityConverter#getMappingContext()
-	 */
+	@Override
 	public MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
 		return mappingContext;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
 	}
 
-	private <S extends Object> S readRowInternal(final CassandraPersistentEntity<S> entity, final Row row) {
+	protected <S extends Object> S readRowInternal(final CassandraPersistentEntity<S> entity, final Row row) {
 
 		final DefaultSpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
 
@@ -127,34 +121,49 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		S instance = instantiator.createInstance(entity, parameterProvider);
 
 		final BeanWrapper<CassandraPersistentEntity<S>, S> wrapper = BeanWrapper.create(instance, conversionService);
-		final S result = wrapper.getBean();
+		S result = wrapper.getBean();
 
-		// Set properties not already set in the constructor
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
+			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				boolean isConstructorProperty = entity.isConstructorArgument(prop);
-				boolean hasValueForProperty = row.getColumnDefinitions().contains(prop.getColumnName());
-
-				if (!hasValueForProperty || isConstructorProperty) {
-					return;
-				}
-
-				Object obj = propertyProvider.getPropertyValue(prop);
-				wrapper.setProperty(prop, obj, useFieldAccessOnly);
+				MappingCassandraConverter.this.handlePersistentPropertyRead(row, entity, prop, propertyProvider, wrapper);
 			}
 		});
 
 		return result;
 	}
 
+	protected void handlePersistentPropertyRead(final Row row, final CassandraPersistentEntity<?> entity,
+			final CassandraPersistentProperty prop,
+			final PropertyValueProvider<CassandraPersistentProperty> propertyProvider, final BeanWrapper<?, ?> wrapper) {
+
+		if (entity.isConstructorArgument(prop)) { // skip 'cause prop was set in ctor
+			return;
+		}
+
+		if (prop.isCompositePrimaryKey()) {
+			// TODO: handle composite primary key properties via recursion into this method
+		}
+
+		boolean hasValueForProperty = row.getColumnDefinitions().contains(prop.getColumnName());
+		if (!hasValueForProperty) {
+			return;
+		}
+
+		Object obj = propertyProvider.getPropertyValue(prop);
+		wrapper.setProperty(prop, obj, useFieldAccessOnly);
+	}
+
+	public boolean getUseFieldAccessOnly() {
+		return useFieldAccessOnly;
+	}
+
 	public void setUseFieldAccessOnly(boolean useFieldAccessOnly) {
 		this.useFieldAccessOnly = useFieldAccessOnly;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.convert.EntityWriter#write(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public <R> R read(Class<R> type, Object row) {
 		if (row instanceof Row) {
@@ -163,9 +172,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		throw new MappingException("Unknown row object " + row.getClass().getName());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.convert.EntityWriter#write(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public void write(Object obj, Object builtStatement) {
 
@@ -198,6 +204,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		// Write the properties
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
 				Object propertyObj = wrapper.getProperty(prop, prop.getType(), useFieldAccessOnly);
@@ -218,6 +225,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		// Write the properties
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
 				Object propertyObj = wrapper.getProperty(prop, prop.getType(), useFieldAccessOnly);
@@ -243,6 +251,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		// Write the properties
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
 				if (prop.isIdProperty()) {
@@ -259,13 +268,15 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 	}
 
+	@Override
 	public CreateTableSpecification getCreateTableSpecification(CassandraPersistentEntity<?> entity) {
 
 		final CreateTableSpecification spec = new CreateTableSpecification();
 
-		spec.name(entity.getTable());
+		spec.name(entity.getTableName());
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
 				if (prop.isCompositePrimaryKey()) {
@@ -273,9 +284,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 					CassandraPersistentEntity<?> pkEntity = mappingContext.getPersistentEntity(prop.getRawType());
 
 					pkEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+						@Override
 						public void doWithPersistentProperty(CassandraPersistentProperty pkProp) {
 
-							if (pkProp.isPartitioned()) {
+							if (pkProp.isPartitionKeyColumn()) {
 								spec.partitionKeyColumn(pkProp.getColumnName(), pkProp.getDataType());
 							} else {
 								spec.clusteredKeyColumn(pkProp.getColumnName(), pkProp.getDataType(), pkProp.getOrdering());

@@ -22,20 +22,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines composite primary key class in the Cassandra table that contains several fields. Example:
- * 
- * @CompositePrimaryKey class AccountPK { String account; String region; }
- * 
- * @Table class Account {
- * @Id AccountPK pk; }
- * 
+ * Defines composite primary key class in the Cassandra table that contains several fields.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
-
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
 public @interface CompositePrimaryKey {
-
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config;
+package org.springframework.data.cassandra.config.java;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -51,13 +51,8 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	private ClassLoader beanClassLoader;
 
 	/**
-	 * Return the base package to scan for mapped {@link Table}s. Will return the package name of the configuration class'
-	 * (the concrete class, not this one here) by default. So if you have a {@code com.acme.AppConfig} extending
-	 * {@link AbstractSpringDataCassandraConfiguration} the base package will be considered {@code com.acme} unless the
-	 * method is overriden to implement alternate behaviour.
-	 * 
-	 * @return the base package to scan for mapped {@link Table} classes or {@literal null} to not enable scanning for
-	 *         entities.
+	 * The base package to scan for entities annotated with {@link Table} annotations. By default, returns the package
+	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>).
 	 */
 	protected String getMappingBasePackage() {
 		return getClass().getPackage().getName();
@@ -65,44 +60,42 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 
 	/**
 	 * Creates a {@link CassandraAdminTemplate}.
-	 * 
-	 * @return
-	 * @throws Exception
 	 */
 	@Bean
-	public CassandraAdminOperations adminTemplate() throws Exception {
+	public CassandraAdminOperations adminTemplate() {
 		return new CassandraAdminTemplate(session());
 	}
 
 	/**
 	 * Return the {@link MappingContext} instance to map Entities to properties.
 	 * 
-	 * @return
-	 * @throws Exception
+	 * @throws ClassNotFoundException
 	 */
 	@Bean
-	public MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext() {
-		return new CassandraMappingContext();
+	public MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> cassandraMappingContext()
+			throws ClassNotFoundException {
+		CassandraMappingContext context = new CassandraMappingContext();
+		context.setInitialEntitySet(getInitialEntitySet());
+		return context;
 	}
 
 	/**
 	 * Return the {@link CassandraConverter} instance to convert Rows to Objects, Objects to BuiltStatements
 	 * 
-	 * @return
-	 * @throws Exception
+	 * @throws ClassNotFoundException
 	 */
 	@Bean
-	public CassandraConverter converter() {
-		MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext());
+	public CassandraConverter converter() throws ClassNotFoundException {
+		MappingCassandraConverter converter = new MappingCassandraConverter(cassandraMappingContext());
 		converter.setBeanClassLoader(beanClassLoader);
 		return converter;
 	}
 
 	/**
-	 * Scans the mapping base package for classes annotated with {@link Table}.
+	 * Scans the mapping base package for entity classes annotated with {@link Table} or {@link Persistent}.
 	 * 
 	 * @see #getMappingBasePackage()
-	 * @return
+	 * @return <code>Set&lt;Class&lt;?&gt;&gt;</code> representing the annotated entity classes found.
 	 * @throws ClassNotFoundException
 	 */
 	protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
@@ -116,19 +109,18 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 			componentProvider.addIncludeFilter(new AnnotationTypeFilter(Table.class));
 			componentProvider.addIncludeFilter(new AnnotationTypeFilter(Persistent.class));
 
+			// TODO: figure out which ClassLoader to use here
+			ClassLoader classLoader = getClass().getClassLoader();
+
 			for (BeanDefinition candidate : componentProvider.findCandidateComponents(basePackage)) {
-				initialEntitySet.add(ClassUtils.forName(candidate.getBeanClassName(),
-						AbstractSpringDataCassandraConfiguration.class.getClassLoader()));
+				initialEntitySet.add(ClassUtils.forName(candidate.getBeanClassName(), classLoader));
 			}
 		}
 
 		return initialEntitySet;
 	}
 
-	/**
-	 * Bean ClassLoader Aware for CassandraTemplate/CassandraAdminTemplate
-	 */
-
+	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
 	}

@@ -224,7 +224,7 @@ public class CassandraAdminTemplate extends CassandraAccessor implements Cassand
 			throw new InvalidDataAccessApiUsageException("No Persitent Entity information found for the class "
 					+ entityClass.getName());
 		}
-		return entity.getTable();
+		return entity.getTableName();
 	}
 
 }
