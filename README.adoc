@@ -46,7 +46,6 @@ companies and individuals:
 * http://www.prowaveconsulting.com[Prowave Consulting]
 * http://www.scispike.com[SciSpike]
 * http://www.vha.com[VHA]
-* Alexander Shvid
 
 The following companies and individuals are also generously providing
 support:
