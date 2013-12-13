@@ -202,7 +202,6 @@ companies and individuals:
 * [Prowave Consulting](http://www.prowaveconsulting.com)
 * [SciSpike](http://www.scispike.com)
 * [VHA](http://www.vha.com)
-* Alexander Shvid
 
 The following companies and individuals are also generously providing
 support:
