@@ -133,14 +133,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				MappingCassandraConverter.this.handlePropertyRead(row, entity, prop, propertyProvider, wrapper);
+				MappingCassandraConverter.this.handlePersistentPropertyRead(row, entity, prop, propertyProvider, wrapper);
 			}
 		});
 
 		return result;
 	}
 
-	protected void handlePropertyRead(final Row row, final CassandraPersistentEntity<?> entity,
+	protected void handlePersistentPropertyRead(final Row row, final CassandraPersistentEntity<?> entity,
 			final CassandraPersistentProperty prop,
 			final PropertyValueProvider<CassandraPersistentProperty> propertyProvider, final BeanWrapper<?, ?> wrapper) {
 

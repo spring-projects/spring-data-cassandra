@@ -22,10 +22,11 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.EntityInstantiators;
 
 /**
- * Base class for {@link CassandraConverter} implementations. Sets up a {@link GenericConversionService} and
- * populates basic converters.
+ * Base class for {@link CassandraConverter} implementations. Sets up a {@link GenericConversionService} and populates
+ * basic converters.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public abstract class AbstractCassandraConverter implements CassandraConverter, InitializingBean {
 
@@ -50,18 +51,12 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 		this.instantiators = instantiators == null ? new EntityInstantiators() : instantiators;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.core.core.convert.MongoConverter#getConversionService()
-	 */
+	@Override
 	public ConversionService getConversionService() {
 		return conversionService;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
+	@Override
 	public void afterPropertiesSet() {
 	}
-
 }
