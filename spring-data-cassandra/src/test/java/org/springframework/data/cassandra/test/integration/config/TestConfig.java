@@ -5,7 +5,7 @@ import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.AbstractSpringDataCassandraConfiguration;
+import org.springframework.data.cassandra.config.java.AbstractSpringDataCassandraConfiguration;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
@@ -66,7 +66,7 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 	}
 
 	@Bean
-	public CassandraDataOperations cassandraDataTemplate() {
+	public CassandraDataOperations cassandraDataTemplate() throws ClassNotFoundException {
 
 		CassandraDataOperations template = new CassandraDataTemplate(sessionFactoryBean().getObject(), converter(),
 				keyspaceName);
