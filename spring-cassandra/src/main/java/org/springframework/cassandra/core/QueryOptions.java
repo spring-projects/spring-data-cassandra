@@ -15,8 +15,6 @@
  */
 package org.springframework.cassandra.core;
 
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Contains Query Options for Cassandra queries. This controls the Consistency Tuning and Retry Policy for a Query.
@@ -29,26 +27,6 @@ public class QueryOptions {
 	private ConsistencyLevel consistencyLevel;
 	private RetryPolicy retryPolicy;
 	private Integer ttl;
-
-	/**
-	 * Create a Map of all these options.
-	 */
-	public Map<String, Object> toMap() {
-
-		Map<String, Object> m = new HashMap<String, Object>();
-
-		if (getConsistencyLevel() != null) {
-			m.put(QueryOptionMapKeys.CONSISTENCY_LEVEL, getConsistencyLevel());
-		}
-		if (getRetryPolicy() != null) {
-			m.put(QueryOptionMapKeys.RETRY_POLICY, getRetryPolicy());
-		}
-		if (getTtl() != null) {
-			m.put(QueryOptionMapKeys.TTL, getTtl());
-		}
-
-		return m;
-	}
 
 	/**
 	 * @return Returns the consistencyLevel.
@@ -90,17 +68,5 @@ public class QueryOptions {
 	 */
 	public void setTtl(Integer ttl) {
 		this.ttl = ttl;
-	}
-
-	/**
-	 * Constants for looking up Map Elements by Key
-	 * 
-	 * @author David Webb
-	 * 
-	 */
-	public static interface QueryOptionMapKeys {
-		public final String CONSISTENCY_LEVEL = "ConsistencyLevel";
-		public final String RETRY_POLICY = "RetryPolicy";
-		public final String TTL = "TTL";
 	}
 }
