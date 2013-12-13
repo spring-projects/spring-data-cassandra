@@ -28,13 +28,6 @@ import com.datastax.driver.core.TableMetadata;
 public interface CassandraAdminOperations {
 
 	/**
-	 * Get the given table's metadata.
-	 * 
-	 * @param tableName The name of the table.
-	 */
-	TableMetadata getTableMetadata(String tableName);
-
-	/**
 	 * Create a table with the name given and fields corresponding to the given class. If the table already exists and
 	 * parameter <code>ifNotExists</code> is {@literal true}, this is a no-op and {@literal false} is returned. If the
 	 * table doesn't exist, parameter <code>ifNotExists</code> is ignored, the table is created and {@literal true} is
@@ -76,4 +69,11 @@ public interface CassandraAdminOperations {
 	 * @param tableName The name of the table.
 	 */
 	void dropTable(String tableName);
+
+	/**
+	 * @param keyspace
+	 * @param tableName
+	 * @return
+	 */
+	TableMetadata getTableMetadata(String keyspace, String tableName);
 }

@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.cassandra.core.SpringDataKeyspace;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.support.CassandraAccessor;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.cassandra.support.exception.CassandraTableExistsException;
 import org.springframework.dao.DataAccessException;
@@ -26,11 +26,10 @@ import com.datastax.driver.core.TableMetadata;
 /**
  * Default implementation of {@link CassandraAdminOperations}.
  */
-public class CassandraAdminTemplate implements CassandraAdminOperations {
+public class CassandraAdminTemplate extends CassandraAccessor implements CassandraAdminOperations {
 
 	private static final Logger log = LoggerFactory.getLogger(CassandraAdminTemplate.class);
 
-	private SpringDataKeyspace keyspace;
 	private Session session;
 	private CassandraConverter converter;
 	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
@@ -42,19 +41,8 @@ public class CassandraAdminTemplate implements CassandraAdminOperations {
 	 * 
 	 * @param keyspace must not be {@literal null}.
 	 */
-	public CassandraAdminTemplate(SpringDataKeyspace keyspace) {
-		setKeyspace(keyspace);
-	}
-
-	protected CassandraAdminTemplate setKeyspace(SpringDataKeyspace keyspace) {
-		Assert.notNull(keyspace);
-		this.keyspace = keyspace;
-		return setSession(keyspace.getSession()).setCassandraConverter(keyspace.getCassandraConverter());
-	}
-
-	protected CassandraAdminTemplate setSession(Session session) {
-		Assert.notNull(session);
-		return this;
+	public CassandraAdminTemplate(Session session) {
+		setSession(session);
 	}
 
 	protected CassandraAdminTemplate setCassandraConverter(CassandraConverter converter) {
@@ -120,13 +108,13 @@ public class CassandraAdminTemplate implements CassandraAdminOperations {
 	 * @param entityClass
 	 * @param tableName
 	 */
-	protected void doAlterTable(Class<?> entityClass, String tableName) {
+	protected void doAlterTable(Class<?> entityClass, String keyspace, String tableName) {
 
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
 
 		Assert.notNull(entity);
 
-		final TableMetadata tableMetadata = getTableMetadata(tableName);
+		final TableMetadata tableMetadata = getTableMetadata(keyspace, tableName);
 
 		final List<String> queryList = CqlUtils.alterTable(tableName, entity, tableMetadata);
 
@@ -185,7 +173,7 @@ public class CassandraAdminTemplate implements CassandraAdminOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableMetadata(java.lang.Class)
 	 */
 	@Override
-	public TableMetadata getTableMetadata(final String tableName) {
+	public TableMetadata getTableMetadata(final String keyspace, final String tableName) {
 
 		Assert.notNull(tableName);
 
@@ -193,9 +181,7 @@ public class CassandraAdminTemplate implements CassandraAdminOperations {
 
 			public TableMetadata doInSession(Session s) throws DataAccessException {
 
-				log.info("Keyspace => " + keyspace.getKeyspace());
-
-				return s.getCluster().getMetadata().getKeyspace(keyspace.getKeyspace()).getTable(tableName);
+				return s.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName);
 			}
 		});
 	}
