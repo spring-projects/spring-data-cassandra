@@ -36,4 +36,12 @@ public class DropTableSpecification extends TableNameSpecification<DropTableSpec
 	public boolean getIfExists() {
 		return ifExists;
 	}
+
+	/**
+	 * Entry point into the {@link DropTableSpecification}'s fluent API to drop a table. Convenient if imported
+	 * statically.
+	 */
+	public static DropTableSpecification dropTable() {
+		return new DropTableSpecification();
+	}
 }
