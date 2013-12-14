@@ -46,4 +46,12 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	public boolean getIfNotExists() {
 		return ifNotExists;
 	}
+
+	/**
+	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
+	 * statically.
+	 */
+	public static CreateTableSpecification createTable() {
+		return new CreateTableSpecification();
+	}
 }
