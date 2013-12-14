@@ -22,10 +22,12 @@ import org.springframework.cassandra.core.cql.CqlStringUtils;
  * @author John McPeek
  * @param <T> The subtype of the {@link KeyspaceOptionsSpecification}.
  */
-public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpecification<T>> extends KeyspaceNameSpecification<T> {
+public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpecification<T>> extends
+		KeyspaceNameSpecification<KeyspaceOptionsSpecification<T>> {
 
 	protected Map<String, Object> options = new LinkedHashMap<String, Object>();
 
+	@SuppressWarnings( "unchecked" )
 	public T name(String name) {
 		return (T) super.name(name);
 	}
