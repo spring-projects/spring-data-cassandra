@@ -1,9 +1,11 @@
 package org.springframework.cassandra.core.keyspace;
 
+import java.util.Map;
+
 public enum KeyspaceOption implements Option {
-	REPLICATION_STRATEGY("class", String.class, true, true, true),
+	REPLICATION("replication", Map.class, true, false, false),
 	
-	REPLICATION_FACTOR("replication_factor", Long.class, false, false, false);
+	DURABLE_WRITES("durable_writes", Boolean.class, false, false, false);
 
 	private Option delegate;
 

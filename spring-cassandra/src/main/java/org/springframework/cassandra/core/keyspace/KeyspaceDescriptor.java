@@ -37,11 +37,7 @@ public interface KeyspaceDescriptor {
 	/**
 	 * Returns the replication strategy.
 	 */
-	String getReplicationStrategy();
-	
-	Long getReplicationFactor();
-	
-	Map<String, Long> getDataCenters();
+	Boolean getDurableWrites();
 
 	/**
 	 * Returns an unmodifiable {@link Map} of keyspace options.

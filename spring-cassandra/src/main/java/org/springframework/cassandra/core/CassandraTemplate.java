@@ -428,6 +428,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @see org.springframework.cassandra.core.CassandraOperations#processList(com.datastax.driver.core.ResultSet, java.lang.Class)
 	 */
 	@Override
+	@SuppressWarnings( "unchecked" )
 	public <T> List<T> processList(ResultSet resultSet, Class<T> elementType) throws DataAccessException {
 		List<Row> rows = resultSet.all();
 		List<T> list = new ArrayList<T>(rows.size());

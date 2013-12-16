@@ -88,7 +88,6 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * 
 	 * @return this
 	 */
-	@SuppressWarnings("unchecked")
 	public CreateIndexSpecification tableName(String tableName) {
 		checkIdentifier(tableName);
 		this.tableName = tableName;

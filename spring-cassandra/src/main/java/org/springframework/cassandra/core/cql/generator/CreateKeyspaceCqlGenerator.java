@@ -15,15 +15,10 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
-import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
 
@@ -56,146 +51,53 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeysp
 				.append(spec().getNameAsIdentifier());
 	}
 
-	protected void optionsCql(StringBuilder cql) {
+	@SuppressWarnings( "unchecked" )
+	protected StringBuilder optionsCql(StringBuilder cql) {
 		cql = noNull(cql);
 		
-		cql.append("WITH REPLICATION =");
+		cql.append( " " );
+		
+		// begin options clause
+		Map<String, Object> options = spec().getOptions();
+
+		if (!options.isEmpty()) {
+
+			// option preamble
+			boolean first = true;
+			cql.append(" WITH ");
+			// end option preamble
+			
+			if (!options.isEmpty()) {
+				for (String name : options.keySet()) {
+					// append AND if we're not on first option
+					if (first) {
+						first = false;
+					} else {
+						cql.append(" AND ");
+					}
+
+					// append <name> = <value>
+					cql.append(name);
+
+					Object value = options.get(name);
+					if (value == null) { // then assume string-only, valueless option like "COMPACT STORAGE"
+						continue;
+					}
+
+					cql.append(" = ");
+
+					if (value instanceof Map) {
+						optionValueMap((Map<Option, Object>) value, cql);
+						continue; // end non-empty value map
+					}
+
+					// else just use value as string
+					cql.append(value.toString());
+				}
+			}
+		}
+		// end options
+		
+		return cql;
 	}
-	
-
-//	@SuppressWarnings("unchecked")
-//	protected StringBuilder columnsAndOptionsCql(StringBuilder cql) {
-//
-//		cql = noNull(cql);
-//
-//		// begin columns
-//		cql.append(" (");
-//
-//		List<ColumnSpecification> partitionKeys = new ArrayList<ColumnSpecification>();
-//		List<ColumnSpecification> clusterKeys = new ArrayList<ColumnSpecification>();
-//		for (ColumnSpecification col : spec().getColumns()) {
-//			col.toCql(cql).append(", ");
-//
-//			if (col.getKeyType() == PARTITIONED) {
-//				partitionKeys.add(col);
-//			} else if (col.getKeyType() == CLUSTERED) {
-//				clusterKeys.add(col);
-//			}
-//		}
-//
-//		// begin primary key clause
-//		cql.append("PRIMARY KEY (");
-//
-//		if (partitionKeys.size() > 1) {
-//			// begin partition key clause
-//			cql.append("(");
-//		}
-//
-//		appendColumnNames(cql, partitionKeys);
-//
-//		if (partitionKeys.size() > 1) {
-//			cql.append(")");
-//			// end partition key clause
-//		}
-//
-//		if (!clusterKeys.isEmpty()) {
-//			cql.append(", ");
-//		}
-//
-//		appendColumnNames(cql, clusterKeys);
-//
-//		cql.append(")");
-//		// end primary key clause
-//
-//		cql.append(")");
-//		// end columns
-//
-//		StringBuilder ordering = createOrderingClause(clusterKeys);
-//		// begin options
-//		// begin option clause
-//		Map<String, Object> options = spec().getOptions();
-//
-//		if (ordering != null || !options.isEmpty()) {
-//
-//			// option preamble
-//			boolean first = true;
-//			cql.append(" WITH ");
-//			// end option preamble
-//
-//			if (ordering != null) {
-//				cql.append(ordering);
-//				first = false;
-//			}
-//			if (!options.isEmpty()) {
-//				for (String name : options.keySet()) {
-//					// append AND if we're not on first option
-//					if (first) {
-//						first = false;
-//					} else {
-//						cql.append(" AND ");
-//					}
-//
-//					// append <name> = <value>
-//					cql.append(name);
-//
-//					Object value = options.get(name);
-//					if (value == null) { // then assume string-only, valueless option like "COMPACT STORAGE"
-//						continue;
-//					}
-//
-//					cql.append(" = ");
-//
-//					if (value instanceof Map) {
-//						optionValueMap((Map<Option, Object>) value, cql);
-//						continue; // end non-empty value map
-//					}
-//
-//					// else just use value as string
-//					cql.append(value.toString());
-//				}
-//			}
-//		}
-//		// end options
-//
-//		return cql;
-//	}
-
-//	private static StringBuilder createOrderingClause(List<ColumnSpecification> columns) {
-//		StringBuilder ordering = null;
-//		boolean first = true;
-//		for (ColumnSpecification col : columns) {
-//
-//			if (col.getOrdering() != null) { // then ordering specified
-//				if (ordering == null) { // then initialize ordering clause
-//					ordering = new StringBuilder().append("CLUSTERING ORDER BY (");
-//				}
-//				if (first) {
-//					first = false;
-//				} else {
-//					ordering.append(", ");
-//				}
-//				ordering.append(col.getName()).append(" ").append(col.getOrdering().cql());
-//			}
-//		}
-//		if (ordering != null) { // then end ordering option
-//			ordering.append(")");
-//		}
-//		return ordering;
-//	}
-//
-//	private static void appendColumnNames(StringBuilder str, List<ColumnSpecification> columns) {
-//
-//		boolean first = true;
-//		for (ColumnSpecification col : columns) {
-//			if (first) {
-//				first = false;
-//			} else {
-//				str.append(", ");
-//			}
-//			str.append(col.getName());
-//
-//		}
-//
-//	}
-
 }
