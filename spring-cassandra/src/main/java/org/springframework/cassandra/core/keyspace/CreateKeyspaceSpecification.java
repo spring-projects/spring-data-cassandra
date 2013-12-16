@@ -27,4 +27,12 @@ public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKey
 		return ifNotExists;
 	}
 
+	/**
+	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
+	 * statically.
+	 */
+	public static CreateKeyspaceSpecification createKeyspace() {
+		return new CreateKeyspaceSpecification();
+	}
+
 }

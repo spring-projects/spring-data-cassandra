@@ -19,11 +19,7 @@ import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
 import java.util.Map;
 
-import org.springframework.cassandra.core.keyspace.AddColumnSpecification;
-import org.springframework.cassandra.core.keyspace.AlterColumnSpecification;
 import org.springframework.cassandra.core.keyspace.AlterKeyspaceSpecification;
-import org.springframework.cassandra.core.keyspace.ColumnChangeSpecification;
-import org.springframework.cassandra.core.keyspace.DropColumnSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
 
 /**
@@ -41,8 +37,7 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 		cql = noNull(cql);
 
 		preambleCql(cql);
-//		changesCql(cql);
-//		optionsCql(cql);
+		optionsCql(cql);
 
 		cql.append(";");
 
@@ -53,69 +48,51 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 		return noNull(cql).append("ALTER KEYSPACE ").append(spec().getNameAsIdentifier()).append(" ");
 	}
 
-//	protected StringBuilder changesCql(StringBuilder cql) {
-//		cql = noNull(cql);
-//
-//		boolean first = true;
-//		for (ColumnChangeSpecification change : spec().getChanges()) {
-//			if (first) {
-//				first = false;
-//			} else {
-//				cql.append(" ");
-//			}
-//			getCqlGeneratorFor(change).toCql(cql);
-//		}
-//
-//		return cql;
-//	}
-//
-//	protected ColumnChangeCqlGenerator<?> getCqlGeneratorFor(ColumnChangeSpecification change) {
-//		if (change instanceof AddColumnSpecification) {
-//			return new AddColumnCqlGenerator((AddColumnSpecification) change);
-//		}
-//		if (change instanceof DropColumnSpecification) {
-//			return new DropColumnCqlGenerator((DropColumnSpecification) change);
-//		}
-//		if (change instanceof AlterColumnSpecification) {
-//			return new AlterColumnCqlGenerator((AlterColumnSpecification) change);
-//		}
-//		throw new IllegalArgumentException("unknown ColumnChangeSpecification type: " + change.getClass().getName());
-//	}
-//
-//	@SuppressWarnings("unchecked")
-//	protected StringBuilder optionsCql(StringBuilder cql) {
-//		cql = noNull(cql);
-//
-//		Map<String, Object> options = spec().getOptions();
-//		if (options == null || options.isEmpty()) {
-//			return cql;
-//		}
-//
-//		cql.append(" WITH ");
-//		boolean first = true;
-//		for (String key : options.keySet()) {
-//			if (first) {
-//				first = false;
-//			} else {
-//				cql.append(" AND ");
-//			}
-//
-//			cql.append(key);
-//
-//			Object value = options.get(key);
-//			if (value == null) {
-//				continue;
-//			}
-//			cql.append(" = ");
-//
-//			if (value instanceof Map) {
-//				optionValueMap((Map<Option, Object>) value, cql);
-//				continue;
-//			}
-//
-//			// else just use value as string
-//			cql.append(value.toString());
-//		}
-//		return cql;
-//	}
+	@SuppressWarnings( "unchecked" )
+	protected StringBuilder optionsCql(StringBuilder cql) {
+		cql = noNull(cql);
+		
+		// begin options clause
+		Map<String, Object> options = spec().getOptions();
+
+		if (!options.isEmpty()) {
+
+			// option preamble
+			boolean first = true;
+			cql.append(" WITH ");
+			// end option preamble
+			
+			if (!options.isEmpty()) {
+				for (String name : options.keySet()) {
+					// append AND if we're not on first option
+					if (first) {
+						first = false;
+					} else {
+						cql.append(" AND ");
+					}
+
+					// append <name> = <value>
+					cql.append(name);
+
+					Object value = options.get(name);
+					if (value == null) { // then assume string-only, valueless option like "COMPACT STORAGE"
+						continue;
+					}
+
+					cql.append(" = ");
+
+					if (value instanceof Map) {
+						optionValueMap((Map<Option, Object>) value, cql);
+						continue; // end non-empty value map
+					}
+
+					// else just use value as string
+					cql.append(value.toString());
+				}
+			}
+		}
+		// end options
+		
+		return cql;
+	}
 }

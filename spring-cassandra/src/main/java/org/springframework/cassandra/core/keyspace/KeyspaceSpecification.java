@@ -15,9 +15,6 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -28,48 +25,27 @@ import java.util.Map;
  */
 public class KeyspaceSpecification<T> extends KeyspaceOptionsSpecification<KeyspaceSpecification<T>> implements KeyspaceDescriptor {
 	
-	private String replicationStrategy;
-	
-	private Long replicationFactor;
-	
-	private Map<String, Long> dataCenters = new HashMap<String, Long>();
-
-	@Override
-	public String getReplicationStrategy() {
-		return replicationStrategy;
-	}
+	private Boolean durableWrites;
 
 	/**
-	 * @param replicationStrategy the replicationStrategy to set
+	 * @param durableWrites the durableWrites to set
 	 */
-	public void setReplicationStrategy(String replicationStrategy) {
-		this.replicationStrategy = replicationStrategy;
-	}
-
-	/**
-	 * @return the replicationFactor
-	 */
-	@Override
-	public Long getReplicationFactor() {
-		return replicationFactor;
-	}
-
-	/**
-	 * @param replicationFactor the replicationFactor to set
-	 */
-	public void setReplicationFactor(Long replicationFactor) {
-		this.replicationFactor = replicationFactor;
+	@SuppressWarnings( "unchecked" )
+	public T durableWrites(Boolean durableWrites) {
+		this.durableWrites = durableWrites;
+		
+		return (T) this;
 	}
 
 	@Override
-	public Map<String, Long> getDataCenters() {
-		return Collections.unmodifiableMap( dataCenters );
+	public Boolean getDurableWrites() {
+		return durableWrites;
 	}
 
 	/**
-	 * @param dataCenters the dataCenters to set
+	 * @param durableWrites the durableWrites to set
 	 */
-	public void setDataCenters(Map<String, Long> dataCenters) {
-		this.dataCenters = dataCenters;
+	public void setDurableWrites(Boolean durableWrites) {
+		this.durableWrites = durableWrites;
 	}
 }

@@ -140,6 +140,7 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 	}
 
 	@Test
+	@SuppressWarnings( "unchecked" )
 	public void ingestionTestListOfList() {
 
 		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
@@ -507,6 +508,7 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
+		@SuppressWarnings( "unused" )
 		Book book = cassandraTemplate.queryForObject("select * from book where isbn in ('1234','2345','3456')",
 				new RowMapper<Book>() {
 					@Override
@@ -561,6 +563,7 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 	@Test(expected = ClassCastException.class)
 	public void queryForObjectTestCqlStringRequiredTypeInvalid() {
 
+		@SuppressWarnings( "unused" )
 		Float title = cassandraTemplate.queryForObject("select title from book where isbn in ('" + ISBN_NINES + "')",
 				Float.class);
 
