@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.TableDescriptor;
 import org.springframework.cassandra.core.keyspace.TableOption;
@@ -31,6 +33,8 @@ import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.TableMetadata.Options;
 
 public class CqlTableSpecificationAssertions {
+
+	private final static Logger log = LoggerFactory.getLogger(CqlTableSpecificationAssertions.class);
 
 	public static double DELTA = 1e-6; // delta for comparisons of doubles
 
@@ -57,8 +61,10 @@ public class CqlTableSpecificationAssertions {
 
 		for (String key : expected.keySet()) {
 
+			log.info(key + " -> " + expected.get(key));
+
 			Object value = expected.get(key);
-			TableOption tableOption = getTableOptionFor(key);
+			TableOption tableOption = getTableOptionFor(key.toUpperCase());
 
 			if (tableOption == null && key.equalsIgnoreCase(TableOption.COMPACT_STORAGE.getName())) {
 				// TODO: figure out how to tell if COMPACT STORAGE was used
