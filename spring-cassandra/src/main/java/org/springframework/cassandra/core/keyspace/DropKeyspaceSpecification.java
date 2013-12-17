@@ -17,4 +17,12 @@ public class DropKeyspaceSpecification extends KeyspaceNameSpecification<DropKey
 		return ifExists;
 	}
 
+	/**
+	 * Entry point into the {@link DropKeyspaceSpecification}'s fluent API to drop a keyspace. Convenient if imported
+	 * statically.
+	 */
+	public static DropKeyspaceSpecification dropTable() {
+		return new DropKeyspaceSpecification();
+	}
+
 }

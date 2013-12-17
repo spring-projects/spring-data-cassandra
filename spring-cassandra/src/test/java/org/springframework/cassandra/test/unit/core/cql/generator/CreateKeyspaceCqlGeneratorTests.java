@@ -49,9 +49,9 @@ public class CreateKeyspaceCqlGeneratorTests {
 			replicationMap.put( new DefaultOption( "dc2", Long.class, false, false, true ), 3 );
 			
 			return (CreateKeyspaceSpecification) CreateKeyspaceSpecification.createKeyspace()
-						.name( name )
-						.with( KeyspaceOption.REPLICATION, replicationMap )
-						.with( KeyspaceOption.DURABLE_WRITES, durableWrites );
+						.name(name)
+						.with(KeyspaceOption.REPLICATION, replicationMap)
+						.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 		}
 
 		@Test
