@@ -23,6 +23,7 @@ public class CqlStringUtils {
 	protected static final String DOUBLE_SINGLE_QUOTE = "\'\'";
 	protected static final String DOUBLE_QUOTE = "\"";
 	protected static final String DOUBLE_DOUBLE_QUOTE = "\"\"";
+	protected static final String EMPTY_STRING = "";
 
 	public static StringBuilder noNull(StringBuilder sb) {
 		return sb == null ? new StringBuilder() : sb;
@@ -128,5 +129,12 @@ public class CqlStringUtils {
 	public static String doubleQuote(Object thing) {
 		return thing == null ? (String) null : new StringBuilder().append(DOUBLE_QUOTE).append(thing).append(DOUBLE_QUOTE)
 				.toString();
+	}
+
+	/**
+	 * Removed single quotes from quoted String option values
+	 */
+	public static String removeSingleQuotes(Object thing) {
+		return thing == null ? (String) null : ((String) thing).replaceAll(SINGLE_QUOTE, EMPTY_STRING);
 	}
 }

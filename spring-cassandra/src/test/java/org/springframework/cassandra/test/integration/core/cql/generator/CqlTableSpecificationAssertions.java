@@ -22,10 +22,10 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.cql.CqlStringUtils;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.TableDescriptor;
 import org.springframework.cassandra.core.keyspace.TableOption;
-import org.springframework.cassandra.core.keyspace.TableOption.CachingOption;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Session;
@@ -91,7 +91,7 @@ public class CqlTableSpecificationAssertions {
 			return;
 
 		case CACHING:
-			assertEquals(CachingOption.valueOf((String) expected).getValue(), actual);
+			assertEquals(((String) expected).toUpperCase(), ((String) actual).toUpperCase());
 			return;
 
 		case COMPACTION:
@@ -103,7 +103,10 @@ public class CqlTableSpecificationAssertions {
 			return;
 		}
 
-		assertEquals(expected, actual);
+		log.info(actual.getClass().getName());
+
+		assertEquals(expected,
+				tableOption.quotesValue() && !(actual instanceof CharSequence) ? CqlStringUtils.singleQuote(actual) : actual);
 	}
 
 	public static void assertCompaction(Map<String, Object> expected, Map<String, String> actual) {
@@ -128,9 +131,9 @@ public class CqlTableSpecificationAssertions {
 		case BLOOM_FILTER_FP_CHANCE:
 			return (T) (Double) options.getBloomFilterFalsePositiveChance();
 		case CACHING:
-			return (T) options.getCaching();
+			return (T) CqlStringUtils.singleQuote(options.getCaching());
 		case COMMENT:
-			return (T) options.getComment();
+			return (T) CqlStringUtils.singleQuote(options.getComment());
 		case COMPACTION:
 			return (T) options.getCompaction();
 		case COMPACT_STORAGE:
@@ -138,7 +141,7 @@ public class CqlTableSpecificationAssertions {
 		case COMPRESSION:
 			return (T) options.getCompression();
 		case DCLOCAL_READ_REPAIR_CHANCE:
-			return (T) (Double) options.getReadRepairChance();
+			return (T) (Double) options.getLocalReadRepairChance();
 		case GC_GRACE_SECONDS:
 			return (T) new Long(options.getGcGraceInSeconds());
 		case READ_REPAIR_CHANCE:
