@@ -33,11 +33,6 @@ public interface KeyspaceDescriptor {
 	 * Returns the name of the table as an identifier or quoted identifier as appropriate.
 	 */
 	String getNameAsIdentifier();
-	
-	/**
-	 * Returns the replication strategy.
-	 */
-	Boolean getDurableWrites();
 
 	/**
 	 * Returns an unmodifiable {@link Map} of keyspace options.

@@ -64,7 +64,7 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeysp
 
 			// option preamble
 			boolean first = true;
-			cql.append(" WITH ");
+			cql.append("WITH ");
 			// end option preamble
 			
 			if (!options.isEmpty()) {
