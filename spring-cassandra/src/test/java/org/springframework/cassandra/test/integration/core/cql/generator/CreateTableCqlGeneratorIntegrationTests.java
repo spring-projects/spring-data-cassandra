@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.BasicTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.CompositePartitionKeyTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.CreateTableTest;
@@ -56,23 +55,6 @@ public class CreateTableCqlGeneratorIntegrationTests {
 		@Override
 		public CompositePartitionKeyTest unit() {
 			return new CompositePartitionKeyTest();
-		}
-	}
-
-	public static class TableOptionsIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
-
-		@Test
-		public void test() {
-
-			CreateTableCqlGeneratorTests.MultipleOptionsTest optionsTest = new CreateTableCqlGeneratorTests.MultipleOptionsTest();
-
-			optionsTest.prepare();
-
-			log.info(optionsTest.cql);
-
-			session.execute(optionsTest.cql);
-
-			assertTable(optionsTest.specification, keyspace, session);
 		}
 	}
 }
