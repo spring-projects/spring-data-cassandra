@@ -199,8 +199,8 @@ Also, developer discussions are being hosted via Google Groups at https://groups
 Spring Data Cassandra is being led and supported by the following
 companies and individuals:
 
-* [Prowave Consulting](http://www.prowaveconsulting.com)
-* [SciSpike](http://www.scispike.com)
+* [Prowave Consulting](http://www.prowaveconsulting.com) - David Webb
+* [SciSpike](http://www.scispike.com) - Matthew Adams
 * [VHA](http://www.vha.com)
 
 The following companies and individuals are also generously providing
