@@ -7,15 +7,10 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.generator.AlterKeyspaceCqlGenerator;
-import org.springframework.cassandra.core.cql.generator.AlterTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.AlterKeyspaceSpecification;
-import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
 import org.springframework.cassandra.core.keyspace.DefaultOption;
 import org.springframework.cassandra.core.keyspace.KeyspaceOption;
-import org.springframework.cassandra.core.keyspace.KeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
-
-import com.datastax.driver.core.DataType;
 
 public class AlterKeyspaceCqlGeneratorTests {
 
@@ -30,7 +25,7 @@ public class AlterKeyspaceCqlGeneratorTests {
 	 * Convenient base class that other test classes can use so as not to repeat the generics declarations.
 	 */
 	public static abstract class AlterTableTest extends
-	KeyspaceOperationCqlGeneratorTest<AlterKeyspaceSpecification, AlterKeyspaceCqlGenerator> {
+		KeyspaceOperationCqlGeneratorTest<AlterKeyspaceSpecification, AlterKeyspaceCqlGenerator> {
 	}
 
 	public static class BasicTest extends AlterTableTest {

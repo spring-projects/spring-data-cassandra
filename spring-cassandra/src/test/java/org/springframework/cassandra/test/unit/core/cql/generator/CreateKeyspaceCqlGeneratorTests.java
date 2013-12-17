@@ -18,7 +18,6 @@ public class CreateKeyspaceCqlGeneratorTests {
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
 	public static void assertPreamble(String keyspaceName, String cql) {
-		System.out.println( "'" + cql + "'" );
 		assertTrue(cql.startsWith("CREATE KEYSPACE " + keyspaceName + " "));
 	}
 
