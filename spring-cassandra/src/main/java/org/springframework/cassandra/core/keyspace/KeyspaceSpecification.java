@@ -24,28 +24,4 @@ package org.springframework.cassandra.core.keyspace;
  * @author John McPeek
  */
 public class KeyspaceSpecification<T> extends KeyspaceOptionsSpecification<KeyspaceSpecification<T>> implements KeyspaceDescriptor {
-	
-	private Boolean durableWrites;
-
-	/**
-	 * @param durableWrites the durableWrites to set
-	 */
-	@SuppressWarnings( "unchecked" )
-	public T durableWrites(Boolean durableWrites) {
-		this.durableWrites = durableWrites;
-		
-		return (T) this;
-	}
-
-	@Override
-	public Boolean getDurableWrites() {
-		return durableWrites;
-	}
-
-	/**
-	 * @param durableWrites the durableWrites to set
-	 */
-	public void setDurableWrites(Boolean durableWrites) {
-		this.durableWrites = durableWrites;
-	}
 }
