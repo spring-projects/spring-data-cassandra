@@ -1,7 +1,6 @@
 package org.springframework.cassandra.test.unit.core.cql.generator;
 
 import static org.junit.Assert.assertTrue;
-import static org.springframework.cassandra.core.keyspace.IndexOperations.createIndex;
 
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.generator.CreateIndexCqlGenerator;
@@ -44,7 +43,7 @@ public class CreateIndexCqlGeneratorTests {
 		public String column1 = "column1";
 
 		public CreateIndexSpecification specification() {
-			return createIndex().name(name).tableName(tableName).columnName(column1);
+			return CreateIndexSpecification.createIndex().name(name).tableName(tableName).columnName(column1);
 		}
 
 		@Test
