@@ -1,7 +1,6 @@
 package org.springframework.cassandra.test.unit.core.cql.generator;
 
 import static org.junit.Assert.assertTrue;
-import static org.springframework.cassandra.core.keyspace.IndexOperations.dropIndex;
 
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.generator.DropIndexCqlGenerator;
@@ -28,7 +27,7 @@ public class DropIndexCqlGeneratorTests {
 		public String name = "myindex";
 
 		public DropIndexSpecification specification() {
-			return dropIndex().name(name);
+			return DropIndexSpecification.dropIndex().name(name);
 		}
 
 		public DropIndexCqlGenerator generator() {
@@ -49,7 +48,7 @@ public class DropIndexCqlGeneratorTests {
 		public String name = "myindex";
 
 		public DropIndexSpecification specification() {
-			return dropIndex().name(name)
+			return DropIndexSpecification.dropIndex().name(name)
 			// .ifExists()
 			;
 		}

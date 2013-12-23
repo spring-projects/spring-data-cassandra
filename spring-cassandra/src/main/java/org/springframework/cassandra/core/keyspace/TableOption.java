@@ -53,13 +53,13 @@ public enum TableOption implements Option {
 	/**
 	 * <code>replicate_on_write</code>
 	 */
-	REPLICATE_ON_WRITE("replicate_on_write", Boolean.class, true, false, false),
+	REPLICATE_ON_WRITE("replicate_on_write", Boolean.class, true, false, true),
 	/**
 	 * <code>caching</code>
 	 * 
 	 * @see CachingOption
 	 */
-	CACHING("caching", CachingOption.class, true, false, false),
+	CACHING("caching", CachingOption.class, true, false, true),
 	/**
 	 * <code>bloom_filter_fp_chance</code>
 	 */
@@ -155,6 +155,10 @@ public enum TableOption implements Option {
 		/**
 		 * <code>tombstone_threshold</code>
 		 */
+		CLASS("class", String.class, true, false, true),
+		/**
+		 * <code>tombstone_threshold</code>
+		 */
 		TOMBSTONE_THRESHOLD("tombstone_threshold", Double.class, true, false, false),
 		/**
 		 * <code>tombstone_compaction_interval</code>
@@ -242,7 +246,7 @@ public enum TableOption implements Option {
 		/**
 		 * <code>sstable_compression</code>
 		 */
-		STABLE_COMPRESSION("sstable_compression", String.class, true, false, false),
+		SSTABLE_COMPRESSION("sstable_compression", String.class, true, false, true),
 		/**
 		 * <code>chunk_length_kb</code>
 		 */

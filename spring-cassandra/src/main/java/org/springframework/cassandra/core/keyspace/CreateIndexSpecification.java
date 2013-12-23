@@ -108,4 +108,12 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		return this;
 	}
 
+	/**
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
+	 * statically.
+	 */
+	public static CreateIndexSpecification createIndex() {
+		return new CreateIndexSpecification();
+	}
+
 }

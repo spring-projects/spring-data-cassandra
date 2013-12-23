@@ -1,8 +1,6 @@
 package org.springframework.cassandra.test.unit.core.keyspace;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.lang.annotation.RetentionPolicy;
 
