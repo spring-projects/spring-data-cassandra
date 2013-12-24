@@ -22,7 +22,7 @@ public abstract class KeyspaceOperationCqlGeneratorTest<S extends KeyspaceNameSp
 
 	public abstract G generator();
 
-	public String tableName;
+	public String keyspace;
 	public S specification;
 	public G generator;
 	public String cql;
