@@ -24,7 +24,7 @@ public class DropKeyspaceCqlGeneratorTests {
 
 	public static class BasicTest extends DropTableTest {
 
-		public String name = "mytable";
+		public String name = "mykeyspace";
 
 		public DropKeyspaceSpecification specification() {
 			return DropKeyspaceSpecification.dropTable().name(name);
