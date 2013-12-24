@@ -4,8 +4,8 @@ import static org.springframework.cassandra.test.integration.core.cql.generator.
 
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.CreateKeyspaceTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.BasicTest;
+import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.CreateKeyspaceTest;
 
 /**
  * Integration tests that reuse unit tests.
