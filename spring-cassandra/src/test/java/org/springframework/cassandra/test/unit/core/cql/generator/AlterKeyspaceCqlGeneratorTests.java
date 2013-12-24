@@ -43,7 +43,7 @@ public class AlterKeyspaceCqlGeneratorTests {
 
 	public static class CompleteTest extends AlterKeyspaceTest {
 
-		public String name = "mytable";
+		public String name = "mykeyspace";
 		public Boolean durableWrites = true;
 		
 		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
