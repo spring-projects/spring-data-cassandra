@@ -21,14 +21,27 @@ public class AlterKeyspaceCqlGeneratorTests {
 		assertTrue(cql.startsWith("ALTER KEYSPACE " + tableName + " "));
 	}
 
+	private static void assertReplicationMap(Map<Option, Object> replicationMap, String cql) {
+		assertTrue(cql.contains(" WITH replication = { "));
+		
+		for (Map.Entry<Option, Object> entry : replicationMap.entrySet() ) {
+			String keyValuePair = "'" + entry.getKey().getName() + "' : '" + entry.getValue().toString() + "'";
+			assertTrue(cql.contains(keyValuePair));
+		}
+	}
+
+	public static void assertDurableWrites(Boolean durableWrites, String cql) {
+		assertTrue(cql.contains(" AND durable_writes = " + durableWrites));
+	}
+
 	/**
 	 * Convenient base class that other test classes can use so as not to repeat the generics declarations.
 	 */
-	public static abstract class AlterTableTest extends
+	public static abstract class AlterKeyspaceTest extends
 		KeyspaceOperationCqlGeneratorTest<AlterKeyspaceSpecification, AlterKeyspaceCqlGenerator> {
 	}
 
-	public static class BasicTest extends AlterTableTest {
+	public static class CompleteTest extends AlterKeyspaceTest {
 
 		public String name = "mytable";
 		public Boolean durableWrites = true;
@@ -56,6 +69,39 @@ public class AlterKeyspaceCqlGeneratorTests {
 			prepare();
 
 			assertPreamble(name, cql);
+			assertReplicationMap(replicationMap, cql);
+			assertDurableWrites(durableWrites, cql);
+		}
+	}
+
+	public static class ReplicationMapOnlyTest extends AlterKeyspaceTest {
+
+		public String name = "mytable";
+		public Boolean durableWrites = true;
+		
+		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
+
+		public AlterKeyspaceSpecification specification() {
+			replicationMap.put( new DefaultOption( "class", String.class, false, false, true ), "SimpleStrategy" );
+			replicationMap.put( new DefaultOption( "replication_factor", Long.class, false, false, true ), 1 );
+			replicationMap.put( new DefaultOption( "dc1", Long.class, false, false, true ), 2 );
+			replicationMap.put( new DefaultOption( "dc2", Long.class, false, false, true ), 3 );
+			
+			return AlterKeyspaceSpecification.alterKeyspace()
+					.name(name)
+					.with(KeyspaceOption.REPLICATION, replicationMap);
+		}
+
+		public AlterKeyspaceCqlGenerator generator() {
+			return new AlterKeyspaceCqlGenerator(specification);
+		}
+
+		@Test
+		public void test() {
+			prepare();
+
+			assertPreamble(name, cql);
+			assertReplicationMap(replicationMap, cql);
 		}
 	}
 }

@@ -12,7 +12,6 @@ public class DropKeyspaceCqlGeneratorTests {
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
 	public static void assertStatement(String tableName, String cql) {
-		System.out.println( "'" + cql + "'" );
 		assertTrue(cql.equals("DROP KEYSPACE " + tableName + ";"));
 	}
 

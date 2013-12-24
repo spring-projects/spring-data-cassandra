@@ -21,6 +21,19 @@ public class CreateKeyspaceCqlGeneratorTests {
 		assertTrue(cql.startsWith("CREATE KEYSPACE " + keyspaceName + " "));
 	}
 
+	private static void assertReplicationMap(Map<Option, Object> replicationMap, String cql) {
+		assertTrue(cql.contains(" WITH replication = { "));
+		
+		for (Map.Entry<Option, Object> entry : replicationMap.entrySet() ) {
+			String keyValuePair = "'" + entry.getKey().getName() + "' : '" + entry.getValue().toString() + "'";
+			assertTrue(cql.contains(keyValuePair));
+		}
+	}
+
+	public static void assertDurableWrites(Boolean durableWrites, String cql) {
+		assertTrue(cql.contains(" AND durable_writes = " + durableWrites));
+	}
+
 	/**
 	 * Convenient base class that other test classes can use so as not to repeat the generics declarations or
 	 * {@link #generator()} method.
@@ -35,20 +48,20 @@ public class CreateKeyspaceCqlGeneratorTests {
 
 	public static class BasicTest extends CreateKeyspaceTest {
 
-		public String name = "mytable";
+		public String name = "mykeyspace";
 		public Boolean durableWrites = true;
 		
 		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
 
 		@Override
 		public CreateKeyspaceSpecification specification() {
+			keyspace = name;
+			
 			replicationMap.put( new DefaultOption( "class", String.class, false, false, true ), "SimpleStrategy" );
 			replicationMap.put( new DefaultOption( "replication_factor", Long.class, false, false, true ), 1 );
-			replicationMap.put( new DefaultOption( "dc1", Long.class, false, false, true ), 2 );
-			replicationMap.put( new DefaultOption( "dc2", Long.class, false, false, true ), 3 );
 			
 			return (CreateKeyspaceSpecification) CreateKeyspaceSpecification.createKeyspace()
-						.name(name)
+						.name(keyspace)
 						.with(KeyspaceOption.REPLICATION, replicationMap)
 						.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 		}
@@ -57,7 +70,40 @@ public class CreateKeyspaceCqlGeneratorTests {
 		public void test() {
 			prepare();
 
-			assertPreamble(name, cql);
+			assertPreamble(keyspace, cql);
+			assertReplicationMap(replicationMap, cql);
+			assertDurableWrites(durableWrites, cql);
+		}
+	}
+
+	public static class NetworkTopologyTest extends CreateKeyspaceTest {
+
+		public String name = "mykeyspace";
+		public Boolean durableWrites = false;
+		
+		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
+
+		@Override
+		public CreateKeyspaceSpecification specification() {
+			keyspace = name;
+			
+			replicationMap.put( new DefaultOption( "class", String.class, false, false, true ), "NetworkTopologyStrategy" );
+			replicationMap.put( new DefaultOption( "dc1", Long.class, false, false, true ), 2 );
+			replicationMap.put( new DefaultOption( "dc2", Long.class, false, false, true ), 3 );
+			
+			return (CreateKeyspaceSpecification) CreateKeyspaceSpecification.createKeyspace()
+						.name(keyspace)
+						.with(KeyspaceOption.REPLICATION, replicationMap)
+						.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
+		}
+
+		@Test
+		public void test() {
+			prepare();
+
+			assertPreamble(keyspace, cql);
+			assertReplicationMap(replicationMap, cql);
+			assertDurableWrites(durableWrites, cql);
 		}
 	}
 }
