@@ -25,6 +25,14 @@ public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpec
 
 	private boolean ifExists;
 
+	/**
+	 * Entry point into the {@link DropIndexSpecification}'s fluent API to drop a table. Convenient if imported
+	 * statically.
+	 */
+	public static DropIndexSpecification dropIndex() {
+		return new DropIndexSpecification();
+	}
+
 	/*
 	 * In CQL 3.1 this is supported so we can uncomment the exposure then.
 	 * In the meantime, it will always be false and tests will pass.
