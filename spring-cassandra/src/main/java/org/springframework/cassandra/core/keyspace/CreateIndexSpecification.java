@@ -88,7 +88,6 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * 
 	 * @return this
 	 */
-	@SuppressWarnings("unchecked")
 	public CreateIndexSpecification tableName(String tableName) {
 		checkIdentifier(tableName);
 		this.tableName = tableName;
@@ -106,6 +105,14 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	public CreateIndexSpecification columnName(String columnName) {
 		this.columnName = columnName;
 		return this;
+	}
+
+	/**
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
+	 * statically.
+	 */
+	public static CreateIndexSpecification createIndex() {
+		return new CreateIndexSpecification();
 	}
 
 }

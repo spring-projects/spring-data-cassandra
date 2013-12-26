@@ -13,25 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cassandra.core.cql.generator;
+package org.springframework.cassandra.core.keyspace;
 
-import org.springframework.cassandra.core.keyspace.TableSpecification;
+import java.util.Map;
 
 /**
- * Base class that contains behavior common to CQL generation for table operations.
+ * Describes a Keyspace.
  * 
- * @author Matthew T. Adams
- * @param T The subtype of this class for which this is a CQL generator.
+ * @author John McPeek
  */
-public abstract class TableCqlGenerator<T extends TableSpecification<T>> extends
-		TableOptionsCqlGenerator<TableSpecification<T>> {
+public interface KeyspaceDescriptor {
 
-	public TableCqlGenerator(TableSpecification<T> specification) {
-		super(specification);
-	}
+	/**
+	 * Returns the name of the table.
+	 */
+	String getName();
 
-	@SuppressWarnings("unchecked")
-	protected T spec() {
-		return (T) getSpecification();
-	}
+	/**
+	 * Returns the name of the table as an identifier or quoted identifier as appropriate.
+	 */
+	String getNameAsIdentifier();
+
+	/**
+	 * Returns an unmodifiable {@link Map} of keyspace options.
+	 */
+	Map<String, Object> getOptions();
 }

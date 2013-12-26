@@ -15,24 +15,23 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
-
-import org.springframework.cassandra.core.keyspace.DropTableSpecification;
+import org.springframework.cassandra.core.keyspace.KeyspaceSpecification;
 
 /**
- * CQL generator for generating a <code>DROP TABLE</code> statement.
+ * Base class that contains behavior common to CQL generation for table operations.
  * 
  * @author Matthew T. Adams
+ * @param T The subtype of this class for which this is a CQL generator.
  */
-public class DropTableCqlGenerator extends TableNameCqlGenerator<DropTableSpecification> {
+public abstract class KeyspaceCqlGenerator<T extends KeyspaceSpecification<T>> extends
+		KeyspaceOptionsCqlGenerator<KeyspaceSpecification<T>> {
 
-	public DropTableCqlGenerator(DropTableSpecification specification) {
+	public KeyspaceCqlGenerator(KeyspaceSpecification<T> specification) {
 		super(specification);
 	}
 
-	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("DROP TABLE ")
-		// .append(spec().getIfExists() ? "IF EXISTS " : "")
-				.append(spec().getNameAsIdentifier()).append(";");
+	@SuppressWarnings("unchecked")
+	protected T spec() {
+		return (T) getSpecification();
 	}
 }

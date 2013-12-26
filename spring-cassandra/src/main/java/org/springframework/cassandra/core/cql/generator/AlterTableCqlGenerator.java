@@ -25,6 +25,7 @@ import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
 import org.springframework.cassandra.core.keyspace.ColumnChangeSpecification;
 import org.springframework.cassandra.core.keyspace.DropColumnSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
+import org.springframework.cassandra.core.keyspace.TableOption;
 
 /**
  * CQL generator for generating <code>ALTER TABLE</code> statements.
@@ -94,6 +95,16 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 		cql.append(" WITH ");
 		boolean first = true;
 		for (String key : options.keySet()) {
+
+			/*
+			 * Compact storage is illegal on alter table.
+			 * 
+			 * TODO - Is there a way to handle this in the specification?
+			 */
+			if (key.equals(TableOption.COMPACT_STORAGE.getName())) {
+				throw new IllegalArgumentException("Alter table cannot contain the COMPACT STORAGE option");
+			}
+
 			if (first) {
 				first = false;
 			} else {
