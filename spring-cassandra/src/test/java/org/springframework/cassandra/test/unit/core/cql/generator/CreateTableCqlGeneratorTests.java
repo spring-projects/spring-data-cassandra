@@ -177,8 +177,6 @@ public class CreateTableCqlGeneratorTests {
 	/**
 	 * Fully test all available create table options
 	 * 
-	 * TODO - Determine how to assert the options with map values
-	 * 
 	 * @author David Webb
 	 * 
 	 */

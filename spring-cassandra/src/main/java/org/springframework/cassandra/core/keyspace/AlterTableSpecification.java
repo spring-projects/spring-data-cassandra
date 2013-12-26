@@ -33,13 +33,15 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 */
 	private List<ColumnChangeSpecification> changes = new ArrayList<ColumnChangeSpecification>();
 
-	/**
+	/*
 	 * Adds a <code>DROP</code> to the list of column changes.
+	 * 
+	 * DW Removed as this only works in C* 2.0
 	 */
-	public AlterTableSpecification drop(String column) {
-		changes.add(new DropColumnSpecification(column));
-		return this;
-	}
+	// public AlterTableSpecification drop(String column) {
+	// changes.add(new DropColumnSpecification(column));
+	// return this;
+	// }
 
 	/**
 	 * Adds an <code>ADD</code> to the list of column changes.
