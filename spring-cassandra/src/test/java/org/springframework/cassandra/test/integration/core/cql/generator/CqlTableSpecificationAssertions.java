@@ -16,6 +16,7 @@
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.cql.CqlStringUtils;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
+import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.cassandra.core.keyspace.TableDescriptor;
 import org.springframework.cassandra.core.keyspace.TableOption;
 
@@ -47,6 +49,13 @@ public class CqlTableSpecificationAssertions {
 		assertPrimaryKeyColumns(expected, tmd);
 		assertColumns(expected.getColumns(), tmd.getColumns());
 		assertOptions(expected.getOptions(), tmd.getOptions());
+	}
+
+	public static void assertNoTable(DropTableSpecification expected, String keyspace, Session session) {
+		TableMetadata tmd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
+				.getTable(expected.getName());
+
+		assertNull(tmd);
 	}
 
 	public static void assertPartitionKeyColumns(TableDescriptor expected, TableMetadata actual) {
