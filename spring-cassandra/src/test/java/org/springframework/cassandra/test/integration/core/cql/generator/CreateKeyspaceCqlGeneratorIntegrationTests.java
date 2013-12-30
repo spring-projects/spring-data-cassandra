@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.BasicTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.CreateKeyspaceTest;
+import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.NetworkTopologyTest;
 
 /**
  * Integration tests that reuse unit tests.
@@ -42,4 +43,12 @@ public class CreateKeyspaceCqlGeneratorIntegrationTests {
 			return new BasicTest();
 		}
 	}
+
+	public static class NetworkTopologyIntegrationTest extends Base<NetworkTopologyTest> {
+
+		@Override
+		public NetworkTopologyTest unit() {
+			return new NetworkTopologyTest();
+		}
+	}	
 }
