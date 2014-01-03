@@ -21,7 +21,7 @@ public class DropKeyspaceSpecification extends KeyspaceNameSpecification<DropKey
 	 * Entry point into the {@link DropKeyspaceSpecification}'s fluent API to drop a keyspace. Convenient if imported
 	 * statically.
 	 */
-	public static DropKeyspaceSpecification dropTable() {
+	public static DropKeyspaceSpecification dropKeyspace() {
 		return new DropKeyspaceSpecification();
 	}
 
