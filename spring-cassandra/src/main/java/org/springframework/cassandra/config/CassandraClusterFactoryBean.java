@@ -16,6 +16,7 @@
 package org.springframework.cassandra.config;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerat
 import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.KeyspaceNameSpecification;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -79,7 +81,8 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
 
-	private List<String> scripts = new ArrayList<String>();
+	private List<String> startupScripts = new ArrayList<String>();
+	private List<String> shutdownScripts = new ArrayList<String>();
 
 	@Override
 	public Cluster getObject() throws Exception {
@@ -113,10 +116,6 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 		return exceptionTranslator.translateExceptionIfPossible(ex);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
@@ -169,20 +168,21 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 		// initialize property
 		this.cluster = cluster;
 
-		processKeyspaceCreations();
-		executeCqlScripts();
+		executeSpecsAndScripts(keyspaceCreations, startupScripts);
 	}
 
-	protected void processKeyspaceCreations() {
-
+	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
 		Session system = null;
 		try {
-			system = keyspaceCreations.size() > 0 ? cluster.connect() : null;
+			system = specs.size() > 0 ? cluster.connect() : null;
 			CassandraTemplate template = system == null ? null : new CassandraTemplate(system);
 
-			for (CreateKeyspaceSpecification spec : this.keyspaceCreations) {
-
-				String cql = new CreateKeyspaceCqlGenerator(spec).toCql();
+			Iterator<?> i = specs.iterator();
+			while (i.hasNext()) {
+				KeyspaceNameSpecification<?> spec = (KeyspaceNameSpecification<?>) i.next();
+				String cql = (spec instanceof CreateKeyspaceSpecification) ? new CreateKeyspaceCqlGenerator(
+						(CreateKeyspaceSpecification) spec).toCql()
+						: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
 
 				if (log.isDebugEnabled()) {
 					log.info("executing CQL [{}]", cql);
@@ -190,26 +190,16 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 
 				template.execute(cql);
 			}
-		} finally {
-			if (system != null) {
-				system.shutdown();
-			}
-		}
-	}
 
-	protected void executeCqlScripts() {
+			for (String script : startupScripts) {
 
-		Session system = null;
-		try {
-			system = scripts.size() > 0 ? cluster.connect() : null;
-			CassandraTemplate template = system == null ? null : new CassandraTemplate(system);
-
-			for (String cql : this.scripts) {
-				if (cql.trim().length() == 0) {
-					continue;
+				if (log.isDebugEnabled()) {
+					log.info("executing raw CQL [{}]", script);
 				}
-				template.execute(cql);
+
+				template.execute(script);
 			}
+
 		} finally {
 			if (system != null) {
 				system.shutdown();
@@ -220,21 +210,9 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	@Override
 	public void destroy() throws Exception {
 
-		Session system = null;
-		try {
-			system = keyspaceDrops.size() > 0 ? cluster.connect() : null;
-			CassandraTemplate template = new CassandraTemplate(system);
+		executeSpecsAndScripts(keyspaceDrops, shutdownScripts);
 
-			for (DropKeyspaceSpecification spec : this.keyspaceDrops) {
-				template.execute(new DropKeyspaceCqlGenerator(spec).toCql());
-			}
-		} finally {
-			if (system != null) {
-				system.shutdown();
-			}
-		}
-
-		this.cluster.shutdown();
+		cluster.shutdown();
 	}
 
 	public void setContactPoints(String contactPoints) {
@@ -297,8 +275,12 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 		return keyspaceDrops;
 	}
 
-	public void setScripts(List<String> scripts) {
-		this.scripts = scripts;
+	public void setStartupScripts(List<String> scripts) {
+		this.startupScripts = scripts;
+	}
+
+	public void setShutdownScripts(List<String> scripts) {
+		this.shutdownScripts = scripts;
 	}
 
 	private static Compression convertCompressionType(CompressionType type) {

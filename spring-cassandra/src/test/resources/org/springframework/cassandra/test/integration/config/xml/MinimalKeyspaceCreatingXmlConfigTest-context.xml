@@ -8,8 +8,7 @@
 	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
 	<cass:cluster>
-		<cass:keyspace action="CREATE-DROP" durable-writes="true"
-			name="minimal" />
+		<cass:keyspace action="CREATE-DROP" name="minimal" />
 	</cass:cluster>
 
 	<cass:session keyspace-name="minimal" />
