@@ -15,9 +15,19 @@
  */
 package org.springframework.cassandra.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
+import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -28,6 +38,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SocketOptions;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
@@ -39,9 +50,10 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-
 public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, InitializingBean, DisposableBean,
 		PersistenceExceptionTranslator {
+
+	protected static final Logger log = LoggerFactory.getLogger(CassandraClusterFactoryBean.class);
 
 	private static final int DEFAULT_PORT = 9042;
 
@@ -64,6 +76,12 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
+	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
+	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
+
+	private List<String> scripts = new ArrayList<String>();
+
+	@Override
 	public Cluster getObject() throws Exception {
 		return cluster;
 	}
@@ -72,6 +90,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
+	@Override
 	public Class<? extends Cluster> getObjectType() {
 		return Cluster.class;
 	}
@@ -80,6 +99,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
 	 */
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
@@ -88,6 +108,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	 * (non-Javadoc)
 	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
 	 */
+	@Override
 	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 		return exceptionTranslator.translateExceptionIfPossible(ex);
 	}
@@ -96,6 +117,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
+	@Override
 	public void afterPropertiesSet() throws Exception {
 
 		if (!StringUtils.hasText(contactPoints)) {
@@ -146,13 +168,72 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 
 		// initialize property
 		this.cluster = cluster;
+
+		processKeyspaceCreations();
+		executeCqlScripts();
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
-	 */
+	protected void processKeyspaceCreations() {
+
+		Session system = null;
+		try {
+			system = keyspaceCreations.size() > 0 ? cluster.connect() : null;
+			CassandraTemplate template = system == null ? null : new CassandraTemplate(system);
+
+			for (CreateKeyspaceSpecification spec : this.keyspaceCreations) {
+
+				String cql = new CreateKeyspaceCqlGenerator(spec).toCql();
+
+				if (log.isDebugEnabled()) {
+					log.info("executing CQL [{}]", cql);
+				}
+
+				template.execute(cql);
+			}
+		} finally {
+			if (system != null) {
+				system.shutdown();
+			}
+		}
+	}
+
+	protected void executeCqlScripts() {
+
+		Session system = null;
+		try {
+			system = scripts.size() > 0 ? cluster.connect() : null;
+			CassandraTemplate template = system == null ? null : new CassandraTemplate(system);
+
+			for (String cql : this.scripts) {
+				if (cql.trim().length() == 0) {
+					continue;
+				}
+				template.execute(cql);
+			}
+		} finally {
+			if (system != null) {
+				system.shutdown();
+			}
+		}
+	}
+
+	@Override
 	public void destroy() throws Exception {
+
+		Session system = null;
+		try {
+			system = keyspaceDrops.size() > 0 ? cluster.connect() : null;
+			CassandraTemplate template = new CassandraTemplate(system);
+
+			for (DropKeyspaceSpecification spec : this.keyspaceDrops) {
+				template.execute(new DropKeyspaceCqlGenerator(spec).toCql());
+			}
+		} finally {
+			if (system != null) {
+				system.shutdown();
+			}
+		}
+
 		this.cluster.shutdown();
 	}
 
@@ -198,6 +279,26 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 
 	public void setMetricsEnabled(boolean metricsEnabled) {
 		this.metricsEnabled = metricsEnabled;
+	}
+
+	public void setKeyspaceCreations(List<CreateKeyspaceSpecification> specifications) {
+		this.keyspaceCreations = specifications;
+	}
+
+	public List<CreateKeyspaceSpecification> getKeyspaceCreations() {
+		return keyspaceCreations;
+	}
+
+	public void setKeyspaceDrops(List<DropKeyspaceSpecification> specifications) {
+		this.keyspaceDrops = specifications;
+	}
+
+	public List<DropKeyspaceSpecification> getKeyspaceDrops() {
+		return keyspaceDrops;
+	}
+
+	public void setScripts(List<String> scripts) {
+		this.scripts = scripts;
 	}
 
 	private static Compression convertCompressionType(CompressionType type) {

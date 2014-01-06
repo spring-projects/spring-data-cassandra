@@ -33,7 +33,7 @@ Defines a Cassandra Session.
 		<xsd:annotation>
 			<xsd:documentation
 				source="org.springframework.cassandra.config.xml.TemplateFactoryBean"><![CDATA[
-Defines a Cassandra Templat.
+Defines a Cassandra Template.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
@@ -67,6 +67,21 @@ Defines a Cassandra Cluster.
 			</xsd:element>
 			<xsd:element name="socket-options" type="socketOptionsType"
 				maxOccurs="1" minOccurs="0"></xsd:element>
+			<xsd:element name="keyspace" type="keyspaceType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Defines a Cassandra Keyspace.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the system keyspace during bean initialization.
+					]]></xsd:documentation>
+				</xsd:annotation>
+				<!-- TODO: cql could come from a resource via a resource attribute... -->
+			</xsd:element>
 		</xsd:sequence>
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
 			<xsd:annotation>
@@ -81,7 +96,7 @@ Defines a Cassandra Cluster.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The comma separated list of Cassandra servers.  Default is localhost.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="port" type="xsd:string" use="optional"
@@ -89,14 +104,14 @@ The comma separated list of Cassandra servers.  Default is localhost.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The native CQL port to connect to.  Default is 9042.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="compression" default="NONE" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The protocol compression option. Default is 'none'.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:restriction base="xsd:string">
@@ -104,14 +119,14 @@ The protocol compression option. Default is 'none'.
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 No compression.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:enumeration>
 					<xsd:enumeration value="SNAPPY">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[
 Uses SNAPPY compression algorithm.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:enumeration>
 				</xsd:restriction>
@@ -121,7 +136,7 @@ Uses SNAPPY compression algorithm.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 AuthInfoProvider implementation.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:annotation>
@@ -138,7 +153,7 @@ AuthInfoProvider implementation.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 LoadBalancingPolicy implementation.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:annotation>
@@ -156,7 +171,7 @@ LoadBalancingPolicy implementation.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 ReconnectionPolicy implementation.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:annotation>
@@ -174,7 +189,7 @@ ReconnectionPolicy implementation.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 RetryPolicy implementation.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:annotation>
@@ -217,28 +232,28 @@ RetryPolicy implementation.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 if the utilisation of opened connections drops below by this configured threshold, then cassandra drops connections till core-connections.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="max-simultaneous-requests" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 If the utilisation of connections reaches this configurable threshold, then cassandra creates more connections up to max-connections.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="core-connections" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 For each host, the driver keeps a core amount of connections open at all time.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="max-connections" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 More connections are created up to a configurable maximum number of connections.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
@@ -248,54 +263,64 @@ More connections are created up to a configurable maximum number of connections.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets connection timeout for client socket in milliseconds.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="keep-alive" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the SO_KEEPALIVE socket option.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="reuse-address" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the SO_REUSEADDR socket option.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="so-linger" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the SO_LINGER socket option.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="tcp-no-delay" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the SO_TCPNODELAY socket option.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="receive-buffer-size" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the SO_RCVBUF socket option.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="send-buffer-size" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the SO_SNDBUF socket option.
-							]]></xsd:documentation>
+				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
 
 	<xsd:complexType name="sessionType">
+		<xsd:sequence>
+			<xsd:element name="cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the named keyspace (like CREATE TABLE, etc) during bean initialization.
+					]]></xsd:documentation>
+				</xsd:annotation>
+				<!-- TODO: cql could come from a resource via a resource attribute... -->
+			</xsd:element>
+		</xsd:sequence>
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -336,6 +361,70 @@ The name of the template; default is 'cassandra-template'.
 The reference to a Cassandra Session; default is 'cassandra-session'.
 				]]></xsd:documentation>
 			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="keyspaceType">
+		<xsd:sequence>
+			<xsd:element name="replication" type="replicationType" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of this keyspace.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="action" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The keyspace action to take at startup.  Value "CREATE" creates this keyspace.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="CREATE">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Action value that causes keyspace creation during bean initialization.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="CREATE-DROP">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Action value that causes keyspace creation during bean initialization and keyspace dropping during bean destruction.
+							]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="durable-writes" type="xsd:boolean"
+			use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Whether or not the keyspace supports durable writes.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="replicationType">
+		<xsd:sequence>
+			<xsd:element name="data-center" type="datacenterType" minOccurs="0" maxOccurs="unbounded">
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="class" type="xsd:string" use="optional" default="SimpleStrategy">
+		</xsd:attribute>
+		<xsd:attribute name="replication-factor" type="xsd:integer" use="optional" default="1">
+		</xsd:attribute>
+	</xsd:complexType>
+	
+	<xsd:complexType name="datacenterType">
+		<xsd:attribute name="name" type="xsd:string" use="required">
+		</xsd:attribute>
+		<xsd:attribute name="replicas-per-node" type="xsd:integer">
 		</xsd:attribute>
 	</xsd:complexType>
 

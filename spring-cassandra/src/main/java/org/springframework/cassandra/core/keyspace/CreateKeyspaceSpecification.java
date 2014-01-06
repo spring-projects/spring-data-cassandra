@@ -36,6 +36,11 @@ public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKey
 	}
 
 	@Override
+	public CreateKeyspaceSpecification name(String name) {
+		return (CreateKeyspaceSpecification) super.name(name);
+	}
+
+	@Override
 	public CreateKeyspaceSpecification with(KeyspaceOption option) {
 		return (CreateKeyspaceSpecification) super.with(option);
 	}
