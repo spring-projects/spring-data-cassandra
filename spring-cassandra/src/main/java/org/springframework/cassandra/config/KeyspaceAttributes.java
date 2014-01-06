@@ -15,6 +15,9 @@
  */
 package org.springframework.cassandra.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Keyspace attributes.
  * 
@@ -23,13 +26,17 @@ package org.springframework.cassandra.config;
  */
 public class KeyspaceAttributes {
 
-	public static final String DEFAULT_REPLICATION_STRATEGY = "SimpleStrategy";
-	public static final int DEFAULT_REPLICATION_FACTOR = 1;
+	public static final String SIMPLE_REPLICATION_STRATEGY = "SimpleStrategy";
+	public static final String NETWORK_TOPOLOGY_REPLICATION_STRATEGY = "NetworkTopologyStrategy";
+
+	public static final String DEFAULT_REPLICATION_STRATEGY = SIMPLE_REPLICATION_STRATEGY;
+	public static final long DEFAULT_REPLICATION_FACTOR = 1;
 	public static final boolean DEFAULT_DURABLE_WRITES = true;
 
 	private String replicationStrategy = DEFAULT_REPLICATION_STRATEGY;
-	private int replicationFactor = DEFAULT_REPLICATION_FACTOR;
+	private long replicationFactor = DEFAULT_REPLICATION_FACTOR;
 	private boolean durableWrites = DEFAULT_DURABLE_WRITES;
+	private Map<String, Long> replicasPerNodeByDataCenter = new HashMap<String, Long>();
 
 	public String getReplicationStrategy() {
 		return replicationStrategy;
@@ -39,19 +46,23 @@ public class KeyspaceAttributes {
 		this.replicationStrategy = replicationStrategy;
 	}
 
-	public int getReplicationFactor() {
+	public long getReplicationFactor() {
 		return replicationFactor;
 	}
 
-	public void setReplicationFactor(int replicationFactor) {
+	public void setReplicationFactor(long replicationFactor) {
 		this.replicationFactor = replicationFactor;
 	}
 
-	public boolean isDurableWrites() {
+	public boolean getDurableWrites() {
 		return durableWrites;
 	}
 
 	public void setDurableWrites(boolean durableWrites) {
 		this.durableWrites = durableWrites;
+	}
+
+	public void addReplicasPerNode(String dataCenter, long replicasPerNode) {
+		replicasPerNodeByDataCenter.put(dataCenter, replicasPerNode);
 	}
 }

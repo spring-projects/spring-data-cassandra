@@ -28,6 +28,7 @@ import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.cassandra.config.CassandraClusterFactoryBean;
 import org.springframework.cassandra.config.CompressionType;
+import org.springframework.cassandra.config.KeyspaceAttributes;
 import org.springframework.cassandra.config.PoolingOptionsConfig;
 import org.springframework.cassandra.config.SocketOptionsConfig;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
@@ -46,7 +47,6 @@ import org.w3c.dom.NodeList;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-
 public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
@@ -87,7 +87,8 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 
 		List<CreateKeyspaceSpecification> creates = new ArrayList<CreateKeyspaceSpecification>();
 		List<DropKeyspaceSpecification> drops = new ArrayList<DropKeyspaceSpecification>();
-		List<String> scripts = new ArrayList<String>();
+		List<String> startupScripts = new ArrayList<String>();
+		List<String> shutdownScripts = new ArrayList<String>();
 
 		List<Element> elements = DomUtils.getChildElements(element);
 
@@ -111,17 +112,20 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 				if (specifications.drop != null) {
 					drops.add(specifications.drop);
 				}
-			} else if ("cql".equals(name)) {
-				scripts.add(parseScript(subElement));
+			} else if ("startup-cql".equals(name)) {
+				startupScripts.add(parseScript(subElement));
+			} else if ("shutdown-cql".equals(name)) {
+				shutdownScripts.add(parseScript(subElement));
 			}
 		}
 
 		builder.addPropertyValue("keyspaceCreations", creates);
 		builder.addPropertyValue("keyspaceDrops", drops);
-		builder.addPropertyValue("scripts", scripts);
+		builder.addPropertyValue("startupScripts", startupScripts);
+		builder.addPropertyValue("shutdownScripts", startupScripts);
 	}
 
-	private KeyspaceSpecifications parseKeyspace(Element element) {
+	protected KeyspaceSpecifications parseKeyspace(Element element) {
 
 		CreateKeyspaceSpecification create = null;
 		DropKeyspaceSpecification drop = null;
@@ -144,7 +148,7 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 					.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 
 			NodeList nodes = element.getElementsByTagName("replication");
-			parseReplication((Element) (nodes.getLength() == 1 ? nodes.item(0) : null), create);
+			create = parseReplication((Element) (nodes.getLength() == 1 ? nodes.item(0) : null), create);
 		}
 
 		if (action.equals("CREATE-DROP")) {
@@ -154,14 +158,14 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 		return new KeyspaceSpecifications(create, drop);
 	}
 
-	protected void parseReplication(Element element, CreateKeyspaceSpecification create) {
+	protected CreateKeyspaceSpecification parseReplication(Element element, CreateKeyspaceSpecification create) {
 
 		String strategyClass = null;
 		if (element != null) {
 			strategyClass = element.getAttribute("class");
 		}
-		if (strategyClass == null || strategyClass.trim().length() == 0) {
-			strategyClass = "SimpleStrategy";
+		if (strategyClass == null || (strategyClass = strategyClass.trim()).length() == 0) {
+			strategyClass = KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY;
 		}
 
 		Long replicationFactor = null;
@@ -170,7 +174,7 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 			replicationFactor = (s == null || s.trim().length() == 0) ? null : Long.parseLong(s);
 		}
 		if (replicationFactor == null) {
-			replicationFactor = 1L;
+			replicationFactor = KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR;
 		}
 
 		Map<Option, Object> replicationMap = new HashMap<Option, Object>();
@@ -187,18 +191,18 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 				Element dataCenter = (Element) dataCenters.item(i);
 
 				replicationMap.put(new DefaultOption(dataCenter.getAttribute("name"), Long.class, false, false, true),
-						dataCenter.getAttribute("replicas-per-node"));
+						dataCenter.getAttribute("replication-factor"));
 			}
 		}
 
-		create.with(KeyspaceOption.REPLICATION, replicationMap);
+		return create.with(KeyspaceOption.REPLICATION, replicationMap);
 	}
 
-	private String parseScript(Element element) {
+	protected String parseScript(Element element) {
 		return element.getTextContent();
 	}
 
-	private BeanDefinition parsePoolingOptions(Element element) {
+	protected BeanDefinition parsePoolingOptions(Element element) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(PoolingOptionsConfig.class);
 
 		ParsingUtils.setPropertyValue(builder, element, "min-simultaneous-requests", "minSimultaneousRequests");
@@ -209,7 +213,7 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 		return builder.getBeanDefinition();
 	}
 
-	private BeanDefinition parseSocketOptions(Element element) {
+	protected BeanDefinition parseSocketOptions(Element element) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SocketOptionsConfig.class);
 
 		ParsingUtils.setPropertyValue(builder, element, "connect-timeout-mls", "connectTimeoutMls");
@@ -223,7 +227,7 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 		return builder.getBeanDefinition();
 	}
 
-	private static class KeyspaceSpecifications {
+	protected static class KeyspaceSpecifications {
 
 		public KeyspaceSpecifications(CreateKeyspaceSpecification create, DropKeyspaceSpecification drop) {
 			this.create = create;
