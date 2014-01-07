@@ -1,0 +1,1 @@
+create table mytable (id uuid primary key, column1 text);

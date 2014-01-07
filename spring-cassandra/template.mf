@@ -1,0 +1,30 @@
+Bundle-SymbolicName: org.springframework.cassandra
+Bundle-Name: Spring Cassandra
+Bundle-Vendor: Spring Data Cassandra Community
+Bundle-ManifestVersion: 2
+Import-Package:
+ sun.reflect;version="0";resolution:=optional
+Import-Template:
+ org.springframework.beans.*;version="[3.1.0, 4.0.0)",
+ org.springframework.cache.*;version="[3.1.0, 4.0.0)",
+ org.springframework.context.*;version="[3.1.0, 4.0.0)",
+ org.springframework.core.*;version="[3.1.0, 4.0.0)",
+ org.springframework.dao.*;version="[3.1.0, 4.0.0)",
+ org.springframework.scheduling.*;resolution:="optional";version="[3.1.0, 4.0.0)",
+ org.springframework.util.*;version="[3.1.0, 4.0.0)",
+ org.springframework.oxm.*;resolution:="optional";version="[3.1.0, 4.0.0)",
+ org.springframework.transaction.support.*;version="[3.1.0, 4.0.0)",
+ org.springframework.data.*;version="[1.5.0, 2.0.0)",
+ org.springframework.expression.*;version="[3.1.0, 4.0.0)",
+ org.aopalliance.*;version="[1.0.0, 2.0.0)";resolution:=optional,
+ org.apache.commons.logging.*;version="[1.1.1, 2.0.0)",
+ org.w3c.dom.*;version="0",
+ javax.xml.transform.*;resolution:="optional";version="0",
+ com.datastax.driver.core.*;resolution:="optional";version="[0.1.0, 1.0.0)",
+ org.apache.cassandra.db.marshal.*;version="[1.2.0, 1.3.0)",
+ org.slf4j.*;version="[1.5.0, 1.8.0)",
+ org.idevlab.rjc.*;resolution:="optional";version="[0.6.4, 0.6.4]",
+ org.apache.commons.pool.impl.*;resolution:="optional";version="[1.0.0, 3.0.0)",
+ org.codehaus.jackson.*;resolution:="optional";version="[1.6, 2.0.0)",
+ org.apache.commons.beanutils.*;resolution:="optional";version=1.8.5,
+ com.google.common.*;resolution:="optional";version="[11.0.0, 20.0.0)"
