@@ -1,65 +1,134 @@
-/*
- * Copyright 2011-2012 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.springframework.cassandra.config.java;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.cassandra.config.CassandraClusterFactoryBean;
+import org.springframework.cassandra.config.CassandraSessionFactoryBean;
+import org.springframework.cassandra.config.CompressionType;
+import org.springframework.cassandra.config.PoolingOptionsConfig;
+import org.springframework.cassandra.config.SocketOptionsConfig;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.AuthProvider;
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.policies.LoadBalancingPolicy;
+import com.datastax.driver.core.policies.ReconnectionPolicy;
+import com.datastax.driver.core.policies.RetryPolicy;
 
 /**
- * Base class for Spring Cassandra configuration using JavaConfig.
+ * Base class for Spring Cassandra configuration that can handle creating namespaces, execute arbitrary CQL on startup &
+ * shutdown, and optionally drop namespaces.
  * 
- * @author Alex Shvid
  * @author Matthew T. Adams
  */
 @Configuration
 public abstract class AbstractCassandraConfiguration {
 
-	/**
-	 * The name of the keyspace to connect to. If {@literal null} or empty, then the system keyspace will be used.
-	 */
 	protected abstract String getKeyspaceName();
 
-	/**
-	 * The {@link Cluster} instance to connect to. Must not be null.
-	 */
 	@Bean
-	public abstract Cluster cluster();
+	public CassandraClusterFactoryBean cluster() throws Exception {
 
-	/**
-	 * Creates a {@link Session} using the {@link Cluster} instance configured in {@link #cluster()}.
-	 * 
-	 * @see #cluster()
-	 */
-	@Bean
-	public Session session() {
-		String keyspaceName = getKeyspaceName();
-		return StringUtils.hasText(keyspaceName) ? cluster().connect(keyspaceName) : cluster().connect();
+		CassandraClusterFactoryBean bean = new CassandraClusterFactoryBean();
+		bean.setAuthProvider(getAuthProvider());
+		bean.setCompressionType(getCompressionType());
+		bean.setContactPoints(getContactPoints());
+		bean.setKeyspaceCreations(getKeyspaceCreations());
+		bean.setKeyspaceDrops(getKeyspaceDrops());
+		bean.setLoadBalancingPolicy(getLoadBalancingPolicy());
+		bean.setLocalPoolingOptions(getLocalPoolingOptions());
+		bean.setMetricsEnabled(getMetricsEnabled());
+		bean.setPort(getPort());
+		bean.setReconnectionPolicy(getReconnectionPolicy());
+		bean.setRemotePoolingOptions(getRemotePoolingOptions());
+		bean.setRetryPolicy(getRetryPolicy());
+		bean.setShutdownScripts(getShutdownScripts());
+		bean.setSocketOptions(getSocketOptions());
+		bean.setStartupScripts(getStartupScripts());
+
+		return bean;
 	}
 
-	/**
-	 * A {@link CassandraTemplate} created from the {@link Session} returned by {@link #session()}.
-	 */
 	@Bean
-	public CassandraOperations template() {
-		return new CassandraTemplate(session());
+	public CassandraSessionFactoryBean session() throws Exception {
+
+		Cluster cluster = cluster().getObject();
+
+		CassandraSessionFactoryBean bean = new CassandraSessionFactoryBean();
+		bean.setCluster(cluster);
+		bean.setKeyspaceName(getKeyspaceName());
+
+		return bean;
+	}
+
+	@Bean
+	public CassandraOperations template() throws Exception {
+		return new CassandraTemplate(session().getObject());
+	}
+
+	protected List<String> getStartupScripts() {
+		return Collections.emptyList();
+	}
+
+	protected SocketOptionsConfig getSocketOptions() {
+		return null;
+	}
+
+	protected List<String> getShutdownScripts() {
+		return Collections.emptyList();
+	}
+
+	protected ReconnectionPolicy getReconnectionPolicy() {
+		return null;
+	}
+
+	protected RetryPolicy getRetryPolicy() {
+		return null;
+	}
+
+	protected PoolingOptionsConfig getRemotePoolingOptions() {
+		return null;
+	}
+
+	protected int getPort() {
+		return CassandraClusterFactoryBean.DEFAULT_PORT;
+	}
+
+	protected boolean getMetricsEnabled() {
+		return CassandraClusterFactoryBean.DEFAULT_METRICS_ENABLED;
+	}
+
+	protected PoolingOptionsConfig getLocalPoolingOptions() {
+		return null;
+	}
+
+	protected LoadBalancingPolicy getLoadBalancingPolicy() {
+		return null;
+	}
+
+	protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
+		return Collections.emptyList();
+	}
+
+	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
+		return Collections.emptyList();
+	}
+
+	protected String getContactPoints() {
+		return CassandraClusterFactoryBean.DEFAULT_CONTACT_POINTS;
+	}
+
+	protected CompressionType getCompressionType() {
+		return null;
+	}
+
+	protected AuthProvider getAuthProvider() {
+		return null;
 	}
 }
