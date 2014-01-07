@@ -7,7 +7,7 @@ so that user's of the module can start to familiarize themselves with the compon
 the development team feedback.  We hope this iterative approach produces the most usable and developer friendly
 ``spring-data-cassandra`` repository.
 
-### What's included (Q4 - 2013)
+### What's included (Q1 - 2014)
 
 There are two modules included in the ``spring-data-cassandra`` repository:  ``spring-cassandra`` and ``spring-data-cassandra``.
 
@@ -19,11 +19,15 @@ This is the low-level core template framework, like the ones you are used to usi
 This includes persistence exception translation, Spring JavaConfig and XML configuration support.  Define your Spring beans to setup your
 Cassandra ``Cluster`` object, then create your ``Session`` and you are ready to interact with Cassandra using the ``CassandraTemplate``.
 
-The module also offers table operation builders for ``CREATE TABLE``, ``ALTER TABLE``, and ``DROP TABLE`` operations.
+The module also offers table operation builders for ``CREATE TABLE``, ``ALTER TABLE``, and ``DROP TABLE`` operations, as well as XML namespace support for automatic keyspace creations and optional drops.
 
 #### Module ``spring-data-cassandra``
 
-The ``spring-data-cassandra`` module depends on the ``spring-cassandra`` module and adds the familiar Spring Data features like repositories and lightweight POJO persistence.  _The code in the ``spring-data-cassandra`` module is a work in progress and is not yet functional._  We are actively working on its completion, but wanted to make available to the Spring and Cassandra communities the lower level Cassandra template functionality.
+The ``spring-data-cassandra`` module depends on the ``spring-cassandra`` module and adds the familiar Spring Data features like repositories and lightweight POJO persistence.
+
+_Note: The code in the ``spring-data-cassandra`` module is a work in progress and is not yet functional._
+
+We are actively working on its completion, but wanted to make the lower level Cassandra template functionality available to the Spring and Cassandra communities.
 
 #### Best practices
 
@@ -33,17 +37,17 @@ create more than one ``CassandraTemplate`` (one per session, one session per key
 
 Here are some considerations when designing your application for use with ``spring-cassandra``.
 
-* When creating a template, wire in a single ``Session`` per keyspace.  _Use one template per keyspace!_
-* Cassandra's ``Session`` object is thread-safe, so you only need one per entire application.
-* Do not issue ``USE <keyspace>`` commands on your session.
+* When creating a template, wire in a single ``Session`` per keyspace.  _Remember, ``Session`` is threadsafe, so only use one session per keyspace!_
+* Cassandra's ``Session`` object is thread-safe, so you only need one per application & keyspace.
+* Do not issue ``USE <keyspace>`` commands on your session; instead, _configure_ the keyspace name you intend to use.
 * The DataStax Java Driver handles all failover and retry logic for you.  Become familiar with the [Driver Documentation](http://www.datastax.com/documentation/developer/java-driver/1.0/webhelp/index.html), which will help you configure your ``Cluster``.
-* If you are using a Cassandra ``Cluster`` spanning multiple data centers, please be insure to include hosts from both data centers in your contact points.
+* If you are using a Cassandra ``Cluster`` spanning multiple data centers, please be insure to include hosts from all data centers in your contact points.
 
 #### High Performance Ingestion
 
 We have included a variety of overloaded ``ingest()`` methods in the template for high performance batch writes.
 
-### What's Next (Q1 - 2014):  Spring _Data_ Cassandra
+### What's Next (early Q1 - 2014):  Spring _Data_ Cassandra
 
 The next round of work to do is to complete module ``spring-data-cassandra``, while taking feedback from the community's use of module ``spring-cassandra``.
 
@@ -73,37 +77,17 @@ Here is a very basic example to get your project connected to Cassandra 1.2 runn
 	@Configuration
 	public class TestConfig extends AbstractCassandraConfiguration {
 
-		public static final String keyspace = "test";
+		public static final String KEYSPACE = "test";
 
 		@Override
 		protected String getKeyspaceName() {
-			return keyspace;
-		}
-
-		@Override
-		@Bean
-		public Cluster cluster() {
-
-			Builder builder = Cluster.builder();
-			builder.addContactPoint("127.0.0.1");
-			return builder.build();
-		}
-
-		@Bean
-		public SessionFactoryBean sessionFactoryBean() {
-
-			SessionFactoryBean bean = new SessionFactoryBean(cluster(), getKeyspaceName());
-			return bean;
-
+			return KEYSPACE;
 		}
 
 		@Bean
 		public CassandraOperations cassandraTemplate() {
-
-			CassandraOperations template = new CassandraTemplate(sessionFactoryBean().getObject());
-			return template;
+			return new CassandraTemplate(session().getObject());
 		}
-
 	}
 
 ### XML Configuration
@@ -112,9 +96,9 @@ Here is a very basic example to get your project connected to Cassandra 1.2 runn
 	<cassandra-session keyspace-name="test" />
 	<cassandra-template />
 
-### Using the Template
+### Using CassnadraTemplate
 
-	public class CassandraDataOperationsTest {
+	public class CassandraOperationsTest {
 
 		@Autowired
 		private CassandraOperations template;
@@ -128,7 +112,6 @@ Here is a very basic example to get your project connected to Cassandra 1.2 runn
 			log.info("Row Count is -> " + count);
 			
 			return count;
-			
 		}
 	}
 
