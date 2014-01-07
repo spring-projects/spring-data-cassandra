@@ -337,6 +337,27 @@ Sets the SO_SNDBUF socket option.
 	</xsd:complexType>
 
 	<xsd:complexType name="sessionType">
+		<xsd:sequence>
+			<xsd:element name="startup-cql" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded">
+				<!-- TODO: cql could come from a resource via a resource attribute... -->
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the session's keyspace during bean initialization.  Multiple elements will be executed in document order.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="shutdown-cql" type="xsd:string"
+				minOccurs="0" maxOccurs="unbounded">
+				<!-- TODO: cql could come from a resource via a resource attribute... -->
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the session's keyspace during bean destruction.  Multiple elements will be executed in document order.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[

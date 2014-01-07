@@ -15,14 +15,19 @@
  */
 package org.springframework.cassandra.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Cluster;
@@ -41,69 +46,101 @@ public class CassandraSessionFactoryBean implements FactoryBean<Session>, Initia
 
 	private static final Logger log = LoggerFactory.getLogger(CassandraSessionFactoryBean.class);
 
-	public static final String DEFAULT_REPLICATION_STRATEGY = "SimpleStrategy";
-	public static final int DEFAULT_REPLICATION_FACTOR = 1;
-
 	private Cluster cluster;
 	private Session session;
 	private String keyspaceName;
-
+	private List<String> startupScripts = new ArrayList<String>();
+	private List<String> shutdownScripts = new ArrayList<String>();
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
+	@Override
 	public Session getObject() {
 		return session;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
+	@Override
 	public Class<? extends Session> getObjectType() {
 		return Session.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
-	 */
+	@Override
 	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 		return exceptionTranslator.translateExceptionIfPossible(ex);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
+	@Override
 	public void afterPropertiesSet() throws Exception {
 
 		if (cluster == null) {
 			throw new IllegalArgumentException("at least one cluster is required");
 		}
 
-		this.session = StringUtils.hasText(this.keyspaceName) ? cluster.connect(keyspaceName) : cluster.connect();
+		session = StringUtils.hasText(keyspaceName) ? cluster.connect(keyspaceName) : cluster.connect();
+		executeScripts(startupScripts);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	/**
+	 * Executes given scripts. Session must be connected when this method is called.
 	 */
-	public void destroy() throws Exception {
-		this.session.shutdown();
+	protected void executeScripts(List<String> scripts) {
+
+		if (scripts == null) {
+			return;
+		}
+
+		CassandraTemplate template = new CassandraTemplate(session);
+
+		for (String script : scripts) {
+
+			if (log.isInfoEnabled()) {
+				log.info("executing raw CQL [{}]", script);
+			}
+
+			template.execute(script);
+		}
 	}
 
+	@Override
+	public void destroy() throws Exception {
+
+		executeScripts(shutdownScripts);
+		session.shutdown();
+	}
+
+	/**
+	 * Sets the keyspace name to connect to. Using <code>null</code>, empty string, or only whitespace will cause the
+	 * system keyspace to be used.
+	 */
 	public void setKeyspaceName(String keyspaceName) {
 		this.keyspaceName = keyspaceName;
 	}
 
+	/**
+	 * Sets the cluster to use. Must not be null.
+	 */
 	public void setCluster(Cluster cluster) {
+		if (cluster == null) {
+			throw new IllegalArgumentException("cluster must not be null");
+		}
 		this.cluster = cluster;
+	}
+
+	/**
+	 * Sets CQL scripts to be executed immediately after the session is connected.
+	 */
+	public void setStartupScripts(List<String> scripts) {
+		this.startupScripts = scripts;
+	}
+
+	/**
+	 * Sets CQL scripts to be executed immediately before the session is shutdown.
+	 */
+	public void setShutdownScripts(List<String> scripts) {
+		this.shutdownScripts = scripts;
 	}
 }

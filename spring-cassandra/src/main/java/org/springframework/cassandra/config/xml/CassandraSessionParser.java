@@ -15,6 +15,9 @@
  */
 package org.springframework.cassandra.config.xml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -23,6 +26,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Parser for &lt;session&gt; definitions.
@@ -38,10 +42,6 @@ public class CassandraSessionParser extends AbstractSimpleBeanDefinitionParser {
 		return CassandraSessionFactoryBean.class;
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
-	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
@@ -64,5 +64,30 @@ public class CassandraSessionParser extends AbstractSimpleBeanDefinitionParser {
 			clusterRef = BeanNames.CASSANDRA_CLUSTER;
 		}
 		builder.addPropertyReference("cluster", clusterRef);
+
+		parseChildElements(element, builder);
+	}
+
+	protected void parseChildElements(Element element, BeanDefinitionBuilder builder) {
+
+		List<String> scripts = parseScripts(element, "startup-cql");
+		builder.addPropertyValue("startupScripts", scripts);
+
+		scripts = parseScripts(element, "shutdown-cql");
+		builder.addPropertyValue("shutdownScripts", scripts);
+	}
+
+	protected List<String> parseScripts(Element element, String elementName) {
+
+		NodeList nodes = element.getElementsByTagName("startup-cql");
+		int length = nodes.getLength();
+		List<String> scripts = new ArrayList<String>(length);
+
+		for (int i = 0; i < length; i++) {
+			Element script = (Element) nodes.item(i);
+			scripts.add(script.getTextContent());
+		}
+
+		return scripts;
 	}
 }
