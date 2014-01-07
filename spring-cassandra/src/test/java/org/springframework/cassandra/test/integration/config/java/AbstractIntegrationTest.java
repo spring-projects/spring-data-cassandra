@@ -14,7 +14,7 @@ import com.datastax.driver.core.Session;
 public abstract class AbstractIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
 	@Inject
-	public Session session;
+	protected Session session;
 
 	@Before
 	public void assertSession() {

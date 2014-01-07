@@ -1,8 +1,5 @@
 package org.springframework.cassandra.test.integration.config.java;
 
-import org.springframework.cassandra.config.KeyspaceAttributes;
-import org.springframework.cassandra.config.PoolingOptionsConfig;
-import org.springframework.cassandra.config.SocketOptionsConfig;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
@@ -37,21 +34,5 @@ public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractInte
 		system.execute("CREATE KEYSPACE " + keyspace
 				+ " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
 		system.shutdown();
-	}
-
-	protected KeyspaceAttributes getKeyspaceAttributes() {
-		return null;
-	}
-
-	protected PoolingOptionsConfig getLocalPoolingOptionsConfig() {
-		return null;
-	}
-
-	protected PoolingOptionsConfig getRemotePoolingOptionsConfig() {
-		return null;
-	}
-
-	protected SocketOptionsConfig getSocketOptionsConfig() {
-		return null;
 	}
 }
