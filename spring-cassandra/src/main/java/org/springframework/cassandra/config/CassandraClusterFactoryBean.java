@@ -15,9 +15,21 @@
  */
 package org.springframework.cassandra.config;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
+import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.KeyspaceNameSpecification;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -28,6 +40,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SocketOptions;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
@@ -39,63 +52,59 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-
 public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, InitializingBean, DisposableBean,
 		PersistenceExceptionTranslator {
 
-	private static final int DEFAULT_PORT = 9042;
+	public static final String DEFAULT_CONTACT_POINTS = "localhost";
+	public static final boolean DEFAULT_METRICS_ENABLED = true;
+	public static final int DEFAULT_PORT = 9042;
+
+	protected static final Logger log = LoggerFactory.getLogger(CassandraClusterFactoryBean.class);
 
 	private Cluster cluster;
 
-	private String contactPoints;
-	private int port = DEFAULT_PORT;
+	/**
+	 * Comma-delimited string of servers.
+	 */
+	private String contactPoints = DEFAULT_CONTACT_POINTS;
+	private int port = CassandraClusterFactoryBean.DEFAULT_PORT;
 	private CompressionType compressionType;
-
 	private PoolingOptionsConfig localPoolingOptions;
 	private PoolingOptionsConfig remotePoolingOptions;
 	private SocketOptionsConfig socketOptions;
-
 	private AuthProvider authProvider;
 	private LoadBalancingPolicy loadBalancingPolicy;
 	private ReconnectionPolicy reconnectionPolicy;
 	private RetryPolicy retryPolicy;
-
-	private boolean metricsEnabled = true;
+	private boolean metricsEnabled = DEFAULT_METRICS_ENABLED;
+	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
+	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
+	private List<String> startupScripts = new ArrayList<String>();
+	private List<String> shutdownScripts = new ArrayList<String>();
 
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
+	@Override
 	public Cluster getObject() throws Exception {
 		return cluster;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
+	@Override
 	public Class<? extends Cluster> getObjectType() {
 		return Cluster.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
-	 */
+	@Override
 	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 		return exceptionTranslator.translateExceptionIfPossible(ex);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
+	@Override
 	public void afterPropertiesSet() throws Exception {
 
 		if (!StringUtils.hasText(contactPoints)) {
@@ -142,20 +151,72 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 			builder.withoutMetrics();
 		}
 
-		Cluster cluster = builder.build();
-
-		// initialize property
-		this.cluster = cluster;
+		cluster = builder.build();
+		executeSpecsAndScripts(keyspaceCreations, startupScripts);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
-	 */
+	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
+
+		Session system = null;
+		CassandraTemplate template = null;
+
+		try {
+			if (specs != null) {
+				system = specs.size() == 0 ? null : cluster.connect();
+				template = system == null ? null : new CassandraTemplate(system);
+
+				Iterator<?> i = specs.iterator();
+				while (i.hasNext()) {
+					KeyspaceNameSpecification<?> spec = (KeyspaceNameSpecification<?>) i.next();
+					String cql = (spec instanceof CreateKeyspaceSpecification) ? new CreateKeyspaceCqlGenerator(
+							(CreateKeyspaceSpecification) spec).toCql() : new DropKeyspaceCqlGenerator(
+							(DropKeyspaceSpecification) spec).toCql();
+
+					if (log.isInfoEnabled()) {
+						log.info("executing CQL [{}]", cql);
+					}
+
+					template.execute(cql);
+				}
+			}
+
+			if (scripts != null) {
+
+				if (system == null) {
+					system = scripts.size() == 0 ? null : cluster.connect();
+				}
+
+				if (template == null) {
+					template = system == null ? null : new CassandraTemplate(system);
+				}
+
+				for (String script : scripts) {
+
+					if (log.isInfoEnabled()) {
+						log.info("executing raw CQL [{}]", script);
+					}
+
+					template.execute(script);
+				}
+			}
+		} finally {
+
+			if (system != null) {
+				system.shutdown();
+			}
+		}
+	}
+
+	@Override
 	public void destroy() throws Exception {
-		this.cluster.shutdown();
+
+		executeSpecsAndScripts(keyspaceDrops, shutdownScripts);
+		cluster.shutdown();
 	}
 
+	/**
+	 * Sets a comma-delimited string of the contact points (hosts) to connect to.
+	 */
 	public void setContactPoints(String contactPoints) {
 		this.contactPoints = contactPoints;
 	}
@@ -198,6 +259,30 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 
 	public void setMetricsEnabled(boolean metricsEnabled) {
 		this.metricsEnabled = metricsEnabled;
+	}
+
+	public void setKeyspaceCreations(List<CreateKeyspaceSpecification> specifications) {
+		this.keyspaceCreations = specifications;
+	}
+
+	public List<CreateKeyspaceSpecification> getKeyspaceCreations() {
+		return keyspaceCreations;
+	}
+
+	public void setKeyspaceDrops(List<DropKeyspaceSpecification> specifications) {
+		this.keyspaceDrops = specifications;
+	}
+
+	public List<DropKeyspaceSpecification> getKeyspaceDrops() {
+		return keyspaceDrops;
+	}
+
+	public void setStartupScripts(List<String> scripts) {
+		this.startupScripts = scripts;
+	}
+
+	public void setShutdownScripts(List<String> scripts) {
+		this.shutdownScripts = scripts;
 	}
 
 	private static Compression convertCompressionType(CompressionType type) {

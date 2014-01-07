@@ -56,10 +56,12 @@ public class AlterTableCqlGeneratorTests {
 
 		public String dropped = "dropped";
 
+		@Override
 		public AlterTableSpecification specification() {
 			return AlterTableSpecification.alterTable().name(name).alter(altered, alteredType).add(added, addedType);
 		}
 
+		@Override
 		public AlterTableCqlGenerator generator() {
 			return new AlterTableCqlGenerator(specification);
 		}
@@ -98,6 +100,7 @@ public class AlterTableCqlGeneratorTests {
 		public Map<Option, Object> compactionMap = new LinkedHashMap<Option, Object>();
 		public Map<Option, Object> compressionMap = new LinkedHashMap<Option, Object>();
 
+		@Override
 		public AlterTableSpecification specification() {
 
 			// Compaction
@@ -108,7 +111,7 @@ public class AlterTableCqlGeneratorTests {
 			compressionMap.put(CompressionOption.CHUNK_LENGTH_KB, 128);
 			compressionMap.put(CompressionOption.CRC_CHECK_CHANCE, 0.75);
 
-			return (AlterTableSpecification) AlterTableSpecification
+			return AlterTableSpecification
 					.alterTable()
 					.name(name)
 					// .with(TableOption.COMPACT_STORAGE)

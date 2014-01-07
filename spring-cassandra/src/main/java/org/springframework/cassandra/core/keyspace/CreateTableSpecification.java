@@ -54,4 +54,19 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	public static CreateTableSpecification createTable() {
 		return new CreateTableSpecification();
 	}
+
+	@Override
+	public CreateTableSpecification with(TableOption option) {
+		return (CreateTableSpecification) super.with(option);
+	}
+
+	@Override
+	public CreateTableSpecification with(TableOption option, Object value) {
+		return (CreateTableSpecification) super.with(option, value);
+	}
+
+	@Override
+	public CreateTableSpecification with(String name, Object value, boolean escape, boolean quote) {
+		return (CreateTableSpecification) super.with(name, value, escape, quote);
+	}
 }

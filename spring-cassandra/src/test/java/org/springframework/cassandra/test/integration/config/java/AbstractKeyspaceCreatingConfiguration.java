@@ -1,8 +1,7 @@
 package org.springframework.cassandra.test.integration.config.java;
 
-import org.springframework.cassandra.config.KeyspaceAttributes;
-import org.springframework.cassandra.config.PoolingOptionsConfig;
-import org.springframework.cassandra.config.SocketOptionsConfig;
+import org.springframework.cassandra.config.CassandraSessionFactoryBean;
+import org.springframework.cassandra.config.java.AbstractCassandraConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
@@ -10,23 +9,23 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 
 @Configuration
-public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractIntegrationTestConfiguration {
+public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractCassandraConfiguration {
 
 	@Override
-	public Session session() {
+	public CassandraSessionFactoryBean session() throws Exception {
 
 		createKeyspaceIfNecessary();
 
 		return super.session();
 	}
 
-	protected void createKeyspaceIfNecessary() {
+	protected void createKeyspaceIfNecessary() throws Exception {
 		String keyspace = getKeyspaceName();
 		if (!StringUtils.hasText(keyspace)) {
 			return;
 		}
 
-		Session system = cluster().connect();
+		Session system = cluster().getObject().connect();
 		KeyspaceMetadata kmd = system.getCluster().getMetadata().getKeyspace(keyspace);
 		if (kmd != null) {
 			return;
@@ -37,21 +36,5 @@ public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractInte
 		system.execute("CREATE KEYSPACE " + keyspace
 				+ " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
 		system.shutdown();
-	}
-
-	protected KeyspaceAttributes getKeyspaceAttributes() {
-		return null;
-	}
-
-	protected PoolingOptionsConfig getLocalPoolingOptionsConfig() {
-		return null;
-	}
-
-	protected PoolingOptionsConfig getRemotePoolingOptionsConfig() {
-		return null;
-	}
-
-	protected SocketOptionsConfig getSocketOptionsConfig() {
-		return null;
 	}
 }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.springframework.cassandra.config.KeyspaceAttributes;
 import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DefaultOption;
@@ -23,9 +24,10 @@ public class CreateKeyspaceCqlGeneratorTests {
 
 	private static void assertReplicationMap(Map<Option, Object> replicationMap, String cql) {
 		assertTrue(cql.contains(" WITH replication = { "));
-		
-		for (Map.Entry<Option, Object> entry : replicationMap.entrySet() ) {
-			String keyValuePair = "'" + entry.getKey().getName() + "' : '" + entry.getValue().toString() + "'";
+
+		for (Map.Entry<Option, Object> entry : replicationMap.entrySet()) {
+			String keyValuePair = "'" + entry.getKey().getName() + "' : " + (entry.getKey().quotesValue() ? "'" : "")
+					+ entry.getValue().toString() + (entry.getKey().quotesValue() ? "'" : "");
 			assertTrue(cql.contains(keyValuePair));
 		}
 	}
@@ -41,6 +43,7 @@ public class CreateKeyspaceCqlGeneratorTests {
 	public static abstract class CreateKeyspaceTest extends
 			KeyspaceOperationCqlGeneratorTest<CreateKeyspaceSpecification, CreateKeyspaceCqlGenerator> {
 
+		@Override
 		public CreateKeyspaceCqlGenerator generator() {
 			return new CreateKeyspaceCqlGenerator(specification);
 		}
@@ -50,20 +53,15 @@ public class CreateKeyspaceCqlGeneratorTests {
 
 		public String name = "mykeyspace";
 		public Boolean durableWrites = true;
-		
-		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
+
+		public Map<Option, Object> replicationMap = KeyspaceAttributes.newSimpleReplication();
 
 		@Override
 		public CreateKeyspaceSpecification specification() {
 			keyspace = name;
-			
-			replicationMap.put( new DefaultOption( "class", String.class, false, false, true ), "SimpleStrategy" );
-			replicationMap.put( new DefaultOption( "replication_factor", Long.class, false, false, true ), 1 );
-			
-			return (CreateKeyspaceSpecification) CreateKeyspaceSpecification.createKeyspace()
-						.name(keyspace)
-						.with(KeyspaceOption.REPLICATION, replicationMap)
-						.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
+
+			return CreateKeyspaceSpecification.createKeyspace().name(keyspace)
+					.with(KeyspaceOption.REPLICATION, replicationMap).with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 		}
 
 		@Test
@@ -80,21 +78,19 @@ public class CreateKeyspaceCqlGeneratorTests {
 
 		public String name = "mykeyspace";
 		public Boolean durableWrites = false;
-		
+
 		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
 
 		@Override
 		public CreateKeyspaceSpecification specification() {
 			keyspace = name;
-			
-			replicationMap.put( new DefaultOption( "class", String.class, false, false, true ), "NetworkTopologyStrategy" );
-			replicationMap.put( new DefaultOption( "dc1", Long.class, false, false, true ), 2 );
-			replicationMap.put( new DefaultOption( "dc2", Long.class, false, false, true ), 3 );
-			
-			return (CreateKeyspaceSpecification) CreateKeyspaceSpecification.createKeyspace()
-						.name(keyspace)
-						.with(KeyspaceOption.REPLICATION, replicationMap)
-						.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
+
+			replicationMap.put(new DefaultOption("class", String.class, false, false, true), "NetworkTopologyStrategy");
+			replicationMap.put(new DefaultOption("dc1", Long.class, false, false, true), 2);
+			replicationMap.put(new DefaultOption("dc2", Long.class, false, false, true), 3);
+
+			return CreateKeyspaceSpecification.createKeyspace().name(keyspace)
+					.with(KeyspaceOption.REPLICATION, replicationMap).with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 		}
 
 		@Test
