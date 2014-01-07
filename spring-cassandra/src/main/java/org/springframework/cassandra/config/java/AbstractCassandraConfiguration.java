@@ -67,11 +67,6 @@ public abstract class AbstractCassandraConfiguration {
 		return bean;
 	}
 
-	@Bean
-	public CassandraOperations template() throws Exception {
-		return new CassandraTemplate(session().getObject());
-	}
-
 	protected List<String> getStartupScripts() {
 		return Collections.emptyList();
 	}

@@ -60,10 +60,12 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 
 	/**
 	 * Creates a {@link CassandraAdminTemplate}.
+	 * 
+	 * @throws Exception
 	 */
 	@Bean
-	public CassandraAdminOperations adminTemplate() {
-		return new CassandraAdminTemplate(session());
+	public CassandraAdminOperations adminTemplate() throws Exception {
+		return new CassandraAdminTemplate(session().getObject());
 	}
 
 	/**
