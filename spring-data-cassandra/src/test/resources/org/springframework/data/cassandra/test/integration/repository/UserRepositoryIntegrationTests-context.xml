@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+	xmlns:cassandra-base="http://www.springframework.org/schema/cassandra"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
+                         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+                         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<context:property-placeholder
+		location="classpath:/org/springframework/data/cassandra/test/integration/repository/cassandra.properties" />
+
+	<cassandra:cluster id="cassandra-cluster"
+		contactPoints="${cassandra.contactPoints}" port="${cassandra.port}"
+		compression="SNAPPY">
+		<cassandra-base:local-pooling-options
+			min-simultaneous-requests="25" max-simultaneous-requests="100"
+			core-connections="2" max-connections="8" />
+		<cassandra-base:remote-pooling-options
+			min-simultaneous-requests="25" max-simultaneous-requests="100"
+			core-connections="1" max-connections="2" />
+		<cassandra-base:socket-options
+			connect-timeout-mls="5000" keep-alive="true" reuse-address="true"
+			so-linger="60" tcp-no-delay="true" receive-buffer-size="65536"
+			send-buffer-size="65536" />
+	</cassandra:cluster>
+
+	<bean id="cassandra-mapping"
+		class=" org.springframework.data.cassandra.mapping.CassandraMappingContext" />
+
+	<bean id="cassandra-converter"
+		class=" org.springframework.data.cassandra.convert.MappingCassandraConverter">
+		<constructor-arg ref="cassandra-mapping" />
+	</bean>
+
+	<cassandra:keyspace id="cassandra-keyspace" name="${cassandra.keyspace}"
+		cassandra-cluster-ref="cassandra-cluster" cassandra-converter-ref="cassandra-converter">
+		<cassandra-base:keyspace-attributes auto="update"
+			replication-stategy="SimpleStrategy" replication-factor="1"
+			durable-writes="true">
+			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.Comment" />
+			<cassandra:table
+				entity="org.springframework.data.cassandra.test.integration.table.Notification" />
+			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.Post" />
+			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.Timeline" />
+			<cassandra:table entity="org.springframework.data.cassandra.test.integration.table.User" />
+		</cassandra-base:keyspace-attributes>
+	</cassandra:keyspace>
+	
+	<cassandra:session id="cassandra-session" cassandra-keyspace-ref="cassandra-keyspace"/>
+	
+	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CassandraTemplate">
+		<constructor-arg ref="cassandra-session" />
+	</bean>
+
+	<bean id="cassandraDataTemplate" class="org.springframework.data.cassandra.core.CassandraDataTemplate">
+		<constructor-arg ref="cassandra-session" />
+		<constructor-arg ref="cassandra-converter" />
+		<constructor-arg value="${cassandra.keyspace}" />
+	</bean>
+	
+	<bean class="org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean">
+		<property name="cassandraDataTemplate" ref="cassandraDataTemplate"/>
+		<property name="repositoryInterface" value="org.springframework.data.cassandra.test.integration.repository.UserRepository"/>
+		<property name="namedQueries">
+			<bean class="org.springframework.data.repository.core.support.PropertiesBasedNamedQueries">
+				<constructor-arg>
+					<util:properties location="classpath:/META-INF/cassandra-named-queries.properties" />
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>
+	
+</beans>

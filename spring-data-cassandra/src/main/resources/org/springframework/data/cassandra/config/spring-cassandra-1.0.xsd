@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns="http://www.springframework.org/schema/data/cassandra"
+	xmlns:base="http://www.springframework.org/schema/cassandra" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tool="http://www.springframework.org/schema/tool"
+	targetNamespace="http://www.springframework.org/schema/data/cassandra"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/tool"
+		schemaLocation="http://www.springframework.org/schema/tool/spring-tool.xsd" />
+
+	<xsd:import namespace="http://www.springframework.org/schema/cassandra"
+		schemaLocation="http://www.springframework.org/schema/cassandra/spring-cassandra.xsd" />
+
+	<xsd:annotation>
+		<xsd:documentation><![CDATA[
+Defines the configuration elements for Spring Data Cassandra support.
+    ]]></xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:element name="session" type="base:sessionType" />
+
+	<xsd:element name="cluster" type="base:clusterType" />
+
+	<xsd:element name="keyspace" type="base:keyspaceType" />
+
+	<xsd:element name="local-pooling-options" type="base:poolingOptionsType" />
+
+	<xsd:element name="remote-pooling-options" type="base:poolingOptionsType" />
+
+	<xsd:element name="socket-options" type="base:socketOptionsType" />
+
+	<xsd:element name="keyspace-attributes" type="base:keyspaceAttributesType" />
+	
+	<xsd:simpleType name="converterRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+						type="org.springframework.data.cassandra.convert.CassandraConverter" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string" />
+	</xsd:simpleType>
+
+	<xsd:complexType name="tableType">
+		<xsd:attribute name="entity" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Entity class name.
+							]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="name" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Table name override.
+							]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+</xsd:schema>
