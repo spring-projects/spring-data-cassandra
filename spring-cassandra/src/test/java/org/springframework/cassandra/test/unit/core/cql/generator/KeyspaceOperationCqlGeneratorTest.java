@@ -1,5 +1,8 @@
 package org.springframework.cassandra.test.unit.core.cql.generator;
 
+import java.util.UUID;
+
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.generator.KeyspaceNameCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.TableNameCqlGenerator;
@@ -35,5 +38,10 @@ public abstract class KeyspaceOperationCqlGeneratorTest<S extends KeyspaceNameSp
 
 	public String generateCql() {
 		return generator.toCql();
+	}
+
+	public String randomKeyspaceName() {
+		String name = getClass().getSimpleName() + "_" + UUID.randomUUID().toString().replace("-", "");
+		return StringUtils.left(name, 47).toLowerCase();
 	}
 }

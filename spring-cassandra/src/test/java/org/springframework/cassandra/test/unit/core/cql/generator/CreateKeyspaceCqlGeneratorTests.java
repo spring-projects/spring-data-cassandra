@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.springframework.cassandra.config.KeyspaceAttributes;
@@ -51,7 +52,7 @@ public class CreateKeyspaceCqlGeneratorTests {
 
 	public static class BasicTest extends CreateKeyspaceTest {
 
-		public String name = "mykeyspace";
+		public String name = randomKeyspaceName();
 		public Boolean durableWrites = true;
 
 		public Map<Option, Object> replicationMap = KeyspaceAttributes.newSimpleReplication();
@@ -76,7 +77,7 @@ public class CreateKeyspaceCqlGeneratorTests {
 
 	public static class NetworkTopologyTest extends CreateKeyspaceTest {
 
-		public String name = "mykeyspace";
+		public String name = randomKeyspaceName();
 		public Boolean durableWrites = false;
 
 		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();

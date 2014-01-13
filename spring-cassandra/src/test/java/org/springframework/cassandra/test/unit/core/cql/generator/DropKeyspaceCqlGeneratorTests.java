@@ -24,12 +24,14 @@ public class DropKeyspaceCqlGeneratorTests {
 
 	public static class BasicTest extends DropTableTest {
 
-		public String name = "mykeyspace";
+		public String name = randomKeyspaceName();
 
+		@Override
 		public DropKeyspaceSpecification specification() {
 			return DropKeyspaceSpecification.dropKeyspace().name(name);
 		}
 
+		@Override
 		public DropKeyspaceCqlGenerator generator() {
 			return new DropKeyspaceCqlGenerator(specification);
 		}

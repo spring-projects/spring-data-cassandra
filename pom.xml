@@ -265,7 +265,7 @@
 				<version>${failsafe.version}</version>
 				<configuration>
 					<!-- <forkMode>always</forkMode> -->
-					<argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
+					<argLine>-Xmx2048m -Xss1024m -XX:MaxPermSize=512m</argLine>
 					<useFile>false</useFile>
 					<includes>
 						<include>**/test/integration/**/*.java</include>
