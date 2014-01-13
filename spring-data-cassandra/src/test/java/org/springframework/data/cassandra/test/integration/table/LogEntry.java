@@ -26,7 +26,7 @@ import org.springframework.data.cassandra.mapping.Table;
  * 
  * @author Alex Shvid
  */
-@Table(name = "log_entry")
+@Table("log_entry")
 public class LogEntry {
 
 	/*

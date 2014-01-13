@@ -30,7 +30,7 @@ import com.datastax.driver.core.DataType;
  * 
  * @author Alex Shvid
  */
-@Table(name = "comments")
+@Table("comments")
 public class Comment {
 
 	/*

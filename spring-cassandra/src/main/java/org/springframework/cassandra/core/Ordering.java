@@ -15,12 +15,15 @@
  */
 package org.springframework.cassandra.core;
 
+import java.util.Comparator;
+
 /**
- * Enum for Cassandra primary key column ordering.
+ * Enum for Cassandra primary key column ordering. Implements {@link Comparator} in that {@link Ordering#ASCENDING} is
+ * ordered before {@link Ordering#DESCENDING}.
  * 
  * @author Matthew T. Adams
  */
-public enum Ordering {
+public enum Ordering implements Comparator<Ordering> {
 
 	/**
 	 * Ascending Cassandra column ordering.
@@ -43,5 +46,19 @@ public enum Ordering {
 	 */
 	public String cql() {
 		return cql;
+	}
+
+	@Override
+	public int compare(Ordering l, Ordering r) {
+		if (l == r) {
+			return 0;
+		}
+		if (l == null && r != null) {
+			return 1;
+		}
+		if (l != null && r == null) {
+			return -1;
+		}
+		return (l == ASCENDING && r == DESCENDING) ? 1 : -1;
 	}
 }

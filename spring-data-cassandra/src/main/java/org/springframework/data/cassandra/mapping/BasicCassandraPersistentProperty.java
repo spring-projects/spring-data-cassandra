@@ -64,7 +64,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return getField().getType().isAnnotationPresent(CompositePrimaryKey.class);
+		return getField().getType().isAnnotationPresent(PrimaryKeyClass.class);
 	}
 
 	@Override
@@ -85,6 +85,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return (CassandraPersistentEntity<?>) ClassTypeInformation.from(getCompositePrimaryKeyType());
 	}
 
+	@Override
 	public String getColumnName() {
 
 		// first check @Column annotation
@@ -93,23 +94,25 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return column.value();
 		}
 
-		// else check @KeyColumn annotation
+		// else check @PrimaryKeyColumn annotation
 		PrimaryKeyColumn pk = findAnnotation(PrimaryKeyColumn.class);
-		if (pk != null && StringUtils.hasText(pk.value())) {
-			return pk.value();
+		if (pk != null && StringUtils.hasText(pk.name())) {
+			return pk.name();
 		}
 
 		// else default
-		return field.getName().toLowerCase();
+		return field.getName().toLowerCase(); // TODO: replace with naming strategy class
 	}
 
-	public Ordering getOrdering() {
+	@Override
+	public Ordering getPrimaryKeyOrdering() {
 
 		PrimaryKeyColumn anno = findAnnotation(PrimaryKeyColumn.class);
 
 		return anno == null ? null : anno.ordering();
 	}
 
+	@Override
 	public DataType getDataType() {
 
 		CassandraType annotation = findAnnotation(CassandraType.class);
@@ -180,10 +183,12 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 	}
 
+	@Override
 	public boolean isIndexed() {
 		return isAnnotationPresent(Indexed.class);
 	}
 
+	@Override
 	public boolean isPartitionKeyColumn() {
 
 		PrimaryKeyColumn anno = findAnnotation(PrimaryKeyColumn.class);

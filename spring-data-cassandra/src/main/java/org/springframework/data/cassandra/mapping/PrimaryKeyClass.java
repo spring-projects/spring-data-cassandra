@@ -22,7 +22,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines composite primary key class in the Cassandra table that contains several fields.
+ * Annotates a type that represents the identity type of another class whose instances are stored in a table.
+ * <p/>
+ * If your Cassandra table has multiple primary key columns, then you must define a primary key class, annotate it with
+ * this annotation, and use that class as the {@link PrimaryKey} of your entity class!
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
@@ -30,5 +33,5 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
-public @interface CompositePrimaryKey {
+public @interface PrimaryKeyClass {
 }

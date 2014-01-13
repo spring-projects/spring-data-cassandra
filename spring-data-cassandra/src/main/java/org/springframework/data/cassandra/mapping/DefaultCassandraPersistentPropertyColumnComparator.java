@@ -8,10 +8,14 @@ import java.util.Comparator;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-public enum CassandraPersistentPropertyColumnNameComparator implements Comparator<CassandraPersistentProperty> {
+public enum DefaultCassandraPersistentPropertyColumnComparator implements Comparator<CassandraPersistentProperty> {
 
-	INSTANCE;
+	/**
+	 * The sole instance of this class.
+	 */
+	IT;
 
+	@Override
 	public int compare(CassandraPersistentProperty o1, CassandraPersistentProperty o2) {
 		return o1.getColumnName().compareTo(o2.getColumnName());
 	}

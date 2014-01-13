@@ -29,7 +29,7 @@ import org.springframework.data.cassandra.mapping.Table;
  * 
  * @author Alex Shvid
  */
-@Table(name = "notifications")
+@Table("notifications")
 public class Notification {
 
 	/*

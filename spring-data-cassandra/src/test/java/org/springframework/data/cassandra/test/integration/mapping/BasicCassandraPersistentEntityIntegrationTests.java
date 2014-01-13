@@ -25,7 +25,6 @@ import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,19 +69,19 @@ public class BasicCassandraPersistentEntityIntegrationTests {
 	}
 
 	@Test
-	public void collectionAllowsReferencingSpringBean() {
+	public void tableAllowsReferencingSpringBean() {
 
-		MappingBean bean = new MappingBean();
-		bean.userLine = "user_line";
+		TableNameHolderThingy bean = new TableNameHolderThingy();
+		bean.tableName = "my_user_line";
 
-		when(context.getBean("mappingBean")).thenReturn(bean);
-		when(context.containsBean("mappingBean")).thenReturn(true);
+		when(context.getBean("tableNameHolderThingy")).thenReturn(bean);
+		when(context.containsBean("tableNameHolderThingy")).thenReturn(true);
 
 		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<UserLine>(
 				ClassTypeInformation.from(UserLine.class));
 		entity.setApplicationContext(context);
 
-		assertThat(entity.getTableName(), is("user_line"));
+		assertThat(entity.getTableName(), is(bean.tableName));
 	}
 
 	@After
@@ -90,36 +89,31 @@ public class BasicCassandraPersistentEntityIntegrationTests {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 	}
 
-	@AfterClass
-	public static void stopCassandra() {
-		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
-	}
-
-	@Table(name = "messages")
-	class Message {
+	@Table("messages")
+	static class Message {
 
 	}
 
-	class Notification extends Message {
+	static class Notification extends Message {
 
 	}
 
-	@Table(name = "#{123}")
-	class Area {
+	@Table("#{123}")
+	static class Area {
 
 	}
 
-	@Table(name = "#{mappingBean.userLine}")
-	class UserLine {
+	@Table("#{tableNameHolderThingy.tableName}")
+	static class UserLine {
 
 	}
 
-	class MappingBean {
+	static class TableNameHolderThingy {
 
-		String userLine;
+		String tableName;
 
-		public String getUserLine() {
-			return userLine;
+		public String getTableName() {
+			return tableName;
 		}
 	}
 

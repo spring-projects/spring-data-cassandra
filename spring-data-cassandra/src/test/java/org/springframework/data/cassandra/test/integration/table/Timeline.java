@@ -29,7 +29,7 @@ import org.springframework.data.cassandra.mapping.Table;
  * 
  * @author Alex Shvid
  */
-@Table(name = "timeline")
+@Table("timeline")
 public class Timeline {
 
 	/*

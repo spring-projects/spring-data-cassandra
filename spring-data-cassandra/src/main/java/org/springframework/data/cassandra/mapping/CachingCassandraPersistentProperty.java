@@ -97,10 +97,10 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	}
 
 	@Override
-	public Ordering getOrdering() {
+	public Ordering getPrimaryKeyOrdering() {
 
 		if (!orderingCached) {
-			ordering = super.getOrdering();
+			ordering = super.getPrimaryKeyOrdering();
 			orderingCached = true;
 		}
 		return ordering;

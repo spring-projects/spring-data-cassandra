@@ -26,6 +26,8 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 /**
  * Identifies the annotated field of a composite primary key class as a primary key field that is either a partition or
  * cluster key field.
+ * 
+ * @author Matthew T. Adams
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
@@ -34,10 +36,10 @@ public @interface PrimaryKeyColumn {
 	/**
 	 * The name of the column in the table.
 	 */
-	String value() default "";
+	String name() default "";
 
 	/**
-	 * The order of this column among all primary key columns.
+	 * The order of this column relative to other primary key columns.
 	 */
 	int ordinal();
 

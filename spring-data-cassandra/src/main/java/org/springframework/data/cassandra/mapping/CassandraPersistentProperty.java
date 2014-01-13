@@ -53,7 +53,7 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 	/**
 	 * The ordering for the column. Valid only for clustered columns.
 	 */
-	Ordering getOrdering();
+	Ordering getPrimaryKeyOrdering();
 
 	/**
 	 * The column's data type.

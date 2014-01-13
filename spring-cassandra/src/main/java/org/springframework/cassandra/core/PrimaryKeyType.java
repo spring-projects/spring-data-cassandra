@@ -15,13 +15,16 @@
  */
 package org.springframework.cassandra.core;
 
+import java.util.Comparator;
+
 /**
- * Values representing primary key column types.
+ * Values representing primary key column types. Implements {@link Comparator} in that
+ * {@link PrimaryKeyType#PARTITIONED} is ordered before {@link PrimaryKeyType#CLUSTERED}.
  * 
  * @author Matthew T. Adams
  * @author Alex Shvid
  */
-public enum PrimaryKeyType {
+public enum PrimaryKeyType implements Comparator<PrimaryKeyType> {
 
 	/**
 	 * Used for a column that is part of the partition key.
@@ -31,5 +34,19 @@ public enum PrimaryKeyType {
 	/**
 	 * Used for a column that is clustered key.
 	 */
-	CLUSTERED
+	CLUSTERED;
+
+	@Override
+	public int compare(PrimaryKeyType l, PrimaryKeyType r) {
+		if (l == r) {
+			return 0;
+		}
+		if (l == null && r != null) {
+			return 1;
+		}
+		if (l != null && r == null) {
+			return -1;
+		}
+		return l == PARTITIONED && r == CLUSTERED ? 1 : -1;
+	}
 }

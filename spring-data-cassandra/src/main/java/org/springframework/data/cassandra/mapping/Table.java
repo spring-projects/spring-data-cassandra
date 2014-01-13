@@ -27,6 +27,7 @@ import org.springframework.data.annotation.Persistent;
  * Identifies a domain object to be persisted to Cassandra as a table.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 @Persistent
 @Inherited
@@ -34,6 +35,8 @@ import org.springframework.data.annotation.Persistent;
 @Target({ ElementType.TYPE })
 public @interface Table {
 
-	String name() default "";
-
+	/**
+	 * The name of the table; must be a valid CQL identifier or quoted identifier.
+	 */
+	String value() default "";
 }

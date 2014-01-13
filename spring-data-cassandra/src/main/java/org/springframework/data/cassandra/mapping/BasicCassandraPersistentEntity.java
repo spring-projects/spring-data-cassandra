@@ -51,7 +51,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
 
-		super(typeInformation, CassandraPersistentPropertyColumnNameComparator.INSTANCE);
+		super(typeInformation, DefaultCassandraPersistentPropertyColumnComparator.IT);
 
 		this.parser = new SpelExpressionParser();
 		this.context = new StandardEvaluationContext();
@@ -59,7 +59,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		Class<?> rawType = typeInformation.getType();
 		Table anno = rawType.getAnnotation(Table.class);
 
-		this.table = anno != null && StringUtils.hasText(anno.name()) ? anno.name() : CassandraNamingUtils
+		this.table = anno != null && StringUtils.hasText(anno.value()) ? anno.value() : CassandraNamingUtils
 				.getPreferredTableName(rawType);
 	}
 

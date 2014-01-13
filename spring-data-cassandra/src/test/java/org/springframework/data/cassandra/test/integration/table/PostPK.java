@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.test.integration.table;
 import java.util.Date;
 
 import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.CompositePrimaryKey;
+import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 
 /**
@@ -31,7 +31,7 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
  * @author Alex Shvid
  */
 
-@CompositePrimaryKey
+@PrimaryKeyClass
 public class PostPK {
 
 	/*

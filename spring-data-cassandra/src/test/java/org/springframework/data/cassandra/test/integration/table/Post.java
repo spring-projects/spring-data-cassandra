@@ -31,7 +31,7 @@ import org.springframework.data.cassandra.mapping.Table;
  * 
  * @author Alex Shvid
  */
-@Table(name = "posts")
+@Table("posts")
 public class Post {
 
 	/*

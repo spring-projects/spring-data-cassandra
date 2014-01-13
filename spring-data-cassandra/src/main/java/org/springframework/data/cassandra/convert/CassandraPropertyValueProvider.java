@@ -55,10 +55,7 @@ public class CassandraPropertyValueProvider implements PropertyValueProvider<Cas
 		this.evaluator = evaluator;
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.convert.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T getPropertyValue(CassandraPersistentProperty property) {
 
@@ -75,10 +72,6 @@ public class CassandraPropertyValueProvider implements PropertyValueProvider<Cas
 
 		log.debug(columnType.getName().name());
 
-		/*
-		 * Dave Webb - Added handler for text since getBytes was throwing 
-		 * InvalidTypeException when using getBytes on a text column. 
-		 */
 		// TODO Might need to qualify all DataTypes as we encounter them.
 		if (columnType.equals(DataType.text())) {
 			return (T) source.getString(columnName);

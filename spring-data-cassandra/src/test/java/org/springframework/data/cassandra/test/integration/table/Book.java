@@ -24,7 +24,7 @@ import org.springframework.data.cassandra.mapping.Table;
  * @author David Webb
  * 
  */
-@Table(name = "book")
+@Table("book")
 public class Book {
 
 	@PrimaryKey
@@ -93,6 +93,7 @@ public class Book {
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("isbn -> " + isbn).append("\n");

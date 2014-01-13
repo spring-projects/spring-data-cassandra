@@ -94,7 +94,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			throw new MappingException("No mapping metadata found for " + rawType.getName());
 		}
 
-		return readRowInternal(persistentEntity, row);
+		return readEntityFromRow(persistentEntity, row);
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
 	}
 
-	protected <S extends Object> S readRowInternal(final CassandraPersistentEntity<S> entity, final Row row) {
+	protected <S extends Object> S readEntityFromRow(final CassandraPersistentEntity<S> entity, final Row row) {
 
 		final DefaultSpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
 
@@ -290,7 +290,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 							if (pkProp.isPartitionKeyColumn()) {
 								spec.partitionKeyColumn(pkProp.getColumnName(), pkProp.getDataType());
 							} else {
-								spec.clusteredKeyColumn(pkProp.getColumnName(), pkProp.getDataType(), pkProp.getOrdering());
+								spec.clusteredKeyColumn(pkProp.getColumnName(), pkProp.getDataType(), pkProp.getPrimaryKeyOrdering());
 							}
 
 						}

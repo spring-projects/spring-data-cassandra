@@ -30,7 +30,7 @@ import org.springframework.data.cassandra.mapping.Table;
  * 
  * @author Alex Shvid
  */
-@Table(name = "users")
+@Table("users")
 public class User {
 
 	/*

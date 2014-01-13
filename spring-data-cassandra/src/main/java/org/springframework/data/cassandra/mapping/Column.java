@@ -48,7 +48,7 @@ import java.lang.annotation.Target;
 public @interface Column {
 
 	/**
-	 * The name of the column in the table.
+	 * The name of the column in the table; must be a valid CQL identifier or quoted identifier.
 	 */
 	String value() default "";
 }
