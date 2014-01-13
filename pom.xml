@@ -33,7 +33,7 @@
 		<dist.id>spring-data-cassandra</dist.id>
 		<springdata.commons>1.6.2.RELEASE</springdata.commons>
 		<cassandra-unit.version>1.2.0.1</cassandra-unit.version>
-		<cassandra-driver-core.version>1.0.4-dse</cassandra-driver-core.version>
+		<cassandra-driver-core.version>1.0.5-dse</cassandra-driver-core.version>
 		<failsafe.version>2.16</failsafe.version>
 	</properties>
 
@@ -126,7 +126,7 @@
 				<version>${spring}</version>
 			</dependency>
 
-			<!--  Logging Dependencies -->
+			<!-- Logging Dependencies -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>log4j-over-slf4j</artifactId>
@@ -187,6 +187,10 @@
 					<exclusion>
 						<artifactId>cassandra-all</artifactId>
 						<groupId>org.apache.cassandra</groupId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.datastax.cassandra</groupId>
+						<artifactId>cassandra-driver-core</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -260,7 +264,7 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${failsafe.version}</version>
 				<configuration>
-					<forkMode>always</forkMode>
+					<!-- <forkMode>always</forkMode> -->
 					<argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
 					<useFile>false</useFile>
 					<includes>
