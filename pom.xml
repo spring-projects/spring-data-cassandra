@@ -35,6 +35,7 @@
 		<cassandra-unit.version>1.2.0.1</cassandra-unit.version>
 		<cassandra-driver-core.version>1.0.5-dse</cassandra-driver-core.version>
 		<failsafe.version>2.16</failsafe.version>
+		<jamm.version>0.2.5</jamm.version>
 	</properties>
 
 	<developers>
@@ -91,6 +92,12 @@
 						<groupId>org.slf4j</groupId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>com.github.stephenc</groupId>
+				<artifactId>jamm</artifactId>
+				<version>${jamm.version}</version>
+				<scope>test</scope>
 			</dependency>
 
 			<!-- Spring -->
@@ -232,8 +239,40 @@
 		</repository>
 	</repositories>
 
+	<dependencies>
+		<dependency>
+			<groupId>com.datastax.cassandra</groupId>
+			<artifactId>cassandra-driver-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.stephenc</groupId>
+			<artifactId>jamm</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cassandraunit</groupId>
+			<artifactId>cassandra-unit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cassandraunit</groupId>
+			<artifactId>cassandra-unit-spring</artifactId>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.bitstrings.maven.plugins</groupId>
+				<artifactId>dependencypath-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<executions>
+					<execution>
+						<id>set-all</id>
+						<goals>
+							<goal>set</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -243,7 +282,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
 					<parallel>methods</parallel>
 					<threadCount>10</threadCount>
 					<useFile>false</useFile>
@@ -264,8 +302,8 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${failsafe.version}</version>
 				<configuration>
-					<!-- <forkMode>always</forkMode> -->
-					<argLine>-Xmx2048m -Xss1024m -XX:MaxPermSize=512m</argLine>
+					<forkCount>1</forkCount>
+					<argLine>-Xmx1024m -Xss512m -javaagent:${com.github.stephenc:jamm:jar}</argLine>
 					<useFile>false</useFile>
 					<includes>
 						<include>**/test/integration/**/*.java</include>
