@@ -81,7 +81,11 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	}
 
 	public void connect() {
+
 		if (connect && !connected()) {
+
+			log.info("Connecting to Cassandra");
+
 			cluster = cluster();
 
 			if (keyspace() == null) {
