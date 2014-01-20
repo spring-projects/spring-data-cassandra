@@ -16,6 +16,7 @@
 package org.springframework.cassandra.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -88,7 +89,7 @@ public class CassandraSessionFactoryBean implements FactoryBean<Session>, Initia
 	 */
 	protected void executeScripts(List<String> scripts) {
 
-		if (scripts == null) {
+		if (scripts == null || scripts.size() == 0) {
 			return;
 		}
 
@@ -133,13 +134,27 @@ public class CassandraSessionFactoryBean implements FactoryBean<Session>, Initia
 	 * Sets CQL scripts to be executed immediately after the session is connected.
 	 */
 	public void setStartupScripts(List<String> scripts) {
-		this.startupScripts = scripts;
+		this.startupScripts = scripts == null ? new ArrayList<String>() : new ArrayList<String>(scripts);
+	}
+
+	/**
+	 * Returns an unmodifiable list of startup scripts.
+	 */
+	public List<String> getStartupScripts() {
+		return Collections.unmodifiableList(startupScripts);
 	}
 
 	/**
 	 * Sets CQL scripts to be executed immediately before the session is shutdown.
 	 */
 	public void setShutdownScripts(List<String> scripts) {
-		this.shutdownScripts = scripts;
+		this.shutdownScripts = scripts == null ? new ArrayList<String>() : new ArrayList<String>(scripts);
+	}
+
+	/**
+	 * Returns an unmodifiable list of shutdown scripts.
+	 */
+	public List<String> getShutdownScripts() {
+		return Collections.unmodifiableList(shutdownScripts);
 	}
 }
