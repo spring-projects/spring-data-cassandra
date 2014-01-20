@@ -63,7 +63,7 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	/**
 	 * The {@link Session} for the {@link #keyspace} from the {@link #cluster}.
 	 */
-	protected static Session session;
+	protected Session session;
 
 	protected String keyspace() {
 		return keyspace;
