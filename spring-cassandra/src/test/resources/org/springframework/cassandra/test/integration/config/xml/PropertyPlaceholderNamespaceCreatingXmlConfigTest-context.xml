@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/cassandra"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/cassandra http://www.springframework.org/schema/cassandra/spring-cassandra-1.0.xsd
+                         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:property-placeholder
+		location="classpath:/org/springframework/cassandra/test/integration/config/xml/ppncxct.properties" />
+
+	<bean id="authProvider" class="com.datastax.driver.core.sasl.DseAuthProvider" />
+
+	<cassandra:cluster id="cassandra-cluster"
+		contactPoints="${cluster.contactPoints}" port="${cluster.port}"
+		compression="${cluster.compression}" auth-info-provider-ref="authProvider">
+		<cassandra:keyspace name="${keyspace.name}" action="${keyspace.action}"/>
+		<cassandra:keyspace name="Foo" action="CREATE_DROP" durable-writes="true">
+			<cassandra:replication class="NetworkTopologyStrategy">
+				<cassandra:data-center replication-factor="${dc1.rf}" name="${dc1.name}"/>
+				<cassandra:data-center replication-factor="${dc1.rf}" name="${dc2.name}"/>
+			</cassandra:replication>
+		</cassandra:keyspace>
+	</cassandra:cluster>
+
+	<cassandra:session id="cassandra-session"
+		keyspace-name="system">
+	</cassandra:session>
+
+	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CassandraTemplate">
+		<constructor-arg ref="cassandra-session" />
+	</bean>
+
+</beans>

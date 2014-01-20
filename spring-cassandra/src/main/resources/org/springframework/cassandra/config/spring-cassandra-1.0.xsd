@@ -133,32 +133,14 @@ The native CQL port to connect to.  Default is 9042.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="compression" default="NONE" use="optional">
+		<xsd:attribute name="compression" default="NONE" use="optional" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The protocol compression option. Default is "NONE".
 				]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="NONE">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-No compression.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="SNAPPY">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-SNAPPY compression algorithm.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="auth-info-provider" use="optional">
+		<xsd:attribute name="auth-info-provider-ref" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 AuthInfoProvider implementation.
@@ -422,32 +404,14 @@ The name of this keyspace.  Required.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="action" use="required">
+		<xsd:attribute name="action" use="required" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The keyspace action to take at startup and possibly shutdown.
 				]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="CREATE">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Action value that causes keyspace creation during bean initialization.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="CREATE-DROP">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Action value that causes keyspace creation during bean initialization and keyspace dropping during bean destruction.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="durable-writes" type="xsd:boolean"
+		<xsd:attribute name="durable-writes" type="xsd:string"
 			use="optional" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -481,7 +445,7 @@ The name of the replication class; default is "SimpleStrategy".
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="replication-factor" type="xsd:integer"
+		<xsd:attribute name="replication-factor" type="xsd:string"
 			use="optional" default="1">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -504,7 +468,7 @@ The name of the data center.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="replication-factor" type="xsd:integer"
+		<xsd:attribute name="replication-factor" type="xsd:string"
 			use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[

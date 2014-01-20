@@ -8,8 +8,6 @@ import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.cassandra.config.CompressionType;
 import org.springframework.cassandra.config.PoolingOptionsConfig;
 import org.springframework.cassandra.config.SocketOptionsConfig;
-import org.springframework.cassandra.core.CassandraOperations;
-import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.context.annotation.Bean;

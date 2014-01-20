@@ -16,8 +16,10 @@
 package org.springframework.cassandra.config;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +31,7 @@ import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerat
 import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
-import org.springframework.cassandra.core.keyspace.KeyspaceNameSpecification;
+import org.springframework.cassandra.core.keyspace.KeyspaceActionSpecification;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -51,6 +53,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author David Webb
  */
 public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, InitializingBean, DisposableBean,
 		PersistenceExceptionTranslator {
@@ -62,9 +65,10 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	protected static final Logger log = LoggerFactory.getLogger(CassandraClusterFactoryBean.class);
 
 	private Cluster cluster;
+	private boolean accumulating = true;
 
-	/**
-	 * Comma-delimited string of servers.
+	/*
+	 * Attributes needed for cluster builder
 	 */
 	private String contactPoints = DEFAULT_CONTACT_POINTS;
 	private int port = CassandraClusterFactoryBean.DEFAULT_PORT;
@@ -77,6 +81,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	private ReconnectionPolicy reconnectionPolicy;
 	private RetryPolicy retryPolicy;
 	private boolean metricsEnabled = DEFAULT_METRICS_ENABLED;
+	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<KeyspaceActionSpecification<?>>();
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
 	private List<String> startupScripts = new ArrayList<String>();
@@ -152,7 +157,29 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 		}
 
 		cluster = builder.build();
+
+		generateSpecificationsFromFactoryBeans();
+
 		executeSpecsAndScripts(keyspaceCreations, startupScripts);
+	}
+
+	/**
+	 * Examines the contents of all the KeyspaceSpecificationFactoryBeans and generates the proper KeyspaceSpecification
+	 * from them.
+	 */
+	private void generateSpecificationsFromFactoryBeans() {
+
+		for (KeyspaceActionSpecification<?> spec : keyspaceSpecifications) {
+
+			if (spec instanceof CreateKeyspaceSpecification) {
+				keyspaceCreations.add((CreateKeyspaceSpecification) spec);
+			}
+			if (spec instanceof DropKeyspaceSpecification) {
+				keyspaceDrops.add((DropKeyspaceSpecification) spec);
+			}
+
+		}
+
 	}
 
 	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
@@ -167,7 +194,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 
 				Iterator<?> i = specs.iterator();
 				while (i.hasNext()) {
-					KeyspaceNameSpecification<?> spec = (KeyspaceNameSpecification<?>) i.next();
+					KeyspaceActionSpecification<?> spec = (KeyspaceActionSpecification<?>) i.next();
 					String cql = (spec instanceof CreateKeyspaceSpecification) ? new CreateKeyspaceCqlGenerator(
 							(CreateKeyspaceSpecification) spec).toCql() : new DropKeyspaceCqlGenerator(
 							(DropKeyspaceSpecification) spec).toCql();
@@ -342,5 +369,36 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 		}
 
 		return socketOptions;
+	}
+
+	/**
+	 * @return Returns the keyspaceSpecifications.
+	 */
+	public Set<KeyspaceActionSpecification<?>> getKeyspaceSpecifications() {
+		return keyspaceSpecifications;
+	}
+
+	/**
+	 * If accumlating is true, we append to the list, otherwise we replace the list.
+	 * 
+	 * @param keyspaceSpecifications The keyspaceSpecifications to set.
+	 */
+	public void setKeyspaceSpecifications(Set<KeyspaceActionSpecification<?>> keyspaceSpecifications) {
+		log.info("Setter Called");
+		this.keyspaceSpecifications = keyspaceSpecifications;
+	}
+
+	/**
+	 * @return Returns the accumulating.
+	 */
+	public boolean isAccumulating() {
+		return accumulating;
+	}
+
+	/**
+	 * @param accumulating The accumulating to set.
+	 */
+	public void setAccumulating(boolean accumulating) {
+		this.accumulating = accumulating;
 	}
 }

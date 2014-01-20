@@ -15,20 +15,20 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import org.springframework.cassandra.core.keyspace.KeyspaceNameSpecification;
+import org.springframework.cassandra.core.keyspace.KeyspaceActionSpecification;
 import org.springframework.util.Assert;
 
-public abstract class KeyspaceNameCqlGenerator<T extends KeyspaceNameSpecification<T>> {
+public abstract class KeyspaceNameCqlGenerator<T extends KeyspaceActionSpecification<T>> {
 
 	public abstract StringBuilder toCql(StringBuilder cql);
 
-	private KeyspaceNameSpecification<T> specification;
+	private KeyspaceActionSpecification<T> specification;
 
-	public KeyspaceNameCqlGenerator(KeyspaceNameSpecification<T> specification) {
+	public KeyspaceNameCqlGenerator(KeyspaceActionSpecification<T> specification) {
 		setSpecification(specification);
 	}
 
-	protected void setSpecification(KeyspaceNameSpecification<T> specification) {
+	protected void setSpecification(KeyspaceActionSpecification<T> specification) {
 		Assert.notNull(specification);
 		this.specification = specification;
 	}
