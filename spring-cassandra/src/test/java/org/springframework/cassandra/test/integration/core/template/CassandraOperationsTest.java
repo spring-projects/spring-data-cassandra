@@ -67,7 +67,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  */
 public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegrationTest {
 
-	private CassandraOperations cassandraTemplate;
+	private static CassandraOperations cassandraTemplate;
 
 	private static Logger log = LoggerFactory.getLogger(CassandraOperationsTest.class);
 
@@ -88,9 +88,26 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 			"cassandraOperationsTest-cql-dataload.cql", this.keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
 			CASSANDRA_NATIVE_PORT);
 
+	public CassandraOperationsTest() {
+		super("sdctest");
+		clear = true;
+	}
+
 	@Before
 	public void setupTemplate() {
-		cassandraTemplate = new CassandraTemplate(session);
+
+		log.info("Running setupTemplate()");
+
+		if (cassandraTemplate == null) {
+
+			log.info("null Template ... Initialzing DB test CQL");
+
+			// CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
+			// "cassandraOperationsTest-cql-dataload.cql", keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
+			// CASSANDRA_NATIVE_PORT);
+
+			cassandraTemplate = new CassandraTemplate(session);
+		}
 	}
 
 	@Test
@@ -140,8 +157,10 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 	}
 
 	@Test
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings("unchecked")
 	public void ingestionTestListOfList() {
+
+		log.info("Keyspace => " + keyspace);
 
 		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
 
@@ -165,6 +184,8 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 
 	@Test
 	public void ingestionTestObjectArray() {
+
+		log.info("Keyspace => " + keyspace);
 
 		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
 
@@ -508,7 +529,7 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		@SuppressWarnings( "unused" )
+		@SuppressWarnings("unused")
 		Book book = cassandraTemplate.queryForObject("select * from book where isbn in ('1234','2345','3456')",
 				new RowMapper<Book>() {
 					@Override
@@ -563,7 +584,7 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 	@Test(expected = ClassCastException.class)
 	public void queryForObjectTestCqlStringRequiredTypeInvalid() {
 
-		@SuppressWarnings( "unused" )
+		@SuppressWarnings("unused")
 		Float title = cassandraTemplate.queryForObject("select title from book where isbn in ('" + ISBN_NINES + "')",
 				Float.class);
 

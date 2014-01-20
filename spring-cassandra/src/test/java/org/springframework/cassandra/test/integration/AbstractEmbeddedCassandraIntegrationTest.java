@@ -7,6 +7,9 @@ import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
+import org.junit.BeforeClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -14,22 +17,30 @@ import com.datastax.driver.core.Session;
 
 public abstract class AbstractEmbeddedCassandraIntegrationTest {
 
+	private static Logger log = LoggerFactory.getLogger(AbstractEmbeddedCassandraIntegrationTest.class);
+
 	protected final static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 	protected final static String CASSANDRA_HOST = "localhost";
 	protected final static int CASSANDRA_NATIVE_PORT = 9042;
 
+	@BeforeClass
 	public static void startCassandra() throws ConfigurationException, TTransportException, IOException,
 			InterruptedException {
+		log.info("Starting Cassandra Embedded Server");
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
 	}
 
 	public AbstractEmbeddedCassandraIntegrationTest() {
-		try {
-			startCassandra();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		if (session == null) {
+			connect();
 		}
-		connect();
+	}
+
+	public AbstractEmbeddedCassandraIntegrationTest(String keyspace) {
+		this.keyspace = keyspace;
+		if (session == null) {
+			connect();
+		}
 	}
 
 	/**
@@ -48,10 +59,11 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	 * If not <code>null</code>, get a {@link Session} for the from the {@link #cluster}.
 	 */
 	protected String keyspace = "ks" + UUID.randomUUID().toString().replace("-", "");
+
 	/**
 	 * The {@link Session} for the {@link #keyspace} from the {@link #cluster}.
 	 */
-	protected Session session;
+	protected static Session session;
 
 	protected String keyspace() {
 		return keyspace;
@@ -69,7 +81,11 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	}
 
 	public void connect() {
+
 		if (connect && !connected()) {
+
+			log.info("Connecting to Cassandra");
+
 			cluster = cluster();
 
 			if (keyspace() == null) {
@@ -91,8 +107,11 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 
 	@After
 	public void after() {
+		log.info("After: clear -> " + clear + ", connected -> " + connected());
 		if (clear && connected()) {
+			log.info("Cleaning Cassandra");
 			EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 		}
 	}
+
 }

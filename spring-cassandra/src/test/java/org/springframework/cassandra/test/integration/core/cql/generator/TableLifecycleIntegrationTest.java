@@ -18,6 +18,9 @@ package org.springframework.cassandra.test.integration.core.cql.generator;
 import static org.springframework.cassandra.test.integration.core.cql.generator.CqlTableSpecificationAssertions.assertNoTable;
 import static org.springframework.cassandra.test.integration.core.cql.generator.CqlTableSpecificationAssertions.assertTable;
 
+import org.cassandraunit.CassandraCQLUnit;
+import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
+import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,18 @@ public class TableLifecycleIntegrationTest extends AbstractEmbeddedCassandraInte
 	private final static Logger log = LoggerFactory.getLogger(TableLifecycleIntegrationTest.class);
 
 	CreateTableCqlGeneratorTests.MultipleOptionsTest createTableTest = new CreateTableCqlGeneratorTests.MultipleOptionsTest();
+
+	public TableLifecycleIntegrationTest() {
+		super("tlit");
+		clear = true;
+	}
+
+	// This only ensures the keyspace exists before each test, while using a static session from the parent object.
+	// TODO - DW Make this better.
+	@Rule
+	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
+			"cassandraOperationsTest-cql-dataload.cql", this.keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
+			CASSANDRA_NATIVE_PORT);
 
 	@Test
 	public void testDrop() {
