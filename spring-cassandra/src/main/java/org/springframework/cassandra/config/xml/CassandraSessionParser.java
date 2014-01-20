@@ -56,8 +56,8 @@ public class CassandraSessionParser extends AbstractSimpleBeanDefinitionParser {
 
 		parseKeyspaceName(element, builder);
 		parseClusterRef(element, builder);
-		parseScripts(element, builder, "startup-cql", "startupScript");
-		parseScripts(element, builder, "shutdown-cql", "shutdownScript");
+		parseScripts(element, builder, "startup-cql", "startupScripts");
+		parseScripts(element, builder, "shutdown-cql", "shutdownScripts");
 	}
 
 	protected void parseScripts(Element element, BeanDefinitionBuilder builder, String elementName, String propertyName) {

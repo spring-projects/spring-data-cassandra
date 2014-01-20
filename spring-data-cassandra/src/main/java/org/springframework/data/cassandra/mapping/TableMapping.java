@@ -2,8 +2,6 @@ package org.springframework.data.cassandra.mapping;
 
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * Interface that stores information about the mapping between a table and the entity or the entities that are mapped to
  * it.
@@ -17,7 +15,6 @@ public interface TableMapping {
 	 * knows that there is only one entity class in this mapping. If there are multiple and this method is called, an
 	 * {@link IllegalStateException} is thrown.
 	 */
-	@NotNull
 	Class<?> getEntityClass();
 
 	/**
@@ -25,7 +22,7 @@ public interface TableMapping {
 	 * 
 	 * @param entityClass The class; may not be null.
 	 */
-	void setEntityClass(@NotNull Class<?> entityClass);
+	void setEntityClass(Class<?> entityClass);
 
 	/**
 	 * Sets the set of entity classes of this mapping.
@@ -35,17 +32,15 @@ public interface TableMapping {
 	/**
 	 * Returns the set of entity classes of this mapping. Never returns null.
 	 */
-	@NotNull
 	Set<Class<?>> getEntityClasses();
 
 	/**
 	 * Returns the name of this mapping. Never returns null.
 	 */
-	@NotNull
 	String getTableName();
 
 	/**
 	 * Sets the table name of this mapping.
 	 */
-	void setTableName(@NotNull String tableName);
+	void setTableName(String tableName);
 }
