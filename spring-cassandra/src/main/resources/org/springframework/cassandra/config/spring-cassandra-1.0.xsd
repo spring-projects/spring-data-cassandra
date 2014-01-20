@@ -357,7 +357,7 @@ Arbitrary CQL script to be executed against the session's keyspace during bean d
 				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
-		
+
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[

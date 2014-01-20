@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config;
-
-import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+package org.springframework.data.cassandra.config.xml;
 
 /**
  * Namespace handler for &lt;cassandra&gt;.
@@ -23,10 +21,10 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
  * @author Alex Shvid
  */
 
-public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
+public class CassandraNamespaceHandler extends org.springframework.cassandra.config.xml.CassandraNamespaceHandler {
 
+	@Override
 	public void init() {
-
-		// registerBeanDefinitionParser("keyspace", new CassandraKeyspaceParser());
+		super.init();
 	}
 }

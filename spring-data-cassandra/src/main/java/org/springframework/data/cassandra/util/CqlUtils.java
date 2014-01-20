@@ -40,24 +40,6 @@ public abstract class CqlUtils {
 	private static Logger log = LoggerFactory.getLogger(CqlUtils.class);
 
 	/**
-	 * Generates the CQL String to create a table in Cassandra
-	 * 
-	 * @param tableName
-	 * @param entity
-	 * @return The CQL that can be passed to session.execute()
-	 */
-	public static String createTable(String tableName, final CassandraPersistentEntity<?> entity,
-			CassandraConverter cassandraConverter) {
-
-		CreateTableSpecification spec = cassandraConverter.getCreateTableSpecification(entity);
-		spec.name(tableName);
-
-		CreateTableCqlGenerator generator = new CreateTableCqlGenerator(spec);
-
-		return generator.toCql();
-	}
-
-	/**
 	 * Create the List of CQL for the indexes required for Cassandra mapped Table.
 	 * 
 	 * @param tableName
@@ -68,6 +50,7 @@ public abstract class CqlUtils {
 		final List<String> result = new ArrayList<String>();
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
 				if (prop.isIndexed()) {
@@ -101,6 +84,7 @@ public abstract class CqlUtils {
 		final List<String> result = new ArrayList<String>();
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
 				String columnName = prop.getColumnName();

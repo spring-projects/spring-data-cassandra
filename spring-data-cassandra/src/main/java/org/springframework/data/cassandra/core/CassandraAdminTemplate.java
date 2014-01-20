@@ -6,6 +6,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.support.CassandraAccessor;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.cassandra.support.exception.CassandraTableExistsException;
@@ -13,10 +15,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.util.CqlUtils;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ResultSet;
@@ -32,7 +33,7 @@ public class CassandraAdminTemplate extends CassandraAccessor implements Cassand
 
 	private Session session;
 	private CassandraConverter converter;
-	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+	private CassandraMappingContext mappingContext;
 
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
@@ -45,34 +46,32 @@ public class CassandraAdminTemplate extends CassandraAccessor implements Cassand
 		setSession(session);
 	}
 
-	protected CassandraAdminTemplate setCassandraConverter(CassandraConverter converter) {
+	public void setCassandraConverter(CassandraConverter converter) {
 		Assert.notNull(converter);
 		this.converter = converter;
-		return setMappingContext(converter.getMappingContext());
+		setMappingContext(converter.getCassandraMappingContext());
 	}
 
-	protected CassandraAdminTemplate setMappingContext(
-			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+	protected void setMappingContext(CassandraMappingContext mappingContext) {
 		Assert.notNull(mappingContext);
-		return this;
+		this.mappingContext = mappingContext;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, java.lang.String, java.lang.Class, java.util.Map)
-	 */
 	@Override
 	public boolean createTable(boolean ifNotExists, final String tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
 
 		try {
-
 			final CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
 
 			execute(new SessionCallback<Object>() {
+				@Override
 				public Object doInSession(Session s) throws DataAccessException {
 
-					String cql = CqlUtils.createTable(tableName, entity, converter);
+					String cql = new CreateTableCqlGenerator(mappingContext.getCreateTableSpecificationFor(entity)).toCql();
+
 					log.info("CREATE TABLE CQL -> " + cql);
+
 					s.execute(cql);
 					return null;
 				}
@@ -120,6 +119,7 @@ public class CassandraAdminTemplate extends CassandraAccessor implements Cassand
 
 		execute(new SessionCallback<Object>() {
 
+			@Override
 			public Object doInSession(Session s) throws DataAccessException {
 
 				for (String q : queryList) {
@@ -179,6 +179,7 @@ public class CassandraAdminTemplate extends CassandraAccessor implements Cassand
 
 		return execute(new SessionCallback<TableMetadata>() {
 
+			@Override
 			public TableMetadata doInSession(Session s) throws DataAccessException {
 
 				return s.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName);

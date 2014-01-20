@@ -31,8 +31,7 @@ import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.ClassUtils;
@@ -74,9 +73,8 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * @throws ClassNotFoundException
 	 */
 	@Bean
-	public MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> cassandraMappingContext()
-			throws ClassNotFoundException {
-		CassandraMappingContext context = new CassandraMappingContext();
+	public CassandraMappingContext cassandraMappingContext() throws ClassNotFoundException {
+		DefaultCassandraMappingContext context = new DefaultCassandraMappingContext();
 		context.setInitialEntitySet(getInitialEntitySet());
 		return context;
 	}

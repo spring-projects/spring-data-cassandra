@@ -28,7 +28,7 @@
 	</cassandra:cluster>
 
 	<bean id="cassandra-mapping"
-		class=" org.springframework.data.cassandra.mapping.CassandraMappingContext" />
+		class=" org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext" />
 
 	<bean id="cassandra-converter"
 		class=" org.springframework.data.cassandra.convert.MappingCassandraConverter">

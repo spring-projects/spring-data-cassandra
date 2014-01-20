@@ -6,13 +6,17 @@ import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.Assert;
 
-// @RunWith(SpringJUnit4ClassRunner.class)
-// @ContextConfiguration
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
 public class CassandraNamespaceTests {
 
 	@Autowired
@@ -29,9 +33,8 @@ public class CassandraNamespaceTests {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 	}
 
-	@AfterClass
-	public static void stopCassandra() {
-		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
+	@Test
+	public void test() {
+		Assert.notNull(ctx);
 	}
-
 }

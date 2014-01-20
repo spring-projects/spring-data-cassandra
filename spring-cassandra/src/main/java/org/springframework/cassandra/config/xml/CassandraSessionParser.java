@@ -25,6 +25,7 @@ import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.util.StringUtils;
+import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -53,39 +54,45 @@ public class CassandraSessionParser extends AbstractSimpleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		String keyspaceName = element.getAttribute("keyspace-name");
-		if (!StringUtils.hasText(keyspaceName)) {
-			keyspaceName = null;
-		}
-		builder.addPropertyValue("keyspaceName", keyspaceName);
+		parseKeyspaceName(element, builder);
+		parseClusterRef(element, builder);
+		parseScripts(element, builder, "startup-cql", "startupScript");
+		parseScripts(element, builder, "shutdown-cql", "shutdownScript");
+	}
+
+	protected void parseScripts(Element element, BeanDefinitionBuilder builder, String elementName, String propertyName) {
+
+		List<String> scripts = parseScripts(element, elementName);
+		builder.addPropertyValue(propertyName, scripts);
+	}
+
+	protected void parseClusterRef(Element element, BeanDefinitionBuilder builder) {
 
 		String clusterRef = element.getAttribute("cluster-ref");
 		if (!StringUtils.hasText(clusterRef)) {
 			clusterRef = BeanNames.CASSANDRA_CLUSTER;
 		}
 		builder.addPropertyReference("cluster", clusterRef);
-
-		parseChildElements(element, builder);
 	}
 
-	protected void parseChildElements(Element element, BeanDefinitionBuilder builder) {
+	protected void parseKeyspaceName(Element element, BeanDefinitionBuilder builder) {
 
-		List<String> scripts = parseScripts(element, "startup-cql");
-		builder.addPropertyValue("startupScripts", scripts);
-
-		scripts = parseScripts(element, "shutdown-cql");
-		builder.addPropertyValue("shutdownScripts", scripts);
+		String keyspaceName = element.getAttribute("keyspace-name");
+		if (!StringUtils.hasText(keyspaceName)) {
+			keyspaceName = null;
+		}
+		builder.addPropertyValue("keyspaceName", keyspaceName);
 	}
 
 	protected List<String> parseScripts(Element element, String elementName) {
 
-		NodeList nodes = element.getElementsByTagName("startup-cql");
+		NodeList nodes = element.getElementsByTagName(elementName);
 		int length = nodes.getLength();
 		List<String> scripts = new ArrayList<String>(length);
 
 		for (int i = 0; i < length; i++) {
 			Element script = (Element) nodes.item(i);
-			scripts.add(script.getTextContent());
+			scripts.add(DomUtils.getTextValue(script));
 		}
 
 		return scripts;

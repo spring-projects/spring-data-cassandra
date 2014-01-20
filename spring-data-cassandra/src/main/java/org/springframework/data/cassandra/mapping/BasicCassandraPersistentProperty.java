@@ -53,16 +53,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Override
-	public boolean isIdProperty() {
-
-		if (super.isIdProperty()) {
-			return true;
-		}
-
-		return isAnnotationPresent(PrimaryKey.class);
-	}
-
-	@Override
 	public boolean isCompositePrimaryKey() {
 		return getField().getType().isAnnotationPresent(PrimaryKeyClass.class);
 	}

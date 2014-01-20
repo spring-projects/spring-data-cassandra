@@ -17,53 +17,9 @@ package org.springframework.data.cassandra.config;
 
 import java.util.Collection;
 
-/**
- * Keyspace attributes are used for manipulation around keyspace at the startup. Auto property defines the way how to do
- * this. Other attributes used to ensure or update keyspace settings.
- * 
- * @author Alex Shvid
- */
 public class KeyspaceAttributes extends org.springframework.cassandra.config.KeyspaceAttributes {
 
-	/*
-	 * auto possible values:
-	 * validate: validate the keyspace, makes no changes.
-	   * update: update the keyspace.
-	   * create: creates the keyspace, destroying previous data.
-	   * create-drop: drop the keyspace at the end of the session.
-	 */
-	public static final String AUTO_VALIDATE = "validate";
-	public static final String AUTO_UPDATE = "update";
-	public static final String AUTO_CREATE = "create";
-	public static final String AUTO_CREATE_DROP = "create-drop";
-
-	private String auto = AUTO_VALIDATE;
-
 	private Collection<TableAttributes> tables;
-
-	public String getAuto() {
-		return auto;
-	}
-
-	public void setAuto(String auto) {
-		this.auto = auto;
-	}
-
-	public boolean isValidate() {
-		return AUTO_VALIDATE.equals(auto);
-	}
-
-	public boolean isUpdate() {
-		return AUTO_UPDATE.equals(auto);
-	}
-
-	public boolean isCreate() {
-		return AUTO_CREATE.equals(auto);
-	}
-
-	public boolean isCreateDrop() {
-		return AUTO_CREATE_DROP.equals(auto);
-	}
 
 	public Collection<TableAttributes> getTables() {
 		return tables;
@@ -72,5 +28,4 @@ public class KeyspaceAttributes extends org.springframework.cassandra.config.Key
 	public void setTables(Collection<TableAttributes> tables) {
 		this.tables = tables;
 	}
-
 }

@@ -27,7 +27,6 @@ import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Cluster;
@@ -46,12 +45,12 @@ public class CassandraSessionFactoryBean implements FactoryBean<Session>, Initia
 
 	private static final Logger log = LoggerFactory.getLogger(CassandraSessionFactoryBean.class);
 
-	private Cluster cluster;
-	private Session session;
-	private String keyspaceName;
-	private List<String> startupScripts = new ArrayList<String>();
-	private List<String> shutdownScripts = new ArrayList<String>();
-	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+	protected Cluster cluster;
+	protected Session session;
+	protected String keyspaceName;
+	protected List<String> startupScripts = new ArrayList<String>();
+	protected List<String> shutdownScripts = new ArrayList<String>();
+	protected final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	@Override
 	public Session getObject() {

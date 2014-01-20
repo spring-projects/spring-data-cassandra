@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.EntityConverter;
@@ -24,10 +24,10 @@ import org.springframework.data.convert.EntityConverter;
  * Central Cassandra specific converter interface from Object to Row.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public interface CassandraConverter extends
 		EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Object> {
 
-	// TODO: move this method to a more appropriate location
-	CreateTableSpecification getCreateTableSpecification(CassandraPersistentEntity<?> entity);
+	CassandraMappingContext getCassandraMappingContext();
 }

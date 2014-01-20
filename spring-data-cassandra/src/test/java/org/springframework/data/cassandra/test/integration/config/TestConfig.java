@@ -7,7 +7,7 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.core.CassandraDataTemplate;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
 
 /**
  * Setup any spring configuration for unit tests
@@ -27,7 +27,7 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 
 	@Bean
 	public CassandraConverter cassandraConverter() {
-		return new MappingCassandraConverter(new CassandraMappingContext());
+		return new MappingCassandraConverter(new DefaultCassandraMappingContext());
 	}
 
 	@Bean

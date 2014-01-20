@@ -39,9 +39,10 @@ import org.springframework.util.StringUtils;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty> implements
 		CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	private final String table;
-	private final SpelExpressionParser parser;
-	private final StandardEvaluationContext context;
+	private String table;
+	private final SpelExpressionParser spelParser;
+	private final StandardEvaluationContext spelContext;
+	private final Class<T> type;
 
 	/**
 	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
@@ -53,25 +54,32 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		super(typeInformation, DefaultCassandraPersistentPropertyColumnComparator.IT);
 
-		this.parser = new SpelExpressionParser();
-		this.context = new StandardEvaluationContext();
+		this.spelParser = new SpelExpressionParser();
+		this.spelContext = new StandardEvaluationContext();
 
-		Class<?> rawType = typeInformation.getType();
-		Table anno = rawType.getAnnotation(Table.class);
+		this.type = typeInformation.getType();
+
+		determineTableName();
+	}
+
+	protected void determineTableName() {
+		Table anno = type.getAnnotation(Table.class);
 
 		this.table = anno != null && StringUtils.hasText(anno.value()) ? anno.value() : CassandraNamingUtils
-				.getPreferredTableName(rawType);
+				.getPreferredTableName(type);
 	}
 
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
-		context.addPropertyAccessor(new BeanFactoryAccessor());
-		context.setBeanResolver(new BeanFactoryResolver(applicationContext));
-		context.setRootObject(applicationContext);
+		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
+		spelContext.setBeanResolver(new BeanFactoryResolver(applicationContext));
+		spelContext.setRootObject(applicationContext);
 	}
 
+	@Override
 	public String getTableName() {
-		Expression expression = parser.parseExpression(table, ParserContext.TEMPLATE_EXPRESSION);
-		return expression.getValue(context, String.class);
+		Expression expression = spelParser.parseExpression(table, ParserContext.TEMPLATE_EXPRESSION);
+		return expression.getValue(spelContext, String.class);
 	}
 }
