@@ -53,7 +53,7 @@
 			send-buffer-size="${socket.sendBufferSize}"
 		 />
 		<cassandra:keyspace name="${keyspace.name}" action="${keyspace.action}"/>
-		<cassandra:keyspace name="Foo" action="CREATE_DROP" durable-writes="true">
+		<cassandra:keyspace name="Foo123" action="CREATE_DROP" durable-writes="true">
 			<cassandra:replication class="NETWORK_TOPOLOGY_STRATEGY">
 				<cassandra:data-center replication-factor="${dc1.rf}" name="${dc1.name}"/>
 				<cassandra:data-center replication-factor="${dc1.rf}" name="${dc2.name}"/>
