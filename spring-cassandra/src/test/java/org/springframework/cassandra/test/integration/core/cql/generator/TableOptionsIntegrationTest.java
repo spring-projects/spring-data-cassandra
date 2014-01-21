@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests;
 
 /**
@@ -28,7 +29,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCql
  * 
  * @author David Webb
  */
-public class TableOptionsIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
+public class TableOptionsIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	private final static Logger log = LoggerFactory.getLogger(TableOptionsIntegrationTest.class);
 
@@ -41,8 +42,8 @@ public class TableOptionsIntegrationTest extends AbstractEmbeddedCassandraIntegr
 
 		log.info(optionsTest.cql);
 
-		session.execute(optionsTest.cql);
+		SESSION.execute(optionsTest.cql);
 
-		assertTable(optionsTest.specification, keyspace, session);
+		assertTable(optionsTest.specification, keyspace, SESSION);
 	}
 }

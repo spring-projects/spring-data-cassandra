@@ -15,11 +15,6 @@ import com.datastax.driver.core.Session;
 @ContextConfiguration
 public class FullySpecifiedKeyspaceCreatingXmlConfigTest extends AbstractEmbeddedCassandraIntegrationTest {
 
-	@Override
-	protected String keyspace() {
-		return null;
-	}
-
 	@Inject
 	Session s;
 

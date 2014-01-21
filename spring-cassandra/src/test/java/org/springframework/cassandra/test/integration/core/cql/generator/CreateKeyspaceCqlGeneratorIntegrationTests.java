@@ -30,9 +30,9 @@ public class CreateKeyspaceCqlGeneratorIntegrationTests {
 			unit = unit();
 			unit.prepare();
 
-			session.execute(unit.cql);
+			SYSTEM.execute(unit.cql);
 
-			assertKeyspace(unit.specification, unit.keyspace, session);
+			assertKeyspace(unit.specification, unit.keyspace, SYSTEM);
 		}
 	}
 
@@ -50,5 +50,5 @@ public class CreateKeyspaceCqlGeneratorIntegrationTests {
 		public NetworkTopologyTest unit() {
 			return new NetworkTopologyTest();
 		}
-	}	
+	}
 }

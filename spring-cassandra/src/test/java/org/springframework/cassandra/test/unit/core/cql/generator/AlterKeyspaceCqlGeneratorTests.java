@@ -11,6 +11,7 @@ import org.springframework.cassandra.core.keyspace.AlterKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DefaultOption;
 import org.springframework.cassandra.core.keyspace.KeyspaceOption;
 import org.springframework.cassandra.core.keyspace.Option;
+import org.springframework.cassandra.test.unit.support.Utils;
 
 public class AlterKeyspaceCqlGeneratorTests {
 
@@ -23,8 +24,8 @@ public class AlterKeyspaceCqlGeneratorTests {
 
 	private static void assertReplicationMap(Map<Option, Object> replicationMap, String cql) {
 		assertTrue(cql.contains(" WITH replication = { "));
-		
-		for (Map.Entry<Option, Object> entry : replicationMap.entrySet() ) {
+
+		for (Map.Entry<Option, Object> entry : replicationMap.entrySet()) {
 			String keyValuePair = "'" + entry.getKey().getName() + "' : '" + entry.getValue().toString() + "'";
 			assertTrue(cql.contains(keyValuePair));
 		}
@@ -38,28 +39,28 @@ public class AlterKeyspaceCqlGeneratorTests {
 	 * Convenient base class that other test classes can use so as not to repeat the generics declarations.
 	 */
 	public static abstract class AlterKeyspaceTest extends
-		KeyspaceOperationCqlGeneratorTest<AlterKeyspaceSpecification, AlterKeyspaceCqlGenerator> {
+			KeyspaceOperationCqlGeneratorTest<AlterKeyspaceSpecification, AlterKeyspaceCqlGenerator> {
 	}
 
 	public static class CompleteTest extends AlterKeyspaceTest {
 
-		public String name = "mykeyspace";
+		public String name = Utils.randomKeyspaceName();
 		public Boolean durableWrites = true;
-		
+
 		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
 
+		@Override
 		public AlterKeyspaceSpecification specification() {
-			replicationMap.put( new DefaultOption( "class", String.class, false, false, true ), "SimpleStrategy" );
-			replicationMap.put( new DefaultOption( "replication_factor", Long.class, false, false, true ), 1 );
-			replicationMap.put( new DefaultOption( "dc1", Long.class, false, false, true ), 2 );
-			replicationMap.put( new DefaultOption( "dc2", Long.class, false, false, true ), 3 );
-			
-			return AlterKeyspaceSpecification.alterKeyspace()
-					.name(name)
-					.with(KeyspaceOption.REPLICATION, replicationMap)
+			replicationMap.put(new DefaultOption("class", String.class, false, false, true), "SimpleStrategy");
+			replicationMap.put(new DefaultOption("replication_factor", Long.class, false, false, true), 1);
+			replicationMap.put(new DefaultOption("dc1", Long.class, false, false, true), 2);
+			replicationMap.put(new DefaultOption("dc2", Long.class, false, false, true), 3);
+
+			return AlterKeyspaceSpecification.alterKeyspace().name(name).with(KeyspaceOption.REPLICATION, replicationMap)
 					.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 		}
 
+		@Override
 		public AlterKeyspaceCqlGenerator generator() {
 			return new AlterKeyspaceCqlGenerator(specification);
 		}
@@ -78,20 +79,20 @@ public class AlterKeyspaceCqlGeneratorTests {
 
 		public String name = "mytable";
 		public Boolean durableWrites = true;
-		
+
 		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
 
+		@Override
 		public AlterKeyspaceSpecification specification() {
-			replicationMap.put( new DefaultOption( "class", String.class, false, false, true ), "SimpleStrategy" );
-			replicationMap.put( new DefaultOption( "replication_factor", Long.class, false, false, true ), 1 );
-			replicationMap.put( new DefaultOption( "dc1", Long.class, false, false, true ), 2 );
-			replicationMap.put( new DefaultOption( "dc2", Long.class, false, false, true ), 3 );
-			
-			return AlterKeyspaceSpecification.alterKeyspace()
-					.name(name)
-					.with(KeyspaceOption.REPLICATION, replicationMap);
+			replicationMap.put(new DefaultOption("class", String.class, false, false, true), "SimpleStrategy");
+			replicationMap.put(new DefaultOption("replication_factor", Long.class, false, false, true), 1);
+			replicationMap.put(new DefaultOption("dc1", Long.class, false, false, true), 2);
+			replicationMap.put(new DefaultOption("dc2", Long.class, false, false, true), 3);
+
+			return AlterKeyspaceSpecification.alterKeyspace().name(name).with(KeyspaceOption.REPLICATION, replicationMap);
 		}
 
+		@Override
 		public AlterKeyspaceCqlGenerator generator() {
 			return new AlterKeyspaceCqlGenerator(specification);
 		}

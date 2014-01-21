@@ -5,7 +5,7 @@ import static org.springframework.cassandra.test.integration.core.cql.generator.
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.BasicTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.CompositePartitionKeyTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.CreateTableTest;
@@ -26,7 +26,7 @@ public class CreateTableCqlGeneratorIntegrationTests {
 	 * 
 	 * @param <T> The concrete unit test class to which this integration test corresponds.
 	 */
-	public static abstract class Base<T extends CreateTableTest> extends AbstractEmbeddedCassandraIntegrationTest {
+	public static abstract class Base<T extends CreateTableTest> extends AbstractKeyspaceCreatingIntegrationTest {
 		T unit;
 
 		public abstract T unit();
@@ -36,9 +36,9 @@ public class CreateTableCqlGeneratorIntegrationTests {
 			unit = unit();
 			unit.prepare();
 
-			session.execute(unit.cql);
+			SESSION.execute(unit.cql);
 
-			assertTable(unit.specification, keyspace, session);
+			assertTable(unit.specification, keyspace, SESSION);
 		}
 	}
 

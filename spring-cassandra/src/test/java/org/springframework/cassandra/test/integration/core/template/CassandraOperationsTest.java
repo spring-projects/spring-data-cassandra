@@ -46,7 +46,7 @@ import org.springframework.cassandra.core.RowCallbackHandler;
 import org.springframework.cassandra.core.RowIterator;
 import org.springframework.cassandra.core.RowMapper;
 import org.springframework.cassandra.core.SessionCallback;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.CollectionUtils;
 
@@ -65,7 +65,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author David Webb
  * 
  */
-public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegrationTest {
+public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	private static CassandraOperations cassandraTemplate;
 
@@ -89,8 +89,8 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 			CASSANDRA_NATIVE_PORT);
 
 	public CassandraOperationsTest() {
-		super("sdctest");
-		clear = true;
+		super();
+		// TODO clear = true;
 	}
 
 	@Before
@@ -106,7 +106,7 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 			// "cassandraOperationsTest-cql-dataload.cql", keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
 			// CASSANDRA_NATIVE_PORT);
 
-			cassandraTemplate = new CassandraTemplate(session);
+			cassandraTemplate = new CassandraTemplate(SESSION);
 		}
 	}
 
@@ -160,8 +160,6 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 	@SuppressWarnings("unchecked")
 	public void ingestionTestListOfList() {
 
-		log.info("Keyspace => " + keyspace);
-
 		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
 
 		List<List<?>> values = new LinkedList<List<?>>();
@@ -184,8 +182,6 @@ public class CassandraOperationsTest extends AbstractEmbeddedCassandraIntegratio
 
 	@Test
 	public void ingestionTestObjectArray() {
-
-		log.info("Keyspace => " + keyspace);
 
 		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
 
