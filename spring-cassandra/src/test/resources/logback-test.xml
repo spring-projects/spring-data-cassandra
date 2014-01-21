@@ -10,8 +10,8 @@
 	</appender>
 
 	<logger name="org.springframework.context" level="info" />
-	<logger name="org.springframework.cassandra" level="info" />
-	<logger name="org.springframework.data.cassandra" level="info" />
+	<logger name="org.springframework.cassandra" level="debug" />
+	<logger name="org.springframework.data.cassandra" level="debug" />
 	<logger name="com.datastax" level="info" />
 
 	<root level="warn">

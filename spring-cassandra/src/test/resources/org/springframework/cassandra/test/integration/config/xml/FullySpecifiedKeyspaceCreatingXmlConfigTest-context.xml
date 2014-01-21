@@ -11,18 +11,16 @@
 		location="classpath:/org/springframework/cassandra/test/integration/config/xml/FullySpecifiedKeyspaceCreatingXmlConfigTest.properties" />
 
 	<cass:cluster>
-		<cass:keyspace action="CREATE-DROP" durable-writes="true"
+		<cass:keyspace action="CREATE_DROP" durable-writes="true"
 			name="full1">
-			<cass:replication class="SimpleStrategy"
-				replication-factor="1">
+			<cass:replication class="SIMPLE_STRATEGY">
 				<cass:data-center name="foo" replication-factor="1" />
 				<cass:data-center name="bar" replication-factor="2" />
 			</cass:replication>
 		</cass:keyspace>
-		<cass:keyspace action="CREATE-DROP" durable-writes="true"
+		<cass:keyspace action="CREATE_DROP" durable-writes="true"
 			name="full2">
-			<cass:replication class="SimpleStrategy"
-				replication-factor="1">
+			<cass:replication class="SIMPLE_STRATEGY">
 				<cass:data-center name="foo" replication-factor="1" />
 				<cass:data-center name="bar" replication-factor="2" />
 			</cass:replication>

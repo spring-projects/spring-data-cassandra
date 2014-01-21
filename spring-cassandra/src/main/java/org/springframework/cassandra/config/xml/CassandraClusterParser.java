@@ -15,44 +15,47 @@
  */
 package org.springframework.cassandra.config.xml;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.springframework.data.config.ParsingUtils.getSourceBeanDefinition;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
+import org.springframework.beans.factory.support.ManagedList;
+import org.springframework.beans.factory.support.ManagedSet;
+import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.cassandra.config.CassandraClusterFactoryBean;
-import org.springframework.cassandra.config.CompressionType;
+import org.springframework.cassandra.config.KeyspaceActionSpecificationFactoryBean;
 import org.springframework.cassandra.config.KeyspaceAttributes;
-import org.springframework.cassandra.config.PoolingOptionsConfig;
-import org.springframework.cassandra.config.SocketOptionsConfig;
-import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
-import org.springframework.cassandra.core.keyspace.DefaultOption;
-import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
-import org.springframework.cassandra.core.keyspace.KeyspaceOption;
-import org.springframework.cassandra.core.keyspace.Option;
+import org.springframework.cassandra.config.MultiLevelSetFlattenerFactoryBean;
+import org.springframework.cassandra.config.PoolingOptionsFactoryBean;
+import org.springframework.cassandra.config.SocketOptionsFactoryBean;
+import org.springframework.cassandra.core.keyspace.KeyspaceActionSpecification;
+import org.springframework.cassandra.core.keyspace.KeyspaceOption.ReplicationStrategy;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+
+import com.datastax.driver.core.HostDistance;
+import com.datastax.driver.core.PoolingOptions;
+import com.datastax.driver.core.SocketOptions;
 
 /**
- * Parser for &lt;cluster;gt; definitions.
+ * Parses the {@literal <cluster>} element of the XML Configuration.
  * 
- * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author David Webb
  */
-public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
+public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 
-	@Override
-	protected Class<?> getBeanClass(Element element) {
-		return CassandraClusterFactoryBean.class;
-	}
+	private final static Logger log = LoggerFactory.getLogger(CassandraClusterParser.class);
 
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
@@ -63,7 +66,34 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 	}
 
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(CassandraClusterFactoryBean.class);
+		builder.getRawBeanDefinition().setSource(parserContext.extractSource(element));
+		builder.getRawBeanDefinition().setDestroyMethodName("destroy");
+		if (parserContext.isNested()) {
+			// Inner bean definition must receive same scope as containing bean.
+			builder.setScope(parserContext.getContainingBeanDefinition().getScope());
+		}
+
+		if (parserContext.isDefaultLazyInit()) {
+			// Default-lazy-init applies to custom bean definitions as well.
+			builder.setLazyInit(true);
+		}
+
+		doParse(element, parserContext, builder);
+
+		return builder.getBeanDefinition();
+	}
+
+	/**
+	 * Parses the attributes on the top level element, then parses all children.
+	 * 
+	 * @param element The Element being parsed
+	 * @param context The Parser Context
+	 * @param builder The parent {@link BeanDefinitionBuilder}
+	 */
+	protected void doParse(Element element, ParserContext context, BeanDefinitionBuilder builder) {
 
 		String contactPoints = element.getAttribute("contactPoints");
 		if (StringUtils.hasText(contactPoints)) {
@@ -77,41 +107,98 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 
 		String compression = element.getAttribute("compression");
 		if (StringUtils.hasText(compression)) {
-			builder.addPropertyValue("compressionType", CompressionType.valueOf(compression));
+			builder.addPropertyValue("compressionType", compression);
 		}
 
-		parseChildElements(builder, element);
+		String authProvider = element.getAttribute("auth-info-provider-ref");
+		if (StringUtils.hasText(authProvider)) {
+			builder.addPropertyReference("authProvider", authProvider);
+		}
+
+		String username = element.getAttribute("username");
+		if (StringUtils.hasText(username)) {
+			builder.addPropertyValue("username", username);
+		}
+
+		String password = element.getAttribute("password");
+		if (StringUtils.hasText(password)) {
+			builder.addPropertyValue("password", password);
+		}
+
+		String deferredInitialization = element.getAttribute("deferredInitialization");
+		if (StringUtils.hasText(deferredInitialization)) {
+			builder.addPropertyValue("deferredInitialization", deferredInitialization);
+		}
+
+		String metricsEnabled = element.getAttribute("metricsEnabled");
+		if (StringUtils.hasText(metricsEnabled)) {
+			builder.addPropertyValue("metricsEnabled", metricsEnabled);
+		}
+
+		String jmxReportingEnabled = element.getAttribute("jmxReportingEnabled");
+		if (StringUtils.hasText(jmxReportingEnabled)) {
+			builder.addPropertyValue("jmxReportingEnabled", jmxReportingEnabled);
+		}
+
+		String loadBalancingPolicy = element.getAttribute("load-balancing-policy-ref");
+		if (StringUtils.hasText(loadBalancingPolicy)) {
+			builder.addPropertyReference("loadBalancingPolicy", loadBalancingPolicy);
+		}
+
+		String reconnectionPolicy = element.getAttribute("reconnection-policy-ref");
+		if (StringUtils.hasText(reconnectionPolicy)) {
+			builder.addPropertyReference("reconnectionPolicy", reconnectionPolicy);
+		}
+
+		String retryPolicy = element.getAttribute("retry-policy-ref");
+		if (StringUtils.hasText(retryPolicy)) {
+			builder.addPropertyReference("retryPolicy", retryPolicy);
+		}
+
+		parseChildElements(element, context, builder);
 	}
 
-	protected void parseChildElements(BeanDefinitionBuilder builder, Element element) {
+	/**
+	 * Parse the Child Elemement of {@link BeanNames.CASSANDRA_CLUSTER}
+	 * 
+	 * @param element The Element being parsed
+	 * @param context The Parser Context
+	 * @param builder The parent {@link BeanDefinitionBuilder}
+	 */
+	protected void parseChildElements(Element element, ParserContext context, BeanDefinitionBuilder builder) {
 
-		List<CreateKeyspaceSpecification> creates = new ArrayList<CreateKeyspaceSpecification>();
-		List<DropKeyspaceSpecification> drops = new ArrayList<DropKeyspaceSpecification>();
+		ManagedSet<BeanDefinition> keyspaceActionSpecificationBeanDefinitions = new ManagedSet<BeanDefinition>();
 		List<String> startupScripts = new ArrayList<String>();
 		List<String> shutdownScripts = new ArrayList<String>();
 
 		List<Element> elements = DomUtils.getChildElements(element);
+		BeanDefinition keyspaceActionSpecificationBeanDefinition = null;
 
-		// parse nested elements
+		/*
+		 * PoolingOptionsBuilder has two potential parsing cycles so it is defined
+		 * before the child elements are iterated over, then converted to a BeanDefinition
+		 * just in time.
+		 */
+		BeanDefinitionBuilder poolingOptionsBuilder = null;
+
+		/*
+		 * Parse each of the child elements
+		 */
 		for (Element subElement : elements) {
+
 			String name = subElement.getLocalName();
 
 			if ("local-pooling-options".equals(name)) {
-				builder.addPropertyValue("localPoolingOptions", parsePoolingOptions(subElement));
+				poolingOptionsBuilder = parsePoolingOptions(subElement, poolingOptionsBuilder, HostDistance.LOCAL);
 			} else if ("remote-pooling-options".equals(name)) {
-				builder.addPropertyValue("remotePoolingOptions", parsePoolingOptions(subElement));
+				poolingOptionsBuilder = parsePoolingOptions(subElement, poolingOptionsBuilder, HostDistance.REMOTE);
 			} else if ("socket-options".equals(name)) {
-				builder.addPropertyValue("socketOptions", parseSocketOptions(subElement));
+				builder.addPropertyValue("socketOptions", getSocketOptionsBeanDefinition(subElement, context));
 			} else if ("keyspace".equals(name)) {
 
-				KeyspaceSpecifications specifications = parseKeyspace(subElement);
+				keyspaceActionSpecificationBeanDefinition = getKeyspaceSpecificationBeanDefinition(subElement, context);
+				keyspaceActionSpecificationBeanDefinitions.add(keyspaceActionSpecificationBeanDefinition);
 
-				if (specifications.create != null) {
-					creates.add(specifications.create);
-				}
-				if (specifications.drop != null) {
-					drops.add(specifications.drop);
-				}
 			} else if ("startup-cql".equals(name)) {
 				startupScripts.add(parseScript(subElement));
 			} else if ("shutdown-cql".equals(name)) {
@@ -119,123 +206,169 @@ public class CassandraClusterParser extends AbstractSimpleBeanDefinitionParser {
 			}
 		}
 
-		builder.addPropertyValue("keyspaceCreations", creates);
-		builder.addPropertyValue("keyspaceDrops", drops);
+		/*
+		 * If the PoolingOptionsBuilder was initilized during parsing, process it now.
+		 */
+		if (poolingOptionsBuilder != null) {
+			builder.addPropertyValue("poolingOptions", getSourceBeanDefinition(poolingOptionsBuilder, context, element));
+		}
+
+		builder.addPropertyValue("keyspaceSpecifications",
+				getKeyspaceSetFlattenerBeanDefinition(element, context, keyspaceActionSpecificationBeanDefinitions));
 		builder.addPropertyValue("startupScripts", startupScripts);
 		builder.addPropertyValue("shutdownScripts", startupScripts);
 	}
 
-	protected KeyspaceSpecifications parseKeyspace(Element element) {
+	/**
+	 * Create the Single Factory Bean that will flatten all List<List<KeyspaceActionSpecificationFactoryBean>>
+	 * 
+	 * @param element The Element being parsed
+	 * @param context The Parser Context
+	 * @param keyspaceActionSpecificationBeanDefinitions The List of Definitions to flatten
+	 * @return A single level List of KeyspaceActionSpecifications
+	 */
+	private Object getKeyspaceSetFlattenerBeanDefinition(Element element, ParserContext context,
+			ManagedSet<BeanDefinition> keyspaceActionSpecificationBeanDefinitions) {
 
-		CreateKeyspaceSpecification create = null;
-		DropKeyspaceSpecification drop = null;
+		BeanDefinitionBuilder flat = BeanDefinitionBuilder.genericBeanDefinition(MultiLevelSetFlattenerFactoryBean.class);
+		flat.addPropertyValue("multiLevelSet", keyspaceActionSpecificationBeanDefinitions);
+		return getSourceBeanDefinition(flat, context, element);
 
-		String name = element.getAttribute("name");
-		if (name == null || name.trim().length() == 0) {
-			name = BeanNames.CASSANDRA_KEYSPACE;
-		}
-
-		boolean durableWrites = Boolean.valueOf(element.getAttribute("durable-writes"));
-
-		String action = element.getAttribute("action");
-		if (action == null || action.trim().length() == 0) {
-			throw new IllegalArgumentException("attribute action must be given");
-		}
-
-		if (action.startsWith("CREATE")) {
-
-			create = CreateKeyspaceSpecification.createKeyspace().name(name)
-					.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
-
-			NodeList nodes = element.getElementsByTagName("replication");
-			create = parseReplication((Element) (nodes.getLength() == 1 ? nodes.item(0) : null), create);
-		}
-
-		if (action.equals("CREATE-DROP")) {
-			drop = DropKeyspaceSpecification.dropKeyspace().name(create.getName());
-		}
-
-		return new KeyspaceSpecifications(create, drop);
 	}
 
-	protected CreateKeyspaceSpecification parseReplication(Element element, CreateKeyspaceSpecification create) {
+	/**
+	 * Parses the keyspace replication options and adds them to the supplied {@link BeanDefinitionBuilder}.
+	 * 
+	 * @param element The Element being parsed
+	 * @param builder The {@link BeanDefinitionBuilder} to add the replication to
+	 */
+	protected void parseReplication(Element element, BeanDefinitionBuilder builder) {
 
+		ManagedList<String> networkTopologyDataCenters = new ManagedList<String>();
+		ManagedList<String> networkTopologyReplicationFactors = new ManagedList<String>();
 		String strategyClass = null;
+		String replicationFactor = null;
+
 		if (element != null) {
+
 			strategyClass = element.getAttribute("class");
-		}
-		if (strategyClass == null || (strategyClass = strategyClass.trim()).length() == 0) {
-			strategyClass = KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY;
-		}
-
-		Long replicationFactor = null;
-		if (element != null) {
-			String s = element.getAttribute("replication-factor");
-			replicationFactor = (s == null || s.trim().length() == 0) ? null : Long.parseLong(s);
-		}
-		if (replicationFactor == null) {
-			replicationFactor = KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR;
-		}
-
-		Map<Option, Object> replicationMap = new HashMap<Option, Object>();
-		replicationMap.put(new DefaultOption("class", String.class, false, false, true), strategyClass);
-		replicationMap.put(new DefaultOption("replication_factor", Long.class, true, false, false), replicationFactor);
-
-		if (element != null) {
-
-			NodeList dataCenters = element.getElementsByTagName("data-center");
-
-			int length = dataCenters.getLength();
-			for (int i = 0; i < length; i++) {
-
-				Element dataCenter = (Element) dataCenters.item(i);
-
-				replicationMap.put(new DefaultOption(dataCenter.getAttribute("name"), Long.class, false, false, true),
-						dataCenter.getAttribute("replication-factor"));
+			if (!StringUtils.hasText(strategyClass)) {
+				strategyClass = KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY;
 			}
+
+			replicationFactor = element.getAttribute("replication-factor");
+			if (!StringUtils.hasText(replicationFactor)) {
+				replicationFactor = KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR + "";
+			}
+
+			/*
+			 * DataCenters only apply to NetworkTolopogyStrategy
+			 */
+			List<Element> dcElements = DomUtils.getChildElementsByTagName(element, "data-center");
+			for (Element dataCenter : dcElements) {
+				networkTopologyDataCenters.add(dataCenter.getAttribute("name"));
+				networkTopologyReplicationFactors.add(dataCenter.getAttribute("replication-factor"));
+			}
+		} else {
+			strategyClass = ReplicationStrategy.SIMPLE_STRATEGY.name();
+			replicationFactor = KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR + "";
 		}
 
-		return create.with(KeyspaceOption.REPLICATION, replicationMap);
+		builder.addPropertyValue("replicationStrategy", strategyClass);
+		builder.addPropertyValue("replicationFactor", replicationFactor);
+		builder.addPropertyValue("networkTopologyDataCenters", networkTopologyDataCenters);
+		builder.addPropertyValue("networkTopologyReplicationFactors", networkTopologyReplicationFactors);
+
 	}
 
+	/**
+	 * Parse CQL Script Elements
+	 * 
+	 * @param element The Element being parsed
+	 * @return
+	 */
 	protected String parseScript(Element element) {
 		return element.getTextContent();
 	}
 
-	protected BeanDefinition parsePoolingOptions(Element element) {
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(PoolingOptionsConfig.class);
+	/**
+	 * Returns a {@link BeanDefinition} for a {@link PoolingOptions} object.
+	 * 
+	 * @param element The Element being parsed
+	 * @param builder The {@link BeanDefinition} to use for building if one already exists
+	 * @param hostDistance The scope of the PoolingOptions to apply
+	 * @return The {@link BeanDefinitionBuilder}
+	 */
+	protected BeanDefinitionBuilder parsePoolingOptions(Element element, BeanDefinitionBuilder builder,
+			HostDistance hostDistance) {
 
-		ParsingUtils.setPropertyValue(builder, element, "min-simultaneous-requests", "minSimultaneousRequests");
-		ParsingUtils.setPropertyValue(builder, element, "max-simultaneous-requests", "maxSimultaneousRequests");
-		ParsingUtils.setPropertyValue(builder, element, "core-connections", "coreConnections");
-		ParsingUtils.setPropertyValue(builder, element, "max-connections", "maxConnections");
+		if (builder == null) {
+			builder = BeanDefinitionBuilder.genericBeanDefinition(PoolingOptionsFactoryBean.class);
+		}
 
-		return builder.getBeanDefinition();
+		if (hostDistance.equals(HostDistance.LOCAL)) {
+			ParsingUtils.setPropertyValue(builder, element, "min-simultaneous-requests", "localMinSimultaneousRequests");
+			ParsingUtils.setPropertyValue(builder, element, "max-simultaneous-requests", "localMaxSimultaneousRequests");
+			ParsingUtils.setPropertyValue(builder, element, "core-connections", "localCoreConnections");
+			ParsingUtils.setPropertyValue(builder, element, "max-connections", "localMaxConnections");
+		}
+		if (hostDistance.equals(HostDistance.REMOTE)) {
+			ParsingUtils.setPropertyValue(builder, element, "min-simultaneous-requests", "remoteMinSimultaneousRequests");
+			ParsingUtils.setPropertyValue(builder, element, "max-simultaneous-requests", "remoteMaxSimultaneousRequests");
+			ParsingUtils.setPropertyValue(builder, element, "core-connections", "remoteCoreConnections");
+			ParsingUtils.setPropertyValue(builder, element, "max-connections", "remoteMaxConnections");
+		}
+
+		return builder;
 	}
 
-	protected BeanDefinition parseSocketOptions(Element element) {
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SocketOptionsConfig.class);
+	/**
+	 * Returns a {@link BeanDefinition} for a {@link SocketOptions} object.
+	 * 
+	 * @param element The Element being parsed
+	 * @param context The ParserContext
+	 * @return The {@link BeanDefinition}
+	 */
+	protected BeanDefinition getSocketOptionsBeanDefinition(Element element, ParserContext context) {
 
-		ParsingUtils.setPropertyValue(builder, element, "connect-timeout-mls", "connectTimeoutMls");
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SocketOptionsFactoryBean.class);
+
+		ParsingUtils.setPropertyValue(builder, element, "connect-timeout-mls", "connectTimeoutMillis");
 		ParsingUtils.setPropertyValue(builder, element, "keep-alive", "keepAlive");
+		ParsingUtils.setPropertyValue(builder, element, "read-timeout-mls", "readTimeoutMillis");
 		ParsingUtils.setPropertyValue(builder, element, "reuse-address", "reuseAddress");
 		ParsingUtils.setPropertyValue(builder, element, "so-linger", "soLinger");
 		ParsingUtils.setPropertyValue(builder, element, "tcp-no-delay", "tcpNoDelay");
 		ParsingUtils.setPropertyValue(builder, element, "receive-buffer-size", "receiveBufferSize");
 		ParsingUtils.setPropertyValue(builder, element, "send-buffer-size", "sendBufferSize");
 
-		return builder.getBeanDefinition();
+		return getSourceBeanDefinition(builder, context, element);
 	}
 
-	protected static class KeyspaceSpecifications {
+	/**
+	 * Returns a {@link BeanDefinition} for a {@link KeyspaceActionSpecification} object.
+	 * 
+	 * @param element The Element being parsed
+	 * @param context The Parser Context
+	 * @return The {@link BeanDefinition} or {@literal null} if action is not given.
+	 */
+	private BeanDefinition getKeyspaceSpecificationBeanDefinition(Element element, ParserContext context) {
 
-		public KeyspaceSpecifications(CreateKeyspaceSpecification create, DropKeyspaceSpecification drop) {
-			this.create = create;
-			this.drop = drop;
-		}
+		String action = element.getAttribute("action");
 
-		public CreateKeyspaceSpecification create;
-		public DropKeyspaceSpecification drop;
-		// TODO: public AlterKeyspaceSpecification alter;
+		Assert.notNull(action, "Keyspace Action must not be null!");
+
+		BeanDefinitionBuilder keyspaceBuilder = BeanDefinitionBuilder
+				.genericBeanDefinition(KeyspaceActionSpecificationFactoryBean.class);
+
+		ParsingUtils.setPropertyValue(keyspaceBuilder, element, "name", "name");
+		ParsingUtils.setPropertyValue(keyspaceBuilder, element, "action", "action");
+		ParsingUtils.setPropertyValue(keyspaceBuilder, element, "durableWrites", "durableWrites");
+
+		Element replicationElement = DomUtils.getChildElementByTagName(element, "replication");
+		parseReplication(replicationElement, keyspaceBuilder);
+
+		return getSourceBeanDefinition(keyspaceBuilder, context, element);
 	}
+
 }

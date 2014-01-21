@@ -1,6 +1,6 @@
 package org.springframework.cassandra.core.keyspace;
 
-public class DropKeyspaceSpecification extends KeyspaceNameSpecification<DropKeyspaceSpecification> {
+public class DropKeyspaceSpecification extends KeyspaceActionSpecification<DropKeyspaceSpecification> {
 
 	private boolean ifExists;
 
