@@ -17,7 +17,8 @@ package org.springframework.cassandra.config;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,11 +32,17 @@ import org.springframework.cassandra.core.keyspace.DefaultOption;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.KeyspaceActionSpecification;
 import org.springframework.cassandra.core.keyspace.KeyspaceOption;
+import org.springframework.cassandra.core.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.cassandra.core.keyspace.Option;
 import org.springframework.util.Assert;
 
 /**
- * @author David Webb (dwebb@brightmove.com)
+ * A single keyspace XML Element can result in multiple actions. Example: {@literal CREATE_DROP}.
+ * 
+ * This FactoryBean inspects the action required to satisfy the keyspace element, and then returns a Set of atomic
+ * {@link KeyspaceActionSpecification} required to satisfy the configuration action.
+ * 
+ * @author David Webb
  * 
  */
 public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<KeyspaceActionSpecification<?>>>,
@@ -45,7 +52,10 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 
 	private KeyspaceAction action;
 	private String name;
-	private Map<Option, Object> replicationOptions = new LinkedHashMap<Option, Object>();
+	private List<String> networkTopologyDataCenters = new LinkedList<String>();
+	private List<String> networkTopologyReplicationFactors = new LinkedList<String>();
+	private String replicationStrategy;
+	private long replicationFactor;
 	private boolean durableWrites = false;
 	private boolean ifNotExists = false;
 
@@ -53,8 +63,11 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 
 	@Override
 	public void destroy() throws Exception {
+		action = null;
 		name = null;
-		replicationOptions = null;
+		networkTopologyDataCenters = null;
+		networkTopologyReplicationFactors = null;
+		replicationStrategy = null;
 		specs = null;
 	}
 
@@ -68,6 +81,7 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 		case CREATE_DROP:
 			specs.add(generateDropKeyspaceSpecification());
 		case CREATE:
+			// Assert.notNull(replicationStrategy, "Replication Strategy is required to create a Keyspace");
 			specs.add(generateCreateKeyspaceSpecification());
 			break;
 		case ALTER:
@@ -76,21 +90,47 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 
 	}
 
+	/**
+	 * Generate a {@link CreateKeyspaceSpecification} for the keyspace.
+	 * 
+	 * @return The {@link CreateKeyspaceSpecification}
+	 */
 	private CreateKeyspaceSpecification generateCreateKeyspaceSpecification() {
+
 		CreateKeyspaceSpecification create = new CreateKeyspaceSpecification();
 		create.name(name).ifNotExists(ifNotExists).with(KeyspaceOption.DURABLE_WRITES, durableWrites);
-		if (replicationOptions != null && replicationOptions.size() > 0) {
-			create.with(KeyspaceOption.REPLICATION, replicationOptions);
-		} else {
-			Map<Option, Object> defaultReplicationStrategyMap = new HashMap<Option, Object>();
-			defaultReplicationStrategyMap.put(new DefaultOption("class", String.class, true, false, true),
-					KeyspaceOption.ReplicationStrategy.SIMPLE_STRATEGY);
-			defaultReplicationStrategyMap.put(new DefaultOption("replication_factor", String.class, true, false, false), "1");
-			create.with(KeyspaceOption.REPLICATION, defaultReplicationStrategyMap);
+
+		Map<Option, Object> replicationStrategyMap = new HashMap<Option, Object>();
+		replicationStrategyMap.put(new DefaultOption("class", String.class, true, false, true), ReplicationStrategy
+				.valueOf(replicationStrategy).getValue());
+
+		/*
+		 * Just set replication factor for SimpleStrategy
+		 */
+		if (replicationStrategy.equals(ReplicationStrategy.SIMPLE_STRATEGY.name())) {
+			replicationStrategyMap.put(new DefaultOption("replication_factor", Long.class, true, false, false),
+					replicationFactor);
 		}
+
+		if (replicationStrategy.equals(ReplicationStrategy.NETWORK_TOPOLOGY_STRATEGY.name())) {
+			int i = 0;
+			for (String datacenter : networkTopologyDataCenters) {
+				replicationStrategyMap.put(new DefaultOption(datacenter, Long.class, true, false, false),
+						networkTopologyReplicationFactors.get(i));
+				i++;
+			}
+		}
+
+		create.with(KeyspaceOption.REPLICATION, replicationStrategyMap);
+
 		return create;
 	}
 
+	/**
+	 * Generate a {@link DropKeyspaceSpecification} for the keyspace.
+	 * 
+	 * @return The {@link DropKeyspaceSpecification}
+	 */
 	private DropKeyspaceSpecification generateDropKeyspaceSpecification() {
 		DropKeyspaceSpecification drop = new DropKeyspaceSpecification();
 		drop.name(getName());
@@ -155,20 +195,6 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 	}
 
 	/**
-	 * @return Returns the replicationOptions.
-	 */
-	public Map<Option, Object> getReplicationOptions() {
-		return replicationOptions;
-	}
-
-	/**
-	 * @param replicationOptions The replicationOptions to set.
-	 */
-	public void setReplicationOptions(Map<Option, Object> replicationOptions) {
-		this.replicationOptions = replicationOptions;
-	}
-
-	/**
 	 * @return Returns the durableWrites.
 	 */
 	public boolean isDurableWrites() {
@@ -180,6 +206,62 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 	 */
 	public void setDurableWrites(boolean durableWrites) {
 		this.durableWrites = durableWrites;
+	}
+
+	/**
+	 * @return Returns the replicationStrategy.
+	 */
+	public String getReplicationStrategy() {
+		return replicationStrategy;
+	}
+
+	/**
+	 * @param replicationStrategy The replicationStrategy to set.
+	 */
+	public void setReplicationStrategy(String replicationStrategy) {
+		this.replicationStrategy = replicationStrategy;
+	}
+
+	/**
+	 * @return Returns the networkTopologyDataCenters.
+	 */
+	public List<String> getNetworkTopologyDataCenters() {
+		return networkTopologyDataCenters;
+	}
+
+	/**
+	 * @param networkTopologyDataCenters The networkTopologyDataCenters to set.
+	 */
+	public void setNetworkTopologyDataCenters(List<String> networkTopologyDataCenters) {
+		this.networkTopologyDataCenters = networkTopologyDataCenters;
+	}
+
+	/**
+	 * @return Returns the networkTopologyReplicationFactors.
+	 */
+	public List<String> getNetworkTopologyReplicationFactors() {
+		return networkTopologyReplicationFactors;
+	}
+
+	/**
+	 * @param networkTopologyReplicationFactors The networkTopologyReplicationFactors to set.
+	 */
+	public void setNetworkTopologyReplicationFactors(List<String> networkTopologyReplicationFactors) {
+		this.networkTopologyReplicationFactors = networkTopologyReplicationFactors;
+	}
+
+	/**
+	 * @return Returns the replicationFactor.
+	 */
+	public long getReplicationFactor() {
+		return replicationFactor;
+	}
+
+	/**
+	 * @param replicationFactor The replicationFactor to set.
+	 */
+	public void setReplicationFactor(long replicationFactor) {
+		this.replicationFactor = replicationFactor;
 	}
 
 }

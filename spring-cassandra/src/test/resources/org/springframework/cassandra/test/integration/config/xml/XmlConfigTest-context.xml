@@ -18,7 +18,7 @@
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="1" max-connections="2" />
 		<cassandra:socket-options
-			connect-timeout-mls="5000" keep-alive="true" reuse-address="true"
+			connect-timeout-millis="5000" keep-alive="true" read-timeout-millis="60000" reuse-address="true"
 			so-linger="60" tcp-no-delay="true" receive-buffer-size="65536"
 			send-buffer-size="65536" />
 	</cassandra:cluster>

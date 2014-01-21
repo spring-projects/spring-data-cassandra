@@ -39,7 +39,6 @@ import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.AuthProvider;
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.Session;
@@ -60,12 +59,13 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 
 	public static final String DEFAULT_CONTACT_POINTS = "localhost";
 	public static final boolean DEFAULT_METRICS_ENABLED = true;
+	public static final boolean DEFAULT_DEFERRED_INITIALIZATION = false;
+	public static final boolean DEFAULT_JMX_REPORTING_ENABLED = true;
 	public static final int DEFAULT_PORT = 9042;
 
 	protected static final Logger log = LoggerFactory.getLogger(CassandraClusterFactoryBean.class);
 
 	private Cluster cluster;
-	private boolean accumulating = true;
 
 	/*
 	 * Attributes needed for cluster builder
@@ -73,14 +73,17 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	private String contactPoints = DEFAULT_CONTACT_POINTS;
 	private int port = CassandraClusterFactoryBean.DEFAULT_PORT;
 	private CompressionType compressionType;
-	private PoolingOptionsConfig localPoolingOptions;
-	private PoolingOptionsConfig remotePoolingOptions;
-	private SocketOptionsConfig socketOptions;
+	private PoolingOptions poolingOptions;
+	private SocketOptions socketOptions;
 	private AuthProvider authProvider;
+	private String username;
+	private String password;
 	private LoadBalancingPolicy loadBalancingPolicy;
 	private ReconnectionPolicy reconnectionPolicy;
 	private RetryPolicy retryPolicy;
 	private boolean metricsEnabled = DEFAULT_METRICS_ENABLED;
+	private boolean deferredInitialization = DEFAULT_DEFERRED_INITIALIZATION;
+	private boolean jmxReportingEnabled = DEFAULT_JMX_REPORTING_ENABLED;
 	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<KeyspaceActionSpecification<?>>();
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
@@ -124,20 +127,20 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 			builder.withCompression(convertCompressionType(compressionType));
 		}
 
-		if (localPoolingOptions != null) {
-			builder.withPoolingOptions(configPoolingOptions(HostDistance.LOCAL, localPoolingOptions));
-		}
-
-		if (remotePoolingOptions != null) {
-			builder.withPoolingOptions(configPoolingOptions(HostDistance.REMOTE, remotePoolingOptions));
+		if (poolingOptions != null) {
+			builder.withPoolingOptions(poolingOptions);
 		}
 
 		if (socketOptions != null) {
-			builder.withSocketOptions(configSocketOptions(socketOptions));
+			builder.withSocketOptions(socketOptions);
 		}
 
 		if (authProvider != null) {
 			builder.withAuthProvider(authProvider);
+
+			if (username != null) {
+				builder.withCredentials(username, password);
+			}
 		}
 
 		if (loadBalancingPolicy != null) {
@@ -152,8 +155,16 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 			builder.withRetryPolicy(retryPolicy);
 		}
 
+		if (deferredInitialization) {
+			builder.withDeferredInitialization();
+		}
+
 		if (!metricsEnabled) {
 			builder.withoutMetrics();
+		}
+
+		if (!jmxReportingEnabled) {
+			builder.withoutJMXReporting();
 		}
 
 		cluster = builder.build();
@@ -256,15 +267,11 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 		this.compressionType = compressionType;
 	}
 
-	public void setLocalPoolingOptions(PoolingOptionsConfig localPoolingOptions) {
-		this.localPoolingOptions = localPoolingOptions;
+	public void setPoolingOptions(PoolingOptions poolingOptions) {
+		this.poolingOptions = poolingOptions;
 	}
 
-	public void setRemotePoolingOptions(PoolingOptionsConfig remotePoolingOptions) {
-		this.remotePoolingOptions = remotePoolingOptions;
-	}
-
-	public void setSocketOptions(SocketOptionsConfig socketOptions) {
+	public void setSocketOptions(SocketOptions socketOptions) {
 		this.socketOptions = socketOptions;
 	}
 
@@ -322,55 +329,6 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 		throw new IllegalArgumentException("unknown compression type " + type);
 	}
 
-	private static PoolingOptions configPoolingOptions(HostDistance hostDistance, PoolingOptionsConfig config) {
-		PoolingOptions poolingOptions = new PoolingOptions();
-
-		if (config.getMinSimultaneousRequests() != null) {
-			poolingOptions
-					.setMinSimultaneousRequestsPerConnectionThreshold(hostDistance, config.getMinSimultaneousRequests());
-		}
-		if (config.getMaxSimultaneousRequests() != null) {
-			poolingOptions
-					.setMaxSimultaneousRequestsPerConnectionThreshold(hostDistance, config.getMaxSimultaneousRequests());
-		}
-		if (config.getCoreConnections() != null) {
-			poolingOptions.setCoreConnectionsPerHost(hostDistance, config.getCoreConnections());
-		}
-		if (config.getMaxConnections() != null) {
-			poolingOptions.setMaxConnectionsPerHost(hostDistance, config.getMaxConnections());
-		}
-
-		return poolingOptions;
-	}
-
-	private static SocketOptions configSocketOptions(SocketOptionsConfig config) {
-		SocketOptions socketOptions = new SocketOptions();
-
-		if (config.getConnectTimeoutMls() != null) {
-			socketOptions.setConnectTimeoutMillis(config.getConnectTimeoutMls());
-		}
-		if (config.getKeepAlive() != null) {
-			socketOptions.setKeepAlive(config.getKeepAlive());
-		}
-		if (config.getReuseAddress() != null) {
-			socketOptions.setReuseAddress(config.getReuseAddress());
-		}
-		if (config.getSoLinger() != null) {
-			socketOptions.setSoLinger(config.getSoLinger());
-		}
-		if (config.getTcpNoDelay() != null) {
-			socketOptions.setTcpNoDelay(config.getTcpNoDelay());
-		}
-		if (config.getReceiveBufferSize() != null) {
-			socketOptions.setReceiveBufferSize(config.getReceiveBufferSize());
-		}
-		if (config.getSendBufferSize() != null) {
-			socketOptions.setSendBufferSize(config.getSendBufferSize());
-		}
-
-		return socketOptions;
-	}
-
 	/**
 	 * @return Returns the keyspaceSpecifications.
 	 */
@@ -389,16 +347,30 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	}
 
 	/**
-	 * @return Returns the accumulating.
+	 * @param username The username to set.
 	 */
-	public boolean isAccumulating() {
-		return accumulating;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	/**
-	 * @param accumulating The accumulating to set.
+	 * @param password The password to set.
 	 */
-	public void setAccumulating(boolean accumulating) {
-		this.accumulating = accumulating;
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	/**
+	 * @param deferredInitialization The deferredInitialization to set.
+	 */
+	public void setDeferredInitialization(boolean deferredInitialization) {
+		this.deferredInitialization = deferredInitialization;
+	}
+
+	/**
+	 * @param jmxReportingEnabled The jmxReportingEnabled to set.
+	 */
+	public void setJmxReportingEnabled(boolean jmxReportingEnabled) {
+		this.jmxReportingEnabled = jmxReportingEnabled;
 	}
 }

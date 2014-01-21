@@ -10,13 +10,51 @@
 		location="classpath:/org/springframework/cassandra/test/integration/config/xml/ppncxct.properties" />
 
 	<bean id="authProvider" class="com.datastax.driver.core.sasl.DseAuthProvider" />
+	
+	<bean id="loadBalancingPolicy" class="com.datastax.driver.core.policies.DCAwareRoundRobinPolicy">
+		<constructor-arg name="localDc" value="${lb.policy.dcAware.localDc}" />
+		<constructor-arg name="usedHostsPerRemoteDc" value="${lb.policy.dcAware.remoteHosts}" />
+	</bean>
+	
+	<bean id="reconnectionPolicy" class="com.datastax.driver.core.policies.ConstantReconnectionPolicy">
+		<constructor-arg name="constantDelayMs" value="${cluster.reconnection.delayMillis}"/>
+	</bean>
+	
+	<bean id="retryPolicy" class="com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy" />
 
 	<cassandra:cluster id="cassandra-cluster"
 		contactPoints="${cluster.contactPoints}" port="${cluster.port}"
-		compression="${cluster.compression}" auth-info-provider-ref="authProvider">
+		compression="${cluster.compression}" auth-info-provider-ref="authProvider"
+		load-balancing-policy-ref="loadBalancingPolicy" username="${auth.username}" password="${auth.password}"
+		deferredInitialization="${cluster.deferredInit}" metricsEnabled="${cluster.metricsEnabled}"
+		jmxReportingEnabled="${cluster.jmxReportingEnabled}"
+		reconnection-policy-ref="reconnectionPolicy"
+		retry-policy-ref="retryPolicy">
+		<cassandra:local-pooling-options 
+			min-simultaneous-requests="${local.min.requests}"
+			max-simultaneous-requests="${local.max.requests}"
+			core-connections="${local.core.connections}"
+			max-connections="${local.max.connections}"
+		/>
+		<cassandra:remote-pooling-options 
+			min-simultaneous-requests="${remote.min.requests}"
+			max-simultaneous-requests="${remote.max.requests}"
+			core-connections="${remote.core.connections}"
+			max-connections="${remote.max.connections}"
+		/>
+		<cassandra:socket-options 
+			connect-timeout-millis="${socket.connectTimeoutMillis}"
+			keep-alive="${socket.keepAlive}"
+			read-timeout-millis="${socket.readTimeoutMillis}"
+			reuse-address="${socket.reuseAddress}"
+			so-linger="${socket.soLinger}"
+			tcp-no-delay="${socket.tcpNoDelay}"
+			receive-buffer-size="${socket.receiveBufferSize}"
+			send-buffer-size="${socket.sendBufferSize}"
+		 />
 		<cassandra:keyspace name="${keyspace.name}" action="${keyspace.action}"/>
 		<cassandra:keyspace name="Foo" action="CREATE_DROP" durable-writes="true">
-			<cassandra:replication class="NetworkTopologyStrategy">
+			<cassandra:replication class="NETWORK_TOPOLOGY_STRATEGY">
 				<cassandra:data-center replication-factor="${dc1.rf}" name="${dc1.name}"/>
 				<cassandra:data-center replication-factor="${dc1.rf}" name="${dc2.name}"/>
 			</cassandra:replication>

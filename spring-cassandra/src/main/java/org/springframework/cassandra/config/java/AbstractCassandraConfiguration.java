@@ -6,8 +6,6 @@ import java.util.List;
 import org.springframework.cassandra.config.CassandraClusterFactoryBean;
 import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.cassandra.config.CompressionType;
-import org.springframework.cassandra.config.PoolingOptionsConfig;
-import org.springframework.cassandra.config.SocketOptionsConfig;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +13,8 @@ import org.springframework.context.annotation.Configuration;
 
 import com.datastax.driver.core.AuthProvider;
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.PoolingOptions;
+import com.datastax.driver.core.SocketOptions;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
@@ -40,11 +40,10 @@ public abstract class AbstractCassandraConfiguration {
 		bean.setKeyspaceCreations(getKeyspaceCreations());
 		bean.setKeyspaceDrops(getKeyspaceDrops());
 		bean.setLoadBalancingPolicy(getLoadBalancingPolicy());
-		bean.setLocalPoolingOptions(getLocalPoolingOptions());
 		bean.setMetricsEnabled(getMetricsEnabled());
 		bean.setPort(getPort());
 		bean.setReconnectionPolicy(getReconnectionPolicy());
-		bean.setRemotePoolingOptions(getRemotePoolingOptions());
+		bean.setPoolingOptions(getPoolingOptions());
 		bean.setRetryPolicy(getRetryPolicy());
 		bean.setShutdownScripts(getShutdownScripts());
 		bean.setSocketOptions(getSocketOptions());
@@ -69,7 +68,7 @@ public abstract class AbstractCassandraConfiguration {
 		return Collections.emptyList();
 	}
 
-	protected SocketOptionsConfig getSocketOptions() {
+	protected SocketOptions getSocketOptions() {
 		return null;
 	}
 
@@ -85,7 +84,7 @@ public abstract class AbstractCassandraConfiguration {
 		return null;
 	}
 
-	protected PoolingOptionsConfig getRemotePoolingOptions() {
+	protected PoolingOptions getPoolingOptions() {
 		return null;
 	}
 
@@ -95,10 +94,6 @@ public abstract class AbstractCassandraConfiguration {
 
 	protected boolean getMetricsEnabled() {
 		return CassandraClusterFactoryBean.DEFAULT_METRICS_ENABLED;
-	}
-
-	protected PoolingOptionsConfig getLocalPoolingOptions() {
-		return null;
 	}
 
 	protected LoadBalancingPolicy getLoadBalancingPolicy() {
