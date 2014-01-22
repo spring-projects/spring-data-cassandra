@@ -8,6 +8,7 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.test.integration.support.BuildProperties;
 import org.springframework.cassandra.test.unit.support.Utils;
 
 import com.datastax.driver.core.Cluster;
@@ -22,9 +23,11 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 
 	static Logger log = LoggerFactory.getLogger(AbstractEmbeddedCassandraIntegrationTest.class);
 
+	protected static final BuildProperties PROPS = new BuildProperties("/build.properties");
+
 	protected static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 	protected static final String CASSANDRA_HOST = "localhost";
-	protected static final int CASSANDRA_NATIVE_PORT = 9042;
+	protected static final int CASSANDRA_NATIVE_PORT = PROPS.getInt("cassandra.native_transport_port");
 
 	/**
 	 * The session connected to the system keyspace.

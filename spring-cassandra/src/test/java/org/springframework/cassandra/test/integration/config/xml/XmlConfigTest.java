@@ -12,7 +12,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.datastax.driver.core.Session;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/springframework/cassandra/test/integration/config/xml/XmlConfigTest-context.xml")
 public class XmlConfigTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	public static final String KEYSPACE = "xmlconfigtest";
