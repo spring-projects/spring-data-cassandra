@@ -110,11 +110,6 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 			builder.addPropertyValue("compressionType", compression);
 		}
 
-		String authProvider = element.getAttribute("auth-info-provider-ref");
-		if (StringUtils.hasText(authProvider)) {
-			builder.addPropertyReference("authProvider", authProvider);
-		}
-
 		String username = element.getAttribute("username");
 		if (StringUtils.hasText(username)) {
 			builder.addPropertyValue("username", username);
@@ -140,6 +135,16 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 			builder.addPropertyValue("jmxReportingEnabled", jmxReportingEnabled);
 		}
 
+		String sslEnabled = element.getAttribute("sslEnabled");
+		if (StringUtils.hasText(sslEnabled)) {
+			builder.addPropertyValue("sslEnabled", sslEnabled);
+		}
+
+		String authProvider = element.getAttribute("auth-info-provider-ref");
+		if (StringUtils.hasText(authProvider)) {
+			builder.addPropertyReference("authProvider", authProvider);
+		}
+
 		String loadBalancingPolicy = element.getAttribute("load-balancing-policy-ref");
 		if (StringUtils.hasText(loadBalancingPolicy)) {
 			builder.addPropertyReference("loadBalancingPolicy", loadBalancingPolicy);
@@ -153,6 +158,21 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 		String retryPolicy = element.getAttribute("retry-policy-ref");
 		if (StringUtils.hasText(retryPolicy)) {
 			builder.addPropertyReference("retryPolicy", retryPolicy);
+		}
+
+		String sslOptions = element.getAttribute("ssl-options-ref");
+		if (StringUtils.hasText(sslOptions)) {
+			builder.addPropertyReference("sslOptions", sslOptions);
+		}
+
+		String hostStateListener = element.getAttribute("host-state-listener-ref");
+		if (StringUtils.hasText(hostStateListener)) {
+			builder.addPropertyReference("hostStateListener", hostStateListener);
+		}
+
+		String latencyTracker = element.getAttribute("latency-tracker-ref");
+		if (StringUtils.hasText(latencyTracker)) {
+			builder.addPropertyReference("latencyTracker", latencyTracker);
 		}
 
 		parseChildElements(element, context, builder);

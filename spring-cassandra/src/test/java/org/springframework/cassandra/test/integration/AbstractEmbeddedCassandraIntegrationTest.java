@@ -24,7 +24,6 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 	static Logger log = LoggerFactory.getLogger(AbstractEmbeddedCassandraIntegrationTest.class);
 
 	protected static final BuildProperties PROPS = new BuildProperties();
-
 	protected static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 	protected static final String CASSANDRA_HOST = "localhost";
 	protected static final int CASSANDRA_NATIVE_PORT = PROPS.getCassandraPort();

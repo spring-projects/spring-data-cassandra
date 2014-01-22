@@ -136,23 +136,6 @@ The protocol compression option. Default is "NONE".
 			</xsd:annotation>
 		</xsd:attribute>
 
-		<xsd:attribute name="auth-info-provider-ref" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-AuthInfoProvider implementation.
-				]]></xsd:documentation>
-			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:annotation>
-					<xsd:appinfo>
-						<tool:annotation kind="ref">
-							<tool:assignable-to type="com.datastax.driver.core.AuthInfoProvider" />
-						</tool:annotation>
-					</xsd:appinfo>
-				</xsd:annotation>
-				<xsd:union memberTypes="xsd:string" />
-			</xsd:simpleType>
-		</xsd:attribute>
 		<xsd:attribute name="username" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -189,7 +172,31 @@ Determine if we defer initalizing the cluster until a connection is requested. D
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="load-balancing-policy-ref" use="optional">
+		<xsd:attribute name="sslEnabled" type="xsd:string" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Determine if SSL is used for Cassandra communication. Defaults to false.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+        <xsd:attribute name="auth-info-provider-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+AuthInfoProvider implementation.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to type="com.datastax.driver.core.AuthInfoProvider" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+        <xsd:attribute name="load-balancing-policy-ref" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 LoadBalancingPolicy implementation.
@@ -237,6 +244,60 @@ RetryPolicy implementation.
 						<tool:annotation kind="ref">
 							<tool:assignable-to
 								type="com.datastax.driver.core.policies.RetryPolicy" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="ssl-options-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Custom SSL Options. sslEnabled must be true for sslOptions to be used.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to
+								type="com.datastax.driver.core.SSLOptions" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="host-state-listener-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Custom Host State Listener for the Cassandra Cluster.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to
+								type="com.datastax.driver.core.Host.StateListener" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="latency-tracker-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Custom Latency Tracker for the Cassandra Cluster.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to
+								type="com.datastax.driver.core.LatencyTracker" />
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -479,7 +540,7 @@ Provides the ability to specify replication factors by data center.
 			default="SimpleStrategy">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the replication class; default is "SimpleStrategy".
+The name of the replication class; default is "SIMPLE_STRATEGY".
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
