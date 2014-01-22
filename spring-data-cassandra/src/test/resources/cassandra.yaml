@@ -303,11 +303,11 @@ trickle_fsync: false
 trickle_fsync_interval_in_kb: 10240
 
 # TCP port, for commands and data
-storage_port: 7000
+storage_port: ${build.cassandra.storage_port}
 
 # SSL port, for encrypted communication.  Unused unless enabled in
 # encryption_options
-ssl_storage_port: 7001
+ssl_storage_port: ${build.cassandra.ssl_storage_port}
 
 # Address to bind to and tell other Cassandra nodes to connect to. You
 # _must_ change this if you want multiple nodes to be able to
@@ -334,7 +334,7 @@ listen_address: localhost
 # same as the rpc_address. The port however is different and specified below.
 start_native_transport: true
 # port for the CQL native transport to listen for clients on
-native_transport_port: 9042
+native_transport_port: ${build.cassandra.native_transport_port}
 # The minimum and maximum threads for handling requests when the native
 # transport is used. They are similar to rpc_min_threads and rpc_max_threads,
 # though the defaults differ slightly.
@@ -352,7 +352,7 @@ start_rpc: true
 # (i.e. it will be based on the configured hostname of the node).
 rpc_address: localhost
 # port for Thrift to listen for clients on
-rpc_port: 9160
+rpc_port: ${build.cassandra.rpc_port}
 
 # enable or disable keepalive on rpc connections
 rpc_keepalive: true

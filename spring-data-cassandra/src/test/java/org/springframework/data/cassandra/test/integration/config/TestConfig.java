@@ -1,5 +1,6 @@
 package org.springframework.data.cassandra.test.integration.config;
 
+import org.springframework.cassandra.test.integration.support.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.java.AbstractSpringDataCassandraConfiguration;
@@ -18,11 +19,20 @@ import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 @Configuration
 public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 
-	public static final String keyspaceName = "test";
+	public static final BuildProperties PROPS = new BuildProperties();
+	public static final int PORT = PROPS.getCassandraPort();
+	public static final int RPC_PORT = PROPS.getCassandraRpcPort();
+
+	public static final String KEYSPACE_NAME = "test";
 
 	@Override
 	protected String getKeyspaceName() {
-		return keyspaceName;
+		return KEYSPACE_NAME;
+	}
+
+	@Override
+	protected int getPort() {
+		return PORT;
 	}
 
 	@Bean
@@ -32,6 +42,6 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 
 	@Bean
 	public CassandraDataOperations cassandraDataTemplate() throws Exception {
-		return new CassandraDataTemplate(session().getObject(), converter(), keyspaceName);
+		return new CassandraDataTemplate(session().getObject(), converter(), KEYSPACE_NAME);
 	}
 }

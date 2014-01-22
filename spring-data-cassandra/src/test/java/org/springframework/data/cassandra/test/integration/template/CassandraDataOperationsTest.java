@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
+import org.springframework.cassandra.test.integration.support.BuildProperties;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.test.integration.config.TestConfig;
 import org.springframework.data.cassandra.test.integration.table.Book;
@@ -65,11 +66,12 @@ public class CassandraDataOperationsTest {
 
 	private static Logger log = LoggerFactory.getLogger(CassandraDataOperationsTest.class);
 
+	private final static BuildProperties PROPS = new BuildProperties();
 	private final static String CASSANDRA_CONFIG = "cassandra.yaml";
 	private final static String KEYSPACE_NAME = "test";
 	private final static String CASSANDRA_HOST = "localhost";
-	private final static int CASSANDRA_NATIVE_PORT = 9042;
-	private final static int CASSANDRA_THRIFT_PORT = 9160;
+	private final static int CASSANDRA_NATIVE_PORT = PROPS.getCassandraPort();
+	private final static int CASSANDRA_THRIFT_PORT = PROPS.getCassandraRpcPort();
 
 	@Rule
 	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet("cql-dataload.cql",
