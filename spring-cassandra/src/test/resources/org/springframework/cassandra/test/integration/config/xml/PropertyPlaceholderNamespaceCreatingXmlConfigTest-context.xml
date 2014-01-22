@@ -21,6 +21,10 @@
 	</bean>
 	
 	<bean id="retryPolicy" class="com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy" />
+	
+	<bean id="hostStateListener" class="org.springframework.cassandra.test.integration.config.xml.TestHostStateListener"/>
+
+	<bean id="latencyTracker" class="org.springframework.cassandra.test.integration.config.xml.TestLatencyTracker"/>
 
 	<cassandra:cluster id="cassandra-cluster"
 		contactPoints="${cluster.contactPoints}" port="${cluster.port}"
@@ -29,7 +33,9 @@
 		deferredInitialization="${cluster.deferredInit}" metricsEnabled="${cluster.metricsEnabled}"
 		jmxReportingEnabled="${cluster.jmxReportingEnabled}"
 		reconnection-policy-ref="reconnectionPolicy"
-		retry-policy-ref="retryPolicy">
+		retry-policy-ref="retryPolicy"
+		host-state-listener-ref="hostStateListener"
+		latency-tracker-ref="latencyTracker">
 		<cassandra:local-pooling-options 
 			min-simultaneous-requests="${local.min.requests}"
 			max-simultaneous-requests="${local.max.requests}"

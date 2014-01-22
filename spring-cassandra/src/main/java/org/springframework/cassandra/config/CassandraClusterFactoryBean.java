@@ -39,8 +39,11 @@ import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.AuthProvider;
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.LatencyTracker;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SocketOptions;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
@@ -61,6 +64,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	public static final boolean DEFAULT_METRICS_ENABLED = true;
 	public static final boolean DEFAULT_DEFERRED_INITIALIZATION = false;
 	public static final boolean DEFAULT_JMX_REPORTING_ENABLED = true;
+	public static final boolean DEFAULT_SSL_ENABLED = false;
 	public static final int DEFAULT_PORT = 9042;
 
 	protected static final Logger log = LoggerFactory.getLogger(CassandraClusterFactoryBean.class);
@@ -84,6 +88,10 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	private boolean metricsEnabled = DEFAULT_METRICS_ENABLED;
 	private boolean deferredInitialization = DEFAULT_DEFERRED_INITIALIZATION;
 	private boolean jmxReportingEnabled = DEFAULT_JMX_REPORTING_ENABLED;
+	private boolean sslEnabled = DEFAULT_SSL_ENABLED;
+	private SSLOptions sslOptions;
+	private Host.StateListener hostStateListener;
+	private LatencyTracker latencyTracker;
 	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<KeyspaceActionSpecification<?>>();
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
@@ -167,7 +175,23 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 			builder.withoutJMXReporting();
 		}
 
+		if (sslEnabled) {
+			if (sslOptions == null) {
+				builder.withSSL();
+			} else {
+				builder.withSSL(sslOptions);
+			}
+		}
+
 		cluster = builder.build();
+
+		if (hostStateListener != null) {
+			cluster.register(hostStateListener);
+		}
+
+		if (latencyTracker != null) {
+			cluster.register(latencyTracker);
+		}
 
 		generateSpecificationsFromFactoryBeans();
 
@@ -372,5 +396,33 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	 */
 	public void setJmxReportingEnabled(boolean jmxReportingEnabled) {
 		this.jmxReportingEnabled = jmxReportingEnabled;
+	}
+
+	/**
+	 * @param sslEnabled The sslEnabled to set.
+	 */
+	public void setSslEnabled(boolean sslEnabled) {
+		this.sslEnabled = sslEnabled;
+	}
+
+	/**
+	 * @param sslOptions The sslOptions to set.
+	 */
+	public void setSslOptions(SSLOptions sslOptions) {
+		this.sslOptions = sslOptions;
+	}
+
+	/**
+	 * @param hostStateListener The hostStateListener to set.
+	 */
+	public void setHostStateListener(Host.StateListener hostStateListener) {
+		this.hostStateListener = hostStateListener;
+	}
+
+	/**
+	 * @param latencyTracker The latencyTracker to set.
+	 */
+	public void setLatencyTracker(LatencyTracker latencyTracker) {
+		this.latencyTracker = latencyTracker;
 	}
 }
