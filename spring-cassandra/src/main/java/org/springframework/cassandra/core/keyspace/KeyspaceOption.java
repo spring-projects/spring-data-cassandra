@@ -4,7 +4,7 @@ import java.util.Map;
 
 public enum KeyspaceOption implements Option {
 	REPLICATION("replication", Map.class, true, false, false),
-	
+
 	DURABLE_WRITES("durable_writes", Boolean.class, false, false, false);
 
 	private Option delegate;
@@ -52,18 +52,18 @@ public enum KeyspaceOption implements Option {
 	public String toString(Object value) {
 		return delegate.toString(value);
 	}
-	
+
 	/**
 	 * Known Replication Strategy options.
 	 * 
 	 * @author John McPeek
-	 *
+	 * 
 	 */
 	public enum ReplicationStrategy {
 		SIMPLE_STRATEGY("SimpleStrategy"), NETWORK_TOPOLOGY_STRATEGY("NetworkTopologyStrategy");
 
 		private String value;
-		
+
 		private ReplicationStrategy(String value) {
 			this.value = value;
 		}

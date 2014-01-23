@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.AlterTableCqlGeneratorTests;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests;
 import org.springframework.cassandra.test.unit.core.cql.generator.DropTableCqlGeneratorTests;
@@ -36,7 +36,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.DropTableCqlGe
  * 
  * @author David Webb
  */
-public class TableLifecycleIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
+public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	private final static Logger log = LoggerFactory.getLogger(TableLifecycleIntegrationTest.class);
 
@@ -44,10 +44,14 @@ public class TableLifecycleIntegrationTest extends AbstractEmbeddedCassandraInte
 
 	public TableLifecycleIntegrationTest() {
 		super("tlit");
-		clear = true;
 	}
 
-	// This only ensures the keyspace exists before each test, while using a static session from the parent object.
+	@Override
+	public boolean dropKeyspaceAfterTest() {
+		return true;
+	}
+
+	// This only ensures the keyspace exists before each test, while using a static SESSION from the parent object.
 	// TODO - DW Make this better.
 	@Rule
 	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
@@ -61,18 +65,18 @@ public class TableLifecycleIntegrationTest extends AbstractEmbeddedCassandraInte
 
 		log.info(createTableTest.cql);
 
-		session.execute(createTableTest.cql);
+		SESSION.execute(createTableTest.cql);
 
-		assertTable(createTableTest.specification, keyspace, session);
+		assertTable(createTableTest.specification, keyspace, SESSION);
 
 		DropTableTest dropTest = new DropTableTest();
 		dropTest.prepare();
 
 		log.info(dropTest.cql);
 
-		session.execute(dropTest.cql);
+		SESSION.execute(dropTest.cql);
 
-		assertNoTable(dropTest.specification, keyspace, session);
+		assertNoTable(dropTest.specification, keyspace, SESSION);
 	}
 
 	@Test
@@ -82,18 +86,18 @@ public class TableLifecycleIntegrationTest extends AbstractEmbeddedCassandraInte
 
 		log.info(createTableTest.cql);
 
-		session.execute(createTableTest.cql);
+		SESSION.execute(createTableTest.cql);
 
-		assertTable(createTableTest.specification, keyspace, session);
+		assertTable(createTableTest.specification, keyspace, SESSION);
 
 		AlterTableCqlGeneratorTests.MultipleOptionsTest alterTest = new AlterTableCqlGeneratorTests.MultipleOptionsTest();
 		alterTest.prepare();
 
 		log.info(alterTest.cql);
 
-		session.execute(alterTest.cql);
+		SESSION.execute(alterTest.cql);
 
-		// assertTable(alterTest.specification, keyspace, session);
+		// assertTable(alterTest.specification, keyspace, SESSION);
 
 	}
 

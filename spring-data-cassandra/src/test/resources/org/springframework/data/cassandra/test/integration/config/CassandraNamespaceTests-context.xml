@@ -11,8 +11,9 @@
 	<context:property-placeholder
 		location="classpath:/org/springframework/data/cassandra/test/integration/config/cassandra.properties" />
 
-	<cass:cluster id="cassandra-cluster" contactPoints="${cassandra.contactPoints}"
-		port="${cassandra.port}">
+	<cass:cluster id="cassandra-cluster"
+		contactPoints="${cassandra.contactPoints}" port="${cassandra.native_transport_port}"
+		compression="SNAPPY">
 		<cass:local-pooling-options
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="2" max-connections="8" />
@@ -22,7 +23,7 @@
 		<cass:socket-options connect-timeout-mls="5000"
 			keep-alive="true" reuse-address="true" so-linger="60" tcp-no-delay="true"
 			receive-buffer-size="65536" send-buffer-size="65536" />
-		<cass:keyspace name="TestKS123" action="CREATE"
+		<cass:keyspace name="${cassandra.keyspace}" action="CREATE"
 			durable-writes="true" />
 	</cass:cluster>
 
@@ -36,7 +37,7 @@
 		<constructor-arg ref="cassandra-mapping" />
 	</bean>
 
-	<cass:session id="cassandra-session" keyspace-name="TestKS123"
+	<cass:session id="cassandra-session" keyspace-name="${cassandra.keyspace}"
 		schema-actions="NONE" cluster-ref="cassandra-cluster"
 		cassandra-converter-ref="cassandra-converter">
 	</cass:session>

@@ -6,7 +6,7 @@ import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCqlGeneratorTests.BasicTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCqlGeneratorTests.CreateIndexTest;
 
@@ -24,7 +24,7 @@ public class CreateIndexCqlGeneratorIntegrationTests {
 	 * 
 	 * @param <T> The concrete unit test class to which this integration test corresponds.
 	 */
-	public static abstract class Base<T extends CreateIndexTest> extends AbstractEmbeddedCassandraIntegrationTest {
+	public static abstract class Base<T extends CreateIndexTest> extends AbstractKeyspaceCreatingIntegrationTest {
 		T unit;
 
 		public abstract T unit();
@@ -34,9 +34,9 @@ public class CreateIndexCqlGeneratorIntegrationTests {
 			unit = unit();
 			unit.prepare();
 
-			session.execute(unit.cql);
+			SESSION.execute(unit.cql);
 
-			assertIndex(unit.specification, keyspace, session);
+			assertIndex(unit.specification, keyspace, SESSION);
 		}
 	}
 

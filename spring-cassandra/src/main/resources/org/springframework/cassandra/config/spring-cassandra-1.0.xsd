@@ -59,22 +59,16 @@ Defines a Cassandra cluster.
 
 	<xsd:complexType name="clusterType">
 		<xsd:sequence>
-			<xsd:element name="local-pooling-options" type="poolingOptionsType"
-				maxOccurs="1" minOccurs="0">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-Local pooling options.
-					]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="remote-pooling-options" type="poolingOptionsType"
-				maxOccurs="1" minOccurs="0">
+
+			<xsd:element name="local-pooling-options"
+				type="poolingOptionsType" maxOccurs="1" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Remote pooling options.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+			<xsd:element name="remote-pooling-options" type="poolingOptionsType" minOccurs="0" maxOccurs="1"></xsd:element>
 			<xsd:element name="socket-options" type="socketOptionsType"
 				maxOccurs="1" minOccurs="0">
 				<xsd:annotation>
@@ -133,32 +127,59 @@ The native CQL port to connect to.  Default is 9042.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="compression" default="NONE" use="optional">
+		<xsd:attribute name="compression" default="NONE" use="optional"
+			type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The protocol compression option. Default is "NONE".
 				]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="NONE">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-No compression.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="SNAPPY">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-SNAPPY compression algorithm.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="auth-info-provider" use="optional">
+
+		<xsd:attribute name="username" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+When Authentication is enabled, the username to use when connecting to the Cluster.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="password" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+When Authentication is enabled, the password to use when connecting to the Cluster.
+				]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="metricsEnabled" type="xsd:string" default="true">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Determine whether or not to collect metrics.  Defaults to true.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="jmxReportingEnabled" type="xsd:string" default="true">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Determine whether or not to enable JMX Reporting.  Defaults to true.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="deferredInitialization" type="xsd:string" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Determine if we defer initalizing the cluster until a connection is requested. Defaults to false.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="sslEnabled" type="xsd:string" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Determine if SSL is used for Cassandra communication. Defaults to false.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+        <xsd:attribute name="auth-info-provider-ref" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 AuthInfoProvider implementation.
@@ -175,7 +196,7 @@ AuthInfoProvider implementation.
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="load-balancing-policy" use="optional">
+        <xsd:attribute name="load-balancing-policy-ref" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 LoadBalancingPolicy implementation.
@@ -193,7 +214,7 @@ LoadBalancingPolicy implementation.
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="reconnection-policy" use="optional">
+		<xsd:attribute name="reconnection-policy-ref" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 ReconnectionPolicy implementation.
@@ -211,7 +232,7 @@ ReconnectionPolicy implementation.
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="retry-policy" use="optional">
+		<xsd:attribute name="retry-policy-ref" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 RetryPolicy implementation.
@@ -229,8 +250,61 @@ RetryPolicy implementation.
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
+		<xsd:attribute name="ssl-options-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Custom SSL Options. sslEnabled must be true for sslOptions to be used.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to
+								type="com.datastax.driver.core.SSLOptions" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="host-state-listener-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Custom Host State Listener for the Cassandra Cluster.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to
+								type="com.datastax.driver.core.Host.StateListener" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="latency-tracker-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Custom Latency Tracker for the Cassandra Cluster.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to
+								type="com.datastax.driver.core.LatencyTracker" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
 	</xsd:complexType>
-
 	<xsd:simpleType name="clusterRef" final="union">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -285,7 +359,7 @@ More connections are created up to a configurable maximum number of connections.
 	</xsd:complexType>
 
 	<xsd:complexType name="socketOptionsType">
-		<xsd:attribute name="connect-timeout-mls" type="xsd:string">
+		<xsd:attribute name="connect-timeout-millis" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets connection timeout for client socket in milliseconds.
@@ -296,6 +370,13 @@ Sets connection timeout for client socket in milliseconds.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the SO_KEEPALIVE socket option.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="read-timeout-millis" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets read timeout for client socket in milliseconds.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -422,32 +503,14 @@ The name of this keyspace.  Required.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="action" use="required">
+		<xsd:attribute name="action" use="required" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The keyspace action to take at startup and possibly shutdown.
 				]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="CREATE">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Action value that causes keyspace creation during bean initialization.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-					<xsd:enumeration value="CREATE-DROP">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[
-Action value that causes keyspace creation during bean initialization and keyspace dropping during bean destruction.
-							]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:enumeration>
-				</xsd:restriction>
-			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="durable-writes" type="xsd:boolean"
+		<xsd:attribute name="durable-writes" type="xsd:string"
 			use="optional" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -477,11 +540,11 @@ Provides the ability to specify replication factors by data center.
 			default="SimpleStrategy">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the replication class; default is "SimpleStrategy".
+The name of the replication class; default is "SIMPLE_STRATEGY".
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="replication-factor" type="xsd:integer"
+		<xsd:attribute name="replication-factor" type="xsd:string"
 			use="optional" default="1">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -490,7 +553,6 @@ The replication factor; default is 1.
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-
 	<xsd:complexType name="datacenterType">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
@@ -504,7 +566,7 @@ The name of the data center.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="replication-factor" type="xsd:integer"
+		<xsd:attribute name="replication-factor" type="xsd:string"
 			use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[

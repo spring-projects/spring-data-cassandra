@@ -9,7 +9,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCqlGeneratorTests;
 import org.springframework.cassandra.test.unit.core.cql.generator.DropIndexCqlGeneratorTests;
 
@@ -18,7 +18,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.DropIndexCqlGe
  * 
  * @author Matthew T. Adams
  */
-public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
+public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	Logger log = LoggerFactory.getLogger(IndexLifecycleCqlGeneratorIntegrationTests.class);
 
@@ -42,19 +42,19 @@ public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractEmbedded
 		dropIfExists.prepare();
 
 		log.info(createTest.cql);
-		session.execute(createTest.cql);
+		SESSION.execute(createTest.cql);
 
-		assertIndex(createTest.specification, keyspace, session);
+		assertIndex(createTest.specification, keyspace, SESSION);
 
 		log.info(dropTest.cql);
-		session.execute(dropTest.cql);
+		SESSION.execute(dropTest.cql);
 
-		assertNoIndex(createTest.specification, keyspace, session);
+		assertNoIndex(createTest.specification, keyspace, SESSION);
 
 		// log.info(dropIfExists.cql);
-		// session.execute(dropIfExists.cql);
+		// SESSION.execute(dropIfExists.cql);
 		//
-		// assertNoIndex(createTest.specification, keyspace, session);
+		// assertNoIndex(createTest.specification, keyspace, SESSION);
 
 	}
 

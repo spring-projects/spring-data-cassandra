@@ -4,7 +4,7 @@ import javax.inject.Inject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -12,19 +12,21 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.datastax.driver.core.Session;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class XmlConfigTest extends AbstractEmbeddedCassandraIntegrationTest {
+@ContextConfiguration(locations = "classpath:/org/springframework/cassandra/test/integration/config/xml/XmlConfigTest-context.xml")
+public class XmlConfigTest extends AbstractKeyspaceCreatingIntegrationTest {
 
-	protected String keyspace() {
-		return "xmlconfigtest";
-	}
+	public static final String KEYSPACE = "xmlconfigtest";
 
 	@Inject
 	Session s;
 
+	public XmlConfigTest() {
+		super(KEYSPACE);
+	}
+
 	@Test
 	public void test() {
 		IntegrationTestUtils.assertSession(s);
-		IntegrationTestUtils.assertKeyspaceExists(keyspace(), s);
+		IntegrationTestUtils.assertKeyspaceExists(KEYSPACE, s);
 	}
 }

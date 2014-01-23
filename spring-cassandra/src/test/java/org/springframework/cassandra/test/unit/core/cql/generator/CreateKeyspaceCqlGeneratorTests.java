@@ -13,6 +13,7 @@ import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DefaultOption;
 import org.springframework.cassandra.core.keyspace.KeyspaceOption;
 import org.springframework.cassandra.core.keyspace.Option;
+import org.springframework.cassandra.test.unit.support.Utils;
 
 public class CreateKeyspaceCqlGeneratorTests {
 
@@ -52,7 +53,7 @@ public class CreateKeyspaceCqlGeneratorTests {
 
 	public static class BasicTest extends CreateKeyspaceTest {
 
-		public String name = randomKeyspaceName();
+		public String name = Utils.randomKeyspaceName();
 		public Boolean durableWrites = true;
 
 		public Map<Option, Object> replicationMap = KeyspaceAttributes.newSimpleReplication();
@@ -77,7 +78,7 @@ public class CreateKeyspaceCqlGeneratorTests {
 
 	public static class NetworkTopologyTest extends CreateKeyspaceTest {
 
-		public String name = randomKeyspaceName();
+		public String name = Utils.randomKeyspaceName();
 		public Boolean durableWrites = false;
 
 		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();

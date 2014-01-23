@@ -63,7 +63,7 @@ public class CassandraAdminTest {
 		/*
 		 * Load data file to creat the test keyspace before we init the template
 		 */
-		DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:9160");
+		DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:" + TestConfig.RPC_PORT);
 		dataLoader.load(new ClassPathYamlDataSet("cassandra-keyspace.yaml"));
 
 	}
@@ -74,7 +74,7 @@ public class CassandraAdminTest {
 		/*
 		 * Load data file to creat the test keyspace before we init the template
 		 */
-		DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:9160");
+		DataLoader dataLoader = new DataLoader("Test Cluster", "localhost:" + TestConfig.RPC_PORT);
 		dataLoader.load(new ClassPathYamlDataSet("cassandra-keyspace.yaml"));
 
 	}

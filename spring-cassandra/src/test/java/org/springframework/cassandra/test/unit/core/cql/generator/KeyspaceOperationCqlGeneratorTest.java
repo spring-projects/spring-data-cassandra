@@ -6,7 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.generator.KeyspaceNameCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.TableNameCqlGenerator;
-import org.springframework.cassandra.core.keyspace.KeyspaceNameSpecification;
+import org.springframework.cassandra.core.keyspace.KeyspaceActionSpecification;
 import org.springframework.cassandra.core.keyspace.TableNameSpecification;
 
 /**
@@ -19,7 +19,7 @@ import org.springframework.cassandra.core.keyspace.TableNameSpecification;
  * @param <S> The type of the {@link TableNameSpecification}
  * @param <G> The type of the {@link TableNameCqlGenerator}
  */
-public abstract class KeyspaceOperationCqlGeneratorTest<S extends KeyspaceNameSpecification<?>, G extends KeyspaceNameCqlGenerator<?>> {
+public abstract class KeyspaceOperationCqlGeneratorTest<S extends KeyspaceActionSpecification<?>, G extends KeyspaceNameCqlGenerator<?>> {
 
 	public abstract S specification();
 

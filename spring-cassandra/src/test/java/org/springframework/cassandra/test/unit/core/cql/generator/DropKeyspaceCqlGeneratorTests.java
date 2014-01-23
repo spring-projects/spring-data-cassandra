@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
+import org.springframework.cassandra.test.unit.support.Utils;
 
 public class DropKeyspaceCqlGeneratorTests {
 
@@ -24,7 +25,7 @@ public class DropKeyspaceCqlGeneratorTests {
 
 	public static class BasicTest extends DropTableTest {
 
-		public String name = randomKeyspaceName();
+		public String name = Utils.randomKeyspaceName();
 
 		@Override
 		public DropKeyspaceSpecification specification() {

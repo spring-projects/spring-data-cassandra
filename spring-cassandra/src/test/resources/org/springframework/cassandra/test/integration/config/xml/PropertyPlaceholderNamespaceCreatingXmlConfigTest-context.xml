@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/cassandra"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/cassandra http://www.springframework.org/schema/cassandra/spring-cassandra-1.0.xsd
+                         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:property-placeholder
+		location="classpath:/org/springframework/cassandra/test/integration/config/xml/ppncxct.properties" />
+
+	<bean id="authProvider" class="com.datastax.driver.core.sasl.DseAuthProvider" />
+	
+	<bean id="loadBalancingPolicy" class="com.datastax.driver.core.policies.DCAwareRoundRobinPolicy">
+		<constructor-arg name="localDc" value="${lb.policy.dcAware.localDc}" />
+		<constructor-arg name="usedHostsPerRemoteDc" value="${lb.policy.dcAware.remoteHosts}" />
+	</bean>
+	
+	<bean id="reconnectionPolicy" class="com.datastax.driver.core.policies.ConstantReconnectionPolicy">
+		<constructor-arg name="constantDelayMs" value="${cluster.reconnection.delayMillis}"/>
+	</bean>
+	
+	<bean id="retryPolicy" class="com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy" />
+	
+	<bean id="hostStateListener" class="org.springframework.cassandra.test.integration.config.xml.TestHostStateListener"/>
+
+	<bean id="latencyTracker" class="org.springframework.cassandra.test.integration.config.xml.TestLatencyTracker"/>
+
+	<cassandra:cluster id="cassandra-cluster"
+		contactPoints="${cluster.contactPoints}" port="${cluster.port}"
+		compression="${cluster.compression}" auth-info-provider-ref="authProvider"
+		load-balancing-policy-ref="loadBalancingPolicy" username="${auth.username}" password="${auth.password}"
+		deferredInitialization="${cluster.deferredInit}" metricsEnabled="${cluster.metricsEnabled}"
+		jmxReportingEnabled="${cluster.jmxReportingEnabled}"
+		reconnection-policy-ref="reconnectionPolicy"
+		retry-policy-ref="retryPolicy"
+		host-state-listener-ref="hostStateListener"
+		latency-tracker-ref="latencyTracker">
+		<cassandra:local-pooling-options 
+			min-simultaneous-requests="${local.min.requests}"
+			max-simultaneous-requests="${local.max.requests}"
+			core-connections="${local.core.connections}"
+			max-connections="${local.max.connections}"
+		/>
+		<cassandra:remote-pooling-options 
+			min-simultaneous-requests="${remote.min.requests}"
+			max-simultaneous-requests="${remote.max.requests}"
+			core-connections="${remote.core.connections}"
+			max-connections="${remote.max.connections}"
+		/>
+		<cassandra:socket-options 
+			connect-timeout-millis="${socket.connectTimeoutMillis}"
+			keep-alive="${socket.keepAlive}"
+			read-timeout-millis="${socket.readTimeoutMillis}"
+			reuse-address="${socket.reuseAddress}"
+			so-linger="${socket.soLinger}"
+			tcp-no-delay="${socket.tcpNoDelay}"
+			receive-buffer-size="${socket.receiveBufferSize}"
+			send-buffer-size="${socket.sendBufferSize}"
+		 />
+		<cassandra:keyspace name="${keyspace.name}" action="${keyspace.action}"/>
+		<cassandra:keyspace name="Foo123" action="CREATE_DROP" durable-writes="true">
+			<cassandra:replication class="NETWORK_TOPOLOGY_STRATEGY">
+				<cassandra:data-center replication-factor="${dc1.rf}" name="${dc1.name}"/>
+				<cassandra:data-center replication-factor="${dc1.rf}" name="${dc2.name}"/>
+			</cassandra:replication>
+		</cassandra:keyspace>
+	</cassandra:cluster>
+
+	<cassandra:session id="cassandra-session"
+		keyspace-name="system">
+	</cassandra:session>
+
+	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CassandraTemplate">
+		<constructor-arg ref="cassandra-session" />
+	</bean>
+
+</beans>
