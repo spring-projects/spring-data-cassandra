@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.exception;
+package org.springframework.cassandra.support.exception;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 

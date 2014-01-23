@@ -16,11 +16,11 @@
 package org.springframework.data.cassandra.mapping;
 
 import org.springframework.beans.BeansException;
+import org.springframework.cassandra.support.exception.UnsupportedCassandraOperationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
-import org.springframework.data.cassandra.exception.UnsupportedCassandraOperationException;
 import org.springframework.data.cassandra.util.CassandraNamingUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
