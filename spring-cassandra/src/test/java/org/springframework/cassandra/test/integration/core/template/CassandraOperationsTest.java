@@ -1091,22 +1091,6 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	}
 
 	/**
-	 * Convert List<Object> to a Book
-	 * 
-	 * @param bookElements
-	 * @return
-	 */
-	private Book listToBook(List<Object> bookElements) {
-		Book b = new Book();
-		b.setIsbn((String) bookElements.get(0));
-		b.setTitle((String) bookElements.get(1));
-		b.setAuthor((String) bookElements.get(2));
-		b.setPages((Integer) bookElements.get(3));
-		return b;
-
-	}
-
-	/**
 	 * Assert that 2 Book objects are the same
 	 * 
 	 * @param b
@@ -1129,7 +1113,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	 */
 	public Book getBook(final String isbn) {
 
-		Book b = this.cassandraTemplate.query("select * from book where isbn = ?", new PreparedStatementBinder() {
+		Book b = cassandraTemplate.query("select * from book where isbn = ?", new PreparedStatementBinder() {
 
 			@Override
 			public BoundStatement bindValues(PreparedStatement ps) throws DriverException {

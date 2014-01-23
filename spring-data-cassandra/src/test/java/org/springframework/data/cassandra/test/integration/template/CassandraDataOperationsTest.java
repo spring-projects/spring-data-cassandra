@@ -28,7 +28,6 @@ import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.cassandraunit.dataset.yaml.ClassPathYamlDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -690,10 +689,5 @@ public class CassandraDataOperationsTest {
 	public void clearCassandra() {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 
-	}
-
-	@AfterClass
-	public static void stopCassandra() {
-		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
 	}
 }

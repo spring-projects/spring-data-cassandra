@@ -20,7 +20,6 @@ import static org.springframework.cassandra.test.integration.core.cql.generator.
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests;
 

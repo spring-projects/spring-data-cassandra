@@ -29,8 +29,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.context.ApplicationContext;
@@ -52,8 +50,6 @@ public class CassandraAdminTest {
 
 	@Mock
 	ApplicationContext context;
-
-	private static Logger log = LoggerFactory.getLogger(CassandraAdminTest.class);
 
 	@BeforeClass
 	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,

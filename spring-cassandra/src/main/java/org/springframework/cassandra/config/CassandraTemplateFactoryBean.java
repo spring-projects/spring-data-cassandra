@@ -15,8 +15,6 @@
  */
 package org.springframework.cassandra.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cassandra.core.CassandraOperations;
@@ -31,23 +29,25 @@ import com.datastax.driver.core.Session;
  */
 public class CassandraTemplateFactoryBean implements FactoryBean<CassandraOperations>, InitializingBean {
 
-	private static final Logger log = LoggerFactory.getLogger(CassandraTemplateFactoryBean.class);
-
 	private CassandraTemplate template;
 	private Session session;
 
+	@Override
 	public CassandraOperations getObject() {
 		return template;
 	}
 
+	@Override
 	public Class<? extends CassandraOperations> getObjectType() {
 		return CassandraOperations.class;
 	}
 
+	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
+	@Override
 	public void afterPropertiesSet() throws Exception {
 
 		if (session == null) {

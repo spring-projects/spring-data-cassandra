@@ -150,7 +150,6 @@ public class UserRepositoryIntegrationTests {
 	@AfterClass
 	public static void stopCassandra() {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-		EmbeddedCassandraServerHelper.stopEmbeddedCassandra();
 	}
 
 	private static void assertEquals(User user1, User user2) {

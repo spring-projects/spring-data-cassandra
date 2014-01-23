@@ -23,7 +23,7 @@ package org.springframework.cassandra.core.keyspace;
  */
 public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpecification> {
 
-	private boolean ifExists;
+	// private boolean ifExists;
 
 	/**
 	 * Entry point into the {@link DropIndexSpecification}'s fluent API to drop a table. Convenient if imported

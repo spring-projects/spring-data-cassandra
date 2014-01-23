@@ -23,6 +23,8 @@ package org.springframework.data.cassandra.exception;
  */
 public class EntityWriterException extends Exception {
 
+	private static final long serialVersionUID = -3068204776019978031L;
+
 	/**
 	 * @param message
 	 */

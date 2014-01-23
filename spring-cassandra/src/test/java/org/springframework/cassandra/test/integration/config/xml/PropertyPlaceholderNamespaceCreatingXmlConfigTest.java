@@ -6,8 +6,6 @@ import javax.inject.Inject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
@@ -19,8 +17,6 @@ import com.datastax.driver.core.Session;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class PropertyPlaceholderNamespaceCreatingXmlConfigTest extends AbstractKeyspaceCreatingIntegrationTest {
-
-	private static Logger log = LoggerFactory.getLogger(PropertyPlaceholderNamespaceCreatingXmlConfigTest.class);
 
 	@Inject
 	Session s;

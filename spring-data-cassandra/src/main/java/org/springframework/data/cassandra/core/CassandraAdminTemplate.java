@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
-import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.support.CassandraAccessor;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.cassandra.support.exception.CassandraTableExistsException;
@@ -49,7 +48,7 @@ public class CassandraAdminTemplate extends CassandraAccessor implements Cassand
 	public void setCassandraConverter(CassandraConverter converter) {
 		Assert.notNull(converter);
 		this.converter = converter;
-		setMappingContext(converter.getCassandraMappingContext());
+		setMappingContext(this.converter.getCassandraMappingContext());
 	}
 
 	protected void setMappingContext(CassandraMappingContext mappingContext) {

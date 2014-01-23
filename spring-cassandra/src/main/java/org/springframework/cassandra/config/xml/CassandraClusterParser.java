@@ -20,8 +20,6 @@ import static org.springframework.data.config.ParsingUtils.getSourceBeanDefiniti
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -54,8 +52,6 @@ import com.datastax.driver.core.SocketOptions;
  * @author David Webb
  */
 public class CassandraClusterParser extends AbstractBeanDefinitionParser {
-
-	private final static Logger log = LoggerFactory.getLogger(CassandraClusterParser.class);
 
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)

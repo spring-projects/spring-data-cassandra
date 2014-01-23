@@ -3,13 +3,8 @@ package org.springframework.data.cassandra.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.CassandraTemplate;
 import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
-import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
-import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -36,8 +31,6 @@ import com.datastax.driver.core.querybuilder.Update;
  * 
  */
 public abstract class CqlUtils {
-
-	private static Logger log = LoggerFactory.getLogger(CqlUtils.class);
 
 	/**
 	 * Create the List of CQL for the indexes required for Cassandra mapped Table.

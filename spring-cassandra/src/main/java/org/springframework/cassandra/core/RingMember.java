@@ -25,6 +25,8 @@ import com.datastax.driver.core.Host;
  */
 public final class RingMember implements Serializable {
 
+	private static final long serialVersionUID = -2582309141903132916L;
+
 	/*
 	 * Ring attributes
 	 */

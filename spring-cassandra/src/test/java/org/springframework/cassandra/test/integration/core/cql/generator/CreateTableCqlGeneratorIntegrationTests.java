@@ -3,8 +3,6 @@ package org.springframework.cassandra.test.integration.core.cql.generator;
 import static org.springframework.cassandra.test.integration.core.cql.generator.CqlTableSpecificationAssertions.assertTable;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.BasicTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests.CompositePartitionKeyTest;
@@ -16,8 +14,6 @@ import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCql
  * @author Matthew T. Adams
  */
 public class CreateTableCqlGeneratorIntegrationTests {
-
-	private final static Logger log = LoggerFactory.getLogger(CreateTableCqlGeneratorIntegrationTests.class);
 
 	/**
 	 * Integration test base class that knows how to do everything except instantiate the concrete unit test type T.

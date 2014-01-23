@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -47,8 +45,6 @@ import org.springframework.util.Assert;
  */
 public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<KeyspaceActionSpecification<?>>>,
 		InitializingBean, DisposableBean {
-
-	private final static Logger log = LoggerFactory.getLogger(KeyspaceActionSpecificationFactoryBean.class);
 
 	private KeyspaceAction action;
 	private String name;
