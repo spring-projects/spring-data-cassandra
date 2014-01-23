@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
@@ -35,12 +37,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.CassandraOperations;
 import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.HostMapper;
 import org.springframework.cassandra.core.PreparedStatementBinder;
 import org.springframework.cassandra.core.PreparedStatementCallback;
 import org.springframework.cassandra.core.PreparedStatementCreator;
+import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.ResultSetExtractor;
-import org.springframework.cassandra.core.ResultSetFutureExtractor;
+import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.RingMember;
 import org.springframework.cassandra.core.RowCallbackHandler;
 import org.springframework.cassandra.core.RowIterator;
@@ -360,24 +364,147 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String isbn = "999999999";
 
 		Book b1 = cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'",
-				new ResultSetFutureExtractor<Book>() {
 
-					@Override
-					public Book extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
+		new ResultSetExtractor<Book>() {
 
-						ResultSet frs = rs.getUninterruptibly();
-						Row r = frs.one();
-						assertNotNull(r);
+			@Override
+			public Book extractData(ResultSet rs) throws DriverException, DataAccessException {
+				Row r = rs.one();
+				assertNotNull(r);
 
-						Book b = rowToBook(r);
+				Book b = rowToBook(r);
 
-						return b;
-					}
-				});
+				return b;
+			}
+		}, 60l, TimeUnit.SECONDS);
 
 		Book b2 = getBook(isbn);
 
 		assertBook(b1, b2);
+
+	}
+
+	@Test
+	public void queryAsynchronouslyTestCqlStringResultSetExtractorWithOptions() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DEFAULT);
+
+		final String isbn = "999999999";
+
+		Book b1 = cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'",
+
+		new ResultSetExtractor<Book>() {
+
+			@Override
+			public Book extractData(ResultSet rs) throws DriverException, DataAccessException {
+				Row r = rs.one();
+				assertNotNull(r);
+
+				Book b = rowToBook(r);
+
+				return b;
+			}
+		}, 60l, TimeUnit.SECONDS, options);
+
+		Book b2 = getBook(isbn);
+
+		assertBook(b1, b2);
+
+	}
+
+	@Test
+	public void queryAsynchronouslyWithListener() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DEFAULT);
+
+		final String isbn = "999999999";
+
+		BookListener listener = new BookListener();
+
+		cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener);
+
+		// TODO Use better multi threading devices here.
+		while (!listener.isDone()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException muted) {
+			}
+		}
+
+		Book book2 = getBook(isbn);
+
+		assertBook(listener.getBook(), book2);
+
+	}
+
+	@Test
+	public void queryAsynchronouslyWithListenerAndExecutor() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DEFAULT);
+
+		final String isbn = "999999999";
+
+		BookListener listener = new BookListener();
+
+		cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+		});
+
+		// TODO Use better multi threading devices here.
+		while (!listener.isDone()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException muted) {
+			}
+		}
+
+		Book book2 = getBook(isbn);
+
+		assertBook(listener.getBook(), book2);
+
+	}
+
+	@Test
+	public void queryAsynchronouslyWithListenerAndExecutorAndOptions() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DEFAULT);
+
+		final String isbn = "999999999";
+
+		BookListener listener = new BookListener();
+
+		cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener, options,
+				new Executor() {
+
+					@Override
+					public void execute(Runnable command) {
+						command.run();
+					}
+				});
+
+		// TODO Use better multi threading devices here.
+		while (!listener.isDone()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException muted) {
+			}
+		}
+
+		Book book2 = getBook(isbn);
+
+		assertBook(listener.getBook(), book2);
 
 	}
 
@@ -405,22 +532,20 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	}
 
 	@Test
-	public void processTestResultSetRowCallbackHandler() {
+	public void processTestResultSetRowCallbackHandlerWithAsyncOptions() {
+
+		QueryOptions options = new QueryOptions();
+		options.setConsistencyLevel(ConsistencyLevel.ONE);
+		options.setRetryPolicy(RetryPolicy.DEFAULT);
 
 		final String isbn = "999999999";
 
 		final Book b1 = getBook(isbn);
 
-		ResultSet rs = cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'",
-				new ResultSetFutureExtractor<ResultSet>() {
+		ResultSetFuture rsf = cassandraTemplate
+				.queryAsynchronously("select * from book where isbn='" + isbn + "'", options);
 
-					@Override
-					public ResultSet extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
-
-						ResultSet frs = rs.getUninterruptibly();
-						return frs;
-					}
-				});
+		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
@@ -470,16 +595,10 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		ResultSet rs = cassandraTemplate.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')",
-				new ResultSetFutureExtractor<ResultSet>() {
+		ResultSetFuture rsf = cassandraTemplate
+				.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
 
-					@Override
-					public ResultSet extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
-
-						ResultSet frs = rs.getUninterruptibly();
-						return frs;
-					}
-				});
+		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
@@ -542,16 +661,10 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		ResultSet rs = cassandraTemplate.queryAsynchronously("select * from book where isbn in ('" + ISBN_NINES + "')",
-				new ResultSetFutureExtractor<ResultSet>() {
+		ResultSetFuture rsf = cassandraTemplate.queryAsynchronously("select * from book where isbn in ('" + ISBN_NINES
+				+ "')");
 
-					@Override
-					public ResultSet extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
-
-						ResultSet frs = rs.getUninterruptibly();
-						return frs;
-					}
-				});
+		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
@@ -589,16 +702,10 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	@Test
 	public void processOneTestResultSetType() {
 
-		ResultSet rs = cassandraTemplate.queryAsynchronously("select title from book where isbn in ('" + ISBN_NINES + "')",
-				new ResultSetFutureExtractor<ResultSet>() {
+		ResultSetFuture rsf = cassandraTemplate.queryAsynchronously("select title from book where isbn in ('" + ISBN_NINES
+				+ "')");
 
-					@Override
-					public ResultSet extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
-
-						ResultSet frs = rs.getUninterruptibly();
-						return frs;
-					}
-				});
+		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
@@ -627,16 +734,10 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	@Test
 	public void processMapTestResultSet() {
 
-		ResultSet rs = cassandraTemplate.queryAsynchronously("select * from book where isbn in ('" + ISBN_NINES + "')",
-				new ResultSetFutureExtractor<ResultSet>() {
+		ResultSetFuture rsf = cassandraTemplate.queryAsynchronously("select * from book where isbn in ('" + ISBN_NINES
+				+ "')");
 
-					@Override
-					public ResultSet extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
-
-						ResultSet frs = rs.getUninterruptibly();
-						return frs;
-					}
-				});
+		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
@@ -674,16 +775,10 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		ResultSet rs = cassandraTemplate.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')",
-				new ResultSetFutureExtractor<ResultSet>() {
+		ResultSetFuture rsf = cassandraTemplate
+				.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
 
-					@Override
-					public ResultSet extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
-
-						ResultSet frs = rs.getUninterruptibly();
-						return frs;
-					}
-				});
+		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
@@ -716,16 +811,10 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		ResultSet rs = cassandraTemplate.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')",
-				new ResultSetFutureExtractor<ResultSet>() {
+		ResultSetFuture rsf = cassandraTemplate
+				.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
 
-					@Override
-					public ResultSet extractData(ResultSetFuture rs) throws DriverException, DataAccessException {
-
-						ResultSet frs = rs.getUninterruptibly();
-						return frs;
-					}
-				});
+		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
@@ -1112,7 +1201,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	 * @param b
 	 * @param orderedElements
 	 */
-	private void assertBook(Book b1, Book b2) {
+	public static void assertBook(Book b1, Book b2) {
 
 		assertEquals(b1.getIsbn(), b2.getIsbn());
 		assertEquals(b1.getTitle(), b2.getTitle());

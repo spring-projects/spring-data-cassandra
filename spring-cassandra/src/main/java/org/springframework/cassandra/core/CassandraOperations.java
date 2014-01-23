@@ -18,10 +18,13 @@ package org.springframework.cassandra.core;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 
 /**
@@ -46,14 +49,137 @@ public interface CassandraOperations {
 	 * 
 	 * @param cql
 	 */
-	void execute(final String cql) throws DataAccessException;
+	void execute(String cql) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
 	 * @param cql The CQL Statement to execute
 	 */
-	void executeAsynchronously(final String cql) throws DataAccessException;
+	void executeAsynchronously(String cql) throws DataAccessException;
+
+	/**
+	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor. This uses default Query
+	 * Options when extracting the ResultSet.
+	 * 
+	 * @param cql The Query
+	 * @param rse The implementation for extracting the ResultSet
+	 * @param timeout Time to wait for results
+	 * @param timeUnit Time unit to wait for results
+	 * @return
+	 */
+	<T> T queryAsynchronously(String cql, ResultSetExtractor<T> rse, Long timeout, TimeUnit timeUnit);
+
+	/**
+	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
+	 * 
+	 * @param cql The Query
+	 * @param rse The implementation for extracting the ResultSet
+	 * @param timeout Time to wait for results
+	 * @param timeUnit Time unit to wait for results
+	 * @param options Query Options
+	 * @return
+	 */
+	<T> T queryAsynchronously(String cql, ResultSetExtractor<T> rse, Long timeout, TimeUnit timeUnit, QueryOptions options);
+
+	/**
+	 * Executes the provided CQL Query and returns the ResultSetFuture for user processing.
+	 * 
+	 * @param cql The Query
+	 * @return
+	 */
+	ResultSetFuture queryAsynchronously(String cql);
+
+	/**
+	 * Executes the provided CQL Query and returns the ResultSetFuture for user processing.
+	 * 
+	 * @param cql The Query
+	 * @param options Query Options
+	 * @return
+	 */
+	ResultSetFuture queryAsynchronously(String cql, QueryOptions options);
+
+	/**
+	 * Executes the provided CQL Query with the provided Runnable implementations.
+	 * 
+	 * @param cql The Query
+	 * @param listener Runnable Listener for handling the query in a separate thread
+	 */
+	void queryAsynchronously(String cql, Runnable listener);
+
+	/**
+	 * Executes the provided CQL Query with the provided listener. This is preferred over the same method that takes a
+	 * plain Runnable. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the
+	 * query is completed for optimal flexibility.
+	 * 
+	 * @param cql The Query
+	 * @param listener Runnable Listener for handling the query in a separate thread
+	 */
+	void queryAsynchronously(String cql, AsynchronousQueryListener listener);
+
+	/**
+	 * Executes the provided CQL Query with the Runnable implementations using the Query Options.
+	 * 
+	 * @param cql The Query
+	 * @param options Query Option
+	 * @param listener Runnable Listener for handling the query in a separate thread
+	 */
+	void queryAsynchronously(String cql, Runnable listener, QueryOptions options);
+
+	/**
+	 * Executes the provided CQL Query with the provided Listener and Query Options. This is preferred over the same
+	 * method that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the
+	 * {@link ResultSetFuture} once the query is completed for optimal flexibility.
+	 * 
+	 * @param cql The Query
+	 * @param options Query Option
+	 * @param listener Runnable Listener for handling the query in a separate thread
+	 */
+	void queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options);
+
+	/**
+	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
+	 * 
+	 * @param cql The Query
+	 * @param options Query Option
+	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @param executor To execute the Runnable Listener
+	 */
+	void queryAsynchronously(String cql, Runnable listener, Executor executor);
+
+	/**
+	 * Executes the provided CQL Query with the provided listener and executor. This is preferred over the same method
+	 * that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture}
+	 * once the query is completed for optimal flexibility.
+	 * 
+	 * @param cql The Query
+	 * @param options Query Option
+	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @param executor To execute the Runnable Listener
+	 */
+	void queryAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor);
+
+	/**
+	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
+	 * 
+	 * @param cql The Query
+	 * @param options Query Option
+	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @param executor To execute the Runnable Listener
+	 */
+	void queryAsynchronously(String cql, Runnable listener, QueryOptions options, Executor executor);
+
+	/**
+	 * Executes the provided CQL Query with the provided Listener, Executor and Query Options. This is preferred over the
+	 * same method that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the
+	 * {@link ResultSetFuture} once the query is completed for optimal flexibility.
+	 * 
+	 * @param cql
+	 * @param listener
+	 * @param options
+	 * @param executor
+	 */
+	void queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options, Executor executor);
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
@@ -64,41 +190,19 @@ public interface CassandraOperations {
 	 * @return Type <T> specified in the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
-	<T> T query(final String cql, ResultSetExtractor<T> rse) throws DataAccessException;
+	<T> T query(String cql, ResultSetExtractor<T> rse) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
 	 * 
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
-	 * @param options Query Options Object
+	 * @param options Query Options
 	 * 
 	 * @return
 	 * @throws DataAccessException
 	 */
-	<T> T query(final String cql, ResultSetExtractor<T> rse, final QueryOptions options) throws DataAccessException;
-
-	/**
-	 * Executes the provided CQL Query asynchronously, and extracts the results with the ResultSetFutureExtractor
-	 * 
-	 * @param cql The Query
-	 * @param rse The implementation for extracting the future results
-	 * @return
-	 * @throws DataAccessException
-	 */
-	<T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse) throws DataAccessException;
-
-	/**
-	 * Executes the provided CQL Query asynchronously, and extracts the results with the ResultSetFutureExtractor
-	 * 
-	 * @param cql The Query
-	 * @param rse The implementation for extracting the future results
-	 * @param options Query Options Object
-	 * @return
-	 * @throws DataAccessException
-	 */
-	<T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse, final QueryOptions options)
-			throws DataAccessException;
+	<T> T query(String cql, ResultSetExtractor<T> rse, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
@@ -107,7 +211,7 @@ public interface CassandraOperations {
 	 * @param rch The implementation for processing the rows returned.
 	 * @throws DataAccessException
 	 */
-	void query(final String cql, RowCallbackHandler rch) throws DataAccessException;
+	void query(String cql, RowCallbackHandler rch) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
@@ -117,7 +221,7 @@ public interface CassandraOperations {
 	 * @param options Query Options Object
 	 * @throws DataAccessException
 	 */
-	void query(final String cql, RowCallbackHandler rch, final QueryOptions options) throws DataAccessException;
+	void query(String cql, RowCallbackHandler rch, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Processes the ResultSet through the RowCallbackHandler and return nothing. This is used internal to the Template
@@ -138,7 +242,7 @@ public interface CassandraOperations {
 	 * @return List of <T> processed by the RowMapper
 	 * @throws DataAccessException
 	 */
-	<T> List<T> query(final String cql, RowMapper<T> rowMapper) throws DataAccessException;
+	<T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper.
@@ -149,7 +253,7 @@ public interface CassandraOperations {
 	 * @return List of <T> processed by the RowMapper
 	 * @throws DataAccessException
 	 */
-	<T> List<T> query(final String cql, RowMapper<T> rowMapper, final QueryOptions options) throws DataAccessException;
+	<T> List<T> query(String cql, RowMapper<T> rowMapper, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Processes the ResultSet through the RowMapper and returns the List of mapped Rows. This is used internal to the
@@ -175,7 +279,7 @@ public interface CassandraOperations {
 	 * @return Object<T>
 	 * @throws DataAccessException
 	 */
-	<T> T queryForObject(final String cql, RowMapper<T> rowMapper) throws DataAccessException;
+	<T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
 	 * Process a ResultSet through a RowMapper. This is used internal to the Template for core operations, but is made
@@ -197,7 +301,7 @@ public interface CassandraOperations {
 	 * @return The Object<T> - item [0,0] in the result table of the query.
 	 * @throws DataAccessException
 	 */
-	<T> T queryForObject(final String cql, Class<T> requiredType) throws DataAccessException;
+	<T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
 
 	/**
 	 * Process a ResultSet, trying to convert the first columns of the first Row to Class<T>. This is used internal to the
@@ -219,7 +323,7 @@ public interface CassandraOperations {
 	 * @return Map representing the results of the Query
 	 * @throws DataAccessException
 	 */
-	Map<String, Object> queryForMap(final String cql) throws DataAccessException;
+	Map<String, Object> queryForMap(String cql) throws DataAccessException;
 
 	/**
 	 * Process a ResultSet with <b>ONE</b> Row and convert to a Map. This is used internal to the Template for core
@@ -241,7 +345,7 @@ public interface CassandraOperations {
 	 * @return List of elementType
 	 * @throws DataAccessException
 	 */
-	<T> List<T> queryForList(final String cql, Class<T> elementType) throws DataAccessException;
+	<T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException;
 
 	/**
 	 * Process a ResultSet and convert the first column of the results to a List. This is used internal to the Template
@@ -263,7 +367,7 @@ public interface CassandraOperations {
 	 * @return List of Maps with the query results
 	 * @throws DataAccessException
 	 */
-	List<Map<String, Object>> queryForListOfMap(final String cql) throws DataAccessException;
+	List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException;
 
 	/**
 	 * Process a ResultSet and convert it to a List of Maps with column/value. This is used internal to the Template for
@@ -313,9 +417,9 @@ public interface CassandraOperations {
 	 * @return Type<T> generated by the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
-	<T> T query(final String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException;
+	<T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException;
 
-	<T> T query(final String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse, final QueryOptions options)
+	<T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse, QueryOptions options)
 			throws DataAccessException;
 
 	/**
@@ -328,7 +432,7 @@ public interface CassandraOperations {
 	 * @param rch The RowCallbackHandler for processing the ResultSet
 	 * @throws DataAccessException
 	 */
-	void query(final String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException;
+	void query(String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException;
 
 	/**
 	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
@@ -341,7 +445,7 @@ public interface CassandraOperations {
 	 * @param options The Query Options Object
 	 * @throws DataAccessException
 	 */
-	void query(final String cql, PreparedStatementBinder psb, RowCallbackHandler rch, final QueryOptions options)
+	void query(String cql, PreparedStatementBinder psb, RowCallbackHandler rch, QueryOptions options)
 			throws DataAccessException;
 
 	/**
@@ -356,7 +460,7 @@ public interface CassandraOperations {
 	 * @return List of <T> for each Row returned from the Query.
 	 * @throws DataAccessException
 	 */
-	<T> List<T> query(final String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException;
+	<T> List<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
 	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
@@ -371,7 +475,7 @@ public interface CassandraOperations {
 	 * @return List of <T> for each Row returned from the Query.
 	 * @throws DataAccessException
 	 */
-	<T> List<T> query(final String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper, final QueryOptions options)
+	<T> List<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper, QueryOptions options)
 			throws DataAccessException;
 
 	/**
@@ -397,8 +501,7 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
-	<T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse, final QueryOptions options)
-			throws DataAccessException;
+	<T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
@@ -421,8 +524,7 @@ public interface CassandraOperations {
 	 * @param options The Query Options Object
 	 * @throws DataAccessException
 	 */
-	void query(PreparedStatementCreator psc, RowCallbackHandler rch, final QueryOptions options)
-			throws DataAccessException;
+	void query(PreparedStatementCreator psc, RowCallbackHandler rch, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
@@ -447,7 +549,7 @@ public interface CassandraOperations {
 	 * @return List of Type <T> mapped from each Row in the Results
 	 * @throws DataAccessException
 	 */
-	<T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper, final QueryOptions options)
+	<T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper, QueryOptions options)
 			throws DataAccessException;
 
 	/**
@@ -462,8 +564,8 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
-	<T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse,
-			final QueryOptions options) throws DataAccessException;
+	<T> T query(PreparedStatementCreator psc, PreparedStatementBinder psb, ResultSetExtractor<T> rse, QueryOptions options)
+			throws DataAccessException;
 
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
@@ -476,7 +578,7 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
-	<T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse)
+	<T> T query(PreparedStatementCreator psc, PreparedStatementBinder psb, ResultSetExtractor<T> rse)
 			throws DataAccessException;
 
 	/**
@@ -491,8 +593,8 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
-	void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch,
-			final QueryOptions options) throws DataAccessException;
+	void query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowCallbackHandler rch, QueryOptions options)
+			throws DataAccessException;
 
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
@@ -505,7 +607,7 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
-	void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch)
+	void query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowCallbackHandler rch)
 			throws DataAccessException;
 
 	/**
@@ -520,8 +622,8 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
-	<T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowMapper<T> rowMapper,
-			final QueryOptions options) throws DataAccessException;
+	<T> List<T> query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowMapper<T> rowMapper,
+			QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
@@ -534,7 +636,7 @@ public interface CassandraOperations {
 	 * @return Type <T> which is the output of the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
-	<T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowMapper<T> rowMapper)
+	<T> List<T> query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowMapper<T> rowMapper)
 			throws DataAccessException;
 
 	/**

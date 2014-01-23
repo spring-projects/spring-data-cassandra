@@ -22,9 +22,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.cassandra.support.CassandraAccessor;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.QueryTimeoutException;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.BoundStatement;
@@ -77,26 +82,169 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		afterPropertiesSet();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#execute(org.springframework.data.cassandra.core.SessionCallback)
-	 */
 	@Override
 	public <T> T execute(SessionCallback<T> sessionCallback) throws DataAccessException {
 		return doExecute(sessionCallback);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#execute(java.lang.String)
-	 */
 	@Override
 	public void execute(final String cql) throws DataAccessException {
 		doExecute(cql, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#queryAsynchronously(java.lang.String, org.springframework.cassandra.core.ResultSetFutureExtractor, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
+	public ResultSetFuture queryAsynchronously(final String cql) {
+		return execute(new SessionCallback<ResultSetFuture>() {
+
+			@Override
+			public ResultSetFuture doInSession(Session s) throws DataAccessException {
+				return s.executeAsync(cql);
+			}
+		});
+	}
+
+	@Override
+	public <T> T queryAsynchronously(String cql, ResultSetExtractor<T> rse, Long timeout, TimeUnit timeUnit) {
+		return queryAsynchronously(cql, rse, timeout, timeUnit, null);
+	}
+
+	@Override
+	public <T> T queryAsynchronously(final String cql, final ResultSetExtractor<T> rse, final Long timeout,
+			final TimeUnit timeUnit, final QueryOptions options) {
+		return rse.extractData(execute(new SessionCallback<ResultSet>() {
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				Statement statement = new SimpleStatement(cql);
+				addQueryOptions(statement, options);
+				ResultSetFuture rsf = s.executeAsync(statement);
+				ResultSet rs = null;
+				try {
+					rs = rsf.get(timeout, timeUnit);
+				} catch (TimeoutException e) {
+					throw new QueryTimeoutException("Asyncronous Query Timed Out.", e);
+				} catch (InterruptedException e) {
+					throw translateExceptionIfPossible(e);
+				} catch (ExecutionException e) {
+					if (e.getCause() instanceof Exception) {
+						throw translateExceptionIfPossible((Exception) e.getCause());
+					}
+					throw new CassandraUncategorizedDataAccessException("Unknown Throwable", e.getCause());
+				}
+				return rs;
+			}
+		}));
+	}
+
+	@Override
+	public ResultSetFuture queryAsynchronously(final String cql, final QueryOptions options) {
+		return execute(new SessionCallback<ResultSetFuture>() {
+			@Override
+			public ResultSetFuture doInSession(Session s) throws DataAccessException {
+				Statement statement = new SimpleStatement(cql);
+				addQueryOptions(statement, options);
+				return s.executeAsync(statement);
+			}
+		});
+	}
+
+	@Override
+	public void queryAsynchronously(String cql, Runnable listener) {
+		queryAsynchronously(cql, listener, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+		});
+
+	}
+
+	@Override
+	public void queryAsynchronously(String cql, AsynchronousQueryListener listener) {
+		queryAsynchronously(cql, listener, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+		});
+
+	}
+
+	@Override
+	public void queryAsynchronously(String cql, Runnable listener, QueryOptions options) {
+		queryAsynchronously(cql, listener, options, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+
+		});
+
+	}
+
+	@Override
+	public void queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options) {
+		queryAsynchronously(cql, listener, options, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+
+		});
+
+	}
+
+	@Override
+	public void queryAsynchronously(String cql, Runnable listener, Executor executor) {
+		queryAsynchronously(cql, listener, null, executor);
+
+	}
+
+	@Override
+	public void queryAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor) {
+		queryAsynchronously(cql, listener, null, executor);
+
+	}
+
+	@Override
+	public void queryAsynchronously(final String cql, final Runnable listener, final QueryOptions options,
+			final Executor executor) {
+		execute(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				Statement statement = new SimpleStatement(cql);
+				addQueryOptions(statement, options);
+				ResultSetFuture rsf = s.executeAsync(statement);
+				rsf.addListener(listener, executor);
+				return null;
+			}
+		});
+	}
+
+	@Override
+	public void queryAsynchronously(final String cql, final AsynchronousQueryListener listener,
+			final QueryOptions options, final Executor executor) {
+		execute(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				Statement statement = new SimpleStatement(cql);
+				addQueryOptions(statement, options);
+				final ResultSetFuture rsf = s.executeAsync(statement);
+				Runnable wrapper = new Runnable() {
+					@Override
+					public void run() {
+						listener.onQueryComplete(rsf);
+					}
+				};
+				rsf.addListener(wrapper, executor);
+				return null;
+			}
+		});
+	}
+
 	public <T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse, final QueryOptions options)
 			throws DataAccessException {
 		return rse.extractData(execute(new SessionCallback<ResultSetFuture>() {
@@ -109,25 +257,15 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		}));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.FutureResultSetExtractor)
-	 */
-	@Override
 	public <T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> rse) throws DataAccessException {
 		return queryAsynchronously(cql, rse, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.ResultSetExtractor, java.util.Map)
-	 */
 	@Override
 	public <T> T query(String cql, ResultSetExtractor<T> rse) throws DataAccessException {
 		return query(cql, rse, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.ResultSetExtractor, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T query(String cql, ResultSetExtractor<T> rse, QueryOptions options) throws DataAccessException {
 		Assert.notNull(cql);
@@ -135,67 +273,40 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		return rse.extractData(rs);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.RowCallbackHandler, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public void query(String cql, RowCallbackHandler rch, QueryOptions options) throws DataAccessException {
 		process(doExecute(cql, options), rch);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.RowCallbackHandler)
-	 */
 	public void query(String cql, RowCallbackHandler rch) throws DataAccessException {
 		query(cql, rch, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.RowMapper, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper, QueryOptions options) throws DataAccessException {
 		return process(doExecute(cql, options), rowMapper);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.RowMapper)
-	 */
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(cql, rowMapper, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#queryForList(java.lang.String)
-	 */
 	public List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException {
 		return processListOfMap(doExecute(cql, null));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#queryForList(java.lang.String, java.lang.Class)
-	 */
 	public <T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException {
 		return processList(doExecute(cql, null), elementType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#queryForMap(java.lang.String)
-	 */
 	public Map<String, Object> queryForMap(String cql) throws DataAccessException {
 		return processMap(doExecute(cql, null));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#queryForObject(java.lang.String, java.lang.Class)
-	 */
 	public <T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
 		return processOne(doExecute(cql, null), requiredType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper)
-	 */
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
 		return processOne(doExecute(cql, null), rowMapper);
 	}
@@ -215,7 +326,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 			return callback.doInSession(getSession());
 
 		} catch (DataAccessException e) {
-			throw throwTranslated(e);
+			throw translateExceptionIfPossible(e);
 		}
 	}
 
@@ -290,9 +401,6 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		return map;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#describeRing()
-	 */
 	@Override
 	public List<RingMember> describeRing() throws DataAccessException {
 		return new ArrayList<RingMember>(describeRing(new RingMemberHostMapper()));
@@ -326,18 +434,12 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#describeRing(org.springframework.cassandra.core.HostMapper)
-	 */
 	@Override
 	public <T> Collection<T> describeRing(HostMapper<T> hostMapper) throws DataAccessException {
 		Set<Host> hosts = getHosts();
 		return hostMapper.mapHosts(hosts);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#executeAsynchronously(java.lang.String)
-	 */
 	@Override
 	public void executeAsynchronously(final String cql) throws DataAccessException {
 		execute(new SessionCallback<Object>() {
@@ -348,9 +450,6 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#process(com.datastax.driver.core.ResultSet, org.springframework.cassandra.core.RowCallbackHandler)
-	 */
 	@Override
 	public void process(ResultSet resultSet, RowCallbackHandler rch) throws DataAccessException {
 		try {
@@ -358,13 +457,10 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 				rch.processRow(row);
 			}
 		} catch (DriverException dx) {
-			throwTranslated(dx);
+			translateExceptionIfPossible(dx);
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#process(com.datastax.driver.core.ResultSet, org.springframework.cassandra.core.RowMapper)
-	 */
 	@Override
 	public <T> List<T> process(ResultSet resultSet, RowMapper<T> rowMapper) throws DataAccessException {
 		List<T> mappedRows = new ArrayList<T>();
@@ -374,14 +470,11 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 				mappedRows.add(rowMapper.mapRow(row, i++));
 			}
 		} catch (DriverException dx) {
-			throwTranslated(dx);
+			translateExceptionIfPossible(dx);
 		}
 		return mappedRows;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#processOne(com.datastax.driver.core.ResultSet, org.springframework.cassandra.core.RowMapper)
-	 */
 	@Override
 	public <T> T processOne(ResultSet resultSet, RowMapper<T> rowMapper) throws DataAccessException {
 		T row = null;
@@ -392,14 +485,11 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 			Assert.isTrue(rows.size() == 1, "row list has " + rows.size() + " rows instead of one");
 			row = rowMapper.mapRow(rows.get(0), 0);
 		} catch (DriverException dx) {
-			throwTranslated(dx);
+			translateExceptionIfPossible(dx);
 		}
 		return row;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#processOne(com.datastax.driver.core.ResultSet, java.lang.Class)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T processOne(ResultSet resultSet, Class<T> requiredType) throws DataAccessException {
@@ -413,9 +503,6 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		return (T) firstColumnToObject(row);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#processMap(com.datastax.driver.core.ResultSet)
-	 */
 	@Override
 	public Map<String, Object> processMap(ResultSet resultSet) throws DataAccessException {
 		if (resultSet == null) {
@@ -424,11 +511,8 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		return toMap(resultSet.one());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#processList(com.datastax.driver.core.ResultSet, java.lang.Class)
-	 */
 	@Override
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings("unchecked")
 	public <T> List<T> processList(ResultSet resultSet, Class<T> elementType) throws DataAccessException {
 		List<Row> rows = resultSet.all();
 		List<T> list = new ArrayList<T>(rows.size());
@@ -438,9 +522,6 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		return list;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#processListOfMap(com.datastax.driver.core.ResultSet)
-	 */
 	@Override
 	public List<Map<String, Object>> processListOfMap(ResultSet resultSet) throws DataAccessException {
 		List<Row> rows = resultSet.all();
@@ -457,14 +538,18 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * @param ex
 	 * @return
 	 */
-	protected RuntimeException throwTranslated(RuntimeException ex) {
+	protected RuntimeException translateExceptionIfPossible(RuntimeException ex) {
 		RuntimeException resolved = getExceptionTranslator().translateExceptionIfPossible(ex);
 		return resolved == null ? ex : resolved;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#execute(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementCallback)
-	 */
+	protected RuntimeException translateExceptionIfPossible(Exception ex) {
+		if (ex instanceof RuntimeException) {
+			return translateExceptionIfPossible((RuntimeException) ex);
+		}
+		return new CassandraUncategorizedDataAccessException("Caught Uncategorized Exception", ex);
+	}
+
 	@Override
 	public <T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action) {
 
@@ -472,125 +557,83 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 			PreparedStatement ps = psc.createPreparedStatement(getSession());
 			return action.doInPreparedStatement(ps);
 		} catch (DriverException dx) {
-			throwTranslated(dx);
+			translateExceptionIfPossible(dx);
 		}
 
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#execute(java.lang.String, org.springframework.cassandra.core.PreparedStatementCallback)
-	 */
 	@Override
 	public <T> T execute(String cql, PreparedStatementCallback<T> action) {
 		return execute(new SimplePreparedStatementCreator(cql), action);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.ResultSetExtractor, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse, QueryOptions options)
 			throws DataAccessException {
 		return query(psc, null, rse, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.ResultSetExtractor)
-	 */
 	@Override
 	public <T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse) throws DataAccessException {
 		return query(psc, rse, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowCallbackHandler, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public void query(PreparedStatementCreator psc, RowCallbackHandler rch, QueryOptions options)
 			throws DataAccessException {
 		query(psc, null, rch, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowCallbackHandler)
-	 */
 	@Override
 	public void query(PreparedStatementCreator psc, RowCallbackHandler rch) throws DataAccessException {
 		query(psc, rch, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowMapper, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper, QueryOptions options)
 			throws DataAccessException {
 		return query(psc, null, rowMapper, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowMapper)
-	 */
 	@Override
 	public <T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(psc, rowMapper, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse, QueryOptions options)
 			throws DataAccessException {
 		return query(new SimplePreparedStatementCreator(cql), psb, rse, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementSetter, org.springframework.cassandra.core.ResultSetExtractor)
-	 */
 	@Override
 	public <T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException {
 		return query(cql, psb, rse, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public void query(String cql, PreparedStatementBinder psb, RowCallbackHandler rch, QueryOptions options)
 			throws DataAccessException {
 		query(new SimplePreparedStatementCreator(cql), psb, rch, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementSetter, org.springframework.cassandra.core.RowCallbackHandler)
-	 */
 	@Override
 	public void query(String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException {
 		query(cql, psb, rch, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper, QueryOptions options)
 			throws DataAccessException {
 		return query(new SimplePreparedStatementCreator(cql), psb, rowMapper, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementSetter, org.springframework.cassandra.core.RowMapper)
-	 */
 	@Override
 	public <T> List<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(cql, psb, rowMapper, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#ingest(java.lang.String, org.springframework.cassandra.core.RowIterator, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public void ingest(String cql, RowIterator rowIterator, QueryOptions options) {
 
@@ -602,17 +645,11 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#ingest(java.lang.String, org.springframework.cassandra.core.RowIterator)
-	 */
 	@Override
 	public void ingest(String cql, RowIterator rowIterator) {
 		ingest(cql, rowIterator, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#ingest(java.lang.String, java.util.List, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public void ingest(String cql, final List<List<?>> rows, QueryOptions options) {
 
@@ -637,17 +674,11 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#ingest(java.lang.String, java.util.List)
-	 */
 	@Override
 	public void ingest(String cql, List<List<?>> rows) {
 		ingest(cql, rows, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#ingest(java.lang.String, java.lang.Object[][], org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public void ingest(String cql, final Object[][] rows, QueryOptions options) {
 
@@ -668,17 +699,11 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		}, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#ingest(java.lang.String, java.lang.Object[][])
-	 */
 	@Override
 	public void ingest(String cql, final Object[][] rows) {
 		ingest(cql, rows, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#truncate(java.lang.String)
-	 */
 	@Override
 	public void truncate(String tableName) throws DataAccessException {
 		Truncate truncate = QueryBuilder.truncate(tableName);
@@ -733,9 +758,6 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse,
 			final QueryOptions options) throws DataAccessException {
@@ -758,18 +780,12 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor)
-	 */
 	@Override
 	public <T> T query(PreparedStatementCreator psc, PreparedStatementBinder psb, ResultSetExtractor<T> rse)
 			throws DataAccessException {
 		return query(psc, psb, rse, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public void query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final RowCallbackHandler rch,
 			final QueryOptions options) throws DataAccessException {
@@ -793,18 +809,12 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler)
-	 */
 	@Override
 	public void query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowCallbackHandler rch)
 			throws DataAccessException {
 		query(psc, psb, rch, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper, org.springframework.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> query(PreparedStatementCreator psc, final PreparedStatementBinder psb,
 			final RowMapper<T> rowMapper, final QueryOptions options) throws DataAccessException {
@@ -827,9 +837,6 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CassandraOperations#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
-	 */
 	@Override
 	public <T> List<T> query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowMapper<T> rowMapper)
 			throws DataAccessException {
