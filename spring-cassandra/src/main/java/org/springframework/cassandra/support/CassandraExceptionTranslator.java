@@ -62,12 +62,7 @@ import com.datastax.driver.core.exceptions.WriteTimeoutException;
 
 public class CassandraExceptionTranslator implements PersistenceExceptionTranslator {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#
-	 * translateExceptionIfPossible(java.lang.RuntimeException)
-	 */
+	@Override
 	public DataAccessException translateExceptionIfPossible(RuntimeException x) {
 
 		if (x instanceof DataAccessException) {
