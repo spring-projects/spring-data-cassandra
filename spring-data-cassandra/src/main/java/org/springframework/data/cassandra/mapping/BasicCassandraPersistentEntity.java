@@ -20,7 +20,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.data.cassandra.exception.UnsupportedCassandraOperationException;
 import org.springframework.data.cassandra.util.CassandraNamingUtils;
+import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.Expression;
@@ -67,6 +70,16 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		this.table = anno != null && StringUtils.hasText(anno.value()) ? anno.value() : CassandraNamingUtils
 				.getPreferredTableName(type);
+	}
+
+	@Override
+	public void addAssociation(Association<CassandraPersistentProperty> association) {
+		throw new UnsupportedCassandraOperationException("Cassandra does not support associations");
+	}
+
+	@Override
+	public void doWithAssociations(AssociationHandler<CassandraPersistentProperty> handler) {
+		throw new UnsupportedCassandraOperationException("Cassandra does not support associations");
 	}
 
 	@Override
