@@ -6,15 +6,23 @@ import java.util.Properties;
 @SuppressWarnings("serial")
 public class BuildProperties extends Properties {
 
+	protected String resourceName = null;
+
 	public BuildProperties() {
-		this("/build.properties");
+		this("/" + BuildProperties.class.getName() + ".properties");
 	}
 
-	public BuildProperties(String resourceName) {
+	protected BuildProperties(String resourceName) {
+		this.resourceName = resourceName;
+
+		loadProperties();
+	}
+
+	public void loadProperties() {
 		loadProperties(resourceName);
 	}
 
-	public void loadProperties(String resourceName) {
+	protected void loadProperties(String resourceName) {
 		InputStream in = null;
 		try {
 			in = getClass().getResourceAsStream(resourceName);

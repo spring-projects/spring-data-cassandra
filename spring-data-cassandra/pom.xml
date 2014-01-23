@@ -25,6 +25,16 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>spring-cassandra</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>spring-cassandra</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<!-- <classifier>tests</classifier> -->
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Spring -->

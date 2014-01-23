@@ -39,9 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
-import org.springframework.cassandra.test.integration.support.BuildProperties;
 import org.springframework.data.cassandra.core.CassandraDataOperations;
 import org.springframework.data.cassandra.test.integration.config.TestConfig;
+import org.springframework.data.cassandra.test.integration.support.SpringDataBuildProperties;
 import org.springframework.data.cassandra.test.integration.table.Book;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -65,7 +65,7 @@ public class CassandraDataOperationsTest {
 
 	private static Logger log = LoggerFactory.getLogger(CassandraDataOperationsTest.class);
 
-	private final static BuildProperties PROPS = new BuildProperties();
+	public static final SpringDataBuildProperties PROPS = new SpringDataBuildProperties();
 	private final static String CASSANDRA_CONFIG = "cassandra.yaml";
 	private final static String KEYSPACE_NAME = "test";
 	private final static String CASSANDRA_HOST = "localhost";

@@ -78,11 +78,6 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>spring-cassandra</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>com.datastax.cassandra</groupId>
 				<artifactId>cassandra-driver-core</artifactId>
 				<version>${cassandra-driver-core.version}</version>
@@ -293,18 +288,6 @@
 							</portNames>
 						</configuration>
 					</execution>
-					<execution>
-						<id>add-shared-source-dir</id>
-						<goals>
-							<goal>add-test-source</goal>
-						</goals>
-						<phase>generate-test-sources</phase>
-						<configuration>
-							<sources>
-								<source>../shared/src/test/java</source>
-							</sources>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -374,13 +357,6 @@
 		<testResources>
 			<testResource>
 				<directory>src/test/resources</directory>
-				<filtering>true</filtering>
-				<includes>
-					<include>**/*</include>
-				</includes>
-			</testResource>
-			<testResource>
-				<directory>../shared/src/test/resources</directory>
 				<filtering>true</filtering>
 				<includes>
 					<include>**/*</include>
