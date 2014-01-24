@@ -85,7 +85,7 @@ Here is a very basic example to get your project connected to Cassandra 1.2 runn
 		}
 
 		@Bean
-		public CassandraOperations CqlTemplate() {
+		public CqlOperations CqlTemplate() {
 			return new CqlTemplate(session().getObject());
 		}
 	}
@@ -98,10 +98,10 @@ Here is a very basic example to get your project connected to Cassandra 1.2 runn
 
 ### Using CqlTemplate
 
-	public class CassandraOperationsTest {
+	public class CqlOperationsTest {
 
 		@Autowired
-		private CassandraOperations template;
+		private CqlOperations template;
 		
 		public Integer getCount() throws DataAccessException {
 		
