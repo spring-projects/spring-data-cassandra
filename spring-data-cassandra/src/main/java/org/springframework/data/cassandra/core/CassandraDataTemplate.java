@@ -946,7 +946,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 			return callback.doInSession(getSession());
 
 		} catch (DataAccessException e) {
-			throw throwTranslated(e);
+			throw translateExceptionIfPossible(e);
 		}
 	}
 
