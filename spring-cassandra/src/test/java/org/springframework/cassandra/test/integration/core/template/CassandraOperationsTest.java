@@ -35,8 +35,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.core.CassandraOperations;
-import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.HostMapper;
 import org.springframework.cassandra.core.PreparedStatementBinder;
@@ -64,14 +64,14 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
 
 /**
- * Unit Tests for CassandraTemplate
+ * Unit Tests for CqlTemplate
  * 
  * @author David Webb
  * 
  */
 public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
-	private static CassandraOperations cassandraTemplate;
+	private static CqlOperations cassandraTemplate;
 
 	private static Logger log = LoggerFactory.getLogger(CassandraOperationsTest.class);
 
@@ -110,7 +110,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 			// "cassandraOperationsTest-cql-dataload.cql", keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
 			// CASSANDRA_NATIVE_PORT);
 
-			cassandraTemplate = new CassandraTemplate(SESSION);
+			cassandraTemplate = new CqlTemplate(SESSION);
 		}
 	}
 
@@ -207,7 +207,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	}
 
 	/**
-	 * This is an implementation of RowIterator for the purposes of testing passing your own Impl to CassandraTemplate
+	 * This is an implementation of RowIterator for the purposes of testing passing your own Impl to CqlTemplate
 	 * 
 	 * @author David Webb
 	 */

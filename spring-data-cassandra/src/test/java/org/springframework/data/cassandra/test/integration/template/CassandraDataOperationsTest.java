@@ -39,7 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
-import org.springframework.data.cassandra.core.CassandraDataOperations;
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.test.integration.config.TestConfig;
 import org.springframework.data.cassandra.test.integration.support.SpringDataBuildProperties;
 import org.springframework.data.cassandra.test.integration.table.Book;
@@ -51,7 +51,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
 /**
- * Unit Tests for CassandraTemplate
+ * Unit Tests for CqlTemplate
  * 
  * @author David Webb
  * 
@@ -61,7 +61,7 @@ import com.datastax.driver.core.querybuilder.Select;
 public class CassandraDataOperationsTest {
 
 	@Autowired
-	private CassandraDataOperations cassandraDataTemplate;
+	private CassandraOperations cassandraDataTemplate;
 
 	private static Logger log = LoggerFactory.getLogger(CassandraDataOperationsTest.class);
 

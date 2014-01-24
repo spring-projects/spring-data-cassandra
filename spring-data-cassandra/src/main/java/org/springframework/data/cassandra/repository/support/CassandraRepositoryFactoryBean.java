@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 
-import org.springframework.data.cassandra.core.CassandraDataTemplate;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
 public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends
 		RepositoryFactoryBeanSupport<T, S, ID> {
 
-	private CassandraDataTemplate cassandraDataTemplate;
+	private CassandraTemplate cassandraDataTemplate;
 
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
@@ -41,11 +41,11 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID e
 	}
 
 	/**
-	 * Configures the {@link CassandraDataTemplate} to be used.
+	 * Configures the {@link CassandraTemplate} to be used.
 	 * 
 	 * @param operations the operations to set
 	 */
-	public void setCassandraDataTemplate(CassandraDataTemplate cassandraDataTemplate) {
+	public void setCassandraDataTemplate(CassandraTemplate cassandraDataTemplate) {
 		this.cassandraDataTemplate = cassandraDataTemplate;
 		setMappingContext(cassandraDataTemplate.getConverter().getMappingContext());
 	}

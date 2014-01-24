@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
@@ -220,12 +220,12 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
 
 		Session system = null;
-		CassandraTemplate template = null;
+		CqlTemplate template = null;
 
 		try {
 			if (specs != null) {
 				system = specs.size() == 0 ? null : cluster.connect();
-				template = system == null ? null : new CassandraTemplate(system);
+				template = system == null ? null : new CqlTemplate(system);
 
 				Iterator<?> i = specs.iterator();
 				while (i.hasNext()) {
@@ -249,7 +249,7 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 				}
 
 				if (template == null) {
-					template = system == null ? null : new CassandraTemplate(system);
+					template = system == null ? null : new CqlTemplate(system);
 				}
 
 				for (String script : scripts) {

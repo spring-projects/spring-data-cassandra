@@ -40,11 +40,11 @@
 
 	<cassandra:session id="cassandra-session" keyspace-name="cassandra-keyspace"/>
 	
-	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CassandraTemplate">
+	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CqlTemplate">
 		<constructor-arg ref="cassandra-session" />
 	</bean>
 
-	<bean id="cassandraDataTemplate" class="org.springframework.data.cassandra.core.CassandraDataTemplate">
+	<bean id="cassandraDataTemplate" class="org.springframework.data.cassandra.core.CassandraTemplate">
 		<constructor-arg ref="cassandra-session" />
 		<constructor-arg ref="cassandra-converter" />
 		<constructor-arg value="${cassandra.keyspace}" />

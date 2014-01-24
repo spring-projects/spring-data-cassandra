@@ -31,7 +31,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Matthew Adams
  * 
  */
-public interface CassandraDataOperations {
+public interface CassandraOperations {
 
 	/**
 	 * The table name used for the specified class by this template.

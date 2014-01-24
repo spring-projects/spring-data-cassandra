@@ -17,29 +17,29 @@ package org.springframework.cassandra.config;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cassandra.core.CassandraOperations;
-import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.cassandra.core.CqlTemplate;
 
 import com.datastax.driver.core.Session;
 
 /**
- * Factory for configuring a {@link CassandraTemplate}.
+ * Factory for configuring a {@link CqlTemplate}.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraTemplateFactoryBean implements FactoryBean<CassandraOperations>, InitializingBean {
+public class CassandraTemplateFactoryBean implements FactoryBean<CqlOperations>, InitializingBean {
 
-	private CassandraTemplate template;
+	private CqlTemplate template;
 	private Session session;
 
 	@Override
-	public CassandraOperations getObject() {
+	public CqlOperations getObject() {
 		return template;
 	}
 
 	@Override
-	public Class<? extends CassandraOperations> getObjectType() {
-		return CassandraOperations.class;
+	public Class<? extends CqlOperations> getObjectType() {
+		return CqlOperations.class;
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraOperat
 			throw new IllegalStateException("session is required");
 		}
 
-		this.template = new CassandraTemplate(session);
+		this.template = new CqlTemplate(session);
 	}
 
 	public void setSession(Session session) {

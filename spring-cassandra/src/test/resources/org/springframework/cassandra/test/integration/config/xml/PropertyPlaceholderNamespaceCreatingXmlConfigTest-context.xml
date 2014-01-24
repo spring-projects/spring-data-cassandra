@@ -71,7 +71,7 @@
 		keyspace-name="system">
 	</cassandra:session>
 
-	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CassandraTemplate">
+	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CqlTemplate">
 		<constructor-arg ref="cassandra-session" />
 	</bean>
 

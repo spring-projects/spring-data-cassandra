@@ -6,7 +6,7 @@ import javax.inject.Inject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.cassandra.core.CassandraOperations;
+import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
 import org.springframework.test.context.ContextConfiguration;
@@ -28,7 +28,7 @@ public class MinimalXmlConfigTest extends AbstractKeyspaceCreatingIntegrationTes
 	Session s;
 
 	@Inject
-	CassandraOperations ops;
+	CqlOperations ops;
 
 	@Test
 	public void test() {

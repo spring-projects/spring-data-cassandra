@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.core.CassandraOperations;
+import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.test.integration.config.TestConfig;
 import org.springframework.test.context.ContextConfiguration;
@@ -46,7 +46,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 public class CassandraAdminTest {
 
 	@Autowired
-	private CassandraOperations cassandraTemplate;
+	private CqlOperations cassandraTemplate;
 
 	@Mock
 	ApplicationContext context;

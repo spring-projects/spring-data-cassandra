@@ -3,7 +3,7 @@ package org.springframework.data.cassandra.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
@@ -140,7 +140,7 @@ public abstract class CqlUtils {
 		/*
 		 * Add Query Options
 		 */
-		CassandraTemplate.addQueryOptions(q, options);
+		CqlTemplate.addQueryOptions(q, options);
 
 		/*
 		 * Add TTL to Insert object
@@ -178,7 +178,7 @@ public abstract class CqlUtils {
 		/*
 		 * Add Query Options
 		 */
-		CassandraTemplate.addQueryOptions(q, options);
+		CqlTemplate.addQueryOptions(q, options);
 
 		/*
 		 * Add TTL to Insert object
@@ -221,7 +221,7 @@ public abstract class CqlUtils {
 		/*
 		 * Add Query Options
 		 */
-		CassandraTemplate.addQueryOptions(b, options);
+		CqlTemplate.addQueryOptions(b, options);
 
 		return b;
 
@@ -257,7 +257,7 @@ public abstract class CqlUtils {
 		/*
 		 * Add Query Options
 		 */
-		CassandraTemplate.addQueryOptions(b, options);
+		CqlTemplate.addQueryOptions(b, options);
 
 		return b;
 
@@ -286,7 +286,7 @@ public abstract class CqlUtils {
 		 */
 		entityWriter.write(objectToRemove, w);
 
-		CassandraTemplate.addQueryOptions(q, options);
+		CqlTemplate.addQueryOptions(q, options);
 
 		return q;
 
@@ -355,7 +355,7 @@ public abstract class CqlUtils {
 
 		}
 
-		CassandraTemplate.addQueryOptions(b, options);
+		CqlTemplate.addQueryOptions(b, options);
 
 		return b;
 

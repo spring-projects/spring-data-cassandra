@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -93,7 +93,7 @@ public class CassandraSessionFactoryBean implements FactoryBean<Session>, Initia
 			return;
 		}
 
-		CassandraTemplate template = new CassandraTemplate(session);
+		CqlTemplate template = new CqlTemplate(session);
 
 		for (String script : scripts) {
 

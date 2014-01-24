@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.cassandra.core.CassandraTemplate;
+import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.dao.DataAccessException;
@@ -47,12 +47,12 @@ import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * The Cassandra Data Template is a convenience API for all Cassandra Operations using POJOs. This is the "Spring Data"
- * flavor of the template. For low level Cassandra Operations use the {@link CassandraTemplate}
+ * flavor of the template. For low level Cassandra Operations use the {@link CqlTemplate}
  * 
  * @author Alex Shvid
  * @author David Webb
  */
-public class CassandraDataTemplate extends CassandraTemplate implements CassandraDataOperations {
+public class CassandraTemplate extends CqlTemplate implements CassandraOperations {
 
 	/*
 	 * List of iterable classes when testing POJOs for specific operations.
@@ -80,7 +80,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	/**
 	 * Default Constructor for wiring in the required components later
 	 */
-	public CassandraDataTemplate() {
+	public CassandraTemplate() {
 	}
 
 	/**
@@ -88,7 +88,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 * 
 	 * @param session must not be {@literal null}
 	 */
-	public CassandraDataTemplate(Session session) {
+	public CassandraTemplate(Session session) {
 		this(session, null, null);
 	}
 
@@ -98,7 +98,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 * @param session must not be {@literal null}
 	 * @param converter must not be {@literal null}.
 	 */
-	public CassandraDataTemplate(Session session, CassandraConverter converter) {
+	public CassandraTemplate(Session session, CassandraConverter converter) {
 		this(session, converter, null);
 	}
 
@@ -108,7 +108,7 @@ public class CassandraDataTemplate extends CassandraTemplate implements Cassandr
 	 * @param session must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 */
-	public CassandraDataTemplate(Session session, CassandraConverter converter, String keyspace) {
+	public CassandraTemplate(Session session, CassandraConverter converter, String keyspace) {
 		setSession(session);
 		this.keyspace = keyspace;
 		this.cassandraConverter = converter;

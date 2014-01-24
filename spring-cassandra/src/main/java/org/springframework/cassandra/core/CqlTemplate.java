@@ -63,13 +63,13 @@ import com.datastax.driver.core.querybuilder.Truncate;
  * @author David Webb
  * @author Matthew Adams
  */
-public class CassandraTemplate extends CassandraAccessor implements CassandraOperations {
+public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
 	 * Blank constructor. You must wire in the Session before use.
 	 * 
 	 */
-	public CassandraTemplate() {
+	public CqlTemplate() {
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class CassandraTemplate extends CassandraAccessor implements CassandraOpe
 	 * 
 	 * @param session must not be {@literal null}.
 	 */
-	public CassandraTemplate(Session session) {
+	public CqlTemplate(Session session) {
 		setSession(session);
 		afterPropertiesSet();
 	}

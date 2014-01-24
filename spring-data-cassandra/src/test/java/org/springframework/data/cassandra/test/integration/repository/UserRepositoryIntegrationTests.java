@@ -33,7 +33,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.cassandra.core.CassandraDataOperations;
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.test.integration.table.User;
 
 import com.google.common.collect.Lists;
@@ -52,7 +52,7 @@ public class UserRepositoryIntegrationTests {
 	protected UserRepository repository;
 
 	@Autowired
-	protected CassandraDataOperations dataOperations;
+	protected CassandraOperations dataOperations;
 
 	User tom, bob, alice, scott;
 

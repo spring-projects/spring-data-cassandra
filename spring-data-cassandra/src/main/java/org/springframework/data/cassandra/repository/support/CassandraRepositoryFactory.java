@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 
-import org.springframework.data.cassandra.core.CassandraDataTemplate;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.CassandraRepository;
@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
 
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
-	private final CassandraDataTemplate cassandraDataTemplate;
+	private final CassandraTemplate cassandraDataTemplate;
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	/**
@@ -45,7 +45,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	 * 
 	 * @param mongoOperations must not be {@literal null}
 	 */
-	public CassandraRepositoryFactory(CassandraDataTemplate cassandraDataTemplate) {
+	public CassandraRepositoryFactory(CassandraTemplate cassandraDataTemplate) {
 
 		Assert.notNull(cassandraDataTemplate);
 

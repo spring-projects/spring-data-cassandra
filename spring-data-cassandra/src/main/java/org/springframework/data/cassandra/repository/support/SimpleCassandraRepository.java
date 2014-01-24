@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.CassandraDataOperations;
-import org.springframework.data.cassandra.core.CassandraDataTemplate;
+import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
@@ -41,18 +41,18 @@ import com.datastax.driver.core.querybuilder.Select;
 
 public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
 
-	private final CassandraDataTemplate cassandraDataTemplate;
+	private final CassandraTemplate cassandraDataTemplate;
 	private final CassandraEntityInformation<T, ID> entityInformation;
 
 	/**
 	 * Creates a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
-	 * {@link CassandraDataTemplate}.
+	 * {@link CassandraTemplate}.
 	 * 
 	 * @param metadata must not be {@literal null}.
 	 * @param template must not be {@literal null}.
 	 */
 	public SimpleCassandraRepository(CassandraEntityInformation<T, ID> metadata,
-			CassandraDataTemplate cassandraDataTemplate) {
+			CassandraTemplate cassandraDataTemplate) {
 
 		Assert.notNull(cassandraDataTemplate);
 		Assert.notNull(metadata);
@@ -224,20 +224,20 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 	}
 
 	/**
-	 * Returns the underlying {@link CassandraOperations} instance.
+	 * Returns the underlying {@link CqlOperations} instance.
 	 * 
 	 * @return
 	 */
-	protected CassandraOperations getCassandraOperations() {
+	protected CqlOperations getCassandraOperations() {
 		return this.cassandraDataTemplate;
 	}
 
 	/**
-	 * Returns the underlying {@link CassandraDataOperations} instance.
+	 * Returns the underlying {@link CassandraOperations} instance.
 	 * 
 	 * @return
 	 */
-	protected CassandraDataOperations getCassandraDataOperations() {
+	protected CassandraOperations getCassandraDataOperations() {
 		return this.cassandraDataTemplate;
 	}
 
