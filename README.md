@@ -19,7 +19,9 @@ This is the low-level core template framework, like the ones you are used to usi
 This includes persistence exception translation, Spring JavaConfig and XML configuration support.  Define your Spring beans to setup your
 Cassandra ``Cluster`` object, then create your ``Session`` and you are ready to interact with Cassandra using the ``CqlTemplate``.
 
-The module also offers table operation builders for ``CREATE TABLE``, ``ALTER TABLE``, and ``DROP TABLE`` operations, as well as XML namespace support for automatic keyspace creations and optional drops.
+The module also offers convenient builder pattern classes to easily specify the creation, alteration, and dropping of keyspaces via a fluent API.  They are intended to be used with generators that produce CQL that can then be easily executed by ``CqlTemplate``.  See test class ``CreateTableCqlGeneratorTests`` for examples.  Don't forget to check out class ``MapBuilder`` for easy creation of Cassandra ``TableOption`` values.table operation builders for ``CREATE TABLE``, ``ALTER TABLE``, and ``DROP TABLE`` operations.
+
+Additionally, there's support for Spring JavaConfig and a Spring Cassandra XML namespace, making it easy to configure your context to work Cassandra, including XML namespace support for automatic keyspace creations, drops & more.
 
 #### Module ``spring-data-cassandra``
 
@@ -28,6 +30,8 @@ The ``spring-data-cassandra`` module depends on the ``spring-cassandra`` module 
 _Note: The code in the ``spring-data-cassandra`` module is a work in progress and is not yet functional._
 
 We are actively working on its completion, but wanted to make the lower level Cassandra template functionality available to the Spring and Cassandra communities.
+
+_Note: we are considering consolidating both modules into one for convenience._
 
 #### Best practices
 
@@ -45,7 +49,7 @@ Here are some considerations when designing your application for use with ``spri
 
 #### High Performance Ingestion
 
-We have included a variety of overloaded ``ingest()`` methods in the template for high performance batch writes.
+We have included a variety of overloaded ``ingest()`` methods in ``CqlTemplate`` for high performance batch writes.
 
 ### What's Next (early Q1 - 2014):  Spring _Data_ Cassandra
 
