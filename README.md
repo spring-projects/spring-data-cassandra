@@ -14,10 +14,10 @@ There are two modules included in the ``spring-data-cassandra`` repository:  ``s
 #### Module ``spring-cassandra``
 
 This is the low-level core template framework, like the ones you are used to using on all your Spring projects.  Our
-``CassandraTemplate`` provides everything you need for working with Cassandra using Spring's familiar template pattern.
+``CqlTemplate`` provides everything you need for working with Cassandra using Spring's familiar template pattern.
 
 This includes persistence exception translation, Spring JavaConfig and XML configuration support.  Define your Spring beans to setup your
-Cassandra ``Cluster`` object, then create your ``Session`` and you are ready to interact with Cassandra using the ``CassandraTemplate``.
+Cassandra ``Cluster`` object, then create your ``Session`` and you are ready to interact with Cassandra using the ``CqlTemplate``.
 
 The module also offers table operation builders for ``CREATE TABLE``, ``ALTER TABLE``, and ``DROP TABLE`` operations, as well as XML namespace support for automatic keyspace creations and optional drops.
 
@@ -33,7 +33,7 @@ We are actively working on its completion, but wanted to make the lower level Ca
 
 We have worked closely with the DataStax Driver Engineering team to ensure that our implementation around their native
 CQL Driver takes advantage of all that it has to offer. If you need access to more than one keyspace in your application,
-create more than one ``CassandraTemplate`` (one per session, one session per keyspace), then use the appropriate template instance where needed.
+create more than one ``CqlTemplate`` (one per session, one session per keyspace), then use the appropriate template instance where needed.
 
 Here are some considerations when designing your application for use with ``spring-cassandra``.
 
@@ -55,10 +55,10 @@ The next round of work to do is to complete module ``spring-data-cassandra``, wh
 
 This is another Spring template class to help you with all of your keyspace and table administration tasks.
 
-#### Cassandra Data Template
+#### Cassandra Template
 
-This template extends ``CassandraTemplate`` to provide even more interaction with Cassandra using annotated POJOs.
-The Spring Data Cassandra Repository implementation is a client of ``CassandraDataTemplate``.  This _data_ template gives the developer the capability of working with annotated POJOs and the template pattern without the requirement of the Spring Data ``Repository`` interface.
+This template extends ``CqlTemplate`` to provide even more interaction with Cassandra using annotated POJOs.
+The Spring Data Cassandra Repository implementation is a client of ``CassandraTemplate``.  This _data_ template gives the developer the capability of working with annotated POJOs and the template pattern without the requirement of the Spring Data ``Repository`` interface.
 
 #### Cassandra Repository
 
@@ -85,8 +85,8 @@ Here is a very basic example to get your project connected to Cassandra 1.2 runn
 		}
 
 		@Bean
-		public CassandraOperations cassandraTemplate() {
-			return new CassandraTemplate(session().getObject());
+		public CassandraOperations CqlTemplate() {
+			return new CqlTemplate(session().getObject());
 		}
 	}
 
@@ -96,7 +96,7 @@ Here is a very basic example to get your project connected to Cassandra 1.2 runn
 	<cassandra-session keyspace-name="test" />
 	<cassandra-template />
 
-### Using CassnadraTemplate
+### Using CqlTemplate
 
 	public class CassandraOperationsTest {
 
@@ -105,7 +105,7 @@ Here is a very basic example to get your project connected to Cassandra 1.2 runn
 		
 		public Integer getCount() throws DataAccessException {
 		
-			String cql = "select count(*) from table_name";
+			String cql = "select count(*) from table_name where id='12345'";
 			
 			Integer count = template.queryForObject(cql, Integer.class);
 			
@@ -175,11 +175,13 @@ below:
 * David Webb:  dwebb _at_ prowaveconsulting _dot_ com
 * Matthew Adams:  matthew _dot_ adams _at_ scispike _dot_ com
 
+Also, developer discussions are being hosted via Google Groups at https://groups.google.com/forum/#!forum/spring-data-cassandra.
+
 ## Contributing Individuals
 
+* David Webb
+* Matthew Adams
 * John McPeek
-
-Also, developer discussions are being hosted via Google Groups at https://groups.google.com/forum/#!forum/spring-data-cassandra.
 
 ## Sponsoring Companies
 
