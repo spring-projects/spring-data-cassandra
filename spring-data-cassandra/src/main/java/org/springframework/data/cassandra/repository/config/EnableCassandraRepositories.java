@@ -113,7 +113,7 @@ public @interface EnableCassandraRepositories {
 	 * 
 	 * @return
 	 */
-	String cassandraDataTemplateRef() default "cassandraDataTemplate";
+	String cassandraTemplateRef() default "cassandraTemplate";
 
 	/**
 	 * Whether to automatically create indexes for query methods defined in the repository interface.

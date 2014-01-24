@@ -41,7 +41,7 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 	}
 
 	@Bean
-	public CassandraOperations cassandraDataTemplate() throws Exception {
+	public CassandraOperations cassandraTemplate() throws Exception {
 		return new CassandraTemplate(session().getObject(), converter(), KEYSPACE_NAME);
 	}
 }

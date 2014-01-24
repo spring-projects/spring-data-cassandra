@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
  */
 public class CassandraRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
-	private static final String CASSANDRA_DATA_TEMPLATE_REF = "cassandra-data-template-ref";
+	private static final String CASSANDRA_TEMPLATE_REF = "cassandra-template-ref";
 	private static final String CREATE_QUERY_INDEXES = "create-query-indexes";
 
 	/* 
@@ -63,7 +63,7 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 
 		Element element = config.getElement();
 
-		ParsingUtils.setPropertyReference(builder, element, CASSANDRA_DATA_TEMPLATE_REF, "cassandraDataTemplate");
+		ParsingUtils.setPropertyReference(builder, element, CASSANDRA_TEMPLATE_REF, "cassandraTemplate");
 		ParsingUtils.setPropertyValue(builder, element, CREATE_QUERY_INDEXES, "createIndexesForQueryMethods");
 	}
 
@@ -76,9 +76,9 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 
 		AnnotationAttributes attributes = config.getAttributes();
 
-		String cassandraDataTemplateRef = attributes.getString("cassandraDataTemplateRef");
-		if (StringUtils.hasText(cassandraDataTemplateRef)) {
-			builder.addPropertyReference("cassandraDataTemplate", cassandraDataTemplateRef);
+		String cassandraTemplateRef = attributes.getString("cassandraTemplateRef");
+		if (StringUtils.hasText(cassandraTemplateRef)) {
+			builder.addPropertyReference("cassandraTemplate", cassandraTemplateRef);
 		}
 		builder.addPropertyValue("createIndexesForQueryMethods", attributes.getBoolean("createIndexesForQueryMethods"));
 	}

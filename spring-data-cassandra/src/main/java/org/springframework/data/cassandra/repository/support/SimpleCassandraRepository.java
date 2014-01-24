@@ -41,7 +41,7 @@ import com.datastax.driver.core.querybuilder.Select;
 
 public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
 
-	private final CassandraTemplate cassandraDataTemplate;
+	private final CassandraTemplate cassandraTemplate;
 	private final CassandraEntityInformation<T, ID> entityInformation;
 
 	/**
@@ -52,13 +52,13 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 	 * @param template must not be {@literal null}.
 	 */
 	public SimpleCassandraRepository(CassandraEntityInformation<T, ID> metadata,
-			CassandraTemplate cassandraDataTemplate) {
+			CassandraTemplate cassandraTemplate) {
 
-		Assert.notNull(cassandraDataTemplate);
+		Assert.notNull(cassandraTemplate);
 		Assert.notNull(metadata);
 
 		this.entityInformation = metadata;
-		this.cassandraDataTemplate = cassandraDataTemplate;
+		this.cassandraTemplate = cassandraTemplate;
 	}
 
 	/*
@@ -68,7 +68,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 	public <S extends T> S save(S entity) {
 
 		Assert.notNull(entity, "Entity must not be null!");
-		cassandraDataTemplate.insert(entity, entityInformation.getTableName());
+		cassandraTemplate.insert(entity, entityInformation.getTableName());
 		return entity;
 	}
 
@@ -105,7 +105,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 		Select select = QueryBuilder.select().all().from(entityInformation.getTableName());
 		select.where(getIdClause(id));
 
-		return cassandraDataTemplate.selectOne(select, entityInformation.getJavaType());
+		return cassandraTemplate.selectOne(select, entityInformation.getJavaType());
 	}
 
 	/*
@@ -119,7 +119,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 		Select select = QueryBuilder.select().all().from(entityInformation.getTableName());
 		select.where(getIdClause(id));
 
-		return cassandraDataTemplate.select(select, entityInformation.getJavaType());
+		return cassandraTemplate.select(select, entityInformation.getJavaType());
 	}
 
 	/*
@@ -133,7 +133,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 		Select select = QueryBuilder.select().countAll().from(entityInformation.getTableName());
 		select.where(getIdClause(id));
 
-		Long num = cassandraDataTemplate.count(select);
+		Long num = cassandraTemplate.count(select);
 		return num != null && num.longValue() > 0;
 	}
 
@@ -142,7 +142,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 	 * @see org.springframework.data.repository.CrudRepository#count()
 	 */
 	public long count() {
-		return cassandraDataTemplate.count(entityInformation.getTableName());
+		return cassandraTemplate.count(entityInformation.getTableName());
 	}
 
 	/*
@@ -155,7 +155,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 		Delete delete = QueryBuilder.delete().all().from(entityInformation.getTableName());
 		delete.where(getIdClause(id));
 
-		cassandraDataTemplate.execute(delete.getQueryString());
+		cassandraTemplate.execute(delete.getQueryString());
 	}
 
 	/*
@@ -185,7 +185,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
 	 */
 	public void deleteAll() {
-		cassandraDataTemplate.truncate(entityInformation.getTableName());
+		cassandraTemplate.truncate(entityInformation.getTableName());
 	}
 
 	/*
@@ -220,7 +220,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 			return Collections.emptyList();
 		}
 
-		return cassandraDataTemplate.select(query, entityInformation.getJavaType());
+		return cassandraTemplate.select(query, entityInformation.getJavaType());
 	}
 
 	/**
@@ -229,7 +229,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 	 * @return
 	 */
 	protected CqlOperations getCassandraOperations() {
-		return this.cassandraDataTemplate;
+		return this.cassandraTemplate;
 	}
 
 	/**
@@ -238,7 +238,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 	 * @return
 	 */
 	protected CassandraOperations getCassandraDataOperations() {
-		return this.cassandraDataTemplate;
+		return this.cassandraTemplate;
 	}
 
 	/**
