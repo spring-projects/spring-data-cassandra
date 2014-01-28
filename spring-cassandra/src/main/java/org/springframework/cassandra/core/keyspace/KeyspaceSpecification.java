@@ -15,13 +15,12 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-
-
 /**
- * Builder class to support the construction of keyspace specifications that have columns. This class can also be used as a
- * standalone {@link KeyspaceDescriptor}, independent of {@link CreateKeyspaceSpecification}.
+ * Builder class to support the construction of keyspace specifications that have columns. This class can also be used
+ * as a standalone {@link KeyspaceDescriptor}, independent of {@link CreateKeyspaceSpecification}.
  * 
  * @author John McPeek
  */
-public class KeyspaceSpecification<T> extends KeyspaceOptionsSpecification<KeyspaceSpecification<T>> implements KeyspaceDescriptor {
+public class KeyspaceSpecification<T> extends KeyspaceOptionsSpecification<KeyspaceSpecification<T>> implements
+		KeyspaceDescriptor {
 }

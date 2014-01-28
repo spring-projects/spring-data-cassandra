@@ -51,12 +51,12 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeysp
 				.append(spec().getNameAsIdentifier());
 	}
 
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings("unchecked")
 	protected StringBuilder optionsCql(StringBuilder cql) {
 		cql = noNull(cql);
-		
-		cql.append( " " );
-		
+
+		cql.append(" ");
+
 		// begin options clause
 		Map<String, Object> options = spec().getOptions();
 
@@ -66,7 +66,7 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeysp
 			boolean first = true;
 			cql.append("WITH ");
 			// end option preamble
-			
+
 			if (!options.isEmpty()) {
 				for (String name : options.keySet()) {
 					// append AND if we're not on first option
@@ -97,7 +97,7 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeysp
 			}
 		}
 		// end options
-		
+
 		return cql;
 	}
 }

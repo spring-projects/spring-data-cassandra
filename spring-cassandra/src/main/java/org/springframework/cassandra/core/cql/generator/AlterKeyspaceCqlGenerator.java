@@ -48,10 +48,10 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 		return noNull(cql).append("ALTER KEYSPACE ").append(spec().getNameAsIdentifier()).append(" ");
 	}
 
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings("unchecked")
 	protected StringBuilder optionsCql(StringBuilder cql) {
 		cql = noNull(cql);
-		
+
 		// begin options clause
 		Map<String, Object> options = spec().getOptions();
 
@@ -61,7 +61,7 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 			boolean first = true;
 			cql.append(" WITH ");
 			// end option preamble
-			
+
 			if (!options.isEmpty()) {
 				for (String name : options.keySet()) {
 					// append AND if we're not on first option
@@ -92,7 +92,7 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 			}
 		}
 		// end options
-		
+
 		return cql;
 	}
 }
