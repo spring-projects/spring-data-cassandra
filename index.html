@@ -1,0 +1,78 @@
+---
+# The name of your project
+title: Spring Data JPA
+
+badges:
+
+  # Specify your project's twitter handle, if any. Delete if none.
+  twitter: SpringData
+
+  # Customize your project's badges. Delete any entries that do not apply.
+  custom:
+    - name: Source (GitHub)
+      url:  https://github.com/spring-projects/spring-data-cassandra
+      icon: github
+
+    - name: Issues (JIRA)
+      url:  http://jira.springsource.org/browse/DATACASS
+      icon: tracking
+
+    - name: CI (Bamboo)
+      url:  https://build.springsource.org/browse/SPRINGDATACASSANDRA
+      icon: ci
+
+    - name: Forum
+      url:  http://forum.spring.io/forum/spring-projects/data
+      icon: forum
+
+    - name: StackOverflow
+      url:  http://stackoverflow.com/questions/tagged/spring-data-cassandra
+      icon: stackoverflow
+
+    # - name: Metrics (SonarQube)
+    #   url:  https://sonar.springsource.org/dashboard/index/org.springframework.data:spring-data-jpa
+    #   icon: metrics
+
+---
+<!DOCTYPE HTML>
+<html lang="en-US">
+
+<!-- Specify the parent of this project (or delete if none) to influence the rendering of the breadcrumb -->
+{% capture parent_link %}
+[Spring Parent]({{ site.projects_site_url }}/spring-parent)
+{% endcapture %}
+
+{% capture billboard_description %}
+
+The Apache Cassandra NoSQL Database offers many new capabilities for teams seeking a solution to handle high velocity, high volume and variable data flows. This new way of thinking introduces new concepts and a learning curve that can be intimidating to team members and team managers. Spring Data Cassandra offers a familiar interface to those who have used other Spring Data modules in the past.
+
+{% endcapture %}
+
+{% capture main_content %}
+
+ The learning curve for developing applications with Cassandra is significantly reduced when using Spring Data Cassandra. With the power to stay at a high level with annotated POJOS, or at a low level with high performance data ingestion capabilities, the Spring Data Cassandra templates are sure to meet every application need.
+
+## Features
+
+* Build repositories based on common Spring Data interfaces
+* Support for synchronous and asynchronous data operations
+* Asynchronous callback support
+* Support for XML based Keyspace creation and CQL Table creation
+* JavaConfig and XML Support for all Cluster and Session Capabilities
+* Exception Translation to the familiar Spring DataAccessException hierarchy
+* Convenient QueryBuilders to eliminate the need to learn CQL
+* Based on the latest DataStax Enterprise CQL Java Driver
+
+<span id="quick-start"></span>
+## Quick Start
+
+{% include download_widget.md %}
+
+{% endcapture %}
+
+{% capture related_resources %}
+
+{% endcapture %}
+
+{% include project_page.html %}
+</html>
