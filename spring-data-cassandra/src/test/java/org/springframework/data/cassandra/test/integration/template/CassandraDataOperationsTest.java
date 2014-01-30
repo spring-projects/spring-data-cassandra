@@ -66,7 +66,7 @@ public class CassandraDataOperationsTest {
 	private static Logger log = LoggerFactory.getLogger(CassandraDataOperationsTest.class);
 
 	public static final SpringDataBuildProperties PROPS = new SpringDataBuildProperties();
-	private final static String CASSANDRA_CONFIG = "cassandra.yaml";
+	private final static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 	private final static String KEYSPACE_NAME = "test";
 	private final static String CASSANDRA_HOST = "localhost";
 	private final static int CASSANDRA_NATIVE_PORT = PROPS.getCassandraPort();

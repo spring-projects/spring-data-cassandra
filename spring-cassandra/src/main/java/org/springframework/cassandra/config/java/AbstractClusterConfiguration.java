@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.cassandra.config.CassandraClusterFactoryBean;
-import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.cassandra.config.CompressionType;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
@@ -12,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.datastax.driver.core.AuthProvider;
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.SocketOptions;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
@@ -26,9 +24,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author Matthew T. Adams
  */
 @Configuration
-public abstract class AbstractCassandraConfiguration {
-
-	protected abstract String getKeyspaceName();
+public abstract class AbstractClusterConfiguration {
 
 	@Bean
 	public CassandraClusterFactoryBean cluster() throws Exception {
@@ -48,18 +44,6 @@ public abstract class AbstractCassandraConfiguration {
 		bean.setShutdownScripts(getShutdownScripts());
 		bean.setSocketOptions(getSocketOptions());
 		bean.setStartupScripts(getStartupScripts());
-
-		return bean;
-	}
-
-	@Bean
-	public CassandraSessionFactoryBean session() throws Exception {
-
-		Cluster cluster = cluster().getObject();
-
-		CassandraSessionFactoryBean bean = new CassandraSessionFactoryBean();
-		bean.setCluster(cluster);
-		bean.setKeyspaceName(getKeyspaceName());
 
 		return bean;
 	}

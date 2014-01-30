@@ -1,7 +1,7 @@
 package org.springframework.cassandra.test.integration.config.java;
 
 import org.springframework.cassandra.config.CassandraSessionFactoryBean;
-import org.springframework.cassandra.config.java.AbstractCassandraConfiguration;
+import org.springframework.cassandra.config.java.AbstractSessionConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
@@ -9,7 +9,7 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 
 @Configuration
-public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractCassandraConfiguration {
+public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractSessionConfiguration {
 
 	@Override
 	public CassandraSessionFactoryBean session() throws Exception {

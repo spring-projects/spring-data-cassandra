@@ -28,7 +28,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * 
  * @author Alex Shvid
  * @author David Webb
- * 
+ * @author Matthew T. Adams
  */
 public abstract class CqlUtils {
 
@@ -118,7 +118,6 @@ public abstract class CqlUtils {
 	/**
 	 * Generates a Query Object for an insert
 	 * 
-	 * @param keyspaceName
 	 * @param tableName
 	 * @param objectToSave
 	 * @param entity
@@ -127,10 +126,10 @@ public abstract class CqlUtils {
 	 * @return The Query object to run with session.execute();
 	 * @throws EntityWriterException
 	 */
-	public static Query toInsertQuery(String keyspaceName, String tableName, final Object objectToSave,
-			QueryOptions options, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
+	public static Query toInsertQuery(String tableName, final Object objectToSave, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
-		final Insert q = QueryBuilder.insertInto(keyspaceName, tableName);
+		final Insert q = QueryBuilder.insertInto(tableName);
 
 		/*
 		 * Write properties
@@ -156,7 +155,6 @@ public abstract class CqlUtils {
 	/**
 	 * Generates a Query Object for an Update
 	 * 
-	 * @param keyspaceName
 	 * @param tableName
 	 * @param objectToSave
 	 * @param entity
@@ -165,10 +163,10 @@ public abstract class CqlUtils {
 	 * @return The Query object to run with session.execute();
 	 * @throws EntityWriterException
 	 */
-	public static Query toUpdateQuery(String keyspaceName, String tableName, final Object objectToSave,
-			QueryOptions options, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
+	public static Query toUpdateQuery(String tableName, final Object objectToSave, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
-		final Update q = QueryBuilder.update(keyspaceName, tableName);
+		final Update q = QueryBuilder.update(tableName);
 
 		/*
 		 * Write properties
@@ -194,7 +192,6 @@ public abstract class CqlUtils {
 	/**
 	 * Generates a Batch Object for multiple Updates
 	 * 
-	 * @param keyspaceName
 	 * @param tableName
 	 * @param objectsToSave
 	 * @param entity
@@ -203,9 +200,8 @@ public abstract class CqlUtils {
 	 * @return The Query object to run with session.execute();
 	 * @throws EntityWriterException
 	 */
-	public static <T> Batch toUpdateBatchQuery(final String keyspaceName, final String tableName,
-			final List<T> objectsToSave, QueryOptions options, EntityWriter<Object, Object> entityWriter)
-			throws EntityWriterException {
+	public static <T> Batch toUpdateBatchQuery(final String tableName, final List<T> objectsToSave, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		/*
 		 * Return variable is a Batch statement
@@ -214,7 +210,7 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : objectsToSave) {
 
-			b.add((Statement) toUpdateQuery(keyspaceName, tableName, objectToSave, options, entityWriter));
+			b.add((Statement) toUpdateQuery(tableName, objectToSave, options, entityWriter));
 
 		}
 
@@ -230,7 +226,6 @@ public abstract class CqlUtils {
 	/**
 	 * Generates a Batch Object for multiple inserts
 	 * 
-	 * @param keyspaceName
 	 * @param tableName
 	 * @param objectsToSave
 	 * @param entity
@@ -239,9 +234,8 @@ public abstract class CqlUtils {
 	 * @return The Query object to run with session.execute();
 	 * @throws EntityWriterException
 	 */
-	public static <T> Batch toInsertBatchQuery(final String keyspaceName, final String tableName,
-			final List<T> objectsToSave, QueryOptions options, EntityWriter<Object, Object> entityWriter)
-			throws EntityWriterException {
+	public static <T> Batch toInsertBatchQuery(final String tableName, final List<T> objectsToSave, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		/*
 		 * Return variable is a Batch statement
@@ -250,7 +244,7 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : objectsToSave) {
 
-			b.add((Statement) toInsertQuery(keyspaceName, tableName, objectToSave, options, entityWriter));
+			b.add((Statement) toInsertQuery(tableName, objectToSave, options, entityWriter));
 
 		}
 
@@ -266,7 +260,6 @@ public abstract class CqlUtils {
 	/**
 	 * Create a Delete Query Object from an annotated POJO
 	 * 
-	 * @param keyspace
 	 * @param tableName
 	 * @param objectToRemove
 	 * @param entity
@@ -274,11 +267,11 @@ public abstract class CqlUtils {
 	 * @return
 	 * @throws EntityWriterException
 	 */
-	public static Query toDeleteQuery(String keyspace, String tableName, final Object objectToRemove,
-			QueryOptions options, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
+	public static Query toDeleteQuery(String tableName, final Object objectToRemove, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		final Delete.Selection ds = QueryBuilder.delete();
-		final Delete q = ds.from(keyspace, tableName);
+		final Delete q = ds.from(tableName);
 		final Where w = q.where();
 
 		/*
@@ -332,7 +325,6 @@ public abstract class CqlUtils {
 	/**
 	 * Create a Batch Query object for multiple deletes.
 	 * 
-	 * @param keyspaceName
 	 * @param tableName
 	 * @param entities
 	 * @param entity
@@ -341,8 +333,8 @@ public abstract class CqlUtils {
 	 * @return
 	 * @throws EntityWriterException
 	 */
-	public static <T> Batch toDeleteBatchQuery(String keyspaceName, String tableName, List<T> entities,
-			QueryOptions options, EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
+	public static <T> Batch toDeleteBatchQuery(String tableName, List<T> entities, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) throws EntityWriterException {
 
 		/*
 		 * Return variable is a Batch statement
@@ -351,7 +343,7 @@ public abstract class CqlUtils {
 
 		for (final T objectToSave : entities) {
 
-			b.add((Statement) toDeleteQuery(keyspaceName, tableName, objectToSave, options, entityWriter));
+			b.add((Statement) toDeleteQuery(tableName, objectToSave, options, entityWriter));
 
 		}
 

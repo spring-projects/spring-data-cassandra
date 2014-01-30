@@ -20,12 +20,15 @@ import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.cassandra.config.java.AbstractCassandraConfiguration;
+import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.annotation.Persistent;
+import org.springframework.data.cassandra.config.CassandraDataSessionFactoryBean;
+import org.springframework.data.cassandra.config.Mapping;
+import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
@@ -44,17 +47,45 @@ import org.springframework.util.StringUtils;
  * @author Matthew T. Adams
  */
 @Configuration
-public abstract class AbstractSpringDataCassandraConfiguration extends AbstractCassandraConfiguration implements
+public abstract class AbstractSpringDataCassandraConfiguration extends AbstractClusterConfiguration implements
 		BeanClassLoaderAware {
 
-	private ClassLoader beanClassLoader;
+	protected abstract String getKeyspaceName();
+
+	protected ClassLoader beanClassLoader;
+	protected Mapping mapping = new Mapping();
+
+	/**
+	 * The {@link SchemaAction} to perform. Defaults to {@link SchemaAction#NONE}.
+	 */
+	public SchemaAction getSchemaAction() {
+		return SchemaAction.NONE;
+	}
 
 	/**
 	 * The base package to scan for entities annotated with {@link Table} annotations. By default, returns the package
 	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>).
 	 */
-	protected String getMappingBasePackage() {
+	public String getMappingBasePackage() {
 		return getClass().getPackage().getName();
+	}
+
+	@Bean
+	public CassandraDataSessionFactoryBean session() throws Exception {
+
+		CassandraDataSessionFactoryBean bean = new CassandraDataSessionFactoryBean();
+
+		bean.setCluster(cluster().getObject());
+		bean.setConverter(converter());
+		bean.setSchemaAction(getSchemaAction());
+		bean.setKeyspaceName(getKeyspaceName());
+		bean.setStartupScripts(getStartupScripts());
+		bean.setShutdownScripts(getShutdownScripts());
+
+		bean.setEntityClassLoader(beanClassLoader);
+		bean.setMapping(mapping);
+
+		return bean;
 	}
 
 	/**
@@ -63,8 +94,8 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * @throws Exception
 	 */
 	@Bean
-	public CassandraAdminOperations adminTemplate() throws Exception {
-		return new CassandraAdminTemplate(session().getObject());
+	public CassandraAdminOperations cassandraTemplate() throws Exception {
+		return new CassandraAdminTemplate(session().getObject(), converter());
 	}
 
 	/**
@@ -109,15 +140,22 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 			componentProvider.addIncludeFilter(new AnnotationTypeFilter(Table.class));
 			componentProvider.addIncludeFilter(new AnnotationTypeFilter(Persistent.class));
 
-			// TODO: figure out which ClassLoader to use here
-			ClassLoader classLoader = getClass().getClassLoader();
-
 			for (BeanDefinition candidate : componentProvider.findCandidateComponents(basePackage)) {
-				initialEntitySet.add(ClassUtils.forName(candidate.getBeanClassName(), classLoader));
+
+				Class<?> clazz = ClassUtils.forName(candidate.getBeanClassName(), beanClassLoader);
+				initialEntitySet.add(clazz);
 			}
 		}
 
+		processMappingOverrides(initialEntitySet);
+
 		return initialEntitySet;
+	}
+
+	protected void processMappingOverrides(Set<Class<?>> entityTypes) {
+
+		// TODO: search for external entity mapping info (xml/properties/yaml/etc) here & update this.mapping
+		// similar to JPA's or JDO's external metadata search algorithms
 	}
 
 	@Override

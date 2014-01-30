@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import java.util.List;
 
+import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
@@ -31,7 +32,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Matthew Adams
  * 
  */
-public interface CassandraOperations {
+public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * The table name used for the specified class by this template.

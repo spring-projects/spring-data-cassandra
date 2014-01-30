@@ -54,7 +54,7 @@ public class CassandraAdminTest {
 	@BeforeClass
 	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
 			InterruptedException {
-		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra("spring-cassandra.yaml");
 
 		/*
 		 * Load data file to creat the test keyspace before we init the template

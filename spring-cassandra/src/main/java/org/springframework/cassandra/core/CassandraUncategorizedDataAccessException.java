@@ -25,6 +25,8 @@ import org.springframework.dao.UncategorizedDataAccessException;
  */
 public class CassandraUncategorizedDataAccessException extends UncategorizedDataAccessException {
 
+	private static final long serialVersionUID = -155082875466458401L;
+
 	/**
 	 * Create the Exception
 	 * 

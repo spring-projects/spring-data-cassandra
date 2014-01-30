@@ -43,7 +43,7 @@
 		cassandra-converter-ref="cassandra-converter" schema-action="CREATE">
 		<cassandra:mapping>
 			<cassandra:entity
-				class="org.springframework.data.cassandra.test.integration.table.User">
+				class="org.springframework.data.cassandra.test.integration.repository.User">
 				<cassandra:table name="users_x" />
 			</cassandra:entity>
 		</cassandra:mapping>

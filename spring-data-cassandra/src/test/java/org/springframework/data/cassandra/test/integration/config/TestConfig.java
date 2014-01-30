@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.java.AbstractSpringDataCassandraConfiguration;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.CassandraAdminOperations;
+import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
 import org.springframework.data.cassandra.test.integration.support.SpringDataBuildProperties;
 
@@ -40,8 +40,9 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 		return new MappingCassandraConverter(new DefaultCassandraMappingContext());
 	}
 
+	@Override
 	@Bean
-	public CassandraOperations cassandraTemplate() throws Exception {
-		return new CassandraTemplate(session().getObject(), converter(), KEYSPACE_NAME);
+	public CassandraAdminOperations cassandraTemplate() throws Exception {
+		return new CassandraAdminTemplate(session().getObject(), converter());
 	}
 }

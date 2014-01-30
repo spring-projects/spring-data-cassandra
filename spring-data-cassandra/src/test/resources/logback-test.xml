@@ -5,12 +5,12 @@
 		<encoder>
 			<!-- pattern>%d %5p %40.40c:%4L - %m%n</pattern-->
 			<pattern>%d %5p | %t | %-55logger{55} | %m | %n</pattern>
-			
+
 		</encoder>
 	</appender>
 
 	<logger name="org.springframework.cassandra" level="info" />
-    <logger name="org.springframework.data.cassandra" level="info" />
+	<logger name="org.springframework.data.cassandra" level="info" />
 
 	<root level="warn">
 		<appender-ref ref="console" />

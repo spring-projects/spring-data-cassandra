@@ -74,19 +74,6 @@ public class KeyspaceAttributes {
 		return builder.build();
 	}
 
-	/**
-	 * Simple data structure to be used when setting the replication factor for a given data center.
-	 */
-	public static class DataCenterReplication {
-		public String dataCenter;
-		public long replicationFactor;
-
-		public DataCenterReplication(String dataCenter, long replicationFactor) {
-			this.dataCenter = dataCenter;
-			this.replicationFactor = replicationFactor;
-		}
-	}
-
 	private ReplicationStrategy replicationStrategy = DEFAULT_REPLICATION_STRATEGY;
 	private long replicationFactor = DEFAULT_REPLICATION_FACTOR;
 	private boolean durableWrites = DEFAULT_DURABLE_WRITES;

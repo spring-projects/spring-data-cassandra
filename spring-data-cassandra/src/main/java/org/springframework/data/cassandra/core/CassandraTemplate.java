@@ -30,11 +30,12 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.exception.EntityWriterException;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
 import org.springframework.data.cassandra.util.CqlUtils;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Query;
@@ -74,9 +75,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * Required elements for successful Template Operations.  These can be set with the Constructor, or wired in
 	 * later.
 	 */
-	private String keyspace;
 	private CassandraConverter cassandraConverter;
-	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+	private CassandraMappingContext mappingContext;
 
 	/**
 	 * Default Constructor for wiring in the required components later
@@ -90,7 +90,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param session must not be {@literal null}
 	 */
 	public CassandraTemplate(Session session) {
-		this(session, null, null);
+		this(session, new MappingCassandraConverter(new DefaultCassandraMappingContext()));
 	}
 
 	/**
@@ -100,46 +100,26 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param converter must not be {@literal null}.
 	 */
 	public CassandraTemplate(Session session, CassandraConverter converter) {
-		this(session, converter, null);
-	}
-
-	/**
-	 * Constructor used for a basic template configuration
-	 * 
-	 * @param session must not be {@literal null}.
-	 * @param converter must not be {@literal null}.
-	 * 
-	 * @deprecated use {@link #CassandraTemplate(Session, CassandraConverter)} because session should already be connected
-	 *             to keyspace
-	 */
-	@Deprecated
-	public CassandraTemplate(Session session, CassandraConverter converter, String keyspace) {
 		setSession(session);
-		this.keyspace = keyspace;
 		this.cassandraConverter = converter;
-		this.mappingContext = this.cassandraConverter.getMappingContext();
+		this.mappingContext = cassandraConverter.getCassandraMappingContext();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(com.datastax.driver.core.querybuilder.Select)
-	 */
+	public CassandraMappingContext getCassandraMappingContext() {
+		return mappingContext;
+	}
+
 	@Override
 	public Long count(Select selectQuery) {
 		return doSelectCount(selectQuery);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(java.lang.String)
-	 */
 	@Override
 	public Long count(String tableName) {
 		Select select = QueryBuilder.select().countAll().from(tableName);
 		return doSelectCount(select);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.util.List)
-	 */
 	@Override
 	public <T> void delete(List<T> entities) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -147,9 +127,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		delete(entities, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.util.List, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> void delete(List<T> entities, QueryOptions options) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -157,18 +134,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		delete(entities, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.util.List, java.lang.String)
-	 */
 	@Override
 	public <T> void delete(List<T> entities, String tableName) {
 
 		delete(entities, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.util.List, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> void delete(List<T> entities, String tableName, QueryOptions options) {
 		Assert.notNull(entities);
@@ -177,9 +148,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		doBatchDelete(tableName, entities, options, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object)
-	 */
 	@Override
 	public <T> void delete(T entity) {
 		String tableName = getTableName(entity.getClass());
@@ -187,9 +155,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		delete(entity, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> void delete(T entity, QueryOptions options) {
 		String tableName = getTableName(entity.getClass());
@@ -197,17 +162,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		delete(entity, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, java.lang.String)
-	 */
 	@Override
 	public <T> void delete(T entity, String tableName) {
 		delete(entity, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> void delete(T entity, String tableName, QueryOptions options) {
 		Assert.notNull(entity);
@@ -215,9 +174,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		doDelete(tableName, entity, options, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List)
-	 */
 	@Override
 	public <T> void deleteAsynchronously(List<T> entities) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -225,9 +181,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		deleteAsynchronously(entities, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> void deleteAsynchronously(List<T> entities, QueryOptions options) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -235,17 +188,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		deleteAsynchronously(entities, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List, java.lang.String)
-	 */
 	@Override
 	public <T> void deleteAsynchronously(List<T> entities, String tableName) {
 		deleteAsynchronously(entities, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.util.List, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> void deleteAsynchronously(List<T> entities, String tableName, QueryOptions options) {
 		Assert.notNull(entities);
@@ -254,9 +201,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		doBatchDelete(tableName, entities, options, true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object)
-	 */
 	@Override
 	public <T> void deleteAsynchronously(T entity) {
 		String tableName = getTableName(entity.getClass());
@@ -264,9 +208,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		deleteAsynchronously(entity, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> void deleteAsynchronously(T entity, QueryOptions options) {
 		String tableName = getTableName(entity.getClass());
@@ -274,17 +215,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		deleteAsynchronously(entity, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object, java.lang.String)
-	 */
 	@Override
 	public <T> void deleteAsynchronously(T entity, String tableName) {
 		deleteAsynchronously(entity, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteAsynchronously(java.lang.Object, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> void deleteAsynchronously(T entity, String tableName, QueryOptions options) {
 		Assert.notNull(entity);
@@ -311,25 +246,16 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return entity.getTableName();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#getConverter()
-	 */
 	@Override
 	public CassandraConverter getConverter() {
 		return cassandraConverter;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableName(java.lang.Class)
-	 */
 	@Override
 	public String getTableName(Class<?> entityClass) {
 		return determineTableName(entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.util.List)
-	 */
 	@Override
 	public <T> List<T> insert(List<T> entities) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -337,9 +263,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return insert(entities, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.util.List, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> insert(List<T> entities, QueryOptions options) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -347,17 +270,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return insert(entities, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.util.List, java.lang.String)
-	 */
 	@Override
 	public <T> List<T> insert(List<T> entities, String tableName) {
 		return insert(entities, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.util.List, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> insert(List<T> entities, String tableName, QueryOptions options) {
 		Assert.notNull(entities);
@@ -366,9 +283,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doBatchInsert(tableName, entities, options, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object)
-	 */
 	@Override
 	public <T> T insert(T entity) {
 		String tableName = determineTableName(entity);
@@ -376,9 +290,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return insert(entity, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T insert(T entity, QueryOptions options) {
 		String tableName = determineTableName(entity);
@@ -386,17 +297,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return insert(entity, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, java.lang.String)
-	 */
 	@Override
 	public <T> T insert(T entity, String tableName) {
 		return insert(entity, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T insert(T entity, String tableName, QueryOptions options) {
 		Assert.notNull(entity);
@@ -405,9 +310,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doInsert(tableName, entity, options, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insertAsynchronously(java.util.List)
-	 */
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -415,9 +317,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return insertAsynchronously(entities, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insertAsynchronously(java.util.List, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities, QueryOptions options) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -425,17 +324,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return insertAsynchronously(entities, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insertAsynchronously(java.util.List, java.lang.String)
-	 */
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities, String tableName) {
 		return insertAsynchronously(entities, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insertAsynchronously(java.util.List, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities, String tableName, QueryOptions options) {
 		Assert.notNull(entities);
@@ -444,9 +337,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doBatchInsert(tableName, entities, options, true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insertAsynchronously(java.lang.Object)
-	 */
 	@Override
 	public <T> T insertAsynchronously(T entity) {
 		String tableName = determineTableName(entity);
@@ -454,9 +344,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return insertAsynchronously(entity, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insertAsynchronously(java.lang.Object, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T insertAsynchronously(T entity, QueryOptions options) {
 		String tableName = determineTableName(entity);
@@ -464,17 +351,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return insertAsynchronously(entity, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insertAsynchronously(java.lang.Object, java.lang.String)
-	 */
 	@Override
 	public <T> T insertAsynchronously(T entity, String tableName) {
 		return insertAsynchronously(entity, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insertAsynchronously(java.lang.Object, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T insertAsynchronously(T entity, String tableName, QueryOptions options) {
 		Assert.notNull(entity);
@@ -485,41 +366,26 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doInsert(tableName, entity, options, true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(com.datastax.driver.core.querybuilder.Select, java.lang.Class)
-	 */
 	@Override
 	public <T> List<T> select(Select cql, Class<T> selectClass) {
 		return select(cql.getQueryString(), selectClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> List<T> select(String cql, Class<T> selectClass) {
 		return doSelect(cql, new ReadRowCallback<T>(cassandraConverter, selectClass));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(com.datastax.driver.core.querybuilder.Select, java.lang.Class)
-	 */
 	@Override
 	public <T> T selectOne(Select selectQuery, Class<T> selectClass) {
 		return selectOne(selectQuery.getQueryString(), selectClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> T selectOne(String cql, Class<T> selectClass) {
 		return doSelectOne(cql, new ReadRowCallback<T>(cassandraConverter, selectClass));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.util.List)
-	 */
 	@Override
 	public <T> List<T> update(List<T> entities) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -527,9 +393,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return update(entities, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.util.List, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> update(List<T> entities, QueryOptions options) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -537,17 +400,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return update(entities, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.util.List, java.lang.String)
-	 */
 	@Override
 	public <T> List<T> update(List<T> entities, String tableName) {
 		return update(entities, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.util.List, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> update(List<T> entities, String tableName, QueryOptions options) {
 		Assert.notNull(entities);
@@ -556,9 +413,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doBatchUpdate(tableName, entities, options, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object)
-	 */
 	@Override
 	public <T> T update(T entity) {
 		String tableName = getTableName(entity.getClass());
@@ -566,9 +420,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return update(entity, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T update(T entity, QueryOptions options) {
 		String tableName = getTableName(entity.getClass());
@@ -576,17 +427,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return update(entity, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, java.lang.String)
-	 */
 	@Override
 	public <T> T update(T entity, String tableName) {
 		return update(entity, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T update(T entity, String tableName, QueryOptions options) {
 		Assert.notNull(entity);
@@ -594,9 +439,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doUpdate(tableName, entity, options, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#updateAsynchronously(java.util.List)
-	 */
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -604,9 +446,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return updateAsynchronously(entities, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#updateAsynchronously(java.util.List, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities, QueryOptions options) {
 		String tableName = getTableName(entities.get(0).getClass());
@@ -614,17 +453,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return updateAsynchronously(entities, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#updateAsynchronously(java.util.List, java.lang.String)
-	 */
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities, String tableName) {
 		return updateAsynchronously(entities, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#updateAsynchronously(java.util.List, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities, String tableName, QueryOptions options) {
 		Assert.notNull(entities);
@@ -633,9 +466,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doBatchUpdate(tableName, entities, options, true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#updateAsynchronously(java.lang.Object)
-	 */
 	@Override
 	public <T> T updateAsynchronously(T entity) {
 		String tableName = getTableName(entity.getClass());
@@ -643,9 +473,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return updateAsynchronously(entity, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#updateAsynchronously(java.lang.Object, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T updateAsynchronously(T entity, QueryOptions options) {
 		String tableName = getTableName(entity.getClass());
@@ -653,18 +480,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return updateAsynchronously(entity, tableName, options);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#updateAsynchronously(java.lang.Object, java.lang.String)
-	 */
 	@Override
 	public <T> T updateAsynchronously(T entity, String tableName) {
 
 		return updateAsynchronously(entity, tableName, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#updateAsynchronously(java.lang.Object, java.lang.String, org.springframework.data.cassandra.core.QueryOptions)
-	 */
 	@Override
 	public <T> T updateAsynchronously(T entity, String tableName, QueryOptions options) {
 		Assert.notNull(entity);
@@ -793,7 +614,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		try {
 
-			final Batch b = CqlUtils.toDeleteBatchQuery(keyspace, tableName, entities, options, cassandraConverter);
+			final Batch b = CqlUtils.toDeleteBatchQuery(tableName, entities, options, cassandraConverter);
 			logger.info(b.toString());
 
 			doExecute(new SessionCallback<Object>() {
@@ -834,7 +655,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		try {
 
-			final Batch b = CqlUtils.toInsertBatchQuery(keyspace, tableName, entities, options, cassandraConverter);
+			final Batch b = CqlUtils.toInsertBatchQuery(tableName, entities, options, cassandraConverter);
 			logger.info(b.getQueryString());
 
 			return doExecute(new SessionCallback<List<T>>() {
@@ -875,7 +696,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		try {
 
-			final Batch b = CqlUtils.toUpdateBatchQuery(keyspace, tableName, entities, options, cassandraConverter);
+			final Batch b = CqlUtils.toUpdateBatchQuery(tableName, entities, options, cassandraConverter);
 			logger.info(b.toString());
 
 			return doExecute(new SessionCallback<List<T>>() {
@@ -911,7 +732,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		try {
 
-			final Query q = CqlUtils.toDeleteQuery(keyspace, tableName, objectToRemove, options, cassandraConverter);
+			final Query q = CqlUtils.toDeleteQuery(tableName, objectToRemove, options, cassandraConverter);
 			logger.info(q.toString());
 
 			doExecute(new SessionCallback<Object>() {
@@ -967,7 +788,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		try {
 
-			final Query q = CqlUtils.toInsertQuery(keyspace, tableName, entity, options, cassandraConverter);
+			final Query q = CqlUtils.toInsertQuery(tableName, entity, options, cassandraConverter);
 
 			logger.info(q.toString());
 			if (q.getConsistencyLevel() != null) {
@@ -1014,7 +835,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		try {
 
-			final Query q = CqlUtils.toUpdateQuery(keyspace, tableName, entity, options, cassandraConverter);
+			final Query q = CqlUtils.toUpdateQuery(tableName, entity, options, cassandraConverter);
 			logger.info(q.toString());
 
 			return doExecute(new SessionCallback<T>() {
