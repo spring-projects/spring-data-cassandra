@@ -1,5 +1,32 @@
 # Spring Data Cassandra Project Info
 
+## Quick Start
+
+To begin working with ``spring-cassandra`` and ``spring-data-cassandra`` add the Spring Maven Repository to your ``pom.xml``.
+
+	<repository>
+		<id>spring-libs-snapshot</id>
+  		<url>http://repo.spring.io/libs-snapshot</url>
+	</repository>
+
+Then include the latest and greatest JAR into your project dependencies.
+
+**CQL Only**
+
+	<dependency>
+		<groupId>org.springframework.data</groupId>
+		<artifactId>spring-cassandra</artifactId>
+		<version>1.0.0.BUILD-SNAPSHOT</version>
+	</dependency>
+
+**CQL and Object Mapping**
+
+	<dependency>
+		<groupId>org.springframework.data</groupId>
+		<artifactId>spring-data-cassandra</artifactId>
+		<version>1.0.0.BUILD-SNAPSHOT</version>
+	</dependency>
+
 ## Release Preview
 
 The goal of this release preview is to publish the pieces of spring-data-cassandra as they become available

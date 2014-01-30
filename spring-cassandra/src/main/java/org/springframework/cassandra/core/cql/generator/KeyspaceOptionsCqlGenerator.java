@@ -31,7 +31,7 @@ import org.springframework.cassandra.core.keyspace.Option;
  * @param T The subtype of this class for which this is a CQL generator.
  */
 public abstract class KeyspaceOptionsCqlGenerator<T extends KeyspaceOptionsSpecification<T>> extends
-	KeyspaceNameCqlGenerator<KeyspaceOptionsSpecification<T>> {
+		KeyspaceNameCqlGenerator<KeyspaceOptionsSpecification<T>> {
 
 	public KeyspaceOptionsCqlGenerator(KeyspaceOptionsSpecification<T> specification) {
 		super(specification);

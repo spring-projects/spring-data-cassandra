@@ -15,12 +15,13 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import org.springframework.cassandra.core.keyspace.Option;
 import org.springframework.cassandra.core.keyspace.KeyspaceDescriptor;
+import org.springframework.cassandra.core.keyspace.Option;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
@@ -29,18 +30,18 @@ public class CqlKeyspaceSpecificationAssertions {
 
 	public static double DELTA = 1e-6; // delta for comparisons of doubles
 
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings("unchecked")
 	public static void assertKeyspace(KeyspaceDescriptor expected, String keyspace, Session session) {
 		KeyspaceMetadata kmd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase());
 
-		assertEquals( expected.getName(), kmd.getName() );
-		
-		Map<String,String> options = kmd.getReplication();
-		Map<String,Object> expectedOptions = expected.getOptions();		
-		Map<Option,Object> replicationMap = (Map<Option, Object>) expectedOptions.get( "replication" );
+		assertEquals(expected.getName(), kmd.getName());
+
+		Map<String, String> options = kmd.getReplication();
+		Map<String, Object> expectedOptions = expected.getOptions();
+		Map<Option, Object> replicationMap = (Map<Option, Object>) expectedOptions.get("replication");
 		assertEquals(replicationMap.size(), options.size());
 
-		for ( Map.Entry<Option, Object> optionEntry : replicationMap.entrySet()) {
+		for (Map.Entry<Option, Object> optionEntry : replicationMap.entrySet()) {
 			String optionValue = options.get(optionEntry.getKey().getName());
 			String repMapValue = "" + optionEntry.getValue();
 			assertTrue(optionValue.endsWith(repMapValue));
