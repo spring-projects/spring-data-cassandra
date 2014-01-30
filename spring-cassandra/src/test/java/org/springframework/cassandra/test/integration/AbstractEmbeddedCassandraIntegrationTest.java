@@ -23,10 +23,11 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 
 	static Logger log = LoggerFactory.getLogger(AbstractEmbeddedCassandraIntegrationTest.class);
 
-	protected static final BuildProperties PROPS = new BuildProperties();
-	protected static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
-	protected static final String CASSANDRA_HOST = "localhost";
-	protected static final int CASSANDRA_NATIVE_PORT = PROPS.getCassandraPort();
+	protected static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
+	protected static String CASSANDRA_HOST = "localhost";
+
+	protected static BuildProperties PROPS = new BuildProperties();
+	protected static int CASSANDRA_NATIVE_PORT = PROPS.getCassandraPort();
 
 	/**
 	 * The session connected to the system keyspace.

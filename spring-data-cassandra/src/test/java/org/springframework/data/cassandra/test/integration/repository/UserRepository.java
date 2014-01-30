@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.test.integration.repository;
 
 import org.springframework.data.cassandra.repository.CassandraRepository;
-import org.springframework.data.cassandra.test.integration.table.User;
 
 /**
  * Sample repository managing {@link User} entities.
@@ -25,5 +24,4 @@ import org.springframework.data.cassandra.test.integration.table.User;
  * 
  */
 public interface UserRepository extends CassandraRepository<User, String> {
-
 }

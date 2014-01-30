@@ -49,7 +49,7 @@ public class BasicCassandraPersistentEntityIntegrationTests {
 	@BeforeClass
 	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
 			InterruptedException {
-		EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml");
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra("spring-cassandra.yaml");
 	}
 
 	@Test

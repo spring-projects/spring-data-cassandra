@@ -34,43 +34,26 @@ import org.w3c.dom.Element;
  */
 public class CassandraRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
-	private static final String CASSANDRA_TEMPLATE_REF = "cql-template-ref";
-	private static final String CREATE_QUERY_INDEXES = "create-query-indexes";
+	private static final String CASSANDRA_TEMPLATE_REF = "cassandra-template-ref";
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModulePrefix()
-	 */
 	@Override
 	protected String getModulePrefix() {
 		return "cassandra";
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryFactoryClassName()
-	 */
+	@Override
 	public String getRepositoryFactoryClassName() {
 		return CassandraRepositoryFactoryBean.class.getName();
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.XmlRepositoryConfigurationSource)
-	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {
 
 		Element element = config.getElement();
 
 		ParsingUtils.setPropertyReference(builder, element, CASSANDRA_TEMPLATE_REF, "cassandraTemplate");
-		ParsingUtils.setPropertyValue(builder, element, CREATE_QUERY_INDEXES, "createIndexesForQueryMethods");
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource)
-	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
 
@@ -80,7 +63,6 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 		if (StringUtils.hasText(cassandraTemplateRef)) {
 			builder.addPropertyReference("cassandraTemplate", cassandraTemplateRef);
 		}
-		builder.addPropertyValue("createIndexesForQueryMethods", attributes.getBoolean("createIndexesForQueryMethods"));
 	}
 
 }

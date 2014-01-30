@@ -25,7 +25,7 @@ import com.datastax.driver.core.TableMetadata;
  * @author David Webb
  * @author Matthew T. Adams
  */
-public interface CassandraAdminOperations {
+public interface CassandraAdminOperations extends CassandraOperations {
 
 	/**
 	 * Create a table with the name given and fields corresponding to the given class. If the table already exists and
@@ -38,9 +38,8 @@ public interface CassandraAdminOperations {
 	 * @param tableName The name of the table.
 	 * @param entityClass The class whose fields determine the columns created.
 	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
-	 * @return Returns true if a table was created, false if not.
 	 */
-	boolean createTable(boolean ifNotExists, String tableName, Class<?> entityClass, Map<String, Object> optionsByName);
+	void createTable(boolean ifNotExists, String tableName, Class<?> entityClass, Map<String, Object> optionsByName);
 
 	/**
 	 * Add columns to the given table from the given class. If parameter dropRemovedAttributColumns is true, then this

@@ -109,8 +109,7 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 			int i = 0;
 			for (String datacenter : networkTopologyDataCenters) {
 				replicationStrategyMap.put(new DefaultOption(datacenter, Long.class, true, false, false),
-						networkTopologyReplicationFactors.get(i));
-				i++;
+						networkTopologyReplicationFactors.get(i++));
 			}
 		}
 

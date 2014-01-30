@@ -25,16 +25,14 @@ public class CassandraDataSessionFactoryBean extends CassandraSessionFactoryBean
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+
 		super.afterPropertiesSet();
 
 		Assert.notNull(converter);
 
-		if (mapping == null) {
-			mapping = new Mapping();
-		}
+		admin = new CassandraAdminTemplate(session, converter);
 
-		admin = new CassandraAdminTemplate(session);
-		admin.setCassandraConverter(converter);
+		mapping = mapping == null ? new Mapping() : mapping;
 
 		processMappingOverrides();
 		performSchemaAction();

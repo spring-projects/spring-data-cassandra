@@ -45,7 +45,7 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID e
 	 * 
 	 * @param operations the operations to set
 	 */
-	public void setCassandraDataTemplate(CassandraTemplate cassandraTemplate) {
+	public void setCassandraTemplate(CassandraTemplate cassandraTemplate) {
 		this.cassandraTemplate = cassandraTemplate;
 		setMappingContext(cassandraTemplate.getConverter().getMappingContext());
 	}

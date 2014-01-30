@@ -31,15 +31,15 @@ public enum SchemaAction {
 	// /**
 	// * Validate that each required table and column exists. Fail if any required table or column does not exists.
 	// */
-	// VALIDATE("VALIDATE"),
+	// VALIDATE,
 	//
 	// /**
 	// * Alter or create each table and column as necessary, leaving unused tables and columns untouched.
 	// */
-	// UPDATE("UPDATE"),
+	// UPDATE,
 	//
 	// /**
 	// * Alter or create each table and column as necessary, removing unused tables and columns.
 	// */
-	// UPDATE_DROP_UNUNSED("UPDATE_DROP_UNUSED");
+	// UPDATE_DROP_UNUNSED;
 }

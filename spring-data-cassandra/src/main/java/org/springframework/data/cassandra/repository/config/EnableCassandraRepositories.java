@@ -34,9 +34,8 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * Annotation to enable Cassandra repositories.
  * 
  * @author Alex Shvid
- * 
+ * @author Matthew T. Adams
  */
-
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -114,12 +113,4 @@ public @interface EnableCassandraRepositories {
 	 * @return
 	 */
 	String cassandraTemplateRef() default "cassandraTemplate";
-
-	/**
-	 * Whether to automatically create indexes for query methods defined in the repository interface.
-	 * 
-	 * @return
-	 */
-	boolean createIndexesForQueryMethods() default false;
-
 }

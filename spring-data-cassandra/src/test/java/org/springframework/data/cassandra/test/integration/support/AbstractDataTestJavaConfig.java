@@ -1,10 +1,10 @@
 package org.springframework.data.cassandra.test.integration.support;
 
-import org.springframework.cassandra.config.java.AbstractCassandraConfiguration;
+import org.springframework.data.cassandra.config.java.AbstractSpringDataCassandraConfiguration;
 
-public abstract class AbstractDataTestJavaConfig extends AbstractCassandraConfiguration {
+public abstract class AbstractDataTestJavaConfig extends AbstractSpringDataCassandraConfiguration {
 
-	public static SpringDataBuildProperties PROPS = new SpringDataBuildProperties();
+	public static final SpringDataBuildProperties PROPS = new SpringDataBuildProperties();
 	public static final int PORT = PROPS.getCassandraPort();
 
 	@Override
