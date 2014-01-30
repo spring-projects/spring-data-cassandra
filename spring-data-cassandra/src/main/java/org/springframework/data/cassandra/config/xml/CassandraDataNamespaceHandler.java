@@ -13,37 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config;
+package org.springframework.data.cassandra.config.xml;
+
+import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
- * Table attributes are used for manipulation around table at the startup (create/update/validate).
+ * Namespace handler for spring-data-cassandra.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
-public class TableAttributes {
-
-	private String entity;
-	private String name;
-
-	public String getEntity() {
-		return entity;
-	}
-
-	public void setEntity(String entity) {
-		this.entity = entity;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
+public class CassandraDataNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
-	public String toString() {
-		return "TableAttributes [entity=" + entity + "]";
-	}
+	public void init() {
 
+		registerBeanDefinitionParser("cluster", new CassandraDataClusterParser());
+		registerBeanDefinitionParser("session", new CassandraDataSessionParser());
+		registerBeanDefinitionParser("template", new CassandraDataTemplateParser());
+	}
 }

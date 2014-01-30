@@ -30,6 +30,7 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -42,7 +43,7 @@ import org.springframework.util.StringUtils;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty> implements
 		CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	private String table;
+	private String tableName;
 	private final SpelExpressionParser spelParser;
 	private final StandardEvaluationContext spelContext;
 	private final Class<T> type;
@@ -68,7 +69,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	protected void determineTableName() {
 		Table anno = type.getAnnotation(Table.class);
 
-		this.table = anno != null && StringUtils.hasText(anno.value()) ? anno.value() : CassandraNamingUtils
+		this.tableName = anno != null && StringUtils.hasText(anno.value()) ? anno.value() : CassandraNamingUtils
 				.getPreferredTableName(type);
 	}
 
@@ -92,7 +93,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	@Override
 	public String getTableName() {
-		Expression expression = spelParser.parseExpression(table, ParserContext.TEMPLATE_EXPRESSION);
+		Expression expression = spelParser.parseExpression(tableName, ParserContext.TEMPLATE_EXPRESSION);
 		return expression.getValue(spelContext, String.class);
+	}
+
+	@Override
+	public void setTableName(String tableName) {
+		Assert.hasText(tableName);
+		this.tableName = tableName;
 	}
 }

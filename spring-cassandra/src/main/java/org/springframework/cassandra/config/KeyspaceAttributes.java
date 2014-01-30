@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.springframework.cassandra.core.keyspace.DefaultOption;
 import org.springframework.cassandra.core.keyspace.KeyspaceOption;
+import org.springframework.cassandra.core.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.cassandra.core.keyspace.Option;
 import org.springframework.cassandra.core.util.MapBuilder;
 
@@ -31,10 +32,7 @@ import org.springframework.cassandra.core.util.MapBuilder;
  */
 public class KeyspaceAttributes {
 
-	public static final String SIMPLE_REPLICATION_STRATEGY = "SimpleStrategy";
-	public static final String NETWORK_TOPOLOGY_REPLICATION_STRATEGY = "NetworkTopologyStrategy";
-
-	public static final String DEFAULT_REPLICATION_STRATEGY = SIMPLE_REPLICATION_STRATEGY;
+	public static final ReplicationStrategy DEFAULT_REPLICATION_STRATEGY = ReplicationStrategy.SIMPLE_STRATEGY;
 	public static final long DEFAULT_REPLICATION_FACTOR = 1;
 	public static final boolean DEFAULT_DURABLE_WRITES = true;
 
@@ -51,8 +49,10 @@ public class KeyspaceAttributes {
 	 * replication strategy class "SimpleStrategy" and with a replication factor equal to that given.
 	 */
 	public static Map<Option, Object> newSimpleReplication(long replicationFactor) {
-		return MapBuilder.map(Option.class, Object.class)
-				.entry(new DefaultOption("class", String.class, true, false, true), SIMPLE_REPLICATION_STRATEGY)
+		return MapBuilder
+				.map(Option.class, Object.class)
+				.entry(new DefaultOption("class", String.class, true, false, true),
+						ReplicationStrategy.SIMPLE_STRATEGY.getValue())
 				.entry(new DefaultOption("replication_factor", Long.class, true, false, false), replicationFactor).build();
 	}
 
@@ -64,7 +64,8 @@ public class KeyspaceAttributes {
 	public static Map<Option, Object> newNetworkReplication(DataCenterReplication... dataCenterReplications) {
 
 		MapBuilder<Option, Object> builder = MapBuilder.map(Option.class, Object.class).entry(
-				new DefaultOption("class", String.class, true, false, true), NETWORK_TOPOLOGY_REPLICATION_STRATEGY);
+				new DefaultOption("class", String.class, true, false, true),
+				ReplicationStrategy.NETWORK_TOPOLOGY_STRATEGY.getValue());
 
 		for (DataCenterReplication dcr : dataCenterReplications) {
 			builder.entry(new DefaultOption(dcr.dataCenter, Long.class, true, false, false), dcr.replicationFactor);
@@ -86,16 +87,16 @@ public class KeyspaceAttributes {
 		}
 	}
 
-	private String replicationStrategy = DEFAULT_REPLICATION_STRATEGY;
+	private ReplicationStrategy replicationStrategy = DEFAULT_REPLICATION_STRATEGY;
 	private long replicationFactor = DEFAULT_REPLICATION_FACTOR;
 	private boolean durableWrites = DEFAULT_DURABLE_WRITES;
 	private Map<String, Long> replicasPerNodeByDataCenter = new HashMap<String, Long>();
 
-	public String getReplicationStrategy() {
+	public ReplicationStrategy getReplicationStrategy() {
 		return replicationStrategy;
 	}
 
-	public void setReplicationStrategy(String replicationStrategy) {
+	public void setReplicationStrategy(ReplicationStrategy replicationStrategy) {
 		this.replicationStrategy = replicationStrategy;
 	}
 

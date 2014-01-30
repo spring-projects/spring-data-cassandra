@@ -15,6 +15,8 @@
  */
 package org.springframework.cassandra.config.xml;
 
+import static org.springframework.cassandra.config.xml.ParsingUtils.*;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -30,7 +32,6 @@ import org.w3c.dom.Element;
  * @author David Webb
  * @author Matthew T. Adams
  */
-
 public class CassandraTemplateParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
@@ -43,16 +44,11 @@ public class CassandraTemplateParser extends AbstractSimpleBeanDefinitionParser 
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : BeanNames.CASSANDRA_TEMPLATE;
+		return StringUtils.hasText(id) ? id : DefaultBeanNames.TEMPLATE;
 	}
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
-		String sessionRef = element.getAttribute("session-ref");
-		if (!StringUtils.hasText(sessionRef)) {
-			sessionRef = BeanNames.CASSANDRA_SESSION;
-		}
-		builder.addPropertyReference("session", sessionRef);
+		addOptionalPropertyReference(builder, "session", element, "session-ref", DefaultBeanNames.SESSION);
 	}
 }

@@ -50,7 +50,7 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 	private String name;
 	private List<String> networkTopologyDataCenters = new LinkedList<String>();
 	private List<String> networkTopologyReplicationFactors = new LinkedList<String>();
-	private String replicationStrategy;
+	private ReplicationStrategy replicationStrategy;
 	private long replicationFactor;
 	private boolean durableWrites = false;
 	private boolean ifNotExists = false;
@@ -97,18 +97,15 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 		create.name(name).ifNotExists(ifNotExists).with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 
 		Map<Option, Object> replicationStrategyMap = new HashMap<Option, Object>();
-		replicationStrategyMap.put(new DefaultOption("class", String.class, true, false, true), ReplicationStrategy
-				.valueOf(replicationStrategy).getValue());
+		replicationStrategyMap.put(new DefaultOption("class", String.class, true, false, true),
+				replicationStrategy.getValue());
 
-		/*
-		 * Just set replication factor for SimpleStrategy
-		 */
-		if (replicationStrategy.equals(ReplicationStrategy.SIMPLE_STRATEGY.name())) {
+		if (replicationStrategy == ReplicationStrategy.SIMPLE_STRATEGY) {
 			replicationStrategyMap.put(new DefaultOption("replication_factor", Long.class, true, false, false),
 					replicationFactor);
 		}
 
-		if (replicationStrategy.equals(ReplicationStrategy.NETWORK_TOPOLOGY_STRATEGY.name())) {
+		if (replicationStrategy == ReplicationStrategy.NETWORK_TOPOLOGY_STRATEGY) {
 			int i = 0;
 			for (String datacenter : networkTopologyDataCenters) {
 				replicationStrategyMap.put(new DefaultOption(datacenter, Long.class, true, false, false),
@@ -207,14 +204,14 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 	/**
 	 * @return Returns the replicationStrategy.
 	 */
-	public String getReplicationStrategy() {
+	public ReplicationStrategy getReplicationStrategy() {
 		return replicationStrategy;
 	}
 
 	/**
 	 * @param replicationStrategy The replicationStrategy to set.
 	 */
-	public void setReplicationStrategy(String replicationStrategy) {
+	public void setReplicationStrategy(ReplicationStrategy replicationStrategy) {
 		this.replicationStrategy = replicationStrategy;
 	}
 

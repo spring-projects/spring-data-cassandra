@@ -20,7 +20,7 @@
 		<cass:remote-pooling-options
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="1" max-connections="2" />
-		<cass:socket-options connect-timeout-mls="5000"
+		<cass:socket-options connect-timeout-millis="5000"
 			keep-alive="true" reuse-address="true" so-linger="60" tcp-no-delay="true"
 			receive-buffer-size="65536" send-buffer-size="65536" />
 		<cass:keyspace name="${cassandra.keyspace}" action="CREATE"
@@ -38,7 +38,7 @@
 	</bean>
 
 	<cass:session id="cassandra-session" keyspace-name="${cassandra.keyspace}"
-		schema-actions="NONE" cluster-ref="cassandra-cluster"
+		schema-action="NONE" cluster-ref="cassandra-cluster"
 		cassandra-converter-ref="cassandra-converter">
 	</cass:session>
 

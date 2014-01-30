@@ -20,13 +20,9 @@ package org.springframework.cassandra.config.xml;
  * @author David Webb
  * @author Matthew T. Adams
  */
-public final class BeanNames {
+public interface DefaultBeanNames {
 
-	private BeanNames() {
-	}
-
-	public static final String CASSANDRA_CLUSTER = "cassandra-cluster";
-	public static final String CASSANDRA_KEYSPACE = "cassandra-keyspace";
-	public static final String CASSANDRA_SESSION = "cassandra-session";
-	public static final String CASSANDRA_TEMPLATE = "cassandra-template";
+	public static final String CLUSTER = "cassandra-cluster";
+	public static final String SESSION = "cassandra-session";
+	public static final String TEMPLATE = "cql-template";
 }

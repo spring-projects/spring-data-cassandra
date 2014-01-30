@@ -27,11 +27,11 @@
 	<bean id="latencyTracker" class="org.springframework.cassandra.test.integration.config.xml.TestLatencyTracker"/>
 
 	<cassandra:cluster id="cassandra-cluster"
-		contactPoints="${cluster.contactPoints}" port="${cluster.port}"
+		contact-points="${cluster.contactPoints}" port="${cluster.port}"
 		compression="${cluster.compression}" auth-info-provider-ref="authProvider"
 		load-balancing-policy-ref="loadBalancingPolicy" username="${auth.username}" password="${auth.password}"
-		deferredInitialization="${cluster.deferredInit}" metricsEnabled="${cluster.metricsEnabled}"
-		jmxReportingEnabled="${cluster.jmxReportingEnabled}"
+		deferred-initialization="${cluster.deferredInit}" metrics-enabled="${cluster.metricsEnabled}"
+		jmx-reporting-enabled="${cluster.jmxReportingEnabled}"
 		reconnection-policy-ref="reconnectionPolicy"
 		retry-policy-ref="retryPolicy"
 		host-state-listener-ref="hostStateListener"

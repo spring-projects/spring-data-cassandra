@@ -28,6 +28,7 @@ import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Cluster;
@@ -76,9 +77,7 @@ public class CassandraSessionFactoryBean implements FactoryBean<Session>, Initia
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		if (cluster == null) {
-			throw new IllegalArgumentException("at least one cluster is required");
-		}
+		Assert.notNull(cluster);
 
 		session = StringUtils.hasText(keyspaceName) ? cluster.connect(keyspaceName) : cluster.connect();
 		executeScripts(startupScripts);

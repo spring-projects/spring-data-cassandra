@@ -30,4 +30,11 @@ public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T,
 	 * Returns the table name to which the entity shall be persisted.
 	 */
 	String getTableName();
+
+	/**
+	 * Sets the table name to which the entity shall be persisted.
+	 * 
+	 * @param tableName The table name; must contain a valid Cassandra table name.
+	 */
+	void setTableName(String tableName);
 }

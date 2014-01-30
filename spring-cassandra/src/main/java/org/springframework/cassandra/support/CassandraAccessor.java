@@ -18,6 +18,7 @@ package org.springframework.cassandra.support;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
 
@@ -53,6 +54,7 @@ public class CassandraAccessor implements InitializingBean {
 	/**
 	 * Ensure that the Cassandra Session has been set
 	 */
+	@Override
 	public void afterPropertiesSet() {
 		if (getSession() == null) {
 			throw new IllegalArgumentException("Property 'session' is required");
@@ -70,7 +72,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * @param session The session to set.
 	 */
 	public void setSession(Session session) {
+		Assert.notNull(session);
 		this.session = session;
 	}
-
 }

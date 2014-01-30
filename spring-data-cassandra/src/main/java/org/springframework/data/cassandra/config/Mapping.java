@@ -13,18 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config.xml;
+package org.springframework.data.cassandra.config;
 
-/**
- * Namespace handler for &lt;cassandra&gt;.
- * 
- * @author Alex Shvid
- */
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-public class CassandraNamespaceHandler extends org.springframework.cassandra.config.xml.CassandraNamespaceHandler {
+public class Mapping {
 
-	@Override
-	public void init() {
-		super.init();
+	private Set<EntityMapping> entityMappings = new HashSet<EntityMapping>();
+
+	public Set<EntityMapping> getEntityMappings() {
+		return Collections.unmodifiableSet(entityMappings);
+	}
+
+	public void setEntityMappings(Set<EntityMapping> mappings) {
+
+		if (mappings == null) {
+			entityMappings.clear();
+			return;
+		}
+
+		this.entityMappings = new HashSet<EntityMapping>(mappings);
 	}
 }

@@ -15,8 +15,9 @@
  */
 package org.springframework.cassandra.config.xml;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyReference;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyValue;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -26,8 +27,9 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * Parser for &lt;session&gt; definitions.
@@ -35,7 +37,6 @@ import org.w3c.dom.NodeList;
  * @author David Webb
  * @author Matthew T. Adams
  */
-
 public class CassandraSessionParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
@@ -48,53 +49,76 @@ public class CassandraSessionParser extends AbstractSimpleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : BeanNames.CASSANDRA_SESSION;
+		return StringUtils.hasText(id) ? id : DefaultBeanNames.SESSION;
+	}
+
+	/**
+	 * Parse the given element. This method is intended to be overridden by subclasses so that any elements not known to
+	 * this class can be properly parsed. The default implementation throws {@link IllegalStateException}.
+	 */
+	protected void parseUnhandledElement(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		throw new IllegalStateException(String.format("encountered unhandled element [%s]", element.getLocalName()));
+	}
+
+	/**
+	 * Parse the given session element attribute. This method is intended to be overridden by subclasses so that any
+	 * attributes not known to this class can be properly parsed. The default implementation throws
+	 * {@link IllegalStateException}.
+	 */
+	protected void parseUnhandledSessionElementAttribute(Attr attribute, ParserContext parserContext,
+			BeanDefinitionBuilder builder) {
+		throw new IllegalStateException(String.format("encountered unhandled session element attribute [%s]",
+				attribute.getName()));
 	}
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		parseKeyspaceName(element, builder);
-		parseClusterRef(element, builder);
-		parseScripts(element, builder, "startup-cql", "startupScripts");
-		parseScripts(element, builder, "shutdown-cql", "shutdownScripts");
+		setDefaultProperties(builder);
+
+		parseSessionAttributes(element, parserContext, builder);
+		parseSessionChildElements(element, parserContext, builder);
 	}
 
-	protected void parseScripts(Element element, BeanDefinitionBuilder builder, String elementName, String propertyName) {
-
-		List<String> scripts = parseScripts(element, elementName);
-		builder.addPropertyValue(propertyName, scripts);
+	protected void setDefaultProperties(BeanDefinitionBuilder builder) {
+		addRequiredPropertyReference(builder, "cluster", DefaultBeanNames.CLUSTER);
 	}
 
-	protected void parseClusterRef(Element element, BeanDefinitionBuilder builder) {
+	protected void parseSessionAttributes(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		String clusterRef = element.getAttribute("cluster-ref");
-		if (!StringUtils.hasText(clusterRef)) {
-			clusterRef = BeanNames.CASSANDRA_CLUSTER;
-		}
-		builder.addPropertyReference("cluster", clusterRef);
-	}
-
-	protected void parseKeyspaceName(Element element, BeanDefinitionBuilder builder) {
-
-		String keyspaceName = element.getAttribute("keyspace-name");
-		if (!StringUtils.hasText(keyspaceName)) {
-			keyspaceName = null;
-		}
-		builder.addPropertyValue("keyspaceName", keyspaceName);
-	}
-
-	protected List<String> parseScripts(Element element, String elementName) {
-
-		NodeList nodes = element.getElementsByTagName(elementName);
-		int length = nodes.getLength();
-		List<String> scripts = new ArrayList<String>(length);
+		NamedNodeMap attributes = element.getAttributes();
+		int length = attributes.getLength();
 
 		for (int i = 0; i < length; i++) {
-			Element script = (Element) nodes.item(i);
-			scripts.add(DomUtils.getTextValue(script));
-		}
 
-		return scripts;
+			Attr attribute = (Attr) attributes.item(i);
+			if ("id".equals(attribute.getName())) {
+				continue;
+			}
+
+			String name = attribute.getName();
+
+			if ("keyspace-name".equals(name)) {
+				addRequiredPropertyValue(builder, "keyspaceName", attribute);
+			} else if ("cluster-ref".equals(name)) {
+				addOptionalPropertyReference(builder, "cluster", attribute, DefaultBeanNames.CLUSTER);
+			} else {
+				parseUnhandledSessionElementAttribute(attribute, parserContext, builder);
+			}
+		}
+	}
+
+	protected void parseSessionChildElements(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+		for (Element child : DomUtils.getChildElements(element)) {
+
+			if ("startup-cql".equals(child.getLocalName())) {
+				builder.addPropertyValue("startupScripts", DomUtils.getTextValue(child));
+			} else if ("shutdown-cql".equals(child.getLocalName())) {
+				builder.addPropertyValue("shutdownScripts", DomUtils.getTextValue(child));
+			} else {
+				parseUnhandledElement(child, parserContext, builder);
+			}
+		}
 	}
 }

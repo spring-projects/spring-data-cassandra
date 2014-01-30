@@ -18,12 +18,11 @@ package org.springframework.cassandra.config.xml;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
- * Namespace handler for &lt;cassandra&gt; elements.
+ * Namespace handler for spring-cassandra.
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-
 public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override

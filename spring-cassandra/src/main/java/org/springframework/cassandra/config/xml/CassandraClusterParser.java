@@ -15,7 +15,10 @@
  */
 package org.springframework.cassandra.config.xml;
 
-import static org.springframework.data.config.ParsingUtils.getSourceBeanDefinition;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyValue;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyValue;
+import static org.springframework.cassandra.config.xml.ParsingUtils.getSourceBeanDefinition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +38,6 @@ import org.springframework.cassandra.config.MultiLevelSetFlattenerFactoryBean;
 import org.springframework.cassandra.config.PoolingOptionsFactoryBean;
 import org.springframework.cassandra.config.SocketOptionsFactoryBean;
 import org.springframework.cassandra.core.keyspace.KeyspaceActionSpecification;
-import org.springframework.cassandra.core.keyspace.KeyspaceOption.ReplicationStrategy;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -58,7 +59,7 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : BeanNames.CASSANDRA_CLUSTER;
+		return StringUtils.hasText(id) ? id : DefaultBeanNames.CLUSTER;
 	}
 
 	@Override
@@ -91,91 +92,29 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 	 */
 	protected void doParse(Element element, ParserContext context, BeanDefinitionBuilder builder) {
 
-		String contactPoints = element.getAttribute("contactPoints");
-		if (StringUtils.hasText(contactPoints)) {
-			builder.addPropertyValue("contactPoints", contactPoints);
-		}
+		addOptionalPropertyValue(builder, "contactPoints", element, "contact-points", null);
+		addOptionalPropertyValue(builder, "port", element, "port", null);
+		addOptionalPropertyValue(builder, "compressionType", element, "compression", null);
+		addOptionalPropertyValue(builder, "username", element, "username", null);
+		addOptionalPropertyValue(builder, "password", element, "password", null);
+		addOptionalPropertyValue(builder, "deferredInitialization", element, "deferred-initialization", null);
+		addOptionalPropertyValue(builder, "metricsEnabled", element, "metrics-enabled", null);
+		addOptionalPropertyValue(builder, "jmxReportingEnabled", element, "jmx-reporting-enabled", null);
+		addOptionalPropertyValue(builder, "sslEnabled", element, "ssl-enabled", null);
 
-		String port = element.getAttribute("port");
-		if (StringUtils.hasText(port)) {
-			builder.addPropertyValue("port", port);
-		}
-
-		String compression = element.getAttribute("compression");
-		if (StringUtils.hasText(compression)) {
-			builder.addPropertyValue("compressionType", compression);
-		}
-
-		String username = element.getAttribute("username");
-		if (StringUtils.hasText(username)) {
-			builder.addPropertyValue("username", username);
-		}
-
-		String password = element.getAttribute("password");
-		if (StringUtils.hasText(password)) {
-			builder.addPropertyValue("password", password);
-		}
-
-		String deferredInitialization = element.getAttribute("deferredInitialization");
-		if (StringUtils.hasText(deferredInitialization)) {
-			builder.addPropertyValue("deferredInitialization", deferredInitialization);
-		}
-
-		String metricsEnabled = element.getAttribute("metricsEnabled");
-		if (StringUtils.hasText(metricsEnabled)) {
-			builder.addPropertyValue("metricsEnabled", metricsEnabled);
-		}
-
-		String jmxReportingEnabled = element.getAttribute("jmxReportingEnabled");
-		if (StringUtils.hasText(jmxReportingEnabled)) {
-			builder.addPropertyValue("jmxReportingEnabled", jmxReportingEnabled);
-		}
-
-		String sslEnabled = element.getAttribute("sslEnabled");
-		if (StringUtils.hasText(sslEnabled)) {
-			builder.addPropertyValue("sslEnabled", sslEnabled);
-		}
-
-		String authProvider = element.getAttribute("auth-info-provider-ref");
-		if (StringUtils.hasText(authProvider)) {
-			builder.addPropertyReference("authProvider", authProvider);
-		}
-
-		String loadBalancingPolicy = element.getAttribute("load-balancing-policy-ref");
-		if (StringUtils.hasText(loadBalancingPolicy)) {
-			builder.addPropertyReference("loadBalancingPolicy", loadBalancingPolicy);
-		}
-
-		String reconnectionPolicy = element.getAttribute("reconnection-policy-ref");
-		if (StringUtils.hasText(reconnectionPolicy)) {
-			builder.addPropertyReference("reconnectionPolicy", reconnectionPolicy);
-		}
-
-		String retryPolicy = element.getAttribute("retry-policy-ref");
-		if (StringUtils.hasText(retryPolicy)) {
-			builder.addPropertyReference("retryPolicy", retryPolicy);
-		}
-
-		String sslOptions = element.getAttribute("ssl-options-ref");
-		if (StringUtils.hasText(sslOptions)) {
-			builder.addPropertyReference("sslOptions", sslOptions);
-		}
-
-		String hostStateListener = element.getAttribute("host-state-listener-ref");
-		if (StringUtils.hasText(hostStateListener)) {
-			builder.addPropertyReference("hostStateListener", hostStateListener);
-		}
-
-		String latencyTracker = element.getAttribute("latency-tracker-ref");
-		if (StringUtils.hasText(latencyTracker)) {
-			builder.addPropertyReference("latencyTracker", latencyTracker);
-		}
+		addOptionalPropertyReference(builder, "authProvider", element, "auth-info-provider-ref", null);
+		addOptionalPropertyReference(builder, "loadBalancingPolicy", element, "load-balancing-policy-ref", null);
+		addOptionalPropertyReference(builder, "reconnectionPolicy", element, "reconnection-policy-ref", null);
+		addOptionalPropertyReference(builder, "retryPolicy", element, "retry-policy-ref", null);
+		addOptionalPropertyReference(builder, "sslOptions", element, "ssl-options-ref", null);
+		addOptionalPropertyReference(builder, "hostStateListener", element, "host-state-listener-ref", null);
+		addOptionalPropertyReference(builder, "latencyTracker", element, "latency-tracker-ref", null);
 
 		parseChildElements(element, context, builder);
 	}
 
 	/**
-	 * Parse the Child Elemement of {@link BeanNames.CASSANDRA_CLUSTER}
+	 * Parse the Child Element of {@link DefaultBeanNames.CLUSTER}
 	 * 
 	 * @param element The Element being parsed
 	 * @param context The Parser Context
@@ -223,7 +162,7 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 		}
 
 		/*
-		 * If the PoolingOptionsBuilder was initilized during parsing, process it now.
+		 * If the PoolingOptionsBuilder was initialized during parsing, process it now.
 		 */
 		if (poolingOptionsBuilder != null) {
 			builder.addPropertyValue("poolingOptions", getSourceBeanDefinition(poolingOptionsBuilder, context, element));
@@ -236,7 +175,7 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 	}
 
 	/**
-	 * Create the Single Factory Bean that will flatten all List<List<KeyspaceActionSpecificationFactoryBean>>
+	 * Create the Single Factory Bean that will flatten all Set<Set<KeyspaceActionSpecificationFactoryBean>>
 	 * 
 	 * @param element The Element being parsed
 	 * @param context The Parser Context
@@ -262,20 +201,13 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 
 		ManagedList<String> networkTopologyDataCenters = new ManagedList<String>();
 		ManagedList<String> networkTopologyReplicationFactors = new ManagedList<String>();
-		String strategyClass = null;
-		String replicationFactor = null;
 
 		if (element != null) {
 
-			strategyClass = element.getAttribute("class");
-			if (!StringUtils.hasText(strategyClass)) {
-				strategyClass = KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY;
-			}
-
-			replicationFactor = element.getAttribute("replication-factor");
-			if (!StringUtils.hasText(replicationFactor)) {
-				replicationFactor = KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR + "";
-			}
+			addOptionalPropertyValue(builder, "replicationStrategy", element, "class",
+					KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY.name());
+			addOptionalPropertyValue(builder, "replicationFactor", element, "replication-factor", ""
+					+ KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR);
 
 			/*
 			 * DataCenters only apply to NetworkTolopogyStrategy
@@ -285,16 +217,10 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 				networkTopologyDataCenters.add(dataCenter.getAttribute("name"));
 				networkTopologyReplicationFactors.add(dataCenter.getAttribute("replication-factor"));
 			}
-		} else {
-			strategyClass = ReplicationStrategy.SIMPLE_STRATEGY.name();
-			replicationFactor = KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR + "";
 		}
 
-		builder.addPropertyValue("replicationStrategy", strategyClass);
-		builder.addPropertyValue("replicationFactor", replicationFactor);
 		builder.addPropertyValue("networkTopologyDataCenters", networkTopologyDataCenters);
 		builder.addPropertyValue("networkTopologyReplicationFactors", networkTopologyReplicationFactors);
-
 	}
 
 	/**
@@ -323,16 +249,16 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 		}
 
 		if (hostDistance.equals(HostDistance.LOCAL)) {
-			ParsingUtils.setPropertyValue(builder, element, "min-simultaneous-requests", "localMinSimultaneousRequests");
-			ParsingUtils.setPropertyValue(builder, element, "max-simultaneous-requests", "localMaxSimultaneousRequests");
-			ParsingUtils.setPropertyValue(builder, element, "core-connections", "localCoreConnections");
-			ParsingUtils.setPropertyValue(builder, element, "max-connections", "localMaxConnections");
+			addOptionalPropertyValue(builder, "localMinSimultaneousRequests", element, "min-simultaneous-requests", null);
+			addOptionalPropertyValue(builder, "localMaxSimultaneousRequests", element, "max-simultaneous-requests", null);
+			addOptionalPropertyValue(builder, "localCoreConnections", element, "core-connections", null);
+			addOptionalPropertyValue(builder, "localMaxConnections", element, "max-connections", null);
 		}
 		if (hostDistance.equals(HostDistance.REMOTE)) {
-			ParsingUtils.setPropertyValue(builder, element, "min-simultaneous-requests", "remoteMinSimultaneousRequests");
-			ParsingUtils.setPropertyValue(builder, element, "max-simultaneous-requests", "remoteMaxSimultaneousRequests");
-			ParsingUtils.setPropertyValue(builder, element, "core-connections", "remoteCoreConnections");
-			ParsingUtils.setPropertyValue(builder, element, "max-connections", "remoteMaxConnections");
+			addOptionalPropertyValue(builder, "remoteMinSimultaneousRequests", element, "min-simultaneous-requests", null);
+			addOptionalPropertyValue(builder, "remoteMaxSimultaneousRequests", element, "max-simultaneous-requests", null);
+			addOptionalPropertyValue(builder, "remoteCoreConnections", element, "core-connections", null);
+			addOptionalPropertyValue(builder, "remoteMaxConnections", element, "max-connections", null);
 		}
 
 		return builder;
@@ -349,14 +275,14 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SocketOptionsFactoryBean.class);
 
-		ParsingUtils.setPropertyValue(builder, element, "connect-timeout-mls", "connectTimeoutMillis");
-		ParsingUtils.setPropertyValue(builder, element, "keep-alive", "keepAlive");
-		ParsingUtils.setPropertyValue(builder, element, "read-timeout-mls", "readTimeoutMillis");
-		ParsingUtils.setPropertyValue(builder, element, "reuse-address", "reuseAddress");
-		ParsingUtils.setPropertyValue(builder, element, "so-linger", "soLinger");
-		ParsingUtils.setPropertyValue(builder, element, "tcp-no-delay", "tcpNoDelay");
-		ParsingUtils.setPropertyValue(builder, element, "receive-buffer-size", "receiveBufferSize");
-		ParsingUtils.setPropertyValue(builder, element, "send-buffer-size", "sendBufferSize");
+		addOptionalPropertyValue(builder, "connectTimeoutMillis", element, "connect-timeout-mls", null);
+		addOptionalPropertyValue(builder, "keepAlive", element, "keep-alive", null);
+		addOptionalPropertyValue(builder, "readTimeoutMillis", element, "read-timeout-mls", null);
+		addOptionalPropertyValue(builder, "reuseAddress", element, "reuse-address", null);
+		addOptionalPropertyValue(builder, "soLinger", element, "so-linger", null);
+		addOptionalPropertyValue(builder, "tcpNoDelay", element, "tcp-no-delay", null);
+		addOptionalPropertyValue(builder, "receiveBufferSize", element, "receive-buffer-size", null);
+		addOptionalPropertyValue(builder, "sendBufferSize", element, "send-buffer-size", null);
 
 		return getSourceBeanDefinition(builder, context, element);
 	}
@@ -370,21 +296,22 @@ public class CassandraClusterParser extends AbstractBeanDefinitionParser {
 	 */
 	private BeanDefinition getKeyspaceSpecificationBeanDefinition(Element element, ParserContext context) {
 
-		String action = element.getAttribute("action");
-
-		Assert.notNull(action, "Keyspace Action must not be null!");
-
 		BeanDefinitionBuilder keyspaceBuilder = BeanDefinitionBuilder
 				.genericBeanDefinition(KeyspaceActionSpecificationFactoryBean.class);
 
-		ParsingUtils.setPropertyValue(keyspaceBuilder, element, "name", "name");
-		ParsingUtils.setPropertyValue(keyspaceBuilder, element, "action", "action");
-		ParsingUtils.setPropertyValue(keyspaceBuilder, element, "durableWrites", "durableWrites");
+		// add required replication defaults
+		addRequiredPropertyValue(keyspaceBuilder, "replicationStrategy",
+				KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY.name());
+		addRequiredPropertyValue(keyspaceBuilder, "replicationFactor", "" + KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR);
+
+		// now start parsing
+		addRequiredPropertyValue(keyspaceBuilder, "name", element, "name");
+		addRequiredPropertyValue(keyspaceBuilder, "action", element, "action");
+		addOptionalPropertyValue(keyspaceBuilder, "durableWrites", element, "durable-writes", "false");
 
 		Element replicationElement = DomUtils.getChildElementByTagName(element, "replication");
 		parseReplication(replicationElement, keyspaceBuilder);
 
 		return getSourceBeanDefinition(keyspaceBuilder, context, element);
 	}
-
 }

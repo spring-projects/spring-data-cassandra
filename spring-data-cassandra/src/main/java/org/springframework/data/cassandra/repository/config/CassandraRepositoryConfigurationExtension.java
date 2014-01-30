@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
  */
 public class CassandraRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
-	private static final String CASSANDRA_TEMPLATE_REF = "cassandra-template-ref";
+	private static final String CASSANDRA_TEMPLATE_REF = "cql-template-ref";
 	private static final String CREATE_QUERY_INDEXES = "create-query-indexes";
 
 	/* 

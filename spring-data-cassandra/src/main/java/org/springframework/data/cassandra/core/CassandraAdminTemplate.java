@@ -30,7 +30,6 @@ public class CassandraAdminTemplate extends CassandraAccessor implements Cassand
 
 	private static final Logger log = LoggerFactory.getLogger(CassandraAdminTemplate.class);
 
-	private Session session;
 	private CassandraConverter converter;
 	private CassandraMappingContext mappingContext;
 
@@ -197,7 +196,7 @@ public class CassandraAdminTemplate extends CassandraAccessor implements Cassand
 		Assert.notNull(callback);
 
 		try {
-			return callback.doInSession(session);
+			return callback.doInSession(getSession());
 		} catch (RuntimeException x) {
 			throw tryToConvert(x);
 		}
