@@ -12,7 +12,7 @@
 		location="classpath:/org/springframework/data/cassandra/test/integration/config/cassandra.properties" />
 
 	<cass:cluster id="cassandra-cluster"
-		contactPoints="${cassandra.contactPoints}" port="${cassandra.native_transport_port}"
+		contact-points="${cassandra.contactPoints}" port="${cassandra.native_transport_port}"
 		compression="SNAPPY">
 		<cass:local-pooling-options
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
