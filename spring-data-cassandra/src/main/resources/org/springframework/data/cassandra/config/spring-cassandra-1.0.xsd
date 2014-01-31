@@ -118,7 +118,7 @@ The name of the Cassandra Cluster definition; default is "cassandra-cluster".
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="contactPoints" type="xsd:string"
+		<xsd:attribute name="contact-points" type="xsd:string"
 			use="optional" default="localhost">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -157,7 +157,7 @@ When Authentication is enabled, the password to use when connecting to the Clust
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="metricsEnabled" type="xsd:string"
+		<xsd:attribute name="metrics-enabled" type="xsd:string"
 			default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -165,7 +165,7 @@ Determine whether or not to collect metrics.  Defaults to true.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="jmxReportingEnabled" type="xsd:string"
+		<xsd:attribute name="jmx-reporting-enabled" type="xsd:string"
 			default="true">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -173,7 +173,7 @@ Determine whether or not to enable JMX Reporting.  Defaults to true.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="deferredInitialization" type="xsd:string"
+		<xsd:attribute name="deferred-initialization" type="xsd:string"
 			default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -181,7 +181,7 @@ Determine if we defer initalizing the cluster until a connection is requested. D
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="sslEnabled" type="xsd:string"
+		<xsd:attribute name="ssl-enabled" type="xsd:string"
 			default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
