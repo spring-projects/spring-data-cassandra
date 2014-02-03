@@ -2,12 +2,20 @@
 
 <xsd:schema xmlns="http://www.springframework.org/schema/data/cassandra"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:tool="http://www.springframework.org/schema/tool"
+	xmlns:tool="http://www.springframework.org/schema/tool" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:repository="http://www.springframework.org/schema/data/repository"
 	targetNamespace="http://www.springframework.org/schema/data/cassandra"
 	elementFormDefault="qualified" attributeFormDefault="unqualified">
 
+	<xsd:import namespace="http://www.springframework.org/schema/beans"
+		schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd" />
 	<xsd:import namespace="http://www.springframework.org/schema/tool"
 		schemaLocation="http://www.springframework.org/schema/tool/spring-tool.xsd" />
+	<xsd:import namespace="http://www.springframework.org/schema/context"
+		schemaLocation="http://www.springframework.org/schema/context/spring-context.xsd" />
+	<xsd:import namespace="http://www.springframework.org/schema/data/repository"
+		schemaLocation="http://www.springframework.org/schema/data/repository/spring-repository.xsd" />
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -444,7 +452,8 @@ Arbitrary CQL script to be executed against the session's keyspace during bean d
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="mapping" type="mappingType" minOccurs="0" maxOccurs="1" />
+			<xsd:element name="mapping" type="mappingType" minOccurs="0"
+				maxOccurs="1" />
 		</xsd:sequence>
 
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
@@ -653,4 +662,38 @@ Table name override.
 		
 		<!-- TODO: allow specification of C* table options here -->
 	</xsd:complexType>
+
+	<xsd:simpleType name="cassandraTemplateRef" final="union">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+						type="org.springframework.data.cassandra.core.CassandraTemplate" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string" />
+	</xsd:simpleType>
+
+	<xsd:attributeGroup name="cassandra-repository-attributes">
+		<xsd:attribute name="cassandra-template-ref" type="cassandraTemplateRef"
+			default="cassandra-template">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a cassandraTemplate. Will default to 'cassandra-template'.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+
+	<xsd:element name="repositories">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="repository:repositories">
+					<xsd:attributeGroup ref="cassandra-repository-attributes" />
+					<xsd:attributeGroup ref="repository:repository-attributes" />
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
 </xsd:schema>

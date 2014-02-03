@@ -16,6 +16,8 @@
 package org.springframework.data.cassandra.config.xml;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension;
+import org.springframework.data.repository.config.RepositoryBeanDefinitionParser;
 
 /**
  * Namespace handler for spring-data-cassandra.
@@ -27,6 +29,9 @@ public class CassandraDataNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
 	public void init() {
+
+		registerBeanDefinitionParser("repositories", new RepositoryBeanDefinitionParser(
+				new CassandraRepositoryConfigurationExtension()));
 
 		registerBeanDefinitionParser("cluster", new CassandraDataClusterParser());
 		registerBeanDefinitionParser("session", new CassandraDataSessionParser());

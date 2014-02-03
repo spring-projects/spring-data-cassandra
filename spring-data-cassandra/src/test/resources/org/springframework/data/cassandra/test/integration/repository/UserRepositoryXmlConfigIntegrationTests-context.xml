@@ -11,7 +11,7 @@
 		location="classpath:/org/springframework/data/cassandra/test/integration/repository/cassandra.properties" />
 
 	<cassandra:cluster id="cassandra-cluster"
-		contactPoints="${cassandra.contactPoints}" port="${cassandra.native_transport_port}">
+		contact-points="${cassandra.contactPoints}" port="${cassandra.native_transport_port}">
 		<cassandra:local-pooling-options
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="2" max-connections="8" />
@@ -49,14 +49,9 @@
 		</cassandra:mapping>
 	</cassandra:session>
 
-	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CqlTemplate">
-		<constructor-arg ref="cassandra-session" />
-	</bean>
+	<cassandra:template id="cassandra-template"
+		cassandra-converter-ref="cassandra-converter" session-ref="cassandra-session" />
 
-	<bean id="cassandraDataTemplate"
-		class="org.springframework.data.cassandra.core.CassandraTemplate">
-		<constructor-arg ref="cassandra-session" />
-		<constructor-arg ref="cassandra-converter" />
-		<constructor-arg value="${cassandra.keyspace}" />
-	</bean>
+	<cassandra:repositories
+		base-package="org.springframework.data.cassandra.test.integration.repository" />
 </beans>

@@ -24,40 +24,35 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.test.integration.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.google.common.collect.Lists;
 
 /**
- * Base class for tests for {@link UserRepository}.
+ * Tests for {@link UserRepository}.
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = UserRepositoryIntegrationTestsConfig.class)
-public class UserRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class UserRepositoryIntegrationTests {
 
-	@Autowired
-	protected UserRepository repository;
+	UserRepository repository;
 
-	@Autowired
-	protected CassandraOperations template;
+	CassandraOperations template;
 
 	User tom, bob, alice, scott;
 
 	List<User> all;
 
-	@Before
+	public UserRepositoryIntegrationTests() {
+	}
+
+	public UserRepositoryIntegrationTests(UserRepository repository, CassandraOperations template) {
+		this.repository = repository;
+		this.template = template;
+	}
+
 	public void setUp() throws InterruptedException {
 
 		repository.deleteAll();
@@ -93,12 +88,10 @@ public class UserRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		all = template.insert(Arrays.asList(tom, bob, alice, scott));
 	}
 
-	@After
 	public void after() {
 		repository.deleteAll();
 	}
 
-	@Test
 	public void findsUserById() throws Exception {
 
 		User user = repository.findOne(bob.getUsername());
@@ -107,7 +100,6 @@ public class UserRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 	}
 
-	@Test
 	public void findsAll() throws Exception {
 		List<User> result = Lists.newArrayList(repository.findAll());
 		assertThat(result.size(), is(all.size()));
@@ -115,7 +107,6 @@ public class UserRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 	}
 
-	@Test
 	public void findsAllWithGivenIds() {
 
 		Iterable<User> result = repository.findAll(Arrays.asList(bob.getUsername(), tom.getUsername()));
@@ -123,7 +114,6 @@ public class UserRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		assertThat(result, not(hasItems(alice, scott)));
 	}
 
-	@Test
 	public void deletesUserCorrectly() throws Exception {
 
 		repository.delete(tom);
@@ -134,7 +124,6 @@ public class UserRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		assertThat(result, not(hasItem(tom)));
 	}
 
-	@Test
 	public void deletesUserByIdCorrectly() {
 
 		repository.delete(tom.getUsername().toString());
