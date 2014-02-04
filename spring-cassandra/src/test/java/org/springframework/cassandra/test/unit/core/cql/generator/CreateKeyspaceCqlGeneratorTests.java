@@ -75,6 +75,30 @@ public class CreateKeyspaceCqlGeneratorTests {
 		}
 	}
 
+	public static class NoOptionsBasicTest extends CreateKeyspaceTest {
+
+		public String name = Utils.randomKeyspaceName();
+		public Boolean durableWrites = true;
+
+		public Map<Option, Object> replicationMap = KeyspaceAttributes.newSimpleReplication();
+
+		@Override
+		public CreateKeyspaceSpecification specification() {
+			keyspace = name;
+
+			return CreateKeyspaceSpecification.createKeyspace().name(keyspace);
+		}
+
+		@Test
+		public void test() {
+			prepare();
+
+			assertPreamble(keyspace, cql);
+			assertReplicationMap(replicationMap, cql);
+			assertDurableWrites(durableWrites, cql);
+		}
+	}
+
 	public static class NetworkTopologyTest extends CreateKeyspaceTest {
 
 		public String name = Utils.randomKeyspaceName();
