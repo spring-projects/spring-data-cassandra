@@ -19,7 +19,9 @@ import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
 import java.util.Map;
 
+import org.springframework.cassandra.config.KeyspaceAttributes;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.KeyspaceOption;
 import org.springframework.cassandra.core.keyspace.Option;
 
 /**
@@ -59,6 +61,17 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeysp
 
 		// begin options clause
 		Map<String, Object> options = spec().getOptions();
+
+		Object replicationOption = options.get(KeyspaceOption.REPLICATION.getName());
+		if (replicationOption == null) {
+			Map<Option, Object> simpleReplicationMap = KeyspaceAttributes.newSimpleReplication();
+			spec().with(KeyspaceOption.REPLICATION, simpleReplicationMap);
+		}
+
+		Object durableWrites = options.get(KeyspaceOption.DURABLE_WRITES.getName());
+		if (durableWrites == null) {
+			spec().with(KeyspaceOption.DURABLE_WRITES, Boolean.TRUE);
+		}
 
 		if (!options.isEmpty()) {
 
