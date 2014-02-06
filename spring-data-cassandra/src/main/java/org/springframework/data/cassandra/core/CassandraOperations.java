@@ -461,4 +461,6 @@ public interface CassandraOperations extends CqlOperations {
 	void deleteById(Class<?> clazz, Object id);
 
 	<T> List<T> selectByIds(Class<T> clazz, Iterable<?> ids);
+
+	<T> List<T> selectAll(Class<T> clazz);
 }

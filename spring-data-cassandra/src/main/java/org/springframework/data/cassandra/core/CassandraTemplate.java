@@ -142,8 +142,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> void delete(List<T> entities) {
+
+		Assert.notEmpty(entities);
+
 		String tableName = getTableName(entities.get(0).getClass());
 		Assert.notNull(tableName);
+
 		delete(entities, tableName);
 	}
 
@@ -395,12 +399,31 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
+	public <T> List<T> selectAll(Class<T> selectClass) {
+
+		Assert.notNull(selectClass);
+
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(selectClass);
+		if (entity == null) {
+			throw new IllegalArgumentException(String.format("unknown persistent class [%s]", selectClass.getName()));
+		}
+		return select(QueryBuilder.select().all().from(entity.getTableName()), selectClass);
+	}
+
+	@Override
 	public <T> List<T> select(Select cql, Class<T> selectClass) {
+
+		Assert.notNull(cql);
+
 		return select(cql.getQueryString(), selectClass);
 	}
 
 	@Override
 	public <T> List<T> select(String cql, Class<T> selectClass) {
+
+		Assert.hasText(cql);
+		Assert.notNull(selectClass);
+
 		return select(cql, new ReadRowCallback<T>(cassandraConverter, selectClass));
 	}
 

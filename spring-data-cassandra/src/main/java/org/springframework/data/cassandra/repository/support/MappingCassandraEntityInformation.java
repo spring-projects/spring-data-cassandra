@@ -22,6 +22,7 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
+import org.springframework.util.Assert;
 
 /**
  * {@link CassandraEntityInformation} implementation using a {@link CassandraPersistentEntity} instance to lookup the
@@ -63,17 +64,14 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	@Override
 	public ID getId(T entity) {
 
-		CassandraPersistentProperty idProperty = entityMetadata.getIdProperty();
+		Assert.notNull(entity);
 
+		CassandraPersistentProperty idProperty = entityMetadata.getIdProperty();
 		if (idProperty == null) {
 			return null;
 		}
 
-		try {
-			return (ID) BeanWrapper.create(entity, null).getProperty(idProperty);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return (ID) BeanWrapper.create(entity, null).getProperty(idProperty);
 	}
 
 	@SuppressWarnings("unchecked")
