@@ -13,45 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.table;
+package org.springframework.data.cassandra.test.integration.composites;
 
 import java.util.Date;
 
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.mapping.CassandraType;
+
+import com.datastax.driver.core.DataType;
 
 /**
- * This is an example of dynamic table that creates each time new column with Post timestamp.
+ * This is an example of dynamic table that creates each time new column with Notification timestamp.
  * 
- * It is possible to use a static table for posts and identify them by PostId(UUID), but in this case we need to use
- * MapReduce for Big Data to find posts for particular user, so it is better to have index (userId) -> index (post time)
- * architecture. It helps a lot to build eventually a search index for the particular user.
+ * By default it is active Notification until user deactivate it. This table uses index on the field active to access in
+ * WHERE cause only for active notifications.
  * 
  * @author Alex Shvid
  */
-
 @PrimaryKeyClass
-public class PostPK {
+public class NotificationPK {
 
 	/*
 	 * Row ID
 	 */
 	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-	private String author;
+	private String username;
 
 	/*
 	 * Clustered Column
 	 */
 	@PrimaryKeyColumn(ordinal = 1)
+	@CassandraType(type = DataType.Name.TIMESTAMP)
 	private Date time;
 
-	public String getAuthor() {
-		return author;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setAuthor(String author) {
-		this.author = author;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public Date getTime() {

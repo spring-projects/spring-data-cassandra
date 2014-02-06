@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.config.java;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.cassandra.config.CassandraDataSessionFactoryBean;
-import org.springframework.data.cassandra.config.Mapping;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
@@ -35,6 +35,8 @@ import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.Mapping;
+import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.ClassUtils;
@@ -66,7 +68,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * The base package to scan for entities annotated with {@link Table} annotations. By default, returns the package
 	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>).
 	 */
-	public String getMappingBasePackage() {
+	public String getEntityBasePackage() {
 		return getClass().getPackage().getName();
 	}
 
@@ -125,13 +127,13 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	/**
 	 * Scans the mapping base package for entity classes annotated with {@link Table} or {@link Persistent}.
 	 * 
-	 * @see #getMappingBasePackage()
+	 * @see #getEntityBasePackage()
 	 * @return <code>Set&lt;Class&lt;?&gt;&gt;</code> representing the annotated entity classes found.
 	 * @throws ClassNotFoundException
 	 */
 	protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
 
-		String basePackage = getMappingBasePackage();
+		String basePackage = getEntityBasePackage();
 		Set<Class<?>> initialEntitySet = new HashSet<Class<?>>();
 
 		if (StringUtils.hasText(basePackage)) {
@@ -139,6 +141,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 					false);
 			componentProvider.addIncludeFilter(new AnnotationTypeFilter(Table.class));
 			componentProvider.addIncludeFilter(new AnnotationTypeFilter(Persistent.class));
+			componentProvider.addIncludeFilter(new AnnotationTypeFilter(PrimaryKeyClass.class));
 
 			for (BeanDefinition candidate : componentProvider.findCandidateComponents(basePackage)) {
 

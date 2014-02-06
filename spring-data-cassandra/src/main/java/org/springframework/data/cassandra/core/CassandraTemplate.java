@@ -16,81 +16,57 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
+import org.mortbay.log.Log;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.exception.EntityWriterException;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
-import org.springframework.data.cassandra.util.CqlUtils;
+import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.convert.EntityWriter;
+import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Batch;
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Delete.Where;
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 
 /**
- * The Cassandra Data Template is a convenience API for all Cassandra Operations using POJOs. For low level Cassandra
- * Operations use the {@link CqlTemplate}
+ * The CassandraTemplate is a convenient API for all Cassandra operations using POJOs with their Spring Data Cassandra
+ * mapping information. For low-level Cassandra operation, see {@link CqlTemplate}.
  * 
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew T. Adams
+ * 
+ * @see CqlTemplate
  */
 public class CassandraTemplate extends CqlTemplate implements CassandraOperations {
 
-	/*
-	 * List of iterable classes when testing POJOs for specific operations.
-	 */
-	public static final Collection<String> ITERABLE_CLASSES;
-	static {
-
-		Set<String> iterableClasses = new HashSet<String>();
-		iterableClasses.add(List.class.getName());
-		iterableClasses.add(Collection.class.getName());
-		iterableClasses.add(Iterator.class.getName());
-
-		ITERABLE_CLASSES = Collections.unmodifiableCollection(iterableClasses);
-
-	}
-
-	/*
-	 * Required elements for successful Template Operations.  These can be set with the Constructor, or wired in
-	 * later.
-	 */
-	private CassandraConverter cassandraConverter;
-	private CassandraMappingContext mappingContext;
+	protected CassandraConverter cassandraConverter;
+	protected CassandraMappingContext mappingContext;
+	protected boolean useFieldAccessOnly = false;
 
 	/**
 	 * Default Constructor for wiring in the required components later
 	 */
 	public CassandraTemplate() {
-	}
-
-	/**
-	 * Constructor if only session is known at time of Template Creation
-	 * 
-	 * @param session must not be {@literal null}
-	 */
-	public CassandraTemplate(Session session) {
-		this(session, new MappingCassandraConverter(new DefaultCassandraMappingContext()));
 	}
 
 	/**
@@ -101,149 +77,15 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 */
 	public CassandraTemplate(Session session, CassandraConverter converter) {
 		setSession(session);
-		this.cassandraConverter = converter;
-		this.mappingContext = cassandraConverter.getCassandraMappingContext();
+		setConverter(converter);
 	}
 
-	public CassandraMappingContext getCassandraMappingContext() {
-		return mappingContext;
-	}
+	public void setConverter(CassandraConverter cassandraConverter) {
 
-	@Override
-	public Long count(Select selectQuery) {
-		return doSelectCount(selectQuery);
-	}
+		Assert.notNull(cassandraConverter);
 
-	@Override
-	public Long count(String tableName) {
-		Select select = QueryBuilder.select().countAll().from(tableName);
-		return doSelectCount(select);
-	}
-
-	@Override
-	public <T> void delete(List<T> entities) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		delete(entities, tableName);
-	}
-
-	@Override
-	public <T> void delete(List<T> entities, QueryOptions options) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		delete(entities, tableName, options);
-	}
-
-	@Override
-	public <T> void delete(List<T> entities, String tableName) {
-
-		delete(entities, tableName, null);
-	}
-
-	@Override
-	public <T> void delete(List<T> entities, String tableName, QueryOptions options) {
-		Assert.notNull(entities);
-		Assert.notEmpty(entities);
-		Assert.notNull(tableName);
-		doBatchDelete(tableName, entities, options, false);
-	}
-
-	@Override
-	public <T> void delete(T entity) {
-		String tableName = getTableName(entity.getClass());
-		Assert.notNull(tableName);
-		delete(entity, tableName);
-	}
-
-	@Override
-	public <T> void delete(T entity, QueryOptions options) {
-		String tableName = getTableName(entity.getClass());
-		Assert.notNull(tableName);
-		delete(entity, tableName, options);
-	}
-
-	@Override
-	public <T> void delete(T entity, String tableName) {
-		delete(entity, tableName, null);
-	}
-
-	@Override
-	public <T> void delete(T entity, String tableName, QueryOptions options) {
-		Assert.notNull(entity);
-		Assert.notNull(tableName);
-		doDelete(tableName, entity, options, false);
-	}
-
-	@Override
-	public <T> void deleteAsynchronously(List<T> entities) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		deleteAsynchronously(entities, tableName);
-	}
-
-	@Override
-	public <T> void deleteAsynchronously(List<T> entities, QueryOptions options) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		deleteAsynchronously(entities, tableName, options);
-	}
-
-	@Override
-	public <T> void deleteAsynchronously(List<T> entities, String tableName) {
-		deleteAsynchronously(entities, tableName, null);
-	}
-
-	@Override
-	public <T> void deleteAsynchronously(List<T> entities, String tableName, QueryOptions options) {
-		Assert.notNull(entities);
-		Assert.notEmpty(entities);
-		Assert.notNull(tableName);
-		doBatchDelete(tableName, entities, options, true);
-	}
-
-	@Override
-	public <T> void deleteAsynchronously(T entity) {
-		String tableName = getTableName(entity.getClass());
-		Assert.notNull(tableName);
-		deleteAsynchronously(entity, tableName);
-	}
-
-	@Override
-	public <T> void deleteAsynchronously(T entity, QueryOptions options) {
-		String tableName = getTableName(entity.getClass());
-		Assert.notNull(tableName);
-		deleteAsynchronously(entity, tableName, options);
-	}
-
-	@Override
-	public <T> void deleteAsynchronously(T entity, String tableName) {
-		deleteAsynchronously(entity, tableName, null);
-	}
-
-	@Override
-	public <T> void deleteAsynchronously(T entity, String tableName, QueryOptions options) {
-		Assert.notNull(entity);
-		Assert.notNull(tableName);
-		doDelete(tableName, entity, options, true);
-	}
-
-	/**
-	 * @param entityClass
-	 * @return
-	 */
-	public String determineTableName(Class<?> entityClass) {
-
-		if (entityClass == null) {
-			throw new InvalidDataAccessApiUsageException(
-					"No class parameter provided, entity table name can't be determined!");
-		}
-
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
-		if (entity == null) {
-			throw new InvalidDataAccessApiUsageException("No Persitent Entity information found for the class "
-					+ entityClass.getName());
-		}
-		return entity.getTableName();
+		this.cassandraConverter = cassandraConverter;
+		mappingContext = cassandraConverter.getCassandraMappingContext();
 	}
 
 	@Override
@@ -251,253 +93,301 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return cassandraConverter;
 	}
 
+	public CassandraMappingContext getCassandraMappingContext() {
+		return mappingContext;
+	}
+
+	public boolean getUseFieldAccessOnly() {
+		return useFieldAccessOnly;
+	}
+
+	/**
+	 * Whether only fields should be used when accessing a persistent entity's data.
+	 * 
+	 * @param useFieldAccessOnly
+	 */
+	public void setUseFieldAccessOnly(boolean useFieldAccessOnly) {
+		this.useFieldAccessOnly = useFieldAccessOnly;
+	}
+
 	@Override
-	public String getTableName(Class<?> entityClass) {
-		return determineTableName(entityClass);
+	public void afterPropertiesSet() {
+		super.afterPropertiesSet();
+
+		Assert.notNull(cassandraConverter);
+		Assert.notNull(mappingContext);
+	}
+
+	@Override
+	public boolean exists(Class<?> type, Object id) {
+
+		Assert.notNull(type);
+		Assert.notNull(id);
+
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(type);
+
+		Select select = QueryBuilder.select().countAll().from(entity.getTableName());
+		appendIdCriteria(select.where(), entity, id);
+
+		return count(select.getQueryString()) != 0;
+	}
+
+	@Override
+	public long count(Class<?> type) {
+		return count(getTableName(type));
+	}
+
+	@Override
+	public <T> void delete(List<T> entities) {
+		delete(entities, null);
+	}
+
+	@Override
+	public <T> void delete(List<T> entities, QueryOptions options) {
+		batchDelete(entities, options, false);
+	}
+
+	@Override
+	public void deleteById(Class<?> type, Object id) {
+
+		Assert.notNull(type);
+		Assert.notNull(id);
+
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(type);
+
+		Delete delete = QueryBuilder.delete().all().from(entity.getTableName());
+		appendIdCriteria(delete.where(), entity, id);
+
+		execute(delete.getQueryString());
+	}
+
+	@Override
+	public <T> void delete(T entity) {
+		delete(entity, null);
+	}
+
+	@Override
+	public <T> void delete(T entity, QueryOptions options) {
+		delete(entity, options, false);
+	}
+
+	@Override
+	public <T> void deleteAsynchronously(List<T> entities) {
+		deleteAsynchronously(entities, null);
+	}
+
+	@Override
+	public <T> void deleteAsynchronously(List<T> entities, QueryOptions options) {
+		batchDelete(entities, options, true);
+	}
+
+	@Override
+	public <T> void deleteAsynchronously(T entity) {
+		deleteAsynchronously(entity, null);
+	}
+
+	@Override
+	public <T> void deleteAsynchronously(T entity, QueryOptions options) {
+		delete(entity, options, true);
+	}
+
+	@Override
+	public String getTableName(Class<?> type) {
+		return mappingContext.getRequiredPersistentEntity(type).getTableName();
 	}
 
 	@Override
 	public <T> List<T> insert(List<T> entities) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		return insert(entities, tableName);
+		return insert(entities, null);
 	}
 
 	@Override
 	public <T> List<T> insert(List<T> entities, QueryOptions options) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		return insert(entities, tableName, options);
-	}
-
-	@Override
-	public <T> List<T> insert(List<T> entities, String tableName) {
-		return insert(entities, tableName, null);
-	}
-
-	@Override
-	public <T> List<T> insert(List<T> entities, String tableName, QueryOptions options) {
-		Assert.notNull(entities);
-		Assert.notEmpty(entities);
-		Assert.notNull(tableName);
-		return doBatchInsert(tableName, entities, options, false);
+		return batchInsert(entities, options, false);
 	}
 
 	@Override
 	public <T> T insert(T entity) {
-		String tableName = determineTableName(entity);
-		Assert.notNull(tableName);
-		return insert(entity, tableName);
+		return insert(entity, null);
 	}
 
 	@Override
 	public <T> T insert(T entity, QueryOptions options) {
-		String tableName = determineTableName(entity);
-		Assert.notNull(tableName);
-		return insert(entity, tableName, options);
-	}
-
-	@Override
-	public <T> T insert(T entity, String tableName) {
-		return insert(entity, tableName, null);
-	}
-
-	@Override
-	public <T> T insert(T entity, String tableName, QueryOptions options) {
-		Assert.notNull(entity);
-		Assert.notNull(tableName);
-		ensureNotIterable(entity);
-		return doInsert(tableName, entity, options, false);
+		return insert(entity, options, false);
 	}
 
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		return insertAsynchronously(entities, tableName);
+		return insertAsynchronously(entities, null);
 	}
 
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities, QueryOptions options) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		return insertAsynchronously(entities, tableName, options);
-	}
-
-	@Override
-	public <T> List<T> insertAsynchronously(List<T> entities, String tableName) {
-		return insertAsynchronously(entities, tableName, null);
-	}
-
-	@Override
-	public <T> List<T> insertAsynchronously(List<T> entities, String tableName, QueryOptions options) {
-		Assert.notNull(entities);
-		Assert.notEmpty(entities);
-		Assert.notNull(tableName);
-		return doBatchInsert(tableName, entities, options, true);
+		return batchInsert(entities, options, true);
 	}
 
 	@Override
 	public <T> T insertAsynchronously(T entity) {
-		String tableName = determineTableName(entity);
-		Assert.notNull(tableName);
-		return insertAsynchronously(entity, tableName);
+		return insertAsynchronously(entity, null);
 	}
 
 	@Override
 	public <T> T insertAsynchronously(T entity, QueryOptions options) {
-		String tableName = determineTableName(entity);
-		Assert.notNull(tableName);
-		return insertAsynchronously(entity, tableName, options);
+		return insert(entity, options, true);
 	}
 
 	@Override
-	public <T> T insertAsynchronously(T entity, String tableName) {
-		return insertAsynchronously(entity, tableName, null);
+	public <T> List<T> selectAll(Class<T> type) {
+		return select(QueryBuilder.select().all().from(getTableName(type)).getQueryString(), type);
 	}
 
 	@Override
-	public <T> T insertAsynchronously(T entity, String tableName, QueryOptions options) {
-		Assert.notNull(entity);
-		Assert.notNull(tableName);
+	public <T> List<T> select(String cql, Class<T> type) {
 
-		ensureNotIterable(entity);
+		Assert.hasText(cql);
+		Assert.notNull(type);
 
-		return doInsert(tableName, entity, options, true);
+		return select(cql, new CassandraConverterRowCallback<T>(cassandraConverter, type));
 	}
 
 	@Override
-	public <T> List<T> select(Select cql, Class<T> selectClass) {
-		return select(cql.getQueryString(), selectClass);
+	public <T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids) {
+
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(type);
+
+		if (entity.getIdProperty().isCompositePrimaryKey()) {
+			throw new IllegalArgumentException(String.format(
+					"entity class [%s] uses a composite primary key class [%s] which this method can't support", type.getName(),
+					entity.getIdProperty().getCompositePrimaryKeyEntity().getType().getName()));
+		}
+
+		Select select = QueryBuilder.select().all().from(entity.getTableName());
+		select.where(QueryBuilder.in(entity.getIdProperty().getColumnName(), CollectionUtils.toArray(ids)));
+
+		return select(select.getQueryString(), type);
 	}
 
 	@Override
-	public <T> List<T> select(String cql, Class<T> selectClass) {
-		return doSelect(cql, new ReadRowCallback<T>(cassandraConverter, selectClass));
+	public <T> T selectOneById(Class<T> type, Object id) {
+
+		Assert.notNull(type);
+		Assert.notNull(id);
+
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
+		if (entity == null) {
+			throw new IllegalArgumentException(String.format("unknown entity class [%s]", type.getName()));
+		}
+
+		Select select = QueryBuilder.select().all().from(entity.getTableName());
+		appendIdCriteria(select.where(), entity, id);
+
+		return selectOne(select.getQueryString(), type);
+	}
+
+	protected interface ClauseCallback {
+		void doWithClause(Clause clause);
+	}
+
+	protected void appendIdCriteria(final ClauseCallback clauseCallback, CassandraPersistentEntity<?> entity, Object id) {
+
+		CassandraPersistentProperty idProperty = entity.getIdProperty();
+
+		if (idProperty.isCompositePrimaryKey()) {
+
+			CassandraPersistentEntity<?> idEntity = idProperty.getCompositePrimaryKeyEntity();
+
+			final BeanWrapper<CassandraPersistentEntity<Object>, Object> idWrapper = BeanWrapper
+					.<CassandraPersistentEntity<Object>, Object> create(id, cassandraConverter.getConversionService());
+
+			idEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
+				@Override
+				public void doWithPersistentProperty(CassandraPersistentProperty p) {
+
+					clauseCallback.doWithClause(QueryBuilder.eq(p.getColumnName(),
+							idWrapper.getProperty(p, p.getActualType(), useFieldAccessOnly)));
+				}
+			});
+
+			return;
+		}
+
+		clauseCallback.doWithClause(QueryBuilder.eq(idProperty.getColumnName(), id));
+	}
+
+	protected void appendIdCriteria(final com.datastax.driver.core.querybuilder.Select.Where where,
+			CassandraPersistentEntity<?> entity, Object id) {
+
+		appendIdCriteria(new ClauseCallback() {
+
+			@Override
+			public void doWithClause(Clause clause) {
+				where.and(clause);
+			}
+		}, entity, id);
+	}
+
+	protected void appendIdCriteria(final Where where, CassandraPersistentEntity<?> entity, Object id) {
+
+		appendIdCriteria(new ClauseCallback() {
+
+			@Override
+			public void doWithClause(Clause clause) {
+				where.and(clause);
+			}
+		}, entity, id);
 	}
 
 	@Override
-	public <T> T selectOne(Select selectQuery, Class<T> selectClass) {
-		return selectOne(selectQuery.getQueryString(), selectClass);
-	}
-
-	@Override
-	public <T> T selectOne(String cql, Class<T> selectClass) {
-		return doSelectOne(cql, new ReadRowCallback<T>(cassandraConverter, selectClass));
+	public <T> T selectOne(String cql, Class<T> type) {
+		return selectOne(cql, new CassandraConverterRowCallback<T>(cassandraConverter, type));
 	}
 
 	@Override
 	public <T> List<T> update(List<T> entities) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		return update(entities, tableName);
+		return update(entities, null);
 	}
 
 	@Override
 	public <T> List<T> update(List<T> entities, QueryOptions options) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		return update(entities, tableName, options);
-	}
-
-	@Override
-	public <T> List<T> update(List<T> entities, String tableName) {
-		return update(entities, tableName, null);
-	}
-
-	@Override
-	public <T> List<T> update(List<T> entities, String tableName, QueryOptions options) {
-		Assert.notNull(entities);
-		Assert.notEmpty(entities);
-		Assert.notNull(tableName);
-		return doBatchUpdate(tableName, entities, options, false);
+		return batchUpdate(entities, options, false);
 	}
 
 	@Override
 	public <T> T update(T entity) {
-		String tableName = getTableName(entity.getClass());
-		Assert.notNull(tableName);
-		return update(entity, tableName);
+		return update(entity, null);
 	}
 
 	@Override
 	public <T> T update(T entity, QueryOptions options) {
-		String tableName = getTableName(entity.getClass());
-		Assert.notNull(tableName);
-		return update(entity, tableName, options);
-	}
-
-	@Override
-	public <T> T update(T entity, String tableName) {
-		return update(entity, tableName, null);
-	}
-
-	@Override
-	public <T> T update(T entity, String tableName, QueryOptions options) {
-		Assert.notNull(entity);
-		Assert.notNull(tableName);
-		return doUpdate(tableName, entity, options, false);
+		return update(entity, options, false);
 	}
 
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		return updateAsynchronously(entities, tableName);
+		return updateAsynchronously(entities, null);
 	}
 
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities, QueryOptions options) {
-		String tableName = getTableName(entities.get(0).getClass());
-		Assert.notNull(tableName);
-		return updateAsynchronously(entities, tableName, options);
-	}
-
-	@Override
-	public <T> List<T> updateAsynchronously(List<T> entities, String tableName) {
-		return updateAsynchronously(entities, tableName, null);
-	}
-
-	@Override
-	public <T> List<T> updateAsynchronously(List<T> entities, String tableName, QueryOptions options) {
-		Assert.notNull(entities);
-		Assert.notEmpty(entities);
-		Assert.notNull(tableName);
-		return doBatchUpdate(tableName, entities, options, true);
+		return batchUpdate(entities, options, true);
 	}
 
 	@Override
 	public <T> T updateAsynchronously(T entity) {
-		String tableName = getTableName(entity.getClass());
-		Assert.notNull(tableName);
-		return updateAsynchronously(entity, tableName);
+		return updateAsynchronously(entity, null);
 	}
 
 	@Override
 	public <T> T updateAsynchronously(T entity, QueryOptions options) {
-		String tableName = getTableName(entity.getClass());
-		Assert.notNull(tableName);
-		return updateAsynchronously(entity, tableName, options);
-	}
-
-	@Override
-	public <T> T updateAsynchronously(T entity, String tableName) {
-
-		return updateAsynchronously(entity, tableName, null);
-	}
-
-	@Override
-	public <T> T updateAsynchronously(T entity, String tableName, QueryOptions options) {
-		Assert.notNull(entity);
-		Assert.notNull(tableName);
-		return doUpdate(tableName, entity, options, true);
+		return update(entity, options, true);
 	}
 
 	/**
 	 * @param obj
 	 * @return
 	 */
-	private <T> String determineTableName(T obj) {
+	protected <T> String determineTableName(T obj) {
 		if (null != obj) {
 			return determineTableName(obj.getClass());
 		}
@@ -505,12 +395,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return null;
 	}
 
-	/**
-	 * @param query
-	 * @param readRowCallback
-	 * @return
-	 */
-	private <T> List<T> doSelect(final String query, ReadRowCallback<T> readRowCallback) {
+	protected <T> List<T> select(final String query, CassandraConverterRowCallback<T> readRowCallback) {
 
 		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
 
@@ -535,58 +420,15 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * @param selectQuery
-	 * @return
-	 */
-	private Long doSelectCount(final Select query) {
-
-		Long count = null;
-
-		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
-
-			@Override
-			public ResultSet doInSession(Session s) throws DataAccessException {
-				return s.execute(query);
-			}
-		});
-
-		if (resultSet == null) {
-			return null;
-		}
-
-		Iterator<Row> iterator = resultSet.iterator();
-		while (iterator.hasNext()) {
-			Row row = iterator.next();
-			count = row.getLong(0);
-		}
-
-		return count;
-
-	}
-
-	/**
 	 * @param query
 	 * @param readRowCallback
 	 * @return
 	 */
-	private <T> T doSelectOne(final String query, ReadRowCallback<T> readRowCallback) {
+	protected <T> T selectOne(String query, CassandraConverterRowCallback<T> readRowCallback) {
 
 		logger.info(query);
 
-		/*
-		 * Run the Query
-		 */
-		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
-
-			@Override
-			public ResultSet doInSession(Session s) throws DataAccessException {
-				return s.execute(query);
-			}
-		});
-
-		if (resultSet == null) {
-			return null;
-		}
+		ResultSet resultSet = query(query);
 
 		Iterator<Row> iterator = resultSet.iterator();
 		if (iterator.hasNext()) {
@@ -607,77 +449,56 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param tableName
 	 * @param objectToRemove
 	 */
-	protected <T> void doBatchDelete(final String tableName, final List<T> entities, final QueryOptions options,
-			final boolean deleteAsynchronously) {
+	protected <T> void batchDelete(List<T> entities, QueryOptions options, boolean asynchronously) {
 
 		Assert.notEmpty(entities);
 
-		try {
+		Batch b = createDeleteBatchQuery(getTableName(entities.get(0).getClass()), entities, options, cassandraConverter);
 
-			final Batch b = CqlUtils.toDeleteBatchQuery(tableName, entities, options, cassandraConverter);
-			logger.info(b.toString());
+		logger.info(b.toString());
 
-			doExecute(new SessionCallback<Object>() {
+		String query = b.getQueryString();
 
-				@Override
-				public Object doInSession(Session s) throws DataAccessException {
-
-					if (deleteAsynchronously) {
-						s.executeAsync(b);
-					} else {
-						s.execute(b);
-					}
-
-					return null;
-
-				}
-			});
-
-		} catch (EntityWriterException e) {
-			throw getExceptionTranslator().translateExceptionIfPossible(
-					new RuntimeException("Failed to translate Object to Query", e));
+		if (asynchronously) {
+			executeAsynchronously(query);
+		} else {
+			execute(query);
 		}
 	}
 
-	/**
-	 * Insert a row into a Cassandra CQL Table
-	 * 
-	 * @param tableName
-	 * @param entities
-	 * @param optionsByName
-	 * @param insertAsychronously
-	 * @return
-	 */
-	protected <T> List<T> doBatchInsert(final String tableName, final List<T> entities, final QueryOptions options,
-			final boolean insertAsychronously) {
+	protected <T> T insert(T entity, QueryOptions options, boolean asynchronously) {
+
+		Assert.notNull(entity);
+
+		Insert insert = createInsertQuery(getTableName(entity.getClass()), entity, options, cassandraConverter);
+
+		String query = insert.getQueryString();
+
+		if (asynchronously) {
+			executeAsynchronously(query);
+		} else {
+			execute(query);
+		}
+
+		return entity;
+	}
+
+	protected <T> List<T> batchInsert(List<T> entities, QueryOptions options, boolean asychronously) {
 
 		Assert.notEmpty(entities);
 
-		try {
+		Batch b = createInsertBatchQuery(getTableName(entities.get(0).getClass()), entities, options, cassandraConverter);
 
-			final Batch b = CqlUtils.toInsertBatchQuery(tableName, entities, options, cassandraConverter);
-			logger.info(b.getQueryString());
+		String query = b.getQueryString();
+		logger.info(query);
 
-			return doExecute(new SessionCallback<List<T>>() {
-
-				@Override
-				public List<T> doInSession(Session s) throws DataAccessException {
-
-					if (insertAsychronously) {
-						s.executeAsync(b);
-					} else {
-						s.execute(b);
-					}
-
-					return entities;
-
-				}
-			});
-
-		} catch (EntityWriterException e) {
-			throw getExceptionTranslator().translateExceptionIfPossible(
-					new RuntimeException("Failed to translate Object to Query", e));
+		if (asychronously) {
+			executeAsynchronously(query);
+		} else {
+			execute(query);
 		}
+
+		return entities;
 	}
 
 	/**
@@ -689,136 +510,44 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param updateAsychronously
 	 * @return
 	 */
-	protected <T> List<T> doBatchUpdate(final String tableName, final List<T> entities, final QueryOptions options,
-			final boolean updateAsychronously) {
+	protected <T> List<T> batchUpdate(List<T> entities, QueryOptions options, boolean asychronously) {
 
 		Assert.notEmpty(entities);
 
-		try {
+		Batch b = toUpdateBatchQuery(getTableName(entities.get(0).getClass()), entities, options, cassandraConverter);
 
-			final Batch b = CqlUtils.toUpdateBatchQuery(tableName, entities, options, cassandraConverter);
-			logger.info(b.toString());
+		String query = b.getQueryString();
+		logger.info(query);
 
-			return doExecute(new SessionCallback<List<T>>() {
-
-				@Override
-				public List<T> doInSession(Session s) throws DataAccessException {
-
-					if (updateAsychronously) {
-						s.executeAsync(b);
-					} else {
-						s.execute(b);
-					}
-
-					return entities;
-
-				}
-			});
-
-		} catch (EntityWriterException e) {
-			throw getExceptionTranslator().translateExceptionIfPossible(
-					new RuntimeException("Failed to translate Object to Query", e));
+		if (asychronously) {
+			executeAsynchronously(query);
+		} else {
+			execute(query);
 		}
+
+		return entities;
 	}
 
 	/**
 	 * Perform the removal of a Row.
 	 * 
 	 * @param tableName
-	 * @param objectToRemove
-	 */
-	protected <T> void doDelete(final String tableName, final T objectToRemove, final QueryOptions options,
-			final boolean deleteAsynchronously) {
-
-		try {
-
-			final Query q = CqlUtils.toDeleteQuery(tableName, objectToRemove, options, cassandraConverter);
-			logger.info(q.toString());
-
-			doExecute(new SessionCallback<Object>() {
-
-				@Override
-				public Object doInSession(Session s) throws DataAccessException {
-
-					if (deleteAsynchronously) {
-						s.executeAsync(q);
-					} else {
-						s.execute(q);
-					}
-
-					return null;
-
-				}
-			});
-
-		} catch (EntityWriterException e) {
-			throw getExceptionTranslator().translateExceptionIfPossible(
-					new RuntimeException("Failed to translate Object to Query", e));
-		}
-	}
-
-	/**
-	 * Execute a command at the Session Level
-	 * 
-	 * @param callback
-	 * @return
-	 */
-	@Override
-	protected <T> T doExecute(SessionCallback<T> callback) {
-
-		Assert.notNull(callback);
-
-		try {
-
-			return callback.doInSession(getSession());
-
-		} catch (DataAccessException e) {
-			throw translateExceptionIfPossible(e);
-		}
-	}
-
-	/**
-	 * Insert a row into a Cassandra CQL Table
-	 * 
-	 * @param tableName
 	 * @param entity
 	 */
-	protected <T> T doInsert(final String tableName, final T entity, final QueryOptions options,
-			final boolean insertAsychronously) {
+	protected <T> void delete(T entity, QueryOptions options, boolean asynchronously) {
 
-		try {
+		Assert.notNull(entity);
 
-			final Query q = CqlUtils.toInsertQuery(tableName, entity, options, cassandraConverter);
+		Delete delete = createDeleteQuery(getTableName(entity.getClass()), entity, options, cassandraConverter);
+		logger.info(delete.toString());
 
-			logger.info(q.toString());
-			if (q.getConsistencyLevel() != null) {
-				logger.info(q.getConsistencyLevel().name());
-			}
-			if (q.getRetryPolicy() != null) {
-				logger.info(q.getRetryPolicy().toString());
-			}
+		String query = delete.getQueryString();
 
-			return doExecute(new SessionCallback<T>() {
-
-				@Override
-				public T doInSession(Session s) throws DataAccessException {
-
-					if (insertAsychronously) {
-						s.executeAsync(q);
-					} else {
-						s.execute(q);
-					}
-
-					return entity;
-
-				}
-			});
-
-		} catch (EntityWriterException e) {
-			throw getExceptionTranslator().translateExceptionIfPossible(
-					new RuntimeException("Failed to translate Object to Query", e));
+		if (asynchronously) {
+			executeAsynchronously(query);
+		} else {
+			execute(query);
 		}
-
 	}
 
 	/**
@@ -830,47 +559,199 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param updateAsychronously
 	 * @return
 	 */
-	protected <T> T doUpdate(final String tableName, final T entity, final QueryOptions options,
-			final boolean updateAsychronously) {
+	protected <T> T update(T entity, QueryOptions options, boolean asychronously) {
 
-		try {
+		Assert.notNull(entity);
 
-			final Query q = CqlUtils.toUpdateQuery(tableName, entity, options, cassandraConverter);
-			logger.info(q.toString());
+		Update q = toUpdateQuery(getTableName(entity.getClass()), entity, options, cassandraConverter);
 
-			return doExecute(new SessionCallback<T>() {
+		String query = q.getQueryString();
+		logger.info(query);
 
-				@Override
-				public T doInSession(Session s) throws DataAccessException {
-
-					if (updateAsychronously) {
-						s.executeAsync(q);
-					} else {
-						s.execute(q);
-					}
-
-					return entity;
-
-				}
-			});
-
-		} catch (EntityWriterException e) {
-			throw getExceptionTranslator().translateExceptionIfPossible(
-					new RuntimeException("Failed to translate Object to Query", e));
+		if (asychronously) {
+			executeAsynchronously(query);
+		} else {
+			execute(query);
 		}
+
+		return entity;
+	}
+
+	/**
+	 * Generates a Query Object for an insert
+	 * 
+	 * @param tableName
+	 * @param objectToSave
+	 * @param entity
+	 * @param optionsByName
+	 * 
+	 * @return The Query object to run with session.execute();
+	 */
+	public static Insert createInsertQuery(String tableName, Object objectToSave, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+
+		Insert q = QueryBuilder.insertInto(tableName);
+
+		/*
+		 * Write properties
+		 */
+		entityWriter.write(objectToSave, q);
+
+		/*
+		 * Add Query Options
+		 */
+		CqlTemplate.addQueryOptions(q, options);
+
+		/*
+		 * Add TTL to Insert object
+		 */
+		if (options != null && options.getTtl() != null) {
+			q.using(QueryBuilder.ttl(options.getTtl()));
+		}
+
+		return q;
+	}
+
+	/**
+	 * Generates a Query Object for an Update
+	 * 
+	 * @param tableName
+	 * @param objectToSave
+	 * @param entity
+	 * @param optionsByName
+	 * 
+	 * @return The Query object to run with session.execute();
+	 */
+	public static Update toUpdateQuery(String tableName, Object objectToSave, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+
+		Update q = QueryBuilder.update(tableName);
+
+		/*
+		 * Write properties
+		 */
+		entityWriter.write(objectToSave, q);
+
+		/*
+		 * Add Query Options
+		 */
+		CqlTemplate.addQueryOptions(q, options);
+
+		/*
+		 * Add TTL to Insert object
+		 */
+		if (options != null && options.getTtl() != null) {
+			q.using(QueryBuilder.ttl(options.getTtl()));
+		}
+
+		return q;
 
 	}
 
 	/**
-	 * Verify the object is not an iterable type
+	 * Generates a Batch Object for multiple Updates
 	 * 
-	 * @param o
+	 * @param tableName
+	 * @param objectsToSave
+	 * @param entity
+	 * @param optionsByName
+	 * 
+	 * @return The Query object to run with session.execute();
 	 */
-	protected void ensureNotIterable(Object o) {
-		if (null != o) {
-			if (o.getClass().isArray() || ITERABLE_CLASSES.contains(o.getClass().getName())) {
-				throw new IllegalArgumentException("Cannot use a collection here.");
-			}
+	public static <T> Batch toUpdateBatchQuery(String tableName, List<T> objectsToSave, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+
+		/*
+		 * Return variable is a Batch statement
+		 */
+		Batch b = QueryBuilder.batch();
+
+		for (T objectToSave : objectsToSave) {
+
+			b.add(toUpdateQuery(tableName, objectToSave, options, entityWriter));
+
 		}
+
+		/*
+		 * Add Query Options
+		 */
+		CqlTemplate.addQueryOptions(b, options);
+
+		return b;
+
+	}
+
+	/**
+	 * Generates a Batch Object for multiple inserts
+	 * 
+	 * @param tableName
+	 * @param entities
+	 * @param entity
+	 * @param optionsByName
+	 * 
+	 * @return The Query object to run with session.execute();
+	 */
+	public static <T> Batch createInsertBatchQuery(String tableName, List<T> entities, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+
+		Batch batch = QueryBuilder.batch();
+
+		for (T entity : entities) {
+			batch.add(createInsertQuery(tableName, entity, options, entityWriter));
+		}
+
+		CqlTemplate.addQueryOptions(batch, options);
+
+		return batch;
+	}
+
+	/**
+	 * Create a Delete Query Object from an annotated POJO
+	 * 
+	 * @param tableName
+	 * @param object
+	 * @param entity
+	 * @param optionsByName
+	 * @return
+	 */
+	public static Delete createDeleteQuery(String tableName, Object object, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+
+		Delete.Selection ds = QueryBuilder.delete();
+		Delete q = ds.from(tableName);
+		Where w = q.where();
+
+		entityWriter.write(object, w);
+
+		CqlTemplate.addQueryOptions(q, options);
+
+		return q;
+	}
+
+	/**
+	 * Create a Batch Query object for multiple deletes.
+	 * 
+	 * @param tableName
+	 * @param entities
+	 * @param entity
+	 * @param optionsByName
+	 * 
+	 * @return
+	 */
+	public static <T> Batch createDeleteBatchQuery(String tableName, List<T> entities, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+
+		Assert.notEmpty(entities);
+		Assert.hasText(tableName);
+
+		Batch batch = QueryBuilder.batch();
+
+		for (T entity : entities) {
+			batch.add(createDeleteQuery(tableName, entity, options, entityWriter));
+		}
+
+		CqlTemplate.addQueryOptions(batch, options);
+
+		return batch;
 	}
 }

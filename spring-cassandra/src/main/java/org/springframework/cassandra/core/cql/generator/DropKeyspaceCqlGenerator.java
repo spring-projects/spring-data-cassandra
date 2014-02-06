@@ -26,10 +26,15 @@ import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
  */
 public class DropKeyspaceCqlGenerator extends KeyspaceNameCqlGenerator<DropKeyspaceSpecification> {
 
+	public static String toCql(DropKeyspaceSpecification specification) {
+		return new DropKeyspaceCqlGenerator(specification).toCql();
+	}
+
 	public DropKeyspaceCqlGenerator(DropKeyspaceSpecification specification) {
 		super(specification);
 	}
 
+	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		return noNull(cql).append("DROP KEYSPACE ").append(spec().getIfExists() ? "IF EXISTS " : "")
 				.append(spec().getNameAsIdentifier()).append(";");

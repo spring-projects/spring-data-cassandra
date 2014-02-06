@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config;
+package org.springframework.data.cassandra.mapping;
 
 import java.util.Collections;
 import java.util.HashSet;

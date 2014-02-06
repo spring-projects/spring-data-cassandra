@@ -24,7 +24,6 @@ import com.datastax.driver.core.Session;
 
 /**
  * @author David Webb
- * 
  */
 public class CassandraAccessor implements InitializingBean {
 
@@ -56,9 +55,7 @@ public class CassandraAccessor implements InitializingBean {
 	 */
 	@Override
 	public void afterPropertiesSet() {
-		if (getSession() == null) {
-			throw new IllegalArgumentException("Property 'session' is required");
-		}
+		Assert.notNull(session);
 	}
 
 	/**

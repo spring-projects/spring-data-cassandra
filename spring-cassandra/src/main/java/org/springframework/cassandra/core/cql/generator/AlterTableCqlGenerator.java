@@ -34,10 +34,15 @@ import org.springframework.cassandra.core.keyspace.TableOption;
  */
 public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableSpecification> {
 
+	public static String toCql(AlterTableSpecification specification) {
+		return new AlterTableCqlGenerator(specification).toCql();
+	}
+
 	public AlterTableCqlGenerator(AlterTableSpecification specification) {
 		super(specification);
 	}
 
+	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		cql = noNull(cql);
 

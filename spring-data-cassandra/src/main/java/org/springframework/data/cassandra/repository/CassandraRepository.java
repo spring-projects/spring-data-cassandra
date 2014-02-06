@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.repository;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -24,9 +23,7 @@ import org.springframework.data.repository.CrudRepository;
  * Cassandra-specific extension of the {@link CrudRepository} interface.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public interface CassandraRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
-
-	List<T> findByPartitionKey(ID id);
-
 }

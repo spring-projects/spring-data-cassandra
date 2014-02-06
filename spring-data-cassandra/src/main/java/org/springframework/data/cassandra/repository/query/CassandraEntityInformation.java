@@ -33,12 +33,4 @@ public interface CassandraEntityInformation<T, ID extends Serializable> extends 
 	 * @return
 	 */
 	String getTableName();
-
-	/**
-	 * Returns the column that the id will be persisted to.
-	 * 
-	 * @return
-	 */
-	String getIdColumn();
-
 }

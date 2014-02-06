@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import java.util.List;
+
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
@@ -24,7 +27,15 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T, CassandraPersistentProperty> {
+public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T, CassandraPersistentProperty>,
+		ApplicationContextAware {
+
+	/**
+	 * Returns whether this entity represents a composite primary key.
+	 */
+	boolean isCompositePrimaryKey();
+
+	List<CassandraPersistentProperty> getCompositePrimaryKeyProperties();
 
 	/**
 	 * Returns the table name to which the entity shall be persisted.
@@ -37,4 +48,6 @@ public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T,
 	 * @param tableName The table name; must contain a valid Cassandra table name.
 	 */
 	void setTableName(String tableName);
+
+	CassandraMappingContext getMappingContext();
 }

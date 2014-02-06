@@ -27,10 +27,15 @@ import org.springframework.cassandra.core.keyspace.DropIndexSpecification;
  */
 public class DropIndexCqlGenerator extends IndexNameCqlGenerator<DropIndexSpecification> {
 
+	public static String toCql(DropIndexSpecification specification) {
+		return new DropIndexCqlGenerator(specification).toCql();
+	}
+
 	public DropIndexCqlGenerator(DropIndexSpecification specification) {
 		super(specification);
 	}
 
+	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		return noNull(cql).append("DROP INDEX ")
 		// .append(spec().getIfExists() ? "IF EXISTS " : "")

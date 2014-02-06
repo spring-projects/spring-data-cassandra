@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.table;
+package org.springframework.data.cassandra.test.integration.composites;
 
 import java.util.Date;
 
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.cassandra.mapping.Table;
 
 /**
  * This is an example of the users timeline dynamic table, where all columns are dynamically created by @ColumnId field
@@ -30,36 +29,43 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
  * 
  * @author Alex Shvid
  */
-
-@PrimaryKeyClass
-public class TimelinePK {
+@Table("timeline")
+public class Timeline {
 
 	/*
 	 * Row ID
 	 */
-	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-	private String username;
+	@Id
+	private TimelinePK pk;
 
 	/*
-	 * Clustered Column
+	 * Reference to the post by author and postUID
 	 */
-	@PrimaryKeyColumn(ordinal = 1)
-	private Date time;
+	private String author;
+	private Date postTime;
 
-	public String getUsername() {
-		return username;
+	public TimelinePK getPk() {
+		return pk;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setPk(TimelinePK pk) {
+		this.pk = pk;
 	}
 
-	public Date getTime() {
-		return time;
+	public String getAuthor() {
+		return author;
 	}
 
-	public void setTime(Date time) {
-		this.time = time;
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public Date getPostTime() {
+		return postTime;
+	}
+
+	public void setPostTime(Date postTime) {
+		this.postTime = postTime;
 	}
 
 }

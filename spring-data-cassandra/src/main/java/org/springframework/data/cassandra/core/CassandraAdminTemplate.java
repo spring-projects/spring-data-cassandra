@@ -6,7 +6,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.cql.generator.AlterTableCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.DropTableCqlGenerator;
+import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
@@ -60,7 +65,9 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	@Override
 	public void replaceTable(String tableName, Class<?> entityClass, Map<String, Object> optionsByName) {
-		throw new UnsupportedOperationException("not yet implemented");
+
+		dropTable(tableName);
+		createTable(false, tableName, entityClass, optionsByName);
 	}
 
 	/**
@@ -102,15 +109,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 		log.info("Dropping table => " + tableName);
 
-		final String q = CqlUtils.dropTable(tableName);
-		log.info(q);
-
-		execute(new SessionCallback<ResultSet>() {
-			@Override
-			public ResultSet doInSession(Session s) {
-				return s.execute(q);
-			}
-		});
+		execute(DropTableSpecification.dropTable(tableName));
 	}
 
 	@Override
@@ -124,25 +123,5 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 				return s.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName);
 			}
 		});
-	}
-
-	/**
-	 * @param entityClass
-	 * @return
-	 */
-	@Override
-	public String determineTableName(Class<?> entityClass) {
-
-		if (entityClass == null) {
-			throw new InvalidDataAccessApiUsageException(
-					"No class parameter provided, entity table name can't be determined!");
-		}
-
-		CassandraPersistentEntity<?> entity = getCassandraMappingContext().getPersistentEntity(entityClass);
-		if (entity == null) {
-			throw new InvalidDataAccessApiUsageException("No Persitent Entity information found for the class "
-					+ entityClass.getName());
-		}
-		return entity.getTableName();
 	}
 }

@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentProperty;
+import org.springframework.data.cassandra.mapping.CachingCassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
@@ -76,6 +77,6 @@ public class CompoundPrimaryKeyIntegrationTests {
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Field field) {
-		return new BasicCassandraPersistentProperty(field, null, entity, new CassandraSimpleTypeHolder());
+		return new CachingCassandraPersistentProperty(field, null, entity, new CassandraSimpleTypeHolder());
 	}
 }

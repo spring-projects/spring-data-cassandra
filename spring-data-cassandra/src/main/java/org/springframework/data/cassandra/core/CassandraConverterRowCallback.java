@@ -16,32 +16,34 @@
 package org.springframework.data.cassandra.core;
 
 import org.springframework.cassandra.core.RowCallback;
-import org.springframework.data.convert.EntityReader;
+import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Row;
 
 /**
- * Simple {@link RowCallback} that will transform {@link Row} into the given target type using the given
- * {@link EntityReader}.
+ * Simple {@link RowCallback} that will transform a {@link Row} into the given target type using the given
+ * {@link CassandraConverter}.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
-public class ReadRowCallback<T> implements RowCallback<T> {
+public class CassandraConverterRowCallback<T> implements RowCallback<T> {
 
-	private final EntityReader<? super T, Object> reader;
+	private final CassandraConverter reader;
 	private final Class<T> type;
 
-	public ReadRowCallback(EntityReader<? super T, Object> reader, Class<T> type) {
+	public CassandraConverterRowCallback(CassandraConverter reader, Class<T> type) {
+
 		Assert.notNull(reader);
 		Assert.notNull(type);
+
 		this.reader = reader;
 		this.type = type;
 	}
 
 	@Override
 	public T doWith(Row row) {
-		T source = reader.read(type, row);
-		return source;
+		return reader.read(type, row);
 	}
 }

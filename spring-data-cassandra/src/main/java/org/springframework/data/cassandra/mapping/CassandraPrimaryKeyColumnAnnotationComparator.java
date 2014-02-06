@@ -19,7 +19,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
  * 
  * @author Matthew T. Adams
  */
-public enum DefaultCassandraPrimaryKeyColumnComparator implements Comparator<PrimaryKeyColumn> {
+public enum CassandraPrimaryKeyColumnAnnotationComparator implements Comparator<PrimaryKeyColumn> {
 
 	/**
 	 * The sole instance of this class.
@@ -27,23 +27,23 @@ public enum DefaultCassandraPrimaryKeyColumnComparator implements Comparator<Pri
 	IT;
 
 	@Override
-	public int compare(PrimaryKeyColumn o1, PrimaryKeyColumn o2) {
+	public int compare(PrimaryKeyColumn left, PrimaryKeyColumn right) {
 
-		int comparison = o1.type().compareTo(o2.type());
+		int comparison = left.type().compareTo(right.type());
 		if (comparison != 0) {
 			return comparison;
 		}
 
-		comparison = new Integer(o1.ordinal()).compareTo(o2.ordinal());
+		comparison = new Integer(left.ordinal()).compareTo(right.ordinal());
 		if (comparison != 0) {
 			return comparison;
 		}
 
-		comparison = o1.name().compareTo(o2.name());
+		comparison = left.name().compareTo(right.name());
 		if (comparison != 0) {
 			return comparison;
 		}
 
-		return o1.ordering().compareTo(o2.ordering());
+		return left.ordering().compareTo(right.ordering());
 	}
 }

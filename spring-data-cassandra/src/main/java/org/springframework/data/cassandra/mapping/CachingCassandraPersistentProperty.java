@@ -17,8 +17,10 @@ package org.springframework.data.cassandra.mapping;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import org.springframework.cassandra.core.Ordering;
+import org.springframework.data.util.TypeInformation;
 
 import com.datastax.driver.core.DataType;
 
@@ -37,11 +39,12 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	private Boolean isClusterKeyColumn;
 	private Boolean isPrimaryKeyColumn;
 	private String columnName;
+	private List<String> columnNames;
 	private Ordering ordering;
 	private boolean orderingCached = false;
 	private DataType dataType;
 	private Class<?> compositePrimaryKeyType;
-	private CassandraPersistentEntity<?> compositePrimaryKeyEntity;
+	private TypeInformation<?> compositePrimaryKeyTypeInformation;
 
 	/**
 	 * Creates a new {@link CachingCassandraPersistentProperty}.
@@ -52,12 +55,12 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	}
 
 	@Override
-	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
+	public TypeInformation<?> getCompositePrimaryKeyTypeInformation() {
 
-		if (compositePrimaryKeyEntity == null) {
-			compositePrimaryKeyEntity = super.getCompositePrimaryKeyEntity();
+		if (compositePrimaryKeyTypeInformation == null) {
+			compositePrimaryKeyTypeInformation = super.getCompositePrimaryKeyTypeInformation();
 		}
-		return compositePrimaryKeyEntity;
+		return compositePrimaryKeyTypeInformation;
 	}
 
 	@Override
@@ -149,5 +152,13 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 			isPartitionKeyColumn = super.isPartitionKeyColumn();
 		}
 		return isPartitionKeyColumn;
+	}
+
+	@Override
+	public List<String> getColumnNames() {
+		if (columnNames == null) {
+			columnNames = super.getColumnNames();
+		}
+		return columnNames;
 	}
 }
