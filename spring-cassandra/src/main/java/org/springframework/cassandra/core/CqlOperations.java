@@ -31,6 +31,7 @@ import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.dao.DataAccessException;
 
+import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
@@ -56,16 +57,29 @@ public interface CqlOperations {
 	 * Executes the supplied CQL Query and returns nothing.
 	 * 
 	 * @param cql
-	 * @see #query(String)
 	 */
 	void execute(String cql) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL Query Asynchronously and returns nothing.
+	 * Executes the supplied Query and returns nothing.
 	 * 
-	 * @param cql The CQL Statement to execute
+	 * @param query The {@link Query} to execute
+	 */
+	void execute(Query query) throws DataAccessException;
+
+	/**
+	 * Executes the supplied Query Asynchronously and returns nothing.
+	 * 
+	 * @param cql The {@link Query} to execute
 	 */
 	void executeAsynchronously(String cql) throws DataAccessException;
+
+	/**
+	 * Executes the supplied CQL Query Asynchronously and returns nothing.
+	 * 
+	 * @param query The {@link Query} to execute
+	 */
+	void executeAsynchronously(Query query) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor. This uses default Query

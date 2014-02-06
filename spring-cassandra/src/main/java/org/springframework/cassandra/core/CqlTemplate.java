@@ -64,7 +64,6 @@ import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Truncate;
 
 /**
@@ -103,6 +102,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> T execute(SessionCallback<T> sessionCallback) throws DataAccessException {
 		return doExecute(sessionCallback);
+	}
+
+	@Override
+	public void execute(Query query) throws DataAccessException {
+		doExecute(query, null);
 	}
 
 	@Override
@@ -399,14 +403,14 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @param callback
 	 * @return
 	 */
-	protected ResultSet doExecute(final BoundStatement bs, final QueryOptions options) {
+	protected ResultSet doExecute(final Query q, final QueryOptions options) {
 
 		return doExecute(new SessionCallback<ResultSet>() {
 
 			@Override
 			public ResultSet doInSession(Session s) throws DataAccessException {
-				addQueryOptions(bs, options);
-				return s.execute(bs);
+				addQueryOptions(q, options);
+				return s.execute(q);
 			}
 		});
 	}
@@ -488,6 +492,16 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
 				return s.executeAsync(cql);
+			}
+		});
+	}
+
+	@Override
+	public void executeAsynchronously(final Query query) throws DataAccessException {
+		execute(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				return s.executeAsync(query);
 			}
 		});
 	}
