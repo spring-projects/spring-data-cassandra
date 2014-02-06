@@ -106,7 +106,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 
 	@Override
 	public Iterable<T> findAll(Iterable<ID> ids) {
-		return template.selectByIds(entityInformation.getJavaType(), ids);
+		return template.selectBySimpleIds(entityInformation.getJavaType(), ids);
 	}
 
 	protected List<T> findAll(Select query) {

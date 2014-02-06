@@ -19,13 +19,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
-import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -33,6 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.test.integration.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
@@ -41,16 +37,10 @@ import org.springframework.data.util.ClassTypeInformation;
  * @author Alex Shvid
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BasicCassandraPersistentEntityIntegrationTests {
+public class BasicCassandraPersistentEntityIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Mock
 	ApplicationContext context;
-
-	@BeforeClass
-	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
-			InterruptedException {
-		EmbeddedCassandraServerHelper.startEmbeddedCassandra("spring-cassandra.yaml");
-	}
 
 	@Test
 	public void subclassInheritsAtDocumentAnnotation() {
@@ -82,11 +72,6 @@ public class BasicCassandraPersistentEntityIntegrationTests {
 		entity.setApplicationContext(context);
 
 		assertThat(entity.getTableName(), is(bean.tableName));
-	}
-
-	@After
-	public void clearCassandra() {
-		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 	}
 
 	@Table("messages")

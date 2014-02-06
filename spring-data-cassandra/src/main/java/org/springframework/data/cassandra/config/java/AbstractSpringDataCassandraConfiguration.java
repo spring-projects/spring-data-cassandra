@@ -68,7 +68,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * The base package to scan for entities annotated with {@link Table} annotations. By default, returns the package
 	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>).
 	 */
-	public String getMappingBasePackage() {
+	public String getEntityBasePackage() {
 		return getClass().getPackage().getName();
 	}
 
@@ -127,13 +127,13 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	/**
 	 * Scans the mapping base package for entity classes annotated with {@link Table} or {@link Persistent}.
 	 * 
-	 * @see #getMappingBasePackage()
+	 * @see #getEntityBasePackage()
 	 * @return <code>Set&lt;Class&lt;?&gt;&gt;</code> representing the annotated entity classes found.
 	 * @throws ClassNotFoundException
 	 */
 	protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
 
-		String basePackage = getMappingBasePackage();
+		String basePackage = getEntityBasePackage();
 		Set<Class<?>> initialEntitySet = new HashSet<Class<?>>();
 
 		if (StringUtils.hasText(basePackage)) {

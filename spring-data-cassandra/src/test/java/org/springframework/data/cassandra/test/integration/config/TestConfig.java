@@ -1,5 +1,6 @@
 package org.springframework.data.cassandra.test.integration.config;
 
+import org.springframework.cassandra.test.unit.support.Utils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.java.AbstractSpringDataCassandraConfiguration;
@@ -23,7 +24,7 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 	public static final int PORT = PROPS.getCassandraPort();
 	public static final int RPC_PORT = PROPS.getCassandraRpcPort();
 
-	public static final String KEYSPACE_NAME = "test";
+	public static final String KEYSPACE_NAME = Utils.randomKeyspaceName();
 
 	@Override
 	protected String getKeyspaceName() {

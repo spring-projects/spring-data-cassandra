@@ -249,7 +249,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	void deleteById(Class<?> type, Object id);
 
-	<T> List<T> selectByIds(Class<T> type, Iterable<?> ids);
+	<T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids);
 
 	<T> List<T> selectAll(Class<T> type);
 }

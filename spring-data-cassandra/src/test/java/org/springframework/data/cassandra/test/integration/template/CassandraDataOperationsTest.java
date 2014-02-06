@@ -15,22 +15,18 @@
  */
 package org.springframework.data.cassandra.test.integration.template;
 
+import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
+import static org.springframework.cassandra.core.keyspace.DropTableSpecification.dropTable;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
-import org.cassandraunit.CassandraCQLUnit;
-import org.cassandraunit.DataLoader;
-import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
-import org.cassandraunit.dataset.yaml.ClassPathYamlDataSet;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.After;
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Rule;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -39,14 +35,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
+import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.test.integration.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.config.TestConfig;
-import org.springframework.data.cassandra.test.integration.support.SpringDataBuildProperties;
-import org.springframework.data.cassandra.test.integration.table.Book;
+import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -57,36 +58,31 @@ import com.datastax.driver.core.querybuilder.Select;
  * 
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { TestConfig.class }, loader = AnnotationConfigContextLoader.class)
-public class CassandraDataOperationsTest {
+@ContextConfiguration
+public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-	@Autowired
-	private CassandraOperations template;
+	@Configuration
+	public static class Config extends TestConfig {
 
-	private static Logger log = LoggerFactory.getLogger(CassandraDataOperationsTest.class);
+		@Override
+		public SchemaAction getSchemaAction() {
+			return SchemaAction.RECREATE;
+		}
 
-	public static final SpringDataBuildProperties PROPS = new SpringDataBuildProperties();
-	private final static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
-	private final static String KEYSPACE_NAME = "test";
-	private final static String CASSANDRA_HOST = "localhost";
-	private final static int CASSANDRA_NATIVE_PORT = PROPS.getCassandraPort();
-	private final static int CASSANDRA_THRIFT_PORT = PROPS.getCassandraRpcPort();
+		@Override
+		protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
+			return Arrays.asList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
+		}
 
-	@Rule
-	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet("cql-dataload.cql",
-			KEYSPACE_NAME), CASSANDRA_CONFIG, CASSANDRA_HOST, CASSANDRA_NATIVE_PORT);
+		@Override
+		public String getEntityBasePackage() {
+			return Book.class.getPackage().getName();
+		}
+	}
 
-	@BeforeClass
-	public static void startCassandra() throws IOException, TTransportException, ConfigurationException,
-			InterruptedException {
-
-		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
-
-		/*
-		 * Load data file to creat the test keyspace before we init the template
-		 */
-		DataLoader dataLoader = new DataLoader("Test Cluster", CASSANDRA_HOST + ":" + CASSANDRA_THRIFT_PORT);
-		dataLoader.load(new ClassPathYamlDataSet("cassandra-keyspace.yaml"));
+	@Before
+	public void before() throws IOException {
+		recreateAllTables();
 	}
 
 	@Test
@@ -664,10 +660,5 @@ public class CassandraDataOperationsTest {
 		template.insert(books);
 
 		Assert.assertEquals(count, template.count(Book.class));
-	}
-
-	@After
-	public void clearCassandra() {
-		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 	}
 }

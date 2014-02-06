@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.table;
+package org.springframework.data.cassandra.test.integration.composites;
 
 import java.util.Date;
 
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.mapping.CassandraType;
-
-import com.datastax.driver.core.DataType;
 
 /**
- * This is an example of dynamic table (wide row) that creates each time new column with timestamp.
+ * This is an example of dynamic table that creates each time new column with Post timestamp.
+ * 
+ * It is possible to use a static table for posts and identify them by PostId(UUID), but in this case we need to use
+ * MapReduce for Big Data to find posts for particular user, so it is better to have index (userId) -> index (post time)
+ * architecture. It helps a lot to build eventually a search index for the particular user.
  * 
  * @author Alex Shvid
  */
 
 @PrimaryKeyClass
-public class CommentPK {
+public class PostPK {
 
 	/*
 	 * Row ID
@@ -43,7 +44,6 @@ public class CommentPK {
 	 * Clustered Column
 	 */
 	@PrimaryKeyColumn(ordinal = 1)
-	@CassandraType(type = DataType.Name.TIMESTAMP)
 	private Date time;
 
 	public String getAuthor() {

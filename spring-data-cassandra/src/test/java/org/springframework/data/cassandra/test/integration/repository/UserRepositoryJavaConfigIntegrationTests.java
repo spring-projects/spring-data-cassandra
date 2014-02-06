@@ -68,7 +68,7 @@ public class UserRepositoryJavaConfigIntegrationTests extends AbstractSpringData
 		}
 
 		@Override
-		public String getMappingBasePackage() {
+		public String getEntityBasePackage() {
 			return User.class.getPackage().getName();
 		}
 	}

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.mortbay.log.Log;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.SessionCallback;
@@ -250,7 +251,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> List<T> selectByIds(Class<T> type, Iterable<?> ids) {
+	public <T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids) {
 
 		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(type);
 
@@ -479,7 +480,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			execute(query);
 		}
 
-		return entity; // TODO: fix this!
+		return entity;
 	}
 
 	protected <T> List<T> batchInsert(List<T> entities, QueryOptions options, boolean asychronously) {
@@ -497,8 +498,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			execute(query);
 		}
 
-		return entities; // TODO: fix this! You're not supposed to necessarily return the very same entities that went in
-											// because the database may assign values.
+		return entities;
 	}
 
 	/**
@@ -525,7 +525,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			execute(query);
 		}
 
-		return entities; // TODO: fix this!
+		return entities;
 	}
 
 	/**
@@ -574,7 +574,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			execute(query);
 		}
 
-		return entity; // TODO: fix this!
+		return entity;
 	}
 
 	/**
