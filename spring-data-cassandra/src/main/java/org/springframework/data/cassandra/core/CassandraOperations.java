@@ -30,7 +30,6 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew Adams
- * 
  */
 public interface CassandraOperations extends CqlOperations {
 
@@ -58,8 +57,9 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param selectClass must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-
 	<T> List<T> select(Select selectQuery, Class<T> selectClass);
+
+	<T> T selectOneById(Class<T> selectClass, Object id);
 
 	/**
 	 * Execute query and convert ResultSet to the entity
@@ -72,13 +72,14 @@ public interface CassandraOperations extends CqlOperations {
 
 	<T> T selectOne(Select selectQuery, Class<T> selectClass);
 
+	Long countById(Class<?> clazz, Object id);
+
 	/**
 	 * Counts rows for given query
 	 * 
 	 * @param selectQuery
 	 * @return
 	 */
-
 	Long count(Select selectQuery);
 
 	/**
@@ -87,7 +88,6 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param tableName
 	 * @return
 	 */
-
 	Long count(String tableName);
 
 	/**
@@ -457,4 +457,8 @@ public interface CassandraOperations extends CqlOperations {
 	 * @return
 	 */
 	CassandraConverter getConverter();
+
+	void deleteById(Class<?> clazz, Object id);
+
+	<T> List<T> selectByIds(Class<T> clazz, Iterable<?> ids);
 }

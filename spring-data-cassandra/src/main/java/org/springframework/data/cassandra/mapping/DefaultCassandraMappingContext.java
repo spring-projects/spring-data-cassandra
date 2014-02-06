@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.createTable;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -73,7 +75,7 @@ public class DefaultCassandraMappingContext extends
 	@Override
 	protected <T> CassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 
-		BasicCassandraPersistentEntity<T> entity = new BasicCassandraPersistentEntity<T>(typeInformation);
+		CassandraPersistentEntity<T> entity = new CachingCassandraPersistentEntity<T>(typeInformation, this);
 
 		if (context != null) {
 			entity.setApplicationContext(context);
@@ -104,9 +106,7 @@ public class DefaultCassandraMappingContext extends
 
 		Assert.notNull(entity);
 
-		final CreateTableSpecification spec = new CreateTableSpecification();
-
-		spec.name(entity.getTableName());
+		final CreateTableSpecification spec = createTable().name(entity.getTableName());
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
@@ -124,7 +124,7 @@ public class DefaultCassandraMappingContext extends
 
 							if (pkProp.isPartitionKeyColumn()) {
 								spec.partitionKeyColumn(pkProp.getColumnName(), pkProp.getDataType());
-							} else {
+							} else { // it's a cluster column
 								spec.clusteredKeyColumn(pkProp.getColumnName(), pkProp.getDataType(), pkProp.getPrimaryKeyOrdering());
 							}
 						}

@@ -17,6 +17,8 @@ package org.springframework.cassandra.core.cql;
 
 import java.util.regex.Pattern;
 
+import com.datastax.driver.core.DataType;
+
 public class CqlStringUtils {
 
 	protected static final String SINGLE_QUOTE = "\'";
@@ -24,6 +26,8 @@ public class CqlStringUtils {
 	protected static final String DOUBLE_QUOTE = "\"";
 	protected static final String DOUBLE_DOUBLE_QUOTE = "\"\"";
 	protected static final String EMPTY_STRING = "";
+	protected static final String TYPE_PARAMETER_PREFIX = "<";
+	protected static final String TYPE_PARAMETER_SUFFIX = ">";
 
 	public static StringBuilder noNull(StringBuilder sb) {
 		return sb == null ? new StringBuilder() : sb;
@@ -136,5 +140,35 @@ public class CqlStringUtils {
 	 */
 	public static String removeSingleQuotes(Object thing) {
 		return thing == null ? (String) null : ((String) thing).replaceAll(SINGLE_QUOTE, EMPTY_STRING);
+	}
+
+	/**
+	 * Renders the given {@link DataType} as a CQL string.
+	 * 
+	 * @param dataType The {@link DataType} to render; must not be null.
+	 */
+	public static String toCql(DataType dataType) {
+
+		if (dataType.getTypeArguments().isEmpty()) {
+			return dataType.getName().name();
+		}
+
+		StringBuilder s = new StringBuilder();
+		s.append(dataType.getName().name()).append(TYPE_PARAMETER_PREFIX);
+
+		boolean first = true;
+
+		for (DataType argDataType : dataType.getTypeArguments()) {
+
+			if (first) {
+				first = false;
+			} else {
+				s.append(',');
+			}
+
+			s.append(argDataType.getName().name());
+		}
+
+		return s.append(TYPE_PARAMETER_SUFFIX).toString();
 	}
 }

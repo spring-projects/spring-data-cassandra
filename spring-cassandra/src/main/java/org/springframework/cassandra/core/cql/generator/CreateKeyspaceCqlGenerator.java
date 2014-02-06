@@ -30,10 +30,15 @@ import org.springframework.cassandra.core.keyspace.Option;
  */
 public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeyspaceSpecification> {
 
+	public static String toCql(CreateKeyspaceSpecification specification) {
+		return new CreateKeyspaceCqlGenerator(specification).toCql();
+	}
+
 	public CreateKeyspaceCqlGenerator(CreateKeyspaceSpecification specification) {
 		super(specification);
 	}
 
+	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 
 		cql = noNull(cql);

@@ -27,6 +27,22 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.springframework.cassandra.core.cql.generator.AlterKeyspaceCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.AlterTableCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.CreateIndexCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.DropIndexCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.DropTableCqlGenerator;
+import org.springframework.cassandra.core.keyspace.AlterKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
+import org.springframework.cassandra.core.keyspace.CreateIndexSpecification;
+import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.cassandra.core.keyspace.DropIndexSpecification;
+import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.cassandra.support.CassandraAccessor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.QueryTimeoutException;
@@ -278,6 +294,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		process(doExecute(cql, options), rch);
 	}
 
+	@Override
 	public void query(String cql, RowCallbackHandler rch) throws DataAccessException {
 		query(cql, rch, null);
 	}
@@ -287,26 +304,32 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return process(doExecute(cql, options), rowMapper);
 	}
 
+	@Override
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(cql, rowMapper, null);
 	}
 
+	@Override
 	public List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException {
 		return processListOfMap(doExecute(cql, null));
 	}
 
+	@Override
 	public <T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException {
 		return processList(doExecute(cql, null), elementType);
 	}
 
+	@Override
 	public Map<String, Object> queryForMap(String cql) throws DataAccessException {
 		return processMap(doExecute(cql, null));
 	}
 
+	@Override
 	public <T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
 		return processOne(doExecute(cql, null), requiredType);
 	}
 
+	@Override
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
 		return processOne(doExecute(cql, null), rowMapper);
 	}
@@ -766,6 +789,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		logger.debug("Executing prepared CQL query");
 
 		return execute(psc, new PreparedStatementCallback<T>() {
+			@Override
 			public T doInPreparedStatement(PreparedStatement ps) throws DriverException {
 				ResultSet rs = null;
 				BoundStatement bs = null;
@@ -794,6 +818,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		logger.debug("Executing prepared CQL query");
 
 		execute(psc, new PreparedStatementCallback<Object>() {
+			@Override
 			public Object doInPreparedStatement(PreparedStatement ps) throws DriverException {
 				ResultSet rs = null;
 				BoundStatement bs = null;
@@ -822,6 +847,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		logger.debug("Executing prepared CQL query");
 
 		return execute(psc, new PreparedStatementCallback<List<T>>() {
+			@Override
 			public List<T> doInPreparedStatement(PreparedStatement ps) throws DriverException {
 				ResultSet rs = null;
 				BoundStatement bs = null;
@@ -841,6 +867,102 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	public <T> List<T> query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowMapper<T> rowMapper)
 			throws DataAccessException {
 		return query(psc, psb, rowMapper, null);
+	}
+
+	@Override
+	public ResultSet execute(final DropTableSpecification specification) {
+
+		return execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(DropTableCqlGenerator.toCql(specification));
+			}
+		});
+	}
+
+	@Override
+	public ResultSet execute(final CreateTableSpecification specification) {
+
+		return execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(CreateTableCqlGenerator.toCql(specification));
+			}
+		});
+	}
+
+	@Override
+	public ResultSet execute(final AlterTableSpecification specification) {
+
+		return execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(AlterTableCqlGenerator.toCql(specification));
+			}
+		});
+	}
+
+	@Override
+	public ResultSet execute(final DropKeyspaceSpecification specification) {
+
+		return execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(DropKeyspaceCqlGenerator.toCql(specification));
+			}
+		});
+	}
+
+	@Override
+	public ResultSet execute(final CreateKeyspaceSpecification specification) {
+
+		return execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(CreateKeyspaceCqlGenerator.toCql(specification));
+			}
+		});
+	}
+
+	@Override
+	public ResultSet execute(final AlterKeyspaceSpecification specification) {
+
+		return execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(AlterKeyspaceCqlGenerator.toCql(specification));
+			}
+		});
+	}
+
+	@Override
+	public ResultSet execute(final DropIndexSpecification specification) {
+
+		return execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(DropIndexCqlGenerator.toCql(specification));
+			}
+		});
+	}
+
+	@Override
+	public ResultSet execute(final CreateIndexSpecification specification) {
+
+		return execute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(CreateIndexCqlGenerator.toCql(specification));
+			}
+		});
 	}
 
 }

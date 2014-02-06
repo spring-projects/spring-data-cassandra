@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.BeansException;
 import org.springframework.cassandra.support.exception.UnsupportedCassandraOperationException;
 import org.springframework.context.ApplicationContext;
@@ -24,6 +27,7 @@ import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.data.cassandra.util.CassandraNamingUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.Expression;
@@ -34,8 +38,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific metadata such as the
- * table name.
+ * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific metadata.
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
@@ -43,10 +46,14 @@ import org.springframework.util.StringUtils;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty> implements
 		CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	private String tableName;
-	private final SpelExpressionParser spelParser;
-	private final StandardEvaluationContext spelContext;
-	private final Class<T> type;
+	protected String tableName;
+	protected CassandraMappingContext mappingContext;
+	protected final SpelExpressionParser spelParser;
+	protected final StandardEvaluationContext spelContext;
+
+	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
+		this(typeInformation, null);
+	}
 
 	/**
 	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
@@ -54,23 +61,22 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 * 
 	 * @param typeInformation
 	 */
-	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
+	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext) {
 
-		super(typeInformation, DefaultCassandraPersistentPropertyColumnComparator.IT);
+		super(typeInformation, CassandraPersistentPropertyComparator.IT);
 
 		this.spelParser = new SpelExpressionParser();
 		this.spelContext = new StandardEvaluationContext();
-
-		this.type = typeInformation.getType();
+		this.mappingContext = mappingContext;
 
 		determineTableName();
 	}
 
 	protected void determineTableName() {
-		Table anno = type.getAnnotation(Table.class);
+		Table anno = getType().getAnnotation(Table.class);
 
 		this.tableName = anno != null && StringUtils.hasText(anno.value()) ? anno.value() : CassandraNamingUtils
-				.getPreferredTableName(type);
+				.getPreferredTableName(getType());
 	}
 
 	@Override
@@ -101,5 +107,47 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	public void setTableName(String tableName) {
 		Assert.hasText(tableName);
 		this.tableName = tableName;
+	}
+
+	@Override
+	public CassandraMappingContext getMappingContext() {
+		return mappingContext;
+	}
+
+	@Override
+	public boolean isCompositePrimaryKey() {
+		return getType().isAnnotationPresent(PrimaryKeyClass.class);
+	}
+
+	@Override
+	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
+
+		final List<CassandraPersistentProperty> properties = new ArrayList<CassandraPersistentProperty>();
+
+		if (!isCompositePrimaryKey()) {
+			throw new IllegalStateException(String.format("[%s] does not represent a composite primary key class", this
+					.getType().getName()));
+		}
+
+		addCompositePrimaryKeyProperties(this, properties);
+
+		return properties;
+	}
+
+	protected void addCompositePrimaryKeyProperties(CassandraPersistentEntity<?> compositePrimaryKeyEntity,
+			final List<CassandraPersistentProperty> properties) {
+
+		compositePrimaryKeyEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
+			@Override
+			public void doWithPersistentProperty(CassandraPersistentProperty p) {
+
+				if (p.isCompositePrimaryKey()) {
+					addCompositePrimaryKeyProperties(p.getCompositePrimaryKeyEntity(), properties);
+				} else {
+					properties.add(p);
+				}
+			}
+		});
 	}
 }

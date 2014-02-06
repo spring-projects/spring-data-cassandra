@@ -21,6 +21,14 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.cassandra.core.keyspace.AlterKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
+import org.springframework.cassandra.core.keyspace.CreateIndexSpecification;
+import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.cassandra.core.keyspace.DropIndexSpecification;
+import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.ResultSet;
@@ -754,4 +762,59 @@ public interface CqlOperations {
 	 */
 	void truncate(String tableName);
 
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(DropTableSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(CreateTableSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(AlterTableSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(DropKeyspaceSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(CreateKeyspaceSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(AlterKeyspaceSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(DropIndexSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(CreateIndexSpecification specification);
 }

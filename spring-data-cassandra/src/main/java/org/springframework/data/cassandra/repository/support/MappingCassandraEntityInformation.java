@@ -59,10 +59,6 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 		this.customTableName = customTableName;
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.EntityInformation#getId(java.lang.Object)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public ID getId(T entity) {
@@ -80,28 +76,14 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.support.EntityInformation#getIdType()
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Class<ID> getIdType() {
 		return (Class<ID>) entityMetadata.getIdProperty().getType();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mongodb.repository.CassandraEntityInformation#getTableName()
-	 */
 	@Override
 	public String getTableName() {
 		return customTableName == null ? entityMetadata.getTableName() : customTableName;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mongodb.repository.CassandraEntityInformation#getIdColumn()
-	 */
-	public String getIdColumn() {
-		return entityMetadata.getIdProperty().getName();
-	}
-
 }
