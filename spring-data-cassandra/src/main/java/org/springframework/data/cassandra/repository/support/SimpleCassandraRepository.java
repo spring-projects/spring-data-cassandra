@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.cassandra.core.util.CollectionUtils;
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
@@ -34,7 +35,7 @@ import com.datastax.driver.core.querybuilder.Select;
  */
 public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
 
-	protected CassandraTemplate template;
+	protected CassandraOperations template;
 	protected CassandraEntityInformation<T, ID> entityInformation;
 
 	/**
@@ -55,7 +56,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 
 	@Override
 	public <S extends T> S save(S entity) {
-		return template.insert(entity, entityInformation.getTableName());
+		return template.insert(entity);
 	}
 
 	@Override
@@ -70,7 +71,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 
 	@Override
 	public boolean exists(ID id) {
-		return template.countById(entityInformation.getJavaType(), id) >= 1; // TODO: == instead of >= ?
+		return template.exists(entityInformation.getJavaType(), id);
 	}
 
 	@Override
@@ -109,6 +110,6 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ca
 	}
 
 	protected List<T> findAll(Select query) {
-		return template.select(query, entityInformation.getJavaType());
+		return template.select(query.getQueryString(), entityInformation.getJavaType());
 	}
 }

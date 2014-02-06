@@ -61,7 +61,7 @@ import com.datastax.driver.core.querybuilder.Select;
 public class CassandraDataOperationsTest {
 
 	@Autowired
-	private CassandraOperations cassandraTemplate;
+	private CassandraOperations template;
 
 	private static Logger log = LoggerFactory.getLogger(CassandraDataOperationsTest.class);
 
@@ -92,16 +92,13 @@ public class CassandraDataOperationsTest {
 	@Test
 	public void insertTest() {
 
-		/*
-		 * Test Single Insert with entity
-		 */
 		Book b1 = new Book();
 		b1.setIsbn("123456-1");
 		b1.setTitle("Spring Data Cassandra Guide");
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
 
-		cassandraTemplate.insert(b1);
+		template.insert(b1);
 
 		Book b2 = new Book();
 		b2.setIsbn("123456-2");
@@ -109,11 +106,8 @@ public class CassandraDataOperationsTest {
 		b2.setAuthor("Cassandra Guru");
 		b2.setPages(521);
 
-		cassandraTemplate.insert(b2, "book_alt");
+		template.insert(b2);
 
-		/*
-		 * Test Single Insert with entity
-		 */
 		Book b3 = new Book();
 		b3.setIsbn("123456-3");
 		b3.setTitle("Spring Data Cassandra Guide");
@@ -124,34 +118,27 @@ public class CassandraDataOperationsTest {
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
-		cassandraTemplate.insert(b3, "book", options);
+		template.insert(b3, options);
 
-		/*
-		 * Test Single Insert with entity
-		 */
 		Book b5 = new Book();
 		b5.setIsbn("123456-5");
 		b5.setTitle("Spring Data Cassandra Guide");
 		b5.setAuthor("Cassandra Guru");
 		b5.setPages(265);
 
-		cassandraTemplate.insert(b5, options);
-
+		template.insert(b5, options);
 	}
 
 	@Test
 	public void insertAsynchronouslyTest() {
 
-		/*
-		 * Test Single Insert with entity
-		 */
 		Book b1 = new Book();
 		b1.setIsbn("123456-1");
 		b1.setTitle("Spring Data Cassandra Guide");
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
 
-		cassandraTemplate.insertAsynchronously(b1);
+		template.insertAsynchronously(b1);
 
 		Book b2 = new Book();
 		b2.setIsbn("123456-2");
@@ -159,7 +146,7 @@ public class CassandraDataOperationsTest {
 		b2.setAuthor("Cassandra Guru");
 		b2.setPages(521);
 
-		cassandraTemplate.insertAsynchronously(b2, "book_alt");
+		template.insertAsynchronously(b2);
 
 		/*
 		 * Test Single Insert with entity
@@ -174,7 +161,7 @@ public class CassandraDataOperationsTest {
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
-		cassandraTemplate.insertAsynchronously(b3, "book", options);
+		template.insertAsynchronously(b3, options);
 
 		/*
 		 * Test Single Insert with entity
@@ -194,7 +181,7 @@ public class CassandraDataOperationsTest {
 		b5.setAuthor("Cassandra Guru");
 		b5.setPages(265);
 
-		cassandraTemplate.insertAsynchronously(b5, options);
+		template.insertAsynchronously(b5, options);
 
 	}
 
@@ -209,19 +196,19 @@ public class CassandraDataOperationsTest {
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books);
+		template.insert(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, "book_alt");
+		template.insert(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, "book", options);
+		template.insert(books, options);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, options);
+		template.insert(books, options);
 
 	}
 
@@ -236,19 +223,19 @@ public class CassandraDataOperationsTest {
 
 		books = getBookList(20);
 
-		cassandraTemplate.insertAsynchronously(books);
+		template.insertAsynchronously(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insertAsynchronously(books, "book_alt");
+		template.insertAsynchronously(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insertAsynchronously(books, "book", options);
+		template.insertAsynchronously(books, options);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insertAsynchronously(books, options);
+		template.insertAsynchronously(books, options);
 
 	}
 
@@ -290,7 +277,7 @@ public class CassandraDataOperationsTest {
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
 
-		cassandraTemplate.update(b1);
+		template.update(b1);
 
 		Book b2 = new Book();
 		b2.setIsbn("123456-2");
@@ -298,7 +285,7 @@ public class CassandraDataOperationsTest {
 		b2.setAuthor("Cassandra Guru");
 		b2.setPages(521);
 
-		cassandraTemplate.update(b2, "book_alt");
+		template.update(b2);
 
 		/*
 		 * Test Single Insert with entity
@@ -309,7 +296,7 @@ public class CassandraDataOperationsTest {
 		b3.setAuthor("Cassandra Guru");
 		b3.setPages(265);
 
-		cassandraTemplate.update(b3, "book", options);
+		template.update(b3, options);
 
 		/*
 		 * Test Single Insert with entity
@@ -320,7 +307,7 @@ public class CassandraDataOperationsTest {
 		b5.setAuthor("Cassandra Guru");
 		b5.setPages(265);
 
-		cassandraTemplate.update(b5, options);
+		template.update(b5, options);
 
 	}
 
@@ -342,7 +329,7 @@ public class CassandraDataOperationsTest {
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
 
-		cassandraTemplate.updateAsynchronously(b1);
+		template.updateAsynchronously(b1);
 
 		Book b2 = new Book();
 		b2.setIsbn("123456-2");
@@ -350,7 +337,7 @@ public class CassandraDataOperationsTest {
 		b2.setAuthor("Cassandra Guru");
 		b2.setPages(521);
 
-		cassandraTemplate.updateAsynchronously(b2, "book_alt");
+		template.updateAsynchronously(b2);
 
 		/*
 		 * Test Single Insert with entity
@@ -361,7 +348,7 @@ public class CassandraDataOperationsTest {
 		b3.setAuthor("Cassandra Guru");
 		b3.setPages(265);
 
-		cassandraTemplate.updateAsynchronously(b3, "book", options);
+		template.updateAsynchronously(b3, options);
 
 		/*
 		 * Test Single Insert with entity
@@ -372,7 +359,7 @@ public class CassandraDataOperationsTest {
 		b5.setAuthor("Cassandra Guru");
 		b5.setPages(265);
 
-		cassandraTemplate.updateAsynchronously(b5, options);
+		template.updateAsynchronously(b5, options);
 
 	}
 
@@ -387,35 +374,35 @@ public class CassandraDataOperationsTest {
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books);
+		template.insert(books);
 
 		alterBooks(books);
 
-		cassandraTemplate.update(books);
+		template.update(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, "book_alt");
+		template.insert(books);
 
 		alterBooks(books);
 
-		cassandraTemplate.update(books, "book_alt");
+		template.update(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, "book", options);
+		template.insert(books, options);
 
 		alterBooks(books);
 
-		cassandraTemplate.update(books, "book", options);
+		template.update(books, options);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, options);
+		template.insert(books, options);
 
 		alterBooks(books);
 
-		cassandraTemplate.update(books, options);
+		template.update(books, options);
 
 	}
 
@@ -430,35 +417,35 @@ public class CassandraDataOperationsTest {
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books);
+		template.insert(books);
 
 		alterBooks(books);
 
-		cassandraTemplate.updateAsynchronously(books);
+		template.updateAsynchronously(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, "book_alt");
+		template.insert(books);
 
 		alterBooks(books);
 
-		cassandraTemplate.updateAsynchronously(books, "book_alt");
+		template.updateAsynchronously(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, "book", options);
+		template.insert(books, options);
 
 		alterBooks(books);
 
-		cassandraTemplate.updateAsynchronously(books, "book", options);
+		template.updateAsynchronously(books, options);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, options);
+		template.insert(books, options);
 
 		alterBooks(books);
 
-		cassandraTemplate.updateAsynchronously(books, options);
+		template.updateAsynchronously(books, options);
 
 	}
 
@@ -489,12 +476,12 @@ public class CassandraDataOperationsTest {
 		Book b1 = new Book();
 		b1.setIsbn("123456-1");
 
-		cassandraTemplate.delete(b1);
+		template.delete(b1);
 
 		Book b2 = new Book();
 		b2.setIsbn("123456-2");
 
-		cassandraTemplate.delete(b2, "book_alt");
+		template.delete(b2);
 
 		/*
 		 * Test Single Insert with entity
@@ -502,7 +489,7 @@ public class CassandraDataOperationsTest {
 		Book b3 = new Book();
 		b3.setIsbn("123456-3");
 
-		cassandraTemplate.delete(b3, "book", options);
+		template.delete(b3, options);
 
 		/*
 		 * Test Single Insert with entity
@@ -510,7 +497,7 @@ public class CassandraDataOperationsTest {
 		Book b5 = new Book();
 		b5.setIsbn("123456-5");
 
-		cassandraTemplate.delete(b5, options);
+		template.delete(b5, options);
 
 	}
 
@@ -529,12 +516,12 @@ public class CassandraDataOperationsTest {
 		Book b1 = new Book();
 		b1.setIsbn("123456-1");
 
-		cassandraTemplate.deleteAsynchronously(b1);
+		template.deleteAsynchronously(b1);
 
 		Book b2 = new Book();
 		b2.setIsbn("123456-2");
 
-		cassandraTemplate.deleteAsynchronously(b2, "book_alt");
+		template.deleteAsynchronously(b2);
 
 		/*
 		 * Test Single Insert with entity
@@ -542,7 +529,7 @@ public class CassandraDataOperationsTest {
 		Book b3 = new Book();
 		b3.setIsbn("123456-3");
 
-		cassandraTemplate.deleteAsynchronously(b3, "book", options);
+		template.deleteAsynchronously(b3, options);
 
 		/*
 		 * Test Single Insert with entity
@@ -550,7 +537,7 @@ public class CassandraDataOperationsTest {
 		Book b5 = new Book();
 		b5.setIsbn("123456-5");
 
-		cassandraTemplate.deleteAsynchronously(b5, options);
+		template.deleteAsynchronously(b5, options);
 
 	}
 
@@ -565,27 +552,27 @@ public class CassandraDataOperationsTest {
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books);
+		template.insert(books);
 
-		cassandraTemplate.delete(books);
-
-		books = getBookList(20);
-
-		cassandraTemplate.insert(books, "book_alt");
-
-		cassandraTemplate.delete(books, "book_alt");
+		template.delete(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, "book", options);
+		template.insert(books);
 
-		cassandraTemplate.delete(books, "book", options);
+		template.delete(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, options);
+		template.insert(books, options);
 
-		cassandraTemplate.delete(books, options);
+		template.delete(books, options);
+
+		books = getBookList(20);
+
+		template.insert(books, options);
+
+		template.delete(books, options);
 
 	}
 
@@ -600,27 +587,27 @@ public class CassandraDataOperationsTest {
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books);
+		template.insert(books);
 
-		cassandraTemplate.deleteAsynchronously(books);
-
-		books = getBookList(20);
-
-		cassandraTemplate.insert(books, "book_alt");
-
-		cassandraTemplate.deleteAsynchronously(books, "book_alt");
+		template.deleteAsynchronously(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, "book", options);
+		template.insert(books);
 
-		cassandraTemplate.deleteAsynchronously(books, "book", options);
+		template.deleteAsynchronously(books);
 
 		books = getBookList(20);
 
-		cassandraTemplate.insert(books, options);
+		template.insert(books, options);
 
-		cassandraTemplate.deleteAsynchronously(books, options);
+		template.deleteAsynchronously(books, options);
+
+		books = getBookList(20);
+
+		template.insert(books, options);
+
+		template.deleteAsynchronously(books, options);
 
 	}
 
@@ -636,12 +623,12 @@ public class CassandraDataOperationsTest {
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
 
-		cassandraTemplate.insert(b1);
+		template.insert(b1);
 
 		Select select = QueryBuilder.select().all().from("book");
 		select.where(QueryBuilder.eq("isbn", "123456-1"));
 
-		Book b = cassandraTemplate.selectOne(select, Book.class);
+		Book b = template.selectOne(select.getQueryString(), Book.class);
 
 		log.info("SingleSelect Book Title -> " + b.getTitle());
 		log.info("SingleSelect Book Author -> " + b.getAuthor());
@@ -656,11 +643,11 @@ public class CassandraDataOperationsTest {
 
 		List<Book> books = getBookList(20);
 
-		cassandraTemplate.insert(books);
+		template.insert(books);
 
 		Select select = QueryBuilder.select().all().from("book");
 
-		List<Book> b = cassandraTemplate.select(select, Book.class);
+		List<Book> b = template.select(select.getQueryString(), Book.class);
 
 		log.info("Book Count -> " + b.size());
 
@@ -671,23 +658,16 @@ public class CassandraDataOperationsTest {
 	@Test
 	public void selectCountTest() {
 
-		List<Book> books = getBookList(20);
+		int count = 20;
+		List<Book> books = getBookList(count);
 
-		cassandraTemplate.insert(books);
+		template.insert(books);
 
-		Select select = QueryBuilder.select().countAll().from("book");
-
-		Long count = cassandraTemplate.count(select);
-
-		log.info("Book Count -> " + count);
-
-		Assert.assertEquals(count, new Long(20));
-
+		Assert.assertEquals(count, template.count(Book.class));
 	}
 
 	@After
 	public void clearCassandra() {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-
 	}
 }

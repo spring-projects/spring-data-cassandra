@@ -56,6 +56,7 @@ public interface CqlOperations {
 	 * Executes the supplied CQL Query and returns nothing.
 	 * 
 	 * @param cql
+	 * @see #query(String)
 	 */
 	void execute(String cql) throws DataAccessException;
 
@@ -108,10 +109,10 @@ public interface CqlOperations {
 	ResultSetFuture queryAsynchronously(String cql, QueryOptions options);
 
 	/**
-	 * Executes the provided CQL Query with the provided Runnable implementations.
+	 * Executes the provided CQL Query with the provided {@link Runnable} implementation.
 	 * 
 	 * @param cql The Query
-	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @param listener {@link Runnable} listener for handling the query in a separate thread
 	 */
 	void queryAsynchronously(String cql, Runnable listener);
 
@@ -121,7 +122,8 @@ public interface CqlOperations {
 	 * query is completed for optimal flexibility.
 	 * 
 	 * @param cql The Query
-	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @param listener {@link AsynchronousQueryListener} Listener for handling the query's {@link ResultSetFuture} in a
+	 *          separate thread
 	 */
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener);
 
@@ -188,6 +190,23 @@ public interface CqlOperations {
 	 * @param executor
 	 */
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options, Executor executor);
+
+	/**
+	 * Executes the provided CQL query and returns the {@link ResultSet}.
+	 * 
+	 * @param cql The query
+	 * @return The {@link ResultSet}
+	 */
+	ResultSet query(String cql);
+
+	/**
+	 * Executes the provided CQL query with the given {@link QueryOptions} and returns the {@link ResultSet}.
+	 * 
+	 * @param cql The query
+	 * @param options The {@link QueryOptions}; may be null.
+	 * @return The {@link ResultSet}
+	 */
+	ResultSet query(String cql, QueryOptions options);
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
@@ -761,6 +780,14 @@ public interface CqlOperations {
 	 * @param tableName
 	 */
 	void truncate(String tableName);
+
+	/**
+	 * Counts all rows for given table
+	 * 
+	 * @param tableName
+	 * @return
+	 */
+	long count(String tableName);
 
 	/**
 	 * Convenience method to convert the given specification to CQL and execute it.

@@ -18,16 +18,17 @@ package org.springframework.cassandra.core;
 import com.datastax.driver.core.ResultSetFuture;
 
 /**
- * @author David Webb
+ * Interface used to give an implementation access to a {@link ResultSetFuture} after the query has completed.
  * 
+ * @author David Webb
  */
 public interface AsynchronousQueryListener {
 
 	/**
 	 * Called upon Query Completion.
 	 * 
-	 * @param rsf The given ResultSetFuture's get methods should return immediately.
+	 * @param rsf The {@link ResultSetFuture}. Since this isn't called until the asynchronous query completes, it can be
+	 *          immediately interrogated.
 	 */
 	public void onQueryComplete(ResultSetFuture rsf);
-
 }

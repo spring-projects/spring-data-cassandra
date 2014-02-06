@@ -34,6 +34,7 @@ import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.Row;
@@ -67,7 +68,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	 * @param mappingContext must not be {@literal null}.
 	 */
 	public MappingCassandraConverter(CassandraMappingContext mappingContext) {
+
 		super(new DefaultConversionService());
+
+		Assert.notNull(mappingContext);
+
 		this.mappingContext = mappingContext;
 		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
 	}

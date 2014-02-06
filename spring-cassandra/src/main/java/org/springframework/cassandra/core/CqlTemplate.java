@@ -45,6 +45,7 @@ import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.cassandra.support.CassandraAccessor;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.util.Assert;
 
@@ -63,6 +64,7 @@ import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Truncate;
 
 /**
@@ -305,6 +307,23 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
+	public ResultSet query(String cql) {
+		return query(cql, (QueryOptions) null);
+	}
+
+	@Override
+	public ResultSet query(String cql, QueryOptions options) {
+
+		return query(cql, new ResultSetExtractor<ResultSet>() {
+
+			@Override
+			public ResultSet extractData(ResultSet rs) throws DriverException, DataAccessException {
+				return rs;
+			}
+		}, options);
+	}
+
+	@Override
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(cql, rowMapper, null);
 	}
@@ -434,7 +453,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * 
 	 * @return
 	 */
-	private Set<Host> getHosts() {
+	protected Set<Host> getHosts() {
 
 		/*
 		 * Get the cluster metadata for this session
@@ -965,4 +984,25 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		});
 	}
 
+	@Override
+	public long count(String tableName) {
+		return selectCount(QueryBuilder.select().countAll().from(tableName).getQueryString());
+	}
+
+	protected long selectCount(String countQuery) {
+
+		return query(countQuery, new ResultSetExtractor<Long>() {
+
+			@Override
+			public Long extractData(ResultSet rs) throws DriverException, DataAccessException {
+
+				Row row = rs.one();
+				if (row == null) {
+					throw new InvalidDataAccessApiUsageException(String.format("count query did not return any results"));
+				}
+
+				return row.getLong(0);
+			}
+		});
+	}
 }

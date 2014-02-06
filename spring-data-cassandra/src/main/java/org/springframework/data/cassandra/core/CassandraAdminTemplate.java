@@ -124,24 +124,4 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 			}
 		});
 	}
-
-	/**
-	 * @param entityClass
-	 * @return
-	 */
-	@Override
-	public String determineTableName(Class<?> entityClass) {
-
-		if (entityClass == null) {
-			throw new InvalidDataAccessApiUsageException(
-					"No class parameter provided, entity table name can't be determined!");
-		}
-
-		CassandraPersistentEntity<?> entity = getCassandraMappingContext().getPersistentEntity(entityClass);
-		if (entity == null) {
-			throw new InvalidDataAccessApiUsageException("No Persitent Entity information found for the class "
-					+ entityClass.getName());
-		}
-		return entity.getTableName();
-	}
 }
