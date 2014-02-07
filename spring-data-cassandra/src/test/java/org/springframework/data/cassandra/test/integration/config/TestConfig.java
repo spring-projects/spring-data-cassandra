@@ -1,14 +1,8 @@
 package org.springframework.data.cassandra.test.integration.config;
 
 import org.springframework.cassandra.test.unit.support.Utils;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.java.AbstractSpringDataCassandraConfiguration;
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.CassandraAdminOperations;
-import org.springframework.data.cassandra.core.CassandraAdminTemplate;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
 import org.springframework.data.cassandra.test.integration.support.SpringDataBuildProperties;
 
 /**
@@ -34,16 +28,5 @@ public class TestConfig extends AbstractSpringDataCassandraConfiguration {
 	@Override
 	protected int getPort() {
 		return PORT;
-	}
-
-	@Bean
-	public CassandraConverter cassandraConverter() {
-		return new MappingCassandraConverter(new DefaultCassandraMappingContext());
-	}
-
-	@Override
-	@Bean
-	public CassandraAdminOperations cassandraTemplate() throws Exception {
-		return new CassandraAdminTemplate(session().getObject(), converter());
 	}
 }
