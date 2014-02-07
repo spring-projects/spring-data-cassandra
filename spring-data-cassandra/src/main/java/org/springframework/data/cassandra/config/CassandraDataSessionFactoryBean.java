@@ -7,6 +7,8 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.mapping.EntityMapping;
+import org.springframework.data.cassandra.mapping.Mapping;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 

@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.mapping;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -24,6 +25,7 @@ import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -49,7 +51,13 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	public BasicCassandraPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
 			CassandraPersistentEntity<?> owner, CassandraSimpleTypeHolder simpleTypeHolder) {
+
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
+	}
+
+	@Override
+	public CassandraPersistentEntity<?> getOwner() {
+		return (CassandraPersistentEntity<?>) super.getOwner();
 	}
 
 	@Override
@@ -57,7 +65,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return getField().getType().isAnnotationPresent(PrimaryKeyClass.class);
 	}
 
-	@Override
 	public Class<?> getCompositePrimaryKeyType() {
 		if (!isCompositePrimaryKey()) {
 			return null;
@@ -67,31 +74,23 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Override
-	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
+	public TypeInformation<?> getCompositePrimaryKeyTypeInformation() {
 		if (!isCompositePrimaryKey()) {
 			return null;
 		}
 
-		return (CassandraPersistentEntity<?>) ClassTypeInformation.from(getCompositePrimaryKeyType());
+		return ClassTypeInformation.from(getCompositePrimaryKeyType());
 	}
 
 	@Override
 	public String getColumnName() {
 
-		// first check @Column annotation
-		Column column = findAnnotation(Column.class);
-		if (column != null && StringUtils.hasText(column.value())) {
-			return column.value();
+		List<String> columnNames = getColumnNames();
+		if (columnNames.size() != 1) {
+			throw new IllegalStateException("property does not have a single column mapping");
 		}
 
-		// else check @PrimaryKeyColumn annotation
-		PrimaryKeyColumn pk = findAnnotation(PrimaryKeyColumn.class);
-		if (pk != null && StringUtils.hasText(pk.name())) {
-			return pk.name();
-		}
-
-		// else default
-		return field.getName().toLowerCase(); // TODO: replace with naming strategy class
+		return columnNames.get(0);
 	}
 
 	@Override
@@ -199,11 +198,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return isAnnotationPresent(PrimaryKeyColumn.class);
 	}
 
-	@Override
-	protected Association<CassandraPersistentProperty> createAssociation() {
-		return new Association<CassandraPersistentProperty>(this, null);
-	}
-
 	protected DataType getDataTypeFor(DataType.Name typeName) {
 		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(typeName);
 		if (dataType == null) {
@@ -229,5 +223,80 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			throw new InvalidDataAccessApiUsageException("expected " + expected + " of typed arguments for the property  '"
 					+ this.getName() + "' type is '" + this.getType() + "' in the entity " + this.getOwner().getName());
 		}
+	}
+
+	@Override
+	public List<String> getColumnNames() {
+
+		final List<String> columnNames = new ArrayList<String>();
+
+		if (isCompositePrimaryKey()) {
+			addCompositePrimaryKeyColumnNames(getCompositePrimaryKeyEntity(), columnNames);
+			return columnNames;
+		}
+
+		// else not a composite primary key property -- first check @Column annotation
+		Column column = findAnnotation(Column.class);
+		if (column != null && StringUtils.hasText(column.value())) {
+			columnNames.add(column.value());
+			return columnNames;
+		}
+
+		// else check @PrimaryKeyColumn annotation
+		PrimaryKeyColumn pk = findAnnotation(PrimaryKeyColumn.class);
+		if (pk != null && StringUtils.hasText(pk.name())) {
+			columnNames.add(pk.name());
+			return columnNames;
+		}
+
+		// else default
+		columnNames.add(field.getName().toLowerCase()); // TODO: replace with naming strategy class
+		return columnNames;
+	}
+
+	protected void addCompositePrimaryKeyColumnNames(CassandraPersistentEntity<?> compositePrimaryKeyEntity,
+			final List<String> columnNames) {
+
+		compositePrimaryKeyEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
+			@Override
+			public void doWithPersistentProperty(CassandraPersistentProperty p) {
+				if (p.isCompositePrimaryKey()) {
+					addCompositePrimaryKeyColumnNames(p.getCompositePrimaryKeyEntity(), columnNames);
+				} else {
+					columnNames.add(p.getColumnName());
+				}
+			}
+		});
+	}
+
+	@Override
+	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
+
+		if (!isCompositePrimaryKey()) {
+			throw new IllegalStateException(String.format("[%s] does not represent a composite primary key property",
+					getField()));
+		}
+
+		return getCompositePrimaryKeyEntity().getCompositePrimaryKeyProperties();
+	}
+
+	@Override
+	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
+		CassandraMappingContext mappingContext = getOwner().getMappingContext();
+		if (mappingContext == null) {
+			throw new IllegalStateException("need CassandraMappingContext");
+		}
+		return mappingContext.getPersistentEntity(getCompositePrimaryKeyTypeInformation());
+	}
+
+	@Override
+	public Association<CassandraPersistentProperty> getAssociation() {
+		throw new UnsupportedOperationException("Cassandra does not support associations");
+	}
+
+	@Override
+	protected Association<CassandraPersistentProperty> createAssociation() {
+		return new Association<CassandraPersistentProperty>(this, null);
 	}
 }

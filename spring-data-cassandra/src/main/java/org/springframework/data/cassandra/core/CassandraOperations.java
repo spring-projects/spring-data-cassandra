@@ -21,8 +21,6 @@ import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
-import com.datastax.driver.core.querybuilder.Select;
-
 /**
  * Operations for interacting with Cassandra. These operations are used by the Repository implementation, but can also
  * be used directly when that is desired by the developer.
@@ -30,7 +28,6 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew Adams
- * 
  */
 public interface CassandraOperations extends CqlOperations {
 
@@ -46,49 +43,25 @@ public interface CassandraOperations extends CqlOperations {
 	 * Execute query and convert ResultSet to the list of entities
 	 * 
 	 * @param query must not be {@literal null}.
-	 * @param selectClass must not be {@literal null}, mapped entity type.
+	 * @param type must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-	<T> List<T> select(String cql, Class<T> selectClass);
+	<T> List<T> select(String cql, Class<T> type);
 
-	/**
-	 * Execute query and convert ResultSet to the list of entities
-	 * 
-	 * @param selectQuery must not be {@literal null}.
-	 * @param selectClass must not be {@literal null}, mapped entity type.
-	 * @return
-	 */
-
-	<T> List<T> select(Select selectQuery, Class<T> selectClass);
+	<T> T selectOneById(Class<T> type, Object id);
 
 	/**
 	 * Execute query and convert ResultSet to the entity
 	 * 
 	 * @param query must not be {@literal null}.
-	 * @param selectClass must not be {@literal null}, mapped entity type.
+	 * @param type must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-	<T> T selectOne(String cql, Class<T> selectClass);
+	<T> T selectOne(String cql, Class<T> type);
 
-	<T> T selectOne(Select selectQuery, Class<T> selectClass);
+	boolean exists(Class<?> type, Object id);
 
-	/**
-	 * Counts rows for given query
-	 * 
-	 * @param selectQuery
-	 * @return
-	 */
-
-	Long count(Select selectQuery);
-
-	/**
-	 * Counts all rows for given table
-	 * 
-	 * @param tableName
-	 * @return
-	 */
-
-	Long count(String tableName);
+	long count(Class<?> type);
 
 	/**
 	 * Insert the given object to the table by id.
@@ -96,23 +69,6 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entity
 	 */
 	<T> T insert(T entity);
-
-	/**
-	 * Insert the given object to the table by id.
-	 * 
-	 * @param entity
-	 * @param tableName
-	 * @return
-	 */
-	<T> T insert(T entity, String tableName);
-
-	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 * @return
-	 */
-	<T> T insert(T entity, String tableName, QueryOptions options);
 
 	/**
 	 * @param entity
@@ -131,15 +87,6 @@ public interface CassandraOperations extends CqlOperations {
 	<T> List<T> insert(List<T> entities);
 
 	/**
-	 * Insert the given list of objects to the table by name.
-	 * 
-	 * @param entities
-	 * @param tableName
-	 * @return
-	 */
-	<T> List<T> insert(List<T> entities, String tableName);
-
-	/**
 	 * @param entities
 	 * @param tableName
 	 * @param options
@@ -148,26 +95,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> List<T> insert(List<T> entities, QueryOptions options);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 * @return
-	 */
-	<T> List<T> insert(List<T> entities, String tableName, QueryOptions options);
-
-	/**
 	 * Insert the given object to the table by id.
 	 * 
 	 * @param object
 	 */
 	<T> T insertAsynchronously(T entity);
-
-	/**
-	 * Insert the given object to the table by id.
-	 * 
-	 * @param object
-	 */
-	<T> T insertAsynchronously(T entity, String tableName);
 
 	/**
 	 * @param entity
@@ -178,26 +110,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> T insertAsynchronously(T entity, QueryOptions options);
 
 	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 * @return
-	 */
-	<T> T insertAsynchronously(T entity, String tableName, QueryOptions options);
-
-	/**
 	 * Insert the given object to the table by id.
 	 * 
 	 * @param object
 	 */
 	<T> List<T> insertAsynchronously(List<T> entities);
-
-	/**
-	 * Insert the given object to the table by id.
-	 * 
-	 * @param object
-	 */
-	<T> List<T> insertAsynchronously(List<T> entities, String tableName);
 
 	/**
 	 * @param entities
@@ -208,26 +125,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> List<T> insertAsynchronously(List<T> entities, QueryOptions options);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 * @return
-	 */
-	<T> List<T> insertAsynchronously(List<T> entities, String tableName, QueryOptions options);
-
-	/**
 	 * Insert the given object to the table by id.
 	 * 
 	 * @param object
 	 */
 	<T> T update(T entity);
-
-	/**
-	 * Insert the given object to the table by id.
-	 * 
-	 * @param object
-	 */
-	<T> T update(T entity, String tableName);
 
 	/**
 	 * @param entity
@@ -238,26 +140,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> T update(T entity, QueryOptions options);
 
 	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 * @return
-	 */
-	<T> T update(T entity, String tableName, QueryOptions options);
-
-	/**
 	 * Insert the given object to the table by id.
 	 * 
 	 * @param object
 	 */
 	<T> List<T> update(List<T> entities);
-
-	/**
-	 * Insert the given object to the table by id.
-	 * 
-	 * @param object
-	 */
-	<T> List<T> update(List<T> entities, String tableName);
 
 	/**
 	 * @param entities
@@ -268,26 +155,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> List<T> update(List<T> entities, QueryOptions options);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 * @return
-	 */
-	<T> List<T> update(List<T> entities, String tableName, QueryOptions options);
-
-	/**
 	 * Insert the given object to the table by id.
 	 * 
 	 * @param object
 	 */
 	<T> T updateAsynchronously(T entity);
-
-	/**
-	 * Insert the given object to the table by id.
-	 * 
-	 * @param object
-	 */
-	<T> T updateAsynchronously(T entity, String tableName);
 
 	/**
 	 * @param entity
@@ -298,26 +170,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> T updateAsynchronously(T entity, QueryOptions options);
 
 	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 * @return
-	 */
-	<T> T updateAsynchronously(T entity, String tableName, QueryOptions options);
-
-	/**
 	 * Insert the given object to the table by id.
 	 * 
 	 * @param object
 	 */
 	<T> List<T> updateAsynchronously(List<T> entities);
-
-	/**
-	 * Insert the given object to the table by id.
-	 * 
-	 * @param object
-	 */
-	<T> List<T> updateAsynchronously(List<T> entities, String tableName);
 
 	/**
 	 * @param entities
@@ -328,27 +185,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> List<T> updateAsynchronously(List<T> entities, QueryOptions options);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 * @return
-	 */
-	<T> List<T> updateAsynchronously(List<T> entities, String tableName, QueryOptions options);
-
-	/**
 	 * Remove the given object from the table by id.
 	 * 
 	 * @param object
 	 */
 	<T> void delete(T entity);
-
-	/**
-	 * Removes the given object from the given table.
-	 * 
-	 * @param object
-	 * @param table must not be {@literal null} or empty.
-	 */
-	<T> void delete(T entity, String tableName);
 
 	/**
 	 * @param entity
@@ -358,13 +199,6 @@ public interface CassandraOperations extends CqlOperations {
 	<T> void delete(T entity, QueryOptions options);
 
 	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 */
-	<T> void delete(T entity, String tableName, QueryOptions options);
-
-	/**
 	 * Remove the given object from the table by id.
 	 * 
 	 * @param object
@@ -372,26 +206,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> void delete(List<T> entities);
 
 	/**
-	 * Removes the given object from the given table.
-	 * 
-	 * @param object
-	 * @param table must not be {@literal null} or empty.
-	 */
-	<T> void delete(List<T> entities, String tableName);
-
-	/**
 	 * @param entities
 	 * @param tableName
 	 * @param options
 	 */
 	<T> void delete(List<T> entities, QueryOptions options);
-
-	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 */
-	<T> void delete(List<T> entities, String tableName, QueryOptions options);
 
 	/**
 	 * Remove the given object from the table by id.
@@ -408,34 +227,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> void deleteAsynchronously(T entity, QueryOptions options);
 
 	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 */
-	<T> void deleteAsynchronously(T entity, String tableName, QueryOptions options);
-
-	/**
-	 * Removes the given object from the given table.
-	 * 
-	 * @param object
-	 * @param table must not be {@literal null} or empty.
-	 */
-	<T> void deleteAsynchronously(T entity, String tableName);
-
-	/**
 	 * Remove the given object from the table by id.
 	 * 
 	 * @param object
 	 */
 	<T> void deleteAsynchronously(List<T> entities);
-
-	/**
-	 * Removes the given object from the given table.
-	 * 
-	 * @param object
-	 * @param table must not be {@literal null} or empty.
-	 */
-	<T> void deleteAsynchronously(List<T> entities, String tableName);
 
 	/**
 	 * @param entities
@@ -445,16 +241,15 @@ public interface CassandraOperations extends CqlOperations {
 	<T> void deleteAsynchronously(List<T> entities, QueryOptions options);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 */
-	<T> void deleteAsynchronously(List<T> entities, String tableName, QueryOptions options);
-
-	/**
 	 * Returns the underlying {@link CassandraConverter}.
 	 * 
 	 * @return
 	 */
 	CassandraConverter getConverter();
+
+	void deleteById(Class<?> type, Object id);
+
+	<T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids);
+
+	<T> List<T> selectAll(Class<T> type);
 }

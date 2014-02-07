@@ -47,6 +47,11 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 		return ifNotExists;
 	}
 
+	@Override
+	public CreateTableSpecification name(String name) {
+		return (CreateTableSpecification) super.name(name);
+	}
+
 	/**
 	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
 	 * statically.

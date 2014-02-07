@@ -35,10 +35,15 @@ import org.springframework.cassandra.core.keyspace.Option;
  */
 public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecification> {
 
+	public static String toCql(CreateTableSpecification specification) {
+		return new CreateTableCqlGenerator(specification).toCql();
+	}
+
 	public CreateTableCqlGenerator(CreateTableSpecification specification) {
 		super(specification);
 	}
 
+	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 
 		cql = noNull(cql);

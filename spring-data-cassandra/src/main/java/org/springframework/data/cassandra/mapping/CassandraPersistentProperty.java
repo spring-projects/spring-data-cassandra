@@ -15,8 +15,11 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import java.util.List;
+
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.TypeInformation;
 
 import com.datastax.driver.core.DataType;
 
@@ -35,34 +38,48 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 	boolean isCompositePrimaryKey();
 
 	/**
-	 * Returns the type of the composite primary key class of this entity, or null if this class does not use a composite
-	 * primary key.
-	 */
-	Class<?> getCompositePrimaryKeyType();
-
-	/**
 	 * Returns a {@link CassandraPersistentEntity} representing the composite primary key class of this entity, or null if
 	 * this class does not use a composite primary key.
 	 */
 	CassandraPersistentEntity<?> getCompositePrimaryKeyEntity();
 
 	/**
-	 * The name of the column to which a property is persisted.
+	 * Returns a {@link TypeInformation} representing the type of the composite primary key class of this entity, or null
+	 * if this class does not use a composite primary key.
+	 */
+	TypeInformation<?> getCompositePrimaryKeyTypeInformation();
+
+	/**
+	 * Gets the list of composite primary key properties that this composite primary key field is a placeholder for.
+	 */
+	List<CassandraPersistentProperty> getCompositePrimaryKeyProperties();
+
+	/**
+	 * The name of the single column to which the property is persisted. This is a convenience method when the caller
+	 * knows that the property is mapped to a single column. Throws {@link IllegalStateException} if this property is
+	 * mapped to multiple columns.
 	 */
 	String getColumnName();
 
 	/**
-	 * The ordering for the column. Valid only for clustered columns.
+	 * The names of the columns to which the property is persisted if this is a composite primary key property. Never
+	 * returns null.
+	 */
+	List<String> getColumnNames();
+
+	/**
+	 * The ordering (ascending or descending) for the column. Valid only for primary key columns; returns null for
+	 * non-primary key columns.
 	 */
 	Ordering getPrimaryKeyOrdering();
 
 	/**
-	 * The column's data type.
+	 * The column's data type. Not valid for a composite primary key, in which case this method returns null.
 	 */
 	DataType getDataType();
 
 	/**
-	 * Whether the property has secondary index on this column.
+	 * Whether the property has a secondary index on this column.
 	 */
 	boolean isIndexed();
 

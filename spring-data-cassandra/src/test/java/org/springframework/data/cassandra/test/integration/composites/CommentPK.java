@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.table;
+package org.springframework.data.cassandra.test.integration.composites;
 
 import java.util.Date;
 
@@ -25,21 +25,19 @@ import org.springframework.data.cassandra.mapping.CassandraType;
 import com.datastax.driver.core.DataType;
 
 /**
- * This is an example of dynamic table that creates each time new column with Notification timestamp.
- * 
- * By default it is active Notification until user deactivate it. This table uses index on the field active to access in
- * WHERE cause only for active notifications.
+ * This is an example of dynamic table (wide row) that creates each time new column with timestamp.
  * 
  * @author Alex Shvid
  */
+
 @PrimaryKeyClass
-public class NotificationPK {
+public class CommentPK {
 
 	/*
 	 * Row ID
 	 */
 	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-	private String username;
+	private String author;
 
 	/*
 	 * Clustered Column
@@ -48,12 +46,12 @@ public class NotificationPK {
 	@CassandraType(type = DataType.Name.TIMESTAMP)
 	private Date time;
 
-	public String getUsername() {
-		return username;
+	public String getAuthor() {
+		return author;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setAuthor(String author) {
+		this.author = author;
 	}
 
 	public Date getTime() {

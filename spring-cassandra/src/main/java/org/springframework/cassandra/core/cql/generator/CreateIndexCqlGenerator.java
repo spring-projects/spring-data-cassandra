@@ -28,10 +28,15 @@ import org.springframework.util.StringUtils;
  */
 public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSpecification> {
 
+	public static String toCql(CreateIndexSpecification specification) {
+		return new CreateIndexCqlGenerator(specification).toCql();
+	}
+
 	public CreateIndexCqlGenerator(CreateIndexSpecification specification) {
 		super(specification);
 	}
 
+	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 
 		cql = noNull(cql);

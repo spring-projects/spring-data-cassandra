@@ -21,8 +21,17 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.cassandra.core.keyspace.AlterKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
+import org.springframework.cassandra.core.keyspace.CreateIndexSpecification;
+import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.cassandra.core.keyspace.DropIndexSpecification;
+import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.dao.DataAccessException;
 
+import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
@@ -52,11 +61,25 @@ public interface CqlOperations {
 	void execute(String cql) throws DataAccessException;
 
 	/**
-	 * Executes the supplied CQL Query Asynchronously and returns nothing.
+	 * Executes the supplied Query and returns nothing.
 	 * 
-	 * @param cql The CQL Statement to execute
+	 * @param query The {@link Query} to execute
+	 */
+	void execute(Query query) throws DataAccessException;
+
+	/**
+	 * Executes the supplied Query Asynchronously and returns nothing.
+	 * 
+	 * @param cql The {@link Query} to execute
 	 */
 	void executeAsynchronously(String cql) throws DataAccessException;
+
+	/**
+	 * Executes the supplied CQL Query Asynchronously and returns nothing.
+	 * 
+	 * @param query The {@link Query} to execute
+	 */
+	void executeAsynchronously(Query query) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor. This uses default Query
@@ -100,10 +123,10 @@ public interface CqlOperations {
 	ResultSetFuture queryAsynchronously(String cql, QueryOptions options);
 
 	/**
-	 * Executes the provided CQL Query with the provided Runnable implementations.
+	 * Executes the provided CQL Query with the provided {@link Runnable} implementation.
 	 * 
 	 * @param cql The Query
-	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @param listener {@link Runnable} listener for handling the query in a separate thread
 	 */
 	void queryAsynchronously(String cql, Runnable listener);
 
@@ -113,7 +136,8 @@ public interface CqlOperations {
 	 * query is completed for optimal flexibility.
 	 * 
 	 * @param cql The Query
-	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @param listener {@link AsynchronousQueryListener} Listener for handling the query's {@link ResultSetFuture} in a
+	 *          separate thread
 	 */
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener);
 
@@ -180,6 +204,23 @@ public interface CqlOperations {
 	 * @param executor
 	 */
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options, Executor executor);
+
+	/**
+	 * Executes the provided CQL query and returns the {@link ResultSet}.
+	 * 
+	 * @param cql The query
+	 * @return The {@link ResultSet}
+	 */
+	ResultSet query(String cql);
+
+	/**
+	 * Executes the provided CQL query with the given {@link QueryOptions} and returns the {@link ResultSet}.
+	 * 
+	 * @param cql The query
+	 * @param options The {@link QueryOptions}; may be null.
+	 * @return The {@link ResultSet}
+	 */
+	ResultSet query(String cql, QueryOptions options);
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
@@ -754,4 +795,67 @@ public interface CqlOperations {
 	 */
 	void truncate(String tableName);
 
+	/**
+	 * Counts all rows for given table
+	 * 
+	 * @param tableName
+	 * @return
+	 */
+	long count(String tableName);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(DropTableSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(CreateTableSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(AlterTableSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(DropKeyspaceSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(CreateKeyspaceSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(AlterKeyspaceSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(DropIndexSpecification specification);
+
+	/**
+	 * Convenience method to convert the given specification to CQL and execute it.
+	 * 
+	 * @param specification The specification to execute; must not be null.
+	 */
+	ResultSet execute(CreateIndexSpecification specification);
 }

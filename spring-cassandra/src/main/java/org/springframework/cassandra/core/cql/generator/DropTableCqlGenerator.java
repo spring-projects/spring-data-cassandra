@@ -26,10 +26,15 @@ import org.springframework.cassandra.core.keyspace.DropTableSpecification;
  */
 public class DropTableCqlGenerator extends TableNameCqlGenerator<DropTableSpecification> {
 
+	public static String toCql(DropTableSpecification specification) {
+		return new DropTableCqlGenerator(specification).toCql();
+	}
+
 	public DropTableCqlGenerator(DropTableSpecification specification) {
 		super(specification);
 	}
 
+	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		return noNull(cql).append("DROP TABLE ")
 		// .append(spec().getIfExists() ? "IF EXISTS " : "")

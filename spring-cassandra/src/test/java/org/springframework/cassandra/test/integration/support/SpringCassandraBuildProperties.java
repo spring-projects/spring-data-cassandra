@@ -4,15 +4,15 @@ import java.io.InputStream;
 import java.util.Properties;
 
 @SuppressWarnings("serial")
-public class BuildProperties extends Properties {
+public class SpringCassandraBuildProperties extends Properties {
 
 	protected String resourceName = null;
 
-	public BuildProperties() {
-		this("/" + BuildProperties.class.getName() + ".properties");
+	public SpringCassandraBuildProperties() {
+		this("/" + SpringCassandraBuildProperties.class.getName() + ".properties");
 	}
 
-	protected BuildProperties(String resourceName) {
+	protected SpringCassandraBuildProperties(String resourceName) {
 		this.resourceName = resourceName;
 
 		loadProperties();

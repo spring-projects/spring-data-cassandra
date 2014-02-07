@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.data.annotation.Persistent;
+
 /**
  * Annotates a type that represents the identity type of another class whose instances are stored in a table.
  * <p/>
@@ -33,5 +35,6 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
+@Persistent
 public @interface PrimaryKeyClass {
 }

@@ -1,4 +1,7 @@
-package org.springframework.data.cassandra.config;
+package org.springframework.data.cassandra.mapping;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Mapping information for an individual entity class.
@@ -7,8 +10,20 @@ package org.springframework.data.cassandra.config;
  */
 public class EntityMapping {
 
+	/**
+	 * The name of the entity's class.
+	 */
 	protected String entityClassName;
+
+	/**
+	 * The name of the table to which the entity is mapped.
+	 */
 	protected String tableName;
+
+	/**
+	 * The {@link PropertyMapping}s for each persistent property, keyed on property name.
+	 */
+	protected Map<String, PropertyMapping> propertyMappings = new HashMap<String, PropertyMapping>();
 
 	public EntityMapping(String entityClassName, String tableName) {
 		setEntityClassName(entityClassName);
