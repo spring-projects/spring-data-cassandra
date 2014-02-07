@@ -8,7 +8,7 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.test.integration.support.BuildProperties;
+import org.springframework.cassandra.test.integration.support.SpringCassandraBuildProperties;
 import org.springframework.cassandra.test.unit.support.Utils;
 
 import com.datastax.driver.core.Cluster;
@@ -26,7 +26,7 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 	protected static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 	protected static String CASSANDRA_HOST = "localhost";
 
-	protected static BuildProperties PROPS = new BuildProperties();
+	protected static SpringCassandraBuildProperties PROPS = new SpringCassandraBuildProperties();
 	protected static int CASSANDRA_NATIVE_PORT = PROPS.getCassandraPort();
 
 	/**
