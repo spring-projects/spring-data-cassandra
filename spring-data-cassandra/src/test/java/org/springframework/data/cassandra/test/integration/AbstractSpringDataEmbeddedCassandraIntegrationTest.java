@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.test.integration.support.SpringDataBuildProperties;
+import org.springframework.data.cassandra.test.integration.support.SpringDataCassandraBuildProperties;
 import org.springframework.data.cassandra.test.integration.template.CassandraDataOperationsTest.Config;
 import org.springframework.util.Assert;
 
@@ -25,7 +25,7 @@ public class AbstractSpringDataEmbeddedCassandraIntegrationTest extends Abstract
 	public static List<TableMetadata> TABLES;
 
 	static {
-		SpringDataBuildProperties props = new SpringDataBuildProperties();
+		SpringDataCassandraBuildProperties props = new SpringDataCassandraBuildProperties();
 		CASSANDRA_NATIVE_PORT = props.getCassandraPort();
 	}
 

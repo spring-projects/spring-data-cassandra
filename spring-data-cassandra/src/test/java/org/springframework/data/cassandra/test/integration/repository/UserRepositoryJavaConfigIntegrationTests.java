@@ -31,7 +31,7 @@ import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.test.integration.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.AbstractDataTestJavaConfig;
+import org.springframework.data.cassandra.test.integration.config.TestConfig;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -46,7 +46,7 @@ public class UserRepositoryJavaConfigIntegrationTests extends AbstractSpringData
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = UserRepository.class)
-	public static class Config extends AbstractDataTestJavaConfig {
+	public static class Config extends TestConfig {
 
 		@Override
 		protected String getKeyspaceName() {

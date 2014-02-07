@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.config.java;
 
-import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 

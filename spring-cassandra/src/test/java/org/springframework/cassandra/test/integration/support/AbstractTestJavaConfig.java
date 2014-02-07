@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public abstract class AbstractTestJavaConfig extends AbstractSessionConfiguration {
 
-	public static BuildProperties PROPS = new BuildProperties();
+	public static SpringCassandraBuildProperties PROPS = new SpringCassandraBuildProperties();
 	public static final int PORT = PROPS.getCassandraPort();
 
 	@Override
