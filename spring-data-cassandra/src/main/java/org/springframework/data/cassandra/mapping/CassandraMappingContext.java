@@ -1,5 +1,7 @@
 package org.springframework.data.cassandra.mapping;
 
+import java.util.Collection;
+
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.TypeInformation;
@@ -13,6 +15,34 @@ import com.datastax.driver.core.TableMetadata;
  */
 public interface CassandraMappingContext extends
 		MappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty> {
+
+	/**
+	 * Returns only those entities that don't represent primary key types.
+	 * 
+	 * @see #getPersistentEntities(boolean)
+	 */
+	@Override
+	public Collection<CassandraPersistentEntity<?>> getPersistentEntities();
+
+	/**
+	 * Returns all persistent entities or only non-primary-key entities.
+	 * 
+	 * @param includePrimaryKeyTypes If <code>true</code>, returns all entities, including entities that represent primary
+	 *          key types. If <code>false</code>, returns only entities that don't represent primary key types.
+	 */
+	public Collection<CassandraPersistentEntity<?>> getPersistentEntities(boolean includePrimaryKeyTypes);
+
+	/**
+	 * Returns only those entities representing primary key types.
+	 */
+	Collection<CassandraPersistentEntity<?>> getPrimaryKeyEntities();
+
+	/**
+	 * Returns only those entities not representing primary key types.
+	 * 
+	 * @see #getPersistentEntities(boolean)
+	 */
+	Collection<CassandraPersistentEntity<?>> getNonPrimaryKeyEntities();
 
 	/**
 	 * Returns a {@link CreateTableSpecification} for the given entity, including all mapping information.

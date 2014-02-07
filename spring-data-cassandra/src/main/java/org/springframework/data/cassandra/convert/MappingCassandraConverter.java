@@ -100,11 +100,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	@Override
-	public MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
-		return mappingContext;
-	}
-
-	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
@@ -112,55 +107,79 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 	protected <S> S readEntityFromRow(final CassandraPersistentEntity<S> entity, final Row row) {
 
-		final DefaultSpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
+		DefaultSpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
 
-		final CassandraPropertyValueProvider propertyProvider = new CassandraPropertyValueProvider(row, evaluator);
+		DefaultCassandraRowValueProvider rowValueProvider = new DefaultCassandraRowValueProvider(row, evaluator);
 
 		CassandraPersistentEntityParameterValueProvider parameterProvider = new CassandraPersistentEntityParameterValueProvider(
-				entity, propertyProvider, null);
+				entity, rowValueProvider, null);
 
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 		S instance = instantiator.createInstance(entity, parameterProvider);
 
-		final BeanWrapper<CassandraPersistentEntity<S>, S> wrapper = BeanWrapper.create(instance, conversionService);
+		BeanWrapper<CassandraPersistentEntity<S>, S> wrapper = BeanWrapper.create(instance, conversionService);
 
-		readPropertiesFromRow(entity, row, propertyProvider, wrapper);
+		readPropertiesFromRow(entity, rowValueProvider, wrapper);
 
 		return wrapper.getBean();
 	}
 
-	protected void readPropertiesFromRow(final CassandraPersistentEntity<?> entity, final Row row,
-			final CassandraPropertyValueProvider propertyProvider, final BeanWrapper<?, ?> wrapper) {
+	protected void readPropertiesFromRow(final CassandraPersistentEntity<?> entity,
+			final DefaultCassandraRowValueProvider row, final BeanWrapper<?, ?> wrapper) {
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				MappingCassandraConverter.this.readPropertyFromRow(row, entity, prop, propertyProvider, wrapper);
+				MappingCassandraConverter.this.readPropertyFromRow(entity, prop, row, wrapper);
 			}
 		});
 	}
 
-	protected void readPropertyFromRow(final Row row, final CassandraPersistentEntity<?> entity,
-			final CassandraPersistentProperty prop, final CassandraPropertyValueProvider propertyProvider,
-			final BeanWrapper<?, ?> wrapper) {
+	protected void readPropertyFromRow(final CassandraPersistentEntity<?> entity, final CassandraPersistentProperty prop,
+			final DefaultCassandraRowValueProvider row, final BeanWrapper<?, ?> wrapper) {
 
 		if (entity.isConstructorArgument(prop)) { // skip 'cause prop was set in ctor
 			return;
 		}
 
 		if (prop.isCompositePrimaryKey()) {
-			readPropertiesFromRow(prop.getCompositePrimaryKeyEntity(), row, propertyProvider, wrapper);
+
+			// get the key
+			CassandraPersistentProperty keyProperty = entity.getIdProperty();
+			Object key = wrapper.getProperty(keyProperty);
+			if (key == null) {
+				key = instantiatePrimaryKey(keyProperty.getCompositePrimaryKeyEntity(), keyProperty, row);
+			}
+
+			// wrap the key
+			@SuppressWarnings("rawtypes")
+			BeanWrapper keyWrapper = BeanWrapper.create(key, conversionService);
+
+			// now recurse on using the key this time
+			readPropertiesFromRow(prop.getCompositePrimaryKeyEntity(), row, keyWrapper);
+
+			// now that the key's properties have been populated, set the key property on the entity
+			wrapper.setProperty(keyProperty, keyWrapper.getBean(), useFieldAccessOnly);
 			return;
 		}
 
-		if (!row.getColumnDefinitions().contains(prop.getColumnName())) {
+		if (!row.getRow().getColumnDefinitions().contains(prop.getColumnName())) {
 			return;
 		}
 
-		Object obj = propertyProvider.getPropertyValue(prop);
+		Object obj = row.getPropertyValue(prop);
 		wrapper.setProperty(prop, obj, useFieldAccessOnly);
+	}
+
+	protected Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
+			DefaultCassandraRowValueProvider propertyProvider) {
+
+		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
+
+		return instantiator.createInstance(entity, new CassandraPersistentEntityParameterValueProvider(entity,
+				propertyProvider, null));
 	}
 
 	public boolean getUseFieldAccessOnly() {
@@ -311,7 +330,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	@Override
-	public CassandraMappingContext getCassandraMappingContext() {
+	public CassandraMappingContext getMappingContext() {
 		return mappingContext;
 	}
 }

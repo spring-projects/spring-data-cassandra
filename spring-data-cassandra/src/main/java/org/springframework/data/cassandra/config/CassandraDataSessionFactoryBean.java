@@ -112,7 +112,8 @@ public class CassandraDataSessionFactoryBean extends CassandraSessionFactoryBean
 			}
 		}
 
-		Collection<? extends CassandraPersistentEntity<?>> entities = converter.getMappingContext().getPersistentEntities();
+		Collection<? extends CassandraPersistentEntity<?>> entities = converter.getMappingContext()
+				.getNonPrimaryKeyEntities();
 
 		for (CassandraPersistentEntity<?> entity : entities) {
 			admin.createTable(false, entity.getTableName(), entity.getType(), null); // TODO: allow spec of table options
@@ -135,7 +136,7 @@ public class CassandraDataSessionFactoryBean extends CassandraSessionFactoryBean
 	public void setConverter(CassandraConverter converter) {
 		Assert.notNull(converter);
 		this.converter = converter;
-		this.mappingContext = converter.getCassandraMappingContext();
+		this.mappingContext = converter.getMappingContext();
 	}
 
 	public Mapping getMapping() {
