@@ -29,5 +29,6 @@ import org.springframework.data.convert.EntityConverter;
 public interface CassandraConverter extends
 		EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Object> {
 
-	CassandraMappingContext getCassandraMappingContext();
+	@Override
+	CassandraMappingContext getMappingContext();
 }

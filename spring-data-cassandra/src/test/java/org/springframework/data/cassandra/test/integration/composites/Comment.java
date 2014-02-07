@@ -15,46 +15,46 @@
  */
 package org.springframework.data.cassandra.test.integration.composites;
 
-import java.util.Date;
-import java.util.Set;
-
 import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.mapping.Table;
-
-import com.datastax.driver.core.DataType;
+import org.springframework.util.Assert;
 
 /**
  * This is an example of dynamic table (wide row). PartitionKey (former RowId) is pk.author. ClusteredColumn (former
  * Column Id) is pk.time
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 @Table("comments")
 public class Comment {
 
-	/*
-	 * Primary Key
-	 */
 	@PrimaryKey
-	private CommentPK pk;
+	private CommentKey pk;
 
 	private String text;
 
-	@CassandraType(type = DataType.Name.SET, typeArguments = { DataType.Name.TEXT })
-	private Set<String> likes;
-
-	/*
-	 * Reference to the Post
+	/**
+	 * @deprecated Only for use by persistence infrastructure
 	 */
-	private String postAuthor;
-	private Date postTime;
+	@Deprecated
+	protected Comment() {
+	}
 
-	public CommentPK getPk() {
+	public Comment(String author, String company) {
+		this(new CommentKey(author, company));
+	}
+
+	public Comment(CommentKey pk) {
+		Assert.notNull(pk);
+		this.pk = pk;
+	}
+
+	public CommentKey getId() {
 		return pk;
 	}
 
-	public void setPk(CommentPK pk) {
+	public void setPk(CommentKey pk) {
 		this.pk = pk;
 	}
 
@@ -66,28 +66,30 @@ public class Comment {
 		this.text = text;
 	}
 
-	public Set<String> getLikes() {
-		return likes;
+	@Override
+	public boolean equals(Object that) {
+
+		if (this == that) {
+			return true;
+		}
+		if (that == null) {
+			return false;
+		}
+		if (!(that instanceof Comment)) {
+			return false;
+		}
+
+		Comment other = (Comment) that;
+
+		if (this.pk == null) {
+			return other.pk == null;
+		}
+
+		return this.pk.equals(other.pk);
 	}
 
-	public void setLikes(Set<String> likes) {
-		this.likes = likes;
+	@Override
+	public int hashCode() {
+		return pk.hashCode();
 	}
-
-	public String getPostAuthor() {
-		return postAuthor;
-	}
-
-	public void setPostAuthor(String postAuthor) {
-		this.postAuthor = postAuthor;
-	}
-
-	public Date getPostTime() {
-		return postTime;
-	}
-
-	public void setPostTime(Date postTime) {
-		this.postTime = postTime;
-	}
-
 }

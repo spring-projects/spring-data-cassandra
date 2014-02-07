@@ -22,6 +22,7 @@ import java.util.Date;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CachingCassandraPersistentProperty;
@@ -32,6 +33,7 @@ import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
@@ -39,41 +41,44 @@ import org.springframework.util.ReflectionUtils;
  * Integration test for {@link BasicCassandraPersistentProperty}.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public class CompoundPrimaryKeyIntegrationTests {
 
 	@PrimaryKeyClass
 	static class TimelineKey {
 
-		@PrimaryKeyColumn(ordinal = 0)
-		String id;
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+		String string;
 
-		@PrimaryKeyColumn(ordinal = 1)
-		Date dt;
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+		Date datetime;
 	}
 
+	@Table
 	static class Timeline {
-
 		@PrimaryKey
 		TimelineKey id;
 
 		@Column("message")
 		String text;
-
 	}
 
+	CassandraPersistentEntity<TimelineKey> cpk;
 	CassandraPersistentEntity<Timeline> entity;
 
 	@Before
 	public void setup() {
+		cpk = new BasicCassandraPersistentEntity<TimelineKey>(ClassTypeInformation.from(TimelineKey.class));
 		entity = new BasicCassandraPersistentEntity<Timeline>(ClassTypeInformation.from(Timeline.class));
 	}
 
 	@Test
-	public void checksIdProperty() {
-		Field field = ReflectionUtils.findField(Timeline.class, "id");
-		CassandraPersistentProperty property = getPropertyFor(field);
+	public void checkIdProperty() {
+		Field id = ReflectionUtils.findField(Timeline.class, "id");
+		CassandraPersistentProperty property = getPropertyFor(id);
 		assertTrue(property.isIdProperty());
+		assertTrue(property.isCompositePrimaryKey());
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Field field) {

@@ -32,22 +32,23 @@ import com.datastax.driver.core.Row;
  * {@link PropertyValueProvider} to read property values from a {@link Row}.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
-public class CassandraPropertyValueProvider implements PropertyValueProvider<CassandraPersistentProperty> {
+public class DefaultCassandraRowValueProvider implements CassandraRowValueProvider {
 
-	private static Logger log = LoggerFactory.getLogger(CassandraPropertyValueProvider.class);
+	private static Logger log = LoggerFactory.getLogger(DefaultCassandraRowValueProvider.class);
 
 	private final Row source;
 	private final SpELExpressionEvaluator evaluator;
 
 	/**
-	 * Creates a new {@link CassandraPropertyValueProvider} with the given {@link Row} and
+	 * Creates a new {@link DefaultCassandraRowValueProvider} with the given {@link Row} and
 	 * {@link DefaultSpELExpressionEvaluator}.
 	 * 
 	 * @param source must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
 	 */
-	public CassandraPropertyValueProvider(Row source, DefaultSpELExpressionEvaluator evaluator) {
+	public DefaultCassandraRowValueProvider(Row source, DefaultSpELExpressionEvaluator evaluator) {
 		Assert.notNull(source);
 		Assert.notNull(evaluator);
 
@@ -84,4 +85,7 @@ public class CassandraPropertyValueProvider implements PropertyValueProvider<Cas
 		return (T) columnType.deserialize(bytes);
 	}
 
+	public Row getRow() {
+		return source;
+	}
 }

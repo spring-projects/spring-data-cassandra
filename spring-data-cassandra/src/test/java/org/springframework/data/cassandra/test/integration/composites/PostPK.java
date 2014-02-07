@@ -34,15 +34,9 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 @PrimaryKeyClass
 public class PostPK {
 
-	/*
-	 * Row ID
-	 */
 	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 	private String author;
 
-	/*
-	 * Clustered Column
-	 */
 	@PrimaryKeyColumn(ordinal = 1)
 	private Date time;
 

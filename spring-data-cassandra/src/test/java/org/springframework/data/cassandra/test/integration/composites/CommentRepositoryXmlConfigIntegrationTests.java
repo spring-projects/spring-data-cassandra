@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.repository;
+package org.springframework.data.cassandra.test.integration.composites;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.test.integration.repository.UserRepository;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -32,20 +33,20 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class UserRepositoryXmlConfigIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class CommentRepositoryXmlConfigIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Autowired
-	protected UserRepository repository;
+	protected CommentRepository repository;
 
 	@Autowired
 	protected CassandraOperations template;
 
-	UserRepositoryIntegrationTests tests;
+	CommentRepositoryIntegrationTests tests;
 
 	@Before
 	public void setUp() throws InterruptedException {
-		tests = new UserRepositoryIntegrationTests(repository, template);
-		tests.setUp();
+		tests = new CommentRepositoryIntegrationTests(repository, template);
+		tests.before();
 	}
 
 	@After
@@ -54,27 +55,17 @@ public class UserRepositoryXmlConfigIntegrationTests extends AbstractSpringDataE
 	}
 
 	@Test
-	public void findsUserById() throws Exception {
-		tests.findsUserById();
+	public void testInsert() {
+		tests.testInsert();
 	}
 
 	@Test
-	public void findsAll() throws Exception {
-		tests.findsAll();
+	public void testDelete() {
+		tests.testDelete();
 	}
 
 	@Test
-	public void findsAllWithGivenIds() {
-		tests.findsAllWithGivenIds();
-	}
-
-	@Test
-	public void deletesUserCorrectly() throws Exception {
-		tests.deletesUserCorrectly();
-	}
-
-	@Test
-	public void deletesUserByIdCorrectly() {
-		tests.deletesUserByIdCorrectly();
+	public void testUpdateNonKeyField() {
+		tests.testUpdateNonKeyField();
 	}
 }

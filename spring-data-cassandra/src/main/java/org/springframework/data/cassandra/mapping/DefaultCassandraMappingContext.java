@@ -19,6 +19,8 @@ import static org.springframework.cassandra.core.keyspace.CreateTableSpecificati
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,12 +53,37 @@ public class DefaultCassandraMappingContext extends
 
 	protected ApplicationContext context;
 	protected Map<String, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<String, Set<CassandraPersistentEntity<?>>>();
+	protected Set<CassandraPersistentEntity<?>> nonPrimaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
+	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 
 	/**
 	 * Creates a new {@link DefaultCassandraMappingContext}.
 	 */
 	public DefaultCassandraMappingContext() {
 		setSimpleTypeHolder(new CassandraSimpleTypeHolder());
+	}
+
+	@Override
+	public Collection<CassandraPersistentEntity<?>> getPersistentEntities() {
+		return getPersistentEntities(false);
+	}
+
+	@Override
+	public Collection<CassandraPersistentEntity<?>> getPrimaryKeyEntities() {
+		return Collections.unmodifiableSet(primaryKeyEntities);
+	}
+
+	@Override
+	public Collection<CassandraPersistentEntity<?>> getNonPrimaryKeyEntities() {
+		return Collections.unmodifiableSet(nonPrimaryKeyEntities);
+	}
+
+	@Override
+	public Collection<CassandraPersistentEntity<?>> getPersistentEntities(boolean includePrimaryKeyTypes) {
+		if (includePrimaryKeyTypes) {
+			return super.getPersistentEntities();
+		}
+		return Collections.unmodifiableSet(nonPrimaryKeyEntities);
 	}
 
 	@Override
@@ -81,12 +108,20 @@ public class DefaultCassandraMappingContext extends
 			entity.setApplicationContext(context);
 		}
 
+		// now do some caching of the entity
+
 		Set<CassandraPersistentEntity<?>> entities = entitySetsByTableName.get(entity.getTableName());
 		if (entities == null) {
 			entities = new HashSet<CassandraPersistentEntity<?>>();
 		}
 		entities.add(entity);
 		entitySetsByTableName.put(entity.getTableName(), entities);
+
+		if (entity.isCompositePrimaryKey()) {
+			primaryKeyEntities.add(entity);
+		} else {
+			nonPrimaryKeyEntities.add(entity);
+		}
 
 		return entity;
 	}
