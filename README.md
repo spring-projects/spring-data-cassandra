@@ -43,7 +43,7 @@ _Note: we are considering consolidating both modules into one for convenience._
 #### Module ``spring-cassandra``
 
 This is the low-level core template framework, like the ones you are used to using on all your Spring projects.  Our
-``CqlTemplate`` provides everything you need for working with Cassandra using Spring's familiar template pattern.
+``CqlTemplate`` provides everything you need for working with Cassandra using Spring's familiar template pattern in a manner very similar to Spring's ``JdbcTemplate``.
 
 This includes persistence exception translation, Spring JavaConfig and XML configuration support.  Define your Spring beans to setup your
 Cassandra ``Cluster`` object, then create your ``Session`` and you are ready to interact with Cassandra using the ``CqlTemplate``.
@@ -60,7 +60,7 @@ The support for Spring JavaConfig and a Spring Cassandra XML namespace makes it 
 
 The ``spring-data-cassandra`` module depends on the ``spring-cassandra`` module and adds the familiar Spring Data features like repositories and lightweight POJO persistence.
 
-_Note: The code in the ``spring-data-cassandra`` module is a work in progress and is not yet functional._
+__Note: As of 7 Feb 2014, module ``spring-data-cassandra`` is functional!__
 
 We are actively working on its completion, but wanted to make the lower level Cassandra template functionality available to the Spring and Cassandra communities.
 
@@ -86,24 +86,24 @@ We have included a variety of overloaded ``ingest()`` methods in ``CqlTemplate``
 
 The next round of work to do is to complete module ``spring-data-cassandra``, while taking feedback from the community's use of module ``spring-cassandra``.
 
+#### Cassandra Repository
+
+The base Spring Data Repository interface for Cassandra is ``CassandraRepository``.
+
+#### Cassandra Template
+
+``CassandraTemplate`` extends ``CqlTemplate`` to provide even more interaction with Cassandra using annotated POJOs.
+The Spring Data ``CassandraRepository`` implementation is a client of ``CassandraTemplate``.  This _data_ template gives the developer the capability of working with annotated POJOs and the template pattern without the requirement of the Spring Data ``Repository`` interface, in addition to the familiar Spring Data ``Repository`` concepts.
+
 #### Cassandra Admin Template
 
 This is another Spring template class to help you with all of your keyspace and table administration tasks.
 
-#### Cassandra Template
-
-This template extends ``CqlTemplate`` to provide even more interaction with Cassandra using annotated POJOs.
-The Spring Data Cassandra Repository implementation is a client of ``CassandraTemplate``.  This _data_ template gives the developer the capability of working with annotated POJOs and the template pattern without the requirement of the Spring Data ``Repository`` interface.
-
-#### Cassandra Repository
-
-The implementation of the standard Spring Data Repository interface for Cassandra.
-
 #### Official Reference Guide
 
-Once we have all the inner workings of the Repository interface completed, we will publish a full Reference Guide on using all of the features in spring-data-cassandra.
+Once we have all the inner workings of the ``CassandraRepository`` interface completed, we will publish a full Reference Guide on using all of the features in ``spring-data-cassandra``.
 
-## Examples
+## CqlTemplate Examples
 
 ### JavaConfig
 
@@ -177,7 +177,7 @@ released.
 
 ## Source Repository & Issue Tracking
 
-Source for this module is hosted on GitHub in [Spring Projects](https://github.com/spring-projects).  
+Source for this module is hosted on GitHub in [Spring Projects](https://github.com/spring-projects/spring-data-cassandra).  
 The Spring Data Cassandra JIRA can be found [here](https://jira.springsource.org/browse/DATACASS).
 
 ## Reporting Problems
@@ -210,7 +210,7 @@ below:
 * David Webb:  dwebb _at_ prowaveconsulting _dot_ com
 * Matthew Adams:  matthew _dot_ adams _at_ scispike _dot_ com
 
-Also, developer discussions are being hosted via Google Groups at https://groups.google.com/forum/#!forum/spring-data-cassandra.
+Also, developer discussions are being hosted via a [Spring Data Cassandra Google Group](https://groups.google.com/forum/#!forum/spring-data-cassandra).
 
 ## Contributing Individuals
 
