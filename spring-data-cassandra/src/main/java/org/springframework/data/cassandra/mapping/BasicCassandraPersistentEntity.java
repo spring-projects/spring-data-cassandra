@@ -51,6 +51,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	protected CassandraMappingContext mappingContext;
 	protected final SpelExpressionParser spelParser;
 	protected final StandardEvaluationContext spelContext;
+	protected CassandraPersistentEntityMetadataVerifier verifier = new DefaultCassandraPersistentEntityMetadataVerifier();
 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
 		this(typeInformation, null);
@@ -155,7 +156,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public void verify() throws MappingException {
 		super.verify();
-		CassandraPersistentEntityMetadataVerifier verifier = new DefaultCassandraPersistentEntityMetadataVerifier();
 		verifier.verify(this);
 	}
 }

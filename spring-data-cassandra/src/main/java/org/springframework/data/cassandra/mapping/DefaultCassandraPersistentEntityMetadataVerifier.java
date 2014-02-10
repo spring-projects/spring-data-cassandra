@@ -38,11 +38,14 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 			return;
 		}
 
-		// TODO
+		// TODO - Determine total list.
 		final List<CassandraPersistentProperty> idProperties = new ArrayList<CassandraPersistentProperty>();
 		final List<CassandraPersistentProperty> compositePrimaryKeys = new ArrayList<CassandraPersistentProperty>();
 		final List<CassandraPersistentProperty> primaryKeyColumns = new ArrayList<CassandraPersistentProperty>();
 
+		/*
+		 * Parse the properties
+		 */
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 			@Override
@@ -59,38 +62,33 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 			}
 		});
 
-		// TODO Outline Rules needed
-
-		// TODO PK Combinations
-
-		// TODO Index, potential verify against TableMetaData...DO NOT CREATE INDEX.
-
-		// TODO - Uncomment once Matt merges this support
 		/*
+		 * Verify that the Primary Key annotations are correct
+		 */
 		if (entity.isCompositePrimaryKey()) {
 
 			if (primaryKeyColumns.size() == 0) {
-				throw new IllegalStateException(String.format(
-						"composite primary key type [%s] has no fields annotated with @%s", entity.getType().getName(),
-						PrimaryKeyColumn.class.getSimpleName()));
+				throw new MappingException(String.format("composite primary key type [%s] has no fields annotated with @%s",
+						entity.getType().getName(), PrimaryKeyColumn.class.getSimpleName()));
 			}
 
 			// there can also be no @PrimaryKey or @Id fields that aren't composite primary keys themselves
 			for (CassandraPersistentProperty p : idProperties) {
 				if (!p.getType().isAnnotationPresent(PrimaryKeyClass.class)) {
-					throw new IllegalStateException(String.format(
+					throw new MappingException(String.format(
 							"composite primary key type [%s] property [%s] can only be a composite primary key type itself", entity
 									.getType().getName(), p.getName()));
 				}
 			}
 
-			return;
+		} else {
+
+			/*
+			 * Not a Composite Primary Key so there must be at
+			 */
+
+			// TODO Index, potential verify against TableMetaData...DO NOT CREATE INDEX.
 		}
-
-		// else it's not a composite primary key class
-
-		}*/
-
 	}
 
 }
