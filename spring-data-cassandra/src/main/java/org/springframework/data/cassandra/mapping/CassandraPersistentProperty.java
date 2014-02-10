@@ -100,4 +100,7 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 	 * @see #isClusterKeyColumn()
 	 */
 	boolean isPrimaryKeyColumn();
+
+	@Override
+	CassandraPersistentEntity<?> getOwner();
 }

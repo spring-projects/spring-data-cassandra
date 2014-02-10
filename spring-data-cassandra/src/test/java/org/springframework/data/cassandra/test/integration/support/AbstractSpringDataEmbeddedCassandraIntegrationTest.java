@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.test.integration;
+package org.springframework.data.cassandra.test.integration.support;
 
 import static org.springframework.cassandra.core.keyspace.DropTableSpecification.dropTable;
 
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.test.integration.support.SpringDataCassandraBuildProperties;
 import org.springframework.data.cassandra.test.integration.template.CassandraDataOperationsTest.Config;
 import org.springframework.util.Assert;
 

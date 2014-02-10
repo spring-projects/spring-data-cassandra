@@ -28,7 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.Table;
-import org.springframework.data.cassandra.test.integration.AbstractSpringDataEmbeddedCassandraIntegrationTest;
+import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**

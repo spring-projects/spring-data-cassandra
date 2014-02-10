@@ -84,7 +84,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Assert.notNull(cassandraConverter);
 
 		this.cassandraConverter = cassandraConverter;
-		mappingContext = cassandraConverter.getCassandraMappingContext();
+		mappingContext = cassandraConverter.getMappingContext();
 	}
 
 	@Override

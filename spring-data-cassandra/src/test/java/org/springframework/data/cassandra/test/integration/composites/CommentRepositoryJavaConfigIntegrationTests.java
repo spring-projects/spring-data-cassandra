@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.repository;
+package org.springframework.data.cassandra.test.integration.composites;
 
 import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
 
@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
+import org.springframework.data.cassandra.test.integration.repository.UserRepository;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.TestConfig;
 import org.springframework.test.context.ContextConfiguration;
@@ -42,15 +43,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class UserRepositoryJavaConfigIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class CommentRepositoryJavaConfigIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
-	@EnableCassandraRepositories(basePackageClasses = UserRepository.class)
+	@EnableCassandraRepositories(basePackageClasses = CommentRepository.class)
 	public static class Config extends TestConfig {
 
 		@Override
 		protected String getKeyspaceName() {
-			return UserRepositoryJavaConfigIntegrationTests.class.getSimpleName();
+			return CommentRepositoryJavaConfigIntegrationTests.class.getSimpleName();
 		}
 
 		@Override
@@ -69,22 +70,22 @@ public class UserRepositoryJavaConfigIntegrationTests extends AbstractSpringData
 
 		@Override
 		public String getEntityBasePackage() {
-			return User.class.getPackage().getName();
+			return Comment.class.getPackage().getName();
 		}
 	}
 
 	@Autowired
-	protected UserRepository repository;
+	protected CommentRepository repository;
 
 	@Autowired
 	protected CassandraOperations template;
 
-	UserRepositoryIntegrationTests tests;
+	CommentRepositoryIntegrationTests tests;
 
 	@Before
-	public void setUp() throws InterruptedException {
-		tests = new UserRepositoryIntegrationTests(repository, template);
-		tests.setUp();
+	public void before() {
+		tests = new CommentRepositoryIntegrationTests(repository, template);
+		tests.before();
 	}
 
 	@After
@@ -93,27 +94,17 @@ public class UserRepositoryJavaConfigIntegrationTests extends AbstractSpringData
 	}
 
 	@Test
-	public void findsUserById() throws Exception {
-		tests.findsUserById();
+	public void testInsert() {
+		tests.testInsert();
 	}
 
 	@Test
-	public void findsAll() throws Exception {
-		tests.findsAll();
+	public void testDelete() {
+		tests.testDelete();
 	}
 
 	@Test
-	public void findsAllWithGivenIds() {
-		tests.findsAllWithGivenIds();
-	}
-
-	@Test
-	public void deletesUserCorrectly() throws Exception {
-		tests.deletesUserCorrectly();
-	}
-
-	@Test
-	public void deletesUserByIdCorrectly() {
-		tests.deletesUserByIdCorrectly();
+	public void testUpdateNonKeyField() {
+		tests.testUpdateNonKeyField();
 	}
 }
