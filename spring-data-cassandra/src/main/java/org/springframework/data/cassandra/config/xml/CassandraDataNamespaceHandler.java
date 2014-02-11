@@ -36,5 +36,7 @@ public class CassandraDataNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("cluster", new CassandraDataClusterParser());
 		registerBeanDefinitionParser("session", new CassandraDataSessionParser());
 		registerBeanDefinitionParser("template", new CassandraDataTemplateParser());
+		registerBeanDefinitionParser("mapping-converter", new CassandraDataMappingCassandraConverterParser());
+		registerBeanDefinitionParser("mapping-context", new CassandraDataCassandraMappingContextParser());
 	}
 }

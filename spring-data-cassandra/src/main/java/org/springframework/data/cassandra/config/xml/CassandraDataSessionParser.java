@@ -46,6 +46,15 @@ public class CassandraDataSessionParser extends CassandraSessionParser {
 	}
 
 	@Override
+	protected void setDefaultProperties(BeanDefinitionBuilder builder) {
+
+		super.setDefaultProperties(builder);
+
+		addRequiredPropertyReference(builder, "converter", DefaultDataBeanNames.CONVERTER);
+		addRequiredPropertyReference(builder, "schemaAction", SchemaAction.NONE.name());
+	}
+
+	@Override
 	protected void parseUnhandledElement(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
 		if ("mapping".equals(element.getLocalName())) {

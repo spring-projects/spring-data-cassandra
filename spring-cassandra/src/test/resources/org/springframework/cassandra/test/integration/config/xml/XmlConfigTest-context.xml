@@ -9,8 +9,8 @@
 	<context:property-placeholder
 		location="classpath:org.springframework.cassandra.test.integration.support.SpringCassandraBuildProperties.properties" />
 
-	<cassandra:cluster id="cassandra-cluster"
-		contact-points="localhost" port="${build.cassandra.native_transport_port}">
+	<cassandra:cluster contact-points="localhost"
+		port="${build.cassandra.native_transport_port}">
 		<cassandra:local-pooling-options
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="2" max-connections="8" />
@@ -18,16 +18,15 @@
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="1" max-connections="2" />
 		<cassandra:socket-options
-			connect-timeout-millis="5000" keep-alive="true" read-timeout-millis="60000" reuse-address="true"
-			so-linger="60" tcp-no-delay="true" receive-buffer-size="65536"
-			send-buffer-size="65536" />
+			connect-timeout-millis="5000" keep-alive="true" read-timeout-millis="60000"
+			reuse-address="true" so-linger="60" tcp-no-delay="true"
+			receive-buffer-size="65536" send-buffer-size="65536" />
 	</cassandra:cluster>
 
-	<cassandra:session id="cassandra-session"
-		keyspace-name="xmlconfigtest" />
+	<cassandra:session keyspace-name="xmlconfigtest" />
 
 	<bean id="cassandraTemplate" class="org.springframework.cassandra.core.CqlTemplate">
-		<constructor-arg ref="cassandra-session" />
+		<constructor-arg ref="cassandraSession" />
 	</bean>
 
 </beans>

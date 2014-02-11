@@ -10,15 +10,10 @@
 	<context:property-placeholder
 		location="classpath:/spring-data-cassandra-build.properties" />
 
-	<bean id="cassandra-mapping"
-		class="org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext" />
+	<cassandra:mapping-context />
 
-	<bean id="cassandra-converter"
-		class="org.springframework.data.cassandra.convert.MappingCassandraConverter">
-		<constructor-arg ref="cassandra-mapping" />
-	</bean>
+	<cassandra:mapping-converter />
 
-	<cassandra:template id="cassandra-template"
-		cassandra-converter-ref="cassandra-converter" session-ref="cassandra-session" />
+	<cassandra:template />
 
 </beans>

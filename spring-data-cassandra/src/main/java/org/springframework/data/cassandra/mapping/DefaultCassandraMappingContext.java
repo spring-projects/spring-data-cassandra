@@ -52,6 +52,8 @@ public class DefaultCassandraMappingContext extends
 		CassandraMappingContext, ApplicationContextAware {
 
 	protected ApplicationContext context;
+
+	// useful caches
 	protected Map<String, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<String, Set<CassandraPersistentEntity<?>>>();
 	protected Set<CassandraPersistentEntity<?>> nonPrimaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
@@ -61,6 +63,20 @@ public class DefaultCassandraMappingContext extends
 	 */
 	public DefaultCassandraMappingContext() {
 		setSimpleTypeHolder(new CassandraSimpleTypeHolder());
+	}
+
+	@Override
+	public void initialize() {
+
+		super.initialize();
+
+		processMappingOverrides();
+	}
+
+	protected void processMappingOverrides() {
+
+		// TODO: search for external entity mapping info (xml/properties/yaml/etc) here & update this.mapping
+		// similar to JPA's or JDO's external metadata search algorithms
 	}
 
 	@Override

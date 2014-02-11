@@ -11,9 +11,8 @@
 	<context:property-placeholder
 		location="classpath:/org/springframework/data/cassandra/test/integration/config/cassandra.properties" />
 
-	<cass:cluster id="cassandra-cluster"
-		contact-points="${cassandra.contactPoints}" port="${cassandra.native_transport_port}"
-		compression="SNAPPY">
+	<cass:cluster contact-points="${cassandra.contactPoints}"
+		port="${cassandra.native_transport_port}" compression="SNAPPY">
 		<cass:local-pooling-options
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="2" max-connections="8" />
@@ -27,21 +26,13 @@
 			durable-writes="true" />
 	</cass:cluster>
 
-	<!-- TODO: not require that this bean be defined -->
-	<bean id="cassandra-mapping"
-		class="org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext"/>
+	<!-- TODO: not require that these beans be defined -->
+	<cass:mapping-context/>
+	<cass:mapping-converter />
 
-	<!-- TODO: not require that this bean be defined -->
-	<bean id="cassandra-converter"
-		class="org.springframework.data.cassandra.convert.MappingCassandraConverter">
-		<constructor-arg ref="cassandra-mapping" />
-	</bean>
+	<cass:session keyspace-name="${cassandra.keyspace}"
+		schema-action="NONE" />
 
-	<cass:session id="cassandra-session" keyspace-name="${cassandra.keyspace}"
-		schema-action="NONE" cluster-ref="cassandra-cluster"
-		cassandra-converter-ref="cassandra-converter">
-	</cass:session>
-
-	<cass:template session-ref="cassandra-session" />
+	<cass:template />
 
 </beans>

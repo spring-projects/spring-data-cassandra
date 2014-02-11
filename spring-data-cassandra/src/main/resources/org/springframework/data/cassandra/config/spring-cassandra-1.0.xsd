@@ -482,7 +482,7 @@ The name of a Cassandra Keyspace.  No default; for the system keyspace, use the 
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The reference to a CassandraConverter; default is "cassandra-converter".
+The reference to a CassandraConverter; default is "cassandraConverter".
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -500,7 +500,7 @@ The schema action to perform; default is NONE.
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The name of the template; default is "cassandra-template".
+The name of the template; default is "cassandraTemplate".
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -515,7 +515,7 @@ The reference to a Cassandra session; default is "cassandra-session".
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The reference to a CassandraConverter; default is "cassandra-converter".
+The reference to a CassandraConverter; default is "cassandraConverter".
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -676,11 +676,10 @@ Table name override.
 	</xsd:simpleType>
 
 	<xsd:attributeGroup name="cassandra-repository-attributes">
-		<xsd:attribute name="cassandra-template-ref" type="cassandraTemplateRef"
-			default="cassandra-template">
+		<xsd:attribute name="cassandra-template-ref" type="cassandraTemplateRef">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The reference to a cassandraTemplate. Will default to 'cassandra-template'.
+The reference to a cassandraTemplate. Will default to 'cassandraTemplate'.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -696,4 +695,61 @@ The reference to a cassandraTemplate. Will default to 'cassandra-template'.
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
+
+	<xsd:element name="mapping-context">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Defines a CassandraMappingContext for holding rich entity mapping information.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:exports
+					type="org.springframework.data.cassandra.mapping.CassandraMappingContext" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="base-packages" type="xsd:string"
+				use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The comma-delimited base packages in which to scan for entities and their mapping information.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="mapping-converter">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Defines a CassandraConverter for getting rich mapping functionality.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:exports
+					type="org.springframework.data.cassandra.convert.CassandraConverter" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="mapping-context-ref" type="mappingContextRef"
+				use="optional">
+				<xsd:annotation>
+					<xsd:documentation
+						source="org.springframework.data.mapping.model.MappingContext"><![CDATA[
+The reference to a MappingContext. Will default to 'mapping-context'.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:simpleType name="mappingContextRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+						type="org.springframework.data.cassandra.mapping.CassandraMappingContext" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string" />
+	</xsd:simpleType>
 </xsd:schema>
