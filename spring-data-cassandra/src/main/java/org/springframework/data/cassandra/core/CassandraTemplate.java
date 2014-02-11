@@ -123,7 +123,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Assert.notNull(type);
 		Assert.notNull(id);
 
-		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(type);
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
 
 		Select select = QueryBuilder.select().countAll().from(entity.getTableName());
 		appendIdCriteria(select.where(), entity, id);
@@ -152,9 +152,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Assert.notNull(type);
 		Assert.notNull(id);
 
-		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(type);
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
 
-		Delete delete = QueryBuilder.delete().all().from(entity.getTableName());
+		Delete delete = QueryBuilder.delete().from(entity.getTableName());
 		appendIdCriteria(delete.where(), entity, id);
 
 		execute(delete.getQueryString());
@@ -192,7 +192,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public String getTableName(Class<?> type) {
-		return mappingContext.getRequiredPersistentEntity(type).getTableName();
+		return mappingContext.getPersistentEntity(type).getTableName();
 	}
 
 	@Override
@@ -252,7 +252,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	@Override
 	public <T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids) {
 
-		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(type);
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
 
 		if (entity.getIdProperty().isCompositePrimaryKey()) {
 			throw new IllegalArgumentException(String.format(

@@ -57,24 +57,4 @@ public interface CassandraMappingContext extends
 	 * @param table May not be null.
 	 */
 	boolean usesTable(TableMetadata table);
-
-	/**
-	 * Returns the {@link CassandraPersistentEntity} for the given type. If it doesn't exist, this method throws
-	 * {@link IllegalArgumentException}.
-	 * 
-	 * @param type The Java type of the persistent entity.
-	 * @return The {@link CassandraPersistentEntity} describing the persistent Java type.
-	 * @throws IllegalArgumentException if the persistent entity is unknown
-	 */
-	public CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> type);
-
-	/**
-	 * Returns the {@link CassandraPersistentEntity} for the given type. If it doesn't exist, this method throws
-	 * {@link IllegalArgumentException}.
-	 * 
-	 * @param type The {@link TypeInformation} of the persistent entity.
-	 * @return The {@link CassandraPersistentEntity} describing the persistent Java type.
-	 * @throws IllegalArgumentException if the persistent entity is unknown
-	 */
-	public CassandraPersistentEntity<?> getRequiredPersistentEntity(TypeInformation<?> type);
 }

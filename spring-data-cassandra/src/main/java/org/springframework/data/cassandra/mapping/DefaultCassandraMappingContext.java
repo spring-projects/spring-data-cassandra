@@ -198,31 +198,6 @@ public class DefaultCassandraMappingContext extends
 		return spec;
 	}
 
-	@Override
-	public CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> type) {
-
-		CassandraPersistentEntity<?> entity = getPersistentEntity(type);
-
-		if (entity == null) {
-			throw new IllegalArgumentException(String.format("no persistence metadata found for type [%s]", type.getName()));
-		}
-
-		return entity;
-	}
-
-	@Override
-	public CassandraPersistentEntity<?> getRequiredPersistentEntity(TypeInformation<?> type) {
-
-		CassandraPersistentEntity<?> entity = getPersistentEntity(type);
-
-		if (entity == null) {
-			throw new IllegalArgumentException(String.format("no persistence metadata found for type [%s]",
-					type.getActualType()));
-		}
-
-		return entity;
-	}
-
 	public void setMapping(Mapping mapping) {
 
 		Assert.notNull(mapping);
