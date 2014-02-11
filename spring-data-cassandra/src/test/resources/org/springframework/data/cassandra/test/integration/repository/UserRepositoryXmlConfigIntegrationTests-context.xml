@@ -13,7 +13,7 @@
 	<import resource="classpath:/spring-data-cassandra-basic.xml" />
 
 	<cass:mapping
-		base-packages="org.springframework.data.cassandra.test.integration.repository">
+		entity-base-packages="org.springframework.data.cassandra.test.integration.repository">
 		<cass:entity
 			class="org.springframework.data.cassandra.test.integration.repository.User">
 			<cass:table name="users_x" />

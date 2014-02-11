@@ -66,7 +66,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		}
 
 		@Override
-		public String[] getMappingBasePackages() {
+		public String[] getEntityBasePackages() {
 			return new String[] { Book.class.getPackage().getName() };
 		}
 	}

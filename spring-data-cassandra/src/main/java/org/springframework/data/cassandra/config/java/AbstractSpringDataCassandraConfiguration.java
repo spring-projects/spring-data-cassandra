@@ -59,7 +59,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * The base packages to scan for entities annotated with {@link Table} annotations. By default, returns the package
 	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>). This method must never return null.
 	 */
-	public String[] getMappingBasePackages() {
+	public String[] getEntityBasePackages() {
 		return new String[] { getClass().getPackage().getName() };
 	}
 
@@ -97,8 +97,8 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	public CassandraMappingContextFactoryBean cassandraMapping() throws ClassNotFoundException {
 
 		CassandraMappingContextFactoryBean bean = new CassandraMappingContextFactoryBean();
-		bean.setBasePackages(new HashSet<String>(Arrays.asList(getMappingBasePackages())));
-		bean.setEntityClassLoader(beanClassLoader);
+		bean.setEntityBasePackages(new HashSet<String>(Arrays.asList(getEntityBasePackages())));
+		bean.setBeanClassLoader(beanClassLoader);
 
 		return bean;
 	}
@@ -118,7 +118,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	/**
 	 * Scans the mapping base package for entity classes.
 	 * 
-	 * @see #getMappingBasePackages()
+	 * @see #getEntityBasePackages()
 	 * @see #getEntityScanner()
 	 * @return <code>Set&lt;Class&lt;?&gt;&gt;</code> representing the annotated entity classes found.
 	 * @throws ClassNotFoundException
@@ -126,7 +126,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
 
 		CassandraEntityClassScanner entityScanner = getEntityScanner();
-		entityScanner.setEntityBasePackages(Arrays.asList(getMappingBasePackages()));
+		entityScanner.setEntityBasePackages(Arrays.asList(getEntityBasePackages()));
 
 		return entityScanner.scanForEntityClasses();
 	}

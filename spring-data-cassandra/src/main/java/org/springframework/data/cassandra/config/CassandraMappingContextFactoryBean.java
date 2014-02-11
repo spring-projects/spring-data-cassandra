@@ -12,9 +12,9 @@ import org.springframework.util.Assert;
 
 public class CassandraMappingContextFactoryBean implements FactoryBean<CassandraMappingContext>, InitializingBean {
 
-	protected Set<String> basePackages = new HashSet<String>();
+	protected Set<String> entityBasePackages = new HashSet<String>();
 	protected Mapping mapping;
-	protected ClassLoader entityClassLoader;
+	protected ClassLoader beanClassLoader;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -25,9 +25,9 @@ public class CassandraMappingContextFactoryBean implements FactoryBean<Cassandra
 	public CassandraMappingContext getObject() throws Exception {
 
 		DefaultCassandraMappingContext mappingContext = new DefaultCassandraMappingContext();
-		mappingContext.setInitialEntitySet(new CassandraEntityClassScanner(basePackages).scanForEntityClasses());
+		mappingContext.setInitialEntitySet(new CassandraEntityClassScanner(entityBasePackages).scanForEntityClasses());
 		mappingContext.setMapping(mapping);
-		mappingContext.setBeanClassLoader(entityClassLoader);
+		mappingContext.setBeanClassLoader(beanClassLoader);
 
 		mappingContext.initialize(); // this is necessary here
 
@@ -44,12 +44,12 @@ public class CassandraMappingContextFactoryBean implements FactoryBean<Cassandra
 		return true;
 	}
 
-	public Set<String> getBasePackages() {
-		return basePackages;
+	public Set<String> getEntityBasePackages() {
+		return entityBasePackages;
 	}
 
-	public void setBasePackages(Set<String> basePackages) {
-		this.basePackages = basePackages == null ? new HashSet<String>() : new HashSet<String>(basePackages);
+	public void setEntityBasePackages(Set<String> basePackages) {
+		this.entityBasePackages = basePackages == null ? new HashSet<String>() : new HashSet<String>(basePackages);
 	}
 
 	public Mapping getMapping() {
@@ -63,11 +63,11 @@ public class CassandraMappingContextFactoryBean implements FactoryBean<Cassandra
 		this.mapping = mapping;
 	}
 
-	public ClassLoader getEntityClassLoader() {
-		return entityClassLoader;
+	public ClassLoader getBeanClassLoader() {
+		return beanClassLoader;
 	}
 
-	public void setEntityClassLoader(ClassLoader entityClassLoader) {
-		this.entityClassLoader = entityClassLoader;
+	public void setBeanClassLoader(ClassLoader entityClassLoader) {
+		this.beanClassLoader = entityClassLoader;
 	}
 }

@@ -702,7 +702,7 @@ Defines a CassandraMappingContext for holding rich entity mapping information.
 				<xsd:element name="entity" type="entityType" minOccurs="0"
 					maxOccurs="unbounded" />
 			</xsd:sequence>
-			<xsd:attribute name="base-packages" type="xsd:string"
+			<xsd:attribute name="entity-base-packages" type="xsd:string"
 				use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[

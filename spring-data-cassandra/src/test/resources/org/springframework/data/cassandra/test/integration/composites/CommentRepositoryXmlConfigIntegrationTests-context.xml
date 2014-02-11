@@ -12,7 +12,7 @@
 	<import resource="classpath:/spring-data-cassandra-basic.xml" />
 
 	<cass:mapping
-		base-packages="org.springframework.data.cassandra.test.integration.composites">
+		entity-base-packages="org.springframework.data.cassandra.test.integration.composites">
 		<cass:entity
 			class="org.springframework.data.cassandra.test.integration.composites.Comment">
 			<cass:table name="comments_x" />

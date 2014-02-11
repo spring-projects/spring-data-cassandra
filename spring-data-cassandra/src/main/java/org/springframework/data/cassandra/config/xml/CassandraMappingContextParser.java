@@ -46,13 +46,13 @@ public class CassandraMappingContextParser extends AbstractSimpleBeanDefinitionP
 
 	protected void parseBasePackagesAttribute(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		String basePackages = element.getAttribute("base-packages");
+		String basePackages = element.getAttribute("entity-base-packages");
 		if (!StringUtils.hasText(basePackages)) {
 			return;
 		}
 
 		Set<String> basePackageSet = StringUtils.commaDelimitedListToSet(basePackages);
-		builder.addPropertyValue("basePackages", basePackageSet);
+		builder.addPropertyValue("entityBasePackages", basePackageSet);
 	}
 
 	protected void parseMapping(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {

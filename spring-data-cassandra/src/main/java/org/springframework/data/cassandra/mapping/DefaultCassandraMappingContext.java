@@ -37,6 +37,7 @@ import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.TableMetadata;
@@ -260,8 +261,7 @@ public class DefaultCassandraMappingContext extends
 			String entityClassName = entityMapping.getEntityClassName();
 			Class<?> entityClass;
 			try {
-				entityClass = Class.forName(entityClassName, false, beanClassLoader == null ? getClass().getClassLoader()
-						: beanClassLoader);
+				entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
 			} catch (ClassNotFoundException e) {
 				throw new IllegalStateException(String.format("unknown persistent entity name [%s]", entityClassName), e);
 			}
