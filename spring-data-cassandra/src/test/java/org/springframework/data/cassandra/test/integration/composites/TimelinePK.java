@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.composites;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.springframework.cassandra.core.PrimaryKeyType;
@@ -32,7 +33,7 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
  */
 
 @PrimaryKeyClass
-public class TimelinePK {
+public class TimelinePK implements Serializable {
 
 	/*
 	 * Row ID
@@ -60,6 +61,37 @@ public class TimelinePK {
 
 	public void setTime(Date time) {
 		this.time = time;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((time == null) ? 0 : time.hashCode());
+		result = prime * result + ((username == null) ? 0 : username.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TimelinePK other = (TimelinePK) obj;
+		if (time == null) {
+			if (other.time != null)
+				return false;
+		} else if (!time.equals(other.time))
+			return false;
+		if (username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!username.equals(other.username))
+			return false;
+		return true;
 	}
 
 }

@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.test.integration.mapping;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,13 +57,45 @@ public class CassandraCompositePrimaryKeyIntegrationTests {
 	private static final CassandraSimpleTypeHolder SIMPLE_TYPE_HOLDER = new CassandraSimpleTypeHolder();
 
 	@PrimaryKeyClass
-	static class Key {
+	static class Key implements Serializable {
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 		String z;
 
 		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED)
 		String a;
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((a == null) ? 0 : a.hashCode());
+			result = prime * result + ((z == null) ? 0 : z.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Key other = (Key) obj;
+			if (a == null) {
+				if (other.a != null)
+					return false;
+			} else if (!a.equals(other.a))
+				return false;
+			if (z == null) {
+				if (other.z != null)
+					return false;
+			} else if (!z.equals(other.z))
+				return false;
+			return true;
+		}
+
 	}
 
 	@Table
