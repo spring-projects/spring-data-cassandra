@@ -22,7 +22,7 @@ import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredP
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
+import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.util.StringUtils;
@@ -37,7 +37,7 @@ import org.w3c.dom.NamedNodeMap;
  * @author David Webb
  * @author Matthew T. Adams
  */
-public class CassandraSessionParser extends AbstractSimpleBeanDefinitionParser {
+public class CassandraSessionParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {

@@ -6,10 +6,10 @@ import java.util.Set;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
+import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.cassandra.config.CassandraMappingContextFactoryBean;
 import org.springframework.data.cassandra.config.DefaultDataBeanNames;
+import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.EntityMapping;
 import org.springframework.data.cassandra.mapping.Mapping;
 import org.springframework.util.StringUtils;
@@ -21,11 +21,11 @@ import org.w3c.dom.Element;
  * 
  * @author Matthew T. Adams
  */
-public class CassandraMappingContextParser extends AbstractSimpleBeanDefinitionParser {
+public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return CassandraMappingContextFactoryBean.class;
+		return DefaultCassandraMappingContext.class;
 	}
 
 	@Override
@@ -37,33 +37,17 @@ public class CassandraMappingContextParser extends AbstractSimpleBeanDefinitionP
 	}
 
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		super.doParse(element, parserContext, builder);
-
-		parseBasePackagesAttribute(element, parserContext, builder);
-		parseMapping(element, parserContext, builder);
+	protected void doParse(Element element, BeanDefinitionBuilder builder) {
+		parseMapping(element, builder);
 	}
 
-	protected void parseBasePackagesAttribute(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
-		String basePackages = element.getAttribute("entity-base-packages");
-		if (!StringUtils.hasText(basePackages)) {
-			return;
-		}
-
-		Set<String> basePackageSet = StringUtils.commaDelimitedListToSet(basePackages);
-		builder.addPropertyValue("entityBasePackages", basePackageSet);
-	}
-
-	protected void parseMapping(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
-		// TODO: parse <mapping> **attributes** here, if there ever are any
+	protected void parseMapping(Element element, BeanDefinitionBuilder builder) {
 
 		Set<EntityMapping> mappings = new HashSet<EntityMapping>();
 
-		for (Element child : DomUtils.getChildElementsByTagName(element, "entity")) {
+		for (Element entity : DomUtils.getChildElementsByTagName(element, "entity")) {
 
-			EntityMapping entityMapping = parseEntity(child);
+			EntityMapping entityMapping = parseEntity(entity);
 
 			if (entityMapping != null) {
 				mappings.add(entityMapping);

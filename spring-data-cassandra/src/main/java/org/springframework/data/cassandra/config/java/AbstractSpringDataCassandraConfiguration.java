@@ -15,22 +15,19 @@
  */
 package org.springframework.data.cassandra.config.java;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.CassandraDataSessionFactoryBean;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
-import org.springframework.data.cassandra.config.CassandraMappingContextFactoryBean;
-import org.springframework.data.cassandra.config.CassandraMappingConverterFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.context.MappingContext;
 
@@ -69,7 +66,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 		CassandraDataSessionFactoryBean bean = new CassandraDataSessionFactoryBean();
 
 		bean.setCluster(cluster().getObject());
-		bean.setConverter(cassandraConverter().getObject());
+		bean.setConverter(cassandraConverter());
 		bean.setSchemaAction(getSchemaAction());
 		bean.setKeyspaceName(getKeyspaceName());
 		bean.setStartupScripts(getStartupScripts());
@@ -85,7 +82,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 */
 	@Bean
 	public CassandraAdminOperations cassandraTemplate() throws Exception {
-		return new CassandraAdminTemplate(session().getObject(), cassandraConverter().getObject());
+		return new CassandraAdminTemplate(session().getObject(), cassandraConverter());
 	}
 
 	/**
@@ -94,10 +91,10 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * @throws ClassNotFoundException
 	 */
 	@Bean
-	public CassandraMappingContextFactoryBean cassandraMapping() throws ClassNotFoundException {
+	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
 
-		CassandraMappingContextFactoryBean bean = new CassandraMappingContextFactoryBean();
-		bean.setEntityBasePackages(new HashSet<String>(Arrays.asList(getEntityBasePackages())));
+		DefaultCassandraMappingContext bean = new DefaultCassandraMappingContext();
+		bean.setInitialEntitySet(CassandraEntityClassScanner.scan(getEntityBasePackages()));
 		bean.setBeanClassLoader(beanClassLoader);
 
 		return bean;
@@ -107,32 +104,8 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * Return the {@link CassandraConverter} instance to convert Rows to Objects, Objects to BuiltStatements
 	 */
 	@Bean
-	public CassandraMappingConverterFactoryBean cassandraConverter() throws Exception {
-
-		CassandraMappingConverterFactoryBean bean = new CassandraMappingConverterFactoryBean();
-		bean.setMappingContext(cassandraMapping().getObject());
-
-		return bean;
-	}
-
-	/**
-	 * Scans the mapping base package for entity classes.
-	 * 
-	 * @see #getEntityBasePackages()
-	 * @see #getEntityScanner()
-	 * @return <code>Set&lt;Class&lt;?&gt;&gt;</code> representing the annotated entity classes found.
-	 * @throws ClassNotFoundException
-	 */
-	protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
-
-		CassandraEntityClassScanner entityScanner = getEntityScanner();
-		entityScanner.setEntityBasePackages(Arrays.asList(getEntityBasePackages()));
-
-		return entityScanner.scanForEntityClasses();
-	}
-
-	public CassandraEntityClassScanner getEntityScanner() {
-		return new CassandraEntityClassScanner();
+	public CassandraConverter cassandraConverter() throws Exception {
+		return new MappingCassandraConverter(cassandraMapping());
 	}
 
 	@Override

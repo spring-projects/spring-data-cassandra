@@ -10,7 +10,7 @@
 	<context:property-placeholder
 		location="classpath:/spring-data-cassandra-build.properties" />
 
-	<cass:converter />
+	<cass:converter mapping-ref="cassandraMapping"/>
 
 	<cass:template />
 

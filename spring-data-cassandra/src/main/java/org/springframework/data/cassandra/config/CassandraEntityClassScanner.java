@@ -1,6 +1,7 @@
 package org.springframework.data.cassandra.config;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,11 +23,36 @@ import org.springframework.util.StringUtils;
  */
 public class CassandraEntityClassScanner {
 
+	public static Set<Class<?>> scan(String... entityBasePackages) throws ClassNotFoundException {
+		return new CassandraEntityClassScanner(entityBasePackages).scanForEntityClasses();
+	}
+
+	public static Set<Class<?>> scan(Class<?>... entityBasePackageClasses) throws ClassNotFoundException {
+		return new CassandraEntityClassScanner(entityBasePackageClasses).scanForEntityClasses();
+	}
+
+	public static Set<Class<?>> scan(Collection<String> entityBasePackages) throws ClassNotFoundException {
+		return new CassandraEntityClassScanner(entityBasePackages).scanForEntityClasses();
+	}
+
+	public static Set<Class<?>> scan(Collection<String> entityBasePackages, Collection<Class<?>> entityBasePackageClasses)
+			throws ClassNotFoundException {
+		return new CassandraEntityClassScanner(entityBasePackages, entityBasePackageClasses).scanForEntityClasses();
+	}
+
 	protected Set<String> entityBasePackages = new HashSet<String>();
 	protected Set<Class<?>> entityBasePackageClasses = new HashSet<Class<?>>();
 	protected ClassLoader beanClassLoader;
 
 	public CassandraEntityClassScanner() {
+	}
+
+	public CassandraEntityClassScanner(Class<?>... entityBasePackageClasses) {
+		this(null, Arrays.asList(entityBasePackageClasses));
+	}
+
+	public CassandraEntityClassScanner(String... entityBasePackages) {
+		this(Arrays.asList(entityBasePackages));
 	}
 
 	public CassandraEntityClassScanner(Collection<String> entityBasePackages) {

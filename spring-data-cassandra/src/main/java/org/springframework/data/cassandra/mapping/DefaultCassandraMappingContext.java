@@ -56,7 +56,6 @@ public class DefaultCassandraMappingContext extends
 	protected ApplicationContext context;
 	protected Mapping mapping = new Mapping();
 	protected ClassLoader beanClassLoader;
-	protected boolean initialized;
 
 	// useful caches
 	protected Map<String, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<String, Set<CassandraPersistentEntity<?>>>();
@@ -71,26 +70,11 @@ public class DefaultCassandraMappingContext extends
 	}
 
 	@Override
-	public void afterPropertiesSet() {
-		if (initialized) {
-			return;
-		}
-
-		super.afterPropertiesSet();
-	}
-
-	@Override
 	public void initialize() {
-
-		if (initialized) {
-			return;
-		}
 
 		super.initialize();
 
 		processMappingOverrides();
-
-		initialized = true;
 	}
 
 	@Override
