@@ -29,8 +29,7 @@ import org.springframework.data.mapping.model.MappingException;
  */
 public class VerifierMappingExceptions extends MappingException {
 
-	Collection<String> messages = new LinkedList<String>();
-	Collection<MappingException> errors = new LinkedList<MappingException>();
+	Collection<MappingException> exceptions = new LinkedList<MappingException>();
 
 	/**
 	 * @param s
@@ -43,16 +42,7 @@ public class VerifierMappingExceptions extends MappingException {
 	 * @param s
 	 */
 	public void add(MappingException e) {
-		messages.add(e.getMessage());
-		errors.add(e);
-	}
-
-	/**
-	 * @param s
-	 */
-	public void add(String s, MappingException e) {
-		messages.add(s);
-		errors.add(e);
+		exceptions.add(e);
 	}
 
 	/**
@@ -61,7 +51,7 @@ public class VerifierMappingExceptions extends MappingException {
 	 * @return The Collection of MappingException
 	 */
 	public Collection<MappingException> getMappingExceptions() {
-		return errors;
+		return exceptions;
 	}
 
 	/**
@@ -69,7 +59,11 @@ public class VerifierMappingExceptions extends MappingException {
 	 * 
 	 * @return The Collection of Messages
 	 */
-	public Collection<String> getMappingExceptionMessages() {
+	public Collection<String> getMessages() {
+		Collection<String> messages = new LinkedList<String>();
+		for (MappingException e : exceptions) {
+			messages.add(e.getMessage());
+		}
 		return messages;
 	}
 
@@ -78,15 +72,15 @@ public class VerifierMappingExceptions extends MappingException {
 	 * 
 	 * @return Number of Errors present
 	 */
-	public int getErrorCount() {
-		return errors.size();
+	public int getCount() {
+		return exceptions.size();
 	}
 
 	@Override
 	public String getMessage() {
 		StringBuilder builder = new StringBuilder();
-		for (String s : messages) {
-			builder.append(s).append("\n");
+		for (MappingException e : exceptions) {
+			builder.append(e.getMessage()).append("\n");
 		}
 		return builder.toString();
 	}

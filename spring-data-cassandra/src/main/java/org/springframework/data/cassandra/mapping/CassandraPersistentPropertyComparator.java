@@ -22,10 +22,10 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 	public int compare(CassandraPersistentProperty left, CassandraPersistentProperty right) {
 
 		if (left != null && right == null) {
-			return -1;
+			return 1;
 		}
 		if (left == null && right != null) {
-			return 1;
+			return -1;
 		}
 		if (left == null && right == null) {
 			return 0;
@@ -57,11 +57,11 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 		boolean rightIsKey = rightIsCompositePrimaryKey || rightIsPrimaryKey;
 
 		if (leftIsKey && !rightIsKey) {
-			return 1;
+			return -1;
 		}
 
 		if (!leftIsKey && rightIsKey) {
-			return -1;
+			return 1;
 		}
 
 		// else, neither property is a composite primary key nor a primary key; compare @Column annotations
