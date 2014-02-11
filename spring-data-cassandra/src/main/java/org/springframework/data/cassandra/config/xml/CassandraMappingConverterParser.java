@@ -11,7 +11,7 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Spring Data Cassandra XML namespace parser for the &lt;mapping-converter&gt; element.
+ * Spring Data Cassandra XML namespace parser for the &lt;converter&gt; element.
  * 
  * @author Matthew T. Adams
  */

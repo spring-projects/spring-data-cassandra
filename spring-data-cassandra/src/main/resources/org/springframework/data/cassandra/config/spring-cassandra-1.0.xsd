@@ -713,7 +713,7 @@ The comma-delimited base packages in which to scan for entities and their mappin
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="mapping-converter">
+	<xsd:element name="converter">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
 Defines a CassandraConverter for getting rich mapping functionality.
