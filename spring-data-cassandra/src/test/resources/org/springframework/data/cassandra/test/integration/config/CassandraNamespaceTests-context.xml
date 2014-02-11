@@ -27,7 +27,7 @@
 	</cass:cluster>
 
 	<!-- TODO: not require that these beans be defined -->
-	<cass:mapping-context/>
+	<cass:mapping />
 	<cass:mapping-converter />
 
 	<cass:session keyspace-name="${cassandra.keyspace}"

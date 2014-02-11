@@ -1,13 +1,11 @@
 package org.springframework.data.cassandra.config.xml;
 
-import java.util.Set;
-
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.cassandra.config.CassandraDataMappingConverterFactoryBean;
+import org.springframework.data.cassandra.config.CassandraMappingConverterFactoryBean;
 import org.springframework.data.cassandra.config.DefaultDataBeanNames;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -17,11 +15,11 @@ import org.w3c.dom.Element;
  * 
  * @author Matthew T. Adams
  */
-public class CassandraDataMappingCassandraConverterParser extends AbstractSimpleBeanDefinitionParser {
+public class CassandraMappingConverterParser extends AbstractSimpleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return CassandraDataMappingConverterFactoryBean.class;
+		return CassandraMappingConverterFactoryBean.class;
 	}
 
 	@Override
@@ -34,29 +32,20 @@ public class CassandraDataMappingCassandraConverterParser extends AbstractSimple
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		super.doParse(element, parserContext, builder);
 
 		parseMappingContextAttribute(element, parserContext, builder);
-		parseBasePackagesAttribute(element, parserContext, builder);
 	}
 
 	protected void parseMappingContextAttribute(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder builder) {
 
-		String mappingContextRef = element.getAttribute("mapping-context-ref");
+		String mappingContextRef = element.getAttribute("mapping-ref");
 		if (!StringUtils.hasText(mappingContextRef)) {
 			mappingContextRef = DefaultDataBeanNames.MAPPING_CONTEXT;
 		}
+
 		builder.addPropertyReference("mappingContext", mappingContextRef);
-	}
-
-	protected void parseBasePackagesAttribute(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
-		String basePackages = element.getAttribute("base-packages");
-		if (!StringUtils.hasText(basePackages)) {
-			return;
-		}
-
-		Set<String> basePackageSet = StringUtils.commaDelimitedListToSet(basePackages);
 	}
 }

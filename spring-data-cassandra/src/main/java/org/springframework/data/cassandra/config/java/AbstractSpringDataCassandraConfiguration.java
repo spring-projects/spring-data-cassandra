@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.config.java;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -24,14 +25,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.CassandraDataSessionFactoryBean;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
+import org.springframework.data.cassandra.config.CassandraMappingContextFactoryBean;
+import org.springframework.data.cassandra.config.CassandraMappingConverterFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.Mapping;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.context.MappingContext;
 
@@ -48,7 +47,6 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	protected abstract String getKeyspaceName();
 
 	protected ClassLoader beanClassLoader;
-	protected Mapping mapping = new Mapping();
 
 	/**
 	 * The {@link SchemaAction} to perform. Defaults to {@link SchemaAction#NONE}.
@@ -71,14 +69,11 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 		CassandraDataSessionFactoryBean bean = new CassandraDataSessionFactoryBean();
 
 		bean.setCluster(cluster().getObject());
-		bean.setConverter(converter());
+		bean.setConverter(converter().getObject());
 		bean.setSchemaAction(getSchemaAction());
 		bean.setKeyspaceName(getKeyspaceName());
 		bean.setStartupScripts(getStartupScripts());
 		bean.setShutdownScripts(getShutdownScripts());
-
-		bean.setEntityClassLoader(beanClassLoader);
-		bean.setMapping(mapping);
 
 		return bean;
 	}
@@ -90,7 +85,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 */
 	@Bean
 	public CassandraAdminOperations cassandraTemplate() throws Exception {
-		return new CassandraAdminTemplate(session().getObject(), converter());
+		return new CassandraAdminTemplate(session().getObject(), converter().getObject());
 	}
 
 	/**
@@ -99,20 +94,25 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * @throws ClassNotFoundException
 	 */
 	@Bean
-	public CassandraMappingContext cassandraMappingContext() throws ClassNotFoundException {
-		DefaultCassandraMappingContext context = new DefaultCassandraMappingContext();
-		context.setInitialEntitySet(getInitialEntitySet());
-		return context;
+	public CassandraMappingContextFactoryBean cassandraMapping() throws ClassNotFoundException {
+
+		CassandraMappingContextFactoryBean bean = new CassandraMappingContextFactoryBean();
+		bean.setBasePackages(new HashSet<String>(Arrays.asList(getMappingBasePackages())));
+		bean.setEntityClassLoader(beanClassLoader);
+
+		return bean;
 	}
 
 	/**
 	 * Return the {@link CassandraConverter} instance to convert Rows to Objects, Objects to BuiltStatements
-	 * 
-	 * @throws ClassNotFoundException
 	 */
 	@Bean
-	public CassandraConverter converter() throws ClassNotFoundException {
-		return new MappingCassandraConverter(cassandraMappingContext());
+	public CassandraMappingConverterFactoryBean converter() throws Exception {
+
+		CassandraMappingConverterFactoryBean bean = new CassandraMappingConverterFactoryBean();
+		bean.setMappingContext(cassandraMapping().getObject());
+
+		return bean;
 	}
 
 	/**

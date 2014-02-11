@@ -10,7 +10,7 @@ import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.util.Assert;
 
-public class CassandraDataMappingConverterFactoryBean implements FactoryBean<CassandraConverter>, InitializingBean {
+public class CassandraMappingConverterFactoryBean implements FactoryBean<CassandraConverter>, InitializingBean {
 
 	protected CassandraMappingContext mappingContext;
 	protected Set<String> basePackages = new HashSet<String>();

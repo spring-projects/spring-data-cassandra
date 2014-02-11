@@ -452,8 +452,6 @@ Arbitrary CQL script to be executed against the session's keyspace during bean d
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="mapping" type="mappingType" minOccurs="0"
-				maxOccurs="1" />
 		</xsd:sequence>
 
 		<xsd:attribute name="id" type="xsd:ID" use="optional">
@@ -629,13 +627,6 @@ The replication factor for the data center.
 		<xsd:union memberTypes="xsd:string" />
 	</xsd:simpleType>
 
-	<xsd:complexType name="mappingType">
-		<xsd:sequence>
-			<xsd:element name="entity" type="entityType" minOccurs="0"
-				maxOccurs="unbounded" />
-		</xsd:sequence>
-	</xsd:complexType>
-
 	<xsd:complexType name="entityType">
 		<xsd:sequence>
 			<xsd:element name="table" type="tableType" minOccurs="0"
@@ -696,7 +687,7 @@ The reference to a cassandraTemplate. Will default to 'cassandraTemplate'.
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="mapping-context">
+	<xsd:element name="mapping">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
 Defines a CassandraMappingContext for holding rich entity mapping information.
@@ -707,6 +698,10 @@ Defines a CassandraMappingContext for holding rich entity mapping information.
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="entity" type="entityType" minOccurs="0"
+					maxOccurs="unbounded" />
+			</xsd:sequence>
 			<xsd:attribute name="base-packages" type="xsd:string"
 				use="optional">
 				<xsd:annotation>
@@ -729,12 +724,12 @@ Defines a CassandraConverter for getting rich mapping functionality.
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:attribute name="mapping-context-ref" type="mappingContextRef"
+			<xsd:attribute name="mapping-ref" type="mappingContextRef"
 				use="optional">
 				<xsd:annotation>
 					<xsd:documentation
-						source="org.springframework.data.mapping.model.MappingContext"><![CDATA[
-The reference to a MappingContext. Will default to 'mapping-context'.
+						source="org.springframework.data.cassandra.mapping.CassandraMappingContext"><![CDATA[
+The reference to a CassandraMappingContext. Will default to 'cassandraMapping'.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>

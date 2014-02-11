@@ -37,6 +37,7 @@ import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.TableMetadata;
 
@@ -52,6 +53,9 @@ public class DefaultCassandraMappingContext extends
 		CassandraMappingContext, ApplicationContextAware {
 
 	protected ApplicationContext context;
+	protected Mapping mapping = new Mapping();
+	protected ClassLoader beanClassLoader;
+	protected boolean initialized;
 
 	// useful caches
 	protected Map<String, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<String, Set<CassandraPersistentEntity<?>>>();
@@ -66,17 +70,26 @@ public class DefaultCassandraMappingContext extends
 	}
 
 	@Override
+	public void afterPropertiesSet() {
+		if (initialized) {
+			return;
+		}
+
+		super.afterPropertiesSet();
+	}
+
+	@Override
 	public void initialize() {
+
+		if (initialized) {
+			return;
+		}
 
 		super.initialize();
 
 		processMappingOverrides();
-	}
 
-	protected void processMappingOverrides() {
-
-		// TODO: search for external entity mapping info (xml/properties/yaml/etc) here & update this.mapping
-		// similar to JPA's or JDO's external metadata search algorithms
+		initialized = true;
 	}
 
 	@Override
@@ -223,5 +236,52 @@ public class DefaultCassandraMappingContext extends
 		}
 
 		return entity;
+	}
+
+	public void setMapping(Mapping mapping) {
+
+		Assert.notNull(mapping);
+
+		this.mapping = mapping;
+	}
+
+	protected void processMappingOverrides() {
+
+		if (mapping == null) {
+			return;
+		}
+
+		for (EntityMapping entityMapping : mapping.getEntityMappings()) {
+
+			if (entityMapping == null) {
+				continue;
+			}
+
+			String entityClassName = entityMapping.getEntityClassName();
+			Class<?> entityClass;
+			try {
+				entityClass = Class.forName(entityClassName, false, beanClassLoader == null ? getClass().getClassLoader()
+						: beanClassLoader);
+			} catch (ClassNotFoundException e) {
+				throw new IllegalStateException(String.format("unknown persistent entity name [%s]", entityClassName), e);
+			}
+
+			CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+
+			if (entity == null) {
+				throw new IllegalStateException(String.format("unknown persistent entity class name [%s]", entityClassName));
+			}
+
+			String tableName = entityMapping.getTableName();
+			if (!StringUtils.hasText(tableName)) {
+				continue;
+			}
+
+			entity.setTableName(tableName);
+		}
+	}
+
+	public void setBeanClassLoader(ClassLoader beanClassLoader) {
+		this.beanClassLoader = beanClassLoader;
 	}
 }

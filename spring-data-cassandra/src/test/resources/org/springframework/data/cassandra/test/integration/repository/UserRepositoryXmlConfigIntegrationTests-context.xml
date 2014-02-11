@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cass="http://www.springframework.org/schema/data/cassandra"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="
@@ -12,22 +12,24 @@
 
 	<import resource="classpath:/spring-data-cassandra-basic.xml" />
 
-	<cassandra:cluster port="${cassandra.native_transport_port}">
-		<cassandra:keyspace name="UserRepositoryXmlConfigIntegrationTests"
+	<cass:mapping
+		base-packages="org.springframework.data.cassandra.test.integration.repository">
+		<cass:entity
+			class="org.springframework.data.cassandra.test.integration.repository.User">
+			<cass:table name="users_x" />
+		</cass:entity>
+	</cass:mapping>
+
+	<cass:cluster port="${cassandra.native_transport_port}">
+		<cass:keyspace name="UserRepositoryXmlConfigIntegrationTests"
 			action="CREATE" durable-writes="true">
-		</cassandra:keyspace>
-	</cassandra:cluster>
+		</cass:keyspace>
+	</cass:cluster>
 
-	<cassandra:session keyspace-name="UserRepositoryXmlConfigIntegrationTests"
+	<cass:session keyspace-name="UserRepositoryXmlConfigIntegrationTests"
 		schema-action="CREATE">
-		<cassandra:mapping>
-			<cassandra:entity
-				class="org.springframework.data.cassandra.test.integration.repository.User">
-				<cassandra:table name="users_x" />
-			</cassandra:entity>
-		</cassandra:mapping>
-	</cassandra:session>
+	</cass:session>
 
-	<cassandra:repositories
+	<cass:repositories
 		base-package="org.springframework.data.cassandra.test.integration.repository" />
 </beans>
