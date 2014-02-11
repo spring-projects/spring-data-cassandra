@@ -69,7 +69,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 		CassandraDataSessionFactoryBean bean = new CassandraDataSessionFactoryBean();
 
 		bean.setCluster(cluster().getObject());
-		bean.setConverter(converter().getObject());
+		bean.setConverter(cassandraConverter().getObject());
 		bean.setSchemaAction(getSchemaAction());
 		bean.setKeyspaceName(getKeyspaceName());
 		bean.setStartupScripts(getStartupScripts());
@@ -85,7 +85,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 */
 	@Bean
 	public CassandraAdminOperations cassandraTemplate() throws Exception {
-		return new CassandraAdminTemplate(session().getObject(), converter().getObject());
+		return new CassandraAdminTemplate(session().getObject(), cassandraConverter().getObject());
 	}
 
 	/**
@@ -107,7 +107,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * Return the {@link CassandraConverter} instance to convert Rows to Objects, Objects to BuiltStatements
 	 */
 	@Bean
-	public CassandraMappingConverterFactoryBean converter() throws Exception {
+	public CassandraMappingConverterFactoryBean cassandraConverter() throws Exception {
 
 		CassandraMappingConverterFactoryBean bean = new CassandraMappingConverterFactoryBean();
 		bean.setMappingContext(cassandraMapping().getObject());
