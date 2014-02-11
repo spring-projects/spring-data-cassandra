@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.mapping;
 
+import java.io.Serializable;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.Ordering;
@@ -26,12 +28,13 @@ import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.mapping.model.MappingException;
 
 /**
  * @author dwebb
  * 
  */
-public class BasicCassandraPersistentEntityVerifierTest {
+public class BasicCassandraPersistentEntityVerifierIntegrationTest {
 
 	CassandraMappingContext mappingContext;
 
@@ -42,10 +45,31 @@ public class BasicCassandraPersistentEntityVerifierTest {
 
 	}
 
+	@Test(expected = MappingException.class)
+	public void testNonPersistentType() {
+
+		mappingContext.getPersistentEntity(NonPersistentClass.class);
+
+	}
+
+	@Test(expected = MappingException.class)
+	public void testTooManyAnnotations() {
+
+		mappingContext.getPersistentEntity(TooManyAnnotations.class);
+
+	}
+
 	@Test
 	public void testNonPrimaryKeyClass() {
 
 		mappingContext.getPersistentEntity(Person.class);
+
+	}
+
+	@Test(expected = MappingException.class)
+	public void testPrimaryKeyClassNotFullyImplemented() {
+
+		mappingContext.getPersistentEntity(AnimalPkNoOverrides.class);
 
 	}
 
@@ -55,6 +79,16 @@ public class BasicCassandraPersistentEntityVerifierTest {
 		mappingContext.getPersistentEntity(AnimalPK.class);
 
 		mappingContext.getPersistentEntity(Animal.class);
+
+	}
+
+	static class NonPersistentClass {
+
+		@Id
+		private String id;
+
+		private String foo;
+		private String bar;
 
 	}
 
@@ -79,7 +113,17 @@ public class BasicCassandraPersistentEntityVerifierTest {
 	}
 
 	@PrimaryKeyClass
-	static class AnimalPK {
+	static class AnimalPK implements Serializable {
+
+		@Override
+		public int hashCode() {
+			return super.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return super.equals(obj);
+		}
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 		private String species;
@@ -89,6 +133,26 @@ public class BasicCassandraPersistentEntityVerifierTest {
 
 		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
 		private String color;
+
+	}
+
+	@PrimaryKeyClass
+	static class AnimalPkNoOverrides {
+
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+		private String species;
+
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+		private String breed;
+
+		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+		private String color;
+
+	}
+
+	@Table
+	@PrimaryKeyClass
+	static class TooManyAnnotations {
 
 	}
 

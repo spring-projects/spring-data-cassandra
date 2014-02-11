@@ -27,7 +27,6 @@ import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.data.cassandra.util.CassandraNamingUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.MappingException;

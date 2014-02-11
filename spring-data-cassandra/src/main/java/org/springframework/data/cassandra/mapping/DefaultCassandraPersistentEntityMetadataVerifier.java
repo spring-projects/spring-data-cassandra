@@ -15,9 +15,13 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MappingException;
 
@@ -33,15 +37,37 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 
-		boolean todo = true;
-		if (todo) {
-			return;
-		}
+		VerifierMappingExceptions exceptions = new VerifierMappingExceptions(
+				"Mapping Exceptions from DefaultCassandraPersistentEntityMetadataVerifier");
 
-		// TODO - Determine total list.
 		final List<CassandraPersistentProperty> idProperties = new ArrayList<CassandraPersistentProperty>();
 		final List<CassandraPersistentProperty> compositePrimaryKeys = new ArrayList<CassandraPersistentProperty>();
 		final List<CassandraPersistentProperty> primaryKeyColumns = new ArrayList<CassandraPersistentProperty>();
+
+		/*
+		 * Determine how this type is annotated
+		 */
+		Class<?> thisType = entity.getType();
+
+		boolean isTable = (thisType.isAnnotationPresent(Table.class) || thisType.isAnnotationPresent(Persistent.class));
+		boolean isPrimaryKeyClass = thisType.isAnnotationPresent(PrimaryKeyClass.class);
+
+		/*
+		 * Ensure that this is not both a @Table(@Persistent) and a @PrimaryKey
+		 */
+		if (isTable && isPrimaryKeyClass) {
+			exceptions.add(new MappingException("Entity cannot be of type Table and PrimaryKey"));
+			throw exceptions;
+		}
+
+		/*
+		 * Ensure that this is either a @Table(@Persistent) or a @PrimaryKey
+		 */
+		if (!isTable && !isPrimaryKeyClass) {
+			exceptions.add(new MappingException(
+					"Cassandra entities must have the @Table, @Persistent or @PrimaryKeyClass Annotation"));
+			throw exceptions;
+		}
 
 		/*
 		 * Parse the properties
@@ -63,32 +89,132 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 		});
 
 		/*
-		 * Verify that the Primary Key annotations are correct
+		 * Perform rules verification on PrimaryKeyClass
 		 */
-		if (entity.isCompositePrimaryKey()) {
+		if (isPrimaryKeyClass) {
 
+			/*
+			 * Must have at least 1 attribute annotated with @PrimaryKeyColumn
+			 */
 			if (primaryKeyColumns.size() == 0) {
-				throw new MappingException(String.format("composite primary key type [%s] has no fields annotated with @%s",
-						entity.getType().getName(), PrimaryKeyColumn.class.getSimpleName()));
+				exceptions.add(new MappingException(String.format(
+						"composite primary key type [%s] has no fields annotated with @%s", entity.getType().getName(),
+						PrimaryKeyColumn.class.getSimpleName())));
 			}
 
-			// there can also be no @PrimaryKey or @Id fields that aren't composite primary keys themselves
-			for (CassandraPersistentProperty p : idProperties) {
-				if (!p.getType().isAnnotationPresent(PrimaryKeyClass.class)) {
-					throw new MappingException(String.format(
-							"composite primary key type [%s] property [%s] can only be a composite primary key type itself", entity
-									.getType().getName(), p.getName()));
+			/*
+			 * At least one of the PrimaryKeyColumns must have a type PARTIONED
+			 */
+			boolean partitionKeyExists = false;
+			for (CassandraPersistentProperty p : primaryKeyColumns) {
+				if (p.getField().getAnnotation(PrimaryKeyColumn.class).type() == PrimaryKeyType.PARTITIONED) {
+					partitionKeyExists = true;
+				}
+			}
+			if (!partitionKeyExists) {
+				exceptions.add(new MappingException(
+						"At least on of the PrimaryKeyColumn annotation must have a type of PARTITIONED"));
+			}
+
+			/*
+			 * Cannot have any Id or PrimaryKey Annotations
+			 */
+			if (idProperties.size() > 0) {
+				exceptions.add(new MappingException(
+						"Annotations @Id and @PrimaryKey are invalid for type annoated as @PrimaryKeyClass"));
+			}
+
+			/*
+			 * Ensure that PrimaryKeyColumn is a supported Type.
+			 */
+			for (CassandraPersistentProperty p : primaryKeyColumns) {
+				if (CassandraSimpleTypeHolder.getDataTypeFor(p.getType()) == null) {
+					exceptions.add(new MappingException("Fields annotated with @PrimaryKeyColumn must be simple CassandraTypes"));
 				}
 			}
 
-		} else {
+			/*
+			 * Ensure PrimaryKeyClass is Serializable
+			 */
+			Class<?>[] interfaces = thisType.getInterfaces();
+			boolean isTypeSerializable = false;
+			for (Class<?> c : interfaces) {
+				if (c.equals(Serializable.class)) {
+					isTypeSerializable = true;
+				}
+			}
+			if (!isTypeSerializable) {
+				exceptions.add(new MappingException("@PrimaryKeyClass must be Serializable"));
+			}
 
 			/*
-			 * Not a Composite Primary Key so there must be at
+			 * Ensure PrimaryKeyClass only extends Object
 			 */
+			if (!thisType.getSuperclass().equals(Object.class)) {
+				exceptions.add(new MappingException("@PrimaryKeyClass must only extend Object"));
+			}
 
-			// TODO Index, potential verify against TableMetaData...DO NOT CREATE INDEX.
+			/*
+			 * Ensure PrimaryKeyClass overrides "boolean equals(Object)"
+			 */
+			try {
+				Method equalsMethod = thisType.getDeclaredMethod("equals", Object.class);
+				if (equalsMethod == null || !equalsMethod.getDeclaringClass().equals(thisType)) {
+					throw new NoSuchMethodException();
+				}
+			} catch (NoSuchMethodException e) {
+				exceptions.add(new MappingException("@PrimaryKeyClass must override 'boolean equals(Object)' method"));
+			}
+
+			/*
+			 * Ensure PrimaryKeyClass overrides "int hashCode()"
+			 */
+			try {
+				Method hashCodeMethod = thisType.getDeclaredMethod("hashCode", (Class<?>[]) null);
+				if (hashCodeMethod == null || !hashCodeMethod.getDeclaringClass().equals(thisType)) {
+					throw new NoSuchMethodException();
+				}
+			} catch (NoSuchMethodException e) {
+				exceptions.add(new MappingException("@PrimaryKeyClass must override 'int hashCode()' method"));
+			}
+		}
+
+		/*
+		 * Perform rules verification on Table/Persistent
+		 */
+		if (isTable) {
+
+			/*
+			 * Ensure at least 1 PK
+			 */
+			if (idProperties.size() == 0 && compositePrimaryKeys.size() == 0) {
+				exceptions.add(new MappingException("@Table/@Persistent types must have at least 1 @PrimaryKey attribute"));
+			}
+
+			/*
+			 * Ensure no more than 1 PK
+			 */
+			if (idProperties.size() + compositePrimaryKeys.size() > 1) {
+				exceptions.add(new MappingException("@Table/@Persistent must have only 1 @PrimaryKey attribute"));
+			}
+
+			/*
+			 * Ensure that Id is a supported Type.  At the point there is only 1.
+			 */
+			if (idProperties.size() == 1) {
+				Class<?> typeClass = idProperties.get(0).getType();
+				if (!typeClass.isAnnotationPresent(PrimaryKeyClass.class)
+						&& CassandraSimpleTypeHolder.getDataTypeFor(typeClass) == null) {
+					exceptions.add(new MappingException("Fields annotated with @PrimaryKey must be simple CassandraTypes"));
+				}
+			}
+		}
+
+		/*
+		 * Determine whether or not to throw Exception based on errors found
+		 */
+		if (exceptions.getErrorCount() > 0) {
+			throw exceptions;
 		}
 	}
-
 }
