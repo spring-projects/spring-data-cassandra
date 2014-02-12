@@ -28,7 +28,7 @@ public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecif
 	}
 
 	public String getName() {
-		return identifier.getIdentifier();
+		return identifier.getName();
 	}
 
 	public String getNameAsIdentifier() {

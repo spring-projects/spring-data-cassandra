@@ -42,7 +42,7 @@ public abstract class TableNameSpecification<T extends TableNameSpecification<T>
 	}
 
 	public String getName() {
-		return identifier.getIdentifier();
+		return identifier.getName();
 	}
 
 	public String getNameAsIdentifier() {

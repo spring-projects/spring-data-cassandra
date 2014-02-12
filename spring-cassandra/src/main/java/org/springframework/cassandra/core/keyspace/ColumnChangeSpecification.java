@@ -35,7 +35,7 @@ public abstract class ColumnChangeSpecification {
 	}
 
 	public String getName() {
-		return identifier.getIdentifier();
+		return identifier.getName();
 	}
 
 	public String getNameAsIdentifier() {

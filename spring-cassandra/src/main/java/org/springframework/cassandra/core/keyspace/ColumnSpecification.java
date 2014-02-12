@@ -146,7 +146,7 @@ public class ColumnSpecification {
 	}
 
 	public String getName() {
-		return identifier.getIdentifier();
+		return identifier.getName();
 	}
 
 	public String getNameAsIdentifier() {

@@ -42,7 +42,7 @@ public abstract class IndexNameSpecification<T extends IndexNameSpecification<T>
 	}
 
 	public String getName() {
-		return identifier.getIdentifier();
+		return identifier.getName();
 	}
 
 	public String getNameAsIdentifier() {

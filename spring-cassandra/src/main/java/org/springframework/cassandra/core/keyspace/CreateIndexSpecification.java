@@ -92,7 +92,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	public String getTableName() {
-		return identifier.getIdentifier();
+		return identifier.getName();
 	}
 
 	public String getTableNameAsIdentifier() {
