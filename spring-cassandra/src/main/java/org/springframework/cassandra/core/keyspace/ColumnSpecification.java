@@ -15,15 +15,14 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
-import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
-import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
-import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
-import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
 import static org.springframework.cassandra.core.Ordering.ASCENDING;
+import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
+import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
-import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.cassandra.core.CqlIdentifier;
 import org.springframework.cassandra.core.Ordering;
+import org.springframework.cassandra.core.PrimaryKeyType;
 
 import com.datastax.driver.core.DataType;
 
@@ -45,7 +44,7 @@ public class ColumnSpecification {
 	 */
 	public static final Ordering DEFAULT_ORDERING = ASCENDING;
 
-	private String name;
+	private CqlIdentifier identifier;
 	private DataType type; // TODO: determining if we should be coupling this to Datastax Java Driver type?
 	private PrimaryKeyType keyType;
 	private Ordering ordering;
@@ -56,8 +55,7 @@ public class ColumnSpecification {
 	 * @return this
 	 */
 	public ColumnSpecification name(String name) {
-		checkIdentifier(name);
-		this.name = name;
+		identifier = new CqlIdentifier(name);
 		return this;
 	}
 
@@ -148,11 +146,11 @@ public class ColumnSpecification {
 	}
 
 	public String getName() {
-		return name;
+		return identifier.getIdentifier();
 	}
 
 	public String getNameAsIdentifier() {
-		return identifize(name);
+		return identifier.toCql();
 	}
 
 	public DataType getType() {
@@ -172,7 +170,7 @@ public class ColumnSpecification {
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return (cql = noNull(cql)).append(name).append(" ").append(type);
+		return (cql = noNull(cql)).append(identifier).append(" ").append(type);
 	}
 
 	@Override

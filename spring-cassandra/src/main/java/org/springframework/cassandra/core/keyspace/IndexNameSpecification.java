@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
-import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
+import org.springframework.cassandra.core.CqlIdentifier;
 
 /**
  * Abstract builder class to support the construction of table specifications.
@@ -29,7 +28,7 @@ public abstract class IndexNameSpecification<T extends IndexNameSpecification<T>
 	/**
 	 * The name of the index.
 	 */
-	private String name;
+	private CqlIdentifier identifier;
 
 	/**
 	 * Sets the index name.
@@ -38,17 +37,16 @@ public abstract class IndexNameSpecification<T extends IndexNameSpecification<T>
 	 */
 	@SuppressWarnings("unchecked")
 	public T name(String name) {
-		checkIdentifier(name);
-		this.name = name;
+		identifier = new CqlIdentifier(name);
 		return (T) this;
 	}
 
 	public String getName() {
-		return name;
+		return identifier.getIdentifier();
 	}
 
 	public String getNameAsIdentifier() {
-		return identifize(name);
+		return identifier.toCql();
 	}
 
 }
