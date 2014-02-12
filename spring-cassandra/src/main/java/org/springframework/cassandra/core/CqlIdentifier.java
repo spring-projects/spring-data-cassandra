@@ -4,6 +4,12 @@ import java.util.regex.Pattern;
 
 import org.springframework.cassandra.core.cql.CqlStringUtils;
 
+/**
+ * This encapsulates the logic for CQL identifiers.
+ * 
+ * @author John McPeek
+ * 
+ */
 public class CqlIdentifier {
 	public static final String UNQUOTED_IDENTIFIER_REGEX = "[a-zA-Z_][a-zA-Z0-9_]*";
 	public static final Pattern UNQUOTED_IDENTIFIER_PATTERN = Pattern.compile(UNQUOTED_IDENTIFIER_REGEX);
