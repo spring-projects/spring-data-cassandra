@@ -2,16 +2,19 @@
 
 ## Quick Start
 
-To begin working with ``spring-cassandra`` and ``spring-data-cassandra`` add the Spring Maven Repository to your ``pom.xml``.
+To begin working with ``spring-cassandra`` or ``spring-data-cassandra``, add the Spring Maven Snapshot Repository to your ``pom.xml``.
 
 	<repository>
 		<id>spring-libs-snapshot</id>
   		<url>http://repo.spring.io/libs-snapshot</url>
+		<snapshots>
+			<enabled>true</enabled>
+		</snapshots>
 	</repository>
 
-Then include the latest and greatest JAR into your project dependencies.
+### CQL Only (spring-cassandra)
 
-**CQL Only**
+*Maven Coordinates*
 
 	<dependency>
 		<groupId>org.springframework.data</groupId>
@@ -19,7 +22,41 @@ Then include the latest and greatest JAR into your project dependencies.
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</dependency>
 
-**CQL and Object Mapping**
+*Minimal Spring XML Configuration*
+
+	<cql:cluster />
+	<cql:session keyspace-name="sensors" />
+	<cql:template />
+
+*Minimal Spring JavaConfig*
+
+	@Configuration
+	public class MyConfig extends AbstractSessionConfiguration {
+		
+		@Override
+		public String getKeyspaceName() {
+			return "sensors";
+		}
+		
+		@Bean
+		public CqlOperations cqlTemplate() {
+			return new CqlTemplate(session.getObject());
+		}
+	}
+
+*Application Class*
+
+	public class SensorService {
+		
+		@Autowired
+		CqlOperations template;
+		
+		// ...
+	}
+	
+### CQL and Object Mapping (spring-data-cassandra)
+
+*Maven Coordinates*
 
 	<dependency>
 		<groupId>org.springframework.data</groupId>
@@ -27,10 +64,39 @@ Then include the latest and greatest JAR into your project dependencies.
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</dependency>
 
+*Minimal Spring XML Configuration*
+
+	<cassandra:cluster />
+	<cassandra:session keyspace-name="foobar" />
+	<cassandra:repositories base-package="org.example.domain" />
+
+*Minimal Spring JavaConfig*
+
+	@Configuration
+	@EnableCassandraRepositories(basePackage = "org.example.domain")
+	public class MyConfig extends AbstractSpringDataCassandraConfiguration {
+		
+		@Override
+		public String getKeyspaceName() {
+			return "foobar";
+		}
+	}
+
+*Application Class*
+
+	public class SensorService {
+		
+		@Autowired
+		SensorRepository repo;
+		
+		// ...
+	}
+	
+
 ## Release Preview
 
 The goal of this release preview is to publish the pieces of spring-data-cassandra as they become available
-so that user's of the module can start to familiarize themselves with the components, and ultimately to provide
+so that users of the module can start to familiarize themselves with the components, and ultimately to provide
 the development team feedback.  We hope this iterative approach produces the most usable and developer friendly
 ``spring-data-cassandra`` repository.
 
@@ -72,9 +138,9 @@ create more than one ``CqlTemplate`` (one per session, one session per keyspace)
 
 Here are some considerations when designing your application for use with ``spring-cassandra``.
 
-* When creating a template, wire in a single ``Session`` per keyspace.  _Remember, ``Session`` is threadsafe, so only use one session per keyspace!_
-* Cassandra's ``Session`` object is thread-safe, so you only need one per application & keyspace.
-* Do not issue ``USE <keyspace>`` commands on your session; instead, _configure_ the keyspace name you intend to use.
+* When creating a template, wire in a single ``Session`` per keyspace.
+* ``Session`` is threadsafe, so only use one per keyspace per application context!
+* __Do not issue__ ``USE <keyspace>`` __commands__ on your session; instead, _configure_ the keyspace name you intend to use.
 * The DataStax Java Driver handles all failover and retry logic for you.  Become familiar with the [Driver Documentation](http://www.datastax.com/documentation/developer/java-driver/1.0/webhelp/index.html), which will help you configure your ``Cluster``.
 * If you are using a Cassandra ``Cluster`` spanning multiple data centers, please be insure to include hosts from all data centers in your contact points.
 
@@ -84,7 +150,7 @@ We have included a variety of overloaded ``ingest()`` methods in ``CqlTemplate``
 
 ### What's Next (early Q1 - 2014):  Spring _Data_ Cassandra
 
-The next round of work to do is to complete module ``spring-data-cassandra``, while taking feedback from the community's use of module ``spring-cassandra``.
+The next round of work to do is to complete module ``spring-data-cassandra``, while taking feedback from the community's use of module ``spring-cassandra``.  We are already well on our way to completion.
 
 #### Cassandra Repository
 
@@ -101,7 +167,7 @@ This is another Spring template class to help you with all of your keyspace and 
 
 #### Official Reference Guide
 
-Once we have all the inner workings of the ``CassandraRepository`` interface completed, we will publish a full Reference Guide on using all of the features in ``spring-data-cassandra``.
+Once we have all the inner workings of the ``CassandraRepository`` interface completed, we will publish a full reference guide on using all of the features in ``spring-data-cassandra``.
 
 ## CqlTemplate Examples
 
@@ -163,9 +229,8 @@ following artifacts (or more recent versions thereof):
 * Datastax Java Driver 1.x
 * JDK 1.6+
 
-The GA release is expected as part of the as-yet unnamed fourth Spring
-Data Release Train "D", following Spring Data Release Train
-[Codd](https://github.com/spring-projects/spring-data-commons/wiki/Release-Train-Codd).
+The GA release is expected as part of the Spring
+Data release train [Dijkstra](https://github.com/spring-projects/spring-data-commons/wiki/Release-Train-Dijkstra).
 
 
 ## Cassandra 2.x
