@@ -22,6 +22,11 @@ public class CachingCassandraPersistentEntity<T> extends BasicCassandraPersisten
 		super(typeInformation, mappingContext);
 	}
 
+	public CachingCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext,
+			CassandraPersistentEntityMetadataVerifier verifier) {
+		super(typeInformation, mappingContext, verifier);
+	}
+
 	@Override
 	public String getTableName() {
 		if (tableName == null) {

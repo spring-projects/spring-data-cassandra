@@ -51,7 +51,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	protected CassandraMappingContext mappingContext;
 	protected final SpelExpressionParser spelParser;
 	protected final StandardEvaluationContext spelContext;
-	protected CassandraPersistentEntityMetadataVerifier verifier = new DefaultCassandraPersistentEntityMetadataVerifier();
+	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new DefaultCassandraPersistentEntityMetadataVerifier();
+	protected CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
 		this(typeInformation, null);
@@ -64,12 +65,26 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 * @param typeInformation
 	 */
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext) {
+		this(typeInformation, mappingContext, DEFAULT_VERIFIER);
+
+	}
+
+	/**
+	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
+	 * name to the entity's simple type name.
+	 * 
+	 * @param typeInformation
+	 */
+	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext,
+			CassandraPersistentEntityMetadataVerifier verifier) {
 
 		super(typeInformation, CassandraPersistentPropertyComparator.IT);
 
 		this.spelParser = new SpelExpressionParser();
 		this.spelContext = new StandardEvaluationContext();
 		this.mappingContext = mappingContext;
+
+		setVerifier(verifier);
 
 		determineTableName();
 	}
@@ -156,6 +171,22 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public void verify() throws MappingException {
 		super.verify();
-		verifier.verify(this);
+		if (verifier != null) {
+			verifier.verify(this);
+		}
+	}
+
+	/**
+	 * @return Returns the verifier.
+	 */
+	public CassandraPersistentEntityMetadataVerifier getVerifier() {
+		return verifier;
+	}
+
+	/**
+	 * @param verifier The verifier to set.
+	 */
+	public void setVerifier(CassandraPersistentEntityMetadataVerifier verifier) {
+		this.verifier = verifier;
 	}
 }

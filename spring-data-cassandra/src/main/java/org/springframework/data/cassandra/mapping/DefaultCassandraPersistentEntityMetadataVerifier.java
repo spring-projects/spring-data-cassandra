@@ -20,6 +20,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mapping.PropertyHandler;
@@ -33,6 +35,10 @@ import org.springframework.data.mapping.model.MappingException;
  * @author David Webb
  */
 public class DefaultCassandraPersistentEntityMetadataVerifier implements CassandraPersistentEntityMetadataVerifier {
+
+	private static final Logger log = LoggerFactory.getLogger(DefaultCassandraPersistentEntityMetadataVerifier.class);
+
+	protected boolean strict = false;
 
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
@@ -157,8 +163,12 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 					throw new NoSuchMethodException();
 				}
 			} catch (NoSuchMethodException e) {
-				exceptions.add(new MappingException(
-						"@PrimaryKeyClass must override 'boolean equals(Object)' method and use all @PrimaryKeyColumn fields", e));
+				String message = "@PrimaryKeyClass must override 'boolean equals(Object)' method and use all @PrimaryKeyColumn fields";
+				if (strict) {
+					exceptions.add(new MappingException(message, e));
+				} else {
+					log.warn(message);
+				}
 			}
 
 			/*
@@ -170,8 +180,12 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 					throw new NoSuchMethodException();
 				}
 			} catch (NoSuchMethodException e) {
-				exceptions.add(new MappingException(
-						"@PrimaryKeyClass must override 'int hashCode()' method and use all @PrimaryKeyColumn fields", e));
+				String message = "@PrimaryKeyClass must override 'int hashCode()' method and use all @PrimaryKeyColumn fields";
+				if (strict) {
+					exceptions.add(new MappingException(message, e));
+				} else {
+					log.warn(message);
+				}
 			}
 
 		}
@@ -209,7 +223,22 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 		 * Determine whether or not to throw Exception based on errors found
 		 */
 		if (exceptions.getCount() > 0) {
+			log.error("Exceptions while verifying PersistentEntity", exceptions);
 			throw exceptions;
 		}
+	}
+
+	/**
+	 * @return Returns the strict.
+	 */
+	public boolean isStrict() {
+		return strict;
+	}
+
+	/**
+	 * @param strict The strict to set.
+	 */
+	public void setStrict(boolean strict) {
+		this.strict = strict;
 	}
 }

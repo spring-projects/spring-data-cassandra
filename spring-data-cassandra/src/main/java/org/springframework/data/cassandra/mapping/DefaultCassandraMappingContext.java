@@ -56,6 +56,7 @@ public class DefaultCassandraMappingContext extends
 	protected ApplicationContext context;
 	protected Mapping mapping = new Mapping();
 	protected ClassLoader beanClassLoader;
+	protected CassandraPersistentEntityMetadataVerifier verifier = new DefaultCassandraPersistentEntityMetadataVerifier();
 
 	// useful caches
 	protected Map<String, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<String, Set<CassandraPersistentEntity<?>>>();
@@ -117,7 +118,7 @@ public class DefaultCassandraMappingContext extends
 	@Override
 	protected <T> CassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 
-		CassandraPersistentEntity<T> entity = new CachingCassandraPersistentEntity<T>(typeInformation, this);
+		CassandraPersistentEntity<T> entity = new CachingCassandraPersistentEntity<T>(typeInformation, this, verifier);
 
 		if (context != null) {
 			entity.setApplicationContext(context);
@@ -261,5 +262,19 @@ public class DefaultCassandraMappingContext extends
 	@Override
 	public boolean contains(Class<?> type) {
 		return entitiesByType.containsKey(type);
+	}
+
+	/**
+	 * @return Returns the verifier.
+	 */
+	public CassandraPersistentEntityMetadataVerifier getVerifier() {
+		return verifier;
+	}
+
+	/**
+	 * @param verifier The verifier to set.
+	 */
+	public void setVerifier(CassandraPersistentEntityMetadataVerifier verifier) {
+		this.verifier = verifier;
 	}
 }
