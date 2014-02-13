@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.simpletons;
 
+import java.util.Date;
+
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 
@@ -33,12 +35,42 @@ public class Book {
 	private String title;
 	private String author;
 	private int pages;
+	private Date saleDate;
+	private boolean isInStock;
 
 	/**
 	 * @return Returns the isbn.
 	 */
 	public String getIsbn() {
 		return isbn;
+	}
+
+	/**
+	 * @return Returns the saleDate.
+	 */
+	public Date getSaleDate() {
+		return saleDate;
+	}
+
+	/**
+	 * @param saleDate The saleDate to set.
+	 */
+	public void setSaleDate(Date saleDate) {
+		this.saleDate = saleDate;
+	}
+
+	/**
+	 * @return Returns the isInStock.
+	 */
+	public boolean isInStock() {
+		return isInStock;
+	}
+
+	/**
+	 * @param isInStock The isInStock to set.
+	 */
+	public void setInStock(boolean isInStock) {
+		this.isInStock = isInStock;
 	}
 
 	/**

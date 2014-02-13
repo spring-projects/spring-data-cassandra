@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import java.nio.ByteBuffer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -33,6 +31,7 @@ import com.datastax.driver.core.Row;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author David Webb
  */
 public class DefaultCassandraRowValueProvider implements CassandraRowValueProvider {
 
@@ -73,16 +72,44 @@ public class DefaultCassandraRowValueProvider implements CassandraRowValueProvid
 
 		log.debug(columnType.getName().name());
 
-		// TODO Might need to qualify all DataTypes as we encounter them.
-		if (columnType.equals(DataType.text())) {
+		// TODO DW Set, Map, List
+
+		if (columnType.equals(DataType.text()) || columnType.equals(DataType.ascii())
+				|| columnType.equals(DataType.varchar())) {
 			return (T) source.getString(columnName);
 		}
-		if (columnType.equals(DataType.cint())) {
+		if (columnType.equals(DataType.cint()) || columnType.equals(DataType.varint())) {
 			return (T) new Integer(source.getInt(columnName));
 		}
+		if (columnType.equals(DataType.cdouble())) {
+			return (T) new Double(source.getDouble(columnName));
+		}
+		if (columnType.equals(DataType.bigint()) || columnType.equals(DataType.counter())) {
+			return (T) new Long(source.getLong(columnName));
+		}
+		if (columnType.equals(DataType.cfloat())) {
+			return (T) new Float(source.getFloat(columnName));
+		}
+		if (columnType.equals(DataType.decimal())) {
+			return (T) source.getDecimal(columnName);
+		}
+		if (columnType.equals(DataType.cboolean())) {
+			return (T) new Boolean(source.getBool(columnName));
+		}
+		if (columnType.equals(DataType.timestamp())) {
+			return (T) source.getDate(columnName);
+		}
+		if (columnType.equals(DataType.blob())) {
+			return (T) source.getBytes(columnName);
+		}
+		if (columnType.equals(DataType.inet())) {
+			return (T) source.getInet(columnName);
+		}
+		if (columnType.equals(DataType.uuid()) || columnType.equals(DataType.timeuuid())) {
+			return (T) source.getUUID(columnName);
+		}
 
-		ByteBuffer bytes = source.getBytes(columnName);
-		return (T) columnType.deserialize(bytes);
+		return (T) source.getBytes(columnName);
 	}
 
 	public Row getRow() {

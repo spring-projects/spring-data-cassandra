@@ -182,6 +182,10 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 		if (isTable) {
 
 			/*
+			 * TODO Verify annotation values with CqlIndentifier
+			 */
+
+			/*
 			 * Ensure only one PK
 			 */
 			int idPropertyCount = idProperties.size();

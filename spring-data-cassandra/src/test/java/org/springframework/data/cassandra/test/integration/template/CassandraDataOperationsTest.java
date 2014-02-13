@@ -16,38 +16,30 @@
 package org.springframework.data.cassandra.test.integration.template;
 
 import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
-import static org.springframework.cassandra.core.keyspace.DropTableSpecification.dropTable;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.TestConfig;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -93,6 +85,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b1.setTitle("Spring Data Cassandra Guide");
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
+		b1.setSaleDate(new Date());
+		b1.setInStock(true);
 
 		template.insert(b1);
 
@@ -249,6 +243,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 			b.setTitle("Spring Data Cassandra Guide");
 			b.setAuthor("Cassandra Guru");
 			b.setPages(i * 10 + 5);
+			b.setInStock(true);
+			b.setSaleDate(new Date());
 			books.add(b);
 		}
 
@@ -643,12 +639,15 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 		Select select = QueryBuilder.select().all().from("book");
 
-		List<Book> b = template.select(select.getQueryString(), Book.class);
+		List<Book> bookz = template.select(select.getQueryString(), Book.class);
 
-		log.info("Book Count -> " + b.size());
+		log.info("Book Count -> " + bookz.size());
 
-		Assert.assertEquals(b.size(), 20);
+		Assert.assertEquals(bookz.size(), 20);
 
+		for (Book b : bookz) {
+			Assert.assertTrue(b.isInStock());
+		}
 	}
 
 	@Test
