@@ -15,18 +15,12 @@
  */
 package org.springframework.data.cassandra.config.java;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.data.annotation.Persistent;
 import org.springframework.data.cassandra.config.CassandraDataSessionFactoryBean;
+import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
@@ -34,12 +28,8 @@ import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.Mapping;
-import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Base class for Spring Data Cassandra configuration using JavaConfig.
@@ -54,7 +44,6 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	protected abstract String getKeyspaceName();
 
 	protected ClassLoader beanClassLoader;
-	protected Mapping mapping = new Mapping();
 
 	/**
 	 * The {@link SchemaAction} to perform. Defaults to {@link SchemaAction#NONE}.
@@ -64,11 +53,11 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	}
 
 	/**
-	 * The base package to scan for entities annotated with {@link Table} annotations. By default, returns the package
-	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>).
+	 * The base packages to scan for entities annotated with {@link Table} annotations. By default, returns the package
+	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>). This method must never return null.
 	 */
-	public String getEntityBasePackage() {
-		return getClass().getPackage().getName();
+	public String[] getEntityBasePackages() {
+		return new String[] { getClass().getPackage().getName() };
 	}
 
 	@Bean
@@ -77,14 +66,11 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 		CassandraDataSessionFactoryBean bean = new CassandraDataSessionFactoryBean();
 
 		bean.setCluster(cluster().getObject());
-		bean.setConverter(converter());
+		bean.setConverter(cassandraConverter());
 		bean.setSchemaAction(getSchemaAction());
 		bean.setKeyspaceName(getKeyspaceName());
 		bean.setStartupScripts(getStartupScripts());
 		bean.setShutdownScripts(getShutdownScripts());
-
-		bean.setEntityClassLoader(beanClassLoader);
-		bean.setMapping(mapping);
 
 		return bean;
 	}
@@ -96,7 +82,7 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 */
 	@Bean
 	public CassandraAdminOperations cassandraTemplate() throws Exception {
-		return new CassandraAdminTemplate(session().getObject(), converter());
+		return new CassandraAdminTemplate(session().getObject(), cassandraConverter());
 	}
 
 	/**
@@ -105,59 +91,21 @@ public abstract class AbstractSpringDataCassandraConfiguration extends AbstractC
 	 * @throws ClassNotFoundException
 	 */
 	@Bean
-	public CassandraMappingContext cassandraMappingContext() throws ClassNotFoundException {
-		DefaultCassandraMappingContext context = new DefaultCassandraMappingContext();
-		context.setInitialEntitySet(getInitialEntitySet());
-		return context;
+	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
+
+		DefaultCassandraMappingContext bean = new DefaultCassandraMappingContext();
+		bean.setInitialEntitySet(CassandraEntityClassScanner.scan(getEntityBasePackages()));
+		bean.setBeanClassLoader(beanClassLoader);
+
+		return bean;
 	}
 
 	/**
 	 * Return the {@link CassandraConverter} instance to convert Rows to Objects, Objects to BuiltStatements
-	 * 
-	 * @throws ClassNotFoundException
 	 */
 	@Bean
-	public CassandraConverter converter() throws ClassNotFoundException {
-		MappingCassandraConverter converter = new MappingCassandraConverter(cassandraMappingContext());
-		converter.setBeanClassLoader(beanClassLoader);
-		return converter;
-	}
-
-	/**
-	 * Scans the mapping base package for entity classes annotated with {@link Table} or {@link Persistent}.
-	 * 
-	 * @see #getEntityBasePackage()
-	 * @return <code>Set&lt;Class&lt;?&gt;&gt;</code> representing the annotated entity classes found.
-	 * @throws ClassNotFoundException
-	 */
-	protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
-
-		String basePackage = getEntityBasePackage();
-		Set<Class<?>> initialEntitySet = new HashSet<Class<?>>();
-
-		if (StringUtils.hasText(basePackage)) {
-			ClassPathScanningCandidateComponentProvider componentProvider = new ClassPathScanningCandidateComponentProvider(
-					false);
-			componentProvider.addIncludeFilter(new AnnotationTypeFilter(Table.class));
-			componentProvider.addIncludeFilter(new AnnotationTypeFilter(Persistent.class));
-			componentProvider.addIncludeFilter(new AnnotationTypeFilter(PrimaryKeyClass.class));
-
-			for (BeanDefinition candidate : componentProvider.findCandidateComponents(basePackage)) {
-
-				Class<?> clazz = ClassUtils.forName(candidate.getBeanClassName(), beanClassLoader);
-				initialEntitySet.add(clazz);
-			}
-		}
-
-		processMappingOverrides(initialEntitySet);
-
-		return initialEntitySet;
-	}
-
-	protected void processMappingOverrides(Set<Class<?>> entityTypes) {
-
-		// TODO: search for external entity mapping info (xml/properties/yaml/etc) here & update this.mapping
-		// similar to JPA's or JDO's external metadata search algorithms
+	public CassandraConverter cassandraConverter() throws Exception {
+		return new MappingCassandraConverter(cassandraMapping());
 	}
 
 	@Override

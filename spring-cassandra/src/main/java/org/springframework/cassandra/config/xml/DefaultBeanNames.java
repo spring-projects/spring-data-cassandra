@@ -22,7 +22,7 @@ package org.springframework.cassandra.config.xml;
  */
 public interface DefaultBeanNames {
 
-	public static final String CLUSTER = "cassandra-cluster";
-	public static final String SESSION = "cassandra-session";
-	public static final String TEMPLATE = "cql-template";
+	public static final String CLUSTER = "cassandraCluster";
+	public static final String SESSION = "cassandraSession";
+	public static final String TEMPLATE = "cqlTemplate";
 }

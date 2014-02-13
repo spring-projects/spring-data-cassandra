@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cass="http://www.springframework.org/schema/data/cassandra"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
@@ -10,15 +10,8 @@
 	<context:property-placeholder
 		location="classpath:/spring-data-cassandra-build.properties" />
 
-	<bean id="cassandra-mapping"
-		class="org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext" />
+	<cass:converter mapping-ref="cassandraMapping"/>
 
-	<bean id="cassandra-converter"
-		class="org.springframework.data.cassandra.convert.MappingCassandraConverter">
-		<constructor-arg ref="cassandra-mapping" />
-	</bean>
-
-	<cassandra:template id="cassandra-template"
-		cassandra-converter-ref="cassandra-converter" session-ref="cassandra-session" />
+	<cass:template />
 
 </beans>

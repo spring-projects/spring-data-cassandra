@@ -9,26 +9,14 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<import resource="classpath:/spring-data-cassandra-basic.xml" />
+	<!-- this is needed just so it runs correctly as part of the build, so ignore it & the port attribute of the cluster below -->
+	<context:property-placeholder
+		location="classpath:/spring-data-cassandra-build.properties" />
 
-	<cass:mapping
-		entity-base-packages="org.springframework.data.cassandra.test.integration.composites">
-		<cass:entity
-			class="org.springframework.data.cassandra.test.integration.composites.Comment">
-			<cass:table name="comments_x" />
-		</cass:entity>
-	</cass:mapping>
+	<cass:cluster port="${cassandra.native_transport_port}" />
 
-	<cass:cluster port="${cassandra.native_transport_port}">
-		<cass:keyspace name="CommentRepositoryXmlConfigIntegrationTests"
-			action="CREATE" durable-writes="true">
-		</cass:keyspace>
-	</cass:cluster>
-
-	<cass:session keyspace-name="CommentRepositoryXmlConfigIntegrationTests"
-		schema-action="CREATE">
-	</cass:session>
+	<cass:session keyspace-name="system" />
 
 	<cass:repositories
-		base-package="org.springframework.data.cassandra.test.integration.composites" />
+		base-package="org.springframework.data.cassandra.test.integration.minimal.config" />
 </beans>

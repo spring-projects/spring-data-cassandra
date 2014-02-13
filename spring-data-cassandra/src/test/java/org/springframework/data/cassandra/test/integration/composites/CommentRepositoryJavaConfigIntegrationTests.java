@@ -69,8 +69,8 @@ public class CommentRepositoryJavaConfigIntegrationTests extends AbstractSpringD
 		}
 
 		@Override
-		public String getEntityBasePackage() {
-			return Comment.class.getPackage().getName();
+		public String[] getEntityBasePackages() {
+			return new String[] { Comment.class.getPackage().getName() };
 		}
 	}
 

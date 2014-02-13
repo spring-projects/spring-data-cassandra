@@ -7,10 +7,7 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.EntityMapping;
-import org.springframework.data.cassandra.mapping.Mapping;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
@@ -22,8 +19,6 @@ public class CassandraDataSessionFactoryBean extends CassandraSessionFactoryBean
 	protected CassandraAdminTemplate admin;
 	protected CassandraConverter converter;
 	protected CassandraMappingContext mappingContext;
-	protected Mapping mapping;
-	protected ClassLoader entityClassLoader = getClass().getClassLoader();
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -34,40 +29,7 @@ public class CassandraDataSessionFactoryBean extends CassandraSessionFactoryBean
 
 		admin = new CassandraAdminTemplate(session, converter);
 
-		mapping = mapping == null ? new Mapping() : mapping;
-
-		processMappingOverrides();
 		performSchemaAction();
-	}
-
-	protected void processMappingOverrides() throws ClassNotFoundException {
-
-		if (mapping == null) {
-			return;
-		}
-
-		for (EntityMapping entityMapping : mapping.getEntityMappings()) {
-
-			if (entityMapping == null) {
-				continue;
-			}
-
-			String entityClassName = entityMapping.getEntityClassName();
-			Class<?> entityClass = Class.forName(entityClassName, false, entityClassLoader);
-
-			CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
-
-			if (entity == null) {
-				throw new IllegalStateException(String.format("unknown persistent entity class name [%s]", entityClassName));
-			}
-
-			String tableName = entityMapping.getTableName();
-			if (!StringUtils.hasText(tableName)) {
-				continue;
-			}
-
-			entity.setTableName(tableName);
-		}
 	}
 
 	protected void performSchemaAction() {
@@ -137,23 +99,5 @@ public class CassandraDataSessionFactoryBean extends CassandraSessionFactoryBean
 		Assert.notNull(converter);
 		this.converter = converter;
 		this.mappingContext = converter.getMappingContext();
-	}
-
-	public Mapping getMapping() {
-		return mapping;
-	}
-
-	public void setMapping(Mapping mapping) {
-		Assert.notNull(mapping);
-		this.mapping = mapping;
-	}
-
-	public ClassLoader getEntityClassLoader() {
-		return entityClassLoader;
-	}
-
-	public void setEntityClassLoader(ClassLoader entityClassLoader) {
-		Assert.notNull(entityClassLoader);
-		this.entityClassLoader = entityClassLoader;
 	}
 }
