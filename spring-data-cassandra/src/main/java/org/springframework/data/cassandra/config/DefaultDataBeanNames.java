@@ -6,5 +6,5 @@ public interface DefaultDataBeanNames extends DefaultBeanNames {
 
 	public static final String DATA_TEMPLATE = "cassandraTemplate";
 	public static final String CONVERTER = "cassandraConverter";
-	public static final String MAPPING_CONTEXT = "cassandraMapping";
+	public static final String CONTEXT = "cassandraMapping";
 }

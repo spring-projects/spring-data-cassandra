@@ -61,6 +61,7 @@ public class DefaultCassandraMappingContext extends
 	protected Map<String, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<String, Set<CassandraPersistentEntity<?>>>();
 	protected Set<CassandraPersistentEntity<?>> nonPrimaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
+	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<Class<?>, CassandraPersistentEntity<?>>();
 
 	/**
 	 * Creates a new {@link DefaultCassandraMappingContext}.
@@ -136,6 +137,8 @@ public class DefaultCassandraMappingContext extends
 		} else {
 			nonPrimaryKeyEntities.add(entity);
 		}
+
+		entitiesByType.put(entity.getType(), entity);
 
 		return entity;
 	}
@@ -242,5 +245,21 @@ public class DefaultCassandraMappingContext extends
 
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {
 		this.beanClassLoader = beanClassLoader;
+	}
+
+	@Override
+	public CassandraPersistentEntity<?> getExistingPersistentEntity(Class<?> type) {
+
+		CassandraPersistentEntity<?> entity = entitiesByType.get(type);
+		if (entity != null) {
+			return entity;
+		}
+
+		throw new IllegalArgumentException(String.format("unknown persistent type [%s]", type.getName()));
+	}
+
+	@Override
+	public boolean contains(Class<?> type) {
+		return entitiesByType.containsKey(type);
 	}
 }

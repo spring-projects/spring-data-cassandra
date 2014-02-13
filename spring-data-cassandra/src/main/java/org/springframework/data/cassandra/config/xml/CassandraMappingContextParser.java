@@ -33,11 +33,14 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : DefaultDataBeanNames.MAPPING_CONTEXT;
+		return StringUtils.hasText(id) ? id : DefaultDataBeanNames.CONTEXT;
 	}
 
 	@Override
-	protected void doParse(Element element, BeanDefinitionBuilder builder) {
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
+
 		parseMapping(element, builder);
 	}
 

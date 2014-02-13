@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.util.TypeInformation;
 
 import com.datastax.driver.core.TableMetadata;
 
@@ -57,4 +56,19 @@ public interface CassandraMappingContext extends
 	 * @param table May not be null.
 	 */
 	boolean usesTable(TableMetadata table);
+
+	/**
+	 * Returns the existing {@link CassandraPersistentEntity} for the given {@link Class}. If it is not yet known to this
+	 * {@link CassandraMappingContext}, an {@link IllegalArgumentException} is thrown.
+	 * 
+	 * @param type The class of the existing persistent entity.
+	 * @return The existing persistent entity.
+	 */
+	CassandraPersistentEntity<?> getExistingPersistentEntity(Class<?> type);
+
+	/**
+	 * Returns whether this {@link CassandraMappingContext} already contains a {@link CassandraPersistentEntity} for the
+	 * given type.
+	 */
+	boolean contains(Class<?> type);
 }

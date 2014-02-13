@@ -31,11 +31,13 @@ public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitio
 	}
 
 	@Override
-	protected void doParse(Element element, BeanDefinitionBuilder builder) {
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
 
 		String mappingRef = element.getAttribute("mapping-ref");
 		if (!StringUtils.hasText(mappingRef)) {
-			mappingRef = DefaultDataBeanNames.MAPPING_CONTEXT;
+			mappingRef = DefaultDataBeanNames.CONTEXT;
 		}
 
 		builder.addConstructorArgReference(mappingRef);

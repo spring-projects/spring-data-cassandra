@@ -3,6 +3,7 @@ package org.springframework.data.cassandra.config.xml;
 import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
 import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyValue;
 import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyReference;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyValue;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -26,6 +27,14 @@ public class CassandraDataSessionParser extends CassandraSessionParser {
 	}
 
 	@Override
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+		super.doParse(element, parserContext, builder);
+
+		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
+	}
+
+	@Override
 	protected void parseUnhandledSessionElementAttribute(Attr attribute, ParserContext parserContext,
 			BeanDefinitionBuilder builder) {
 
@@ -45,7 +54,7 @@ public class CassandraDataSessionParser extends CassandraSessionParser {
 
 		super.setDefaultProperties(builder);
 
+		addRequiredPropertyValue(builder, "schemaAction", SchemaAction.NONE.name());
 		addRequiredPropertyReference(builder, "converter", DefaultDataBeanNames.CONVERTER);
-		addRequiredPropertyReference(builder, "schemaAction", SchemaAction.NONE.name());
 	}
 }
