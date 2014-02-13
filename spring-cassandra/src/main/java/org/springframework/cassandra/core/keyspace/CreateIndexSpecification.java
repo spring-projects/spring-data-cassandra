@@ -15,9 +15,7 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.checkIdentifier;
-import static org.springframework.cassandra.core.cql.CqlStringUtils.identifize;
-
+import org.springframework.cassandra.core.CqlIdentifier;
 import org.springframework.util.StringUtils;
 
 /**
@@ -31,7 +29,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 	private boolean ifNotExists = false;
 	private boolean custom = false;
-	private String tableName;
+	private CqlIdentifier identifier;
 	private String columnName;
 	private String using;
 
@@ -89,17 +87,16 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * @return this
 	 */
 	public CreateIndexSpecification tableName(String tableName) {
-		checkIdentifier(tableName);
-		this.tableName = tableName;
+		identifier = new CqlIdentifier(tableName);
 		return this;
 	}
 
 	public String getTableName() {
-		return tableName;
+		return identifier.getName();
 	}
 
 	public String getTableNameAsIdentifier() {
-		return identifize(tableName);
+		return identifier.toCql();
 	}
 
 	public CreateIndexSpecification columnName(String columnName) {

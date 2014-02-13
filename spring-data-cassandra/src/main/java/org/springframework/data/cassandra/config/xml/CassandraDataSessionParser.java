@@ -1,20 +1,16 @@
 package org.springframework.data.cassandra.config.xml;
 
-import static org.springframework.cassandra.config.xml.ParsingUtils.*;
-
-import java.util.HashSet;
-import java.util.Set;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyValue;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyReference;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyValue;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.cassandra.config.xml.CassandraSessionParser;
-import org.springframework.data.cassandra.config.DefaultDataBeanNames;
 import org.springframework.data.cassandra.config.CassandraDataSessionFactoryBean;
+import org.springframework.data.cassandra.config.DefaultDataBeanNames;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.mapping.EntityMapping;
-import org.springframework.data.cassandra.mapping.Mapping;
-import org.springframework.util.StringUtils;
-import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
@@ -28,6 +24,14 @@ public class CassandraDataSessionParser extends CassandraSessionParser {
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return CassandraDataSessionFactoryBean.class;
+	}
+
+	@Override
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+		super.doParse(element, parserContext, builder);
+
+		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
 	}
 
 	@Override
@@ -46,55 +50,11 @@ public class CassandraDataSessionParser extends CassandraSessionParser {
 	}
 
 	@Override
-	protected void parseUnhandledElement(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void setDefaultProperties(BeanDefinitionBuilder builder) {
 
-		if ("mapping".equals(element.getLocalName())) {
-			parseMapping(element, parserContext, builder);
-		} else {
-			super.parseUnhandledElement(element, parserContext, builder);
-		}
-	}
+		super.setDefaultProperties(builder);
 
-	protected void parseMapping(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
-		// TODO: parse <mapping> attributes here, if there ever are any
-
-		Set<EntityMapping> mappings = new HashSet<EntityMapping>();
-
-		for (Element child : DomUtils.getChildElementsByTagName(element, "entity")) {
-
-			EntityMapping entityMapping = parseEntity(child);
-
-			if (entityMapping != null) {
-				mappings.add(entityMapping);
-			}
-		}
-
-		Mapping mapping = new Mapping();
-		mapping.setEntityMappings(mappings);
-
-		builder.addPropertyValue("mapping", mapping);
-	}
-
-	protected EntityMapping parseEntity(Element entity) {
-
-		String className = entity.getAttribute("class");
-		if (!StringUtils.hasText(className)) {
-			throw new IllegalStateException("class attribute must not be empty");
-		}
-
-		Element table = DomUtils.getChildElementByTagName(entity, "table");
-		if (table == null) {
-			return null;
-		}
-
-		String tableName = table.getAttribute("name");
-		if (!StringUtils.hasText(tableName)) {
-			tableName = null;
-		}
-
-		// TODO: parse future entity mappings here, like table options
-
-		return new EntityMapping(className, tableName);
+		addRequiredPropertyValue(builder, "schemaAction", SchemaAction.NONE.name());
+		addRequiredPropertyReference(builder, "converter", DefaultDataBeanNames.CONVERTER);
 	}
 }

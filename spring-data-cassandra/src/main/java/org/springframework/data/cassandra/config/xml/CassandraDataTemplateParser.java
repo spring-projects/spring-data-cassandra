@@ -32,6 +32,9 @@ public class CassandraDataTemplateParser extends CassandraTemplateParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
+
 		super.doParse(element, parserContext, builder);
 
 		parseConverterAttribute(element, parserContext, builder);

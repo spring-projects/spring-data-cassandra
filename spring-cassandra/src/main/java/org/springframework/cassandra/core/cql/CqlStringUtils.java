@@ -23,7 +23,7 @@ public class CqlStringUtils {
 
 	protected static final String SINGLE_QUOTE = "\'";
 	protected static final String DOUBLE_SINGLE_QUOTE = "\'\'";
-	protected static final String DOUBLE_QUOTE = "\"";
+	public static final String DOUBLE_QUOTE = "\"";
 	protected static final String DOUBLE_DOUBLE_QUOTE = "\"\"";
 	protected static final String EMPTY_STRING = "";
 	protected static final String TYPE_PARAMETER_PREFIX = "<";
@@ -35,61 +35,6 @@ public class CqlStringUtils {
 
 	public static final String UNESCAPED_DOUBLE_QUOTE_REGEX = "TODO";
 	public static final Pattern UNESCAPED_DOUBLE_QUOTE_PATTERN = Pattern.compile(UNESCAPED_DOUBLE_QUOTE_REGEX);
-
-	public static final String UNQUOTED_IDENTIFIER_REGEX = "[a-zA-Z_][a-zA-Z0-9_]*";
-	public static final Pattern UNQUOTED_IDENTIFIER_PATTERN = Pattern.compile(UNQUOTED_IDENTIFIER_REGEX);
-
-	public static boolean isUnquotedIdentifier(CharSequence chars) {
-		return UNQUOTED_IDENTIFIER_PATTERN.matcher(chars).matches();
-	}
-
-	public static void checkUnquotedIdentifier(CharSequence chars) {
-		if (!CqlStringUtils.isUnquotedIdentifier(chars)) {
-			throw new IllegalArgumentException("[" + chars + "] is not a valid CQL identifier");
-		}
-	}
-
-	public static final String QUOTED_IDENTIFIER_REGEX = "[a-zA-Z_]([a-zA-Z0-9_]|\"{2}+)*";
-	public static final Pattern QUOTED_IDENTIFIER_PATTERN = Pattern.compile(QUOTED_IDENTIFIER_REGEX);
-
-	public static boolean isQuotedIdentifier(CharSequence chars) {
-		return QUOTED_IDENTIFIER_PATTERN.matcher(chars).matches();
-	}
-
-	public static void checkQuotedIdentifier(CharSequence chars) {
-		if (!CqlStringUtils.isQuotedIdentifier(chars)) {
-			throw new IllegalArgumentException("[" + chars + "] is not a valid CQL quoted identifier");
-		}
-	}
-
-	public static boolean isIdentifier(CharSequence chars) {
-		return isUnquotedIdentifier(chars) || isQuotedIdentifier(chars);
-	}
-
-	public static void checkIdentifier(CharSequence chars) {
-		if (!CqlStringUtils.isIdentifier(chars)) {
-			throw new IllegalArgumentException("[" + chars + "] is not a valid CQL quoted or unquoted identifier");
-		}
-	}
-
-	/**
-	 * Renders the given string as a legal Cassandra identifier.
-	 * <ul>
-	 * <li>If the given identifier is a legal unquoted identifier, it is returned unchanged.</li>
-	 * <li>If the given identifier is a legal quoted identifier, it is returned encased in double quotes.</li>
-	 * <li>If the given identifier is illegal, an {@link IllegalArgumentException} is thrown.</li>
-	 * </ul>
-	 */
-	public static String identifize(String candidate) {
-
-		checkIdentifier(candidate);
-
-		if (isUnquotedIdentifier(candidate)) {
-			return candidate;
-		}
-		// else it must be quoted
-		return doubleQuote(candidate);
-	}
 
 	/**
 	 * Renders the given string as a legal Cassandra string column or table option value, by escaping single quotes and
