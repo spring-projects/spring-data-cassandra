@@ -257,7 +257,7 @@ public class CreateTableCqlGeneratorTests {
 		public static final List<String> FUNKY_LEGAL_NAMES;
 
 		static {
-			List<String> funkies = new ArrayList<String>(Arrays.asList(new String[] {}));
+			List<String> funkies = new ArrayList<String>(Arrays.asList(new String[] { /* TODO */}));
 			// TODO: should these work? "a \"\" x", "a\"\"\"\"x", "a b"
 			for (ReservedKeyword funky : ReservedKeyword.values()) {
 				funkies.add(funky.name());

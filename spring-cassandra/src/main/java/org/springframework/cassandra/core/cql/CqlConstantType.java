@@ -14,14 +14,13 @@ public enum CqlConstantType {
 		this.pattern = pattern;
 	}
 
-	public boolean isValid(CharSequence candidate) {
+	public boolean matches(CharSequence candidate) {
 		return pattern.matcher(candidate).matches();
 	}
 
 	public static class Regex {
 
-		// TODO: any sequence of characters encased in single quotes, as long as single quotes are doubled
-		public static final String STRING_REGEX = "\\'[.TODO]*+\\'";
+		public static final String STRING_REGEX = "'((?:[^']+|'')*)'";
 		public static final Pattern STRING_PATTERN = Pattern.compile(STRING_REGEX);
 
 		public static final String INTEGER_REGEX = "\\-?[0-9]+";
@@ -33,10 +32,10 @@ public enum CqlConstantType {
 		public static final String BOOLEAN_REGEX = "(?i)true|false";
 		public static final Pattern BOOLEAN_PATTERN = Pattern.compile(BOOLEAN_REGEX);
 
-		public static final String UUID_REGEX = "(?i)[0-9A-F]{8}+\\-[0-9A-F]{4}+\\-[0-9A-F]{4}+\\-[0-9A-F]{4}+\\-[0-9A-F]{12}+";
+		public static final String UUID_REGEX = "(?i)[0-9a-f]{8}+\\-[0-9a-f]{4}+\\-[0-9a-f]{4}+\\-[0-9a-f]{4}+\\-[0-9a-f]{12}+";
 		public static final Pattern UUID_PATTERN = Pattern.compile(UUID_REGEX);
 
-		public static final String BLOB_REGEX = "(?i)0[X](0-9A-F)+";
+		public static final String BLOB_REGEX = "(?i)0[x](0-9a-f)+";
 		public static final Pattern BLOB_PATTERN = Pattern.compile(BLOB_REGEX);
 	}
 }

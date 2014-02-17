@@ -117,9 +117,9 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier> {
 	}
 
 	/**
-	 * Returns the identifier <em>without</em> encasing quotes, regardless of the value of {@link #isQuoted()}. If
-	 * {@link #isQuoted()} is <code>true</code>, then this value will be the same as {@link #toCql()} and
-	 * {@link #toString()}. If {@link #isQuoted()} is <code>false</code>, it will be different.
+	 * Returns the identifier <em>without</em> encasing quotes, regardless of the value of {@link #isQuoted()}. For
+	 * example, if {@link #isQuoted()} is <code>true</code>, then this value will be the same as {@link #toCql()} and
+	 * {@link #toString()}.
 	 * <p/>
 	 * This is needed, for example, to get the correct {@link TableMetadata} from
 	 * {@link KeyspaceMetadata#getTable(String)}: the given string must <em>not</em> be quoted.
