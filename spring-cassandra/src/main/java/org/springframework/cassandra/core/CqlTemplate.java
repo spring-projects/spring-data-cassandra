@@ -53,7 +53,6 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Host;
-import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
@@ -83,8 +82,53 @@ import com.datastax.driver.core.querybuilder.Truncate;
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
-	 * Blank constructor. You must wire in the Session before use.
+	 * Add common {@link Query} options for all types of queries.
 	 * 
+	 * @param q
+	 * @param options
+	 * @return the {@link Query} given.
+	 */
+	public static Query addQueryOptions(Query q, QueryOptions options) {
+
+		if (options == null) {
+			return q;
+		}
+
+		if (options.getConsistencyLevel() != null) {
+			q.setConsistencyLevel(ConsistencyLevelResolver.resolve(options.getConsistencyLevel()));
+		}
+		if (options.getRetryPolicy() != null) {
+			q.setRetryPolicy(RetryPolicyResolver.resolve(options.getRetryPolicy()));
+		}
+		return q;
+	}
+
+	/**
+	 * Add common Query options for all types of queries.
+	 * 
+	 * @param q
+	 * @param optionsByName
+	 */
+	public static void addPreparedStatementOptions(PreparedStatement s, QueryOptions options) {
+
+		if (options == null) {
+			return;
+		}
+
+		/*
+		 * Add Query Options
+		 */
+		if (options.getConsistencyLevel() != null) {
+			s.setConsistencyLevel(ConsistencyLevelResolver.resolve(options.getConsistencyLevel()));
+		}
+		if (options.getRetryPolicy() != null) {
+			s.setRetryPolicy(RetryPolicyResolver.resolve(options.getRetryPolicy()));
+		}
+
+	}
+
+	/**
+	 * Blank constructor. You must wire in the Session before use.
 	 */
 	public CqlTemplate() {
 	}
@@ -105,13 +149,18 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void execute(Query query) throws DataAccessException {
-		doExecute(query, null);
+	public void execute(String cql) throws DataAccessException {
+		execute(cql, (QueryOptions) null);
 	}
 
 	@Override
-	public void execute(final String cql) throws DataAccessException {
-		doExecute(cql, null);
+	public void execute(String cql, QueryOptions options) throws DataAccessException {
+		doExecute(cql, options);
+	}
+
+	@Override
+	public void execute(Query query) throws DataAccessException {
+		doExecute(query);
 	}
 
 	@Override
@@ -376,41 +425,38 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		}
 	}
 
-	/**
-	 * Execute a command at the Session Level
-	 * 
-	 * @param callback
-	 * @return
-	 */
-	protected ResultSet doExecute(final String cql, final QueryOptions options) {
+	protected ResultSet doExecute(String cql) {
+		return doExecute(cql, null);
+	}
 
-		logger.info(cql);
+	protected ResultSet doExecute(String cql, QueryOptions options) {
+		return doExecute(addQueryOptions(new SimpleStatement(cql), options));
+	}
+
+	/**
+	 * Execute a command at the Session Level with optional options
+	 * 
+	 * @param q The query to execute.
+	 * @param options The {@link QueryOptions}. May be null.
+	 */
+	protected ResultSet doExecute(final Query q) {
 
 		return doExecute(new SessionCallback<ResultSet>() {
 
 			@Override
 			public ResultSet doInSession(Session s) throws DataAccessException {
-				SimpleStatement statement = new SimpleStatement(cql);
-				addQueryOptions(statement, options);
-				return s.execute(statement);
+				return s.execute(q);
 			}
 		});
 	}
 
-	/**
-	 * Execute a command at the Session Level
-	 * 
-	 * @param callback
-	 * @return
-	 */
-	protected ResultSet doExecute(final Query q, final QueryOptions options) {
+	protected ResultSetFuture doExecuteAsync(final Query q) {
 
-		return doExecute(new SessionCallback<ResultSet>() {
+		return doExecute(new SessionCallback<ResultSetFuture>() {
 
 			@Override
-			public ResultSet doInSession(Session s) throws DataAccessException {
-				addQueryOptions(q, options);
-				return s.execute(q);
+			public ResultSetFuture doInSession(Session s) throws DataAccessException {
+				return s.executeAsync(q);
 			}
 		});
 	}
@@ -459,25 +505,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	protected Set<Host> getHosts() {
 
-		/*
-		 * Get the cluster metadata for this session
-		 */
-		Metadata clusterMetadata = doExecute(new SessionCallback<Metadata>() {
+		return doExecute(new SessionCallback<Set<Host>>() {
 
 			@Override
-			public Metadata doInSession(Session s) throws DataAccessException {
-				return s.getCluster().getMetadata();
+			public Set<Host> doInSession(Session s) throws DataAccessException {
+				return s.getCluster().getMetadata().getAllHosts();
 			}
-
 		});
-
-		/*
-		 * Get all hosts in the cluster
-		 */
-		Set<Host> hosts = clusterMetadata.getAllHosts();
-
-		return hosts;
-
 	}
 
 	@Override
@@ -487,23 +521,18 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void executeAsynchronously(final String cql) throws DataAccessException {
-		execute(new SessionCallback<Object>() {
-			@Override
-			public Object doInSession(Session s) throws DataAccessException {
-				return s.executeAsync(cql);
-			}
-		});
+	public void executeAsynchronously(String cql) throws DataAccessException {
+		executeAsynchronously(cql, (QueryOptions) null);
 	}
 
 	@Override
-	public void executeAsynchronously(final Query query) throws DataAccessException {
-		execute(new SessionCallback<Object>() {
-			@Override
-			public Object doInSession(Session s) throws DataAccessException {
-				return s.executeAsync(query);
-			}
-		});
+	public void executeAsynchronously(final String cql, QueryOptions options) throws DataAccessException {
+		doExecuteAsync(addQueryOptions(new SimpleStatement(cql), options));
+	}
+
+	@Override
+	public void executeAsynchronously(Query query) throws DataAccessException {
+		doExecuteAsync(query);
 	}
 
 	@Override
@@ -766,54 +795,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		doExecute(truncate.getQueryString(), null);
 	}
 
-	/**
-	 * Add common Query options for all types of queries.
-	 * 
-	 * @param q
-	 * @param optionsByName
-	 */
-	public static void addQueryOptions(Query q, QueryOptions options) {
-
-		if (options == null) {
-			return;
-		}
-
-		/*
-		 * Add Query Options
-		 */
-		if (options.getConsistencyLevel() != null) {
-			q.setConsistencyLevel(ConsistencyLevelResolver.resolve(options.getConsistencyLevel()));
-		}
-		if (options.getRetryPolicy() != null) {
-			q.setRetryPolicy(RetryPolicyResolver.resolve(options.getRetryPolicy()));
-		}
-
-	}
-
-	/**
-	 * Add common Query options for all types of queries.
-	 * 
-	 * @param q
-	 * @param optionsByName
-	 */
-	public static void addPreparedStatementOptions(PreparedStatement s, QueryOptions options) {
-
-		if (options == null) {
-			return;
-		}
-
-		/*
-		 * Add Query Options
-		 */
-		if (options.getConsistencyLevel() != null) {
-			s.setConsistencyLevel(ConsistencyLevelResolver.resolve(options.getConsistencyLevel()));
-		}
-		if (options.getRetryPolicy() != null) {
-			s.setRetryPolicy(RetryPolicyResolver.resolve(options.getRetryPolicy()));
-		}
-
-	}
-
 	@Override
 	public <T> T query(PreparedStatementCreator psc, final PreparedStatementBinder psb, final ResultSetExtractor<T> rse,
 			final QueryOptions options) throws DataAccessException {
@@ -831,7 +812,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				} else {
 					bs = ps.bind();
 				}
-				rs = doExecute(bs, options);
+				rs = doExecute(addQueryOptions(bs, options));
 				return rse.extractData(rs);
 			}
 		});
@@ -860,7 +841,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				} else {
 					bs = ps.bind();
 				}
-				rs = doExecute(bs, options);
+				rs = doExecute(addQueryOptions(bs, options));
 				process(rs, rch);
 				return null;
 			}
@@ -889,7 +870,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				} else {
 					bs = ps.bind();
 				}
-				rs = doExecute(bs, options);
+				rs = doExecute(addQueryOptions(bs, options));
 
 				return process(rs, rowMapper);
 			}

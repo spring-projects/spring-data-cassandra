@@ -61,6 +61,14 @@ public interface CqlOperations {
 	void execute(String cql) throws DataAccessException;
 
 	/**
+	 * Executes the supplied CQL Query and returns nothing.
+	 * 
+	 * @param cql
+	 * @param options may be null
+	 */
+	void execute(String cql, QueryOptions options) throws DataAccessException;
+
+	/**
 	 * Executes the supplied Query and returns nothing.
 	 * 
 	 * @param query The {@link Query} to execute
@@ -73,6 +81,13 @@ public interface CqlOperations {
 	 * @param cql The {@link Query} to execute
 	 */
 	void executeAsynchronously(String cql) throws DataAccessException;
+
+	/**
+	 * Executes the supplied Query Asynchronously and returns nothing.
+	 * 
+	 * @param cql The {@link Query} to execute
+	 */
+	void executeAsynchronously(String cql, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
@@ -123,21 +138,26 @@ public interface CqlOperations {
 	ResultSetFuture queryAsynchronously(String cql, QueryOptions options);
 
 	/**
-	 * Executes the provided CQL Query with the provided {@link Runnable} implementation.
+	 * Executes the provided CQL Query with the provided {@link Runnable}, which is started after the query has completed.
+	 * <p/>
+	 * A more useful method than this one is {@link #queryAsynchronously(String, AsynchronousQueryListener)}, where you're
+	 * given the {@link ResultSetFuture} after the query has been executed.
 	 * 
 	 * @param cql The Query
 	 * @param listener {@link Runnable} listener for handling the query in a separate thread
+	 * 
+	 * @see #queryAsynchronously(String, AsynchronousQueryListener)
 	 */
 	void queryAsynchronously(String cql, Runnable listener);
 
 	/**
 	 * Executes the provided CQL Query with the provided listener. This is preferred over the same method that takes a
-	 * plain Runnable. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the
+	 * {@link Runnable}. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the
 	 * query is completed for optimal flexibility.
 	 * 
 	 * @param cql The Query
-	 * @param listener {@link AsynchronousQueryListener} Listener for handling the query's {@link ResultSetFuture} in a
-	 *          separate thread
+	 * @param listener {@link AsynchronousQueryListener} for handling the query's {@link ResultSetFuture} in a separate
+	 *          thread
 	 */
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener);
 
@@ -771,9 +791,8 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The CQL
 	 * @param rows Object array of Object array of values to bind to the CQL.
-	 * @param options The Query Options Object
 	 */
-	void ingest(String cql, Object[][] rows, QueryOptions options);
+	void ingest(String cql, Object[][] rows);
 
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
@@ -785,8 +804,9 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The CQL
 	 * @param rows Object array of Object array of values to bind to the CQL.
+	 * @param options The Query Options Object
 	 */
-	void ingest(String cql, Object[][] rows);
+	void ingest(String cql, Object[][] rows, QueryOptions options);
 
 	/**
 	 * Delete all rows in the table
