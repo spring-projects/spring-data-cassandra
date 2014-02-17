@@ -15,7 +15,10 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import org.springframework.cassandra.core.CqlIdentifier;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -27,10 +30,18 @@ import org.springframework.util.StringUtils;
 public class CreateIndexSpecification extends IndexNameSpecification<CreateIndexSpecification> implements
 		IndexDescriptor {
 
+	/**
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
+	 * statically.
+	 */
+	public static CreateIndexSpecification createIndex() {
+		return new CreateIndexSpecification();
+	}
+
 	private boolean ifNotExists = false;
 	private boolean custom = false;
-	private CqlIdentifier identifier;
-	private String columnName;
+	private CqlIdentifier tableName;
+	private CqlIdentifier columnName;
 	private String using;
 
 	/**
@@ -56,6 +67,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		return ifNotExists;
 	}
 
+	@Override
 	public boolean isCustom() {
 		return custom;
 	}
@@ -73,11 +85,13 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		return this;
 	}
 
+	@Override
 	public String getUsing() {
 		return using;
 	}
 
-	public String getColumnName() {
+	@Override
+	public CqlIdentifier getColumnName() {
 		return columnName;
 	}
 
@@ -87,29 +101,27 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * @return this
 	 */
 	public CreateIndexSpecification tableName(String tableName) {
-		identifier = new CqlIdentifier(tableName);
+		return tableName(cqlId(tableName));
+	}
+
+	public CreateIndexSpecification tableName(CqlIdentifier tableName) {
+		Assert.notNull(tableName);
+		this.tableName = tableName;
 		return this;
 	}
 
-	public String getTableName() {
-		return identifier.getName();
-	}
-
-	public String getTableNameAsIdentifier() {
-		return identifier.toCql();
+	@Override
+	public CqlIdentifier getTableName() {
+		return tableName;
 	}
 
 	public CreateIndexSpecification columnName(String columnName) {
+		return columnName(cqlId(columnName));
+	}
+
+	public CreateIndexSpecification columnName(CqlIdentifier columnName) {
+		Assert.notNull(columnName);
 		this.columnName = columnName;
 		return this;
 	}
-
-	/**
-	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
-	 * statically.
-	 */
-	public static CreateIndexSpecification createIndex() {
-		return new CreateIndexSpecification();
-	}
-
 }

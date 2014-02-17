@@ -29,14 +29,14 @@ public class CqlIndexSpecificationAssertions {
 
 	public static void assertIndex(IndexDescriptor expected, String keyspace, Session session) {
 		IndexMetadata imd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
-				.getTable(expected.getTableName()).getColumn(expected.getColumnName()).getIndex();
+				.getTable(expected.getTableName().toCql()).getColumn(expected.getColumnName().toCql()).getIndex();
 
-		assertEquals(expected.getName().toLowerCase(), imd.getName().toLowerCase());
+		assertEquals(expected.getName(), imd.getName());
 	}
 
 	public static void assertNoIndex(IndexDescriptor expected, String keyspace, Session session) {
 		IndexMetadata imd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
-				.getTable(expected.getTableName()).getColumn(expected.getColumnName()).getIndex();
+				.getTable(expected.getTableName().toCql()).getColumn(expected.getColumnName().toCql()).getIndex();
 
 		assertNull(imd);
 	}

@@ -18,6 +18,8 @@ package org.springframework.cassandra.core.keyspace;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+
 /**
  * Describes a table.
  * 
@@ -29,12 +31,7 @@ public interface TableDescriptor {
 	/**
 	 * Returns the name of the table.
 	 */
-	String getName();
-
-	/**
-	 * Returns the name of the table as an identifer or quoted identifier as appropriate.
-	 */
-	String getNameAsIdentifier();
+	CqlIdentifier getName();
 
 	/**
 	 * Returns an unmodifiable {@link List} of {@link ColumnSpecification}s.

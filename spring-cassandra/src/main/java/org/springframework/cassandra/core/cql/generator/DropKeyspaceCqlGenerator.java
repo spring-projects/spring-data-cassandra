@@ -37,6 +37,6 @@ public class DropKeyspaceCqlGenerator extends KeyspaceNameCqlGenerator<DropKeysp
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		return noNull(cql).append("DROP KEYSPACE ").append(spec().getIfExists() ? "IF EXISTS " : "")
-				.append(spec().getNameAsIdentifier()).append(";");
+				.append(spec().getName()).append(";");
 	}
 }

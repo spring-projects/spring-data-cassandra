@@ -29,6 +29,14 @@ import com.datastax.driver.core.DataType;
 public class AlterTableSpecification extends TableOptionsSpecification<AlterTableSpecification> {
 
 	/**
+	 * Entry point into the {@link AlterTableSpecification}'s fluent API to alter a table. Convenient if imported
+	 * statically.
+	 */
+	public static AlterTableSpecification alterTable() {
+		return new AlterTableSpecification();
+	}
+
+	/**
 	 * The list of column changes.
 	 */
 	private List<ColumnChangeSpecification> changes = new ArrayList<ColumnChangeSpecification>();
@@ -64,13 +72,5 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 */
 	public List<ColumnChangeSpecification> getChanges() {
 		return Collections.unmodifiableList(changes);
-	}
-
-	/**
-	 * Entry point into the {@link AlterTableSpecification}'s fluent API to alter a table. Convenient if imported
-	 * statically.
-	 */
-	public static AlterTableSpecification alterTable() {
-		return new AlterTableSpecification();
 	}
 }

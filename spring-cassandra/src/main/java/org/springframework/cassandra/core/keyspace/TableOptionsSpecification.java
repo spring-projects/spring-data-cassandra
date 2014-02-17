@@ -22,7 +22,10 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.CqlStringUtils;
+
+import com.datastax.driver.core.DataType;
 
 /**
  * Abstract builder class to support the construction of table specifications that have table options, that is, those
@@ -42,8 +45,15 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 
 	protected Map<String, Object> options = new LinkedHashMap<String, Object>();
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public T name(String name) {
+		return (T) super.name(name);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public T name(CqlIdentifier name) {
 		return (T) super.name(name);
 	}
 
@@ -68,7 +78,7 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	 */
 	public T with(TableOption option, Object value) {
 		option.checkValue(value);
-		return (T) with(option.getName(), value, option.escapesValue(), option.quotesValue());
+		return with(option.getName(), value, option.escapesValue(), option.quotesValue());
 	}
 
 	/**

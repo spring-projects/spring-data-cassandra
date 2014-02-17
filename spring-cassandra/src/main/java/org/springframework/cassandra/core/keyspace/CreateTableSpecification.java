@@ -22,6 +22,14 @@ package org.springframework.cassandra.core.keyspace;
  */
 public class CreateTableSpecification extends TableSpecification<CreateTableSpecification> {
 
+	/**
+	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
+	 * statically.
+	 */
+	public static CreateTableSpecification createTable() {
+		return new CreateTableSpecification();
+	}
+
 	private boolean ifNotExists = false;
 
 	/**
@@ -50,14 +58,6 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	@Override
 	public CreateTableSpecification name(String name) {
 		return (CreateTableSpecification) super.name(name);
-	}
-
-	/**
-	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
-	 * statically.
-	 */
-	public static CreateTableSpecification createTable() {
-		return new CreateTableSpecification();
 	}
 
 	@Override

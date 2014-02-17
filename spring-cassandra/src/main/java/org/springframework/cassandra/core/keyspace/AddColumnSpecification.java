@@ -15,11 +15,17 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+
 import com.datastax.driver.core.DataType;
 
 public class AddColumnSpecification extends ColumnTypeChangeSpecification {
 
 	public AddColumnSpecification(String name, DataType type) {
+		super(name, type);
+	}
+
+	public AddColumnSpecification(CqlIdentifier name, DataType type) {
 		super(name, type);
 	}
 }

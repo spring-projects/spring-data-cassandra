@@ -50,7 +50,7 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 	}
 
 	protected StringBuilder preambleCql(StringBuilder cql) {
-		return noNull(cql).append("ALTER KEYSPACE ").append(spec().getNameAsIdentifier()).append(" ");
+		return noNull(cql).append("ALTER KEYSPACE ").append(spec().getName()).append(" ");
 	}
 
 	@SuppressWarnings("unchecked")

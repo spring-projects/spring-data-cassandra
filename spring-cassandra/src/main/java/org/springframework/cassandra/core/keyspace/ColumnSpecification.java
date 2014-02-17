@@ -18,11 +18,13 @@ package org.springframework.cassandra.core.keyspace;
 import static org.springframework.cassandra.core.Ordering.ASCENDING;
 import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
 import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
-import org.springframework.cassandra.core.CqlIdentifier;
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.util.Assert;
 
 import com.datastax.driver.core.DataType;
 
@@ -44,7 +46,7 @@ public class ColumnSpecification {
 	 */
 	public static final Ordering DEFAULT_ORDERING = ASCENDING;
 
-	private CqlIdentifier identifier;
+	private CqlIdentifier name;
 	private DataType type; // TODO: determining if we should be coupling this to Datastax Java Driver type?
 	private PrimaryKeyType keyType;
 	private Ordering ordering;
@@ -55,7 +57,12 @@ public class ColumnSpecification {
 	 * @return this
 	 */
 	public ColumnSpecification name(String name) {
-		identifier = new CqlIdentifier(name);
+		return name(cqlId(name));
+	}
+
+	public ColumnSpecification name(CqlIdentifier name) {
+		Assert.notNull(name);
+		this.name = name;
 		return this;
 	}
 
@@ -130,7 +137,7 @@ public class ColumnSpecification {
 	 * 
 	 * @return this
 	 */
-	/* package */ColumnSpecification keyType(PrimaryKeyType keyType) {
+	ColumnSpecification keyType(PrimaryKeyType keyType) {
 		this.keyType = keyType;
 		return this;
 	}
@@ -140,17 +147,13 @@ public class ColumnSpecification {
 	 * 
 	 * @return this
 	 */
-	/* package */ColumnSpecification ordering(Ordering ordering) {
+	ColumnSpecification ordering(Ordering ordering) {
 		this.ordering = ordering;
 		return this;
 	}
 
-	public String getName() {
-		return identifier.getName();
-	}
-
-	public String getNameAsIdentifier() {
-		return identifier.toCql();
+	public CqlIdentifier getName() {
+		return name;
 	}
 
 	public DataType getType() {
@@ -170,7 +173,7 @@ public class ColumnSpecification {
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return (cql = noNull(cql)).append(identifier).append(" ").append(type);
+		return (cql = noNull(cql)).append(name).append(" ").append(type);
 	}
 
 	@Override

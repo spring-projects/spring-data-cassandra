@@ -15,6 +15,8 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+
 /**
  * A specification to drop a column.
  * 
@@ -22,7 +24,19 @@ package org.springframework.cassandra.core.keyspace;
  */
 public class DropColumnSpecification extends ColumnChangeSpecification {
 
+	public static DropColumnSpecification dropColumn(String name) {
+		return new DropColumnSpecification(name);
+	}
+
+	public static DropColumnSpecification dropColumn(CqlIdentifier name) {
+		return new DropColumnSpecification(name);
+	}
+
 	public DropColumnSpecification(String name) {
+		super(name);
+	}
+
+	public DropColumnSpecification(CqlIdentifier name) {
 		super(name);
 	}
 }

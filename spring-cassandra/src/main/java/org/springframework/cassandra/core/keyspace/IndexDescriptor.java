@@ -15,6 +15,7 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 /**
  * Describes an index.
@@ -27,27 +28,16 @@ public interface IndexDescriptor {
 	/**
 	 * Returns the name of the index.
 	 */
-	String getName();
+	CqlIdentifier getName();
 
 	/**
 	 * Returns the table name for the index
 	 */
-	String getTableName();
+	CqlIdentifier getTableName();
 
-	/**
-	 * Returns the name of the index as an identifer or quoted identifier as appropriate.
-	 */
-	String getNameAsIdentifier();
-
-	/**
-	 * Returns the name of the table as an identifer or quoted identifier as appropriate.
-	 */
-	String getTableNameAsIdentifier();
-
-	String getColumnName();
+	CqlIdentifier getColumnName();
 
 	String getUsing();
 
 	boolean isCustom();
-
 }

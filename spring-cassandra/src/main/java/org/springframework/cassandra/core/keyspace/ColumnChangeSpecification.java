@@ -15,7 +15,10 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import org.springframework.cassandra.core.CqlIdentifier;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.util.Assert;
 
 /**
  * Base class for column change specifications.
@@ -24,21 +27,22 @@ import org.springframework.cassandra.core.CqlIdentifier;
  */
 public abstract class ColumnChangeSpecification {
 
-	private CqlIdentifier identifier;
+	protected CqlIdentifier name;
 
-	public ColumnChangeSpecification(String name) {
+	protected ColumnChangeSpecification(String name) {
+		this(cqlId(name));
+	}
+
+	protected ColumnChangeSpecification(CqlIdentifier name) {
 		setName(name);
 	}
 
-	private void setName(String name) {
-		identifier = new CqlIdentifier(name);
+	protected void setName(CqlIdentifier name) {
+		Assert.notNull(name);
+		this.name = name;
 	}
 
-	public String getName() {
-		return identifier.getName();
-	}
-
-	public String getNameAsIdentifier() {
-		return identifier.toCql();
+	public CqlIdentifier getName() {
+		return name;
 	}
 }

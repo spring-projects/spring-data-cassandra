@@ -15,7 +15,10 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import org.springframework.cassandra.core.CqlIdentifier;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.util.Assert;
 
 /**
  * Abstract builder class to support the construction of table specifications.
@@ -28,24 +31,25 @@ public abstract class TableNameSpecification<T extends TableNameSpecification<T>
 	/**
 	 * The name of the table.
 	 */
-	private CqlIdentifier identifier;
+	private CqlIdentifier name;
 
 	/**
 	 * Sets the table name.
 	 * 
 	 * @return this
 	 */
-	@SuppressWarnings("unchecked")
 	public T name(String name) {
-		identifier = new CqlIdentifier(name);
+		return name(cqlId(name));
+	}
+
+	@SuppressWarnings("unchecked")
+	public T name(CqlIdentifier name) {
+		Assert.notNull(name);
+		this.name = name;
 		return (T) this;
 	}
 
-	public String getName() {
-		return identifier.getName();
-	}
-
-	public String getNameAsIdentifier() {
-		return identifier.toCql();
+	public CqlIdentifier getName() {
+		return name;
 	}
 }
