@@ -42,7 +42,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
 public abstract class AbstractClusterConfiguration {
 
 	@Bean
-	public CassandraClusterFactoryBean cluster() throws Exception {
+	public CassandraClusterFactoryBean cluster() {
 
 		CassandraClusterFactoryBean bean = new CassandraClusterFactoryBean();
 		bean.setAuthProvider(getAuthProvider());

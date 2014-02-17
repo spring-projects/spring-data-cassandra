@@ -15,6 +15,9 @@
  */
 package org.springframework.cassandra.test.integration.config.java;
 
+import static org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator.toCql;
+import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
+
 import org.springframework.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.cassandra.config.java.AbstractSessionConfiguration;
 import org.springframework.context.annotation.Configuration;
@@ -46,10 +49,7 @@ public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractSess
 			return;
 		}
 
-		// TODO: use KeyspaceBuilder to build keyspace with attributes & options
-
-		system.execute("CREATE KEYSPACE " + keyspace
-				+ " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
+		system.execute(toCql(createKeyspace().name(keyspace).withSimpleReplication()));
 		system.shutdown();
 	}
 }

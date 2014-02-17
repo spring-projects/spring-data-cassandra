@@ -17,9 +17,15 @@ package org.springframework.cassandra.test.integration.config;
 
 import static org.junit.Assert.assertNotNull;
 
+import org.springframework.cassandra.core.CqlTemplate;
+
 import com.datastax.driver.core.Session;
 
 public class IntegrationTestUtils {
+
+	public static void assertCqlTemplate(CqlTemplate cqlTemplate) {
+		assertNotNull(cqlTemplate);
+	}
 
 	public static void assertSession(Session session) {
 		assertNotNull(session);
