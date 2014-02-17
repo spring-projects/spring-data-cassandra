@@ -15,7 +15,6 @@
  */
 package org.springframework.cassandra.core;
 
-
 /**
  * Contains Query Options for Cassandra queries. This controls the Consistency Tuning and Retry Policy for a Query.
  * 
@@ -27,6 +26,7 @@ public class QueryOptions {
 	private ConsistencyLevel consistencyLevel;
 	private RetryPolicy retryPolicy;
 	private Integer ttl;
+	private Long timestamp;
 
 	/**
 	 * @return Returns the consistencyLevel.
@@ -57,16 +57,24 @@ public class QueryOptions {
 	}
 
 	/**
-	 * @return Returns the ttl.
+	 * @return Returns the ttl in seconds.
 	 */
 	public Integer getTtl() {
 		return ttl;
 	}
 
 	/**
-	 * @param ttl The ttl to set.
+	 * @param ttl The ttl in seconds to set.
 	 */
-	public void setTtl(Integer ttl) {
-		this.ttl = ttl;
+	public void setTtl(Integer timeToLive) {
+		this.ttl = timeToLive;
+	}
+
+	public Long getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(Long timestamp) {
+		this.timestamp = timestamp;
 	}
 }
