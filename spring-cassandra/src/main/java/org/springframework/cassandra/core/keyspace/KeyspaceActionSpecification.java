@@ -1,6 +1,9 @@
 package org.springframework.cassandra.core.keyspace;
 
-import org.springframework.cassandra.core.CqlIdentifier;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.util.Assert;
 
 /**
  * Abstract builder class to support the construction of keyspace specifications.
@@ -14,7 +17,16 @@ public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecif
 	/**
 	 * The name of the keyspace.
 	 */
-	private CqlIdentifier identifier;
+	private CqlIdentifier name;
+
+	/**
+	 * Sets the keyspace name.
+	 * 
+	 * @return this
+	 */
+	public T name(String name) {
+		return name(cqlId(name));
+	}
 
 	/**
 	 * Sets the keyspace name.
@@ -22,27 +34,14 @@ public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecif
 	 * @return this
 	 */
 	@SuppressWarnings("unchecked")
-	public T name(String name) {
-		identifier = new CqlIdentifier(name);
+	public T name(CqlIdentifier name) {
+		Assert.notNull(name);
+		this.name = name;
 		return (T) this;
 	}
 
-	public String getName() {
-		return identifier.getName();
-	}
-
-	public String getNameAsIdentifier() {
-		return identifier.toCql();
-	}
-
-	/**
-	 * For debugging KeyspaceActionSprcifications
-	 */
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Keyspace Action Specification {name: " + identifier + ", class: " + this.getClass() + "}");
-		return sb.toString();
+	public CqlIdentifier getName() {
+		return name;
 	}
 
 	/**
@@ -62,13 +61,12 @@ public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecif
 		if (!(that instanceof KeyspaceActionSpecification)) {
 			return false;
 		}
-		KeyspaceActionSpecification<?> thatSpec = (KeyspaceActionSpecification<?>) that;
-		return this.identifier.equals(thatSpec.identifier) && this.getClass().equals(that.getClass());
+		KeyspaceActionSpecification<?> other = (KeyspaceActionSpecification<?>) that;
+		return this.name.equals(other.name) && this.getClass().equals(that.getClass());
 	}
 
 	@Override
 	public int hashCode() {
-		return this.identifier.hashCode() ^ this.getClass().hashCode();
+		return name.hashCode() ^ getClass().hashCode();
 	}
-
 }

@@ -112,14 +112,14 @@ public class CassandraCompositePrimaryKeyIntegrationTests {
 		List<ColumnSpecification> partitionKeyColumns = spec.getPartitionKeyColumns();
 		assertEquals(1, partitionKeyColumns.size());
 		ColumnSpecification partitionKeyColumn = partitionKeyColumns.get(0);
-		assertEquals("z", partitionKeyColumn.getName());
+		assertEquals("z", partitionKeyColumn.getName().toCql());
 		assertEquals(PrimaryKeyType.PARTITIONED, partitionKeyColumn.getKeyType());
 		assertEquals(DataType.text(), partitionKeyColumn.getType());
 
 		List<ColumnSpecification> clusteredKeyColumns = spec.getClusteredKeyColumns();
 		assertEquals(1, clusteredKeyColumns.size());
 		ColumnSpecification clusteredKeyColumn = clusteredKeyColumns.get(0);
-		assertEquals("a", clusteredKeyColumn.getName());
+		assertEquals("a", clusteredKeyColumn.getName().toCql());
 		assertEquals(PrimaryKeyType.CLUSTERED, clusteredKeyColumn.getKeyType());
 		assertEquals(DataType.text(), partitionKeyColumn.getType());
 	}

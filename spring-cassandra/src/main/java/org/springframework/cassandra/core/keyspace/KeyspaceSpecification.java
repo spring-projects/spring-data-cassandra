@@ -20,6 +20,7 @@ package org.springframework.cassandra.core.keyspace;
  * as a standalone {@link KeyspaceDescriptor}, independent of {@link CreateKeyspaceSpecification}.
  * 
  * @author John McPeek
+ * @author Matthew T. Adams
  */
 public class KeyspaceSpecification<T> extends KeyspaceOptionsSpecification<KeyspaceSpecification<T>> implements
 		KeyspaceDescriptor {

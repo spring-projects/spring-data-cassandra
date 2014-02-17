@@ -26,7 +26,6 @@ public class AlterTableCqlGeneratorTests {
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
 	public static void assertPreamble(String tableName, String cql) {
-		System.out.println("cql: " + cql);
 		assertTrue(cql.startsWith("ALTER TABLE " + tableName + " "));
 	}
 

@@ -39,6 +39,6 @@ public class DropIndexCqlGenerator extends IndexNameCqlGenerator<DropIndexSpecif
 	public StringBuilder toCql(StringBuilder cql) {
 		return noNull(cql).append("DROP INDEX ")
 		// .append(spec().getIfExists() ? "IF EXISTS " : "")
-				.append(spec().getNameAsIdentifier()).append(";");
+				.append(spec().getName()).append(";");
 	}
 }

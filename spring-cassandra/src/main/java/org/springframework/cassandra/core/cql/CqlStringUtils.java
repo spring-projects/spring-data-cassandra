@@ -15,8 +15,6 @@
  */
 package org.springframework.cassandra.core.cql;
 
-import java.util.regex.Pattern;
-
 import com.datastax.driver.core.DataType;
 
 public class CqlStringUtils {
@@ -33,9 +31,6 @@ public class CqlStringUtils {
 		return sb == null ? new StringBuilder() : sb;
 	}
 
-	public static final String UNESCAPED_DOUBLE_QUOTE_REGEX = "TODO";
-	public static final Pattern UNESCAPED_DOUBLE_QUOTE_PATTERN = Pattern.compile(UNESCAPED_DOUBLE_QUOTE_REGEX);
-
 	/**
 	 * Renders the given string as a legal Cassandra string column or table option value, by escaping single quotes and
 	 * encasing the result in single quotes. Given <code>null</code>, returns <code>null</code>.
@@ -51,15 +46,15 @@ public class CqlStringUtils {
 	/**
 	 * Doubles single quote characters (' -&gt; ''). Given <code>null</code>, returns <code>null</code>.
 	 */
-	public static String escapeSingle(Object things) {
-		return things == null ? (String) null : things.toString().replace(SINGLE_QUOTE, DOUBLE_SINGLE_QUOTE);
+	public static String escapeSingle(Object thing) {
+		return thing == null ? (String) null : thing.toString().replace(SINGLE_QUOTE, DOUBLE_SINGLE_QUOTE);
 	}
 
 	/**
 	 * Doubles double quote characters (" -&gt; ""). Given <code>null</code>, returns <code>null</code>.
 	 */
-	public static String escapeDouble(Object things) {
-		return things == null ? (String) null : things.toString().replace(DOUBLE_QUOTE, DOUBLE_DOUBLE_QUOTE);
+	public static String escapeDouble(Object thing) {
+		return thing == null ? (String) null : thing.toString().replace(DOUBLE_QUOTE, DOUBLE_DOUBLE_QUOTE);
 	}
 
 	/**
@@ -115,5 +110,22 @@ public class CqlStringUtils {
 		}
 
 		return s.append(TYPE_PARAMETER_SUFFIX).toString();
+	}
+
+	public static String unquote(String s) {
+		return unquote(s, "\"");
+	}
+
+	public static String unquote(String s, String quoteChar) {
+		if (s == null) {
+			return s;
+		}
+		if (!s.startsWith(quoteChar) || !s.endsWith(quoteChar)) {
+			return s;
+		}
+		if (s.length() <= 2) {
+			return s;
+		}
+		return s.substring(1, s.length() - 1);
 	}
 }

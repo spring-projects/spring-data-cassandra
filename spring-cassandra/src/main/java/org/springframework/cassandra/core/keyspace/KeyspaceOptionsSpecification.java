@@ -27,6 +27,7 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 
 	protected Map<String, Object> options = new LinkedHashMap<String, Object>();
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public T name(String name) {
 		return (T) super.name(name);
@@ -53,7 +54,7 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 	 */
 	public T with(KeyspaceOption option, Object value) {
 		option.checkValue(value);
-		return (T) with(option.getName(), value, option.escapesValue(), option.quotesValue());
+		return with(option.getName(), value, option.escapesValue(), option.quotesValue());
 	}
 
 	/**
@@ -90,5 +91,4 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 	public Map<String, Object> getOptions() {
 		return Collections.unmodifiableMap(options);
 	}
-
 }

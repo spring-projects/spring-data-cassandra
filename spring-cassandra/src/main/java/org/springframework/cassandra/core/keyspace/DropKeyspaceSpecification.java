@@ -24,5 +24,4 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification<DropK
 	public static DropKeyspaceSpecification dropKeyspace() {
 		return new DropKeyspaceSpecification();
 	}
-
 }

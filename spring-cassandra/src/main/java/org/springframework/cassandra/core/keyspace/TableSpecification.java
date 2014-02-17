@@ -17,6 +17,7 @@ package org.springframework.cassandra.core.keyspace;
 
 import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
 import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.List;
 
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.DataType;
 
@@ -63,6 +65,10 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @param type The data type of the column.
 	 */
 	public T column(String name, DataType type) {
+		return column(cqlId(name), type);
+	}
+
+	public T column(CqlIdentifier name, DataType type) {
 		return column(name, type, null, null);
 	}
 
@@ -74,6 +80,10 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @return this
 	 */
 	public T partitionKeyColumn(String name, DataType type) {
+		return partitionKeyColumn(cqlId(name), type);
+	}
+
+	public T partitionKeyColumn(CqlIdentifier name, DataType type) {
 		return column(name, type, PARTITIONED, null);
 	}
 
@@ -89,6 +99,10 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 		return clusteredKeyColumn(name, type, null);
 	}
 
+	public T clusteredKeyColumn(CqlIdentifier name, DataType type) {
+		return clusteredKeyColumn(name, type, null);
+	}
+
 	/**
 	 * Adds the given primary key column to the table with the given ordering (<code>null</code> meaning ascending). Must
 	 * be specified after all partition key columns and before any non-key columns.
@@ -98,6 +112,10 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @return this
 	 */
 	public T clusteredKeyColumn(String name, DataType type, Ordering ordering) {
+		return clusteredKeyColumn(cqlId(name), type, ordering);
+	}
+
+	public T clusteredKeyColumn(CqlIdentifier name, DataType type, Ordering ordering) {
 		return column(name, type, CLUSTERED, ordering);
 	}
 
@@ -112,8 +130,12 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 *          used, else ignored.
 	 * @return this
 	 */
-	@SuppressWarnings("unchecked")
 	protected T column(String name, DataType type, PrimaryKeyType keyType, Ordering ordering) {
+		return column(cqlId(name), type, keyType, ordering);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected T column(CqlIdentifier name, DataType type, PrimaryKeyType keyType, Ordering ordering) {
 
 		ColumnSpecification column = new ColumnSpecification().name(name).type(type).keyType(keyType)
 				.ordering(keyType == CLUSTERED ? ordering : null);
@@ -138,6 +160,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	/**
 	 * Returns an unmodifiable list of all columns.
 	 */
+	@Override
 	public List<ColumnSpecification> getColumns() {
 		return Collections.unmodifiableList(columns);
 	}
@@ -145,6 +168,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	/**
 	 * Returns an unmodifiable list of all partition key columns.
 	 */
+	@Override
 	public List<ColumnSpecification> getPartitionKeyColumns() {
 		return Collections.unmodifiableList(partitionKeyColumns);
 	}
@@ -152,6 +176,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	/**
 	 * Returns an unmodifiable list of all primary key columns that are not also partition key columns.
 	 */
+	@Override
 	public List<ColumnSpecification> getClusteredKeyColumns() {
 		return Collections.unmodifiableList(clusteredKeyColumns);
 	}
@@ -159,6 +184,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	/**
 	 * Returns an unmodifiable list of all primary key columns that are not also partition key columns.
 	 */
+	@Override
 	public List<ColumnSpecification> getPrimaryKeyColumns() {
 
 		ArrayList<ColumnSpecification> primaryKeyColumns = new ArrayList<ColumnSpecification>();
@@ -171,6 +197,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	/**
 	 * Returns an unmodifiable list of all non-key columns.
 	 */
+	@Override
 	public List<ColumnSpecification> getNonKeyColumns() {
 		return Collections.unmodifiableList(nonKeyColumns);
 	}

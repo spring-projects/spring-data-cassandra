@@ -19,7 +19,6 @@ public abstract class TableOperationCqlGeneratorTest<S extends TableNameSpecific
 
 	public abstract G generator();
 
-	public String tableName;
 	public S specification;
 	public G generator;
 	public String cql;

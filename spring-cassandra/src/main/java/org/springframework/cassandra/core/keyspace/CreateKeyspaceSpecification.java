@@ -1,10 +1,19 @@
 package org.springframework.cassandra.core.keyspace;
 
 import org.springframework.cassandra.config.DataCenterReplication;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.cassandra.core.util.MapBuilder;
 
 public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKeyspaceSpecification> {
+
+	/**
+	 * Entry point into the {@link CreateKeyspaceSpecification}'s fluent API to create a keyspace. Convenient if imported
+	 * statically.
+	 */
+	public static CreateKeyspaceSpecification createKeyspace() {
+		return new CreateKeyspaceSpecification();
+	}
 
 	private boolean ifNotExists = false;
 
@@ -29,14 +38,6 @@ public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKey
 
 	public boolean getIfNotExists() {
 		return ifNotExists;
-	}
-
-	/**
-	 * Entry point into the {@link CreateKeyspaceSpecification}'s fluent API to create a keyspace. Convenient if imported
-	 * statically.
-	 */
-	public static CreateKeyspaceSpecification createKeyspace() {
-		return new CreateKeyspaceSpecification();
 	}
 
 	public CreateKeyspaceSpecification withSimpleReplication() {
@@ -68,6 +69,11 @@ public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKey
 
 	@Override
 	public CreateKeyspaceSpecification name(String name) {
+		return (CreateKeyspaceSpecification) super.name(name);
+	}
+
+	@Override
+	public CreateKeyspaceSpecification name(CqlIdentifier name) {
 		return (CreateKeyspaceSpecification) super.name(name);
 	}
 

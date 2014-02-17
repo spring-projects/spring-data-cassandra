@@ -1,13 +1,20 @@
 package org.springframework.cassandra.test.unit.core.cql.generator;
 
 import static org.junit.Assert.assertTrue;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.ReservedKeyword;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
@@ -25,7 +32,7 @@ public class CreateTableCqlGeneratorTests {
 	/**
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
-	public static void assertPreamble(String tableName, String cql) {
+	public static void assertPreamble(CqlIdentifier tableName, String cql) {
 		assertTrue(cql.startsWith("CREATE TABLE " + tableName + " "));
 	}
 
@@ -83,6 +90,7 @@ public class CreateTableCqlGeneratorTests {
 	public static abstract class CreateTableTest extends
 			TableOperationCqlGeneratorTest<CreateTableSpecification, CreateTableCqlGenerator> {
 
+		@Override
 		public CreateTableCqlGenerator generator() {
 			return new CreateTableCqlGenerator(specification);
 		}
@@ -90,12 +98,13 @@ public class CreateTableCqlGeneratorTests {
 
 	public static class BasicTest extends CreateTableTest {
 
-		public String name = "mytable";
+		public CqlIdentifier name = cqlId("mytable");
 		public DataType partitionKeyType0 = DataType.text();
-		public String partitionKey0 = "partitionKey0";
+		public CqlIdentifier partitionKey0 = cqlId("partitionKey0");
 		public DataType columnType1 = DataType.text();
 		public String column1 = "column1";
 
+		@Override
 		public CreateTableSpecification specification() {
 			return CreateTableSpecification.createTable().name(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
 					.column(column1, columnType1);
@@ -107,18 +116,18 @@ public class CreateTableCqlGeneratorTests {
 
 			assertPreamble(name, cql);
 			assertColumns(String.format("%s %s, %s %s", partitionKey0, partitionKeyType0, column1, columnType1), cql);
-			assertPrimaryKey(partitionKey0, cql);
+			assertPrimaryKey(partitionKey0.toCql(), cql);
 		}
 	}
 
 	public static class CompositePartitionKeyTest extends CreateTableTest {
 
-		public String name = "composite_partition_key_table";
+		public CqlIdentifier name = cqlId("composite_partition_key_table");
 		public DataType partKeyType0 = DataType.text();
-		public String partKey0 = "partKey0";
+		public CqlIdentifier partKey0 = cqlId("partKey0");
 		public DataType partKeyType1 = DataType.text();
-		public String partKey1 = "partKey1";
-		public String column0 = "column0";
+		public CqlIdentifier partKey1 = cqlId("partKey1");
+		public CqlIdentifier column0 = cqlId("column0");
 		public DataType columnType0 = DataType.text();
 
 		@Override
@@ -147,19 +156,20 @@ public class CreateTableCqlGeneratorTests {
 	 */
 	public static class ReadRepairChanceTest extends CreateTableTest {
 
-		public String name = "mytable";
+		public CqlIdentifier name = cqlId("mytable");
 		public DataType partitionKeyType0 = DataType.text();
-		public String partitionKey0 = "partitionKey0";
+		public CqlIdentifier partitionKey0 = cqlId("partitionKey0");
 		public DataType partitionKeyType1 = DataType.timestamp();
-		public String partitionKey1 = "create_timestamp";
+		public CqlIdentifier partitionKey1 = cqlId("create_timestamp");
 		public DataType columnType1 = DataType.text();
-		public String column1 = "column1";
+		public CqlIdentifier column1 = cqlId("column1");
 		public Double readRepairChance = 0.5;
 
+		@Override
 		public CreateTableSpecification specification() {
-			return (CreateTableSpecification) CreateTableSpecification.createTable().name(name)
-					.partitionKeyColumn(partitionKey0, partitionKeyType0).partitionKeyColumn(partitionKey1, partitionKeyType1)
-					.column(column1, columnType1).with(TableOption.READ_REPAIR_CHANCE, readRepairChance);
+			return CreateTableSpecification.createTable().name(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
+					.partitionKeyColumn(partitionKey1, partitionKeyType1).column(column1, columnType1)
+					.with(TableOption.READ_REPAIR_CHANCE, readRepairChance);
 		}
 
 		@Test
@@ -182,13 +192,13 @@ public class CreateTableCqlGeneratorTests {
 	 */
 	public static class MultipleOptionsTest extends CreateTableTest {
 
-		public String name = "timeseries_table";
+		public CqlIdentifier name = cqlId("timeseries_table");
 		public DataType partitionKeyType0 = DataType.timeuuid();
-		public String partitionKey0 = "tid";
+		public CqlIdentifier partitionKey0 = cqlId("tid");
 		public DataType partitionKeyType1 = DataType.timestamp();
-		public String partitionKey1 = "create_timestamp";
+		public CqlIdentifier partitionKey1 = cqlId("create_timestamp");
 		public DataType columnType1 = DataType.text();
-		public String column1 = "data_point";
+		public CqlIdentifier column1 = cqlId("data_point");
 		public Double readRepairChance = 0.5;
 		public Double dcLocalReadRepairChance = 0.7;
 		public Double bloomFilterFpChance = 0.001;
@@ -198,6 +208,7 @@ public class CreateTableCqlGeneratorTests {
 		public Map<Option, Object> compactionMap = new LinkedHashMap<Option, Object>();
 		public Map<Option, Object> compressionMap = new LinkedHashMap<Option, Object>();
 
+		@Override
 		public CreateTableSpecification specification() {
 
 			// Compaction
@@ -208,11 +219,11 @@ public class CreateTableCqlGeneratorTests {
 			compressionMap.put(CompressionOption.CHUNK_LENGTH_KB, 128);
 			compressionMap.put(CompressionOption.CRC_CHECK_CHANCE, 0.75);
 
-			return (CreateTableSpecification) CreateTableSpecification.createTable().name(name)
-					.partitionKeyColumn(partitionKey0, partitionKeyType0).partitionKeyColumn(partitionKey1, partitionKeyType1)
-					.column(column1, columnType1).with(TableOption.COMPACT_STORAGE)
-					.with(TableOption.READ_REPAIR_CHANCE, readRepairChance).with(TableOption.COMPACTION, compactionMap)
-					.with(TableOption.COMPRESSION, compressionMap).with(TableOption.BLOOM_FILTER_FP_CHANCE, bloomFilterFpChance)
+			return CreateTableSpecification.createTable().name(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
+					.partitionKeyColumn(partitionKey1, partitionKeyType1).column(column1, columnType1)
+					.with(TableOption.COMPACT_STORAGE).with(TableOption.READ_REPAIR_CHANCE, readRepairChance)
+					.with(TableOption.COMPACTION, compactionMap).with(TableOption.COMPRESSION, compressionMap)
+					.with(TableOption.BLOOM_FILTER_FP_CHANCE, bloomFilterFpChance)
 					.with(TableOption.CACHING, CachingOption.KEYS_ONLY).with(TableOption.REPLICATE_ON_WRITE, replcateOnWrite)
 					.with(TableOption.COMMENT, comment).with(TableOption.DCLOCAL_READ_REPAIR_CHANCE, dcLocalReadRepairChance)
 					.with(TableOption.GC_GRACE_SECONDS, gcGraceSeconds);
@@ -241,4 +252,50 @@ public class CreateTableCqlGeneratorTests {
 		}
 	}
 
+	public static class FunkyTableNameTest {
+
+		public static final List<String> FUNKY_LEGAL_NAMES;
+
+		static {
+			List<String> funkies = new ArrayList<String>(Arrays.asList(new String[] {}));
+			// TODO: should these work? "a \"\" x", "a\"\"\"\"x", "a b"
+			for (ReservedKeyword funky : ReservedKeyword.values()) {
+				funkies.add(funky.name());
+			}
+			FUNKY_LEGAL_NAMES = Collections.unmodifiableList(funkies);
+		}
+
+		@Test
+		public void test() {
+			for (String name : FUNKY_LEGAL_NAMES) {
+				new TableNameTest(name).test();
+			}
+		}
+	}
+
+	/**
+	 * This class is supposed to be used by other test classes.
+	 */
+	public static class TableNameTest extends CreateTableTest {
+
+		public String tableName;
+
+		public TableNameTest(String tableName) {
+			this.tableName = tableName;
+		}
+
+		@Override
+		public CreateTableSpecification specification() {
+			return CreateTableSpecification.createTable().name(tableName).partitionKeyColumn(cqlId("pk"), DataType.text());
+		}
+
+		/**
+		 * There is no @Test annotation on this method on purpose! It's supposed to be called by another test class's @Test
+		 * method so that you can loop, calling this test method as many times as are necessary.
+		 */
+		public void test() {
+			prepare();
+			assertPreamble(cqlId(tableName), cql);
+		}
+	}
 }

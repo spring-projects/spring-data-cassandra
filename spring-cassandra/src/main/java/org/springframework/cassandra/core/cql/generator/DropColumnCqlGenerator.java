@@ -31,6 +31,6 @@ public class DropColumnCqlGenerator extends ColumnChangeCqlGenerator<DropColumnS
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("DROP ").append(spec().getNameAsIdentifier());
+		return noNull(cql).append("DROP ").append(spec().getName());
 	}
 }

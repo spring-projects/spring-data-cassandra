@@ -15,6 +15,9 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.DataType;
@@ -29,6 +32,10 @@ public abstract class ColumnTypeChangeSpecification extends ColumnChangeSpecific
 	private DataType type;
 
 	public ColumnTypeChangeSpecification(String name, DataType type) {
+		this(cqlId(name), type);
+	}
+
+	public ColumnTypeChangeSpecification(CqlIdentifier name, DataType type) {
 		super(name);
 		setType(type);
 	}

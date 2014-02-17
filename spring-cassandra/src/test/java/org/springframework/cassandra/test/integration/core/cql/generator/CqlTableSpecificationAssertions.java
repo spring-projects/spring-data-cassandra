@@ -42,9 +42,9 @@ public class CqlTableSpecificationAssertions {
 
 	public static void assertTable(TableDescriptor expected, String keyspace, Session session) {
 		TableMetadata tmd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
-				.getTable(expected.getName());
+				.getTable(CqlStringUtils.unquote(expected.getName().toCql())); // TODO: talk to Datastax about unquoting
 
-		assertEquals(expected.getName().toLowerCase(), tmd.getName().toLowerCase());
+		assertEquals(CqlStringUtils.unquote(expected.getName().toCql()), tmd.getName()); // TODO: talk to Datastax
 		assertPartitionKeyColumns(expected, tmd);
 		assertPrimaryKeyColumns(expected, tmd);
 		assertColumns(expected.getColumns(), tmd.getColumns());
@@ -53,7 +53,7 @@ public class CqlTableSpecificationAssertions {
 
 	public static void assertNoTable(DropTableSpecification expected, String keyspace, Session session) {
 		TableMetadata tmd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
-				.getTable(expected.getName());
+				.getTable(expected.getName().toCql());
 
 		assertNull(tmd);
 	}
@@ -171,7 +171,7 @@ public class CqlTableSpecificationAssertions {
 	}
 
 	public static void assertColumn(ColumnSpecification expected, ColumnMetadata actual) {
-		assertEquals(expected.getName().toLowerCase(), actual.getName().toLowerCase());
+		assertEquals(expected.getName().toCql(), actual.getName());
 		assertEquals(expected.getType(), actual.getType());
 	}
 }
