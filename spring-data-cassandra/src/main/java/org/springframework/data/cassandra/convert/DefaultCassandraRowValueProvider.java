@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.convert;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -68,11 +70,30 @@ public class DefaultCassandraRowValueProvider implements CassandraRowValueProvid
 		if (source.isNull(property.getColumnName())) {
 			return null;
 		}
+
 		DataType columnType = source.getColumnDefinitions().getType(columnName);
 
-		log.debug(columnType.getName().name());
+		/*
+		 * Handle the types of collections that are available
+		 */
+		if (columnType.isCollection()) {
 
-		// TODO DW Set, Map, List
+			List<DataType> collectionTypes = columnType.getTypeArguments();
+			if (collectionTypes.size() == 2) {
+				return (T) source
+						.getMap(columnName, collectionTypes.get(0).asJavaClass(), collectionTypes.get(1).asJavaClass());
+			}
+
+			if (columnType.equals(DataType.list(collectionTypes.get(0)))) {
+				return (T) source.getList(columnName, collectionTypes.get(0).asJavaClass());
+			}
+
+			if (columnType.equals(DataType.set(collectionTypes.get(0)))) {
+				return (T) source.getSet(columnName, collectionTypes.get(0).asJavaClass());
+			}
+
+			throw new IllegalStateException("Unknown Collection type encountered.  Valid collections are Set, List and Map.");
+		}
 
 		if (columnType.equals(DataType.text()) || columnType.equals(DataType.ascii())
 				|| columnType.equals(DataType.varchar())) {
