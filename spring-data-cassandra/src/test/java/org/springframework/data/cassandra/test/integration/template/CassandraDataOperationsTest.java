@@ -21,7 +21,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -35,6 +40,8 @@ import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
+import org.springframework.data.cassandra.test.integration.simpletons.BookHistory;
+import org.springframework.data.cassandra.test.integration.simpletons.BookReference;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.TestConfig;
 import org.springframework.test.context.ContextConfiguration;
@@ -660,4 +667,90 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 		Assert.assertEquals(count, template.count(Book.class));
 	}
+
+	@Test
+	public void mapTest() {
+
+		BookHistory b1 = new BookHistory();
+		b1.setIsbn("123456-1");
+		b1.setTitle("Spring Data Cassandra Guide");
+		b1.setAuthor("Cassandra Guru");
+		b1.setPages(521);
+		b1.setSaleDate(new Date());
+		b1.setInStock(true);
+
+		Map<String, Integer> checkOutMap = new HashMap<String, Integer>();
+		checkOutMap.put("dwebb", 50);
+		checkOutMap.put("madams", 100);
+		checkOutMap.put("jmcpeek", 150);
+
+		b1.setCheckOuts(checkOutMap);
+
+		template.insert(b1);
+
+		Select select = QueryBuilder.select().all().from("bookHistory");
+		select.where(QueryBuilder.eq("isbn", "123456-1"));
+
+		BookHistory b = template.selectOne(select.getQueryString(), BookHistory.class);
+
+		Assert.assertNotNull(b.getCheckOuts());
+
+		log.info("Checkouts map data");
+		for (String username : b.getCheckOuts().keySet()) {
+			log.info(username + " has " + b.getCheckOuts().get(username) + " checkouts of this book.");
+		}
+
+		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
+		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
+
+	}
+
+	@Test
+	public void listSetTest() {
+
+		BookReference b1 = new BookReference();
+		b1.setIsbn("123456-1");
+		b1.setTitle("Spring Data Cassandra Guide");
+		b1.setAuthor("Cassandra Guru");
+		b1.setPages(521);
+		b1.setSaleDate(new Date());
+		b1.setInStock(true);
+
+		Set<String> refs = new HashSet<String>();
+		refs.add("Spring Data by O'Reilly");
+		refs.add("Spring by Example");
+		refs.add("Spring Recipies");
+		b1.setReferences(refs);
+
+		List<Integer> marks = new LinkedList<Integer>();
+		marks.add(13);
+		marks.add(52);
+		marks.add(144);
+		b1.setBookmarks(marks);
+
+		template.insert(b1);
+
+		Select select = QueryBuilder.select().all().from("bookReference");
+		select.where(QueryBuilder.eq("isbn", "123456-1"));
+
+		BookReference b = template.selectOne(select.getQueryString(), BookReference.class);
+
+		Assert.assertNotNull(b.getReferences());
+		Assert.assertNotNull(b.getBookmarks());
+
+		log.info("Bookmark List<Integer> Data");
+		for (Integer mark : b.getBookmarks()) {
+			log.info("Bookmark set on page + " + mark);
+		}
+
+		log.info("Reference Set<String> Data");
+		for (String ref : b.getReferences()) {
+			log.info("Reference -> " + ref);
+		}
+
+		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
+		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
+
+	}
+
 }
