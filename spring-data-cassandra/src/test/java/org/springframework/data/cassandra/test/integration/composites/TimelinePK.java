@@ -35,6 +35,8 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 @PrimaryKeyClass
 public class TimelinePK implements Serializable {
 
+	private static final long serialVersionUID = 1872200498229849025L;
+
 	/*
 	 * Row ID
 	 */

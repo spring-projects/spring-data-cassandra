@@ -213,6 +213,11 @@ public interface CassandraOperations extends CqlOperations {
 	<T> void delete(List<T> entities, QueryOptions options);
 
 	/**
+	 * Deletes all entities of a given class.
+	 */
+	<T> void deleteAll(Class<T> clazz);
+
+	/**
 	 * Remove the given object from the table by id.
 	 * 
 	 * @param object

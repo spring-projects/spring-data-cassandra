@@ -43,10 +43,6 @@ public class CommentRepositoryIntegrationTests {
 		repository.deleteAll();
 	}
 
-	public void after() {
-		repository.deleteAll();
-	}
-
 	public void testInsert() {
 
 		String author = "testAuthorInsert";

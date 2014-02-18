@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.test.integration.repository;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,14 +42,9 @@ public class UserRepositoryXmlConfigIntegrationTests extends AbstractSpringDataE
 	UserRepositoryIntegrationTests tests;
 
 	@Before
-	public void setUp() throws InterruptedException {
+	public void before() {
 		tests = new UserRepositoryIntegrationTests(repository, template);
-		tests.setUp();
-	}
-
-	@After
-	public void after() {
-		tests.after();
+		tests.before();
 	}
 
 	@Test

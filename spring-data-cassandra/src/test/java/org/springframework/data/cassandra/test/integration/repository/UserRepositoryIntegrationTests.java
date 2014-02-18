@@ -53,7 +53,7 @@ public class UserRepositoryIntegrationTests {
 		this.template = template;
 	}
 
-	public void setUp() throws InterruptedException {
+	public void setUp() {
 
 		repository.deleteAll();
 
@@ -88,8 +88,9 @@ public class UserRepositoryIntegrationTests {
 		all = template.insert(Arrays.asList(tom, bob, alice, scott));
 	}
 
-	public void after() {
+	public void before() {
 		repository.deleteAll();
+		setUp();
 	}
 
 	public void findsUserById() throws Exception {

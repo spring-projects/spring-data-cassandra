@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.test.integration.composites;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,11 +46,6 @@ public class CommentRepositoryXmlConfigIntegrationTests extends AbstractSpringDa
 	public void setUp() throws InterruptedException {
 		tests = new CommentRepositoryIntegrationTests(repository, template);
 		tests.before();
-	}
-
-	@After
-	public void after() {
-		tests.after();
 	}
 
 	@Test

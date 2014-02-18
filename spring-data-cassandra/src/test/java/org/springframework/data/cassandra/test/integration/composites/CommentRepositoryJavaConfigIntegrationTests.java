@@ -20,7 +20,6 @@ import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecific
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +31,7 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.test.integration.repository.UserRepository;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.TestConfig;
+import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -47,7 +46,7 @@ public class CommentRepositoryJavaConfigIntegrationTests extends AbstractSpringD
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = CommentRepository.class)
-	public static class Config extends TestConfig {
+	public static class Config extends IntegrationTestConfig {
 
 		@Override
 		protected String getKeyspaceName() {
@@ -86,11 +85,6 @@ public class CommentRepositoryJavaConfigIntegrationTests extends AbstractSpringD
 	public void before() {
 		tests = new CommentRepositoryIntegrationTests(repository, template);
 		tests.before();
-	}
-
-	@After
-	public void after() {
-		tests.after();
 	}
 
 	@Test

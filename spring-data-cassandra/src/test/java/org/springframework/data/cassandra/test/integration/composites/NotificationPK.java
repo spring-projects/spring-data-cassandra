@@ -36,6 +36,8 @@ import com.datastax.driver.core.DataType;
 @PrimaryKeyClass
 public class NotificationPK implements Serializable {
 
+	private static final long serialVersionUID = -5041736242014855732L;
+
 	/*
 	 * Row ID
 	 */

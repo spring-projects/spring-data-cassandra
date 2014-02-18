@@ -35,6 +35,8 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 @PrimaryKeyClass
 public class PostPK implements Serializable {
 
+	private static final long serialVersionUID = 2390757126054483315L;
+
 	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 	private String author;
 

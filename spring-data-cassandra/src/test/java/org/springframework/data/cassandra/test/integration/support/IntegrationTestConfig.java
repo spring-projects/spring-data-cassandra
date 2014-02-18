@@ -26,17 +26,17 @@ import org.springframework.data.cassandra.config.java.AbstractSpringDataCassandr
  * @author Matthew T. Adams
  */
 @Configuration
-public class TestConfig extends AbstractSpringDataCassandraConfiguration {
+public class IntegrationTestConfig extends AbstractSpringDataCassandraConfiguration {
 
 	public static final SpringDataCassandraBuildProperties PROPS = new SpringDataCassandraBuildProperties();
 	public static final int PORT = PROPS.getCassandraPort();
 	public static final int RPC_PORT = PROPS.getCassandraRpcPort();
 
-	public static final String KEYSPACE_NAME = Utils.randomKeyspaceName();
+	public String keyspaceName = Utils.randomKeyspaceName();
 
 	@Override
 	protected String getKeyspaceName() {
-		return KEYSPACE_NAME;
+		return keyspaceName;
 	}
 
 	@Override

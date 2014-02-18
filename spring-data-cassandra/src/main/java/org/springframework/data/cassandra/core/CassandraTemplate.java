@@ -753,4 +753,14 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		return batch;
 	}
+
+	@Override
+	public <T> void deleteAll(Class<T> clazz) {
+
+		if (!mappingContext.contains(clazz)) {
+			throw new IllegalArgumentException(String.format("unknown persistent entity class [%s]", clazz.getName()));
+		}
+
+		truncate(mappingContext.getPersistentEntity(clazz).getTableName());
+	}
 }
