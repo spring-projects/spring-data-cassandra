@@ -206,6 +206,7 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 			if (idPropertyCount != 1) {
 				exceptions.add(new MappingException(String.format(
 						"@Table/@Persistent types must have only one @PrimaryKey attribute.  Found %s.", idPropertyCount)));
+				throw exceptions;
 			}
 
 			/*
