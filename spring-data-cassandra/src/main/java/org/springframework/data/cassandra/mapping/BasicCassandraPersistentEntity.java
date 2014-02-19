@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.data.cassandra.util.SpelUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PropertyHandler;
@@ -98,10 +99,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return cqlId(getType().getSimpleName(), anno == null ? false : anno.forceQuote());
 		}
 
-		Expression expression = spelParser.parseExpression(anno.value(), ParserContext.TEMPLATE_EXPRESSION);
-		String tableName = expression.getValue(spelContext, String.class);
-
-		return cqlId(tableName, anno.forceQuote());
+		return cqlId(SpelUtils.evaluate(anno.value(), spelContext), anno.forceQuote());
 	}
 
 	@Override
