@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.AlterKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
 import org.springframework.cassandra.core.keyspace.CreateIndexSpecification;
@@ -813,7 +814,22 @@ public interface CqlOperations {
 	 * 
 	 * @param tableName
 	 */
+	void truncate(CqlIdentifier tableName);
+
+	/**
+	 * Delete all rows in the table
+	 * 
+	 * @param tableName
+	 */
 	void truncate(String tableName);
+
+	/**
+	 * Counts all rows for given table
+	 * 
+	 * @param tableName
+	 * @return
+	 */
+	long count(CqlIdentifier tableName);
 
 	/**
 	 * Counts all rows for given table

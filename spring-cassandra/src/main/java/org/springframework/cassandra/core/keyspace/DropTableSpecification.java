@@ -15,6 +15,8 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+
 /**
  * Builder class that supports the construction of <code>DROP TABLE</code> specifications.
  * 
@@ -45,6 +47,17 @@ public class DropTableSpecification extends TableNameSpecification<DropTableSpec
 	 */
 	public static DropTableSpecification dropTable() {
 		return new DropTableSpecification();
+	}
+
+	/**
+	 * Entry point into the {@link DropTableSpecification}'s fluent API to drop a table. Convenient if imported
+	 * statically. This static method is shorter than the no-arg form, which would be
+	 * <code>dropTable().name(tableName)</code>.
+	 * 
+	 * @param tableName The name of the table to drop.
+	 */
+	public static DropTableSpecification dropTable(CqlIdentifier tableName) {
+		return new DropTableSpecification().name(tableName);
 	}
 
 	/**

@@ -15,6 +15,8 @@
  */
 package org.springframework.cassandra.core;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,6 +29,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.AlterKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.AlterTableCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.CreateIndexCqlGenerator;
@@ -828,7 +831,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public void truncate(String tableName) throws DataAccessException {
-		Truncate truncate = QueryBuilder.truncate(tableName);
+		truncate(cqlId(tableName));
+	}
+
+	@Override
+	public void truncate(CqlIdentifier tableName) throws DataAccessException {
+		Truncate truncate = QueryBuilder.truncate(tableName.toCql());
 		doExecute(truncate.getQueryString(), null);
 	}
 
@@ -1017,8 +1025,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
+	public long count(CqlIdentifier tableName) {
+		return selectCount(QueryBuilder.select().countAll().from(tableName.toCql()).getQueryString());
+	}
+
+	@Override
 	public long count(String tableName) {
-		return selectCount(QueryBuilder.select().countAll().from(tableName).getQueryString());
+		return count(cqlId(tableName));
 	}
 
 	protected long selectCount(String countQuery) {

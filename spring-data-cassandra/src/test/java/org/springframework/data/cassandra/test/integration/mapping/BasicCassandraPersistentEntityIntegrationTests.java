@@ -45,7 +45,7 @@ public class BasicCassandraPersistentEntityIntegrationTests extends AbstractSpri
 
 		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<Notification>(
 				ClassTypeInformation.from(Notification.class));
-		assertThat(entity.getTableName(), is("messages"));
+		assertThat(entity.getTableName().toCql(), is("messages"));
 	}
 
 	@Test
@@ -53,7 +53,7 @@ public class BasicCassandraPersistentEntityIntegrationTests extends AbstractSpri
 
 		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<Area>(
 				ClassTypeInformation.from(Area.class));
-		assertThat(entity.getTableName(), is("123"));
+		assertThat(entity.getTableName().toCql(), is("a123"));
 	}
 
 	@Test
@@ -69,26 +69,22 @@ public class BasicCassandraPersistentEntityIntegrationTests extends AbstractSpri
 				ClassTypeInformation.from(UserLine.class));
 		entity.setApplicationContext(context);
 
-		assertThat(entity.getTableName(), is(bean.tableName));
+		assertThat(entity.getTableName().toCql(), is(bean.tableName));
 	}
 
 	@Table("messages")
 	static class Message {
-
 	}
 
 	static class Notification extends Message {
-
 	}
 
-	@Table("#{123}")
+	@Table("#{'a123'}")
 	static class Area {
-
 	}
 
 	@Table("#{tableNameHolderThingy.tableName}")
 	static class UserLine {
-
 	}
 
 	static class TableNameHolderThingy {
@@ -99,5 +95,4 @@ public class BasicCassandraPersistentEntityIntegrationTests extends AbstractSpri
 			return tableName;
 		}
 	}
-
 }

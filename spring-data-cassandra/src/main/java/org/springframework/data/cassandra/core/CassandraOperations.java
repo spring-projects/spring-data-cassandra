@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.QueryOptions;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
 /**
@@ -37,7 +38,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entityClass must not be {@literal null}.
 	 * @return
 	 */
-	String getTableName(Class<?> entityClass);
+	CqlIdentifier getTableName(Class<?> entityClass);
 
 	/**
 	 * Execute query and convert ResultSet to the list of entities

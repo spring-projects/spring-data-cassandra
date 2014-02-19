@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.config;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
 import java.util.Collection;
 
 import org.springframework.cassandra.config.CassandraSessionFactoryBean;
@@ -84,7 +86,7 @@ public class CassandraDataSessionFactoryBean extends CassandraSessionFactoryBean
 		for (TableMetadata table : kmd.getTables()) {
 			if (dropTables) {
 				if (dropUnused || mappingContext.usesTable(table)) {
-					admin.dropTable(table.getName());
+					admin.dropTable(cqlId(table.getName()));
 				}
 			}
 		}

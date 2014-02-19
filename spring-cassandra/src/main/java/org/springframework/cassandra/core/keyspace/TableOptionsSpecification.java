@@ -25,8 +25,6 @@ import java.util.Map;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.CqlStringUtils;
 
-import com.datastax.driver.core.DataType;
-
 /**
  * Abstract builder class to support the construction of table specifications that have table options, that is, those
  * options normally specified by <code>WITH ... AND ...</code>.

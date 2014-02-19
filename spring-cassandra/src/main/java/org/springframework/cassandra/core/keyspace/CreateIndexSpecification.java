@@ -38,6 +38,22 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		return new CreateIndexSpecification();
 	}
 
+	/**
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
+	 * statically.
+	 */
+	public static CreateIndexSpecification createIndex(CqlIdentifier name) {
+		return new CreateIndexSpecification().name(name);
+	}
+
+	/**
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
+	 * statically.
+	 */
+	public static CreateIndexSpecification createIndex(String name) {
+		return new CreateIndexSpecification().name(name);
+	}
+
 	private boolean ifNotExists = false;
 	private boolean custom = false;
 	private CqlIdentifier tableName;

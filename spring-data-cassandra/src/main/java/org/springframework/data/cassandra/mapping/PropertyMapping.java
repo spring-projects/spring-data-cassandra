@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.quotedCqlId;
+
 import org.springframework.util.Assert;
 
 /**
@@ -26,18 +29,24 @@ public class PropertyMapping {
 
 	protected String propertyName;
 	protected String columnName;
+	protected boolean forceQuote;
 
 	public PropertyMapping(String propertyName, String columnName) {
+		this(propertyName, columnName, false);
+	}
+
+	public PropertyMapping(String propertyName, String columnName, boolean forceQuote) {
 
 		setPropertyName(propertyName);
 		setColumnName(columnName);
+		setForceQuote(forceQuote);
 	}
 
 	public String getPropertyName() {
 		return propertyName;
 	}
 
-	protected void setPropertyName(String propertyName) {
+	public void setPropertyName(String propertyName) {
 		Assert.notNull(propertyName);
 		this.propertyName = propertyName;
 	}
@@ -46,8 +55,59 @@ public class PropertyMapping {
 		return columnName;
 	}
 
-	protected void setColumnName(String columnName) {
+	public void setColumnName(String columnName) {
 		Assert.notNull(columnName);
 		this.columnName = columnName;
+	}
+
+	public boolean getForceQuote() {
+		return forceQuote;
+	}
+
+	public void setForceQuote(boolean forceQuote) {
+		this.forceQuote = forceQuote;
+	}
+
+	@Override
+	public boolean equals(Object that) {
+
+		if (this == that) {
+			return true;
+		}
+		if (that == null) {
+			return false;
+		}
+		if (!(that instanceof PropertyMapping)) {
+			return false;
+		}
+
+		PropertyMapping other = (PropertyMapping) that;
+
+		if (this.propertyName == null) {
+			if (other.propertyName != null) {
+				return false;
+			}
+		} else if (!this.propertyName.equals(other.propertyName)) {
+			return false;
+		}
+
+		if (this.columnName == null) {
+			if (other.columnName != null) {
+				return false;
+			}
+		} else if (!(forceQuote ? quotedCqlId(this.columnName) : cqlId(this.columnName)).equals(other.columnName)) {
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int hashCode = 37;
+		hashCode ^= (propertyName == null ? 0 : propertyName.hashCode());
+		hashCode ^= (columnName == null ? 0 : (forceQuote ? quotedCqlId(this.columnName) : cqlId(this.columnName))
+				.hashCode());
+		return hashCode;
 	}
 }

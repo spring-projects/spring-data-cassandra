@@ -51,4 +51,9 @@ public @interface Column {
 	 * The name of the column in the table; must be a valid CQL identifier or quoted identifier.
 	 */
 	String value() default "";
+
+	/**
+	 * Whether to cause the column name to be force-quoted.
+	 */
+	boolean forceQuote() default false;
 }

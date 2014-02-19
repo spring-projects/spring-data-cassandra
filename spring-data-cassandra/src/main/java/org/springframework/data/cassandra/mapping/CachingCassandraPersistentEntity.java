@@ -19,11 +19,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.util.TypeInformation;
 
 public class CachingCassandraPersistentEntity<T> extends BasicCassandraPersistentEntity<T> {
 
-	protected String tableName;
+	protected CqlIdentifier tableName;
 	protected String name;
 	protected Boolean isCompositePrimaryKey;
 	protected List<CassandraPersistentProperty> compositePrimaryKeyProperties;
@@ -43,7 +44,7 @@ public class CachingCassandraPersistentEntity<T> extends BasicCassandraPersisten
 	}
 
 	@Override
-	public String getTableName() {
+	public CqlIdentifier getTableName() {
 		if (tableName == null) {
 			tableName = super.getTableName();
 		}

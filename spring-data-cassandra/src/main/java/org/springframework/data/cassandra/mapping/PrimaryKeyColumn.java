@@ -53,4 +53,9 @@ public @interface PrimaryKeyColumn {
 	 * Default is {@link Ordering#ASCENDING}.
 	 */
 	Ordering ordering() default Ordering.ASCENDING;
+
+	/**
+	 * Whether to cause the column name to be force-quoted.
+	 */
+	boolean forceQuote() default false;
 }

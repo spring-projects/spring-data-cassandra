@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.createTable;
 
 import java.beans.PropertyDescriptor;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -59,7 +61,7 @@ public class DefaultCassandraMappingContext extends
 	protected CassandraPersistentEntityMetadataVerifier verifier = new DefaultCassandraPersistentEntityMetadataVerifier();
 
 	// useful caches
-	protected Map<String, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<String, Set<CassandraPersistentEntity<?>>>();
+	protected Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<CqlIdentifier, Set<CassandraPersistentEntity<?>>>();
 	protected Set<CassandraPersistentEntity<?>> nonPrimaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<Class<?>, CassandraPersistentEntity<?>>();
@@ -240,7 +242,7 @@ public class DefaultCassandraMappingContext extends
 				continue;
 			}
 
-			entity.setTableName(tableName);
+			entity.setTableName(cqlId(tableName, entityMapping.getForceQuote()));
 		}
 	}
 
@@ -274,6 +276,7 @@ public class DefaultCassandraMappingContext extends
 	/**
 	 * @param verifier The verifier to set.
 	 */
+	@Override
 	public void setVerifier(CassandraPersistentEntityMetadataVerifier verifier) {
 		this.verifier = verifier;
 	}

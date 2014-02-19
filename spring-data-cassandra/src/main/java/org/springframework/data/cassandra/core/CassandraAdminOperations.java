@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Map;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+
 import com.datastax.driver.core.TableMetadata;
 
 /**
@@ -39,7 +41,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @param entityClass The class whose fields determine the columns created.
 	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
 	 */
-	void createTable(boolean ifNotExists, String tableName, Class<?> entityClass, Map<String, Object> optionsByName);
+	void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass, Map<String, Object> optionsByName);
 
 	/**
 	 * Add columns to the given table from the given class. If parameter dropRemovedAttributColumns is true, then this
@@ -50,7 +52,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @param dropRemovedAttributeColumns Whether to drop columns that exist on the table but that don't have
 	 *          corresponding fields in the class. If true, this effectively becomes a synchronziation operation.
 	 */
-	void alterTable(String tableName, Class<?> entityClass, boolean dropRemovedAttributeColumns);
+	void alterTable(CqlIdentifier tableName, Class<?> entityClass, boolean dropRemovedAttributeColumns);
 
 	/**
 	 * Drops the existing table with the given name and creates a new one; basically a {@link #dropTable(String)} followed
@@ -60,19 +62,19 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @param entityClass The class whose fields determine the new table's columns.
 	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
 	 */
-	void replaceTable(String tableName, Class<?> entityClass, Map<String, Object> optionsByName);
+	void replaceTable(CqlIdentifier tableName, Class<?> entityClass, Map<String, Object> optionsByName);
 
 	/**
 	 * Drops the named table.
 	 * 
 	 * @param tableName The name of the table.
 	 */
-	void dropTable(String tableName);
+	void dropTable(CqlIdentifier tableName);
 
 	/**
 	 * @param keyspace
 	 * @param tableName
 	 * @return
 	 */
-	TableMetadata getTableMetadata(String keyspace, String tableName);
+	TableMetadata getTableMetadata(String keyspace, CqlIdentifier tableName);
 }

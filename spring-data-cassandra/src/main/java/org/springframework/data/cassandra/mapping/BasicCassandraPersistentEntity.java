@@ -15,16 +15,18 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.BeansException;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.support.exception.UnsupportedCassandraOperationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
-import org.springframework.data.cassandra.util.CassandraNamingUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PropertyHandler;
@@ -47,11 +49,12 @@ import org.springframework.util.StringUtils;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty> implements
 		CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	protected String tableName;
-	protected CassandraMappingContext mappingContext;
-	protected final SpelExpressionParser spelParser;
-	protected final StandardEvaluationContext spelContext;
 	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new DefaultCassandraPersistentEntityMetadataVerifier();
+
+	protected CqlIdentifier tableName;
+	protected CassandraMappingContext mappingContext;
+	protected final StandardEvaluationContext spelContext;
+	protected final SpelExpressionParser spelParser;
 	protected CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
@@ -85,15 +88,20 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		this.mappingContext = mappingContext;
 
 		setVerifier(verifier);
-
-		determineTableName();
 	}
 
-	protected void determineTableName() {
+	protected CqlIdentifier determineTableName() {
+
 		Table anno = getType().getAnnotation(Table.class);
 
-		this.tableName = anno != null && StringUtils.hasText(anno.value()) ? anno.value() : CassandraNamingUtils
-				.getPreferredTableName(getType());
+		if (anno == null || !StringUtils.hasText(anno.value())) {
+			return cqlId(getType().getSimpleName(), anno == null ? false : anno.forceQuote());
+		}
+
+		Expression expression = spelParser.parseExpression(anno.value(), ParserContext.TEMPLATE_EXPRESSION);
+		String tableName = expression.getValue(spelContext, String.class);
+
+		return cqlId(tableName, anno.forceQuote());
 	}
 
 	@Override
@@ -112,17 +120,25 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
 		spelContext.setBeanResolver(new BeanFactoryResolver(applicationContext));
 		spelContext.setRootObject(applicationContext);
+
+		// this is the earliest time at which we can do this because the table name value may contain a SpEL expression
+		getTableName();
 	}
 
 	@Override
-	public String getTableName() {
-		Expression expression = spelParser.parseExpression(tableName, ParserContext.TEMPLATE_EXPRESSION);
-		return expression.getValue(spelContext, String.class);
+	public CqlIdentifier getTableName() {
+
+		if (tableName != null) {
+			return tableName;
+		}
+
+		return tableName = determineTableName();
 	}
 
 	@Override
-	public void setTableName(String tableName) {
-		Assert.hasText(tableName);
+	public void setTableName(CqlIdentifier tableName) {
+
+		Assert.notNull(tableName);
 		this.tableName = tableName;
 	}
 

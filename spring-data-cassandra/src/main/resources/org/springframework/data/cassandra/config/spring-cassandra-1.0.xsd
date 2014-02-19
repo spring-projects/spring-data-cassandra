@@ -651,6 +651,14 @@ Table name override.
 			</xsd:annotation>
 		</xsd:attribute>
 		
+		<xsd:attribute name="force-quote" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Whether to force-quote the table name.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		
 		<!-- TODO: allow specification of C* table options here -->
 	</xsd:complexType>
 

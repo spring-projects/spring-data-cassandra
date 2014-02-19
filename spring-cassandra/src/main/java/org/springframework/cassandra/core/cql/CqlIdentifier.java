@@ -42,6 +42,15 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier> {
 	}
 
 	/**
+	 * Factory method for {@link CqlIdentifier}. Convenient if imported statically.
+	 * 
+	 * @see #CqlIdentifier(String)
+	 */
+	public static CqlIdentifier cqlId(CharSequence identifier, boolean forceQuote) {
+		return new CqlIdentifier(identifier, forceQuote);
+	}
+
+	/**
 	 * Factory method for a force-quoted {@link CqlIdentifier}. Convenient if imported statically.
 	 * 
 	 * @see #CqlIdentifier(String, boolean)

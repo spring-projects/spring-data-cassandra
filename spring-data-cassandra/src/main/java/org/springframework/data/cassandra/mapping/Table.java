@@ -39,4 +39,9 @@ public @interface Table {
 	 * The name of the table; must be a valid CQL identifier or quoted identifier.
 	 */
 	String value() default "";
+
+	/**
+	 * Whether to cause the table name to be force-quoted.
+	 */
+	boolean forceQuote() default false;
 }

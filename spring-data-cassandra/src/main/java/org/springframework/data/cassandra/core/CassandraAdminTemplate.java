@@ -21,6 +21,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.dao.DataAccessException;
@@ -49,7 +50,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	}
 
 	@Override
-	public void createTable(boolean ifNotExists, final String tableName, Class<?> entityClass,
+	public void createTable(boolean ifNotExists, final CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
 
 		final CassandraPersistentEntity<?> entity = getCassandraMappingContext().getPersistentEntity(entityClass);
@@ -68,12 +69,12 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	}
 
 	@Override
-	public void alterTable(String tableName, Class<?> entityClass, boolean dropRemovedAttributeColumns) {
+	public void alterTable(CqlIdentifier tableName, Class<?> entityClass, boolean dropRemovedAttributeColumns) {
 		throw new UnsupportedOperationException("not yet implemented");
 	}
 
 	@Override
-	public void replaceTable(String tableName, Class<?> entityClass, Map<String, Object> optionsByName) {
+	public void replaceTable(CqlIdentifier tableName, Class<?> entityClass, Map<String, Object> optionsByName) {
 
 		dropTable(tableName);
 		createTable(false, tableName, entityClass, optionsByName);
@@ -85,14 +86,14 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 * @param entityClass
 	 * @param tableName
 	 */
-	protected void doAlterTable(Class<?> entityClass, String keyspace, String tableName) {
+	protected void doAlterTable(Class<?> entityClass, String keyspace, CqlIdentifier tableName) {
 
 		CassandraPersistentEntity<?> entity = getCassandraMappingContext().getPersistentEntity(entityClass);
 
 		Assert.notNull(entity);
 
 		final TableMetadata tableMetadata = getTableMetadata(keyspace, tableName);
-		final List<String> queryList = CqlUtils.alterTable(tableName, entity, tableMetadata);
+		final List<String> queryList = CqlUtils.alterTable(tableName.toCql(), entity, tableMetadata);
 
 		execute(new SessionCallback<Object>() {
 
@@ -114,7 +115,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	}
 
 	@Override
-	public void dropTable(String tableName) {
+	public void dropTable(CqlIdentifier tableName) {
 
 		log.info("Dropping table => " + tableName);
 
@@ -122,14 +123,14 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	}
 
 	@Override
-	public TableMetadata getTableMetadata(final String keyspace, final String tableName) {
+	public TableMetadata getTableMetadata(final String keyspace, final CqlIdentifier tableName) {
 
 		Assert.notNull(tableName);
 
 		return execute(new SessionCallback<TableMetadata>() {
 			@Override
 			public TableMetadata doInSession(Session s) {
-				return s.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName);
+				return s.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName.toCql());
 			}
 		});
 	}

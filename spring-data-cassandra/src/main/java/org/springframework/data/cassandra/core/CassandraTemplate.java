@@ -22,6 +22,7 @@ import java.util.List;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
@@ -125,7 +126,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
 
-		Select select = QueryBuilder.select().countAll().from(entity.getTableName());
+		Select select = QueryBuilder.select().countAll().from(entity.getTableName().toCql());
 		appendIdCriteria(select.where(), entity, id);
 
 		return count(select.getQueryString()) != 0;
@@ -133,7 +134,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public long count(Class<?> type) {
-		return count(getTableName(type));
+		return count(getTableName(type).toCql());
 	}
 
 	@Override
@@ -154,7 +155,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
 
-		Delete delete = QueryBuilder.delete().from(entity.getTableName());
+		Delete delete = QueryBuilder.delete().from(entity.getTableName().toCql());
 		appendIdCriteria(delete.where(), entity, id);
 
 		execute(delete.getQueryString());
@@ -191,7 +192,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public String getTableName(Class<?> type) {
+	public CqlIdentifier getTableName(Class<?> type) {
 		return mappingContext.getPersistentEntity(type).getTableName();
 	}
 
@@ -237,7 +238,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> List<T> selectAll(Class<T> type) {
-		return select(QueryBuilder.select().all().from(getTableName(type)).getQueryString(), type);
+		return select(QueryBuilder.select().all().from(getTableName(type).toCql()).getQueryString(), type);
 	}
 
 	@Override
@@ -260,7 +261,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 					entity.getIdProperty().getCompositePrimaryKeyEntity().getType().getName()));
 		}
 
-		Select select = QueryBuilder.select().all().from(entity.getTableName());
+		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 		select.where(QueryBuilder.in(entity.getIdProperty().getColumnName(), CollectionUtils.toArray(ids)));
 
 		return select(select.getQueryString(), type);
@@ -277,7 +278,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			throw new IllegalArgumentException(String.format("unknown entity class [%s]", type.getName()));
 		}
 
-		Select select = QueryBuilder.select().all().from(entity.getTableName());
+		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 		appendIdCriteria(select.where(), entity, id);
 
 		return selectOne(select.getQueryString(), type);
@@ -382,16 +383,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return update(entity, options, true);
 	}
 
-	/**
-	 * @param obj
-	 * @return
-	 */
-	protected <T> String determineTableName(T obj) {
-		if (null != obj) {
-			return determineTableName(obj.getClass());
-		}
-
-		return null;
+	protected <T> CqlIdentifier determineTableName(T obj) {
+		return obj == null ? null : determineTableName(obj.getClass());
 	}
 
 	protected <T> List<T> select(final String query, CassandraConverterRowCallback<T> readRowCallback) {
@@ -452,7 +445,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Assert.notEmpty(entities);
 
-		Batch b = createDeleteBatchQuery(getTableName(entities.get(0).getClass()), entities, options, cassandraConverter);
+		Batch b = createDeleteBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
+				cassandraConverter);
 
 		logger.info(b.toString());
 
@@ -469,7 +463,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Assert.notNull(entity);
 
-		Insert insert = createInsertQuery(getTableName(entity.getClass()), entity, options, cassandraConverter);
+		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
 		String query = insert.getQueryString();
 
@@ -486,7 +480,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Assert.notEmpty(entities);
 
-		Batch b = createInsertBatchQuery(getTableName(entities.get(0).getClass()), entities, options, cassandraConverter);
+		Batch b = createInsertBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
+				cassandraConverter);
 
 		String query = b.getQueryString();
 		logger.info(query);
@@ -513,7 +508,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Assert.notEmpty(entities);
 
-		Batch b = toUpdateBatchQuery(getTableName(entities.get(0).getClass()), entities, options, cassandraConverter);
+		Batch b = toUpdateBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
+				cassandraConverter);
 
 		String query = b.getQueryString();
 		logger.info(query);
@@ -537,7 +533,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Assert.notNull(entity);
 
-		Delete delete = createDeleteQuery(getTableName(entity.getClass()), entity, options, cassandraConverter);
+		Delete delete = createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 		logger.info(delete.toString());
 
 		String query = delete.getQueryString();
@@ -562,7 +558,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Assert.notNull(entity);
 
-		Update q = toUpdateQuery(getTableName(entity.getClass()), entity, options, cassandraConverter);
+		Update q = toUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
 		String query = q.getQueryString();
 		logger.info(query);
@@ -761,6 +757,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			throw new IllegalArgumentException(String.format("unknown persistent entity class [%s]", clazz.getName()));
 		}
 
-		truncate(mappingContext.getPersistentEntity(clazz).getTableName());
+		truncate(mappingContext.getPersistentEntity(clazz).getTableName().toCql());
 	}
 }

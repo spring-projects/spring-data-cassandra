@@ -15,8 +15,13 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.quotedCqlId;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.util.Assert;
 
 /**
  * Mapping information for an individual entity class.
@@ -36,13 +41,24 @@ public class EntityMapping {
 	protected String tableName;
 
 	/**
+	 * Whether to force the table name to be quoted.
+	 */
+	protected boolean forceQuote = false;
+
+	/**
 	 * The {@link PropertyMapping}s for each persistent property, keyed on property name.
 	 */
 	protected Map<String, PropertyMapping> propertyMappings = new HashMap<String, PropertyMapping>();
 
 	public EntityMapping(String entityClassName, String tableName) {
+		this(entityClassName, tableName, false);
+	}
+
+	public EntityMapping(String entityClassName, String tableName, boolean forceQuote) {
+
 		setEntityClassName(entityClassName);
 		setTableName(tableName);
+		setForceQuote(forceQuote);
 	}
 
 	public String getEntityClassName() {
@@ -50,6 +66,8 @@ public class EntityMapping {
 	}
 
 	public void setEntityClassName(String entityClassName) {
+
+		Assert.hasText(entityClassName);
 		this.entityClassName = entityClassName;
 	}
 
@@ -58,7 +76,17 @@ public class EntityMapping {
 	}
 
 	public void setTableName(String tableName) {
+
+		Assert.hasText(tableName);
 		this.tableName = tableName;
+	}
+
+	public boolean getForceQuote() {
+		return forceQuote;
+	}
+
+	public void setForceQuote(boolean forceQuote) {
+		this.forceQuote = forceQuote;
 	}
 
 	@Override
@@ -73,13 +101,14 @@ public class EntityMapping {
 			return false;
 		}
 
-		EntityMapping thatMapping = (EntityMapping) that;
+		EntityMapping other = (EntityMapping) that;
 
-		return this.entityClassName.equals(thatMapping.entityClassName) && this.tableName.equals(thatMapping.tableName);
+		return this.entityClassName.equals(other.entityClassName)
+				&& (forceQuote ? quotedCqlId(this.tableName) : cqlId(this.tableName)).equals(other.tableName);
 	}
 
 	@Override
 	public int hashCode() {
-		return entityClassName.hashCode() ^ tableName.hashCode();
+		return entityClassName.hashCode() ^ (forceQuote ? quotedCqlId(this.tableName) : cqlId(this.tableName)).hashCode();
 	}
 }

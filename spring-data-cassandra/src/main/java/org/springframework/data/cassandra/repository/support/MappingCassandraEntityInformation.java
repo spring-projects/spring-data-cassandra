@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
@@ -36,7 +37,7 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 		implements CassandraEntityInformation<T, ID> {
 
 	private final CassandraPersistentEntity<T> entityMetadata;
-	private final String customTableName;
+	private final CqlIdentifier customTableName;
 
 	/**
 	 * Creates a new {@link MappingCassandraEntityInformation} for the given {@link CassandraPersistentEntity}.
@@ -54,7 +55,7 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	 * @param entity must not be {@literal null}.
 	 * @param customTableName
 	 */
-	public MappingCassandraEntityInformation(CassandraPersistentEntity<T> entity, String customTableName) {
+	public MappingCassandraEntityInformation(CassandraPersistentEntity<T> entity, CqlIdentifier customTableName) {
 		super(entity.getType());
 		this.entityMetadata = entity;
 		this.customTableName = customTableName;
@@ -81,7 +82,7 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	}
 
 	@Override
-	public String getTableName() {
+	public CqlIdentifier getTableName() {
 		return customTableName == null ? entityMetadata.getTableName() : customTableName;
 	}
 }

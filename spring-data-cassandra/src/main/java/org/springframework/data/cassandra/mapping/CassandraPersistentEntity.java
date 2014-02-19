@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.mapping;
 
 import java.util.List;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
@@ -40,14 +41,9 @@ public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T,
 	/**
 	 * Returns the table name to which the entity shall be persisted.
 	 */
-	String getTableName();
+	CqlIdentifier getTableName();
 
-	/**
-	 * Sets the table name to which the entity shall be persisted.
-	 * 
-	 * @param tableName The table name; must contain a valid Cassandra table name.
-	 */
-	void setTableName(String tableName);
+	void setTableName(CqlIdentifier tableName);
 
 	CassandraMappingContext getMappingContext();
 }

@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+
 import com.datastax.driver.core.DataType;
 
 /**
@@ -34,6 +36,22 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 */
 	public static AlterTableSpecification alterTable() {
 		return new AlterTableSpecification();
+	}
+
+	/**
+	 * Entry point into the {@link AlterTableSpecification}'s fluent API to alter a table. Convenient if imported
+	 * statically.
+	 */
+	public static AlterTableSpecification alterTable(CqlIdentifier tableName) {
+		return new AlterTableSpecification().name(tableName);
+	}
+
+	/**
+	 * Entry point into the {@link AlterTableSpecification}'s fluent API to alter a table. Convenient if imported
+	 * statically.
+	 */
+	public static AlterTableSpecification alterTable(String tableName) {
+		return new AlterTableSpecification().name(tableName);
 	}
 
 	/**

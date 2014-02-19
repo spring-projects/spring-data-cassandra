@@ -15,6 +15,8 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+
 /**
  * Builder class to construct a <code>CREATE TABLE</code> specification.
  * 
@@ -30,7 +32,28 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 		return new CreateTableSpecification();
 	}
 
+	/**
+	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
+	 * statically.
+	 */
+	public static CreateTableSpecification createTable(CqlIdentifier name) {
+		return new CreateTableSpecification().name(name);
+	}
+
+	/**
+	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
+	 * statically.
+	 */
+	public static CreateTableSpecification createTable(String name) {
+		return new CreateTableSpecification().name(name);
+	}
+
 	private boolean ifNotExists = false;
+
+	@Override
+	public CreateTableSpecification name(CqlIdentifier name) {
+		return (CreateTableSpecification) super.name(name);
+	}
 
 	/**
 	 * Causes the inclusion of an <code>IF NOT EXISTS</code> clause.
