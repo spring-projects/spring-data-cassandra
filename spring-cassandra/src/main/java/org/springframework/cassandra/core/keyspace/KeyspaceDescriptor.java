@@ -17,7 +17,7 @@ package org.springframework.cassandra.core.keyspace;
 
 import java.util.Map;
 
-import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.cassandra.core.cql.KeyspaceIdentifier;
 
 /**
  * Describes a Keyspace.
@@ -29,7 +29,7 @@ public interface KeyspaceDescriptor {
 	/**
 	 * Returns the name of the table.
 	 */
-	CqlIdentifier getName();
+	KeyspaceIdentifier getName();
 
 	/**
 	 * Returns an unmodifiable {@link Map} of keyspace options.

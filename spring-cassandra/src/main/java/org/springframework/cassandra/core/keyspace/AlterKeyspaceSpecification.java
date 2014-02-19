@@ -15,6 +15,8 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
+import org.springframework.cassandra.core.cql.KeyspaceIdentifier;
+
 public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<AlterKeyspaceSpecification> {
 
 	/**
@@ -23,5 +25,24 @@ public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<Alt
 	 */
 	public static AlterKeyspaceSpecification alterKeyspace() {
 		return new AlterKeyspaceSpecification();
+	}
+
+	/**
+	 * Entry point into the {@link AlterKeyspaceSpecification}'s fluent API to alter a keyspace. Convenient if imported
+	 * statically.
+	 */
+	public static AlterKeyspaceSpecification alterKeyspace(KeyspaceIdentifier name) {
+		return new AlterKeyspaceSpecification(name);
+	}
+
+	public AlterKeyspaceSpecification() {
+	}
+
+	public AlterKeyspaceSpecification(String name) {
+		name(name);
+	}
+
+	public AlterKeyspaceSpecification(KeyspaceIdentifier name) {
+		name(name);
 	}
 }

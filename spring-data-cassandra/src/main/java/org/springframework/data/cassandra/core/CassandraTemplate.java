@@ -757,6 +757,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			throw new IllegalArgumentException(String.format("unknown persistent entity class [%s]", clazz.getName()));
 		}
 
-		truncate(mappingContext.getPersistentEntity(clazz).getTableName().toCql());
+		truncate(mappingContext.getPersistentEntity(clazz).getTableName());
 	}
 }

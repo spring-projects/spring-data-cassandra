@@ -242,7 +242,7 @@ public class DefaultCassandraMappingContext extends
 				continue;
 			}
 
-			entity.setTableName(cqlId(tableName, entityMapping.getForceQuote()));
+			entity.setTableName(cqlId(tableName, Boolean.valueOf(entityMapping.getForceQuote())));
 		}
 	}
 

@@ -15,11 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.template;
 
-import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -31,9 +27,7 @@ import org.junit.runner.RunWith;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
-import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
@@ -55,16 +49,6 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 	@Configuration
 	public static class Config extends IntegrationTestConfig {
-
-		@Override
-		public SchemaAction getSchemaAction() {
-			return SchemaAction.RECREATE;
-		}
-
-		@Override
-		protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-			return Arrays.asList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
-		}
 
 		@Override
 		public String[] getEntityBasePackages() {

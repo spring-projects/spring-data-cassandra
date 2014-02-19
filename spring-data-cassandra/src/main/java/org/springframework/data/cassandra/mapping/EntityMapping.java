@@ -15,9 +15,6 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-import static org.springframework.cassandra.core.cql.CqlIdentifier.quotedCqlId;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,12 +35,12 @@ public class EntityMapping {
 	/**
 	 * The name of the table to which the entity is mapped.
 	 */
-	protected String tableName;
+	protected String tableName = "";
 
 	/**
 	 * Whether to force the table name to be quoted.
 	 */
-	protected boolean forceQuote = false;
+	protected String forceQuote = "false";
 
 	/**
 	 * The {@link PropertyMapping}s for each persistent property, keyed on property name.
@@ -51,10 +48,10 @@ public class EntityMapping {
 	protected Map<String, PropertyMapping> propertyMappings = new HashMap<String, PropertyMapping>();
 
 	public EntityMapping(String entityClassName, String tableName) {
-		this(entityClassName, tableName, false);
+		this(entityClassName, tableName, Boolean.FALSE.toString());
 	}
 
-	public EntityMapping(String entityClassName, String tableName, boolean forceQuote) {
+	public EntityMapping(String entityClassName, String tableName, String forceQuote) {
 
 		setEntityClassName(entityClassName);
 		setTableName(tableName);
@@ -77,15 +74,17 @@ public class EntityMapping {
 
 	public void setTableName(String tableName) {
 
-		Assert.hasText(tableName);
+		Assert.notNull(tableName);
 		this.tableName = tableName;
 	}
 
-	public boolean getForceQuote() {
+	public String getForceQuote() {
 		return forceQuote;
 	}
 
-	public void setForceQuote(boolean forceQuote) {
+	public void setForceQuote(String forceQuote) {
+
+		Assert.notNull(forceQuote);
 		this.forceQuote = forceQuote;
 	}
 
@@ -103,12 +102,12 @@ public class EntityMapping {
 
 		EntityMapping other = (EntityMapping) that;
 
-		return this.entityClassName.equals(other.entityClassName)
-				&& (forceQuote ? quotedCqlId(this.tableName) : cqlId(this.tableName)).equals(other.tableName);
+		return this.entityClassName.equals(other.entityClassName) && this.forceQuote.equals(other.forceQuote)
+				&& this.tableName.equals(other.tableName);
 	}
 
 	@Override
 	public int hashCode() {
-		return entityClassName.hashCode() ^ (forceQuote ? quotedCqlId(this.tableName) : cqlId(this.tableName)).hashCode();
+		return entityClassName.hashCode() ^ forceQuote.hashCode() ^ tableName.hashCode();
 	}
 }

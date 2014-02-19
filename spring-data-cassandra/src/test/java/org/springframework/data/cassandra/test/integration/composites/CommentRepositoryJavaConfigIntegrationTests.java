@@ -15,18 +15,11 @@
  */
 package org.springframework.data.cassandra.test.integration.composites;
 
-import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.test.integration.repository.UserRepository;
@@ -48,24 +41,10 @@ public class CommentRepositoryJavaConfigIntegrationTests extends AbstractSpringD
 	@EnableCassandraRepositories(basePackageClasses = CommentRepository.class)
 	public static class Config extends IntegrationTestConfig {
 
-		@Override
-		protected String getKeyspaceName() {
-			return CommentRepositoryJavaConfigIntegrationTests.class.getSimpleName();
-		}
-
-		@Override
-		protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-			List<CreateKeyspaceSpecification> creates = new ArrayList<CreateKeyspaceSpecification>();
-
-			creates.add(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
-
-			return creates;
-		}
-
-		@Override
-		public SchemaAction getSchemaAction() {
-			return SchemaAction.RECREATE;
-		}
+		// @Override
+		// protected String getKeyspaceName() {
+		// return CommentRepositoryJavaConfigIntegrationTests.class.getSimpleName();
+		// }
 
 		@Override
 		public String[] getEntityBasePackages() {

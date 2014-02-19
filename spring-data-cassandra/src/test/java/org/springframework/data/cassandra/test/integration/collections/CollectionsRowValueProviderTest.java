@@ -15,10 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.collections;
 
-import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
-
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,9 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.data.cassandra.test.integration.simpletons.BookHistory;
 import org.springframework.data.cassandra.test.integration.simpletons.BookReference;
@@ -55,16 +50,6 @@ public class CollectionsRowValueProviderTest extends AbstractSpringDataEmbeddedC
 
 	@Configuration
 	public static class Config extends IntegrationTestConfig {
-
-		@Override
-		public SchemaAction getSchemaAction() {
-			return SchemaAction.RECREATE;
-		}
-
-		@Override
-		protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-			return Arrays.asList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
-		}
 
 		@Override
 		public String[] getEntityBasePackages() {

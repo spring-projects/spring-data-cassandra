@@ -15,9 +15,9 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.cql.KeyspaceIdentifier.ksId;
 
-import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.util.Assert;
 
 /**
@@ -32,7 +32,7 @@ public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecif
 	/**
 	 * The name of the keyspace.
 	 */
-	private CqlIdentifier name;
+	private KeyspaceIdentifier name;
 
 	/**
 	 * Sets the keyspace name.
@@ -40,7 +40,7 @@ public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecif
 	 * @return this
 	 */
 	public T name(String name) {
-		return name(cqlId(name));
+		return name(ksId(name));
 	}
 
 	/**
@@ -49,13 +49,13 @@ public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecif
 	 * @return this
 	 */
 	@SuppressWarnings("unchecked")
-	public T name(CqlIdentifier name) {
+	public T name(KeyspaceIdentifier name) {
 		Assert.notNull(name);
 		this.name = name;
 		return (T) this;
 	}
 
-	public CqlIdentifier getName() {
+	public KeyspaceIdentifier getName() {
 		return name;
 	}
 

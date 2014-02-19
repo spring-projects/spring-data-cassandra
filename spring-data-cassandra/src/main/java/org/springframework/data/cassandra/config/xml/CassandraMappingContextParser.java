@@ -92,16 +92,16 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 
 		String tableName = table.getAttribute("name");
 		if (!StringUtils.hasText(tableName)) {
-			tableName = null;
+			tableName = "";
 		}
 
 		String forceQuote = table.getAttribute("force-quote");
 		if (!StringUtils.hasText(forceQuote)) {
-			forceQuote = "false";
+			forceQuote = Boolean.FALSE.toString();
 		}
 
 		// TODO: parse future entity mappings here, like table options
 
-		return new EntityMapping(className, tableName, Boolean.valueOf(forceQuote));
+		return new EntityMapping(className, tableName, forceQuote);
 	}
 }

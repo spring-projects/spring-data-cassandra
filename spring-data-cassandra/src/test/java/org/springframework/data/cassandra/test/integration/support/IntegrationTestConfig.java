@@ -15,8 +15,15 @@
  */
 package org.springframework.data.cassandra.test.integration.support;
 
+import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.test.unit.support.Utils;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.config.java.AbstractSpringDataCassandraConfiguration;
 
 /**
@@ -35,12 +42,22 @@ public class IntegrationTestConfig extends AbstractSpringDataCassandraConfigurat
 	public String keyspaceName = Utils.randomKeyspaceName();
 
 	@Override
+	protected int getPort() {
+		return PORT;
+	}
+
+	@Override
+	public SchemaAction getSchemaAction() {
+		return SchemaAction.RECREATE;
+	}
+
+	@Override
 	protected String getKeyspaceName() {
 		return keyspaceName;
 	}
 
 	@Override
-	protected int getPort() {
-		return PORT;
+	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
+		return Arrays.asList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
 	}
 }

@@ -15,9 +15,46 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
+import org.springframework.cassandra.core.cql.KeyspaceIdentifier;
+
 public class DropKeyspaceSpecification extends KeyspaceActionSpecification<DropKeyspaceSpecification> {
 
+	/**
+	 * Entry point into the {@link DropKeyspaceSpecification}'s fluent API to drop a keyspace. Convenient if imported
+	 * statically.
+	 */
+	public static DropKeyspaceSpecification dropKeyspace() {
+		return new DropKeyspaceSpecification();
+	}
+
+	/**
+	 * Entry point into the {@link DropKeyspaceSpecification}'s fluent API to drop a keyspace. Convenient if imported
+	 * statically.
+	 */
+	public static DropKeyspaceSpecification dropKeyspace(KeyspaceIdentifier name) {
+		return new DropKeyspaceSpecification(name);
+	}
+
+	/**
+	 * Entry point into the {@link DropKeyspaceSpecification}'s fluent API to drop a keyspace. Convenient if imported
+	 * statically.
+	 */
+	public static DropKeyspaceSpecification dropKeyspace(String name) {
+		return new DropKeyspaceSpecification(name);
+	}
+
 	private boolean ifExists;
+
+	public DropKeyspaceSpecification() {
+	}
+
+	public DropKeyspaceSpecification(String name) {
+		name(name);
+	}
+
+	public DropKeyspaceSpecification(KeyspaceIdentifier name) {
+		name(name);
+	}
 
 	public DropKeyspaceSpecification ifExists() {
 		return ifExists(true);
@@ -30,13 +67,5 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification<DropK
 
 	public boolean getIfExists() {
 		return ifExists;
-	}
-
-	/**
-	 * Entry point into the {@link DropKeyspaceSpecification}'s fluent API to drop a keyspace. Convenient if imported
-	 * statically.
-	 */
-	public static DropKeyspaceSpecification dropKeyspace() {
-		return new DropKeyspaceSpecification();
 	}
 }

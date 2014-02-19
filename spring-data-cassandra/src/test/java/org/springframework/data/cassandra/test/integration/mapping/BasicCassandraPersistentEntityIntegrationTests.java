@@ -26,16 +26,16 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.Table;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Integration tests for {@link BasicCassandraPersistentEntity}.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BasicCassandraPersistentEntityIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class BasicCassandraPersistentEntityIntegrationTests {
 
 	@Mock
 	ApplicationContext context;
