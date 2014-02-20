@@ -262,7 +262,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		}
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
-		select.where(QueryBuilder.in(entity.getIdProperty().getColumnName(), CollectionUtils.toArray(ids)));
+		select.where(QueryBuilder.in(entity.getIdProperty().getColumnName().toCql(), CollectionUtils.toArray(ids)));
 
 		return select(select.getQueryString(), type);
 	}
@@ -304,7 +304,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 				@Override
 				public void doWithPersistentProperty(CassandraPersistentProperty p) {
 
-					clauseCallback.doWithClause(QueryBuilder.eq(p.getColumnName(),
+					clauseCallback.doWithClause(QueryBuilder.eq(p.getColumnName().toCql(),
 							idWrapper.getProperty(p, p.getActualType(), useFieldAccessOnly)));
 				}
 			});
@@ -312,7 +312,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			return;
 		}
 
-		clauseCallback.doWithClause(QueryBuilder.eq(idProperty.getColumnName(), id));
+		clauseCallback.doWithClause(QueryBuilder.eq(idProperty.getColumnName().toCql(), id));
 	}
 
 	protected void appendIdCriteria(final com.datastax.driver.core.querybuilder.Select.Where where,

@@ -165,7 +165,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			return;
 		}
 
-		if (!row.getRow().getColumnDefinitions().contains(prop.getColumnName())) {
+		if (!row.getRow().getColumnDefinitions().contains(prop.getColumnName().toCql())) {
 			return;
 		}
 
@@ -246,7 +246,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 				}
 
 				if (value != null) {
-					insert.value(prop.getColumnName(), value);
+					insert.value(prop.getColumnName().toCql(), value);
 				}
 			}
 		});
@@ -276,9 +276,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 				if (value != null) {
 					if (prop.isIdProperty() || entity.isCompositePrimaryKey()) {
-						update.where(QueryBuilder.eq(prop.getColumnName(), value));
+						update.where(QueryBuilder.eq(prop.getColumnName().toCql(), value));
 					} else {
-						update.with(QueryBuilder.set(prop.getColumnName(), value));
+						update.with(QueryBuilder.set(prop.getColumnName().toCql(), value));
 					}
 				}
 			}
@@ -309,7 +309,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			return;
 		}
 
-		where.and(QueryBuilder.eq(idProperty.getColumnName(), idValue));
+		where.and(QueryBuilder.eq(idProperty.getColumnName().toCql(), idValue));
 	}
 
 	@SuppressWarnings("unchecked")

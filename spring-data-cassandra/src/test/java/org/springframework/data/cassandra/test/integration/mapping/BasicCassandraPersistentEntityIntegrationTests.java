@@ -53,6 +53,7 @@ public class BasicCassandraPersistentEntityIntegrationTests {
 
 		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<Area>(
 				ClassTypeInformation.from(Area.class));
+		entity.setApplicationContext(context);
 		assertThat(entity.getTableName().toCql(), is("a123"));
 	}
 

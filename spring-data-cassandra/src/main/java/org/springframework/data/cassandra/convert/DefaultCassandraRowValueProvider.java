@@ -66,8 +66,8 @@ public class DefaultCassandraRowValueProvider implements CassandraRowValueProvid
 			return evaluator.evaluate(expression);
 		}
 
-		String columnName = property.getColumnName();
-		if (source.isNull(property.getColumnName())) {
+		String columnName = property.getColumnName().toCql();
+		if (source.isNull(columnName)) {
 			return null;
 		}
 
@@ -133,6 +133,7 @@ public class DefaultCassandraRowValueProvider implements CassandraRowValueProvid
 		return (T) source.getBytes(columnName);
 	}
 
+	@Override
 	public Row getRow() {
 		return source;
 	}

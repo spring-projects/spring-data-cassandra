@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.test.integration.mapping;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -28,6 +29,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentProperty;
@@ -58,6 +60,8 @@ public class CassandraCompositePrimaryKeyIntegrationTests {
 
 	@PrimaryKeyClass
 	static class Key implements Serializable {
+
+		private static final long serialVersionUID = 1L;
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 		String z;
@@ -130,10 +134,10 @@ public class CassandraCompositePrimaryKeyIntegrationTests {
 		assertTrue(property.isIdProperty());
 		assertTrue(property.isCompositePrimaryKey());
 
-		List<String> expectedColumnNames = Arrays.asList(new String[] { "z", "a" });
+		List<CqlIdentifier> expectedColumnNames = Arrays.asList(new CqlIdentifier[] { cqlId("z"), cqlId("a") });
 		assertTrue(expectedColumnNames.equals(property.getColumnNames()));
 
-		List<String> actualColumnNames = new ArrayList<String>();
+		List<CqlIdentifier> actualColumnNames = new ArrayList<CqlIdentifier>();
 		List<CassandraPersistentProperty> properties = property.getCompositePrimaryKeyProperties();
 		for (CassandraPersistentProperty p : properties) {
 			actualColumnNames.addAll(p.getColumnNames());

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -23,12 +25,20 @@ import java.util.Set;
 
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.expression.BeanFactoryAccessor;
+import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.cassandra.util.SpelUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.DataType;
@@ -37,9 +47,13 @@ import com.datastax.driver.core.DataType;
  * Cassandra specific {@link org.springframework.data.mapping.model.AnnotationBasedPersistentProperty} implementation.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
 public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentProperty<CassandraPersistentProperty>
-		implements CassandraPersistentProperty {
+		implements CassandraPersistentProperty, ApplicationContextAware {
+
+	protected ApplicationContext context;
+	protected StandardEvaluationContext spelContext;
 
 	/**
 	 * Creates a new {@link BasicCassandraPersistentProperty}.
@@ -53,6 +67,22 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			CassandraPersistentEntity<?> owner, CassandraSimpleTypeHolder simpleTypeHolder) {
 
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
+
+		if (owner != null && owner.getApplicationContext() != null) {
+			setApplicationContext(owner.getApplicationContext());
+		}
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext context) {
+
+		Assert.notNull(context);
+
+		this.context = context;
+		spelContext = new StandardEvaluationContext();
+		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
+		spelContext.setBeanResolver(new BeanFactoryResolver(context));
+		spelContext.setRootObject(context);
 	}
 
 	@Override
@@ -83,9 +113,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Override
-	public String getColumnName() {
+	public CqlIdentifier getColumnName() {
 
-		List<String> columnNames = getColumnNames();
+		List<CqlIdentifier> columnNames = getColumnNames();
 		if (columnNames.size() != 1) {
 			throw new IllegalStateException("property does not have a single column mapping");
 		}
@@ -226,9 +256,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Override
-	public List<String> getColumnNames() {
+	public List<CqlIdentifier> getColumnNames() {
 
-		final List<String> columnNames = new ArrayList<String>();
+		List<CqlIdentifier> columnNames = new ArrayList<CqlIdentifier>();
 
 		if (isCompositePrimaryKey()) {
 			addCompositePrimaryKeyColumnNames(getCompositePrimaryKeyEntity(), columnNames);
@@ -238,24 +268,26 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		// else not a composite primary key property -- first check @Column annotation
 		Column column = findAnnotation(Column.class);
 		if (column != null && StringUtils.hasText(column.value())) {
-			columnNames.add(column.value());
+			columnNames.add(cqlId(spelContext == null ? column.value() : SpelUtils.evaluate(column.value(), spelContext),
+					column.forceQuote()));
 			return columnNames;
 		}
 
 		// else check @PrimaryKeyColumn annotation
 		PrimaryKeyColumn pk = findAnnotation(PrimaryKeyColumn.class);
 		if (pk != null && StringUtils.hasText(pk.name())) {
-			columnNames.add(pk.name());
+			columnNames.add(cqlId(spelContext == null ? pk.name() : SpelUtils.evaluate(pk.name(), spelContext),
+					pk.forceQuote()));
 			return columnNames;
 		}
 
 		// else default
-		columnNames.add(field.getName().toLowerCase()); // TODO: replace with naming strategy class
+		columnNames.add(cqlId(field.getName())); // TODO: replace with naming strategy class
 		return columnNames;
 	}
 
 	protected void addCompositePrimaryKeyColumnNames(CassandraPersistentEntity<?> compositePrimaryKeyEntity,
-			final List<String> columnNames) {
+			final List<CqlIdentifier> columnNames) {
 
 		compositePrimaryKeyEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 

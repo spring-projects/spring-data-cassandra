@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import org.springframework.cassandra.core.Ordering;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.util.TypeInformation;
 
 import com.datastax.driver.core.DataType;
@@ -38,8 +39,8 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	private Boolean isPartitionKeyColumn;
 	private Boolean isClusterKeyColumn;
 	private Boolean isPrimaryKeyColumn;
-	private String columnName;
-	private List<String> columnNames;
+	private CqlIdentifier columnName;
+	private List<CqlIdentifier> columnNames;
 	private Ordering ordering;
 	private boolean orderingCached = false;
 	private DataType dataType;
@@ -128,7 +129,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	}
 
 	@Override
-	public String getColumnName() {
+	public CqlIdentifier getColumnName() {
 
 		if (columnName == null) {
 			columnName = super.getColumnName();
@@ -155,7 +156,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	}
 
 	@Override
-	public List<String> getColumnNames() {
+	public List<CqlIdentifier> getColumnNames() {
 		if (columnNames == null) {
 			columnNames = super.getColumnNames();
 		}

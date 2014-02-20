@@ -64,7 +64,7 @@ public class BasicCassandraPersistentPropertyIntegrationTests {
 	public void usesAnnotatedColumnName() {
 
 		Field field = ReflectionUtils.findField(Timeline.class, "text");
-		assertThat(getPropertyFor(field).getColumnName(), is("message"));
+		assertThat(getPropertyFor(field).getColumnName().toCql(), is("message"));
 	}
 
 	@Test
@@ -77,7 +77,7 @@ public class BasicCassandraPersistentPropertyIntegrationTests {
 	@Test
 	public void returnsPropertyNameForUnannotatedProperty() {
 		Field field = ReflectionUtils.findField(Timeline.class, "time");
-		assertThat(getPropertyFor(field).getColumnName(), is("time"));
+		assertThat(getPropertyFor(field).getColumnName().toCql(), is("time"));
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Field field) {

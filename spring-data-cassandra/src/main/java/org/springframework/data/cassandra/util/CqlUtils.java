@@ -52,7 +52,7 @@ public abstract class CqlUtils {
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				String columnName = prop.getColumnName();
+				String columnName = prop.getColumnName().toCql();
 				DataType columnDataType = prop.getDataType();
 				ColumnMetadata columnMetadata = table.getColumn(columnName.toLowerCase());
 

@@ -34,9 +34,6 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.expression.Expression;
-import org.springframework.expression.ParserContext;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -54,9 +51,9 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	protected CqlIdentifier tableName;
 	protected CassandraMappingContext mappingContext;
-	protected final StandardEvaluationContext spelContext;
-	protected final SpelExpressionParser spelParser;
+	protected StandardEvaluationContext spelContext;
 	protected CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
+	protected ApplicationContext context;
 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
 		this(typeInformation, null);
@@ -84,8 +81,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		super(typeInformation, CassandraPersistentPropertyComparator.IT);
 
-		this.spelParser = new SpelExpressionParser();
-		this.spelContext = new StandardEvaluationContext();
 		this.mappingContext = mappingContext;
 
 		setVerifier(verifier);
@@ -99,7 +94,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return cqlId(getType().getSimpleName(), anno == null ? false : anno.forceQuote());
 		}
 
-		return cqlId(SpelUtils.evaluate(anno.value(), spelContext), anno.forceQuote());
+		return cqlId(spelContext == null ? anno.value() : SpelUtils.evaluate(anno.value(), spelContext), anno.forceQuote());
 	}
 
 	@Override
@@ -113,14 +108,15 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(ApplicationContext context) throws BeansException {
 
+		Assert.notNull(context);
+
+		this.context = context;
+		spelContext = new StandardEvaluationContext();
 		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
-		spelContext.setBeanResolver(new BeanFactoryResolver(applicationContext));
-		spelContext.setRootObject(applicationContext);
-
-		// this is the earliest time at which we can do this because the table name value may contain a SpEL expression
-		getTableName();
+		spelContext.setBeanResolver(new BeanFactoryResolver(context));
+		spelContext.setRootObject(context);
 	}
 
 	@Override
@@ -202,5 +198,10 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	public void setVerifier(CassandraPersistentEntityMetadataVerifier verifier) {
 		this.verifier = verifier;
+	}
+
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return context;
 	}
 }

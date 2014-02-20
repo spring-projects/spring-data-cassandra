@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.mapping;
 import java.util.List;
 
 import org.springframework.cassandra.core.Ordering;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 
@@ -30,7 +32,8 @@ import com.datastax.driver.core.DataType;
  * @author Matthew T. Adams
  * @author David T. Webb
  */
-public interface CassandraPersistentProperty extends PersistentProperty<CassandraPersistentProperty> {
+public interface CassandraPersistentProperty extends PersistentProperty<CassandraPersistentProperty>,
+		ApplicationContextAware {
 
 	/**
 	 * Whether the property is a composite primary key.
@@ -59,13 +62,13 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 	 * knows that the property is mapped to a single column. Throws {@link IllegalStateException} if this property is
 	 * mapped to multiple columns.
 	 */
-	String getColumnName();
+	CqlIdentifier getColumnName();
 
 	/**
 	 * The names of the columns to which the property is persisted if this is a composite primary key property. Never
 	 * returns null.
 	 */
-	List<String> getColumnNames();
+	List<CqlIdentifier> getColumnNames();
 
 	/**
 	 * The ordering (ascending or descending) for the column. Valid only for primary key columns; returns null for

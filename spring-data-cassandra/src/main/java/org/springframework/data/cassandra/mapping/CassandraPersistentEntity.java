@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.mapping;
 import java.util.List;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
@@ -46,4 +47,6 @@ public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T,
 	void setTableName(CqlIdentifier tableName);
 
 	CassandraMappingContext getMappingContext();
+
+	ApplicationContext getApplicationContext();
 }
