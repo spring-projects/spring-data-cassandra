@@ -37,4 +37,14 @@ import org.springframework.data.annotation.Id;
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 @Id
 public @interface PrimaryKey {
+
+	/**
+	 * The column name for the primary key if it is of a simple type, else ignored.
+	 */
+	String value() default "";
+
+	/**
+	 * Whether to cause the column name to be force-quoted if the primary key is of a simple type, else ignored.
+	 */
+	boolean forceQuote() default false;
 }

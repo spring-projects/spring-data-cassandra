@@ -36,4 +36,17 @@ public class ForceQuotedEntitiesSimpleIntegrationTests {
 	@Table(value = EXPLICIT_TABLE_NAME, forceQuote = true)
 	public static class ExplicitTableNameForceQuoted {
 	}
+
+	@Test
+	public void testDefaultTableNameForceQuoted() {
+		BasicCassandraPersistentEntity<DefaultTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<DefaultTableNameForceQuoted>(
+				ClassTypeInformation.from(DefaultTableNameForceQuoted.class));
+
+		assertEquals(DefaultTableNameForceQuoted.class.getSimpleName().toLowerCase(), entity.getTableName().toCql());
+		assertEquals(DefaultTableNameForceQuoted.class.getSimpleName().toLowerCase(), entity.getTableName().getUnquoted());
+	}
+
+	@Table
+	public static class DefaultTableNameForceQuoted {
+	}
 }

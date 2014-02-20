@@ -260,30 +260,50 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		List<CqlIdentifier> columnNames = new ArrayList<CqlIdentifier>();
 
-		if (isCompositePrimaryKey()) {
+		if (isCompositePrimaryKey()) { // then the id type has @PrimaryKeyClass
+
 			addCompositePrimaryKeyColumnNames(getCompositePrimaryKeyEntity(), columnNames);
 			return columnNames;
 		}
 
-		// else not a composite primary key property -- first check @Column annotation
-		Column column = findAnnotation(Column.class);
-		if (column != null && StringUtils.hasText(column.value())) {
-			columnNames.add(cqlId(spelContext == null ? column.value() : SpelUtils.evaluate(column.value(), spelContext),
-					column.forceQuote()));
-			return columnNames;
+		// else we're dealing with a single-column field
+		String defaultName = getField().getName(); // TODO: replace with naming strategy class
+		String overriddenName = null;
+		boolean forceQuote = false;
+
+		if (isIdProperty()) { // then the id is of a simple type (since it's not a composite primary key)
+
+			PrimaryKey anno = findAnnotation(PrimaryKey.class);
+			overriddenName = anno == null ? null : anno.value();
+			forceQuote = anno == null ? forceQuote : anno.forceQuote();
+
+		} else if (isPrimaryKeyColumn()) { // then it's a simple type
+
+			PrimaryKeyColumn anno = findAnnotation(PrimaryKeyColumn.class);
+			overriddenName = anno == null ? null : anno.name();
+			forceQuote = anno == null ? forceQuote : anno.forceQuote();
+
+		} else { // then it's a vanilla column with the assumption that it's mapped to a single column
+
+			Column anno = findAnnotation(Column.class);
+			overriddenName = anno == null ? null : anno.value();
+			forceQuote = anno == null ? forceQuote : anno.forceQuote();
+
 		}
 
-		// else check @PrimaryKeyColumn annotation
-		PrimaryKeyColumn pk = findAnnotation(PrimaryKeyColumn.class);
-		if (pk != null && StringUtils.hasText(pk.name())) {
-			columnNames.add(cqlId(spelContext == null ? pk.name() : SpelUtils.evaluate(pk.name(), spelContext),
-					pk.forceQuote()));
-			return columnNames;
-		}
-
-		// else default
-		columnNames.add(cqlId(field.getName())); // TODO: replace with naming strategy class
+		columnNames.add(createColumnName(defaultName, overriddenName, forceQuote));
 		return columnNames;
+	}
+
+	protected CqlIdentifier createColumnName(String defaultName, String overriddenName, boolean forceQuote) {
+
+		String name = defaultName;
+
+		if (StringUtils.hasText(overriddenName)) {
+			name = spelContext == null ? overriddenName : SpelUtils.evaluate(overriddenName, spelContext);
+		}
+
+		return cqlId(name, forceQuote);
 	}
 
 	protected void addCompositePrimaryKeyColumnNames(CassandraPersistentEntity<?> compositePrimaryKeyEntity,
