@@ -49,4 +49,6 @@ public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T,
 	CassandraMappingContext getMappingContext();
 
 	ApplicationContext getApplicationContext();
+
+	void setForceQuote(boolean forceQuote);
 }

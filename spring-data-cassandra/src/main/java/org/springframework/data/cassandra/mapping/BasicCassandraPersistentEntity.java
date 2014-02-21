@@ -54,6 +54,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	protected StandardEvaluationContext spelContext;
 	protected CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 	protected ApplicationContext context;
+	protected Boolean forceQuote;
 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
 		this(typeInformation, null);
@@ -134,6 +135,18 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		Assert.notNull(tableName);
 		this.tableName = tableName;
+	}
+
+	@Override
+	public void setForceQuote(boolean forceQuote) {
+
+		if (this.forceQuote != null && this.forceQuote == forceQuote) {
+			return;
+		} else {
+			this.forceQuote = forceQuote;
+		}
+
+		setTableName(cqlId(tableName.getUnquoted(), forceQuote));
 	}
 
 	@Override

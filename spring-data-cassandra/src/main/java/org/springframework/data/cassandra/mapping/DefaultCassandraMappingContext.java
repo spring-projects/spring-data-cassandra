@@ -114,13 +114,13 @@ public class DefaultCassandraMappingContext extends
 	public CassandraPersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
 			CassandraPersistentEntity<?> owner, CassandraSimpleTypeHolder simpleTypeHolder) {
 
-		return new CachingCassandraPersistentProperty(field, descriptor, owner, simpleTypeHolder);
+		return new BasicCassandraPersistentProperty(field, descriptor, owner, simpleTypeHolder);
 	}
 
 	@Override
 	protected <T> CassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 
-		CassandraPersistentEntity<T> entity = new CachingCassandraPersistentEntity<T>(typeInformation, this, verifier);
+		CassandraPersistentEntity<T> entity = new BasicCassandraPersistentEntity<T>(typeInformation, this, verifier);
 
 		if (context != null) {
 			entity.setApplicationContext(context);

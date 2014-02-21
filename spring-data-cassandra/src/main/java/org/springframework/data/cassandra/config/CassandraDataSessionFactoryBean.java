@@ -75,6 +75,7 @@ public class CassandraDataSessionFactoryBean extends CassandraSessionFactoryBean
 		Metadata md = session.getCluster().getMetadata();
 		KeyspaceMetadata kmd = md.getKeyspace(keyspaceName);
 
+		// TODO: fix this with KeyspaceIdentifier
 		if (kmd == null) { // try lower-cased keyspace name
 			kmd = md.getKeyspace(keyspaceName.toLowerCase());
 		}

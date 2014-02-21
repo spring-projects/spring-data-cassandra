@@ -20,9 +20,6 @@
 		</cass:entity>
 		<cass:entity
 			class="org.springframework.data.cassandra.test.integration.forcequote.config.Explicit">
-			<!-- this value must match those in
-			org.springframework.data.cassandra.test.integration.forcequote.config.ForceQuotedRepositoryXmlConfigIntegrationTests
-			testExplicit() -->
 			<cass:table force-quote="true" name="Zz" />
 		</cass:entity>
 		<cass:entity
@@ -47,7 +44,7 @@
 	</cass:cluster>
 
 	<cass:session keyspace-name="ForceQuoteRepositoryXmlConfigIntegrationTests"
-		schema-action="RECREATE_DROP_UNUSED">
+		schema-action="RECREATE">
 	</cass:session>
 
 	<cass:repositories

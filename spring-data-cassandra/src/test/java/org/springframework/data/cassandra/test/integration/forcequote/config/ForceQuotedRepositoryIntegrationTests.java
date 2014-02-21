@@ -42,7 +42,7 @@ public class ForceQuotedRepositoryIntegrationTests {
 		assertNull(i.findOne(key));
 	}
 
-	public void testExplicit() {
+	public void testExplicit(String tableName) {
 		Explicit entity = new Explicit();
 		String key = entity.getPrimaryKey();
 
@@ -52,7 +52,7 @@ public class ForceQuotedRepositoryIntegrationTests {
 		Explicit f = e.findOne(key);
 		assertNotSame(f, entity);
 
-		String stringValue = query("stringvalue", "\"Xx\"", "primarykey", f.getPrimaryKey());
+		String stringValue = query("stringvalue", String.format("\"%s\"", tableName), "primarykey", f.getPrimaryKey());
 		assertEquals(f.getStringValue(), stringValue);
 
 		e.delete(key);
@@ -88,8 +88,8 @@ public class ForceQuotedRepositoryIntegrationTests {
 		ExplicitProperties f = ep.findOne(key);
 		assertNotSame(f, entity);
 
-		String stringValue = query(String.format("\"%s\"", ExplicitProperties.EXPLICIT_STRING_VALUE), "explicitproperties",
-				String.format("\"%s\"", ExplicitProperties.EXPLICIT_PRIMARY_KEY), f.getPrimaryKey());
+		String stringValue = query(String.format("\"%s\"", stringValueColumnName), "explicitproperties",
+				String.format("\"%s\"", primaryKeyColumnName), f.getPrimaryKey());
 		assertEquals(f.getStringValue(), stringValue);
 
 		ip.delete(key);

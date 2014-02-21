@@ -33,7 +33,6 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentProperty;
-import org.springframework.data.cassandra.mapping.CachingCassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -129,8 +128,7 @@ public class CassandraCompositePrimaryKeyIntegrationTests {
 	public void validateMappingInfo() {
 
 		Field field = ReflectionUtils.findField(Thing.class, "id");
-		CassandraPersistentProperty property = new CachingCassandraPersistentProperty(field, null, thing,
-				SIMPLE_TYPE_HOLDER);
+		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(field, null, thing, SIMPLE_TYPE_HOLDER);
 		assertTrue(property.isIdProperty());
 		assertTrue(property.isCompositePrimaryKey());
 

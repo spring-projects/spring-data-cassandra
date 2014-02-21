@@ -46,9 +46,11 @@ public abstract class ForceQuotedRepositoryIntegrationTestsDelegator extends
 		tests.testImplicit();
 	}
 
-	@Test
-	public void testExplicit() {
-		tests.testExplicit();
+	/**
+	 * Not a @Test -- used by subclasses!
+	 */
+	public void testExplicit(String tableName) {
+		tests.testExplicit(tableName);
 	}
 
 	@Test

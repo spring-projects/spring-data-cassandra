@@ -7,12 +7,16 @@ import org.springframework.data.cassandra.test.integration.support.IntegrationTe
 import org.springframework.test.context.ContextConfiguration;
 
 @ContextConfiguration
-public class ForceQuotedRepositoryJavaConfigIntegrationTests extends
-		ForceQuotedRepositoryIntegrationTestsDelegator {
+public class ForceQuotedRepositoryJavaConfigIntegrationTests extends ForceQuotedRepositoryIntegrationTestsDelegator {
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = ForceQuotedRepositoryIntegrationTests.class)
 	public static class Config extends IntegrationTestConfig {
+	}
+
+	@Test
+	public void testExplicit() {
+		tests.testExplicit(Explicit.TABLE_NAME);
 	}
 
 	@Test

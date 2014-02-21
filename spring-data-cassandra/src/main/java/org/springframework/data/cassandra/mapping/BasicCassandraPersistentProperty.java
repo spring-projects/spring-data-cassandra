@@ -276,6 +276,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return columnNames;
 		}
 
+		return this.columnNames = Collections.unmodifiableList(determineColumnNames());
+	}
+
+	protected List<CqlIdentifier> determineColumnNames() {
+
 		List<CqlIdentifier> columnNames = new ArrayList<CqlIdentifier>();
 
 		if (isCompositePrimaryKey()) { // then the id type has @PrimaryKeyClass
@@ -310,7 +315,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		columnNames.add(createColumnName(defaultName, overriddenName, forceQuote));
-		return this.columnNames = Collections.unmodifiableList(columnNames);
+
+		return columnNames;
 	}
 
 	protected CqlIdentifier createColumnName(String defaultName, String overriddenName, boolean forceQuote) {
@@ -351,6 +357,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	public void setColumnNames(List<CqlIdentifier> columnNames) {
 
 		Assert.notNull(columnNames);
+
+		// force calculation of columnNames if not yet known
 		if (this.columnNames == null) {
 			getColumnNames();
 		}
@@ -379,7 +387,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		for (CqlIdentifier columnName : getColumnNames()) {
 			columnNames.add(cqlId(columnName.getUnquoted(), forceQuote));
 		}
-		this.columnNames = Collections.unmodifiableList(columnNames);
+
+		setColumnNames(columnNames);
 	}
 
 	@Override

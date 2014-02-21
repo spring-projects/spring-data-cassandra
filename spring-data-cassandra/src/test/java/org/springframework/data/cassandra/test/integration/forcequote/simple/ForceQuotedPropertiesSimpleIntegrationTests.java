@@ -1,6 +1,7 @@
 package org.springframework.data.cassandra.test.integration.forcequote.simple;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 import static org.springframework.cassandra.core.cql.CqlIdentifier.quotedCqlId;
 

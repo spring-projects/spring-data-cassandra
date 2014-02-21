@@ -665,9 +665,27 @@ Whether to force-quote the table name.
 	</xsd:complexType>
 
 	<xsd:complexType name="propertyType">
-		<xsd:attribute name="name" use="required" type="xsd:string" />
-		<xsd:attribute name="column-name" use="optional" type="xsd:string" />
-		<xsd:attribute name="force-quote" use="optional" type="xsd:string" />
+		<xsd:attribute name="name" use="required" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the property.  Required.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="column-name" use="optional" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The column-name that the property should be mapped to.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="force-quote" use="optional" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Whether the column name should be force-quoted.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:complexType>
 
 	<xsd:simpleType name="cassandraTemplateRef" final="union">
