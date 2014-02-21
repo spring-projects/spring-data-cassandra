@@ -15,7 +15,9 @@
  */
 package org.springframework.data.cassandra.config.xml;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -27,6 +29,7 @@ import org.springframework.data.cassandra.config.DefaultDataBeanNames;
 import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.EntityMapping;
 import org.springframework.data.cassandra.mapping.Mapping;
+import org.springframework.data.cassandra.mapping.PropertyMapping;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -85,23 +88,56 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 			throw new IllegalStateException("class attribute must not be empty");
 		}
 
+		String tableName = "";
+		String forceQuote = "";
 		Element table = DomUtils.getChildElementByTagName(entity, "table");
-		if (table == null) {
-			return null;
-		}
+		if (table != null) {
+			tableName = table.getAttribute("name");
+			if (!StringUtils.hasText(tableName)) {
+				tableName = "";
+			}
 
-		String tableName = table.getAttribute("name");
-		if (!StringUtils.hasText(tableName)) {
-			tableName = "";
-		}
-
-		String forceQuote = table.getAttribute("force-quote");
-		if (!StringUtils.hasText(forceQuote)) {
-			forceQuote = Boolean.FALSE.toString();
+			forceQuote = table.getAttribute("force-quote");
+			if (!StringUtils.hasText(forceQuote)) {
+				forceQuote = Boolean.FALSE.toString();
+			}
 		}
 
 		// TODO: parse future entity mappings here, like table options
 
-		return new EntityMapping(className, tableName, forceQuote);
+		Map<String, PropertyMapping> propertyMappings = parsePropertyMappings(entity);
+
+		EntityMapping entityMapping = new EntityMapping(className, tableName, forceQuote);
+		entityMapping.setPropertyMappings(propertyMappings);
+
+		return entityMapping;
+	}
+
+	protected Map<String, PropertyMapping> parsePropertyMappings(Element entity) {
+
+		Map<String, PropertyMapping> pms = new HashMap<String, PropertyMapping>();
+
+		for (Element property : DomUtils.getChildElementsByTagName(entity, "property")) {
+
+			String value = property.getAttribute("name");
+			if (!StringUtils.hasText(value)) {
+				throw new IllegalStateException("name attribute must not be empty");
+			}
+			PropertyMapping pm = new PropertyMapping(value);
+
+			value = property.getAttribute("column-name");
+			if (StringUtils.hasText(value)) {
+				pm.setColumnName(value);
+			}
+
+			value = property.getAttribute("force-quote");
+			if (StringUtils.hasText(value)) {
+				pm.setForceQuote(value);
+			}
+
+			pms.put(pm.getPropertyName(), pm);
+		}
+
+		return pms;
 	}
 }

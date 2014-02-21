@@ -106,4 +106,29 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 
 	@Override
 	CassandraPersistentEntity<?> getOwner();
+
+	/**
+	 * Whether to force-quote the column names of this property.
+	 * 
+	 * @param forceQuote
+	 * @see CassandraPersistentProperty#getColumnNames()
+	 */
+	void setForceQuote(boolean forceQuote);
+
+	/**
+	 * If this property is mapped with a single column, set the column name to the given {@link CqlIdentifier}. If this
+	 * property is not mapped by a single column, throws {@link IllegalStateException}. If the given column name is null,
+	 * {@link IllegalArgumentException} is thrown.
+	 * 
+	 * @param columnName
+	 */
+	void setColumnName(CqlIdentifier columnName);
+
+	/**
+	 * Sets this property's column names to the collection given. The given collection must have the same size as this
+	 * property's current list of column names, and must contain no <code>null</code> elements.
+	 * 
+	 * @param columnName
+	 */
+	void setColumnNames(List<CqlIdentifier> columnNames);
 }

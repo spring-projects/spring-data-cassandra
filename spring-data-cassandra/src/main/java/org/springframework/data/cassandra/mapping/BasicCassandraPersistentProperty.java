@@ -20,6 +20,8 @@ import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -54,6 +56,18 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	protected ApplicationContext context;
 	protected StandardEvaluationContext spelContext;
+	/**
+	 * An unmodifiable list of this property's column names.
+	 */
+	protected List<CqlIdentifier> columnNames;
+	/**
+	 * An unmodifiable list of this property's explicitly set column names.
+	 */
+	protected List<CqlIdentifier> explicitColumnNames;
+	/**
+	 * Whether this property has been explicitly instructed to force quote column names.
+	 */
+	protected Boolean forceQuote;
 
 	/**
 	 * Creates a new {@link BasicCassandraPersistentProperty}.
@@ -258,6 +272,10 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public List<CqlIdentifier> getColumnNames() {
 
+		if (this.columnNames != null) {
+			return columnNames;
+		}
+
 		List<CqlIdentifier> columnNames = new ArrayList<CqlIdentifier>();
 
 		if (isCompositePrimaryKey()) { // then the id type has @PrimaryKeyClass
@@ -292,7 +310,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		columnNames.add(createColumnName(defaultName, overriddenName, forceQuote));
-		return columnNames;
+		return this.columnNames = Collections.unmodifiableList(columnNames);
 	}
 
 	protected CqlIdentifier createColumnName(String defaultName, String overriddenName, boolean forceQuote) {
@@ -320,6 +338,48 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 				}
 			}
 		});
+	}
+
+	@Override
+	public void setColumnName(CqlIdentifier columnName) {
+
+		Assert.notNull(columnName);
+		setColumnNames(Arrays.asList(new CqlIdentifier[] { columnName }));
+	}
+
+	@Override
+	public void setColumnNames(List<CqlIdentifier> columnNames) {
+
+		Assert.notNull(columnNames);
+		if (this.columnNames == null) {
+			getColumnNames();
+		}
+		if (this.columnNames.size() != columnNames.size()) {
+			throw new IllegalStateException(String.format(
+					"property [%s] on entity [%s] is mapped to [%s] column%s, but given column name list has size [%s]",
+					getName(), getOwner().getType().getName(), this.columnNames.size(), this.columnNames.size() == 1 ? "" : "s",
+					columnNames.size()));
+		}
+
+		this.columnNames = this.explicitColumnNames = Collections
+				.unmodifiableList(new ArrayList<CqlIdentifier>(columnNames));
+	}
+
+	@Override
+	public void setForceQuote(boolean forceQuote) {
+
+		if (this.forceQuote != null && this.forceQuote == forceQuote) {
+			return;
+		} else {
+			this.forceQuote = forceQuote;
+		}
+
+		List<CqlIdentifier> columnNames = new ArrayList<CqlIdentifier>(this.columnNames == null ? 0
+				: this.columnNames.size());
+		for (CqlIdentifier columnName : getColumnNames()) {
+			columnNames.add(cqlId(columnName.getUnquoted(), forceQuote));
+		}
+		this.columnNames = Collections.unmodifiableList(columnNames);
 	}
 
 	@Override

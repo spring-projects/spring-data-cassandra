@@ -238,12 +238,41 @@ public class DefaultCassandraMappingContext extends
 			}
 
 			String tableName = entityMapping.getTableName();
-			if (!StringUtils.hasText(tableName)) {
-				continue;
+			if (StringUtils.hasText(tableName)) {
+				entity.setTableName(cqlId(tableName, Boolean.valueOf(entityMapping.getForceQuote())));
 			}
 
-			entity.setTableName(cqlId(tableName, Boolean.valueOf(entityMapping.getForceQuote())));
+			processMappingOverrides(entity, entityMapping);
 		}
+	}
+
+	protected void processMappingOverrides(CassandraPersistentEntity<?> entity, EntityMapping entityMapping) {
+
+		for (PropertyMapping mapping : entityMapping.getPropertyMappings().values()) {
+			processMappingOverride(entity, mapping);
+		}
+	}
+
+	protected void processMappingOverride(CassandraPersistentEntity<?> entity, PropertyMapping mapping) {
+
+		CassandraPersistentProperty property = entity.getPersistentProperty(mapping.getPropertyName());
+		if (property == null) {
+			throw new IllegalArgumentException(String.format("entity class [%s] has no persistent property named [%s]",
+					entity.getType().getName(), mapping.getPropertyName()));
+		}
+
+		boolean forceQuote = false;
+		String value = mapping.getForceQuote();
+		if (StringUtils.hasText(value)) {
+			property.setForceQuote(forceQuote = Boolean.valueOf(value));
+		}
+
+		value = mapping.getColumnName();
+
+		if (StringUtils.hasText(value)) {
+			property.setColumnName(cqlId(value, forceQuote));
+		}
+
 	}
 
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {

@@ -29,13 +29,17 @@ public class PropertyMapping {
 
 	protected String propertyName;
 	protected String columnName;
-	protected boolean forceQuote;
+	protected String forceQuote;
 
-	public PropertyMapping(String propertyName, String columnName) {
-		this(propertyName, columnName, false);
+	public PropertyMapping(String propertyName) {
+		setPropertyName(propertyName);
 	}
 
-	public PropertyMapping(String propertyName, String columnName, boolean forceQuote) {
+	public PropertyMapping(String propertyName, String columnName) {
+		this(propertyName, columnName, "false");
+	}
+
+	public PropertyMapping(String propertyName, String columnName, String forceQuote) {
 
 		setPropertyName(propertyName);
 		setColumnName(columnName);
@@ -60,11 +64,11 @@ public class PropertyMapping {
 		this.columnName = columnName;
 	}
 
-	public boolean getForceQuote() {
+	public String getForceQuote() {
 		return forceQuote;
 	}
 
-	public void setForceQuote(boolean forceQuote) {
+	public void setForceQuote(String forceQuote) {
 		this.forceQuote = forceQuote;
 	}
 
@@ -95,7 +99,15 @@ public class PropertyMapping {
 			if (other.columnName != null) {
 				return false;
 			}
-		} else if (!(forceQuote ? quotedCqlId(this.columnName) : cqlId(this.columnName)).equals(other.columnName)) {
+		} else if (!this.columnName.equals(other.columnName)) {
+			return false;
+		}
+
+		if (this.forceQuote == null) {
+			if (other.forceQuote != null) {
+				return false;
+			}
+		} else if (this.forceQuote.equals(other.forceQuote)) {
 			return false;
 		}
 
@@ -105,9 +117,9 @@ public class PropertyMapping {
 	@Override
 	public int hashCode() {
 		int hashCode = 37;
-		hashCode ^= (propertyName == null ? 0 : propertyName.hashCode());
-		hashCode ^= (columnName == null ? 0 : (forceQuote ? quotedCqlId(this.columnName) : cqlId(this.columnName))
-				.hashCode());
+		hashCode ^= propertyName == null ? 0 : propertyName.hashCode();
+		hashCode ^= columnName == null ? 0 : columnName.hashCode();
+		hashCode ^= forceQuote == null ? 0 : forceQuote.hashCode();
 		return hashCode;
 	}
 }

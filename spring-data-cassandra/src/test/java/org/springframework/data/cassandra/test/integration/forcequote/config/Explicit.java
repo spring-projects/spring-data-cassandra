@@ -11,21 +11,27 @@ public class Explicit {
 	public static final String TABLE_NAME = "Xx";
 
 	@PrimaryKey
-	String key;
+	String primaryKey;
+
+	String stringValue = UUID.randomUUID().toString();
 
 	public Explicit() {
 		this(UUID.randomUUID().toString());
 	}
 
-	public Explicit(String key) {
-		setKey(key);
+	public Explicit(String primaryKey) {
+		setPrimaryKey(primaryKey);
 	}
 
-	public String getKey() {
-		return key;
+	public String getPrimaryKey() {
+		return primaryKey;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public void setPrimaryKey(String primaryKey) {
+		this.primaryKey = primaryKey;
+	}
+
+	public String getStringValue() {
+		return stringValue;
 	}
 }

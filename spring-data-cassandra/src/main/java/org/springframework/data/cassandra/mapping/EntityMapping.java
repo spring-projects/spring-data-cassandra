@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -109,5 +110,14 @@ public class EntityMapping {
 	@Override
 	public int hashCode() {
 		return entityClassName.hashCode() ^ forceQuote.hashCode() ^ tableName.hashCode();
+	}
+
+	public void setPropertyMappings(Map<String, PropertyMapping> propertyMappings) {
+		propertyMappings = propertyMappings == null ? new HashMap<String, PropertyMapping>() : propertyMappings;
+		this.propertyMappings = new HashMap<String, PropertyMapping>(propertyMappings);
+	}
+
+	public Map<String, PropertyMapping> getPropertyMappings() {
+		return Collections.unmodifiableMap(propertyMappings);
 	}
 }

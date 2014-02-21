@@ -1,5 +1,6 @@
 package org.springframework.data.cassandra.test.integration.forcequote.config;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -8,51 +9,91 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 
 public class ForceQuotedRepositoryIntegrationTests {
 
-	ImplicitRepository implicits;
-	ExplicitRepository explicits;
-	CassandraTemplate template;
-
-	public ForceQuotedRepositoryIntegrationTests() {
-	}
-
-	public ForceQuotedRepositoryIntegrationTests(ImplicitRepository implicits, ExplicitRepository explicits,
-			CassandraTemplate template) {
-		this.implicits = implicits;
-		this.explicits = explicits;
-		this.template = template;
-	}
+	ImplicitRepository i;
+	ImplicitPropertiesRepository ip;
+	ExplicitRepository e;
+	ExplicitPropertiesRepository ep;
+	CassandraTemplate t;
 
 	public void before() {
-		template.deleteAll(Implicit.class);
+		t.deleteAll(Implicit.class);
+	}
+
+	public String query(String columnName, String tableName, String keyColumnName, String key) {
+		return t.queryForObject(
+				String.format("select %s from %s where %s = '%s'", columnName, tableName, keyColumnName, key), String.class);
 	}
 
 	public void testImplicit() {
 		Implicit entity = new Implicit();
-		String key = entity.getKey();
+		String key = entity.getPrimaryKey();
 
-		Implicit si = implicits.save(entity);
-		assertSame(si, entity);
+		Implicit s = i.save(entity);
+		assertSame(s, entity);
 
-		Implicit fi = implicits.findOne(key);
-		assertNotSame(fi, entity);
+		Implicit f = i.findOne(key);
+		assertNotSame(f, entity);
 
-		implicits.delete(key);
+		String stringValue = query("stringvalue", "\"Implicit\"", "primarykey", f.getPrimaryKey());
+		assertEquals(f.getStringValue(), stringValue);
 
-		assertNull(implicits.findOne(key));
+		i.delete(key);
+
+		assertNull(i.findOne(key));
 	}
 
 	public void testExplicit() {
 		Explicit entity = new Explicit();
-		String key = entity.getKey();
+		String key = entity.getPrimaryKey();
 
-		Explicit si = explicits.save(entity);
-		assertSame(si, entity);
+		Explicit s = e.save(entity);
+		assertSame(s, entity);
 
-		Explicit fi = explicits.findOne(key);
-		assertNotSame(fi, entity);
+		Explicit f = e.findOne(key);
+		assertNotSame(f, entity);
 
-		explicits.delete(key);
+		String stringValue = query("stringvalue", "\"Xx\"", "primarykey", f.getPrimaryKey());
+		assertEquals(f.getStringValue(), stringValue);
 
-		assertNull(explicits.findOne(key));
+		e.delete(key);
+
+		assertNull(e.findOne(key));
+	}
+
+	public void testImplicitProperties() {
+		ImplicitProperties entity = new ImplicitProperties();
+		String key = entity.getPrimaryKey();
+
+		ImplicitProperties s = ip.save(entity);
+		assertSame(s, entity);
+
+		ImplicitProperties f = ip.findOne(key);
+		assertNotSame(f, entity);
+
+		String stringValue = query("\"stringValue\"", "implicitproperties", "\"primaryKey\"", f.getPrimaryKey());
+		assertEquals(f.getStringValue(), stringValue);
+
+		ip.delete(key);
+
+		assertNull(ip.findOne(key));
+	}
+
+	public void testExplicitProperties(String stringValueColumnName, String primaryKeyColumnName) {
+		ExplicitProperties entity = new ExplicitProperties();
+		String key = entity.getPrimaryKey();
+
+		ExplicitProperties s = ep.save(entity);
+		assertSame(s, entity);
+
+		ExplicitProperties f = ep.findOne(key);
+		assertNotSame(f, entity);
+
+		String stringValue = query(String.format("\"%s\"", ExplicitProperties.EXPLICIT_STRING_VALUE), "explicitproperties",
+				String.format("\"%s\"", ExplicitProperties.EXPLICIT_PRIMARY_KEY), f.getPrimaryKey());
+		assertEquals(f.getStringValue(), stringValue);
+
+		ip.delete(key);
+
+		assertNull(ip.findOne(key));
 	}
 }

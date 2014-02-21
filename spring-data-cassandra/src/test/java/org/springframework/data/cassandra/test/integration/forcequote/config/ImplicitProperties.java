@@ -2,22 +2,24 @@ package org.springframework.data.cassandra.test.integration.forcequote.config;
 
 import java.util.UUID;
 
+import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 
-@Table(forceQuote = true)
-public class Implicit {
+@Table
+public class ImplicitProperties {
 
-	@PrimaryKey
+	@PrimaryKey(forceQuote = true)
 	String primaryKey;
 
+	@Column(forceQuote = true)
 	String stringValue = UUID.randomUUID().toString();
 
-	public Implicit() {
+	public ImplicitProperties() {
 		this(UUID.randomUUID().toString());
 	}
 
-	public Implicit(String primaryKey) {
+	public ImplicitProperties(String primaryKey) {
 		setPrimaryKey(primaryKey);
 	}
 
@@ -31,5 +33,9 @@ public class Implicit {
 
 	public String getStringValue() {
 		return stringValue;
+	}
+
+	public void setStringValue(String stringy) {
+		this.stringValue = stringy;
 	}
 }

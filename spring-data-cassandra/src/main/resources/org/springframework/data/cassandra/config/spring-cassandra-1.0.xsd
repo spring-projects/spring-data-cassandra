@@ -632,6 +632,8 @@ The replication factor for the data center.
 			<xsd:element name="table" type="tableType" minOccurs="0"
 				maxOccurs="1">
 			</xsd:element>
+			<xsd:element name="property" type="propertyType"
+				minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 		<xsd:attribute name="class" type="xsd:string">
 			<xsd:annotation>
@@ -650,7 +652,7 @@ Table name override.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		
+
 		<xsd:attribute name="force-quote" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -660,6 +662,12 @@ Whether to force-quote the table name.
 		</xsd:attribute>
 		
 		<!-- TODO: allow specification of C* table options here -->
+	</xsd:complexType>
+
+	<xsd:complexType name="propertyType">
+		<xsd:attribute name="name" use="required" type="xsd:string" />
+		<xsd:attribute name="column-name" use="optional" type="xsd:string" />
+		<xsd:attribute name="force-quote" use="optional" type="xsd:string" />
 	</xsd:complexType>
 
 	<xsd:simpleType name="cassandraTemplateRef" final="union">

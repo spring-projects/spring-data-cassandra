@@ -22,6 +22,19 @@
 			class="org.springframework.data.cassandra.test.integration.forcequote.config.Explicit">
 			<cass:table force-quote="true" name="Zz" />
 		</cass:entity>
+		<cass:entity
+			class="org.springframework.data.cassandra.test.integration.forcequote.config.ImplicitProperties">
+			<cass:property name="primaryKey" force-quote="true" />
+			<cass:property name="stringValue" force-quote="true" />
+		</cass:entity>
+		<cass:entity
+			class="org.springframework.data.cassandra.test.integration.forcequote.config.ExplicitProperties">
+			<!-- these values must match those in
+			org.springframework.data.cassandra.test.integration.forcequote.config.ForceQuotedRepositoryXmlConfigIntegrationTests
+			testExplicitPropertiesWithXmlValues() -->
+			<cass:property name="primaryKey" force-quote="true" column-name="XmlPrimaryKey"/>
+			<cass:property name="stringValue" force-quote="true" column-name="XmlStringValue"/>
+		</cass:entity>
 	</cass:mapping>
 
 	<cass:cluster port="${cassandra.native_transport_port}">
