@@ -9,8 +9,8 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 @PrimaryKeyClass
 public class ExplicitKey implements Serializable {
 
-	public static final String EXPLICIT_KEY_ZERO = "FirstKey";
-	public static final String EXPLICIT_KEY_ONE = "SecondKey";
+	public static final String EXPLICIT_KEY_ZERO = "JavaExplicitKeyZero";
+	public static final String EXPLICIT_KEY_ONE = "JavaExplicitKeyOne";
 
 	private static final long serialVersionUID = 4459456944472099332L;
 

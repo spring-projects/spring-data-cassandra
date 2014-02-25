@@ -13,40 +13,33 @@
 	<import resource="classpath:/spring-data-cassandra-basic.xml" />
 
 	<cass:mapping
-		entity-base-packages="org.springframework.data.cassandra.test.integration.forcequote.config">
+		entity-base-packages="org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey">
 		<cass:entity
-			class="org.springframework.data.cassandra.test.integration.forcequote.config.Implicit">
+			class="org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey.Implicit">
 			<cass:table force-quote="true" />
 		</cass:entity>
 		<cass:entity
-			class="org.springframework.data.cassandra.test.integration.forcequote.config.Explicit">
-			<cass:table force-quote="true" name="Zz" />
+			class="org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey.Explicit">
+			<cass:table force-quote="true" name="XmlExplicitTable" />
+			<cass:property name="stringValue" force-quote="true" column-name="XmlExplicitStringValue"/>
 		</cass:entity>
 		<cass:entity
-			class="org.springframework.data.cassandra.test.integration.forcequote.config.ImplicitProperties">
-			<cass:property name="primaryKey" force-quote="true" />
-			<cass:property name="stringValue" force-quote="true" />
-		</cass:entity>
-		<cass:entity
-			class="org.springframework.data.cassandra.test.integration.forcequote.config.ExplicitProperties">
-			<!-- these values must match those in
-			org.springframework.data.cassandra.test.integration.forcequote.config.ForceQuotedRepositoryXmlConfigIntegrationTests
-			testExplicitPropertiesWithXmlValues() -->
-			<cass:property name="primaryKey" force-quote="true" column-name="XmlPrimaryKey"/>
-			<cass:property name="stringValue" force-quote="true" column-name="XmlStringValue"/>
+			class="org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey.ExplicitKey">
+			<cass:property name="keyZero" force-quote="true" column-name="XmlExplicitKeyZero"/>
+			<cass:property name="keyOne" force-quote="true" column-name="XmlExplicitKeyOne"/>
 		</cass:entity>
 	</cass:mapping>
 
 	<cass:cluster port="${cassandra.native_transport_port}">
-		<cass:keyspace name="ForceQuoteRepositoryXmlConfigIntegrationTests"
+		<cass:keyspace name="#{randomKeyspaceName}"
 			action="CREATE" durable-writes="true">
 		</cass:keyspace>
 	</cass:cluster>
 
-	<cass:session keyspace-name="ForceQuoteRepositoryXmlConfigIntegrationTests"
-		schema-action="RECREATE">
+	<cass:session keyspace-name="#{randomKeyspaceName}"
+		schema-action="RECREATE_DROP_UNUSED">
 	</cass:session>
 
 	<cass:repositories
-		base-package="org.springframework.data.cassandra.test.integration.forcequote.config" />
+		base-package="org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey" />
 </beans>

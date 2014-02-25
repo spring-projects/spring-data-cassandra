@@ -38,8 +38,9 @@ public abstract class ForceQuotedCompositePrimaryKeyRepositoryIntegrationTestsDe
 		tests.testImplicit();
 	}
 
-	@Test
-	public void testExplicit() {
-		tests.testExplicit();
+	public void testExplicit(String tableName, String stringValueColumnName, String keyZeroColumnName,
+			String keyOneColumnName) {
+
+		tests.testExplicit(tableName, stringValueColumnName, keyZeroColumnName, keyOneColumnName);
 	}
 }
