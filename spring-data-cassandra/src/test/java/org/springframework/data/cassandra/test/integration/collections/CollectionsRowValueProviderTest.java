@@ -89,9 +89,9 @@ public class CollectionsRowValueProviderTest extends AbstractSpringDataEmbeddedC
 
 		Assert.assertNotNull(b.getCheckOuts());
 
-		log.info("Checkouts map data");
+		log.debug("Checkouts map data");
 		for (String username : b.getCheckOuts().keySet()) {
-			log.info(username + " has " + b.getCheckOuts().get(username) + " checkouts of this book.");
+			log.debug(username + " has " + b.getCheckOuts().get(username) + " checkouts of this book.");
 		}
 
 		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
@@ -132,14 +132,14 @@ public class CollectionsRowValueProviderTest extends AbstractSpringDataEmbeddedC
 		Assert.assertNotNull(b.getReferences());
 		Assert.assertNotNull(b.getBookmarks());
 
-		log.info("Bookmark List<Integer> Data");
+		log.debug("Bookmark List<Integer> Data");
 		for (Integer mark : b.getBookmarks()) {
-			log.info("Bookmark set on page  " + mark);
+			log.debug("Bookmark set on page  " + mark);
 		}
 
-		log.info("Reference Set<String> Data");
+		log.debug("Reference Set<String> Data");
 		for (String ref : b.getReferences()) {
-			log.info("Reference -> " + ref);
+			log.debug("Reference -> " + ref);
 		}
 
 		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");

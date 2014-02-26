@@ -16,6 +16,7 @@
 package org.springframework.cassandra.test.integration;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
@@ -35,6 +36,10 @@ import com.datastax.driver.core.Session;
  * @author Matthew T. Adams
  */
 public class AbstractEmbeddedCassandraIntegrationTest {
+
+	public static String uuid() {
+		return UUID.randomUUID().toString();
+	}
 
 	static Logger log = LoggerFactory.getLogger(AbstractEmbeddedCassandraIntegrationTest.class);
 

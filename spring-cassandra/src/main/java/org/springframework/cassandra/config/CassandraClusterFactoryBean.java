@@ -234,8 +234,8 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 							(CreateKeyspaceSpecification) spec).toCql() : new DropKeyspaceCqlGenerator(
 							(DropKeyspaceSpecification) spec).toCql();
 
-					if (log.isInfoEnabled()) {
-						log.info("executing CQL [{}]", cql);
+					if (log.isDebugEnabled()) {
+						log.debug("executing CQL [{}]", cql);
 					}
 
 					template.execute(cql);
@@ -254,8 +254,8 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 
 				for (String script : scripts) {
 
-					if (log.isInfoEnabled()) {
-						log.info("executing raw CQL [{}]", script);
+					if (log.isDebugEnabled()) {
+						log.debug("executing raw CQL [{}]", script);
 					}
 
 					template.execute(script);
@@ -366,7 +366,6 @@ public class CassandraClusterFactoryBean implements FactoryBean<Cluster>, Initia
 	 * @param keyspaceSpecifications The keyspaceSpecifications to set.
 	 */
 	public void setKeyspaceSpecifications(Set<KeyspaceActionSpecification<?>> keyspaceSpecifications) {
-		log.info("Setter Called");
 		this.keyspaceSpecifications = keyspaceSpecifications;
 	}
 

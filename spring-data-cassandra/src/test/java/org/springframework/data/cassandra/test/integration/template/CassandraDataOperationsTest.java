@@ -606,8 +606,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 		Book b = template.selectOne(select.getQueryString(), Book.class);
 
-		log.info("SingleSelect Book Title -> " + b.getTitle());
-		log.info("SingleSelect Book Author -> " + b.getAuthor());
+		log.debug("SingleSelect Book Title -> " + b.getTitle());
+		log.debug("SingleSelect Book Author -> " + b.getAuthor());
 
 		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
 		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
@@ -625,7 +625,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 		List<Book> bookz = template.select(select.getQueryString(), Book.class);
 
-		log.info("Book Count -> " + bookz.size());
+		log.debug("Book Count -> " + bookz.size());
 
 		Assert.assertEquals(bookz.size(), 20);
 

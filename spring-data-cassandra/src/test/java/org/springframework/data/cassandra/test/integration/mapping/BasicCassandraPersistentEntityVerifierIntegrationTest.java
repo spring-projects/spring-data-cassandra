@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.mapping;
 
+import static org.junit.Assert.*;
+
 import java.io.Serializable;
 
 import org.junit.Before;
@@ -23,6 +25,7 @@ import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
@@ -80,6 +83,36 @@ public class BasicCassandraPersistentEntityVerifierIntegrationTest {
 
 		mappingContext.getPersistentEntity(Animal.class);
 
+	}
+
+	@Test(expected = MappingException.class)
+	public void testNoPartitionKey() {
+
+		mappingContext.getPersistentEntity(NoPartitionKey.class);
+
+	}
+
+	@Test(expected = MappingException.class)
+	public void testPkAndPkc() {
+
+		mappingContext.getPersistentEntity(PkAndPkc.class);
+
+	}
+
+	@Test
+	public void testOnePkc() {
+
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(OnePkc.class);
+
+		assertNull(entity.getIdProperty());
+	}
+
+	@Test
+	public void testMultiPkc() {
+
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(MultiPkc.class);
+
+		assertNull(entity.getIdProperty());
 	}
 
 	static class NonPersistentClass {
@@ -147,13 +180,44 @@ public class BasicCassandraPersistentEntityVerifierIntegrationTest {
 
 		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
 		private String color;
-
 	}
 
 	@Table
 	@PrimaryKeyClass
 	static class TooManyAnnotations {
-
 	}
 
+	@Table
+	public static class NoPartitionKey {
+
+		@PrimaryKeyColumn(ordinal = 0)
+		String key;
+	}
+
+	@Table
+	public static class PkAndPkc {
+
+		@PrimaryKey
+		String primaryKey;
+
+		@PrimaryKeyColumn(ordinal = 0)
+		String primaryKeyColumn;
+	}
+
+	@Table
+	public static class OnePkc {
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0)
+		String pk;
+	}
+
+	@Table
+	public static class MultiPkc {
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0)
+		String pk0;
+
+		@PrimaryKeyColumn(ordinal = 1)
+		String pk1;
+	}
 }

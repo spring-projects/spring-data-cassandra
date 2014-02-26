@@ -21,7 +21,7 @@ import java.util.List;
 import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
 
@@ -33,7 +33,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-public class SimpleCassandraRepository<T, ID extends Serializable> implements CassandraRepository<T, ID> {
+public class SimpleCassandraRepository<T, ID extends Serializable> implements TypedIdCassandraRepository<T, ID> {
 
 	protected CassandraOperations template;
 	protected CassandraEntityInformation<T, ID> entityInformation;

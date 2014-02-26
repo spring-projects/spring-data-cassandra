@@ -15,6 +15,11 @@
  */
 package org.springframework.data.cassandra.convert;
 
+import static org.springframework.data.cassandra.repository.support.BasicMapId.id;
+
+import java.io.Serializable;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -25,6 +30,8 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.repository.MapId;
+import org.springframework.data.cassandra.repository.MapIdentifiable;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.context.MappingContext;
@@ -275,7 +282,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 				}
 
 				if (value != null) {
-					if (prop.isIdProperty() || entity.isCompositePrimaryKey()) {
+					if (prop.isIdProperty() || entity.isCompositePrimaryKey() || prop.isPrimaryKeyColumn()) {
 						update.where(QueryBuilder.eq(prop.getColumnName().toCql(), value));
 					} else {
 						update.with(QueryBuilder.set(prop.getColumnName().toCql(), value));
@@ -293,23 +300,73 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	protected void writeDeleteWhereFromWrapper(final BeanWrapper<CassandraPersistentEntity<Object>, Object> wrapper,
 			final Where where, CassandraPersistentEntity<?> entity) {
 
-		CassandraPersistentProperty idProperty = entity.getIdProperty();
-		Object idValue = wrapper.getProperty(idProperty, idProperty.getType(), useFieldAccessOnly);
-
-		if (idValue == null) {
+		Object id = getId(wrapper, entity);
+		if (id == null) {
 			String msg = String.format("no id value found in object {}", wrapper.getBean());
 			log.error(msg);
 			throw new IllegalArgumentException(msg);
 		}
 
-		if (idProperty.isCompositePrimaryKey()) {
-			writeDeleteWhereFromWrapper(
-					BeanWrapper.<CassandraPersistentEntity<Object>, Object> create(idValue, conversionService), where,
-					idProperty.getCompositePrimaryKeyEntity());
+		if (id instanceof MapId) {
+
+			for (Map.Entry<String, Serializable> entry : ((MapId) id).entrySet()) {
+				where.and(QueryBuilder.eq(entry.getKey(), entry.getValue()));
+			}
 			return;
 		}
 
-		where.and(QueryBuilder.eq(idProperty.getColumnName().toCql(), idValue));
+		CassandraPersistentProperty idProperty = entity.getIdProperty();
+		if (idProperty != null) {
+
+			if (idProperty.isCompositePrimaryKey()) {
+				writeDeleteWhereFromWrapper(
+						BeanWrapper.<CassandraPersistentEntity<Object>, Object> create(id, conversionService), where,
+						idProperty.getCompositePrimaryKeyEntity());
+				return;
+			}
+
+			where.and(QueryBuilder.eq(idProperty.getColumnName().toCql(), id));
+			return;
+		}
+	}
+
+	@Override
+	public Object getId(Object object, CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(object);
+
+		final BeanWrapper<?, ?> wrapper = (object instanceof BeanWrapper) ? (BeanWrapper<?, ?>) object : BeanWrapper
+				.create(object, conversionService);
+		object = wrapper == null ? object : wrapper.getBean();
+
+		if (!entity.getType().isAssignableFrom(object.getClass())) {
+			throw new IllegalArgumentException(String.format(
+					"given instance of type [%s] is not of compatible expected type [%s]", object.getClass().getName(), entity
+							.getType().getName()));
+		}
+
+		if (object instanceof MapIdentifiable) {
+			return ((MapIdentifiable) object).getMapId();
+		}
+
+		CassandraPersistentProperty idProperty = entity.getIdProperty();
+		if (idProperty != null) {
+			return wrapper.getProperty(entity.getIdProperty(), idProperty.getType(), useFieldAccessOnly);
+		}
+
+		// if the class doesn't have an id property, then it's using MapId
+		final MapId id = id();
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
+			@Override
+			public void doWithPersistentProperty(CassandraPersistentProperty p) {
+				if (p.isPrimaryKeyColumn()) {
+					id.with(p.getName(), (Serializable) wrapper.getProperty(p, p.getType(), useFieldAccessOnly));
+				}
+			}
+		});
+
+		return id;
 	}
 
 	@SuppressWarnings("unchecked")

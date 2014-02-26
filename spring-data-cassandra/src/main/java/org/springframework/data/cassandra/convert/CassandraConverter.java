@@ -31,4 +31,6 @@ public interface CassandraConverter extends
 
 	@Override
 	CassandraMappingContext getMappingContext();
+
+	Object getId(Object object, CassandraPersistentEntity<?> entity);
 }

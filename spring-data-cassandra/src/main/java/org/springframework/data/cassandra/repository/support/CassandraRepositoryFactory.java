@@ -20,7 +20,7 @@ import java.io.Serializable;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.MappingException;
@@ -29,10 +29,10 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
 import org.springframework.util.Assert;
 
 /**
- * Factory to create {@link CassandraRepository} instances.
+ * Factory to create {@link TypedIdCassandraRepository} instances.
  * 
  * @author Alex Shvid
- * 
+ * @author Matthew T. Adams
  */
 
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
@@ -68,10 +68,6 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, ID extends Serializable> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
@@ -83,6 +79,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 					domainClass.getName()));
 		}
 
-		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity);
+		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
+				cassandraTemplate.getConverter());
 	}
 }

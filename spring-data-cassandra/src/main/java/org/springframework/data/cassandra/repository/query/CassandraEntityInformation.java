@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.io.Serializable;
 
-import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.repository.core.EntityInformation;
 
 /**
@@ -26,12 +25,7 @@ import org.springframework.data.repository.core.EntityInformation;
  * @author Alex Shvid
  * 
  */
-public interface CassandraEntityInformation<T, ID extends Serializable> extends EntityInformation<T, ID> {
+public interface CassandraEntityInformation<T, ID extends Serializable> extends EntityInformation<T, ID>,
+		CassandraEntityMetadata<T> {
 
-	/**
-	 * Returns the name of the table the entity shall be persisted to.
-	 * 
-	 * @return
-	 */
-	CqlIdentifier getTableName();
 }

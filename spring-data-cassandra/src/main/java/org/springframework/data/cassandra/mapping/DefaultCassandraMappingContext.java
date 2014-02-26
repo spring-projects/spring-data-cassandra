@@ -187,8 +187,10 @@ public class DefaultCassandraMappingContext extends
 
 				} else {
 
-					if (prop.isIdProperty()) {
+					if (prop.isIdProperty() || prop.isPartitionKeyColumn()) {
 						spec.partitionKeyColumn(prop.getColumnName(), prop.getDataType());
+					} else if (prop.isClusterKeyColumn()) {
+						spec.clusteredKeyColumn(prop.getColumnName(), prop.getDataType());
 					} else {
 						spec.column(prop.getColumnName(), prop.getDataType());
 					}

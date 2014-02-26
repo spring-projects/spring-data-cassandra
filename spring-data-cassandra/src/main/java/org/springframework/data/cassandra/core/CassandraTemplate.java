@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.QueryOptions;
@@ -288,7 +289,23 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		void doWithClause(Clause clause);
 	}
 
+	protected void appendIdCriteria(final ClauseCallback clauseCallback, CassandraPersistentEntity<?> entity,
+			final Map<?, ?> id) {
+
+		for (Map.Entry<?, ?> entry : id.entrySet()) {
+
+			CassandraPersistentProperty property = entity.getPersistentProperty(entry.getKey().toString());
+			clauseCallback.doWithClause(QueryBuilder.eq(property.getColumnName().toCql(), entry.getValue()));
+		}
+	}
+
 	protected void appendIdCriteria(final ClauseCallback clauseCallback, CassandraPersistentEntity<?> entity, Object id) {
+
+		if (id instanceof Map<?, ?>) {
+
+			appendIdCriteria(clauseCallback, entity, (Map<?, ?>) id);
+			return;
+		}
 
 		CassandraPersistentProperty idProperty = entity.getIdProperty();
 
@@ -418,7 +435,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 */
 	protected <T> T selectOne(String query, CassandraConverterRowCallback<T> readRowCallback) {
 
-		logger.info(query);
+		logger.debug(query);
 
 		ResultSet resultSet = query(query);
 
@@ -448,9 +465,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Batch b = createDeleteBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
 				cassandraConverter);
 
-		logger.info(b.toString());
-
 		String query = b.getQueryString();
+		logger.debug(query);
 
 		if (asynchronously) {
 			executeAsynchronously(query);
@@ -484,7 +500,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 				cassandraConverter);
 
 		String query = b.getQueryString();
-		logger.info(query);
+		logger.debug(query);
 
 		if (asychronously) {
 			executeAsynchronously(query);
@@ -512,7 +528,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 				cassandraConverter);
 
 		String query = b.getQueryString();
-		logger.info(query);
+		logger.debug(query);
 
 		if (asychronously) {
 			executeAsynchronously(query);
@@ -534,9 +550,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Assert.notNull(entity);
 
 		Delete delete = createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
-		logger.info(delete.toString());
 
 		String query = delete.getQueryString();
+		logger.debug(query);
 
 		if (asynchronously) {
 			executeAsynchronously(query);
@@ -561,7 +577,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Update q = toUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
 		String query = q.getQueryString();
-		logger.info(query);
+		logger.debug(query);
 
 		if (asychronously) {
 			executeAsynchronously(query);

@@ -41,8 +41,8 @@ public class MultiLevelSetFlattenerFactoryBean<T> implements FactoryBean<Set<T>>
 
 		for (Set<T> topSet : multiLevelSet) {
 			for (T t : topSet) {
-				log.info(t.toString());
-				log.info("Set contains -> " + set.contains(t));
+				log.debug(t.toString());
+				log.debug("Set contains -> " + set.contains(t));
 				set.add(t);
 			}
 		}

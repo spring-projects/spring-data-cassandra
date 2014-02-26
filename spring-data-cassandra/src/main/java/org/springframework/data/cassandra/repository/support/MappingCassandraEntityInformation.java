@@ -18,8 +18,10 @@ package org.springframework.data.cassandra.repository.support;
 import java.io.Serializable;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
@@ -31,34 +33,25 @@ import org.springframework.util.Assert;
  * the {@link CassandraPersistentEntity} if given.
  * 
  * @author Alex Shvid
- * 
+ * @author Matthew T. Adams
  */
 public class MappingCassandraEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID>
 		implements CassandraEntityInformation<T, ID> {
 
 	private final CassandraPersistentEntity<T> entityMetadata;
-	private final CqlIdentifier customTableName;
+	private CassandraConverter converter;
 
 	/**
 	 * Creates a new {@link MappingCassandraEntityInformation} for the given {@link CassandraPersistentEntity}.
 	 * 
 	 * @param entity must not be {@literal null}.
 	 */
-	public MappingCassandraEntityInformation(CassandraPersistentEntity<T> entity) {
-		this(entity, null);
-	}
+	public MappingCassandraEntityInformation(CassandraPersistentEntity<T> entity, CassandraConverter converter) {
 
-	/**
-	 * Creates a new {@link MappingCassandraEntityInformation} for the given {@link CassandraPersistentEntity} and custom
-	 * table name.
-	 * 
-	 * @param entity must not be {@literal null}.
-	 * @param customTableName
-	 */
-	public MappingCassandraEntityInformation(CassandraPersistentEntity<T> entity, CqlIdentifier customTableName) {
 		super(entity.getType());
+
 		this.entityMetadata = entity;
-		this.customTableName = customTableName;
+		this.converter = converter;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -68,21 +61,21 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 		Assert.notNull(entity);
 
 		CassandraPersistentProperty idProperty = entityMetadata.getIdProperty();
-		if (idProperty == null) {
-			return null;
+		if (idProperty != null) {
+			return (ID) BeanWrapper.create(entity, null).getProperty(idProperty);
 		}
 
-		return (ID) BeanWrapper.create(entity, null).getProperty(idProperty);
+		return (ID) converter.getId(entity, entityMetadata);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Class<ID> getIdType() {
-		return (Class<ID>) entityMetadata.getIdProperty().getType();
+		return (Class<ID>) (entityMetadata.getIdProperty() == null ? MapId.class : entityMetadata.getIdProperty().getType());
 	}
 
 	@Override
 	public CqlIdentifier getTableName() {
-		return customTableName == null ? entityMetadata.getTableName() : customTableName;
+		return entityMetadata.getTableName();
 	}
 }

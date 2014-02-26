@@ -18,14 +18,14 @@ package org.springframework.data.cassandra.repository.support;
 import java.io.Serializable;
 
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
 
 /**
- * {@link org.springframework.beans.factory.FactoryBean} to create {@link CassandraRepository} instances.
+ * {@link org.springframework.beans.factory.FactoryBean} to create {@link TypedIdCassandraRepository} instances.
  * 
  * @author Alex Shvid
  * 

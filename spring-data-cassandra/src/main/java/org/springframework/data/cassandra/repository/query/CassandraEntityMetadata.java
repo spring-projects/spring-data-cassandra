@@ -15,12 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.repository.core.EntityMetadata;
 
 /**
  * Extension of {@link EntityMetadata} to additionally expose the table name an entity shall be persisted to.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  * 
  * @param <T>
  */
@@ -31,5 +33,5 @@ public interface CassandraEntityMetadata<T> extends EntityMetadata<T> {
 	 * 
 	 * @return
 	 */
-	String getTableName();
+	CqlIdentifier getTableName();
 }

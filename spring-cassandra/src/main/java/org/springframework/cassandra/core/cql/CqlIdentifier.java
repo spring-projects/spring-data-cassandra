@@ -1,5 +1,6 @@
 package org.springframework.cassandra.core.cql;
 
+import java.io.Serializable;
 import java.util.regex.Pattern;
 
 import org.springframework.cassandra.core.ReservedKeyword;
@@ -24,7 +25,9 @@ import com.datastax.driver.core.TableMetadata;
  * @author John McPeek
  * @author Matthew T. Adams
  */
-public final class CqlIdentifier implements Comparable<CqlIdentifier> {
+public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializable {
+
+	private static final long serialVersionUID = -974441606330912437L;
 
 	public static final String UNQUOTED_REGEX = "(?i)[a-z][\\w]*";
 	public static final Pattern UNQUOTED = Pattern.compile(UNQUOTED_REGEX);

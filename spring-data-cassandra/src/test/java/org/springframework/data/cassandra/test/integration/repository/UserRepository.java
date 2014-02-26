@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.repository;
 
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 
 /**
  * Sample repository managing {@link User} entities.
@@ -23,5 +23,5 @@ import org.springframework.data.cassandra.repository.CassandraRepository;
  * @author Alex Shvid
  * 
  */
-public interface UserRepository extends CassandraRepository<User, String> {
+public interface UserRepository extends TypedIdCassandraRepository<User, String> {
 }
