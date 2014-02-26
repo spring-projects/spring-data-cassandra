@@ -10,7 +10,7 @@
 	<packaging>pom</packaging>
 
 	<name>Spring Data Cassandra</name>
-	<description>Cassandra support for Spring Data</description>
+	<description>Spring Data Cassandra</description>
 	<url>http://www.springsource.org/spring-data/cassandra</url>
 
 	<parent>
@@ -21,7 +21,7 @@
 	</parent>
 
 	<modules>
-		<module>spring-cassandra</module>
+		<module>spring-cql</module>
 		<module>spring-data-cassandra</module>
 		<module>spring-data-cassandra-distribution</module>
 	</modules>

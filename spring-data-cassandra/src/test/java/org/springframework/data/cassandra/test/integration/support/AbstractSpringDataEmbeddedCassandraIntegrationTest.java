@@ -25,7 +25,7 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 public class AbstractSpringDataEmbeddedCassandraIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
 	static {
-		SpringDataCassandraBuildProperties props = new SpringDataCassandraBuildProperties();
+		SpringCassandraBuildProperties props = new SpringCassandraBuildProperties();
 		CASSANDRA_NATIVE_PORT = props.getCassandraPort();
 	}
 

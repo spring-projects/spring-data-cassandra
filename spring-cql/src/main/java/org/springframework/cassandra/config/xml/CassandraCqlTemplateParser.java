@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2014 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,28 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config.xml;
+package org.springframework.cassandra.config.xml;
+
+import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.cassandra.config.DefaultBeanNames;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.cassandra.config.CassandraCqlTemplateFactoryBean;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Spring Data Cassandra XML namespace parser for the &lt;converter&gt; element.
+ * Parser for &lt;template&gt; definitions.
  * 
+ * @author David Webb
  * @author Matthew T. Adams
  */
-public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitionParser {
+public class CassandraCqlTemplateParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return MappingCassandraConverter.class;
+		return CassandraCqlTemplateFactoryBean.class;
 	}
 
 	@Override
@@ -42,19 +44,11 @@ public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitio
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : DefaultBeanNames.CONVERTER;
+		return StringUtils.hasText(id) ? id : DefaultCqlBeanNames.TEMPLATE;
 	}
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
-		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
-
-		String mappingRef = element.getAttribute("mapping-ref");
-		if (!StringUtils.hasText(mappingRef)) {
-			mappingRef = DefaultBeanNames.CONTEXT;
-		}
-
-		builder.addConstructorArgReference(mappingRef);
+		addOptionalPropertyReference(builder, "session", element, "session-ref", DefaultCqlBeanNames.SESSION);
 	}
 }

@@ -116,7 +116,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		DefaultSpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
 
-		DefaultCassandraRowValueProvider rowValueProvider = new DefaultCassandraRowValueProvider(row, evaluator);
+		BasicCassandraRowValueProvider rowValueProvider = new BasicCassandraRowValueProvider(row, evaluator);
 
 		CassandraPersistentEntityParameterValueProvider parameterProvider = new CassandraPersistentEntityParameterValueProvider(
 				entity, rowValueProvider, null);
@@ -132,7 +132,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	protected void readPropertiesFromRow(final CassandraPersistentEntity<?> entity,
-			final DefaultCassandraRowValueProvider row, final BeanWrapper<?, ?> wrapper) {
+			final BasicCassandraRowValueProvider row, final BeanWrapper<?, ?> wrapper) {
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
@@ -145,7 +145,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	protected void readPropertyFromRow(final CassandraPersistentEntity<?> entity, final CassandraPersistentProperty prop,
-			final DefaultCassandraRowValueProvider row, final BeanWrapper<?, ?> wrapper) {
+			final BasicCassandraRowValueProvider row, final BeanWrapper<?, ?> wrapper) {
 
 		if (entity.isConstructorArgument(prop)) { // skip 'cause prop was set in ctor
 			return;
@@ -181,7 +181,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	protected Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
-			DefaultCassandraRowValueProvider propertyProvider) {
+			BasicCassandraRowValueProvider propertyProvider) {
 
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 

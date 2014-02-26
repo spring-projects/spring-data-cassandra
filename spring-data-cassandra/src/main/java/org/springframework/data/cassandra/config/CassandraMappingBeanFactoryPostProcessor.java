@@ -54,9 +54,9 @@ import com.datastax.driver.core.Session;
  * {@link CassandraMappingContext} definition present, then it will be used in the
  * {@link BasicCassandraMappingContext} bean definition.
  * <p/>
- * It requires that a single {@link Session} or {@link CassandraDataSessionFactoryBean} definition be present. As
- * described above, multiple {@link Session} definitions, multiple {@link CassandraDataSessionFactoryBean} definitions,
- * or both a {@link Session} and {@link CassandraDataSessionFactoryBean} will cause an {@link IllegalStateException} to
+ * It requires that a single {@link Session} or {@link CassandraSessionFactoryBean} definition be present. As
+ * described above, multiple {@link Session} definitions, multiple {@link CassandraSessionFactoryBean} definitions,
+ * or both a {@link Session} and {@link CassandraSessionFactoryBean} will cause an {@link IllegalStateException} to
  * be thrown.
  * 
  * @author Matthew T. Adams
@@ -141,14 +141,14 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanDefinitionR
 		// first, search for any session and session factory beans
 		BeanDefinitionHolder[] sessionBeans = getBeanDefinitionsOfType(registry, factory, Session.class, true, false);
 		BeanDefinitionHolder[] sessionFactoryBeans = getBeanDefinitionsOfType(registry, factory,
-				CassandraDataSessionFactoryBean.class, true, false);
+				CassandraSessionFactoryBean.class, true, false);
 
 		int sessionCount = sessionBeans.length;
 		int sessionFactoryCount = sessionFactoryBeans.length;
 		int totalCount = sessionCount + sessionFactoryCount;
 
 		if (totalCount == 0 || totalCount > 1) { // can't create default template -- none or multiple
-			throw createSessionException(totalCount, Session.class, CassandraDataSessionFactoryBean.class);
+			throw createSessionException(totalCount, Session.class, CassandraSessionFactoryBean.class);
 		}
 
 		if (sessionCount == 1) {
@@ -168,7 +168,7 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanDefinitionR
 	protected BeanDefinitionHolder regsiterDefaultContext(BeanDefinitionRegistry registry) {
 
 		BeanDefinitionHolder contextBean = new BeanDefinitionHolder(BeanDefinitionBuilder.genericBeanDefinition(
-				BasicCassandraMappingContext.class).getBeanDefinition(), DefaultDataBeanNames.CONTEXT);
+				BasicCassandraMappingContext.class).getBeanDefinition(), DefaultBeanNames.CONTEXT);
 
 		registry.registerBeanDefinition(contextBean.getBeanName(), contextBean.getBeanDefinition());
 
@@ -180,7 +180,7 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanDefinitionR
 		BeanDefinitionBuilder converterBeanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 				MappingCassandraConverter.class).addConstructorArgReference(contextBeanName);
 		BeanDefinitionHolder beanDefinition = new BeanDefinitionHolder(converterBeanDefinitionBuilder.getBeanDefinition(),
-				DefaultDataBeanNames.CONVERTER);
+				DefaultBeanNames.CONVERTER);
 
 		registry.registerBeanDefinition(beanDefinition.getBeanName(), beanDefinition.getBeanDefinition());
 
@@ -195,7 +195,7 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanDefinitionR
 				.addConstructorArgReference(converterBeanName);
 		BeanDefinition beanDefinition = templateBeanDefinitionBuilder.getBeanDefinition();
 
-		BeanDefinitionHolder template = new BeanDefinitionHolder(beanDefinition, DefaultDataBeanNames.TEMPLATE);
+		BeanDefinitionHolder template = new BeanDefinitionHolder(beanDefinition, DefaultBeanNames.TEMPLATE);
 		registry.registerBeanDefinition(template.getBeanName(), template.getBeanDefinition());
 
 		return template;

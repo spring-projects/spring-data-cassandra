@@ -18,23 +18,23 @@ package org.springframework.data.cassandra.config.xml;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.cassandra.config.xml.CassandraCqlTemplateParser;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.config.CassandraTemplateFactoryBean;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Spring Data Cassandra XML namespace parser for the &lt;converter&gt; element.
+ * Spring Data Cassandra XML namespace parser for the &lt;template&gt; element.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitionParser {
+public class CassandraTemplateParser extends CassandraCqlTemplateParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return MappingCassandraConverter.class;
+		return CassandraTemplateFactoryBean.class;
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitio
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : DefaultBeanNames.CONVERTER;
+		return StringUtils.hasText(id) ? id : DefaultBeanNames.DATA_TEMPLATE;
 	}
 
 	@Override
@@ -50,11 +50,16 @@ public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitio
 
 		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
 
-		String mappingRef = element.getAttribute("mapping-ref");
-		if (!StringUtils.hasText(mappingRef)) {
-			mappingRef = DefaultBeanNames.CONTEXT;
-		}
+		super.doParse(element, parserContext, builder);
 
-		builder.addConstructorArgReference(mappingRef);
+		parseConverterAttribute(element, parserContext, builder);
+	}
+
+	protected void parseConverterAttribute(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		String converterRef = element.getAttribute("cassandra-converter-ref");
+		if (!StringUtils.hasText(converterRef)) {
+			converterRef = DefaultBeanNames.CONVERTER;
+		}
+		builder.addPropertyReference("converter", converterRef);
 	}
 }

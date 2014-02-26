@@ -25,7 +25,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.cassandra.config.DefaultDataBeanNames;
+import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.EntityMapping;
 import org.springframework.data.cassandra.mapping.Mapping;
@@ -51,7 +51,7 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : DefaultDataBeanNames.CONTEXT;
+		return StringUtils.hasText(id) ? id : DefaultBeanNames.CONTEXT;
 	}
 
 	@Override

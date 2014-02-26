@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.repository.config;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.cassandra.config.xml.ParsingUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.data.cassandra.config.DefaultDataBeanNames;
+import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
@@ -53,7 +53,7 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 		Element element = config.getElement();
 
 		ParsingUtils.addOptionalPropertyReference(builder, "cassandraTemplate", element, CASSANDRA_TEMPLATE_REF,
-				DefaultDataBeanNames.TEMPLATE);
+				DefaultBeanNames.TEMPLATE);
 	}
 
 	@Override
