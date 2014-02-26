@@ -88,7 +88,7 @@ public interface CassandraMappingContext extends
 	boolean contains(Class<?> type);
 
 	/**
-	 * Sets a verifier other than the {@link DefaultCassandraPersistentEntityMetadataVerifier}
+	 * Sets a verifier other than the {@link BasicCassandraPersistentEntityMetadataVerifier}
 	 */
 	void setVerifier(CassandraPersistentEntityMetadataVerifier verifier);
 }

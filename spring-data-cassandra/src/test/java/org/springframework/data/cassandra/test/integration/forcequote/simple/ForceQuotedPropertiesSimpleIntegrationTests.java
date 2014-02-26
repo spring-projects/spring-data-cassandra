@@ -16,7 +16,7 @@ import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.Column;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
@@ -24,7 +24,7 @@ import org.springframework.data.cassandra.mapping.Table;
 
 public class ForceQuotedPropertiesSimpleIntegrationTests {
 
-	CassandraMappingContext context = new DefaultCassandraMappingContext();
+	CassandraMappingContext context = new BasicCassandraMappingContext();
 
 	@Test
 	public void testImplicit() {

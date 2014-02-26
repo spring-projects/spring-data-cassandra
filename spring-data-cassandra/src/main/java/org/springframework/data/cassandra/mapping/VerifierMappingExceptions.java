@@ -27,6 +27,7 @@ import org.springframework.data.mapping.model.MappingException;
  * @author David Webb
  * 
  */
+@SuppressWarnings("serial")
 public class VerifierMappingExceptions extends MappingException {
 
 	Collection<MappingException> exceptions = new LinkedList<MappingException>();

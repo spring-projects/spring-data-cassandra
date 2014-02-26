@@ -26,7 +26,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.cassandra.config.DefaultDataBeanNames;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.EntityMapping;
 import org.springframework.data.cassandra.mapping.Mapping;
 import org.springframework.data.cassandra.mapping.PropertyMapping;
@@ -43,7 +43,7 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return DefaultCassandraMappingContext.class;
+		return BasicCassandraMappingContext.class;
 	}
 
 	@Override

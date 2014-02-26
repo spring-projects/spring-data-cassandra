@@ -30,7 +30,7 @@ import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Session;
@@ -41,7 +41,7 @@ import com.datastax.driver.core.Session;
  * interface types via their default implementation types:
  * <ul>
  * <li>{@link CassandraOperations} via {@link CassandraTemplate}</li>
- * <li>{@link CassandraMappingContext} via {@link DefaultCassandraMappingContext}</li>
+ * <li>{@link CassandraMappingContext} via {@link BasicCassandraMappingContext}</li>
  * <li> {@link CassandraConverter} via {@link MappingCassandraConverter}</li>
  * </ul>
  * <p/>
@@ -52,7 +52,7 @@ import com.datastax.driver.core.Session;
  * <p/>
  * If a single definition of a required type is present, then it is used. For example, if there is already a
  * {@link CassandraMappingContext} definition present, then it will be used in the
- * {@link DefaultCassandraMappingContext} bean definition.
+ * {@link BasicCassandraMappingContext} bean definition.
  * <p/>
  * It requires that a single {@link Session} or {@link CassandraDataSessionFactoryBean} definition be present. As
  * described above, multiple {@link Session} definitions, multiple {@link CassandraDataSessionFactoryBean} definitions,
@@ -168,7 +168,7 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanDefinitionR
 	protected BeanDefinitionHolder regsiterDefaultContext(BeanDefinitionRegistry registry) {
 
 		BeanDefinitionHolder contextBean = new BeanDefinitionHolder(BeanDefinitionBuilder.genericBeanDefinition(
-				DefaultCassandraMappingContext.class).getBeanDefinition(), DefaultDataBeanNames.CONTEXT);
+				BasicCassandraMappingContext.class).getBeanDefinition(), DefaultDataBeanNames.CONTEXT);
 
 		registry.registerBeanDefinition(contextBean.getBeanName(), contextBean.getBeanDefinition());
 

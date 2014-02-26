@@ -26,7 +26,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
@@ -44,7 +44,7 @@ public class BasicCassandraPersistentEntityVerifierIntegrationTest {
 	@Before
 	public void init() {
 
-		mappingContext = new DefaultCassandraMappingContext();
+		mappingContext = new BasicCassandraMappingContext();
 
 	}
 

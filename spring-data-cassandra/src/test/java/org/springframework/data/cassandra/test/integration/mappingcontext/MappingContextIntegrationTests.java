@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.model.MappingException;
@@ -43,7 +43,7 @@ public class MappingContextIntegrationTests {
 		String key;
 	}
 
-	DefaultCassandraMappingContext ctx = new DefaultCassandraMappingContext();
+	BasicCassandraMappingContext ctx = new BasicCassandraMappingContext();
 
 	@Test(expected = MappingException.class)
 	public void testGetPersistentEntityOfTransientType() {

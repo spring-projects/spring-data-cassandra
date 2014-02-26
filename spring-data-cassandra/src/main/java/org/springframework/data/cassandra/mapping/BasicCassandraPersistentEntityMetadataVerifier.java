@@ -33,9 +33,9 @@ import org.springframework.data.mapping.model.MappingException;
  * @author Matthew T Adams
  * @author David Webb
  */
-public class DefaultCassandraPersistentEntityMetadataVerifier implements CassandraPersistentEntityMetadataVerifier {
+public class BasicCassandraPersistentEntityMetadataVerifier implements CassandraPersistentEntityMetadataVerifier {
 
-	private static final Logger log = LoggerFactory.getLogger(DefaultCassandraPersistentEntityMetadataVerifier.class);
+	private static final Logger log = LoggerFactory.getLogger(BasicCassandraPersistentEntityMetadataVerifier.class);
 
 	protected boolean strict = false;
 
@@ -43,7 +43,7 @@ public class DefaultCassandraPersistentEntityMetadataVerifier implements Cassand
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 
 		VerifierMappingExceptions exceptions = new VerifierMappingExceptions(
-				"Mapping Exceptions from DefaultCassandraPersistentEntityMetadataVerifier");
+				"Mapping Exceptions from BasicCassandraPersistentEntityMetadataVerifier");
 
 		final List<CassandraPersistentProperty> idProperties = new ArrayList<CassandraPersistentProperty>();
 		final List<CassandraPersistentProperty> compositePrimaryKeys = new ArrayList<CassandraPersistentProperty>();

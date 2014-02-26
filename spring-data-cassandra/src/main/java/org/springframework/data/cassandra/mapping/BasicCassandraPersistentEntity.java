@@ -47,7 +47,7 @@ import org.springframework.util.StringUtils;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty> implements
 		CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new DefaultCassandraPersistentEntityMetadataVerifier();
+	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new BasicCassandraPersistentEntityMetadataVerifier();
 
 	protected CqlIdentifier tableName;
 	protected CassandraMappingContext mappingContext;

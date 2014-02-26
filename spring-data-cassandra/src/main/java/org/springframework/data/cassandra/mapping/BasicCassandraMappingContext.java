@@ -51,14 +51,14 @@ import com.datastax.driver.core.TableMetadata;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-public class DefaultCassandraMappingContext extends
+public class BasicCassandraMappingContext extends
 		AbstractMappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty> implements
 		CassandraMappingContext, ApplicationContextAware {
 
 	protected ApplicationContext context;
 	protected Mapping mapping = new Mapping();
 	protected ClassLoader beanClassLoader;
-	protected CassandraPersistentEntityMetadataVerifier verifier = new DefaultCassandraPersistentEntityMetadataVerifier();
+	protected CassandraPersistentEntityMetadataVerifier verifier = new BasicCassandraPersistentEntityMetadataVerifier();
 
 	// useful caches
 	protected Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<CqlIdentifier, Set<CassandraPersistentEntity<?>>>();
@@ -67,9 +67,9 @@ public class DefaultCassandraMappingContext extends
 	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<Class<?>, CassandraPersistentEntity<?>>();
 
 	/**
-	 * Creates a new {@link DefaultCassandraMappingContext}.
+	 * Creates a new {@link BasicCassandraMappingContext}.
 	 */
-	public DefaultCassandraMappingContext() {
+	public BasicCassandraMappingContext() {
 		setSimpleTypeHolder(new CassandraSimpleTypeHolder());
 	}
 

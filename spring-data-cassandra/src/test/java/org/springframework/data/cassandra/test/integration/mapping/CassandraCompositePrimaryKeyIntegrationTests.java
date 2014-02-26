@@ -38,7 +38,7 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.mapping.Column;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
@@ -119,7 +119,7 @@ public class CassandraCompositePrimaryKeyIntegrationTests {
 
 	@Before
 	public void setup() {
-		context = new DefaultCassandraMappingContext();
+		context = new BasicCassandraMappingContext();
 		thing = context.getPersistentEntity(ClassTypeInformation.from(Thing.class));
 		key = context.getPersistentEntity(ClassTypeInformation.from(Key.class));
 	}

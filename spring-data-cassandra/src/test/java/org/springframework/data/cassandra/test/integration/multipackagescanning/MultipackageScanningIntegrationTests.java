@@ -25,20 +25,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.test.integration.multipackagescanning.first.First;
 import org.springframework.data.cassandra.test.integration.multipackagescanning.second.Second;
 import org.springframework.data.cassandra.test.integration.multipackagescanning.third.Third;
 
 public class MultipackageScanningIntegrationTests {
 
-	DefaultCassandraMappingContext mapping;
+	BasicCassandraMappingContext mapping;
 	String pkg = getClass().getPackage().getName();
 
 	@Before
 	public void before() throws ClassNotFoundException {
 
-		mapping = new DefaultCassandraMappingContext();
+		mapping = new BasicCassandraMappingContext();
 		mapping.setInitialEntitySet(CassandraEntityClassScanner.scan(pkg + ".first", pkg + ".second"));
 
 		mapping.initialize();

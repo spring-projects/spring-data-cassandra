@@ -27,7 +27,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.mapping.DefaultCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
@@ -41,7 +41,7 @@ import org.springframework.data.mapping.PropertyHandler;
 public class BasicCassandraPersistentEntityOrderPropertiesTest {
 
 	private List<CassandraPersistentProperty> expected;
-	private DefaultCassandraMappingContext mappingContext = new DefaultCassandraMappingContext();
+	private BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
 
 	@Before
 	public void init() {
