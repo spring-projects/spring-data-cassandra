@@ -101,7 +101,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			return q;
 		}
 
-		// common options
 		if (options.getConsistencyLevel() != null) {
 			q.setConsistencyLevel(ConsistencyLevelResolver.resolve(options.getConsistencyLevel()));
 		}
@@ -109,37 +108,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			q.setRetryPolicy(RetryPolicyResolver.resolve(options.getRetryPolicy()));
 		}
 
-		Using ttl = options.getTtl() == null ? null : QueryBuilder.ttl(options.getTtl());
-		Using timestamp = options.getTimestamp() == null ? null : QueryBuilder.timestamp(options.getTimestamp());
-
-		// options for specific query types
-
-		if (q instanceof Insert) {
-			Insert i = (Insert) q;
-			if (ttl != null) {
-				i.using(ttl);
-			}
-			if (timestamp != null) {
-				i.using(timestamp);
-			}
-		}
-
-		if (q instanceof Update) {
-			Update u = ((Update) q);
-			if (ttl != null) {
-				u.using(ttl);
-			}
-			if (timestamp != null) {
-				u.using(timestamp);
-			}
-		}
-
-		if (q instanceof Delete) {
-			Delete d = (Delete) q;
-			if (timestamp != null) {
-				d.using(timestamp);
-			}
-		}
 		return q;
 	}
 

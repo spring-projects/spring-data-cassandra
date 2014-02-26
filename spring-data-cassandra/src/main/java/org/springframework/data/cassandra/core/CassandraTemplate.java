@@ -613,13 +613,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		 */
 		CqlTemplate.addQueryOptions(q, options);
 
-		/*
-		 * Add TTL to Insert object
-		 */
-		if (options != null && options.getTtl() != null) {
-			q.using(QueryBuilder.ttl(options.getTtl()));
-		}
-
 		return q;
 	}
 
@@ -648,15 +641,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		 */
 		CqlTemplate.addQueryOptions(q, options);
 
-		/*
-		 * Add TTL to Insert object
-		 */
-		if (options != null && options.getTtl() != null) {
-			q.using(QueryBuilder.ttl(options.getTtl()));
-		}
-
 		return q;
-
 	}
 
 	/**

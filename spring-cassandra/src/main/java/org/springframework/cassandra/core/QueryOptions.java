@@ -25,8 +25,6 @@ public class QueryOptions {
 
 	private ConsistencyLevel consistencyLevel;
 	private RetryPolicy retryPolicy;
-	private Integer ttl;
-	private Long timestamp;
 
 	/**
 	 * @return Returns the consistencyLevel.
@@ -54,27 +52,5 @@ public class QueryOptions {
 	 */
 	public void setRetryPolicy(RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
-	}
-
-	/**
-	 * @return Returns the ttl in seconds.
-	 */
-	public Integer getTtl() {
-		return ttl;
-	}
-
-	/**
-	 * @param ttl The ttl in seconds to set.
-	 */
-	public void setTtl(Integer timeToLive) {
-		this.ttl = timeToLive;
-	}
-
-	public Long getTimestamp() {
-		return timestamp;
-	}
-
-	public void setTimestamp(Long timestamp) {
-		this.timestamp = timestamp;
 	}
 }
