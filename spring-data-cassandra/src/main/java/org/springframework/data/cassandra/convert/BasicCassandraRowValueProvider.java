@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -25,7 +23,6 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
 
 /**
@@ -37,9 +34,7 @@ import com.datastax.driver.core.Row;
  */
 public class BasicCassandraRowValueProvider implements CassandraRowValueProvider {
 
-	private static Logger log = LoggerFactory.getLogger(BasicCassandraRowValueProvider.class);
-
-	private final Row source;
+	private final ColumnReader reader;
 	private final SpELExpressionEvaluator evaluator;
 
 	/**
@@ -53,88 +48,24 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 		Assert.notNull(source);
 		Assert.notNull(evaluator);
 
-		this.source = source;
+		this.reader = new ColumnReader(source);
 		this.evaluator = evaluator;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T getPropertyValue(CassandraPersistentProperty property) {
+	public Object getPropertyValue(CassandraPersistentProperty property) {
 
 		String expression = property.getSpelExpression();
 		if (expression != null) {
 			return evaluator.evaluate(expression);
 		}
 
-		String columnName = property.getColumnName().toCql();
-		if (source.isNull(columnName)) {
-			return null;
-		}
-
-		DataType columnType = source.getColumnDefinitions().getType(columnName);
-
-		/*
-		 * Handle the types of collections that are available
-		 */
-		if (columnType.isCollection()) {
-
-			List<DataType> collectionTypes = columnType.getTypeArguments();
-			if (collectionTypes.size() == 2) {
-				return (T) source
-						.getMap(columnName, collectionTypes.get(0).asJavaClass(), collectionTypes.get(1).asJavaClass());
-			}
-
-			if (columnType.equals(DataType.list(collectionTypes.get(0)))) {
-				return (T) source.getList(columnName, collectionTypes.get(0).asJavaClass());
-			}
-
-			if (columnType.equals(DataType.set(collectionTypes.get(0)))) {
-				return (T) source.getSet(columnName, collectionTypes.get(0).asJavaClass());
-			}
-
-			throw new IllegalStateException("Unknown Collection type encountered.  Valid collections are Set, List and Map.");
-		}
-
-		if (columnType.equals(DataType.text()) || columnType.equals(DataType.ascii())
-				|| columnType.equals(DataType.varchar())) {
-			return (T) source.getString(columnName);
-		}
-		if (columnType.equals(DataType.cint()) || columnType.equals(DataType.varint())) {
-			return (T) new Integer(source.getInt(columnName));
-		}
-		if (columnType.equals(DataType.cdouble())) {
-			return (T) new Double(source.getDouble(columnName));
-		}
-		if (columnType.equals(DataType.bigint()) || columnType.equals(DataType.counter())) {
-			return (T) new Long(source.getLong(columnName));
-		}
-		if (columnType.equals(DataType.cfloat())) {
-			return (T) new Float(source.getFloat(columnName));
-		}
-		if (columnType.equals(DataType.decimal())) {
-			return (T) source.getDecimal(columnName);
-		}
-		if (columnType.equals(DataType.cboolean())) {
-			return (T) new Boolean(source.getBool(columnName));
-		}
-		if (columnType.equals(DataType.timestamp())) {
-			return (T) source.getDate(columnName);
-		}
-		if (columnType.equals(DataType.blob())) {
-			return (T) source.getBytes(columnName);
-		}
-		if (columnType.equals(DataType.inet())) {
-			return (T) source.getInet(columnName);
-		}
-		if (columnType.equals(DataType.uuid()) || columnType.equals(DataType.timeuuid())) {
-			return (T) source.getUUID(columnName);
-		}
-
-		return (T) source.getBytes(columnName);
+		return reader.get(property.getColumnName());
 	}
 
 	@Override
 	public Row getRow() {
-		return source;
+		return reader.getRow();
 	}
 }

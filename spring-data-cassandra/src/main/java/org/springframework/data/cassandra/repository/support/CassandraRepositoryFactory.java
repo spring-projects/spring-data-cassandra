@@ -16,16 +16,23 @@
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
-import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
+import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
 import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.util.Assert;
 
 /**
@@ -38,7 +45,7 @@ import org.springframework.util.Assert;
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	private final CassandraTemplate cassandraTemplate;
-	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+	private final CassandraMappingContext mappingContext;
 
 	/**
 	 * Creates a new {@link MongoRepositoryFactory} with the given {@link MongoOperations}.
@@ -51,6 +58,9 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 		this.cassandraTemplate = cassandraTemplate;
 		this.mappingContext = cassandraTemplate.getConverter().getMappingContext();
+
+		// TODO: remove when supporting declarative query methods
+		setQueryLookupStrategyKey(QueryLookupStrategy.Key.USE_DECLARED_QUERY);
 	}
 
 	@Override
@@ -81,5 +91,29 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
 				cassandraTemplate.getConverter());
+	}
+
+	@Override
+	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
+		return new CassandraQueryLookupStrategy();
+	}
+
+	private class CassandraQueryLookupStrategy implements QueryLookupStrategy {
+
+		@Override
+		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, NamedQueries namedQueries) {
+
+			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, mappingContext);
+			String namedQueryName = queryMethod.getNamedQueryName();
+
+			if (namedQueries.hasQuery(namedQueryName)) {
+				String namedQuery = namedQueries.getQuery(namedQueryName);
+				return new StringBasedCassandraQuery(namedQuery, queryMethod, cassandraTemplate);
+			} else if (queryMethod.hasAnnotatedQuery()) {
+				return new StringBasedCassandraQuery(queryMethod, cassandraTemplate);
+			} else {
+				throw new InvalidDataAccessApiUsageException("declarative query methods are a todo");
+			}
+		}
 	}
 }

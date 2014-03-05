@@ -234,10 +234,6 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 							(CreateKeyspaceSpecification) spec).toCql() : new DropKeyspaceCqlGenerator(
 							(DropKeyspaceSpecification) spec).toCql();
 
-					if (log.isDebugEnabled()) {
-						log.debug("executing CQL [{}]", cql);
-					}
-
 					template.execute(cql);
 				}
 			}

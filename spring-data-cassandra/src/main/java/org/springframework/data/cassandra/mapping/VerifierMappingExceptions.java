@@ -31,12 +31,14 @@ import org.springframework.data.mapping.model.MappingException;
 public class VerifierMappingExceptions extends MappingException {
 
 	Collection<MappingException> exceptions = new LinkedList<MappingException>();
+	private String className;
 
 	/**
 	 * @param s
 	 */
-	public VerifierMappingExceptions(String s) {
+	public VerifierMappingExceptions(CassandraPersistentEntity<?> entity, String s) {
 		super(s);
+		this.className = entity.getType().getName();
 	}
 
 	/**
@@ -79,7 +81,7 @@ public class VerifierMappingExceptions extends MappingException {
 
 	@Override
 	public String getMessage() {
-		StringBuilder builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder(className).append(":\n");
 		for (MappingException e : exceptions) {
 			builder.append(e.getMessage()).append("\n");
 		}

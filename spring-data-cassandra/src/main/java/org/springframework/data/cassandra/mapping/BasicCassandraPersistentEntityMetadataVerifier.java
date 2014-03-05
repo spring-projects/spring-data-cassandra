@@ -42,7 +42,7 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 
-		VerifierMappingExceptions exceptions = new VerifierMappingExceptions(
+		VerifierMappingExceptions exceptions = new VerifierMappingExceptions(entity,
 				"Mapping Exceptions from BasicCassandraPersistentEntityMetadataVerifier");
 
 		final List<CassandraPersistentProperty> idProperties = new ArrayList<CassandraPersistentProperty>();
