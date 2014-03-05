@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.test.integration.repositoryquery;
+package org.springframework.data.cassandra.test.integration.querymethods.declared;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -8,26 +8,20 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
+import org.springframework.data.cassandra.test.integration.querymethods.declared.base.PersonRepository;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class QueryAnnotationIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-	@Configuration
-	@EnableCassandraRepositories(basePackageClasses = PersonRepository.class)
 	public static class Config extends IntegrationTestConfig {
 
 		@Override

@@ -93,6 +93,12 @@ public class UserRepositoryIntegrationTests {
 		setUp();
 	}
 
+	public void findByNamedQuery() {
+		String name = repository.findByNamedQuery("bob");
+		Assert.assertNotNull(name);
+		Assert.assertEquals("Bob", name);
+	}
+
 	public void findsUserById() throws Exception {
 
 		User user = repository.findOne(bob.getUsername());

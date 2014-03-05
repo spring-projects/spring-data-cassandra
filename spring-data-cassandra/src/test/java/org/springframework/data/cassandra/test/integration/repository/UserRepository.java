@@ -21,7 +21,9 @@ import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
  * Sample repository managing {@link User} entities.
  * 
  * @author Alex Shvid
- * 
+ * @author Matthew T. Adams
  */
 public interface UserRepository extends TypedIdCassandraRepository<User, String> {
+
+	String findByNamedQuery(String username);
 }

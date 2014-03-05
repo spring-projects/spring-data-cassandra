@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.repositoryquery;
+package org.springframework.data.cassandra.test.integration.querymethods.declared;
 
 import java.util.Date;
 

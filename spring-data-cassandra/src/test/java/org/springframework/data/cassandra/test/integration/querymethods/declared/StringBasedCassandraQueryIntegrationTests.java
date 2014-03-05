@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.repositoryquery;
+package org.springframework.data.cassandra.test.integration.querymethods.declared;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -42,8 +42,6 @@ import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * Unit tests for {@link StringBasedCassandraQuery}.
- * 
- * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class StringBasedCassandraQueryIntegrationTests {

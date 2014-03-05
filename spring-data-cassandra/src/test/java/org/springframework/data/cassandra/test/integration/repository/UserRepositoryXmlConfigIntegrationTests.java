@@ -15,60 +15,13 @@
  */
 package org.springframework.data.cassandra.test.integration.repository;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * Base class for xml config tests for {@link UserRepository}.
+ * xml config tests for {@link UserRepository}.
  * 
  * @author Matthew T. Adams
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class UserRepositoryXmlConfigIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
-
-	@Autowired
-	protected UserRepository repository;
-
-	@Autowired
-	protected CassandraOperations template;
-
-	UserRepositoryIntegrationTests tests;
-
-	@Before
-	public void before() {
-		tests = new UserRepositoryIntegrationTests(repository, template);
-		tests.before();
-	}
-
-	@Test
-	public void findsUserById() throws Exception {
-		tests.findsUserById();
-	}
-
-	@Test
-	public void findsAll() throws Exception {
-		tests.findsAll();
-	}
-
-	@Test
-	public void findsAllWithGivenIds() {
-		tests.findsAllWithGivenIds();
-	}
-
-	@Test
-	public void deletesUserCorrectly() throws Exception {
-		tests.deletesUserCorrectly();
-	}
-
-	@Test
-	public void deletesUserByIdCorrectly() {
-		tests.deletesUserByIdCorrectly();
-	}
+public class UserRepositoryXmlConfigIntegrationTests extends UserRepositoryIntegrationTestsDelegator {
 }
