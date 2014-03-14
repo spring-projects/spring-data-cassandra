@@ -65,7 +65,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	protected final CassandraMappingContext mappingContext;
 	protected ApplicationContext applicationContext;
 	protected SpELContext spELContext;
-	protected boolean useFieldAccessOnly = true;
 
 	protected ClassLoader beanClassLoader;
 
@@ -187,14 +186,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		return instantiator.createInstance(entity, new CassandraPersistentEntityParameterValueProvider(entity,
 				propertyProvider, null));
-	}
-
-	public boolean getUseFieldAccessOnly() {
-		return useFieldAccessOnly;
-	}
-
-	public void setUseFieldAccessOnly(boolean useFieldAccessOnly) {
-		this.useFieldAccessOnly = useFieldAccessOnly;
 	}
 
 	@Override

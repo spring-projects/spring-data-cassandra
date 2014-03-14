@@ -62,7 +62,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	protected CassandraConverter cassandraConverter;
 	protected CassandraMappingContext mappingContext;
-	protected boolean useFieldAccessOnly = false;
 
 	/**
 	 * Default Constructor for wiring in the required components later
@@ -96,19 +95,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	public CassandraMappingContext getCassandraMappingContext() {
 		return mappingContext;
-	}
-
-	public boolean getUseFieldAccessOnly() {
-		return useFieldAccessOnly;
-	}
-
-	/**
-	 * Whether only fields should be used when accessing a persistent entity's data.
-	 * 
-	 * @param useFieldAccessOnly
-	 */
-	public void setUseFieldAccessOnly(boolean useFieldAccessOnly) {
-		this.useFieldAccessOnly = useFieldAccessOnly;
 	}
 
 	@Override
