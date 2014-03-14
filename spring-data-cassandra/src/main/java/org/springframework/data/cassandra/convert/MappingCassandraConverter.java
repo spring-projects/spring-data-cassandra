@@ -168,7 +168,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			readPropertiesFromRow(prop.getCompositePrimaryKeyEntity(), row, keyWrapper);
 
 			// now that the key's properties have been populated, set the key property on the entity
-			wrapper.setProperty(keyProperty, keyWrapper.getBean(), useFieldAccessOnly);
+			wrapper.setProperty(keyProperty, keyWrapper.getBean());
 			return;
 		}
 
@@ -177,7 +177,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		}
 
 		Object obj = row.getPropertyValue(prop);
-		wrapper.setProperty(prop, obj, useFieldAccessOnly);
+		wrapper.setProperty(prop, obj);
 	}
 
 	protected Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
@@ -243,7 +243,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				Object value = wrapper.getProperty(prop, prop.getType(), useFieldAccessOnly);
+				Object value = wrapper.getProperty(prop, prop.getType());
 
 				if (prop.isCompositePrimaryKey()) {
 					writeInsertFromWrapper(
@@ -272,7 +272,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				Object value = wrapper.getProperty(prop, prop.getType(), useFieldAccessOnly);
+				Object value = wrapper.getProperty(prop, prop.getType());
 
 				if (prop.isCompositePrimaryKey()) {
 					writeUpdateFromWrapper(
@@ -351,7 +351,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		CassandraPersistentProperty idProperty = entity.getIdProperty();
 		if (idProperty != null) {
-			return wrapper.getProperty(entity.getIdProperty(), idProperty.getType(), useFieldAccessOnly);
+			return wrapper.getProperty(entity.getIdProperty(), idProperty.getType());
 		}
 
 		// if the class doesn't have an id property, then it's using MapId
@@ -361,7 +361,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty p) {
 				if (p.isPrimaryKeyColumn()) {
-					id.with(p.getName(), (Serializable) wrapper.getProperty(p, p.getType(), useFieldAccessOnly));
+					id.with(p.getName(), (Serializable) wrapper.getProperty(p, p.getType()));
 				}
 			}
 		});
