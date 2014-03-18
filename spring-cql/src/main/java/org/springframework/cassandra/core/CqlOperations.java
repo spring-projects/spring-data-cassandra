@@ -36,6 +36,12 @@ import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.Batch;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Truncate;
+import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * Operations for interacting with Cassandra at the lowest level. This interface provides Exception Translation.
@@ -77,6 +83,41 @@ public interface CqlOperations {
 	void execute(Query query) throws DataAccessException;
 
 	/**
+	 * Executes the supplied Delete Query and returns nothing.
+	 * 
+	 * @param query The {@link Delete} to execute
+	 */
+	void execute(Delete delete) throws DataAccessException;
+
+	/**
+	 * Executes the supplied Insert Query and returns nothing.
+	 * 
+	 * @param query The {@link Insert} to execute
+	 */
+	void execute(Insert insert) throws DataAccessException;
+
+	/**
+	 * Executes the supplied Update Query and returns nothing.
+	 * 
+	 * @param query The {@link Update} to execute
+	 */
+	void execute(Update update) throws DataAccessException;
+
+	/**
+	 * Executes the supplied Batch Query and returns nothing.
+	 * 
+	 * @param query The {@link Batch} to execute
+	 */
+	void execute(Batch batch) throws DataAccessException;
+
+	/**
+	 * Executes the supplied Truncate Query and returns nothing.
+	 * 
+	 * @param query The {@link Truncate} to execute
+	 */
+	void execute(Truncate truncate) throws DataAccessException;
+
+	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
 	 * 
 	 * @param cql The {@link Query} to execute
@@ -84,11 +125,46 @@ public interface CqlOperations {
 	void executeAsynchronously(String cql) throws DataAccessException;
 
 	/**
+	 * Executes the supplied CQL Truncate Asynchronously and returns nothing.
+	 * 
+	 * @param query The {@link Truncate} to execute
+	 */
+	void executeAsynchronously(Truncate truncate) throws DataAccessException;
+
+	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
 	 * 
 	 * @param cql The {@link Query} to execute
 	 */
 	void executeAsynchronously(String cql, QueryOptions options) throws DataAccessException;
+
+	/**
+	 * Executes the supplied CQL Delete Asynchronously and returns nothing.
+	 * 
+	 * @param query The {@link Delete} to execute
+	 */
+	void executeAsynchronously(Delete delete) throws DataAccessException;
+
+	/**
+	 * Executes the supplied CQL Insert Asynchronously and returns nothing.
+	 * 
+	 * @param query The {@link Insert} to execute
+	 */
+	void executeAsynchronously(Insert insert) throws DataAccessException;
+
+	/**
+	 * Executes the supplied CQL Update Asynchronously and returns nothing.
+	 * 
+	 * @param query The {@link Update} to execute
+	 */
+	void executeAsynchronously(Update update) throws DataAccessException;
+
+	/**
+	 * Executes the supplied CQL Batch Asynchronously and returns nothing.
+	 * 
+	 * @param query The {@link Query} to execute
+	 */
+	void executeAsynchronously(Batch batch) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
@@ -130,6 +206,14 @@ public interface CqlOperations {
 	ResultSetFuture queryAsynchronously(String cql);
 
 	/**
+	 * Executes the provided CQL Select and returns the ResultSetFuture for user processing.
+	 * 
+	 * @param cql The {@link Select}
+	 * @return
+	 */
+	ResultSetFuture queryAsynchronously(Select select);
+
+	/**
 	 * Executes the provided CQL Query and returns the ResultSetFuture for user processing.
 	 * 
 	 * @param cql The Query
@@ -152,6 +236,20 @@ public interface CqlOperations {
 	void queryAsynchronously(String cql, Runnable listener);
 
 	/**
+	 * Executes the provided CQL Select with the provided {@link Runnable}, which is started after the query has
+	 * completed.
+	 * <p/>
+	 * A more useful method than this one is {@link #queryAsynchronously(Select, AsynchronousQueryListener)}, where you're
+	 * given the {@link ResultSetFuture} after the query has been executed.
+	 * 
+	 * @param select The Select Query
+	 * @param listener {@link Runnable} listener for handling the query in a separate thread
+	 * 
+	 * @see #queryAsynchronously(Select, AsynchronousQueryListener)
+	 */
+	void queryAsynchronously(Select select, Runnable listener);
+
+	/**
 	 * Executes the provided CQL Query with the provided listener. This is preferred over the same method that takes a
 	 * {@link Runnable}. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the
 	 * query is completed for optimal flexibility.
@@ -161,6 +259,17 @@ public interface CqlOperations {
 	 *          thread
 	 */
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener);
+
+	/**
+	 * Executes the provided CQL Select with the provided listener. This is preferred over the same method that takes a
+	 * {@link Runnable}. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the
+	 * query is completed for optimal flexibility.
+	 * 
+	 * @param select The Select
+	 * @param listener {@link AsynchronousQueryListener} for handling the query's {@link ResultSetFuture} in a separate
+	 *          thread
+	 */
+	void queryAsynchronously(Select select, AsynchronousQueryListener listener);
 
 	/**
 	 * Executes the provided CQL Query with the Runnable implementations using the Query Options.
@@ -186,11 +295,19 @@ public interface CqlOperations {
 	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
 	 * 
 	 * @param cql The Query
-	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
 	 */
 	void queryAsynchronously(String cql, Runnable listener, Executor executor);
+
+	/**
+	 * Executes the provided CQL Select with the provided Executor and Runnable implementations.
+	 * 
+	 * @param select The Select Query
+	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @param executor To execute the Runnable Listener
+	 */
+	void queryAsynchronously(Select select, Runnable listener, Executor executor);
 
 	/**
 	 * Executes the provided CQL Query with the provided listener and executor. This is preferred over the same method
@@ -203,6 +320,17 @@ public interface CqlOperations {
 	 * @param executor To execute the Runnable Listener
 	 */
 	void queryAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor);
+
+	/**
+	 * Executes the provided Select Query with the provided listener and executor. This is preferred over the same method
+	 * that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture}
+	 * once the query is completed for optimal flexibility.
+	 * 
+	 * @param select The Select Query
+	 * @param listener Runnable Listener for handling the query in a separate thread
+	 * @param executor To execute the Runnable Listener
+	 */
+	void queryAsynchronously(Select select, AsynchronousQueryListener listener, Executor executor);
 
 	/**
 	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
@@ -235,6 +363,14 @@ public interface CqlOperations {
 	ResultSet query(String cql);
 
 	/**
+	 * Executes the provided Select query and returns the {@link ResultSet}.
+	 * 
+	 * @param select The Select Query
+	 * @return The {@link ResultSet}
+	 */
+	ResultSet query(Select select);
+
+	/**
 	 * Executes the provided CQL query with the given {@link QueryOptions} and returns the {@link ResultSet}.
 	 * 
 	 * @param cql The query
@@ -253,6 +389,17 @@ public interface CqlOperations {
 	 * @throws DataAccessException
 	 */
 	<T> T query(String cql, ResultSetExtractor<T> rse) throws DataAccessException;
+
+	/**
+	 * Executes the provided Select Query, and extracts the results with the ResultSetExtractor.
+	 * 
+	 * @param select The SelectQuery
+	 * @param rse The implementation for extracting the ResultSet
+	 * 
+	 * @return Type <T> specified in the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
+	<T> T query(Select select, ResultSetExtractor<T> rse) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
@@ -274,6 +421,15 @@ public interface CqlOperations {
 	 * @throws DataAccessException
 	 */
 	void query(String cql, RowCallbackHandler rch) throws DataAccessException;
+
+	/**
+	 * Executes the provided Select Query, and then processes the results with the <code>RowCallbackHandler</code>.
+	 * 
+	 * @param select The Select Query
+	 * @param rch The implementation for processing the rows returned.
+	 * @throws DataAccessException
+	 */
+	void query(Select select, RowCallbackHandler rch) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
@@ -305,6 +461,16 @@ public interface CqlOperations {
 	 * @throws DataAccessException
 	 */
 	<T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException;
+
+	/**
+	 * Executes the provided Select Query, and maps all Rows returned with the supplied RowMapper.
+	 * 
+	 * @param select The Select Query
+	 * @param rowMapper The implementation for mapping all rows
+	 * @return List of <T> processed by the RowMapper
+	 * @throws DataAccessException
+	 */
+	<T> List<T> query(Select select, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper.
@@ -344,6 +510,20 @@ public interface CqlOperations {
 	<T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
+	 * Executes the provided Select Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
+	 * 
+	 * <p>
+	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
+	 * </p>
+	 * 
+	 * @param select The Select Query
+	 * @param rowMapper The implementation for convert the Row to <T>
+	 * @return Object<T>
+	 * @throws DataAccessException
+	 */
+	<T> T queryForObject(Select select, RowMapper<T> rowMapper) throws DataAccessException;
+
+	/**
 	 * Process a ResultSet through a RowMapper. This is used internal to the Template for core operations, but is made
 	 * available through Operations in the event you have a ResultSet to process. The ResultsSet could come from a
 	 * ResultSetFuture after an asynchronous query.
@@ -364,6 +544,16 @@ public interface CqlOperations {
 	 * @throws DataAccessException
 	 */
 	<T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
+
+	/**
+	 * Executes the provided Select query and tries to return the first column of the first Row as a Class<T>.
+	 * 
+	 * @param select The Select Query
+	 * @param requiredType Valid Class that Cassandra Data Types can be converted to.
+	 * @return The Object<T> - item [0,0] in the result table of the query.
+	 * @throws DataAccessException
+	 */
+	<T> T queryForObject(Select select, Class<T> requiredType) throws DataAccessException;
 
 	/**
 	 * Process a ResultSet, trying to convert the first columns of the first Row to Class<T>. This is used internal to the
@@ -388,6 +578,16 @@ public interface CqlOperations {
 	Map<String, Object> queryForMap(String cql) throws DataAccessException;
 
 	/**
+	 * Executes the provided Select Query and maps <b>ONE</b> Row to a basic Map of Strings and Objects. If more than one
+	 * Row is returned from the Query, an exception will be thrown.
+	 * 
+	 * @param select The Select Query
+	 * @return Map representing the results of the Query
+	 * @throws DataAccessException
+	 */
+	Map<String, Object> queryForMap(Select select) throws DataAccessException;
+
+	/**
 	 * Process a ResultSet with <b>ONE</b> Row and convert to a Map. This is used internal to the Template for core
 	 * operations, but is made available through Operations in the event you have a ResultSet to process. The ResultsSet
 	 * could come from a ResultSetFuture after an asynchronous query.
@@ -410,6 +610,17 @@ public interface CqlOperations {
 	<T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException;
 
 	/**
+	 * Executes the provided Select Query and returns all values in the first column of the Results as a List of the Type
+	 * in the second argument.
+	 * 
+	 * @param select The Select Query
+	 * @param elementType Type to cast the data values to
+	 * @return List of elementType
+	 * @throws DataAccessException
+	 */
+	<T> List<T> queryForList(Select select, Class<T> elementType) throws DataAccessException;
+
+	/**
 	 * Process a ResultSet and convert the first column of the results to a List. This is used internal to the Template
 	 * for core operations, but is made available through Operations in the event you have a ResultSet to process. The
 	 * ResultsSet could come from a ResultSetFuture after an asynchronous query.
@@ -430,6 +641,16 @@ public interface CqlOperations {
 	 * @throws DataAccessException
 	 */
 	List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException;
+
+	/**
+	 * Executes the provided Select Query and converts the results to a basic List of Maps. Each element in the List
+	 * represents a Row returned from the Query. Each Row's columns are put into the map as column/value.
+	 * 
+	 * @param select The Select Query
+	 * @return List of Maps with the query results
+	 * @throws DataAccessException
+	 */
+	List<Map<String, Object>> queryForListOfMap(Select select) throws DataAccessException;
 
 	/**
 	 * Process a ResultSet and convert it to a List of Maps with column/value. This is used internal to the Template for
@@ -481,6 +702,19 @@ public interface CqlOperations {
 	 */
 	<T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException;
 
+	/**
+	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
+	 * processed with the ResultSetExtractor implementation provided by the Application Code. The can return any object,
+	 * including a List of Objects to support the ResultSet processing.
+	 * 
+	 * @param cql The Query to Prepare
+	 * @param psb The Binding implementation
+	 * @param rse The implementation for extracting the results of the query.
+	 * @param options The Query Options to apply to the PreparedStatement
+	 * @return Type<T> generated by the ResultSetExtractor
+	 * @throws DataAccessException
+	 */
 	<T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse, QueryOptions options)
 			throws DataAccessException;
 

@@ -15,8 +15,6 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,12 +63,15 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Truncate;
 import com.datastax.driver.core.querybuilder.Update;
-import com.datastax.driver.core.querybuilder.Using;
+
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 /**
  * <b>This is the Central class in the Cassandra core package.</b> It simplifies the use of Cassandra and helps to avoid
@@ -240,6 +241,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public void queryAsynchronously(String cql, AsynchronousQueryListener listener) {
+
 		queryAsynchronously(cql, listener, new Executor() {
 
 			@Override
@@ -993,6 +995,31 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
+	public void execute(Delete delete) throws DataAccessException {
+		doExecute(delete);
+	}
+
+	@Override
+	public void execute(Insert insert) throws DataAccessException {
+		doExecute(insert);
+	}
+
+	@Override
+	public void execute(Update update) throws DataAccessException {
+		doExecute(update);
+	}
+
+	@Override
+	public void execute(Batch batch) throws DataAccessException {
+		doExecute(batch);
+	}
+
+	@Override
+	public void execute(Truncate truncate) throws DataAccessException {
+		doExecute(truncate);
+	}
+
+	@Override
 	public long count(CqlIdentifier tableName) {
 		return selectCount(QueryBuilder.select().countAll().from(tableName.toCql()).getQueryString());
 	}
@@ -1018,4 +1045,146 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			}
 		});
 	}
+
+	@Override
+	public void executeAsynchronously(Truncate truncate) throws DataAccessException {
+		doExecuteAsync(truncate);
+	}
+
+	@Override
+	public void executeAsynchronously(Delete delete) throws DataAccessException {
+		doExecuteAsync(delete);
+	}
+
+	@Override
+	public void executeAsynchronously(Insert insert) throws DataAccessException {
+		doExecuteAsync(insert);
+	}
+
+	@Override
+	public void executeAsynchronously(Update update) throws DataAccessException {
+		doExecuteAsync(update);
+	}
+
+	@Override
+	public void executeAsynchronously(Batch batch) throws DataAccessException {
+		doExecuteAsync(batch);
+	}
+
+	@Override
+	public ResultSetFuture queryAsynchronously(final Select select) {
+		return execute(new SessionCallback<ResultSetFuture>() {
+
+			@Override
+			public ResultSetFuture doInSession(Session s) throws DataAccessException {
+				return s.executeAsync(select);
+			}
+		});
+	}
+
+	@Override
+	public void queryAsynchronously(Select select, Runnable listener) {
+		queryAsynchronously(select, listener, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+		});
+	}
+
+	@Override
+	public void queryAsynchronously(Select select, AsynchronousQueryListener listener) {
+		queryAsynchronously(select, listener, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+		});
+	}
+
+	@Override
+	public void queryAsynchronously(final Select select, final AsynchronousQueryListener listener, final Executor executor) {
+		execute(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				final ResultSetFuture rsf = s.executeAsync(select);
+				Runnable wrapper = new Runnable() {
+					@Override
+					public void run() {
+						listener.onQueryComplete(rsf);
+					}
+				};
+				rsf.addListener(wrapper, executor);
+				return null;
+			}
+		});
+	}
+
+	@Override
+	public void queryAsynchronously(final Select select, final Runnable listener, final Executor executor) {
+		execute(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				ResultSetFuture rsf = s.executeAsync(select);
+				rsf.addListener(listener, executor);
+				return null;
+			}
+		});
+	}
+
+	@Override
+	public ResultSet query(Select select) {
+		return query(select, new ResultSetExtractor<ResultSet>() {
+
+			@Override
+			public ResultSet extractData(ResultSet rs) throws DriverException, DataAccessException {
+				return rs;
+			}
+		});
+	}
+
+	@Override
+	public <T> T query(Select select, ResultSetExtractor<T> rse) throws DataAccessException {
+		Assert.notNull(select);
+		ResultSet rs = doExecute(select);
+		return rse.extractData(rs);
+	}
+
+	@Override
+	public void query(Select select, RowCallbackHandler rch) throws DataAccessException {
+		process(doExecute(select), rch);
+	}
+
+	@Override
+	public <T> List<T> query(Select select, RowMapper<T> rowMapper) throws DataAccessException {
+		return process(doExecute(select), rowMapper);
+	}
+
+	@Override
+	public <T> T queryForObject(Select select, RowMapper<T> rowMapper) throws DataAccessException {
+		return processOne(doExecute(select), rowMapper);
+	}
+
+	@Override
+	public <T> T queryForObject(Select select, Class<T> requiredType) throws DataAccessException {
+		return processOne(doExecute(select), requiredType);
+	}
+
+	@Override
+	public Map<String, Object> queryForMap(Select select) throws DataAccessException {
+		return processMap(doExecute(select));
+	}
+
+	@Override
+	public <T> List<T> queryForList(Select select, Class<T> elementType) throws DataAccessException {
+		return processList(doExecute(select), elementType);
+	}
+
+	@Override
+	public List<Map<String, Object>> queryForListOfMap(Select select) throws DataAccessException {
+		return processListOfMap(doExecute(select));
+	}
+
 }
