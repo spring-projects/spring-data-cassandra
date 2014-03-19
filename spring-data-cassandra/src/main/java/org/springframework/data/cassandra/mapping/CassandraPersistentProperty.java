@@ -20,6 +20,7 @@ import java.util.List;
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 
@@ -131,4 +132,14 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 	 * @param columnName
 	 */
 	void setColumnNames(List<CqlIdentifier> columnNames);
+
+	public enum PropertyToFieldNameConverter implements Converter<CassandraPersistentProperty, String> {
+
+		INSTANCE;
+
+		@Override
+		public String convert(CassandraPersistentProperty source) {
+			return source.getColumnName().toCql();
+		}
+	}
 }

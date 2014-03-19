@@ -62,6 +62,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 				String cql = new CreateTableCqlGenerator(getCassandraMappingContext().getCreateTableSpecificationFor(entity))
 						.toCql();
 
+				log.debug(cql);
+
 				s.execute(cql);
 				return null;
 			}

@@ -27,6 +27,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.AlterKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.AlterTableCqlGenerator;
@@ -88,6 +90,8 @@ import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
  * @author Matthew Adams
  */
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
+
+	protected static final Logger log = LoggerFactory.getLogger(CqlTemplate.class);
 
 	/**
 	 * Add common {@link Query} options for all types of queries.
@@ -455,6 +459,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 			@Override
 			public ResultSet doInSession(Session s) throws DataAccessException {
+
+				if (log.isDebugEnabled()) {
+					log.debug("executing [{}]", q.toString());
+				}
+
 				return s.execute(q);
 			}
 		});
@@ -466,6 +475,10 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 			@Override
 			public ResultSetFuture doInSession(Session s) throws DataAccessException {
+
+				if (log.isDebugEnabled()) {
+					log.debug("asynchronously executing [{}]", q.toString());
+				}
 				return s.executeAsync(q);
 			}
 		});

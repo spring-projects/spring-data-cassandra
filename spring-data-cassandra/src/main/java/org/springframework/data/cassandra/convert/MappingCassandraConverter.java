@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import static org.springframework.data.cassandra.repository.support.BasicMapId.id;
+import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -56,6 +56,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Oliver Gierke
  */
 public class MappingCassandraConverter extends AbstractCassandraConverter implements CassandraConverter,
 		ApplicationContextAware, BeanClassLoaderAware {
@@ -65,7 +66,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	protected final CassandraMappingContext mappingContext;
 	protected ApplicationContext applicationContext;
 	protected SpELContext spELContext;
-	protected boolean useFieldAccessOnly = true;
 
 	protected ClassLoader beanClassLoader;
 
@@ -124,7 +124,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 		S instance = instantiator.createInstance(entity, parameterProvider);
 
-		BeanWrapper<CassandraPersistentEntity<S>, S> wrapper = BeanWrapper.create(instance, conversionService);
+		BeanWrapper<S> wrapper = BeanWrapper.create(instance, conversionService);
 
 		readPropertiesFromRow(entity, rowValueProvider, wrapper);
 
@@ -132,7 +132,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	protected void readPropertiesFromRow(final CassandraPersistentEntity<?> entity,
-			final BasicCassandraRowValueProvider row, final BeanWrapper<?, ?> wrapper) {
+			final BasicCassandraRowValueProvider row, final BeanWrapper<?> wrapper) {
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
@@ -145,7 +145,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	protected void readPropertyFromRow(final CassandraPersistentEntity<?> entity, final CassandraPersistentProperty prop,
-			final BasicCassandraRowValueProvider row, final BeanWrapper<?, ?> wrapper) {
+			final BasicCassandraRowValueProvider row, final BeanWrapper<?> wrapper) {
 
 		if (entity.isConstructorArgument(prop)) { // skip 'cause prop was set in ctor
 			return;
@@ -161,14 +161,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			}
 
 			// wrap the key
-			@SuppressWarnings("rawtypes")
-			BeanWrapper keyWrapper = BeanWrapper.create(key, conversionService);
+			BeanWrapper<Object> keyWrapper = BeanWrapper.create(key, conversionService);
 
 			// now recurse on using the key this time
 			readPropertiesFromRow(prop.getCompositePrimaryKeyEntity(), row, keyWrapper);
 
 			// now that the key's properties have been populated, set the key property on the entity
-			wrapper.setProperty(keyProperty, keyWrapper.getBean(), useFieldAccessOnly);
+			wrapper.setProperty(keyProperty, keyWrapper.getBean());
 			return;
 		}
 
@@ -177,7 +176,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		}
 
 		Object obj = row.getPropertyValue(prop);
-		wrapper.setProperty(prop, obj, useFieldAccessOnly);
+		wrapper.setProperty(prop, obj);
 	}
 
 	protected Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
@@ -187,14 +186,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		return instantiator.createInstance(entity, new CassandraPersistentEntityParameterValueProvider(entity,
 				propertyProvider, null));
-	}
-
-	public boolean getUseFieldAccessOnly() {
-		return useFieldAccessOnly;
-	}
-
-	public void setUseFieldAccessOnly(boolean useFieldAccessOnly) {
-		this.useFieldAccessOnly = useFieldAccessOnly;
 	}
 
 	@Override
@@ -231,23 +222,21 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	protected void writeInsertFromObject(final Object object, final Insert insert, CassandraPersistentEntity<?> entity) {
-		writeInsertFromWrapper(BeanWrapper.<CassandraPersistentEntity<Object>, Object> create(object, conversionService),
-				insert, entity);
+		writeInsertFromWrapper(BeanWrapper.create(object, conversionService), insert, entity);
 	}
 
-	protected void writeInsertFromWrapper(final BeanWrapper<CassandraPersistentEntity<Object>, Object> wrapper,
-			final Insert insert, CassandraPersistentEntity<?> entity) {
+	protected void writeInsertFromWrapper(final BeanWrapper<Object> wrapper, final Insert insert,
+			CassandraPersistentEntity<?> entity) {
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				Object value = wrapper.getProperty(prop, prop.getType(), useFieldAccessOnly);
+				Object value = wrapper.getProperty(prop, prop.getType());
 
 				if (prop.isCompositePrimaryKey()) {
-					writeInsertFromWrapper(
-							BeanWrapper.<CassandraPersistentEntity<Object>, Object> create(value, conversionService), insert,
+					writeInsertFromWrapper(BeanWrapper.create(value, conversionService), insert,
 							prop.getCompositePrimaryKeyEntity());
 					return;
 				}
@@ -260,23 +249,21 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	protected void writeUpdateFromObject(final Object object, final Update update, CassandraPersistentEntity<?> entity) {
-		writeUpdateFromWrapper(BeanWrapper.<CassandraPersistentEntity<Object>, Object> create(object, conversionService),
-				update, entity);
+		writeUpdateFromWrapper(BeanWrapper.create(object, conversionService), update, entity);
 	}
 
-	protected void writeUpdateFromWrapper(final BeanWrapper<CassandraPersistentEntity<Object>, Object> wrapper,
-			final Update update, final CassandraPersistentEntity<?> entity) {
+	protected void writeUpdateFromWrapper(final BeanWrapper<Object> wrapper, final Update update,
+			final CassandraPersistentEntity<?> entity) {
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				Object value = wrapper.getProperty(prop, prop.getType(), useFieldAccessOnly);
+				Object value = wrapper.getProperty(prop, prop.getType());
 
 				if (prop.isCompositePrimaryKey()) {
-					writeUpdateFromWrapper(
-							BeanWrapper.<CassandraPersistentEntity<Object>, Object> create(value, conversionService), update,
+					writeUpdateFromWrapper(BeanWrapper.create(value, conversionService), update,
 							prop.getCompositePrimaryKeyEntity());
 					return;
 				}
@@ -293,12 +280,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	}
 
 	protected void writeDeleteWhereFromObject(final Object object, final Where where, CassandraPersistentEntity<?> entity) {
-		writeDeleteWhereFromWrapper(
-				BeanWrapper.<CassandraPersistentEntity<Object>, Object> create(object, conversionService), where, entity);
+		writeDeleteWhereFromWrapper(BeanWrapper.create(object, conversionService), where, entity);
 	}
 
-	protected void writeDeleteWhereFromWrapper(final BeanWrapper<CassandraPersistentEntity<Object>, Object> wrapper,
-			final Where where, CassandraPersistentEntity<?> entity) {
+	protected void writeDeleteWhereFromWrapper(final BeanWrapper<Object> wrapper, final Where where,
+			CassandraPersistentEntity<?> entity) {
 
 		Object id = getId(wrapper, entity);
 		if (id == null) {
@@ -319,8 +305,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		if (idProperty != null) {
 
 			if (idProperty.isCompositePrimaryKey()) {
-				writeDeleteWhereFromWrapper(
-						BeanWrapper.<CassandraPersistentEntity<Object>, Object> create(id, conversionService), where,
+				writeDeleteWhereFromWrapper(BeanWrapper.create(id, conversionService), where,
 						idProperty.getCompositePrimaryKeyEntity());
 				return;
 			}
@@ -335,8 +320,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		Assert.notNull(object);
 
-		final BeanWrapper<?, ?> wrapper = (object instanceof BeanWrapper) ? (BeanWrapper<?, ?>) object : BeanWrapper
-				.create(object, conversionService);
+		final BeanWrapper<?> wrapper = object instanceof BeanWrapper ? (BeanWrapper<?>) object : BeanWrapper.create(object,
+				conversionService);
 		object = wrapper == null ? object : wrapper.getBean();
 
 		if (!entity.getType().isAssignableFrom(object.getClass())) {
@@ -351,7 +336,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		CassandraPersistentProperty idProperty = entity.getIdProperty();
 		if (idProperty != null) {
-			return wrapper.getProperty(entity.getIdProperty(), idProperty.getType(), useFieldAccessOnly);
+			return wrapper.getProperty(entity.getIdProperty(), idProperty.getType());
 		}
 
 		// if the class doesn't have an id property, then it's using MapId
@@ -361,7 +346,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty p) {
 				if (p.isPrimaryKeyColumn()) {
-					id.with(p.getName(), (Serializable) wrapper.getProperty(p, p.getType(), useFieldAccessOnly));
+					id.with(p.getName(), (Serializable) wrapper.getProperty(p, p.getType()));
 				}
 			}
 		});

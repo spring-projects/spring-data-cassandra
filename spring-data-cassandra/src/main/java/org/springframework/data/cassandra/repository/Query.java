@@ -21,22 +21,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.data.annotation.QueryAnnotation;
+
 /**
  * Annotation to declare finder queries directly on repository methods.
  * 
  * @author Alex Shvid
+ * @author Matthew T. Adams
  */
-
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
+@QueryAnnotation
 public @interface Query {
 
 	/**
-	 * Takes a Cassandra CQL3 string to define the actual query to be executed.
+	 * A Cassandra CQL3 string to define the actual query to be executed. Placeholders {@code ?0}, {@code ?1}, etc are
+	 * supported.
 	 * 
 	 * @return
 	 */
 	String value() default "";
-
 }
