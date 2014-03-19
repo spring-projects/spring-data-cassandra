@@ -55,20 +55,18 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew T. Adams
- * 
+ * @author Oliver Gierke
  * @see CqlTemplate
  */
 public class CassandraTemplate extends CqlTemplate implements CassandraOperations {
 
 	protected CassandraConverter cassandraConverter;
 	protected CassandraMappingContext mappingContext;
-	protected boolean useFieldAccessOnly = false;
 
 	/**
 	 * Default Constructor for wiring in the required components later
 	 */
-	public CassandraTemplate() {
-	}
+	public CassandraTemplate() {}
 
 	/**
 	 * Constructor if only session and converter are known at time of Template Creation
@@ -96,19 +94,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	public CassandraMappingContext getCassandraMappingContext() {
 		return mappingContext;
-	}
-
-	public boolean getUseFieldAccessOnly() {
-		return useFieldAccessOnly;
-	}
-
-	/**
-	 * Whether only fields should be used when accessing a persistent entity's data.
-	 * 
-	 * @param useFieldAccessOnly
-	 */
-	public void setUseFieldAccessOnly(boolean useFieldAccessOnly) {
-		this.useFieldAccessOnly = useFieldAccessOnly;
 	}
 
 	@Override
@@ -313,8 +298,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 			CassandraPersistentEntity<?> idEntity = idProperty.getCompositePrimaryKeyEntity();
 
-			final BeanWrapper<CassandraPersistentEntity<Object>, Object> idWrapper = BeanWrapper
-					.<CassandraPersistentEntity<Object>, Object> create(id, cassandraConverter.getConversionService());
+			final BeanWrapper<Object> idWrapper = BeanWrapper.create(id, cassandraConverter.getConversionService());
 
 			idEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
@@ -322,7 +306,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 				public void doWithPersistentProperty(CassandraPersistentProperty p) {
 
 					clauseCallback.doWithClause(QueryBuilder.eq(p.getColumnName().toCql(),
-							idWrapper.getProperty(p, p.getActualType(), useFieldAccessOnly)));
+							idWrapper.getProperty(p, p.getActualType())));
 				}
 			});
 
@@ -595,7 +579,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param objectToSave
 	 * @param entity
 	 * @param optionsByName
-	 * 
 	 * @return The Query object to run with session.execute();
 	 */
 	public static Insert createInsertQuery(String tableName, Object objectToSave, QueryOptions options,
@@ -623,7 +606,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param objectToSave
 	 * @param entity
 	 * @param optionsByName
-	 * 
 	 * @return The Query object to run with session.execute();
 	 */
 	public static Update toUpdateQuery(String tableName, Object objectToSave, QueryOptions options,
@@ -651,7 +633,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param objectsToSave
 	 * @param entity
 	 * @param optionsByName
-	 * 
 	 * @return The Query object to run with session.execute();
 	 */
 	public static <T> Batch toUpdateBatchQuery(String tableName, List<T> objectsToSave, QueryOptions options,
@@ -684,7 +665,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param entities
 	 * @param entity
 	 * @param optionsByName
-	 * 
 	 * @return The Query object to run with session.execute();
 	 */
 	public static <T> Batch createInsertBatchQuery(String tableName, List<T> entities, QueryOptions options,
@@ -731,7 +711,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param entities
 	 * @param entity
 	 * @param optionsByName
-	 * 
 	 * @return
 	 */
 	public static <T> Batch createDeleteBatchQuery(String tableName, List<T> entities, QueryOptions options,
