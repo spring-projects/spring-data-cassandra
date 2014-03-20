@@ -36,10 +36,6 @@
 		<cassandra-driver-core.version>1.0.5-dse</cassandra-driver-core.version>
 		<failsafe.version>2.16</failsafe.version>
 		<jamm.version>0.2.5</jamm.version>
-		<build.cassandra.native_transport_port>11000</build.cassandra.native_transport_port>
-		<build.cassandra.rpc_port>11001</build.cassandra.rpc_port>
-		<build.cassandra.storage_port>11002</build.cassandra.storage_port>
-		<build.cassandra.ssl_storage_port>11003</build.cassandra.ssl_storage_port>
 	</properties>
 
 	<developers>
@@ -272,7 +268,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -295,7 +290,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
