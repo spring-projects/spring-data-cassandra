@@ -15,10 +15,6 @@
  */
 package org.springframework.cassandra.test.integration.core.template;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,11 +29,12 @@ import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.CqlTemplate;
-import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.HostMapper;
 import org.springframework.cassandra.core.PreparedStatementBinder;
 import org.springframework.cassandra.core.PreparedStatementCallback;
@@ -50,11 +47,13 @@ import org.springframework.cassandra.core.RowCallbackHandler;
 import org.springframework.cassandra.core.RowIterator;
 import org.springframework.cassandra.core.RowMapper;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.CollectionUtils;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
@@ -62,6 +61,13 @@ import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Truncate;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit Tests for CqlTemplate
@@ -71,7 +77,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  */
 public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
-	private static CqlOperations cassandraTemplate;
+	private static CqlOperations cqlTemplate;
 
 	private static Logger log = LoggerFactory.getLogger(CassandraOperationsTest.class);
 
@@ -102,7 +108,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		log.info("Running setupTemplate()");
 
-		if (cassandraTemplate == null) {
+		if (cqlTemplate == null) {
 
 			log.info("null Template ... Initialzing DB test CQL");
 
@@ -110,14 +116,14 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 			// "cassandraOperationsTest-cql-dataload.cql", keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
 			// CASSANDRA_NATIVE_PORT);
 
-			cassandraTemplate = new CqlTemplate(SESSION);
+			cqlTemplate = new CqlTemplate(SESSION);
 		}
 	}
 
 	@Test
 	public void ringTest() {
 
-		List<RingMember> ring = cassandraTemplate.describeRing();
+		List<RingMember> ring = cqlTemplate.describeRing();
 
 		/*
 		 * There must be 1 node in the cluster if the embedded server is
@@ -133,7 +139,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	@Test
 	public void hostMapperTest() {
 
-		List<MyHost> ring = (List<MyHost>) cassandraTemplate.describeRing(new HostMapper<MyHost>() {
+		List<MyHost> ring = (List<MyHost>) cqlTemplate.describeRing(new HostMapper<MyHost>() {
 
 			@Override
 			public Collection<MyHost> mapHosts(Set<Host> host) throws DriverException {
@@ -172,7 +178,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		values.add(new LinkedList<Object>(CollectionUtils.arrayToList(o2)));
 		values.add(new LinkedList<Object>(CollectionUtils.arrayToList(o3)));
 
-		cassandraTemplate.ingest(cql, values);
+		cqlTemplate.ingest(cql, values);
 
 		// Assert that the rows were inserted into Cassandra
 		Book b1 = getBook((String) o1[0]);
@@ -194,7 +200,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		values[1] = o2;
 		values[2] = o3;
 
-		cassandraTemplate.ingest(cql, values);
+		cqlTemplate.ingest(cql, values);
 
 		// Assert that the rows were inserted into Cassandra
 		Book b1 = getBook("1234");
@@ -250,7 +256,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		v[2] = o3;
 		RowIterator ri = new MyRowIterator(v);
 
-		cassandraTemplate.ingest(cql, ri);
+		cqlTemplate.ingest(cql, ri);
 
 		// Assert that the rows were inserted into Cassandra
 		Book b1 = getBook("1234");
@@ -271,7 +277,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String author = "David Webb";
 		final Integer pages = 1;
 
-		cassandraTemplate.execute(new SessionCallback<Object>() {
+		cqlTemplate.execute(new SessionCallback<Object>() {
 
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
@@ -302,8 +308,8 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String author = "David Webb";
 		final Integer pages = 1;
 
-		cassandraTemplate.execute("insert into book (isbn, title, author, pages) values ('" + isbn + "', '" + title
-				+ "', '" + author + "', " + pages + ")");
+		cqlTemplate.execute("insert into book (isbn, title, author, pages) values ('" + isbn + "', '" + title + "', '"
+				+ author + "', " + pages + ")");
 
 		Book b = getBook(isbn);
 
@@ -319,8 +325,8 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String author = "David Webb";
 		final Integer pages = 1;
 
-		cassandraTemplate.executeAsynchronously("insert into book (isbn, title, author, pages) values ('" + isbn + "', '"
-				+ title + "', '" + author + "', " + pages + ")");
+		cqlTemplate.executeAsynchronously("insert into book (isbn, title, author, pages) values ('" + isbn + "', '" + title
+				+ "', '" + author + "', " + pages + ")");
 
 		try {
 			Thread.sleep(2000);
@@ -339,7 +345,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		final String isbn = "999999999";
 
-		Book b1 = cassandraTemplate.query("select * from book where isbn='" + isbn + "'", new ResultSetExtractor<Book>() {
+		Book b1 = cqlTemplate.query("select * from book where isbn='" + isbn + "'", new ResultSetExtractor<Book>() {
 
 			@Override
 			public Book extractData(ResultSet rs) throws DriverException, DataAccessException {
@@ -363,7 +369,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		final String isbn = "999999999";
 
-		Book b1 = cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'",
+		Book b1 = cqlTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'",
 
 		new ResultSetExtractor<Book>() {
 
@@ -393,7 +399,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		final String isbn = "999999999";
 
-		Book b1 = cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'",
+		Book b1 = cqlTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'",
 
 		new ResultSetExtractor<Book>() {
 
@@ -425,7 +431,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		BookListener listener = new BookListener();
 
-		cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener);
+		cqlTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener);
 
 		// TODO Use better multi threading devices here.
 		while (!listener.isDone()) {
@@ -452,7 +458,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		BookListener listener = new BookListener();
 
-		cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener, new Executor() {
+		cqlTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener, new Executor() {
 
 			@Override
 			public void execute(Runnable command) {
@@ -485,14 +491,13 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		BookListener listener = new BookListener();
 
-		cassandraTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener, options,
-				new Executor() {
+		cqlTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener, options, new Executor() {
 
-					@Override
-					public void execute(Runnable command) {
-						command.run();
-					}
-				});
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+		});
 
 		// TODO Use better multi threading devices here.
 		while (!listener.isDone()) {
@@ -515,7 +520,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		final Book b1 = getBook(isbn);
 
-		cassandraTemplate.query("select * from book where isbn='" + isbn + "'", new RowCallbackHandler() {
+		cqlTemplate.query("select * from book where isbn='" + isbn + "'", new RowCallbackHandler() {
 
 			@Override
 			public void processRow(Row row) throws DriverException {
@@ -542,14 +547,13 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		final Book b1 = getBook(isbn);
 
-		ResultSetFuture rsf = cassandraTemplate
-				.queryAsynchronously("select * from book where isbn='" + isbn + "'", options);
+		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", options);
 
 		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
-		cassandraTemplate.process(rs, new RowCallbackHandler() {
+		cqlTemplate.process(rs, new RowCallbackHandler() {
 
 			@Override
 			public void processRow(Row row) throws DriverException {
@@ -572,7 +576,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		List<Book> books = cassandraTemplate.query("select * from book where isbn in ('1234','2345','3456')",
+		List<Book> books = cqlTemplate.query("select * from book where isbn in ('1234','2345','3456')",
 				new RowMapper<Book>() {
 
 					@Override
@@ -595,14 +599,13 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		ResultSetFuture rsf = cassandraTemplate
-				.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
+		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
 
 		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
-		List<Book> books = cassandraTemplate.process(rs, new RowMapper<Book>() {
+		List<Book> books = cqlTemplate.process(rs, new RowMapper<Book>() {
 
 			@Override
 			public Book mapRow(Row row, int rowNum) throws DriverException {
@@ -622,7 +625,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	@Test
 	public void queryForObjectTestCqlStringRowMapper() {
 
-		Book book = cassandraTemplate.queryForObject("select * from book where isbn in ('" + ISBN_NINES + "')",
+		Book book = cqlTemplate.queryForObject("select * from book where isbn in ('" + ISBN_NINES + "')",
 				new RowMapper<Book>() {
 					@Override
 					public Book mapRow(Row row, int rowNum) throws DriverException {
@@ -645,7 +648,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		ingestionTestObjectArray();
 
 		@SuppressWarnings("unused")
-		Book book = cassandraTemplate.queryForObject("select * from book where isbn in ('1234','2345','3456')",
+		Book book = cqlTemplate.queryForObject("select * from book where isbn in ('1234','2345','3456')",
 				new RowMapper<Book>() {
 					@Override
 					public Book mapRow(Row row, int rowNum) throws DriverException {
@@ -661,14 +664,13 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		ResultSetFuture rsf = cassandraTemplate.queryAsynchronously("select * from book where isbn in ('" + ISBN_NINES
-				+ "')");
+		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn in ('" + ISBN_NINES + "')");
 
 		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
-		Book book = cassandraTemplate.processOne(rs, new RowMapper<Book>() {
+		Book book = cqlTemplate.processOne(rs, new RowMapper<Book>() {
 			@Override
 			public Book mapRow(Row row, int rowNum) throws DriverException {
 				Book b = rowToBook(row);
@@ -683,7 +685,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	@Test
 	public void quertForObjectTestCqlStringRequiredType() {
 
-		String title = cassandraTemplate.queryForObject("select title from book where isbn in ('" + ISBN_NINES + "')",
+		String title = cqlTemplate.queryForObject("select title from book where isbn in ('" + ISBN_NINES + "')",
 				String.class);
 
 		assertEquals(title, TITLE_NINES);
@@ -694,22 +696,22 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	public void queryForObjectTestCqlStringRequiredTypeInvalid() {
 
 		@SuppressWarnings("unused")
-		Float title = cassandraTemplate.queryForObject("select title from book where isbn in ('" + ISBN_NINES + "')",
-				Float.class);
+		Float title = cqlTemplate
+				.queryForObject("select title from book where isbn in ('" + ISBN_NINES + "')", Float.class);
 
 	}
 
 	@Test
 	public void processOneTestResultSetType() {
 
-		ResultSetFuture rsf = cassandraTemplate.queryAsynchronously("select title from book where isbn in ('" + ISBN_NINES
-				+ "')");
+		ResultSetFuture rsf = cqlTemplate
+				.queryAsynchronously("select title from book where isbn in ('" + ISBN_NINES + "')");
 
 		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
-		String title = cassandraTemplate.processOne(rs, String.class);
+		String title = cqlTemplate.processOne(rs, String.class);
 
 		assertNotNull(title);
 		assertEquals(title, TITLE_NINES);
@@ -718,8 +720,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	@Test
 	public void queryForMapTestCqlString() {
 
-		Map<String, Object> rsMap = cassandraTemplate
-				.queryForMap("select * from book where isbn in ('" + ISBN_NINES + "')");
+		Map<String, Object> rsMap = cqlTemplate.queryForMap("select * from book where isbn in ('" + ISBN_NINES + "')");
 
 		log.debug(rsMap.toString());
 
@@ -734,14 +735,13 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	@Test
 	public void processMapTestResultSet() {
 
-		ResultSetFuture rsf = cassandraTemplate.queryAsynchronously("select * from book where isbn in ('" + ISBN_NINES
-				+ "')");
+		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn in ('" + ISBN_NINES + "')");
 
 		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
-		Map<String, Object> rsMap = cassandraTemplate.processMap(rs);
+		Map<String, Object> rsMap = cqlTemplate.processMap(rs);
 
 		log.debug("Size of Book List -> " + rsMap.size());
 
@@ -759,7 +759,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		List<String> titles = cassandraTemplate.queryForList("select title from book where isbn in ('1234','2345','3456')",
+		List<String> titles = cqlTemplate.queryForList("select title from book where isbn in ('1234','2345','3456')",
 				String.class);
 
 		log.debug(titles.toString());
@@ -775,14 +775,13 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		ResultSetFuture rsf = cassandraTemplate
-				.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
+		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
 
 		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
-		List<String> titles = cassandraTemplate.processList(rs, String.class);
+		List<String> titles = cqlTemplate.processList(rs, String.class);
 
 		log.debug(titles.toString());
 
@@ -796,7 +795,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		List<Map<String, Object>> results = cassandraTemplate
+		List<Map<String, Object>> results = cqlTemplate
 				.queryForListOfMap("select * from book where isbn in ('1234','2345','3456')");
 
 		log.debug(results.toString());
@@ -811,14 +810,13 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		// Insert our 3 test books.
 		ingestionTestObjectArray();
 
-		ResultSetFuture rsf = cassandraTemplate
-				.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
+		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
 
 		ResultSet rs = rsf.getUninterruptibly();
 
 		assertNotNull(rs);
 
-		List<Map<String, Object>> results = cassandraTemplate.processListOfMap(rs);
+		List<Map<String, Object>> results = cqlTemplate.processListOfMap(rs);
 
 		log.debug(results.toString());
 
@@ -831,7 +829,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
 
-		BoundStatement statement = cassandraTemplate.execute(cql, new PreparedStatementCallback<BoundStatement>() {
+		BoundStatement statement = cqlTemplate.execute(cql, new PreparedStatementCallback<BoundStatement>() {
 
 			@Override
 			public BoundStatement doInPreparedStatement(PreparedStatement ps) throws DriverException, DataAccessException {
@@ -849,7 +847,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		final String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
 
-		BoundStatement statement = cassandraTemplate.execute(new PreparedStatementCreator() {
+		BoundStatement statement = cqlTemplate.execute(new PreparedStatementCreator() {
 
 			@Override
 			public PreparedStatement createPreparedStatement(Session session) throws DriverException {
@@ -874,7 +872,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String cql = "select * from book where isbn = ?";
 		final String isbn = "999999999";
 
-		Book b1 = cassandraTemplate.query(cql, new PreparedStatementBinder() {
+		Book b1 = cqlTemplate.query(cql, new PreparedStatementBinder() {
 
 			@Override
 			public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
@@ -904,7 +902,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String cql = "select * from book where isbn = ?";
 		final String isbn = "999999999";
 
-		cassandraTemplate.query(cql, new PreparedStatementBinder() {
+		cqlTemplate.query(cql, new PreparedStatementBinder() {
 
 			@Override
 			public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
@@ -932,7 +930,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String cql = "select * from book where isbn = ?";
 		final String isbn = "999999999";
 
-		List<Book> books = cassandraTemplate.query(cql, new PreparedStatementBinder() {
+		List<Book> books = cqlTemplate.query(cql, new PreparedStatementBinder() {
 
 			@Override
 			public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
@@ -959,7 +957,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		final String cql = "select * from book";
 
-		List<Book> books = cassandraTemplate.query(new PreparedStatementCreator() {
+		List<Book> books = cqlTemplate.query(new PreparedStatementCreator() {
 
 			@Override
 			public PreparedStatement createPreparedStatement(Session session) throws DriverException {
@@ -992,7 +990,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		final String cql = "select * from book";
 
-		cassandraTemplate.query(new PreparedStatementCreator() {
+		cqlTemplate.query(new PreparedStatementCreator() {
 
 			@Override
 			public PreparedStatement createPreparedStatement(Session session) throws DriverException {
@@ -1019,7 +1017,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		final String cql = "select * from book";
 
-		List<Book> books = cassandraTemplate.query(new PreparedStatementCreator() {
+		List<Book> books = cqlTemplate.query(new PreparedStatementCreator() {
 
 			@Override
 			public PreparedStatement createPreparedStatement(Session session) throws DriverException {
@@ -1044,7 +1042,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String cql = "select * from book where isbn = ?";
 		final String isbn = "999999999";
 
-		List<Book> books = cassandraTemplate.query(new PreparedStatementCreator() {
+		List<Book> books = cqlTemplate.query(new PreparedStatementCreator() {
 
 			@Override
 			public PreparedStatement createPreparedStatement(Session session) throws DriverException {
@@ -1084,7 +1082,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String cql = "select * from book where isbn = ?";
 		final String isbn = "999999999";
 
-		cassandraTemplate.query(new PreparedStatementCreator() {
+		cqlTemplate.query(new PreparedStatementCreator() {
 
 			@Override
 			public PreparedStatement createPreparedStatement(Session session) throws DriverException {
@@ -1114,7 +1112,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		final String cql = "select * from book where isbn = ?";
 		final String isbn = "999999999";
 
-		List<Book> books = cassandraTemplate.query(new PreparedStatementCreator() {
+		List<Book> books = cqlTemplate.query(new PreparedStatementCreator() {
 
 			@Override
 			public PreparedStatement createPreparedStatement(Session session) throws DriverException {
@@ -1138,6 +1136,29 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 
 		assertEquals(books.size(), 1);
 		assertBook(books.get(0), b2);
+	}
+
+	@Test
+	public void insertAndTruncateQueryObjectTest() {
+
+		Log.info("Starting Insert and Truncate Query Object Test");
+
+		String tableName = "truncate_test";
+
+		CreateTableSpecification createTableSpec = new CreateTableSpecification();
+
+		createTableSpec.name(tableName).partitionKeyColumn("id", DataType.text()).column("foo", DataType.text());
+
+		cqlTemplate.execute(createTableSpec);
+
+		Insert insert = QueryBuilder.insertInto(tableName).value("id", uuid()).value("foo", "bar");
+
+		cqlTemplate.execute(insert);
+
+		Truncate truncate = QueryBuilder.truncate(tableName);
+
+		cqlTemplate.execute(truncate);
+
 	}
 
 	/**
@@ -1202,7 +1223,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	 */
 	public Book getBook(final String isbn) {
 
-		Book b = cassandraTemplate.query("select * from book where isbn = ?", new PreparedStatementBinder() {
+		Book b = cqlTemplate.query("select * from book where isbn = ?", new PreparedStatementBinder() {
 
 			@Override
 			public BoundStatement bindValues(PreparedStatement ps) throws DriverException {

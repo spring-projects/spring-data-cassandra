@@ -12,13 +12,13 @@ To begin working with ``spring-cassandra`` or ``spring-data-cassandra``, add the
 		</snapshots>
 	</repository>
 
-### CQL Only (spring-cassandra)
+### CQL Only (spring-cql)
 
 *Maven Coordinates*
 
 	<dependency>
 		<groupId>org.springframework.data</groupId>
-		<artifactId>spring-cassandra</artifactId>
+		<artifactId>spring-cql</artifactId>
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</dependency>
 
