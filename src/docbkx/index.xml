@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+    "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
+  <bookinfo>
+    <title>Spring Data Cassandra - Reference Documentation</title>
+
+    <releaseinfo>&version;</releaseinfo>
+
+    <authorgroup>
+      <author>
+        <firstname>David</firstname>
+        <surname>Webb</surname>
+      </author>
+
+      <author>
+        <firstname>Matthew</firstname>
+        <surname>Adams</surname>
+      </author>
+
+      <author>
+        <firstname>John</firstname>
+        <surname>McPeek</surname>
+      </author>
+    </authorgroup>
+
+    <legalnotice>
+      <para>Copies of this document may be made for your own use and for
+      distribution to others, provided that you do not charge any fee for such
+      copies and further provided that each copy contains this Copyright
+      Notice, whether distributed in print or electronically.</para>
+    </legalnotice>
+
+    <pubdate />
+
+    <copyright>
+      <year>2008-2014</year>
+
+      <holder> The original authors.</holder>
+    </copyright>
+    
+    <productname>Spring Data Cassandra - Reference Documentation</productname>
+  </bookinfo>
+
+  <toc/>
+
+  <xi:include href="preface.xml"/>
+
+  <part id="introduction">
+    <title>Introduction</title>
+
+    <xi:include href="introduction/introduction.xml"/>
+    <xi:include href="introduction/requirements.xml"/>
+    <xi:include href="introduction/getting-started.xml"/>
+    <xi:include href="https://raw.github.com/spring-projects/spring-data-commons/1.7.0.RELEASE/src/docbkx/repositories.xml">
+      <xi:fallback href="../../../spring-data-commons/src/docbkx/repositories.xml" />
+    </xi:include>
+  </part>
+
+  <part id="reference">
+    <title>Reference Documentation</title>
+
+    <xi:include href="reference/introduction.xml"/>
+    <xi:include href="reference/cassandra.xml"/>
+    <xi:include href="reference/cassandra-repositories.xml"/>
+    <xi:include href="reference/mapping.xml"/>
+  </part>
+
+  <part id="appendix">
+    <title>Appendix</title>
+
+    <xi:include href="https://raw.github.com/spring-projects/spring-data-commons/1.7.0.RELEASE/src/docbkx/repository-namespace-reference.xml">
+    	<xi:fallback href="../../../spring-data-commons/src/docbkx/repository-namespace-reference.xml" />
+    </xi:include>
+    <xi:include href="https://raw.github.com/spring-projects/spring-data-commons/1.7.0.RELEASE/src/docbkx/repository-query-keywords-reference.xml">
+    	<xi:fallback href="../../../spring-data-commons/src/docbkx/repository-query-keywords-reference.xml" />
+    </xi:include>
+  </part>
+
+</book>

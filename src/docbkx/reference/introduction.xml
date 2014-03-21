@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+    "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<partintro>
+  <title>Document Structure</title>
+
+  <para>This part of the reference documentation explains the core functionality
+    offered by Spring Data Cassandra.
+  </para>
+
+  <para>
+    <xref linkend="cassandra.core"/>
+    introduces the Cassandra module feature set.
+  </para>
+
+  <para>
+    <xref linkend="cassandra.repositories"/>
+    introduces the repository support for Cassandra.
+  </para>
+
+</partintro>
