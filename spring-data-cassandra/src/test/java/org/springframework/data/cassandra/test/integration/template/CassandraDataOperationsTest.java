@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
@@ -88,7 +89,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b3.setAuthor("Cassandra Guru");
 		b3.setPages(265);
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
@@ -131,7 +133,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b3.setAuthor("Cassandra Guru");
 		b3.setPages(265);
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
@@ -162,7 +165,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 	@Test
 	public void insertBatchTest() {
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
@@ -189,7 +193,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 	@Test
 	public void insertBatchAsynchronouslyTest() {
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
@@ -240,7 +245,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 		insertTest();
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
@@ -292,7 +298,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 		insertTest();
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
@@ -342,7 +349,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 	@Test
 	public void updateBatchTest() {
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
@@ -385,7 +393,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 	@Test
 	public void updateBatchAsynchronouslyTest() {
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
@@ -520,7 +529,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 	@Test
 	public void deleteBatchTest() {
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
@@ -555,7 +565,8 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 	@Test
 	public void deleteBatchAsynchronouslyTest() {
 
-		QueryOptions options = new QueryOptions();
+		WriteOptions options = new WriteOptions();
+		options.setTtl(60);
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
