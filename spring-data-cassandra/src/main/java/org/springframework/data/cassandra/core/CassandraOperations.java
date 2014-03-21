@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.QueryOptions;
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
@@ -77,7 +78,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options
 	 * @return
 	 */
-	<T> T insert(T entity, QueryOptions options);
+	<T> T insert(T entity, WriteOptions options);
 
 	/**
 	 * Insert the given list of objects to the table by annotation table name.
@@ -93,7 +94,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options
 	 * @return
 	 */
-	<T> List<T> insert(List<T> entities, QueryOptions options);
+	<T> List<T> insert(List<T> entities, WriteOptions options);
 
 	/**
 	 * Insert the given object to the table by id.
@@ -108,7 +109,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options
 	 * @return
 	 */
-	<T> T insertAsynchronously(T entity, QueryOptions options);
+	<T> T insertAsynchronously(T entity, WriteOptions options);
 
 	/**
 	 * Insert the given object to the table by id.
@@ -123,7 +124,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options
 	 * @return
 	 */
-	<T> List<T> insertAsynchronously(List<T> entities, QueryOptions options);
+	<T> List<T> insertAsynchronously(List<T> entities, WriteOptions options);
 
 	/**
 	 * Insert the given object to the table by id.
@@ -138,7 +139,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options
 	 * @return
 	 */
-	<T> T update(T entity, QueryOptions options);
+	<T> T update(T entity, WriteOptions options);
 
 	/**
 	 * Insert the given object to the table by id.
@@ -153,7 +154,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options
 	 * @return
 	 */
-	<T> List<T> update(List<T> entities, QueryOptions options);
+	<T> List<T> update(List<T> entities, WriteOptions options);
 
 	/**
 	 * Insert the given object to the table by id.
@@ -168,7 +169,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options
 	 * @return
 	 */
-	<T> T updateAsynchronously(T entity, QueryOptions options);
+	<T> T updateAsynchronously(T entity, WriteOptions options);
 
 	/**
 	 * Insert the given object to the table by id.
@@ -183,7 +184,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options
 	 * @return
 	 */
-	<T> List<T> updateAsynchronously(List<T> entities, QueryOptions options);
+	<T> List<T> updateAsynchronously(List<T> entities, WriteOptions options);
 
 	/**
 	 * Remove the given object from the table by id.

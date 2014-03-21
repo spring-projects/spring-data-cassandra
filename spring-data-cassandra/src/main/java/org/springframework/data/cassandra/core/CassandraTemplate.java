@@ -23,6 +23,7 @@ import java.util.Map;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.dao.DataAccessException;
@@ -66,7 +67,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	/**
 	 * Default Constructor for wiring in the required components later
 	 */
-	public CassandraTemplate() {}
+	public CassandraTemplate() {
+	}
 
 	/**
 	 * Constructor if only session and converter are known at time of Template Creation
@@ -188,7 +190,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> List<T> insert(List<T> entities, QueryOptions options) {
+	public <T> List<T> insert(List<T> entities, WriteOptions options) {
 		return batchInsert(entities, options, false);
 	}
 
@@ -198,7 +200,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> T insert(T entity, QueryOptions options) {
+	public <T> T insert(T entity, WriteOptions options) {
 		return insert(entity, options, false);
 	}
 
@@ -208,7 +210,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> List<T> insertAsynchronously(List<T> entities, QueryOptions options) {
+	public <T> List<T> insertAsynchronously(List<T> entities, WriteOptions options) {
 		return batchInsert(entities, options, true);
 	}
 
@@ -218,7 +220,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> T insertAsynchronously(T entity, QueryOptions options) {
+	public <T> T insertAsynchronously(T entity, WriteOptions options) {
 		return insert(entity, options, true);
 	}
 
@@ -350,7 +352,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> List<T> update(List<T> entities, QueryOptions options) {
+	public <T> List<T> update(List<T> entities, WriteOptions options) {
 		return batchUpdate(entities, options, false);
 	}
 
@@ -360,7 +362,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> T update(T entity, QueryOptions options) {
+	public <T> T update(T entity, WriteOptions options) {
 		return update(entity, options, false);
 	}
 
@@ -370,7 +372,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> List<T> updateAsynchronously(List<T> entities, QueryOptions options) {
+	public <T> List<T> updateAsynchronously(List<T> entities, WriteOptions options) {
 		return batchUpdate(entities, options, true);
 	}
 
@@ -380,7 +382,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> T updateAsynchronously(T entity, QueryOptions options) {
+	public <T> T updateAsynchronously(T entity, WriteOptions options) {
 		return update(entity, options, true);
 	}
 
@@ -459,13 +461,14 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		}
 	}
 
-	protected <T> T insert(T entity, QueryOptions options, boolean asynchronously) {
+	protected <T> T insert(T entity, WriteOptions options, boolean asynchronously) {
 
 		Assert.notNull(entity);
 
 		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
 		String query = insert.getQueryString();
+		logger.debug(query);
 
 		if (asynchronously) {
 			executeAsynchronously(query);
@@ -476,7 +479,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return entity;
 	}
 
-	protected <T> List<T> batchInsert(List<T> entities, QueryOptions options, boolean asychronously) {
+	protected <T> List<T> batchInsert(List<T> entities, WriteOptions options, boolean asychronously) {
 
 		Assert.notEmpty(entities);
 
@@ -504,7 +507,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param updateAsychronously
 	 * @return
 	 */
-	protected <T> List<T> batchUpdate(List<T> entities, QueryOptions options, boolean asychronously) {
+	protected <T> List<T> batchUpdate(List<T> entities, WriteOptions options, boolean asychronously) {
 
 		Assert.notEmpty(entities);
 
@@ -554,7 +557,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param updateAsychronously
 	 * @return
 	 */
-	protected <T> T update(T entity, QueryOptions options, boolean asychronously) {
+	protected <T> T update(T entity, WriteOptions options, boolean asychronously) {
 
 		Assert.notNull(entity);
 
@@ -581,7 +584,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
-	public static Insert createInsertQuery(String tableName, Object objectToSave, QueryOptions options,
+	public static Insert createInsertQuery(String tableName, Object objectToSave, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
 		Insert q = QueryBuilder.insertInto(tableName);
@@ -608,7 +611,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
-	public static Update toUpdateQuery(String tableName, Object objectToSave, QueryOptions options,
+	public static Update toUpdateQuery(String tableName, Object objectToSave, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
 		Update q = QueryBuilder.update(tableName);
@@ -635,7 +638,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
-	public static <T> Batch toUpdateBatchQuery(String tableName, List<T> objectsToSave, QueryOptions options,
+	public static <T> Batch toUpdateBatchQuery(String tableName, List<T> objectsToSave, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
 		/*
@@ -667,7 +670,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
-	public static <T> Batch createInsertBatchQuery(String tableName, List<T> entities, QueryOptions options,
+	public static <T> Batch createInsertBatchQuery(String tableName, List<T> entities, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
 		Batch batch = QueryBuilder.batch();

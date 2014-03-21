@@ -973,7 +973,7 @@ public interface CqlOperations {
 	 * @param rowIterator Implementation to provide the Object[] to be bound to the CQL.
 	 * @param options The Query Options Object
 	 */
-	void ingest(String cql, RowIterator rowIterator, QueryOptions options);
+	void ingest(String cql, RowIterator rowIterator, WriteOptions options);
 
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
@@ -1001,7 +1001,7 @@ public interface CqlOperations {
 	 * @param rows List of List<?> with data to bind to the CQL.
 	 * @param options The Query Options Object
 	 */
-	void ingest(String cql, List<List<?>> rows, QueryOptions options);
+	void ingest(String cql, List<List<?>> rows, WriteOptions options);
 
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
@@ -1041,7 +1041,7 @@ public interface CqlOperations {
 	 * @param rows Object array of Object array of values to bind to the CQL.
 	 * @param options The Query Options Object
 	 */
-	void ingest(String cql, Object[][] rows, QueryOptions options);
+	void ingest(String cql, Object[][] rows, WriteOptions options);
 
 	/**
 	 * Delete all rows in the table

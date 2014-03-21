@@ -47,6 +47,7 @@ import org.springframework.cassandra.core.RowCallbackHandler;
 import org.springframework.cassandra.core.RowIterator;
 import org.springframework.cassandra.core.RowMapper;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.dao.DataAccessException;
@@ -75,11 +76,11 @@ import static org.junit.Assert.assertTrue;
  * @author David Webb
  * 
  */
-public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
+public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	private static CqlOperations cqlTemplate;
 
-	private static Logger log = LoggerFactory.getLogger(CassandraOperationsTest.class);
+	private static Logger log = LoggerFactory.getLogger(CQLOperationsTest.class);
 
 	/*
 	 * Objects used for test data
@@ -98,7 +99,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 			"cassandraOperationsTest-cql-dataload.cql", this.keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
 			CASSANDRA_NATIVE_PORT);
 
-	public CassandraOperationsTest() {
+	public CQLOperationsTest() {
 		super();
 		// TODO clear = true;
 	}
@@ -144,7 +145,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 			@Override
 			public Collection<MyHost> mapHosts(Set<Host> host) throws DriverException {
 
-				List<MyHost> list = new LinkedList<CassandraOperationsTest.MyHost>();
+				List<MyHost> list = new LinkedList<CQLOperationsTest.MyHost>();
 
 				for (Host h : host) {
 					MyHost mh = new MyHost();
@@ -170,6 +171,9 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 	@SuppressWarnings("unchecked")
 	public void ingestionTestListOfList() {
 
+		WriteOptions options = new WriteOptions();
+		options.setTtl(360);
+
 		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
 
 		List<List<?>> values = new LinkedList<List<?>>();
@@ -178,7 +182,7 @@ public class CassandraOperationsTest extends AbstractKeyspaceCreatingIntegration
 		values.add(new LinkedList<Object>(CollectionUtils.arrayToList(o2)));
 		values.add(new LinkedList<Object>(CollectionUtils.arrayToList(o3)));
 
-		cqlTemplate.ingest(cql, values);
+		cqlTemplate.ingest(cql, values, options);
 
 		// Assert that the rows were inserted into Cassandra
 		Book b1 = getBook((String) o1[0]);

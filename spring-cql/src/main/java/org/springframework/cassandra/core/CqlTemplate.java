@@ -117,6 +117,84 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/**
+	 * Add common {@link Query} options for Insert queries.
+	 * 
+	 * @param q
+	 * @param options
+	 * @return the {@link Query} given.
+	 */
+	public static Query addWriteOptions(Insert q, WriteOptions options) {
+
+		if (options == null) {
+			return q;
+		}
+
+		if (options.getConsistencyLevel() != null) {
+			q.setConsistencyLevel(ConsistencyLevelResolver.resolve(options.getConsistencyLevel()));
+		}
+		if (options.getRetryPolicy() != null) {
+			q.setRetryPolicy(RetryPolicyResolver.resolve(options.getRetryPolicy()));
+		}
+		if (options.getTtl() != null) {
+			q.using(QueryBuilder.ttl(options.getTtl()));
+		}
+
+		return q;
+	}
+
+	/**
+	 * Add common {@link Query} options for Update queries.
+	 * 
+	 * @param q
+	 * @param options
+	 * @return the {@link Query} given.
+	 */
+	public static Query addWriteOptions(Update q, WriteOptions options) {
+
+		if (options == null) {
+			return q;
+		}
+
+		if (options.getConsistencyLevel() != null) {
+			q.setConsistencyLevel(ConsistencyLevelResolver.resolve(options.getConsistencyLevel()));
+		}
+		if (options.getRetryPolicy() != null) {
+			q.setRetryPolicy(RetryPolicyResolver.resolve(options.getRetryPolicy()));
+		}
+		if (options.getTtl() != null) {
+			q.using(QueryBuilder.ttl(options.getTtl()));
+		}
+
+		return q;
+	}
+
+	/**
+	 * Add common {@link Query} options for Batch queries.
+	 * 
+	 * @param q
+	 * @param options
+	 * @return the {@link Query} given.
+	 */
+	public static Query addWriteOptions(Batch q, WriteOptions options) {
+
+		if (options == null) {
+			return q;
+		}
+
+		if (options.getConsistencyLevel() != null) {
+			q.setConsistencyLevel(ConsistencyLevelResolver.resolve(options.getConsistencyLevel()));
+		}
+		if (options.getRetryPolicy() != null) {
+			q.setRetryPolicy(RetryPolicyResolver.resolve(options.getRetryPolicy()));
+		}
+		if (options.getTtl() != null) {
+			q.using(QueryBuilder.ttl(options.getTtl()));
+		}
+
+		return q;
+	}
+
+	/**
 	 * Add common Query options for all types of queries.
 	 * 
 	 * @param q
@@ -743,7 +821,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void ingest(String cql, RowIterator rowIterator, QueryOptions options) {
+	public void ingest(String cql, RowIterator rowIterator, WriteOptions options) {
 
 		PreparedStatement preparedStatement = getSession().prepare(cql);
 		addPreparedStatementOptions(preparedStatement, options);
@@ -759,7 +837,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void ingest(String cql, final List<List<?>> rows, QueryOptions options) {
+	public void ingest(String cql, final List<List<?>> rows, WriteOptions options) {
 
 		Assert.notNull(rows);
 		Assert.notEmpty(rows);
@@ -788,7 +866,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void ingest(String cql, final Object[][] rows, QueryOptions options) {
+	public void ingest(String cql, final Object[][] rows, WriteOptions options) {
 
 		ingest(cql, new RowIterator() {
 
