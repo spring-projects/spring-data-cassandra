@@ -103,6 +103,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b5.setPages(265);
 
 		template.insert(b5, options);
+
 	}
 
 	@Test

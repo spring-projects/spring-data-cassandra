@@ -597,7 +597,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		/*
 		 * Add Query Options
 		 */
-		CqlTemplate.addQueryOptions(q, options);
+		CqlTemplate.addWriteOptions(q, options);
 
 		return q;
 	}
@@ -624,7 +624,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		/*
 		 * Add Query Options
 		 */
-		CqlTemplate.addQueryOptions(q, options);
+		CqlTemplate.addWriteOptions(q, options);
 
 		return q;
 	}

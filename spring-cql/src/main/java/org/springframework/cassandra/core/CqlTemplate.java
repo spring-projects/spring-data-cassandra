@@ -123,7 +123,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @param options
 	 * @return the {@link Query} given.
 	 */
-	public static Query addWriteOptions(Insert q, WriteOptions options) {
+	public static Insert addWriteOptions(Insert q, WriteOptions options) {
 
 		if (options == null) {
 			return q;
@@ -149,33 +149,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @param options
 	 * @return the {@link Query} given.
 	 */
-	public static Query addWriteOptions(Update q, WriteOptions options) {
-
-		if (options == null) {
-			return q;
-		}
-
-		if (options.getConsistencyLevel() != null) {
-			q.setConsistencyLevel(ConsistencyLevelResolver.resolve(options.getConsistencyLevel()));
-		}
-		if (options.getRetryPolicy() != null) {
-			q.setRetryPolicy(RetryPolicyResolver.resolve(options.getRetryPolicy()));
-		}
-		if (options.getTtl() != null) {
-			q.using(QueryBuilder.ttl(options.getTtl()));
-		}
-
-		return q;
-	}
-
-	/**
-	 * Add common {@link Query} options for Batch queries.
-	 * 
-	 * @param q
-	 * @param options
-	 * @return the {@link Query} given.
-	 */
-	public static Query addWriteOptions(Batch q, WriteOptions options) {
+	public static Update addWriteOptions(Update q, WriteOptions options) {
 
 		if (options == null) {
 			return q;
