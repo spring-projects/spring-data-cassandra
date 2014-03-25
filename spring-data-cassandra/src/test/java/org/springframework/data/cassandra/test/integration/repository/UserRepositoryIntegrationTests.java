@@ -15,12 +15,6 @@
  */
 package org.springframework.data.cassandra.test.integration.repository;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,6 +22,14 @@ import org.junit.Assert;
 import org.springframework.data.cassandra.core.CassandraOperations;
 
 import com.google.common.collect.Lists;
+
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link UserRepository}.
@@ -139,6 +141,18 @@ public class UserRepositoryIntegrationTests {
 
 		assertThat(result.size(), is(all.size() - 1));
 		assertThat(result, not(hasItem(tom)));
+	}
+
+	public void exists() {
+
+		String id = "tom";
+
+		assertTrue(repository.exists(id));
+
+		repository.delete(id);
+
+		assertTrue(!repository.exists(id));
+
 	}
 
 	private static void assertEquals(User user1, User user2) {

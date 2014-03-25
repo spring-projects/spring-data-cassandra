@@ -75,4 +75,9 @@ public abstract class UserRepositoryIntegrationTestsDelegator extends
 	public void deletesUserByIdCorrectly() {
 		tests.deletesUserByIdCorrectly();
 	}
+
+	@Test
+	public void exists() {
+		tests.exists();
+	}
 }

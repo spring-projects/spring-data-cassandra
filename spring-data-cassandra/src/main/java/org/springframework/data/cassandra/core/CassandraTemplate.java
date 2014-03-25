@@ -117,7 +117,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Select select = QueryBuilder.select().countAll().from(entity.getTableName().toCql());
 		appendIdCriteria(select.where(), entity, id);
 
-		return count(select.getQueryString()) != 0;
+		Long count = queryForObject(select, Long.class);
+
+		return count != 0;
 	}
 
 	@Override
