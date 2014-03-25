@@ -27,6 +27,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Base class for Java config tests for {@link UserRepository}.
  * 
  * @author Matthew T. Adams
+ * @author David Webb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 public abstract class UserRepositoryIntegrationTestsDelegator extends

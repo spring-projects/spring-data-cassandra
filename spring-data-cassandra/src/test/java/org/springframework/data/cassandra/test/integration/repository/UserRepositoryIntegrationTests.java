@@ -36,6 +36,7 @@ import static org.junit.Assert.assertTrue;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author David Webb
  */
 public class UserRepositoryIntegrationTests {
 
