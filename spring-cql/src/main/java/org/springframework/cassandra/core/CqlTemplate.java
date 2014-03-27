@@ -606,8 +606,127 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
+	public void executeAsynchronously(String cql, Runnable listener) throws DataAccessException {
+		executeAsynchronously(cql, listener, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+
+		});
+	}
+
+	@Override
+	public void executeAsynchronously(final String cql, final Runnable listener, final Executor executor)
+			throws DataAccessException {
+
+		execute(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				Statement statement = new SimpleStatement(cql);
+				final ResultSetFuture rsf = s.executeAsync(statement);
+				rsf.addListener(listener, executor);
+				return null;
+			}
+		});
+
+	}
+
+	@Override
+	public void executeAsynchronously(String cql, AsynchronousQueryListener listener) throws DataAccessException {
+		executeAsynchronously(cql, listener, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+
+		});
+
+	}
+
+	@Override
+	public void executeAsynchronously(final String cql, final AsynchronousQueryListener listener, final Executor executor)
+			throws DataAccessException {
+
+		execute(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				Statement statement = new SimpleStatement(cql);
+				final ResultSetFuture rsf = s.executeAsync(statement);
+				Runnable wrapper = new Runnable() {
+					@Override
+					public void run() {
+						listener.onQueryComplete(rsf);
+					}
+				};
+				rsf.addListener(wrapper, executor);
+				return null;
+			}
+		});
+
+	}
+
+	@Override
 	public void executeAsynchronously(Query query) throws DataAccessException {
 		doExecuteAsync(query);
+	}
+
+	@Override
+	public void executeAsynchronously(Query query, Runnable listener) throws DataAccessException {
+		executeAsynchronously(query, listener, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+		});
+	}
+
+	@Override
+	public void executeAsynchronously(Query query, AsynchronousQueryListener listener) throws DataAccessException {
+		executeAsynchronously(query, listener, new Executor() {
+
+			@Override
+			public void execute(Runnable command) {
+				command.run();
+			}
+		});
+	}
+
+	@Override
+	public void executeAsynchronously(final Query query, final Runnable listener, final Executor executor)
+			throws DataAccessException {
+		execute(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				final ResultSetFuture rsf = s.executeAsync(query);
+				rsf.addListener(listener, executor);
+				return null;
+			}
+		});
+	}
+
+	@Override
+	public void executeAsynchronously(final Query query, final AsynchronousQueryListener listener, final Executor executor)
+			throws DataAccessException {
+
+		execute(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				final ResultSetFuture rsf = s.executeAsync(query);
+				Runnable wrapper = new Runnable() {
+					@Override
+					public void run() {
+						listener.onQueryComplete(rsf);
+					}
+				};
+				rsf.addListener(wrapper, executor);
+				return null;
+			}
+		});
+
 	}
 
 	@Override
