@@ -16,7 +16,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.4.0.BUILD-SNAPSHOT</version>
+		<version>1.4.0.M1</version>
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
 
@@ -31,7 +31,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<project.type>multi</project.type>
 		<dist.id>spring-data-cassandra</dist.id>
-		<springdata.commons>1.8.0.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.8.0.M1</springdata.commons>
 		<cassandra-unit.version>1.2.0.1</cassandra-unit.version>
 		<cassandra-driver-core.version>1.0.5-dse</cassandra-driver-core.version>
 		<failsafe.version>2.16</failsafe.version>
@@ -93,39 +93,6 @@
 				<artifactId>jamm</artifactId>
 				<version>${jamm.version}</version>
 				<scope>test</scope>
-			</dependency>
-
-			<!-- Spring -->
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-context</artifactId>
-				<version>${spring}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-tx</artifactId>
-				<version>${spring}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-beans</artifactId>
-				<version>${spring}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-core</artifactId>
-				<version>${spring}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-expression</artifactId>
-				<version>${spring}</version>
 			</dependency>
 
 			<!-- Logging Dependencies -->
@@ -230,7 +197,7 @@
 	<repositories>
 		<repository>
 			<id>spring-lib-release</id>
-			<url>http://repo.springsource.org/libs-release-local</url>
+			<url>http://repo.spring.io/libs-milestone</url>
 		</repository>
 	</repositories>
 

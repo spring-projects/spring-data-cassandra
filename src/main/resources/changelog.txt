@@ -1,0 +1,42 @@
+Spring Data Cassandra Changelog
+===============================
+
+Changes in version 1.0.0.M1 (2014-03-31)
+----------------------------------------
+
+** Technical task
+    * [DATACASS-17] - Create Operations
+    * [DATACASS-18] - Update (Save) Operations
+    * [DATACASS-19] - Delete Operations
+    * [DATACASS-20] - Search Operations
+    * [DATACASS-21] - Include Basic Options for Cassandra Connectivity
+    * [DATACASS-39] - Better PreparedStatement Support
+    * [DATACASS-48] - Add ConsistencyLevel and RetryPolicy to Operations/Template
+
+** Bug
+    * [DATACASS-92] - Add support for missing DataTypes to DefaultCassandraRowValueProvider
+    * [DATACASS-105] - Missing CassandraPersistentProperty.getActualType() method in code.
+
+** Story
+    * [DATACASS-11] - Develop or Modify Mapping Subsystem for Beans
+    * [DATACASS-13] - Define Operations Interface and Implement with CassandraTemplate
+    * [DATACASS-14] - Define JavaConfig for spring-cassandra
+    * [DATACASS-15] - Define Basic XML Namespace for spring-cassandra
+    * [DATACASS-32] - Implement the TemplateAPI for CQL
+    * [DATACASS-38] - Cluster Connection Listener
+    * [DATACASS-42] - Update to latest spring-data-commons v.next
+    * [DATACASS-61] - Create Outline
+    * [DATACASS-69] - Add more queryAsynchronously methods to Operations Interface
+    * [DATACASS-80] - Rename classes in spring-cassandra & spring-data-cassandra
+    * [DATACASS-84] - Provide support for naming strategies
+    * [DATACASS-88] - Ensure license text appears in all source files with proper dates.
+    * [DATACASS-89] - Add overloaded methods to CqlOperations that use strongly typed Query objects
+    * [DATACASS-90] - Ensure all CqlOperations methods take QueryOptions where appropriate
+    * [DATACASS-93] - Enhance annotations to allow for force-quoting
+    * [DATACASS-94] - Add class AbstractCqlTemplateConfiguration
+    * [DATACASS-96] - Integrate CqlIdentifier
+    * [DATACASS-98] - Entity validation fails and throws a IndexOutOfBoundsException
+    * [DATACASS-99] - Make classes using prefixes "Default" & "Basic" uniform
+    * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
+    * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
+    * [DATACASS-107] - Support declarative query methods
