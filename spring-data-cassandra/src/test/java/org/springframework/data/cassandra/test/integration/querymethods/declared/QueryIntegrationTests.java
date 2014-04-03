@@ -248,4 +248,24 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		assertEquals(found.getFirstname(), saved.getFirstname());
 	}
 
+	@Test
+	public void testEscapeSingleQuoteInQueryParameterValue() {
+
+		Person saved = new Person();
+		saved.setFirstname("Bri'an" + uuid());
+		String lastname = "O'Brian" + uuid();
+		saved.setLastname(lastname);
+
+		saved = r.save(saved);
+
+		List<Person> results = r.findFolksWithLastnameAsList(lastname);
+
+		assertNotNull(results);
+		assertTrue(results.size() == 1);
+		for (Person person : results) {
+			assertNotNull(person);
+			assertEquals(saved.getLastname(), person.getLastname());
+			assertEquals(saved.getFirstname(), person.getFirstname());
+		}
+	}
 }

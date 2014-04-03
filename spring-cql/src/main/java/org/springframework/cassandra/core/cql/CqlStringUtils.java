@@ -15,6 +15,10 @@
  */
 package org.springframework.cassandra.core.cql;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import com.datastax.driver.core.DataType;
 
 public class CqlStringUtils {
@@ -26,6 +30,8 @@ public class CqlStringUtils {
 	protected static final String EMPTY_STRING = "";
 	protected static final String TYPE_PARAMETER_PREFIX = "<";
 	protected static final String TYPE_PARAMETER_SUFFIX = ">";
+	public static final String ISO8601_DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
+	public static final DateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat(ISO8601_DATE_FORMAT_PATTERN);
 
 	public static StringBuilder noNull(StringBuilder sb) {
 		return sb == null ? new StringBuilder() : sb;
@@ -127,5 +133,13 @@ public class CqlStringUtils {
 			return s;
 		}
 		return s.substring(1, s.length() - 1);
+	}
+
+	public static String date(Date date) {
+		return ISO8601_DATE_FORMAT.format(date);
+	}
+
+	public static String date(long time) {
+		return ISO8601_DATE_FORMAT.format(new Date(time));
 	}
 }

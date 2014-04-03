@@ -100,10 +100,10 @@ public class StringBasedCassandraQueryIntegrationTests {
 
 	private interface SampleRepository {
 
-		@Query("SELECT * FROM person WHERE lastname='?0';")
+		@Query("SELECT * FROM person WHERE lastname=?0;")
 		Person findByLastname(String lastname);
 
-		@Query("SELECT * FROM person WHERE lastname='?0' AND firstname='?1';")
+		@Query("SELECT * FROM person WHERE lastname=?0 AND firstname=?1;")
 		Person findByLastnameAndFirstname(String lastname, String firstname);
 	}
 }

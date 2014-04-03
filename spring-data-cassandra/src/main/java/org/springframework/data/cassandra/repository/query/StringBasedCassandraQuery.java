@@ -1,10 +1,12 @@
 package org.springframework.data.cassandra.repository.query;
 
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.cql.CqlStringUtils;
 import org.springframework.data.cassandra.core.CassandraOperations;
 
 public class StringBasedCassandraQuery extends AbstractCassandraQuery {
@@ -38,7 +40,19 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		while (matcher.find()) {
 			String group = matcher.group();
 			int index = Integer.parseInt(matcher.group(1));
-			result = result.replace(group, getParameterWithIndex(accessor, index).toString());
+			Object value = getParameterWithIndex(accessor, index);
+			String stringValue = null;
+			CassandraQueryMethod queryMethod = getQueryMethod();
+
+			if (queryMethod.isStringLikeParameter(index)) {
+				stringValue = "'" + CqlStringUtils.escapeSingle(value) + "'";
+			} else if (queryMethod.isDateParameter(index)) {
+				stringValue = "'" + CqlStringUtils.date((Date) value) + "'";
+			} else {
+				stringValue = value.toString();
+			}
+
+			result = result.replace(group, stringValue);
 		}
 
 		return result;

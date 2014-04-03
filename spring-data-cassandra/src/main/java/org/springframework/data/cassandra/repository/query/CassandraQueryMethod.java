@@ -35,6 +35,12 @@ public class CassandraQueryMethod extends QueryMethod {
 					Long.class, boolean.class, Boolean.class, BigDecimal.class, BigInteger.class, double.class, Double.class,
 					float.class, Float.class, InetAddress.class, Date.class, UUID.class, }));
 
+	public static final List<Class<?>> STRING_LIKE_PARAMETER_TYPES = Collections.unmodifiableList(Arrays
+			.asList(new Class<?>[] { CharSequence.class, char.class, Character.class, char[].class }));
+
+	public static final List<Class<?>> DATE_PARAMETER_TYPES = Collections.unmodifiableList(Arrays
+			.asList(new Class<?>[] { Date.class }));
+
 	public static boolean isMapOfCharSequenceToObject(TypeInformation<?> type) {
 
 		if (!type.isMap()) {
@@ -52,6 +58,8 @@ public class CassandraQueryMethod extends QueryMethod {
 	protected Query query;
 	protected String queryString;
 	protected boolean queryCached = false;
+	protected Set<Integer> stringLikeParameterIndexes = new HashSet<Integer>();
+	protected Set<Integer> dateParameterIndexes = new HashSet<Integer>();
 
 	public CassandraQueryMethod(Method method, RepositoryMetadata metadata, CassandraMappingContext mappingContext) {
 
@@ -73,10 +81,23 @@ public class CassandraQueryMethod extends QueryMethod {
 		}
 
 		Set<Class<?>> offendingTypes = new HashSet<Class<?>>();
+
+		int i = 0;
 		for (Class<?> type : method.getParameterTypes()) {
 			if (!ALLOWED_PARAMETER_TYPES.contains(type)) {
 				offendingTypes.add(type);
 			}
+			for (Class<?> quotedType : STRING_LIKE_PARAMETER_TYPES) {
+				if (quotedType.isAssignableFrom(type)) {
+					stringLikeParameterIndexes.add(i);
+				}
+			}
+			for (Class<?> quotedType : DATE_PARAMETER_TYPES) {
+				if (quotedType.isAssignableFrom(type)) {
+					dateParameterIndexes.add(i);
+				}
+			}
+			i++;
 		}
 
 		if (offendingTypes.size() > 0) {
@@ -152,5 +173,13 @@ public class CassandraQueryMethod extends QueryMethod {
 		}
 
 		return isMapOfCharSequenceToObject(type.getComponentType());
+	}
+
+	public boolean isStringLikeParameter(int parameterIndex) {
+		return stringLikeParameterIndexes.contains(parameterIndex);
+	}
+
+	public boolean isDateParameter(int parameterIndex) {
+		return dateParameterIndexes.contains(parameterIndex);
 	}
 }
