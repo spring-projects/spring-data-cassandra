@@ -30,7 +30,7 @@ public class CqlStringUtils {
 	protected static final String EMPTY_STRING = "";
 	protected static final String TYPE_PARAMETER_PREFIX = "<";
 	protected static final String TYPE_PARAMETER_SUFFIX = ">";
-	public static final String ISO8601_DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
+	public static final String ISO8601_DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSXX";
 	public static final DateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat(ISO8601_DATE_FORMAT_PATTERN);
 
 	public static StringBuilder noNull(StringBuilder sb) {
