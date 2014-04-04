@@ -33,7 +33,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	public static final List<Class<?>> ALLOWED_PARAMETER_TYPES = Collections.unmodifiableList(Arrays
 			.asList(new Class<?>[] { String.class, CharSequence.class, char.class, Character.class, char[].class, long.class,
 					Long.class, boolean.class, Boolean.class, BigDecimal.class, BigInteger.class, double.class, Double.class,
-					float.class, Float.class, InetAddress.class, Date.class, UUID.class, }));
+					float.class, Float.class, InetAddress.class, Date.class, UUID.class, int.class, Integer.class }));
 
 	public static final List<Class<?>> STRING_LIKE_PARAMETER_TYPES = Collections.unmodifiableList(Arrays
 			.asList(new Class<?>[] { CharSequence.class, char.class, Character.class, char[].class }));
