@@ -47,7 +47,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 			if (queryMethod.isStringLikeParameter(index)) {
 				stringValue = "'" + CqlStringUtils.escapeSingle(value) + "'";
 			} else if (queryMethod.isDateParameter(index)) {
-				stringValue = "'" + CqlStringUtils.date((Date) value) + "'";
+				stringValue = "" + ((Date) value).getTime();
 			} else {
 				stringValue = value.toString();
 			}
