@@ -29,6 +29,7 @@ import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -68,6 +69,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * Default Constructor for wiring in the required components later
 	 */
 	public CassandraTemplate() {
+	}
+
+	public CassandraTemplate(Session session) {
+		this(session, new MappingCassandraConverter());
 	}
 
 	/**

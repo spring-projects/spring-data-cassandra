@@ -27,6 +27,7 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -68,6 +69,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	protected SpELContext spELContext;
 
 	protected ClassLoader beanClassLoader;
+
+	/**
+	 * Creates a new {@link MappingCassandraConverter} with a {@link BasicCassandraMappingContext}.
+	 */
+	public MappingCassandraConverter() {
+		this(new BasicCassandraMappingContext());
+	}
 
 	/**
 	 * Creates a new {@link MappingCassandraConverter} with the given {@link CassandraMappingContext}.
