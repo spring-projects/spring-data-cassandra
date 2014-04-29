@@ -231,17 +231,6 @@
 	<build>
 		<plugins>
 			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<optimize>true</optimize>
-					<showDeprecation>true</showDeprecation>
-					<showWarnings>true</showWarnings>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.bitstrings.maven.plugins</groupId>
 				<artifactId>dependencypath-maven-plugin</artifactId>
 				<version>1.1.1</version>
