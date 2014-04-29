@@ -32,10 +32,10 @@ import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.dao.DataAccessException;
 
-import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -78,9 +78,9 @@ public interface CqlOperations {
 	/**
 	 * Executes the supplied Query and returns nothing.
 	 * 
-	 * @param query The {@link Query} to execute
+	 * @param query The {@link Statement} to execute
 	 */
-	void execute(Query query) throws DataAccessException;
+	void execute(Statement query) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Delete Query and returns nothing.
@@ -206,44 +206,44 @@ public interface CqlOperations {
 	/**
 	 * Executes the supplied CQL Batch Asynchronously and returns nothing.
 	 * 
-	 * @param query The {@link Query} to execute
+	 * @param query The {@link Batch} to execute
 	 */
 	void executeAsynchronously(Batch batch) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
-	 * @param query The {@link Query} to execute
+	 * @param query The {@link Statement} to execute
 	 */
-	void executeAsynchronously(Query query) throws DataAccessException;
+	void executeAsynchronously(Statement query) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
-	 * @param query The {@link Query} to execute
+	 * @param query The {@link Statement} to execute
 	 */
-	void executeAsynchronously(Query query, Runnable runnable) throws DataAccessException;
+	void executeAsynchronously(Statement query, Runnable runnable) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
-	 * @param query The {@link Query} to execute
+	 * @param query The {@link Statement} to execute
 	 */
-	void executeAsynchronously(Query query, AsynchronousQueryListener listener) throws DataAccessException;
+	void executeAsynchronously(Statement query, AsynchronousQueryListener listener) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
-	 * @param query The {@link Query} to execute
+	 * @param query The {@link Statement} to execute
 	 */
-	void executeAsynchronously(Query query, Runnable runnable, Executor executor) throws DataAccessException;
+	void executeAsynchronously(Statement query, Runnable runnable, Executor executor) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
 	 * 
-	 * @param query The {@link Query} to execute
+	 * @param query The {@link Statement} to execute
 	 */
-	void executeAsynchronously(Query query, AsynchronousQueryListener listener, Executor executor)
+	void executeAsynchronously(Statement query, AsynchronousQueryListener listener, Executor executor)
 			throws DataAccessException;
 
 	/**

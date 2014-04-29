@@ -15,10 +15,6 @@
  */
 package org.springframework.data.cassandra.test.integration.querymethods.declared;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
-
 import java.lang.reflect.Method;
 
 import org.junit.Before;
@@ -39,6 +35,12 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+
+import static org.hamcrest.Matchers.is;
+
+import static org.junit.Assert.assertThat;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link StringBasedCassandraQuery}.
@@ -74,6 +76,7 @@ public class StringBasedCassandraQueryIntegrationTests {
 
 		String table = Person.class.getSimpleName().toLowerCase();
 		Select expected = QueryBuilder.select().all().from(table);
+		expected.setForceNoValues(true);
 		expected.where(QueryBuilder.eq("lastname", "Matthews"));
 
 		assertThat(actual.getQueryString(), is(expected.getQueryString()));
@@ -93,6 +96,7 @@ public class StringBasedCassandraQueryIntegrationTests {
 
 		String table = Person.class.getSimpleName().toLowerCase();
 		Select expected = QueryBuilder.select().all().from(table);
+		expected.setForceNoValues(true);
 		expected.where(QueryBuilder.eq("lastname", "Matthews")).and(QueryBuilder.eq("firstname", "John"));
 
 		assertThat(actual.getQueryString(), is(expected.getQueryString()));

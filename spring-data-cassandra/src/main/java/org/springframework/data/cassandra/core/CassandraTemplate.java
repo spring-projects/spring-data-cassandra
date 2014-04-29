@@ -153,7 +153,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Delete delete = QueryBuilder.delete().from(entity.getTableName().toCql());
 		appendIdCriteria(delete.where(), entity, id);
 
-		execute(delete.getQueryString());
+		execute(delete);
 	}
 
 	@Override
@@ -233,7 +233,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> List<T> selectAll(Class<T> type) {
-		return select(QueryBuilder.select().all().from(getTableName(type).toCql()).getQueryString(), type);
+		return select(QueryBuilder.select().all().from(getTableName(type).toCql()), type);
 	}
 
 	@Override
@@ -243,6 +243,14 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Assert.notNull(type);
 
 		return select(cql, new CassandraConverterRowCallback<T>(cassandraConverter, type));
+	}
+
+	@Override
+	public <T> List<T> select(Select select, Class<T> type) {
+
+		Assert.notNull(select);
+
+		return select(select, new CassandraConverterRowCallback<T>(cassandraConverter, type));
 	}
 
 	@Override
@@ -259,7 +267,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 		select.where(QueryBuilder.in(entity.getIdProperty().getColumnName().toCql(), CollectionUtils.toArray(ids)));
 
-		return select(select.getQueryString(), type);
+		return select(select, type);
 	}
 
 	@Override
@@ -276,7 +284,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 		appendIdCriteria(select.where(), entity, id);
 
-		return selectOne(select.getQueryString(), type);
+		return selectOne(select, type);
 	}
 
 	protected interface ClauseCallback {
@@ -354,6 +362,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
+	public <T> T selectOne(Select select, Class<T> type) {
+		return selectOne(select, new CassandraConverterRowCallback<T>(cassandraConverter, type));
+	}
+
+	@Override
 	public <T> List<T> update(List<T> entities) {
 		return update(entities, null);
 	}
@@ -421,6 +434,30 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return result;
 	}
 
+	protected <T> List<T> select(final Select query, CassandraConverterRowCallback<T> readRowCallback) {
+
+		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(query);
+			}
+		});
+
+		if (resultSet == null) {
+			return null;
+		}
+
+		List<T> result = new ArrayList<T>();
+		Iterator<Row> iterator = resultSet.iterator();
+		while (iterator.hasNext()) {
+			Row row = iterator.next();
+			result.add(readRowCallback.doWith(row));
+		}
+
+		return result;
+	}
+
 	/**
 	 * @param query
 	 * @param readRowCallback
@@ -429,6 +466,23 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	protected <T> T selectOne(String query, CassandraConverterRowCallback<T> readRowCallback) {
 
 		logger.debug(query);
+
+		ResultSet resultSet = query(query);
+
+		Iterator<Row> iterator = resultSet.iterator();
+		if (iterator.hasNext()) {
+			Row row = iterator.next();
+			T result = readRowCallback.doWith(row);
+			if (iterator.hasNext()) {
+				throw new DuplicateKeyException("found two or more results in query " + query);
+			}
+			return result;
+		}
+
+		return null;
+	}
+
+	protected <T> T selectOne(Select query, CassandraConverterRowCallback<T> readRowCallback) {
 
 		ResultSet resultSet = query(query);
 
@@ -458,13 +512,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Batch b = createDeleteBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
 				cassandraConverter);
 
-		String query = b.getQueryString();
-		logger.debug(query);
-
 		if (asynchronously) {
-			executeAsynchronously(query);
+			executeAsynchronously(b);
 		} else {
-			execute(query);
+			execute(b);
 		}
 	}
 
@@ -474,13 +525,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
-		String query = insert.getQueryString();
-		logger.debug(query);
-
 		if (asynchronously) {
-			executeAsynchronously(query);
+			executeAsynchronously(insert);
 		} else {
-			execute(query);
+			execute(insert);
 		}
 
 		return entity;
@@ -493,13 +541,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Batch b = createInsertBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
 				cassandraConverter);
 
-		String query = b.getQueryString();
-		logger.debug(query);
-
 		if (asychronously) {
-			executeAsynchronously(query);
+			executeAsynchronously(b);
 		} else {
-			execute(query);
+			execute(b);
 		}
 
 		return entities;
@@ -521,13 +566,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Batch b = toUpdateBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
 				cassandraConverter);
 
-		String query = b.getQueryString();
-		logger.debug(query);
-
 		if (asychronously) {
-			executeAsynchronously(query);
+			executeAsynchronously(b);
 		} else {
-			execute(query);
+			execute(b);
 		}
 
 		return entities;
@@ -545,13 +587,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Delete delete = createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
-		String query = delete.getQueryString();
-		logger.debug(query);
-
 		if (asynchronously) {
-			executeAsynchronously(query);
+			executeAsynchronously(delete);
 		} else {
-			execute(query);
+			execute(delete);
 		}
 	}
 
@@ -568,15 +607,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Assert.notNull(entity);
 
-		Update q = toUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
-
-		String query = q.getQueryString();
-		logger.debug(query);
+		Update update = toUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 
 		if (asychronously) {
-			executeAsynchronously(query);
+			executeAsynchronously(update);
 		} else {
-			execute(query);
+			execute(update);
 		}
 
 		return entity;
@@ -594,19 +630,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	public static Insert createInsertQuery(String tableName, Object objectToSave, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
-		Insert q = QueryBuilder.insertInto(tableName);
+		Insert insert = QueryBuilder.insertInto(tableName);
 
 		/*
 		 * Write properties
 		 */
-		entityWriter.write(objectToSave, q);
+		entityWriter.write(objectToSave, insert);
 
 		/*
 		 * Add Query Options
 		 */
-		CqlTemplate.addWriteOptions(q, options);
+		CqlTemplate.addWriteOptions(insert, options);
 
-		return q;
+		return insert;
 	}
 
 	/**
@@ -621,19 +657,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	public static Update toUpdateQuery(String tableName, Object objectToSave, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
-		Update q = QueryBuilder.update(tableName);
+		Update update = QueryBuilder.update(tableName);
 
 		/*
 		 * Write properties
 		 */
-		entityWriter.write(objectToSave, q);
+		entityWriter.write(objectToSave, update);
 
 		/*
 		 * Add Query Options
 		 */
-		CqlTemplate.addWriteOptions(q, options);
+		CqlTemplate.addWriteOptions(update, options);
 
-		return q;
+		return update;
 	}
 
 	/**
@@ -704,14 +740,15 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			EntityWriter<Object, Object> entityWriter) {
 
 		Delete.Selection ds = QueryBuilder.delete();
-		Delete q = ds.from(tableName);
-		Where w = q.where();
+		Delete delete = ds.from(tableName);
+
+		Where w = delete.where();
 
 		entityWriter.write(object, w);
 
-		CqlTemplate.addQueryOptions(q, options);
+		CqlTemplate.addQueryOptions(delete, options);
 
-		return q;
+		return delete;
 	}
 
 	/**

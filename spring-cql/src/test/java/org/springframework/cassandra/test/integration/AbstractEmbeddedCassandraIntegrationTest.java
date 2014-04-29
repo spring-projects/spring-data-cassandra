@@ -63,8 +63,8 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 	}
 
 	@BeforeClass
-	public static void startCassandra() throws ConfigurationException, TTransportException, IOException,
-			InterruptedException {
+	public static void startCassandra() throws TTransportException, IOException, InterruptedException,
+			ConfigurationException {
 
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
 	}

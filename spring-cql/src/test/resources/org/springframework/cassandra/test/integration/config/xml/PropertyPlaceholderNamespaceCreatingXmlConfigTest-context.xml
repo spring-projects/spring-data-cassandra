@@ -9,14 +9,16 @@
 	<context:property-placeholder
 		location="classpath:/org/springframework/cassandra/test/integration/config/xml/ppncxct.properties" />
 
-	<bean id="authProvider" class="com.datastax.driver.core.sasl.DseAuthProvider" />
+	<bean id="authProvider" class="com.datastax.driver.auth.DseAuthProvider" />
 
+	<!-- 
 	<bean id="loadBalancingPolicy"
 		class="com.datastax.driver.core.policies.DCAwareRoundRobinPolicy">
 		<constructor-arg name="localDc" value="${lb.policy.dcAware.localDc}" />
 		<constructor-arg name="usedHostsPerRemoteDc"
 			value="${lb.policy.dcAware.remoteHosts}" />
 	</bean>
+	 -->
 
 	<bean id="reconnectionPolicy"
 		class="com.datastax.driver.core.policies.ConstantReconnectionPolicy">
@@ -35,9 +37,9 @@
 
 	<cassandra:cluster contact-points="${cluster.contactPoints}"
 		port="${cluster.port}" compression="${cluster.compression}"
-		auth-info-provider-ref="authProvider" load-balancing-policy-ref="loadBalancingPolicy"
+		auth-info-provider-ref="authProvider"
 		username="${auth.username}" password="${auth.password}"
-		deferred-initialization="${cluster.deferredInit}" metrics-enabled="${cluster.metricsEnabled}"
+		metrics-enabled="${cluster.metricsEnabled}"
 		jmx-reporting-enabled="${cluster.jmxReportingEnabled}"
 		reconnection-policy-ref="reconnectionPolicy" retry-policy-ref="retryPolicy"
 		host-state-listener-ref="hostStateListener" latency-tracker-ref="latencyTracker">

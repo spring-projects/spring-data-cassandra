@@ -172,14 +172,6 @@ Determine whether or not to enable JMX Reporting.  Defaults to true.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="deferred-initialization" type="xsd:string"
-			default="false">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-Determine if we defer initalizing the cluster until a connection is requested. Defaults to false.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
 		<xsd:attribute name="ssl-enabled" type="xsd:string"
 			default="false">
 			<xsd:annotation>

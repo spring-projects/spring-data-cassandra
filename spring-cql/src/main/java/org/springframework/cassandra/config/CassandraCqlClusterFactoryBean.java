@@ -86,7 +86,6 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	private ReconnectionPolicy reconnectionPolicy;
 	private RetryPolicy retryPolicy;
 	private boolean metricsEnabled = DEFAULT_METRICS_ENABLED;
-	private boolean deferredInitialization = DEFAULT_DEFERRED_INITIALIZATION;
 	private boolean jmxReportingEnabled = DEFAULT_JMX_REPORTING_ENABLED;
 	private boolean sslEnabled = DEFAULT_SSL_ENABLED;
 	private SSLOptions sslOptions;
@@ -161,10 +160,6 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 		if (retryPolicy != null) {
 			builder.withRetryPolicy(retryPolicy);
-		}
-
-		if (deferredInitialization) {
-			builder.withDeferredInitialization();
 		}
 
 		if (!metricsEnabled) {
@@ -260,7 +255,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 		} finally {
 
 			if (system != null) {
-				system.shutdown();
+				system.close();
 			}
 		}
 	}
@@ -269,7 +264,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	public void destroy() throws Exception {
 
 		executeSpecsAndScripts(keyspaceDrops, shutdownScripts);
-		cluster.shutdown();
+		cluster.close();
 	}
 
 	/**
@@ -377,13 +372,6 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 */
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	/**
-	 * @param deferredInitialization The deferredInitialization to set.
-	 */
-	public void setDeferredInitialization(boolean deferredInitialization) {
-		this.deferredInitialization = deferredInitialization;
 	}
 
 	/**

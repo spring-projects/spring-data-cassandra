@@ -15,11 +15,6 @@
  */
 package org.springframework.cassandra.config.xml;
 
-import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
-import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyValue;
-import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyValue;
-import static org.springframework.cassandra.config.xml.ParsingUtils.getSourceBeanDefinition;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +40,11 @@ import org.w3c.dom.Element;
 import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.SocketOptions;
+
+import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyValue;
+import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyValue;
+import static org.springframework.cassandra.config.xml.ParsingUtils.getSourceBeanDefinition;
 
 /**
  * Parses the {@literal <cluster>} element of the XML Configuration.
@@ -97,7 +97,6 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 		addOptionalPropertyValue(builder, "compressionType", element, "compression", null);
 		addOptionalPropertyValue(builder, "username", element, "username", null);
 		addOptionalPropertyValue(builder, "password", element, "password", null);
-		addOptionalPropertyValue(builder, "deferredInitialization", element, "deferred-initialization", null);
 		addOptionalPropertyValue(builder, "metricsEnabled", element, "metrics-enabled", null);
 		addOptionalPropertyValue(builder, "jmxReportingEnabled", element, "jmx-reporting-enabled", null);
 		addOptionalPropertyValue(builder, "sslEnabled", element, "ssl-enabled", null);

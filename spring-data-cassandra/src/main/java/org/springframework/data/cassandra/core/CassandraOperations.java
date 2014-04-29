@@ -23,6 +23,8 @@ import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
+import com.datastax.driver.core.querybuilder.Select;
+
 /**
  * Operations for interacting with Cassandra. These operations are used by the Repository implementation, but can also
  * be used directly when that is desired by the developer.
@@ -50,16 +52,34 @@ public interface CassandraOperations extends CqlOperations {
 	 */
 	<T> List<T> select(String cql, Class<T> type);
 
+	/**
+	 * Execute the Select Query and convert to the list of entities
+	 * 
+	 * @param select must not be {@literal null}.
+	 * @param type must not be {@literal null}, mapped entity type.
+	 * @return
+	 */
+	<T> List<T> select(Select select, Class<T> type);
+
 	<T> T selectOneById(Class<T> type, Object id);
 
 	/**
-	 * Execute query and convert ResultSet to the entity
+	 * Execute CQL and convert ResultSet to the entity
 	 * 
 	 * @param query must not be {@literal null}.
 	 * @param type must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
 	<T> T selectOne(String cql, Class<T> type);
+
+	/**
+	 * Execute Select query and convert ResultSet to the entity
+	 * 
+	 * @param query must not be {@literal null}.
+	 * @param type must not be {@literal null}, mapped entity type.
+	 * @return
+	 */
+	<T> T selectOne(Select select, Class<T> type);
 
 	boolean exists(Class<?> type, Object id);
 

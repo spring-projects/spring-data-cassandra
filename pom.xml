@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -31,8 +32,8 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-cassandra</dist.id>
 		<springdata.commons>1.8.0.BUILD-SNAPSHOT</springdata.commons>
-		<cassandra-unit.version>1.2.0.1</cassandra-unit.version>
-		<cassandra-driver-core.version>1.0.5-dse</cassandra-driver-core.version>
+		<cassandra-unit.version>2.0.2.1</cassandra-unit.version>
+		<cassandra-driver-dse.version>2.0.1</cassandra-driver-dse.version>
 		<failsafe.version>2.16</failsafe.version>
 		<jamm.version>0.2.5</jamm.version>
 	</properties>
@@ -78,12 +79,20 @@
 		<dependencies>
 			<dependency>
 				<groupId>com.datastax.cassandra</groupId>
-				<artifactId>cassandra-driver-core</artifactId>
-				<version>${cassandra-driver-core.version}</version>
+				<artifactId>cassandra-driver-dse</artifactId>
+				<version>${cassandra-driver-dse.version}</version>
 				<exclusions>
 					<exclusion>
 						<artifactId>slf4j-log4j12</artifactId>
 						<groupId>org.slf4j</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>log4j</artifactId>
+						<groupId>log4j</groupId>
+					</exclusion>
+					<exclusion>
+						<artifactId>guava</artifactId>
+						<groupId>com.google.guava</groupId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -203,7 +212,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.datastax.cassandra</groupId>
-			<artifactId>cassandra-driver-core</artifactId>
+			<artifactId>cassandra-driver-dse</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.github.stephenc</groupId>
@@ -286,7 +295,8 @@
 				<version>${failsafe.version}</version>
 				<configuration>
 					<forkCount>1</forkCount>
-					<argLine>-Xmx1024m -Xss512m -javaagent:${com.github.stephenc:jamm:jar}</argLine>
+					<argLine>-Xmx1024m -Xss512m
+						-javaagent:${com.github.stephenc:jamm:jar}</argLine>
 					<reuseForks>true</reuseForks>
 					<useFile>false</useFile>
 					<includes>

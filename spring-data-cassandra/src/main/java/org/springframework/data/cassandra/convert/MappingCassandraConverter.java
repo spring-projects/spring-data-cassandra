@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
-
 import java.io.Serializable;
 import java.util.Map;
 
@@ -50,6 +48,8 @@ import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Update;
+
+import static org.springframework.data.cassandra.repository.support.BasicMapId.id;
 
 /**
  * {@link CassandraConverter} that uses a {@link MappingContext} to do sophisticated mapping of domain objects to
@@ -243,13 +243,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 				Object value = wrapper.getProperty(prop, prop.getType());
 
+				log.debug("prop.type -> " + prop.getType().getName());
+				log.debug("prop.value -> " + value);
+
 				if (prop.isCompositePrimaryKey()) {
+					log.debug("prop is a compositeKey");
 					writeInsertFromWrapper(BeanWrapper.create(value, conversionService), insert,
 							prop.getCompositePrimaryKeyEntity());
 					return;
 				}
 
 				if (value != null) {
+					log.debug(String.format("Adding insert.value [%s] - [%s]", prop.getColumnName().toCql(), value));
 					insert.value(prop.getColumnName().toCql(), value);
 				}
 			}

@@ -110,6 +110,6 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	}
 
 	protected List<T> findAll(Select query) {
-		return template.select(query.getQueryString(), entityInformation.getJavaType());
+		return template.select(query, entityInformation.getJavaType());
 	}
 }

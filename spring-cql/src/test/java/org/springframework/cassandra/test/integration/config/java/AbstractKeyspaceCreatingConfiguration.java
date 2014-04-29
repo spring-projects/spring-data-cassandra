@@ -15,9 +15,6 @@
  */
 package org.springframework.cassandra.test.integration.config.java;
 
-import static org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator.toCql;
-import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
-
 import org.springframework.cassandra.config.CassandraCqlSessionFactoryBean;
 import org.springframework.cassandra.config.java.AbstractSessionConfiguration;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +22,9 @@ import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
+
+import static org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator.toCql;
+import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.createKeyspace;
 
 @Configuration
 public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractSessionConfiguration {
@@ -50,6 +50,6 @@ public abstract class AbstractKeyspaceCreatingConfiguration extends AbstractSess
 		}
 
 		system.execute(toCql(createKeyspace().name(keyspace).withSimpleReplication()));
-		system.shutdown();
+		system.close();
 	}
 }

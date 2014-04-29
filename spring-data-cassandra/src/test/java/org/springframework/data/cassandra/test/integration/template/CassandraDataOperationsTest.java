@@ -616,7 +616,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		Select select = QueryBuilder.select().all().from("book");
 		select.where(QueryBuilder.eq("isbn", "123456-1"));
 
-		Book b = template.selectOne(select.getQueryString(), Book.class);
+		Book b = template.selectOne(select, Book.class);
 
 		log.debug("SingleSelect Book Title -> " + b.getTitle());
 		log.debug("SingleSelect Book Author -> " + b.getAuthor());
@@ -635,7 +635,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 		Select select = QueryBuilder.select().all().from("book");
 
-		List<Book> bookz = template.select(select.getQueryString(), Book.class);
+		List<Book> bookz = template.select(select, Book.class);
 
 		log.debug("Book Count -> " + bookz.size());
 

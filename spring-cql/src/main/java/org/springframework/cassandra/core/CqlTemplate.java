@@ -57,7 +57,6 @@ import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
@@ -94,13 +93,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	protected static final Logger log = LoggerFactory.getLogger(CqlTemplate.class);
 
 	/**
-	 * Add common {@link Query} options for all types of queries.
+	 * Add common {@link Statement} options for all types of queries.
 	 * 
 	 * @param q
 	 * @param options
-	 * @return the {@link Query} given.
+	 * @return the {@link Statement} given.
 	 */
-	public static Query addQueryOptions(Query q, QueryOptions options) {
+	public static Statement addQueryOptions(Statement q, QueryOptions options) {
 
 		if (options == null) {
 			return q;
@@ -224,7 +223,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void execute(Query query) throws DataAccessException {
+	public void execute(Statement query) throws DataAccessException {
 		doExecute(query);
 	}
 
@@ -505,7 +504,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @param q The query to execute.
 	 * @param options The {@link QueryOptions}. May be null.
 	 */
-	protected ResultSet doExecute(final Query q) {
+	protected ResultSet doExecute(final Statement q) {
 
 		return doExecute(new SessionCallback<ResultSet>() {
 
@@ -521,7 +520,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		});
 	}
 
-	protected ResultSetFuture doExecuteAsync(final Query q) {
+	protected ResultSetFuture doExecuteAsync(final Statement q) {
 
 		return doExecute(new SessionCallback<ResultSetFuture>() {
 
@@ -669,12 +668,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void executeAsynchronously(Query query) throws DataAccessException {
+	public void executeAsynchronously(Statement query) throws DataAccessException {
 		doExecuteAsync(query);
 	}
 
 	@Override
-	public void executeAsynchronously(Query query, Runnable listener) throws DataAccessException {
+	public void executeAsynchronously(Statement query, Runnable listener) throws DataAccessException {
 		executeAsynchronously(query, listener, new Executor() {
 
 			@Override
@@ -685,7 +684,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void executeAsynchronously(Query query, AsynchronousQueryListener listener) throws DataAccessException {
+	public void executeAsynchronously(Statement query, AsynchronousQueryListener listener) throws DataAccessException {
 		executeAsynchronously(query, listener, new Executor() {
 
 			@Override
@@ -696,7 +695,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void executeAsynchronously(final Query query, final Runnable listener, final Executor executor)
+	public void executeAsynchronously(final Statement query, final Runnable listener, final Executor executor)
 			throws DataAccessException {
 		execute(new SessionCallback<Object>() {
 			@Override
@@ -709,8 +708,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void executeAsynchronously(final Query query, final AsynchronousQueryListener listener, final Executor executor)
-			throws DataAccessException {
+	public void executeAsynchronously(final Statement query, final AsynchronousQueryListener listener,
+			final Executor executor) throws DataAccessException {
 
 		execute(new SessionCallback<Object>() {
 			@Override
@@ -991,7 +990,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public void truncate(CqlIdentifier tableName) throws DataAccessException {
 		Truncate truncate = QueryBuilder.truncate(tableName.toCql());
-		doExecute(truncate.getQueryString(), null);
+		doExecute(truncate);
 	}
 
 	@Override
@@ -1205,7 +1204,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public long count(CqlIdentifier tableName) {
-		return selectCount(QueryBuilder.select().countAll().from(tableName.toCql()).getQueryString());
+		return selectCount(QueryBuilder.select().countAll().from(tableName.toCql()));
 	}
 
 	@Override
@@ -1213,9 +1212,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return count(cqlId(tableName));
 	}
 
-	protected long selectCount(String countQuery) {
+	protected long selectCount(Select select) {
 
-		return query(countQuery, new ResultSetExtractor<Long>() {
+		return query(select, new ResultSetExtractor<Long>() {
 
 			@Override
 			public Long extractData(ResultSet rs) throws DriverException, DataAccessException {

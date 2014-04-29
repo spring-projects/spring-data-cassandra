@@ -11,6 +11,7 @@
 
 	<logger name="org.springframework.cassandra" level="info" />
 	<logger name="org.springframework.data.cassandra" level="info" />
+	<logger name="com.datastax.driver" level="info" />
 
 	<root level="warn">
 		<appender-ref ref="console" />

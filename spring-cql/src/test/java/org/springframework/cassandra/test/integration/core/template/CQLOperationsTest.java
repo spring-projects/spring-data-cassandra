@@ -29,7 +29,6 @@ import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.ConsistencyLevel;
@@ -1145,7 +1144,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	@Test
 	public void insertAndTruncateQueryObjectTest() {
 
-		Log.info("Starting Insert and Truncate Query Object Test");
+		log.info("Starting Insert and Truncate Query Object Test");
 
 		String tableName = "truncate_test";
 

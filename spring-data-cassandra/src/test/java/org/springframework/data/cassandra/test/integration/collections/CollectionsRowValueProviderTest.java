@@ -85,7 +85,7 @@ public class CollectionsRowValueProviderTest extends AbstractSpringDataEmbeddedC
 		Select select = QueryBuilder.select().all().from("bookHistory");
 		select.where(QueryBuilder.eq("isbn", "123456-1"));
 
-		BookHistory b = template.selectOne(select.getQueryString(), BookHistory.class);
+		BookHistory b = template.selectOne(select, BookHistory.class);
 
 		Assert.assertNotNull(b.getCheckOuts());
 
@@ -127,7 +127,7 @@ public class CollectionsRowValueProviderTest extends AbstractSpringDataEmbeddedC
 		Select select = QueryBuilder.select().all().from("bookReference");
 		select.where(QueryBuilder.eq("isbn", "123456-1"));
 
-		BookReference b = template.selectOne(select.getQueryString(), BookReference.class);
+		BookReference b = template.selectOne(select, BookReference.class);
 
 		Assert.assertNotNull(b.getReferences());
 		Assert.assertNotNull(b.getBookmarks());

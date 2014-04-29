@@ -31,14 +31,14 @@ public class CassandraConnectionFailureException extends DataAccessResourceFailu
 
 	private static final long serialVersionUID = 6299912054261646552L;
 
-	private final Map<InetAddress, String> messagesByHost = new HashMap<InetAddress, String>();
+	private final Map<InetAddress, Throwable> messagesByHost = new HashMap<InetAddress, Throwable>();
 
-	public CassandraConnectionFailureException(Map<InetAddress, String> messagesByHost, String msg, Throwable cause) {
+	public CassandraConnectionFailureException(Map<InetAddress, Throwable> map, String msg, Throwable cause) {
 		super(msg, cause);
-		this.messagesByHost.putAll(messagesByHost);
+		this.messagesByHost.putAll(map);
 	}
 
-	public Map<InetAddress, String> getMessagesByHost() {
+	public Map<InetAddress, Throwable> getMessagesByHost() {
 		return Collections.unmodifiableMap(messagesByHost);
 	}
 }

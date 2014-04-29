@@ -108,7 +108,7 @@ public class CassandraCqlSessionFactoryBean implements FactoryBean<Session>, Ini
 	public void destroy() throws Exception {
 
 		executeScripts(shutdownScripts);
-		session.shutdown();
+		session.close();
 	}
 
 	/**
