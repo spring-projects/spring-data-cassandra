@@ -173,7 +173,7 @@ Once we have all the inner workings of the ``CassandraRepository`` interface com
 
 ### JavaConfig
 
-Here is a very basic example to get your project connected to Cassandra 1.2 running on your local machine.
+Here is a very basic example to get your project connected to Cassandra running on your local machine.
 
 	@Configuration
 	public class TestConfig extends AbstractCassandraConfiguration {
@@ -224,20 +224,13 @@ subproject is well underway.
 A first milestone (M1) is expected sometime in early 1Q14 built on the
 following artifacts (or more recent versions thereof):
 
-* Spring Data Commons 1.7.x
-* Cassandra 1.2
-* Datastax Java Driver 1.x
+* Spring Data Commons 1.8.x
+* Cassandra 2.0
+* Datastax Java Driver 2.0.X
 * JDK 1.6+
 
 The GA release is expected as part of the Spring
 Data release train [Dijkstra](https://github.com/spring-projects/spring-data-commons/wiki/Release-Train-Dijkstra).
-
-
-## Cassandra 2.x
-
-We are anticipating support for Cassandra 2.x and Datastax Java Driver
-2.x in a parallel branch after the 1.x-based support has been
-released.
 
 
 ## Source Repository & Issue Tracking
