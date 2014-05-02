@@ -1,6 +1,15 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.0.0.RC1 (2014-05-02)
+-----------------------------------------
+* DATACASS-127 - Release 1.0 RC1.
+* DATACASS-126 - Upgrade DS Driver to 2.0.X.
+* DATACASS-121 - Automatically quote string-like parameter values in @Query methods.
+* DATACASS-97 - Polish javadoc.
+* DATACASS-95 - Polish for 1.0.
+
+
 Changes in version 1.0.0.M1 (2014-03-31)
 ----------------------------------------
 
