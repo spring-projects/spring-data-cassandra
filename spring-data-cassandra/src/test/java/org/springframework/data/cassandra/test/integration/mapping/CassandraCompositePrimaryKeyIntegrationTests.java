@@ -16,15 +16,24 @@
 package org.springframework.data.cassandra.test.integration.mapping;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,13 +41,14 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.BasicCassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
+import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.mapping.Column;
-import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
@@ -108,9 +118,41 @@ public class CassandraCompositePrimaryKeyIntegrationTests {
 		Key id;
 
 		Date time;
-
+		
 		@Column("message")
-		String text;
+		String text;	
+		
+		Long quantity;
+		
+		ByteBuffer byteBuffer;		
+		
+		boolean bool;	
+		
+                @CassandraType(type=DataType.Name.COUNTER)
+                long counter;
+                
+                BigDecimal bigDecimal;
+                
+                Double double1;
+                
+                @Column("float2")
+                float float1;
+                
+                InetAddress inetAddress;
+                
+                Integer integer;
+                
+                @CassandraType(type=DataType.Name.UUID)
+                UUID uuid;
+                
+                BigInteger bigInteger;       
+                
+                UUID timeuuid;
+                
+                List<String> list;
+                Set<Integer> set;
+                Map<String, Integer> map;
+                
 	}
 
 	CassandraMappingContext context;
@@ -157,5 +199,37 @@ public class CassandraCompositePrimaryKeyIntegrationTests {
 		assertEquals("a", clusteredKeyColumn.getName().toCql());
 		assertEquals(PrimaryKeyType.CLUSTERED, clusteredKeyColumn.getKeyType());
 		assertEquals(DataType.text(), partitionKeyColumn.getType());
+		
+		List<ColumnSpecification> nonKeyColumns = spec.getNonKeyColumns();
+		assertEquals(17, nonKeyColumns.size());
+		Map<String, ColumnSpecification> columnMap = new HashMap<String, ColumnSpecification>();
+		for (ColumnSpecification columnSpecification : nonKeyColumns) {
+		    columnMap.put(columnSpecification.getName().toCql(), columnSpecification);
+		}		
+		assertColumnSpecification(columnMap, "time", DataType.timestamp());
+		assertColumnSpecification(columnMap, "message", DataType.text());
+		assertColumnSpecification(columnMap, "quantity", DataType.bigint());
+		assertColumnSpecification(columnMap, "bytebuffer", DataType.blob());
+		assertColumnSpecification(columnMap, "bool", DataType.cboolean());
+		assertColumnSpecification(columnMap, "counter", DataType.counter());
+		assertColumnSpecification(columnMap, "bigdecimal", DataType.decimal());
+		assertColumnSpecification(columnMap, "double1", DataType.cdouble());
+		assertColumnSpecification(columnMap, "float2", DataType.cfloat());
+		assertColumnSpecification(columnMap, "inetaddress", DataType.inet());
+		assertColumnSpecification(columnMap, "integer", DataType.cint());
+		assertColumnSpecification(columnMap, "uuid", DataType.uuid());
+		assertColumnSpecification(columnMap, "biginteger", DataType.varint());
+		assertColumnSpecification(columnMap, "timeuuid", DataType.timeuuid());
+		assertColumnSpecification(columnMap, "list", DataType.list(DataType.text()));		
+		assertColumnSpecification(columnMap, "\"set\"", DataType.set(DataType.cint()));
+		assertColumnSpecification(columnMap, "map", DataType.map(DataType.text(), DataType.cint()));
+
+	}
+	
+	private static void assertColumnSpecification(Map<String, ColumnSpecification> columnMap, String name, DataType dataType) {
+	        ColumnSpecification columnSpecification = columnMap.get(name);
+	        assertNotNull(name + " column not found", columnSpecification);	  
+	        assertEquals(name, columnSpecification.getName().toCql());
+	        assertEquals(dataType, columnSpecification.getType());
 	}
 }

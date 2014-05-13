@@ -73,6 +73,8 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		}
 
 		dataTypesByJavaClass.put(String.class, DataType.text());
+		dataTypesByJavaClass.put(Long.class, DataType.bigint());
+		dataTypesByJavaClass.put(long.class, DataType.bigint());
 
 		CASSANDRA_SIMPLE_TYPES = Collections.unmodifiableSet(simpleTypes);
 	}
