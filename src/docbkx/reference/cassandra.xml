@@ -1,66 +1,85 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="cassandra.core">
-	<title>Cassandra support</title>
-	<para>The Cassandra support contains a wide range of features which are 
-	summarized below.</para>
-	<itemizedlist>
-		<listitem>
-			<para>Spring configuration support using Java based @Configuration classes 
-			or an XML namespace for a Cassandra driver instance and replica sets</para>
-		</listitem>
-		<listitem>
-			<para>CassandraTemplate helper class that increases productivity performing 
-			common Cassandra operations. Includes integrated object mapping between CQL 
-			Tables and POJOs.</para>
-		</listitem>
-		<listitem>
-			<para>Exception translation into Spring&apos;s portable Data Access 
-			Exception hierarchy</para>
-		</listitem>
-		<listitem>
-			<para>Feature Rich Object Mapping integrated with Spring&apos;s Conversion 
-			Service</para>
-		</listitem>
-		<listitem>
-			<para>Annotation based mapping metadata but extensible to support other 
-			metadata formats</para>
-		</listitem>
-		<listitem>
-			<para>Persistence and mapping lifecycle events</para>
-		</listitem>
-		<listitem>
-			<para>Java based Query, Criteria, and Update DSLs</para>
-		</listitem>
-		<listitem>
-			<para>Automatic implementation of Repository interfaces including support 
-			for custom finder methods.</para>
-		</listitem>
-	</itemizedlist>
-	<para>For most tasks you will find yourself using <classname>
-	CassandraTemplate</classname> or the Repository support that both leverage the 
-	rich mapping functionality. CassandraTemplate is the place to look for 
-	accessing functionality such as incrementing counters or ad-hoc CRUD 
-	operations. CassandraTemplate also provides callback methods so that it is 
-	easy for you to get a hold of the low level API artifacts such as <literal>
-	com.datastax.driver.core.Session</literal> to communicate directly with 
-	Cassandra. The goal with naming conventions on various API artifacts is to 
-	copy those in the base DataStax Java driver so you can easily map your 
-	existing knowledge onto the Spring APIs.</para>
-	<section id="cassandra-getting-started">
-		<title>Getting Started</title>
-		<para>Spring Data Cassandra uses the DataStax Java Driver version 2.X, which 
-		supports DataStax Enterprise 4/Cassandra 2.0, and Java SE 6 or higher. The 
-		latest commercial release (2.X as of this writing) is recommended. An easy 
-		way to bootstrap setting up a working environment is to create a Spring based 
-		project in <ulink url="http://spring.io/tools/sts">STS</ulink>.</para>
-		<para>First you need to set up a running Cassandra server.</para>
-		<para>To create a Spring project in STS go to File -&gt; New -&gt; Spring 
-		Template Project -&gt; Simple Spring Utility Project -&gt; press Yes when 
-		prompted. Then enter a project and a package name such as 
-		org.spring.cassandra.example.</para>
-		<para>Then add the following to pom.xml dependencies section.</para>
-		<programlisting lang="" language="xml">&lt;dependencies&gt;
+  <title>Cassandra support</title>
+
+  <para>The Cassandra support contains a wide range of features which are
+  summarized below.</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>Spring configuration support using Java based @Configuration
+      classes or an XML namespace for a Cassandra driver instance and replica
+      sets</para>
+    </listitem>
+
+    <listitem>
+      <para>CassandraTemplate helper class that increases productivity
+      performing common Cassandra operations. Includes integrated object
+      mapping between CQL Tables and POJOs.</para>
+    </listitem>
+
+    <listitem>
+      <para>Exception translation into Spring's portable Data Access Exception
+      hierarchy</para>
+    </listitem>
+
+    <listitem>
+      <para>Feature Rich Object Mapping integrated with Spring's Conversion
+      Service</para>
+    </listitem>
+
+    <listitem>
+      <para>Annotation based mapping metadata but extensible to support other
+      metadata formats</para>
+    </listitem>
+
+    <listitem>
+      <para>Persistence and mapping lifecycle events</para>
+    </listitem>
+
+    <listitem>
+      <para>Java based Query, Criteria, and Update DSLs</para>
+    </listitem>
+
+    <listitem>
+      <para>Automatic implementation of Repository interfaces including
+      support for custom finder methods.</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>For most tasks you will find yourself using <classname>
+  CassandraTemplate</classname> or the Repository support that both leverage
+  the rich mapping functionality. CassandraTemplate is the place to look for
+  accessing functionality such as incrementing counters or ad-hoc CRUD
+  operations. CassandraTemplate also provides callback methods so that it is
+  easy for you to get a hold of the low level API artifacts such as <literal>
+  com.datastax.driver.core.Session</literal> to communicate directly with
+  Cassandra. The goal with naming conventions on various API artifacts is to
+  copy those in the base DataStax Java driver so you can easily map your
+  existing knowledge onto the Spring APIs.</para>
+
+  <section id="cassandra-getting-started">
+    <title>Getting Started</title>
+
+    <para>Spring Data Cassandra uses the DataStax Java Driver version 2.X,
+    which supports DataStax Enterprise 4/Cassandra 2.0, and Java SE 6 or
+    higher. The latest commercial release (2.X as of this writing) is
+    recommended. An easy way to bootstrap setting up a working environment is
+    to create a Spring based project in <ulink
+    url="http://spring.io/tools/sts">STS</ulink>.</para>
+
+    <para>First you need to set up a running Cassandra server.</para>
+
+    <para>To create a Spring project in STS go to File -&gt; New -&gt; Spring
+    Template Project -&gt; Simple Spring Utility Project -&gt; press Yes when
+    prompted. Then enter a project and a package name such as
+    org.spring.cassandra.example.</para>
+
+    <para>Then add the following to pom.xml dependencies section.</para>
+
+    <programlisting lang="" language="xml">&lt;dependencies&gt;
 
   &lt;!-- other dependency elements omitted --&gt;
 
@@ -71,24 +90,30 @@
   &lt;/dependency&gt;
 
 &lt;/dependencies&gt;</programlisting>
-		<para>Also change the version of Spring in the pom.xml to be</para>
-		<programlisting lang="" language="xml">&lt;spring.framework.version&gt;3.2.8.RELEASE&lt;/spring.framework.version&gt;</programlisting>
-		<para>You will also need to add the location of the Spring Milestone 
-		repository for maven to your pom.xml which is at the same level of your 
-		&lt;dependencies/&gt; element</para>
-		<programlisting language="xml">&lt;repositories&gt;
+
+    <para>Also change the version of Spring in the pom.xml to be</para>
+
+    <programlisting lang="" language="xml">&lt;spring.framework.version&gt;3.2.8.RELEASE&lt;/spring.framework.version&gt;</programlisting>
+
+    <para>You will also need to add the location of the Spring Milestone
+    repository for maven to your pom.xml which is at the same level of your
+    &lt;dependencies/&gt; element</para>
+
+    <programlisting language="xml">&lt;repositories&gt;
   &lt;repository&gt;
     &lt;id&gt;spring-milestone&lt;/id&gt;
     &lt;name&gt;Spring Maven MILESTONE Repository&lt;/name&gt;
     &lt;url&gt;http://repo.spring.io/libs-milestone&lt;/url&gt;
   &lt;/repository&gt;
 &lt;/repositories&gt;</programlisting>
-		<para>The repository is also 
-		<ulink url="http://shrub.appspot.com/maven.springframework.org/milestone/org/springframework/data/">
-		browseable here</ulink>.</para>
-		<para>Create a simple Employee class to persist.</para>
-		<para>
-			<programlisting>package org.spring.cassandra.example; 
+
+    <para>The repository is also <ulink
+    url="http://shrub.appspot.com/maven.springframework.org/milestone/org/springframework/data/">
+    browseable here</ulink>.</para>
+
+    <para>Create a simple Employee class to persist.</para>
+
+    <para><programlisting>package org.spring.cassandra.example; 
  
 import org.springframework.data.cassandra.mapping.PrimaryKey; 
 import org.springframework.data.cassandra.mapping.Table; 
@@ -122,14 +147,14 @@ public class Person {
  
  @Override 
  public String toString() { 
-  return &quot;Person [id=&quot; + id + &quot;, name=&quot; + name + &quot;, age=&quot; + age + &quot;]&quot;; 
+  return "Person [id=" + id + ", name=" + name + ", age=" + age + "]"; 
  } 
  
-}</programlisting>
-		</para>
-		<para>And a main application to run</para>
-		<para>
-			<programlisting>package org.spring.cassandra.example; 
+}</programlisting></para>
+
+    <para>And a main application to run</para>
+
+    <para><programlisting>package org.spring.cassandra.example; 
  
 import java.net.InetAddress; 
 import java.net.UnknownHostException; 
@@ -157,18 +182,18 @@ public class CassandraApp {
  
    cluster = Cluster.builder().addContactPoints(InetAddress.getLocalHost()).build(); 
  
-   session = cluster.connect(&quot;mykeyspace&quot;); 
+   session = cluster.connect("mykeyspace"); 
  
    CassandraOperations cassandraOps = new CassandraTemplate(session); 
  
-   cassandraOps.insert(new Person(&quot;1234567890&quot;, &quot;David&quot;, 40)); 
+   cassandraOps.insert(new Person("1234567890", "David", 40)); 
  
-   Select s = QueryBuilder.select().from(&quot;person&quot;); 
-   s.where(QueryBuilder.eq(&quot;id&quot;, &quot;1234567890&quot;)); 
+   Select s = QueryBuilder.select().from("person"); 
+   s.where(QueryBuilder.eq("id", "1234567890")); 
  
    LOG.info(cassandraOps.queryForObject(s, Person.class).getId()); 
  
-   cassandraOps.truncate(&quot;person&quot;); 
+   cassandraOps.truncate("person"); 
  
   } catch (UnknownHostException e) { 
    e.printStackTrace(); 
@@ -176,151 +201,278 @@ public class CassandraApp {
  
  } 
 } 
+</programlisting></para>
+
+    <para>Even in this simple example, there are a few things to
+    observe.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>You can create an instance of CassandraTemplate with a Cassandra
+        Session, derived from the Cluster.</para>
+      </listitem>
+
+      <listitem>
+        <para>You must annotate your POJO as a Cassandra @Table, and also
+        annotate the @PrimaryKey. Optionally you can override these mapping
+        names to match your Cassandra database table and column names.</para>
+      </listitem>
+
+      <listitem>
+        <para>You can use CQL String, or the DataStax QueryBuilder to
+        construct you queries.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Examples Repository</title>
+
+    <para>After the initial release of Spring Data Cassandra 1.0.0, we will
+    start working on a showcase repository with full examples.</para>
+  </section>
+
+  <section id="cassandra-connectors">
+    <title>Connecting to Cassandra with Spring</title>
+
+    <section id="cassandra-connectors.ext_properties">
+      <title>Externalize Connection Properties</title>
+
+      <para>Create a properties file with the information you need to connect
+      to Cassandra. The contact points are keyspace are the minimal required
+      fields, but port is added here for clarity.</para>
+
+      <para>We will call this cassandra.properties</para>
+
+      <para><programlisting>cassandra.contactpoints=10.1.55.80,10.1.55.81
+cassandra.port=9042
+cassandra.keyspace=showcase</programlisting>We will use spring to load these
+      properties into the Spring Context in the next two examples. </para>
+    </section>
+
+    <section id="cassandra-connectors.xmlconfig">
+      <title>XML Configuration</title>
+
+      <para>The XML Configuration elements for a basic Cassandra configuration
+      are shown below. These elements all use default bean names to keep the
+      configuration code clean and readable.</para>
+
+      <para>While this example show how easy it is to configure Spring to
+      connect to Cassandra, there are many other options. Basically, any
+      option available with the DataStax Java Driver is also available in the
+      Spring Data Cassandra configuration. This is including, but not limited
+      to Authentication, Load Balancing Policies, Retry Policies and Pooling
+      Options. All of the Spring Data Cassandra method names and XML elements
+      are named exactly (or as close as possible) like the configuration
+      options on the driver so mapping any existing driver configuration
+      should be straight forward.</para>
+
+      <programlisting>&lt;?xml version='1.0'?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/cql http://www.springframework.org/schema/cql/spring-cql-1.0.xsd
+        http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd"&gt;
+
+
+    &lt;!-- Loads the properties into the Spring Context and uses them to fill 
+        in placeholders in the bean definitions --&gt;
+    &lt;context:property-placeholder location="classpath:cassandra.properties" /&gt;
+
+    &lt;!-- REQUIRED: The Cassandra Cluster --&gt;
+    &lt;cassandra:cluster contact-points="${cassandra.contactpoints}" port="${cassandra.port}" /&gt;
+
+    &lt;!-- REQUIRED: The Cassandra Session, built from the Cluster, and attaching to a keyspace --&gt;
+    &lt;cassandra:session keyspace-name="${cassandra.keyspace}" /&gt;
+
+    &lt;!-- REQUIRED: The Default Cassandra Converter used by CassandraTemplate --&gt;
+    &lt;cassandra:converter/&gt;
+
+    &lt;!-- REQUIRED: The Cassandra Template is the building block of all Spring Data Cassandra --&gt;
+    &lt;cassandra:template/&gt;
+
+    &lt;!-- OPTIONAL: If you are using Spring Data Cassandra Repositories, add your base packages to scan here--&gt;
+    &lt;cassandra:repositories base-package="org.spring.cassandra.example.repo" /&gt;
+
+&lt;/beans&gt;
 </programlisting>
-		</para>
-		<para>Even in this simple example, there are a few things to observe.</para>
-		<itemizedlist>
-			<listitem>
-				<para>You can create an instance of CassandraTemplate with a Cassandra 
-				Session, derived from the Cluster.</para>
-			</listitem>
-			<listitem>
-				<para>You must annotate your POJO as a Cassandra @Table, and also annotate 
-				the @PrimaryKey.  Optionally you can override these mapping names to match 
-				your Cassandra database table and column names.</para>
-			</listitem>
-			<listitem>
-				<para>You can use CQL String, or the DataStax QueryBuilder to construct you 
-				queries.</para>
-			</listitem>
-		</itemizedlist>
-	</section>
-	<section>
-		<title>Examples Repository</title>
-		<para>After the initial release of Spring Data Cassandra 1.0.0, we will start 
-		working on a showcase repository with full examples.</para>
-	</section>
-	<section id="cassandra-connectors">
-		<title>Connecting to Cassandra with Spring</title>
-		<section id="cassandra-connectors.ext_properties">
-			<title>Externalize Connection Properties</title>
-			<para>TODO</para>
-		</section>
-		<section id="cassandra-connectors.xmlconfig">
-			<title>XML Configuration</title>
-			<para>TODO</para>
-		</section>
-		<section id="cassandra-connectors.javaconfig">
-			<title>Java Configuration</title>
-			<para>TODO</para>
-		</section>
-	</section>
-	<section id="cassandra.auditing">
-		<title>General auditing configuration</title>
-		<para>Auditing support is not available in the current version.</para>
-	</section>
-	<section id="cassandra-template">
-		<title>Introduction to CassandraTemplate</title>
-		<section id="cassandra-template.instantiating" label=" ">
-			<title>Instantiating CassandraTemplate</title>
-		</section>
-	</section>
-	<section id="cassandra-template.save-update-remove">
-		<title>Saving, Updating, and Removing Rows</title>
-		<para><classname>CassandraTemplate</classname> provides a simple way for you 
-		to save, update, and delete your domain objects and map those objects to 
-		documents stored in Cassandra.</para>
-		<section id="cassandra-template.id-handling">
-			<title>How the Composite Primary Key fields are handled in the mapping 
-			layer</title>
-			<para>Cassandra requires that you have at least 1 Partition Key field for a 
-			CQL Table. Alternately, you can have one or more Clustering Key 
-			fields.</para>
-			<para>TODO With Examples</para>
-		</section>
-		<section id="cassandra-template.type-mapping">
-			<title>Type mapping</title>
-		</section>
-		<section id="cassandra-template.save-insert">
-			<title>Methods for saving and inserting rows</title>
-		</section>
-		<section id="cassandra-template-update">
-			<title>Updating rows in a CQL table</title>
-		</section>
-		<section id="cassandra-template.upserts">
-			<title>Upserting rows in a CQL table</title>
-		</section>
-		<section id="cassandra-template.find-and-upsert">
-			<title>Finding and Upserting rowa in a CQL table</title>
-		</section>
-		<section id="cassandra-template.delete">
-			<title>Methods for removing rows</title>
-		</section>
-	</section>
-	<section id="cassandra.query">
-		<title>Querying CQL Tables</title>
-	</section>
-	<section id="cassandra.custom-converters">
-		<title>Overriding default mapping with custom converters</title>
-		<para>In order to have more fine grained control over the mapping process you 
-		can register Spring converters with the <classname>
-		CassandraConverter</classname> implementations such as the <classname>
-		MappingCassandraConverter</classname>.</para>
-		<para>The <classname>MappingCassandraConverter</classname> checks to see if 
-		there are any Spring converters that can handle a specific class before 
-		attempting to map the object itself. To &apos;hijack&apos; the normal mapping 
-		strategies of the <classname>MappingCassandraConverter</classname>, perhaps 
-		for increased performance or other custom mapping needs, you first need to 
-		create an implementation of the Spring <interfacename>
-		Converter</interfacename> interface and then register it with the 
-		MappingConverter.</para>
-		<note>
-			<para>For more information on the Spring type conversion service see the 
-			reference docs 
-			<ulink url="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/validation.html#core-convert">
-			here</ulink>.</para>
-		</note>
-		<section id="cassandra.custom-converters.writer">
-			<title>Saving using a registered Spring Converter</title>
-		</section>
-		<section id="cassandra.custom-converters.reader">
-			<title>Reading using a Spring Converter</title>
-		</section>
-		<section id="cassandra.custom-converters.xml">
-			<title>Registering Spring Converters with the CassandraConverter</title>
-		</section>
-		<section id="cassandra.converter-disambiguation">
-			<title>Converter disambiguation</title>
-		</section>
-	</section>
-	<section id="cassandra-template.commands">
-		<title>Executing Commands</title>
-		<section id="cassandra-template.commands.execution">
-			<title>Methods for executing commands</title>
-		</section>
-	</section>
-	<section id="cassandra.mapping-usage.events">
-		<title>Lifecycle Events</title>
-	</section>
-	<section id="cassandra.exception">
-		<title>Exception Translation</title>
-		<para>The Spring framework provides exception translation for a wide variety 
-		of database and mapping technologies. This has traditionally been for JDBC 
-		and JPA. The Spring support for Cassandra extends this feature to the 
-		Cassandra Database by providing an implementation of the <classname>
-		org.springframework.dao.support.PersistenceExceptionTranslator</classname> 
-		interface.</para>
-		<para>The motivation behind mapping to Spring&apos;s 
-		<ulink url="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/dao.html#dao-exceptions">
-		consistent data access exception hierarchy</ulink> is that you are then able 
-		to write portable and descriptive exception handling code without resorting 
-		to coding against Cassandra Exceptions. All of Spring&apos;s data access 
-		exceptions are inherited from the root <classname>
-		DataAccessException</classname> class so you can be sure that you will be 
-		able to catch all database related exception within a single try-catch 
-		block.</para>
-	</section>
-	<section id="cassandra.executioncallback">
-		<title>Execution callbacks</title>
-	</section>
+    </section>
+
+    <section id="cassandra-connectors.javaconfig">
+      <title>Java Configuration</title>
+
+      <para>TODO</para>
+    </section>
+  </section>
+
+  <section id="cassandra.auditing">
+    <title>General auditing configuration</title>
+
+    <para>Auditing support is not available in the current version.</para>
+  </section>
+
+  <section id="cassandra-template">
+    <title>Introduction to CassandraTemplate</title>
+
+    <section id="cassandra-template.instantiating">
+      <title>Instantiating CassandraTemplate</title>
+
+      <para>CassandraTemplate requires a Cassandra Session object.</para>
+    </section>
+  </section>
+
+  <section id="cassandra-template.save-update-remove">
+    <title>Saving, Updating, and Removing Rows</title>
+
+    <para><classname>CassandraTemplate</classname> provides a simple way for
+    you to save, update, and delete your domain objects and map those objects
+    to documents stored in Cassandra.</para>
+
+    <section id="cassandra-template.id-handling">
+      <title>How the Composite Primary Key fields are handled in the mapping
+      layer</title>
+
+      <para>Cassandra requires that you have at least 1 Partition Key field
+      for a CQL Table. Alternately, you can have one or more Clustering Key
+      fields.</para>
+
+      <para>TODO With Examples</para>
+    </section>
+
+    <section id="cassandra-template.type-mapping">
+      <title>Type mapping</title>
+
+      <para>TODO With Examples</para>
+    </section>
+
+    <section id="cassandra-template.save-insert">
+      <title>Methods for saving and inserting rows</title>
+
+      <para>TODO With Examples</para>
+    </section>
+
+    <section id="cassandra-template-update">
+      <title>Updating rows in a CQL table</title>
+
+      <para>TODO With Examples</para>
+    </section>
+
+    <section id="cassandra-template.upserts">
+      <title>Upserting rows in a CQL table</title>
+
+      <para>TODO With Examples</para>
+    </section>
+
+    <section id="cassandra-template.find-and-upsert">
+      <title>Finding and Upserting rowa in a CQL table</title>
+
+      <para>TODO With Examples</para>
+    </section>
+
+    <section id="cassandra-template.delete">
+      <title>Methods for removing rows</title>
+
+      <para>TODO With Examples</para>
+    </section>
+  </section>
+
+  <section id="cassandra.query">
+    <title>Querying CQL Tables</title>
+
+    <para>TODO With Examples</para>
+  </section>
+
+  <section id="cassandra.custom-converters">
+    <title>Overriding default mapping with custom converters</title>
+
+    <para>In order to have more fine grained control over the mapping process
+    you can register Spring converters with the <classname>
+    CassandraConverter</classname> implementations such as the <classname>
+    MappingCassandraConverter</classname>.</para>
+
+    <para>The <classname>MappingCassandraConverter</classname> checks to see
+    if there are any Spring converters that can handle a specific class before
+    attempting to map the object itself. To 'hijack' the normal mapping
+    strategies of the <classname>MappingCassandraConverter</classname>,
+    perhaps for increased performance or other custom mapping needs, you first
+    need to create an implementation of the Spring <interfacename>
+    Converter</interfacename> interface and then register it with the
+    MappingConverter.</para>
+
+    <note>
+      <para>For more information on the Spring type conversion service see the
+      reference docs <ulink
+      url="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/validation.html#core-convert">
+      here</ulink>.</para>
+    </note>
+
+    <section id="cassandra.custom-converters.writer">
+      <title>Saving using a registered Spring Converter</title>
+
+      <para>TODO With Examples</para>
+    </section>
+
+    <section id="cassandra.custom-converters.reader">
+      <title>Reading using a Spring Converter</title>
+
+      <para>TODO With Examples</para>
+    </section>
+
+    <section id="cassandra.custom-converters.xml">
+      <title>Registering Spring Converters with the CassandraConverter</title>
+
+      <para>TODO With Examples</para>
+    </section>
+
+    <section id="cassandra.converter-disambiguation">
+      <title>Converter disambiguation</title>
+
+      <para>TODO With Examples</para>
+    </section>
+  </section>
+
+  <section id="cassandra-template.commands">
+    <title>Executing Commands</title>
+
+    <section id="cassandra-template.commands.execution">
+      <title>Methods for executing commands</title>
+
+      <para>TODO With Examples</para>
+    </section>
+  </section>
+
+  <section id="cassandra.mapping-usage.events">
+    <title>Lifecycle Events</title>
+
+    <para>TODO With Examples</para>
+  </section>
+
+  <section id="cassandra.exception">
+    <title>Exception Translation</title>
+
+    <para>The Spring framework provides exception translation for a wide
+    variety of database and mapping technologies. This has traditionally been
+    for JDBC and JPA. The Spring support for Cassandra extends this feature to
+    the Cassandra Database by providing an implementation of the <classname>
+    org.springframework.dao.support.PersistenceExceptionTranslator</classname>
+    interface.</para>
+
+    <para>The motivation behind mapping to Spring's <ulink
+    url="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/dao.html#dao-exceptions">
+    consistent data access exception hierarchy</ulink> is that you are then
+    able to write portable and descriptive exception handling code without
+    resorting to coding against Cassandra Exceptions. All of Spring's data
+    access exceptions are inherited from the root <classname>
+    DataAccessException</classname> class so you can be sure that you will be
+    able to catch all database related exception within a single try-catch
+    block.</para>
+  </section>
+
+  <section id="cassandra.executioncallback">
+    <title>Execution callbacks</title>
+
+    <para>TODO With Examples</para>
+  </section>
 </chapter>
