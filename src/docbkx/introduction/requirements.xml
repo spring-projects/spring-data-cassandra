@@ -7,6 +7,6 @@
     3.2.x and above.
   </para>
   <para>
-    Currently we support Cassandra 1.X using the DataStax Java Driver (1.0.6-dse)
+    Currently we support Cassandra 2.X using the DataStax Java Driver (2.0.X)
   </para>
 </chapter>
