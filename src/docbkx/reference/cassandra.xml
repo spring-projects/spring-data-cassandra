@@ -449,34 +449,285 @@ private CassandraOperations cassandraOperations;</programlisting>
 
       <para>Cassandra requires that you have at least 1 Partition Key field
       for a CQL Table. Alternately, you can have one or more Clustering Key
-      fields.</para>
+      fields. When your CQL Table has a composite Primary Key field you must
+      create a @PrimaryKeyClass to define the structure of the composite PK.
+      In this context, composite PK means one or more partition columns, or 1
+      partition column plus one or more clustering columns.</para>
+
+      <section>
+        <title>Simplest Composite Key</title>
+
+        <para>The simplest for of a Composite key is a key with one partition
+        key and one clustering key. Here is an example of a CQL Table, and the
+        corresponding POJOs that represent the table and it's composite
+        key.</para>
+
+        <para>CQL Table defined in Cassandra</para>
+
+        <programlisting>create table login_event(
+  person_id text, 
+  event_time timestamp,
+  event_code int,
+  ip_address text,
+  primary key (person_id, event_time))
+  with CLUSTERING ORDER BY (event_time DESC)
+;</programlisting>
+
+        <para>Class defining the <emphasis>Composite Primary Key</emphasis>.
+        <emphasis role="bold">NOTE: PrimaryKeyClass must implement
+        <literal>Serializable</literal> and provide implementation of
+        <literal>hashCode()</literal> and <literal>equals()</literal> just
+        like the example.</emphasis></para>
+
+        <programlisting>package org.spring.cassandra.example;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import org.springframework.cassandra.core.Ordering;
+import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+
+@PrimaryKeyClass
+public class LoginEventKey implements Serializable {
+
+  @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+  private String personId;
+
+  @PrimaryKeyColumn(name = "event_time", ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+  private Date eventTime;
+
+  public String getPersonId() {
+    return personId;
+  }
+
+  public void setPersonId(String personId) {
+    this.personId = personId;
+  }
+
+  public Date getEventTime() {
+    return eventTime;
+  }
+
+  public void setEventTime(Date eventTime) {
+    this.eventTime = eventTime;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((eventTime == null) ? 0 : eventTime.hashCode());
+    result = prime * result + ((personId == null) ? 0 : personId.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    LoginEventKey other = (LoginEventKey) obj;
+    if (eventTime == null) {
+      if (other.eventTime != null)
+        return false;
+    } else if (!eventTime.equals(other.eventTime))
+      return false;
+    if (personId == null) {
+      if (other.personId != null)
+        return false;
+    } else if (!personId.equals(other.personId))
+      return false;
+    return true;
+  }
+}
+</programlisting>
+
+        <para>Class defining the CQL Table, having the <emphasis>Composite
+        Primary Key</emphasis> as an attribute and annotated as the
+        <literal>PrimaryKey</literal>.</para>
+
+        <programlisting>package org.spring.cassandra.example;
+
+import org.springframework.data.cassandra.mapping.Column;
+import org.springframework.data.cassandra.mapping.PrimaryKey;
+import org.springframework.data.cassandra.mapping.Table;
+
+@Table(value = "login_event")
+public class LoginEvent {
+
+  @PrimaryKey
+  private LoginEventKey pk;
+
+  @Column(value = "event_code")
+  private int eventCode;
+
+  @Column(value = "ip_address")
+  private String ipAddress;
+
+  public LoginEventKey getPk() {
+    return pk;
+  }
+
+  public void setPk(LoginEventKey pk) {
+    this.pk = pk;
+  }
+
+  public int getEventCode() {
+    return eventCode;
+  }
+
+  public void setEventCode(int eventCode) {
+    this.eventCode = eventCode;
+  }
+
+  public String getIpAddress() {
+    return ipAddress;
+  }
+
+  public void setIpAddress(String ipAddress) {
+    this.ipAddress = ipAddress;
+  }
+
+}
+</programlisting>
+      </section>
+
+      <section>
+        <title>Complex Composite Primary Key</title>
+
+        <para>The annotations provided with Spring Data Cassandra can handle
+        any key combination available in Cassandra. Here is one more example
+        of a Composite Primary Key with 5 columns, 2 of which are a composite
+        partition key, and the remaining 3 are ordered clustering keys. The
+        getters/setters, hashCode and equals are omitted for brevity.</para>
+
+        <programlisting>package org.spring.cassandra.example;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import org.springframework.cassandra.core.Ordering;
+import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+
+@PrimaryKeyClass
+public class DetailedLoginEventKey implements Serializable {
+
+  @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+  private String personId;
+
+  @PrimaryKeyColumn(name = "wks_id", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+  private String workstationId;
+
+  @PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING)
+  private Date application;
+
+  @PrimaryKeyColumn(name = "event_code", ordinal = 3, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING)
+  private Date eventCode;
+
+  @PrimaryKeyColumn(name = "event_time", ordinal = 4, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+  private Date eventTime;
+
+  ...
+
+}
+</programlisting>
+      </section>
     </section>
 
     <section id="cassandra-template.type-mapping">
       <title>Type mapping</title>
 
-      <para>TODO With Examples</para>
+      <para>Spring Data Cassandra relies on the DataStax Java Driver type
+      mapping component. This approach ensures that as types are added or
+      changed, the Spring Data Cassandra module will continue to function
+      without requiring changes. For more information on the DataStax CQL3 to
+      Java Type mappings, please see their <ulink
+      url="http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html">Documentation
+      here</ulink>.</para>
     </section>
 
     <section id="cassandra-template.save-insert">
       <title>Methods for saving and inserting rows</title>
 
-      <para>TODO With Examples</para>
+      <section>
+        <title>Single records inserts</title>
+
+        <para>To insert one row at a time, there are many options. At this
+        point you should already have a cassandraTemplate available to you so
+        we will just how the relevant code for each section, omitting the
+        template setup.</para>
+
+        <para>Insert a record with an annotated POJO.</para>
+
+        <programlisting>cassandraOperations.insert(new Person("123123123", "Alison", 39));</programlisting>
+
+        <para>Insert a row using the QueryBuilder.Insert object that is part
+        of the DataStax Java Driver.</para>
+
+        <programlisting>Insert insert = QueryBuilder.insertInto("person");
+insert.setConsistencyLevel(ConsistencyLevel.ONE);
+insert.value("id", "123123123");
+insert.value("name", "Alison");
+insert.value("age", 39);
+
+cassandraOperations.execute(insert);</programlisting>
+
+        <para>Then there is always the old fashioned way. You can write your
+        own CQL statements.</para>
+
+        <programlisting>String cql = "insert into person (id, name, age) values ('123123123', 'Alison', 39)";
+   
+cassandraOperations.execute(cql);</programlisting>
+      </section>
+
+      <section>
+        <title>Multiple inserts for high speed ingestion</title>
+
+        <para>CQLOperations, which is extended by CassandraOperations is a
+        lower level Template that you can use for just about anything you need
+        to accomplish with Cassandra. CqlOperations includes several
+        overloaded methods named <literal>ingest()</literal>.</para>
+
+        <para>Use these methods to pass a CQL String with Bind Markers, and
+        your preferred flavor of data set (Object[][] and
+        List&lt;List&lt;T&gt;&gt;).</para>
+
+        <para>The ingest method takes advantage of static PreparedStatements
+        that are only prepared once for performance. Each record in your data
+        list is bound to the same PreparedStatement, then executed
+        asynchronously for high performance.</para>
+
+        <programlisting>    String cqlIngest = "insert into person (id, name, age) values (?, ?, ?)";
+
+    List&lt;Object&gt; person1 = new ArrayList&lt;Object&gt;();
+    person1.add("10000");
+    person1.add("David");
+    person1.add(40);
+
+    List&lt;Object&gt; person2 = new ArrayList&lt;Object&gt;();
+    person2.add("10001");
+    person2.add("Roger");
+    person2.add(65);
+
+    List&lt;List&lt;?&gt;&gt; people = new ArrayList&lt;List&lt;?&gt;&gt;();
+    people.add(person1);
+    people.add(person2);
+
+    cassandraOperations.ingest(cqlIngest, people);</programlisting>
+      </section>
     </section>
 
     <section id="cassandra-template-update">
       <title>Updating rows in a CQL table</title>
 
       <para>TODO With Examples</para>
-    </section>
-
-    <section id="cassandra-template.upserts">
-      <title>Upserting rows in a CQL table</title>
-
-      <para>To upsert a row in Cassandra, use the insert logic explained in
-      the previous section. When you insert a row into Cassandra, and there is
-      already a row for that primary key value, the row is overwritten by the
-      data in the new insert.</para>
     </section>
 
     <section id="cassandra-template.delete">
