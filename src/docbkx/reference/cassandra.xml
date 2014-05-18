@@ -247,7 +247,7 @@ public class CassandraApp {
       <para><programlisting>cassandra.contactpoints=10.1.55.80,10.1.55.81
 cassandra.port=9042
 cassandra.keyspace=showcase</programlisting>We will use spring to load these
-      properties into the Spring Context in the next two examples. </para>
+      properties into the Spring Context in the next two examples.</para>
     </section>
 
     <section id="cassandra-connectors.xmlconfig">
@@ -269,32 +269,38 @@ cassandra.keyspace=showcase</programlisting>We will use spring to load these
 
       <programlisting>&lt;?xml version='1.0'?&gt;
 &lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/cql http://www.springframework.org/schema/cql/spring-cql-1.0.xsd
-        http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd"&gt;
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xmlns:context="http://www.springframework.org/schema/context"
+  xsi:schemaLocation="http://www.springframework.org/schema/cql http://www.springframework.org/schema/cql/spring-cql-1.0.xsd
+    http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd"&gt;
 
+  &lt;!-- Loads the properties into the Spring Context and uses them to fill 
+    in placeholders in the bean definitions --&gt;
+  &lt;context:property-placeholder location="classpath:cassandra.properties" /&gt;
 
-    &lt;!-- Loads the properties into the Spring Context and uses them to fill 
-        in placeholders in the bean definitions --&gt;
-    &lt;context:property-placeholder location="classpath:cassandra.properties" /&gt;
+  &lt;!-- REQUIRED: The Cassandra Cluster --&gt;
+  &lt;cassandra:cluster contact-points="${cassandra.contactpoints}"
+    port="${cassandra.port}" /&gt;
 
-    &lt;!-- REQUIRED: The Cassandra Cluster --&gt;
-    &lt;cassandra:cluster contact-points="${cassandra.contactpoints}" port="${cassandra.port}" /&gt;
+  &lt;!-- REQUIRED: The Cassandra Session, built from the Cluster, and attaching 
+    to a keyspace --&gt;
+  &lt;cassandra:session keyspace-name="${cassandra.keyspace}" /&gt;
 
-    &lt;!-- REQUIRED: The Cassandra Session, built from the Cluster, and attaching to a keyspace --&gt;
-    &lt;cassandra:session keyspace-name="${cassandra.keyspace}" /&gt;
+  &lt;!-- REQUIRED: The Default Cassandra Mapping Context used by CassandraConverter --&gt;
+  &lt;cassandra:mapping /&gt;
 
-    &lt;!-- REQUIRED: The Default Cassandra Converter used by CassandraTemplate --&gt;
-    &lt;cassandra:converter/&gt;
+  &lt;!-- REQUIRED: The Default Cassandra Converter used by CassandraTemplate --&gt;
+  &lt;cassandra:converter /&gt;
 
-    &lt;!-- REQUIRED: The Cassandra Template is the building block of all Spring Data Cassandra --&gt;
-    &lt;cassandra:template/&gt;
+  &lt;!-- REQUIRED: The Cassandra Template is the building block of all Spring 
+    Data Cassandra --&gt;
+  &lt;cassandra:template id="cassandraTemplate" /&gt;
 
-    &lt;!-- OPTIONAL: If you are using Spring Data Cassandra Repositories, add your base packages to scan here--&gt;
-    &lt;cassandra:repositories base-package="org.spring.cassandra.example.repo" /&gt;
+  &lt;!-- OPTIONAL: If you are using Spring Data Cassandra Repositories, add 
+    your base packages to scan here --&gt;
+  &lt;cassandra:repositories base-package="org.spring.cassandra.example.repo" /&gt;
 
 &lt;/beans&gt;
 </programlisting>
@@ -319,7 +325,43 @@ cassandra.keyspace=showcase</programlisting>We will use spring to load these
     <section id="cassandra-template.instantiating">
       <title>Instantiating CassandraTemplate</title>
 
-      <para>CassandraTemplate requires a Cassandra Session object.</para>
+      <para><literal>CassandraTemplate</literal> should always be configured
+      as a Spring Bean, although we show an example above where you can
+      instantiate it directly. But for the purposes of this being a Spring
+      module, lets assume we are using the Spring Container.</para>
+
+      <para><literal>CassandraTemplate</literal> is an implementation of
+      <literal>CassandraOperations</literal>. You should always assign your
+      <literal>CassandraTemplate</literal> to its interface definition,
+      <literal>CassandraOperations</literal>.</para>
+
+      <para>There are 2 easy ways to get a
+      <literal>CassandraTemplate</literal>, depending on how you load you
+      Spring Application Context.</para>
+
+      <bridgehead>AutoWiring</bridgehead>
+
+      <programlisting>@Autowired
+private CassandraOperations cassandraOperations;</programlisting>
+
+      <para>Like all Spring Autowiring, this assumes there is only one bean of
+      type <literal>CassandraOperations</literal> in the
+      <literal>ApplicationContext</literal>. If you have multiple
+      <literal>CassandraTemplate</literal> beans (which will be the case if
+      you are working with multiple keyspaces in the same project), use the
+      <literal>@Qualifier </literal>annotation to designate which bean you
+      want to Autowire.</para>
+
+      <programlisting>@Autowired
+@Qualifier("myTemplateBeanId")
+private CassandraOperations cassandraOperations;</programlisting>
+
+      <bridgehead>Bean Lookup with ApplicationContext</bridgehead>
+
+      <para>You can also just lookup the <literal>CassandraTemplate</literal>
+      bean from the <literal>ApplicationContext</literal>.</para>
+
+      <programlisting>CassandraOperations cassandraOperations = applicationContext.getBean("cassandraTemplate", CassandraOperations.class);</programlisting>
     </section>
   </section>
 
@@ -337,8 +379,6 @@ cassandra.keyspace=showcase</programlisting>We will use spring to load these
       <para>Cassandra requires that you have at least 1 Partition Key field
       for a CQL Table. Alternately, you can have one or more Clustering Key
       fields.</para>
-
-      <para>TODO With Examples</para>
     </section>
 
     <section id="cassandra-template.type-mapping">
@@ -362,13 +402,10 @@ cassandra.keyspace=showcase</programlisting>We will use spring to load these
     <section id="cassandra-template.upserts">
       <title>Upserting rows in a CQL table</title>
 
-      <para>TODO With Examples</para>
-    </section>
-
-    <section id="cassandra-template.find-and-upsert">
-      <title>Finding and Upserting rowa in a CQL table</title>
-
-      <para>TODO With Examples</para>
+      <para>To upsert a row in Cassandra, use the insert logic explained in
+      the previous section. When you insert a row into Cassandra, and there is
+      already a row for that primary key value, the row is overwritten by the
+      data in the new insert.</para>
     </section>
 
     <section id="cassandra-template.delete">
