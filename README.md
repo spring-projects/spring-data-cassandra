@@ -290,3 +290,6 @@ support:
 
 * [DataStax](http://www.datastax.com)
 * [Spring](http://www.spring.io) @ [Pivotal](http://www.gopivotal.com)
+* Docbook Editor provided by [Oxygen XML](http://www.oxygenxml.com)
+
+![Oxygen XML Logo](http://www.oxygenxml.com/img/resources/oxygen190x62.png)
