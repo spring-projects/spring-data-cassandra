@@ -126,13 +126,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>cglib</groupId>
-				<artifactId>cglib-nodep</artifactId>
-				<version>2.2.2</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
 				<groupId>org.xerial.snappy</groupId>
 				<artifactId>snappy-java</artifactId>
 				<version>1.1.0.1</version>
