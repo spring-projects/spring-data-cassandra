@@ -30,7 +30,7 @@
 		<dist.id>spring-data-cassandra</dist.id>
 		<springdata.commons>1.8.0.BUILD-SNAPSHOT</springdata.commons>
 		<cassandra-unit.version>2.0.2.1</cassandra-unit.version>
-		<cassandra-driver-dse.version>2.0.1</cassandra-driver-dse.version>
+		<cassandra-driver-dse.version>2.0.2</cassandra-driver-dse.version>
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
 		<jamm.version>0.2.5</jamm.version>

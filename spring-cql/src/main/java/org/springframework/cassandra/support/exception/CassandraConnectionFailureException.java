@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.support.exception;
 
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,14 +31,14 @@ public class CassandraConnectionFailureException extends DataAccessResourceFailu
 
 	private static final long serialVersionUID = 6299912054261646552L;
 
-	private final Map<InetAddress, Throwable> messagesByHost = new HashMap<InetAddress, Throwable>();
+	private final Map<InetSocketAddress, Throwable> messagesByHost = new HashMap<InetSocketAddress, Throwable>();
 
-	public CassandraConnectionFailureException(Map<InetAddress, Throwable> map, String msg, Throwable cause) {
+	public CassandraConnectionFailureException(Map<InetSocketAddress, Throwable> map, String msg, Throwable cause) {
 		super(msg, cause);
 		this.messagesByHost.putAll(map);
 	}
 
-	public Map<InetAddress, Throwable> getMessagesByHost() {
+	public Map<InetSocketAddress, Throwable> getMessagesByHost() {
 		return Collections.unmodifiableMap(messagesByHost);
 	}
 }
