@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.config;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-
 import java.util.Collection;
 
 import org.springframework.cassandra.config.CassandraCqlSessionFactoryBean;
@@ -30,9 +28,11 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.TableMetadata;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
 public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean {
 
-	protected SchemaAction schemaAction;
+	protected SchemaAction schemaAction = SchemaAction.NONE;
 	protected CassandraAdminTemplate admin;
 	protected CassandraConverter converter;
 	protected CassandraMappingContext mappingContext;
