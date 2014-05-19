@@ -726,21 +726,100 @@ cassandraOperations.execute(cql);</programlisting>
 
     <section id="cassandra-template-update">
       <title>Updating rows in a CQL table</title>
+      <para>Much like inserting, there are several flavors of update from which you can
+        choose.</para>
+      <para>Update a record with an annotated POJO.</para>
+      <programlisting>cassandraOperations.update(new Person("123123123", "Alison", 35));</programlisting>
+      <para>Update a row using the QueryBuilder.Update object that is part of the DataStax Java
+        Driver.</para>
+      <programlisting>Update update = QueryBuilder.update("person");
+update.setConsistencyLevel(ConsistencyLevel.ONE);
+update.with(QueryBuilder.set("age", 35));
+update.where(QueryBuilder.eq("id", "123123123"));
 
-      <para>TODO With Examples</para>
+cassandraOperations.execute(update);</programlisting>
+      <para>Then there is always the old fashioned way. You can write your own CQL
+        statements.</para>
+      <programlisting>String cql = "update person set age = 35 where id = '123123123'";
+
+cassandraOperations.execute(cql);</programlisting>
     </section>
 
     <section id="cassandra-template.delete">
       <title>Methods for removing rows</title>
+      <para>Much like inserting, there are several flavors of delete from which you can
+        choose.</para>
+      <para>Delete a record with an annotated POJO.</para>
+      <programlisting>cassandraOperations.delete(new Person("123123123", null, 0));</programlisting>
+      <para>Delete a row using the QueryBuilder.Delete object that is part of the DataStax Java
+        Driver.</para>
+      <programlisting>Delete delete = QueryBuilder.delete().from("person");
+delete.where(QueryBuilder.eq("id", "123123123"));
 
-      <para>TODO With Examples</para>
+cassandraOperations.execute(delete);</programlisting>
+      <para>Then there is always the old fashioned way. You can write your own CQL
+        statements.</para>
+      <programlisting>String cql = "delete from person where id = '123123123'";
+
+cassandraOperations.execute(cql);</programlisting>
+    </section>
+    <section>
+      <title>Methods for truncating tables</title>
+      <para>Much like inserting, there are several flavors of truncate from which you can
+        choose.</para>
+      <para>Truncate a table using the truncate() method.</para>
+      <programlisting>cassandraOperations.truncate("person");</programlisting>
+      <para>Truncate a table using the QueryBuilder.Truncate object that is part of the DataStax
+        Java Driver.</para>
+      <programlisting>Truncate truncate = QueryBuilder.truncate("person");
+
+cassandraOperations.execute(truncate);</programlisting>
+      <para>Then there is always the old fashioned way. You can write your own CQL
+        statements.</para>
+      <programlisting>String cql = "truncate person";
+
+cassandraOperations.execute(cql);</programlisting>
     </section>
   </section>
 
   <section id="cassandra.query">
     <title>Querying CQL Tables</title>
+    <para>Tthere are several flavors of select and query from which you can choose.  Please see the
+      CassandraTemplate API documentation for all overloads available.</para>
+    <para>Query a table for multiple rows and map the results to a POJO.</para>
+    <programlisting>String cqlAll = "select * from person";
 
-    <para>TODO With Examples</para>
+List&lt;Person> results = cassandraOperations.select(cqlAll, Person.class);
+for (Person p : results) {
+	LOG.info(String.format("Found People with Name [%s] for id [%s]", p.getName(), p.getId()));
+}</programlisting>
+    <para>Query a table for a single row and map the result to a POJO.</para>
+    <programlisting>String cqlOne = "select * from person where id = '123123123'";
+
+Person p = cassandraOperations.selectOne(cqlOne, Person.class);
+LOG.info(String.format("Found Person with Name [%s] for id [%s]", p.getName(), p.getId()));</programlisting>
+    <para>Query a table using the QueryBuilder.Select object that is part of the DataStax Java
+      Driver.</para>
+    <programlisting>Select select = QueryBuilder.select().from("person");
+select.where(QueryBuilder.eq("id", "123123123"));
+
+Person p = cassandraOperations.selectOne(select, Person.class);
+LOG.info(String.format("Found Person with Name [%s] for id [%s]", p.getName(), p.getId()));</programlisting>
+    <para>Then there is always the old fashioned way. You can write your own CQL statements, and
+      there are several callback handlers for mapping the results.  The example uses the RowMapper
+      interface.</para>
+    <programlisting>String cqlAll = "select * from person";
+List&lt;Person> results = cassandraOperations.query(cqlAll, new RowMapper&lt;Person>() {
+
+	public Person mapRow(Row row, int rowNum) throws DriverException {
+		Person p = new Person(row.getString("id"), row.getString("name"), row.getInt("age"));
+		return p;
+	}
+});
+
+for (Person p : results) {
+	LOG.info(String.format("Found People with Name [%s] for id [%s]", p.getName(), p.getId()));
+}</programlisting>
   </section>
 
   <section id="cassandra.custom-converters">
@@ -770,25 +849,25 @@ cassandraOperations.execute(cql);</programlisting>
     <section id="cassandra.custom-converters.writer">
       <title>Saving using a registered Spring Converter</title>
 
-      <para>TODO With Examples</para>
+      <para>Coming Soon!</para>
     </section>
 
     <section id="cassandra.custom-converters.reader">
       <title>Reading using a Spring Converter</title>
 
-      <para>TODO With Examples</para>
+      <para>Coming Soon!</para>
     </section>
 
     <section id="cassandra.custom-converters.xml">
       <title>Registering Spring Converters with the CassandraConverter</title>
 
-      <para>TODO With Examples</para>
+      <para>Coming Soon!</para>
     </section>
 
     <section id="cassandra.converter-disambiguation">
       <title>Converter disambiguation</title>
 
-      <para>TODO With Examples</para>
+      <para>Coming Soon!</para>
     </section>
   </section>
 
@@ -798,8 +877,26 @@ cassandraOperations.execute(cql);</programlisting>
     <section id="cassandra-template.commands.execution">
       <title>Methods for executing commands</title>
 
-      <para>The CassandraTemplate has many overrides for execute() and executeAsync().  Pass in the
+      <para>The CassandraTemplate has many overloads for execute() and executeAsync(). Pass in the
         CQL command you wish to be executed, and handle the appropriate response.</para>
+      <para>This example uses the basic AsynchronousQueryListener that comes with Spring Data
+        Cassandra.  Please see the API documentation for all the options.  There should be nothing
+        you cannot perform in Cassandra with the execute() and executeAsync() methods.</para>
+      <para>
+        <programlisting>cassandraOperations.executeAsynchronously("delete from person where id = '123123123'",
+		new AsynchronousQueryListener() {
+
+			public void onQueryComplete(ResultSetFuture rsf) {
+				LOG.info("Async Query Completed");
+			}
+		});</programlisting>
+      </para>
+      <para>This example shows how to create and drop a table, using different API objects, all
+        passed to the execute()
+        methods.<programlisting>cassandraOperations.execute("create table test_table (id uuid primary key, event text)");
+
+DropTableSpecification dropper = DropTableSpecification.dropTable("test_table");
+cassandraOperations.execute(dropper);</programlisting></para>
     </section>
   </section>
 
@@ -822,11 +919,5 @@ cassandraOperations.execute(cql);</programlisting>
     DataAccessException</classname> class so you can be sure that you will be
     able to catch all database related exception within a single try-catch
     block.</para>
-  </section>
-
-  <section id="cassandra.executioncallback">
-    <title>Execution callbacks</title>
-
-    <para>TODO With Examples</para>
   </section>
 </chapter>
