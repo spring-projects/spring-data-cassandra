@@ -798,14 +798,9 @@ cassandraOperations.execute(cql);</programlisting>
     <section id="cassandra-template.commands.execution">
       <title>Methods for executing commands</title>
 
-      <para>TODO With Examples</para>
+      <para>The CassandraTemplate has many overrides for execute() and executeAsync().  Pass in the
+        CQL command you wish to be executed, and handle the appropriate response.</para>
     </section>
-  </section>
-
-  <section id="cassandra.mapping-usage.events">
-    <title>Lifecycle Events</title>
-
-    <para>TODO With Examples</para>
   </section>
 
   <section id="cassandra.exception">
