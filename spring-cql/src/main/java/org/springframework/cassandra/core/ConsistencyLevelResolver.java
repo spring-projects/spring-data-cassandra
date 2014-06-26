@@ -46,6 +46,9 @@ public final class ConsistencyLevelResolver {
 		case ONE:
 			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.ONE;
 			break;
+		case LOCAL_ONE:
+			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.LOCAL_ONE;
+			break;
 		case ALL:
 			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.ALL;
 			break;
@@ -66,6 +69,12 @@ public final class ConsistencyLevelResolver {
 			break;
 		case TWO:
 			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.TWO;
+			break;
+		case SERIAL:
+			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.SERIAL;
+			break;
+		case LOCAL_SERIAL:
+			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL;
 			break;
 		default:
 			break;
