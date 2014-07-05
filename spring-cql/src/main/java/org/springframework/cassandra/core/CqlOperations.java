@@ -737,7 +737,7 @@ public interface CqlOperations {
 	List<Map<String, Object>> processListOfMap(ResultSet resultSet) throws DataAccessException;
 
 	/**
-	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. <b>This can only be used for CQL
+	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
 	 * PreparedStatementCallback implementation provided by the Application Code.
 	 * 
@@ -762,7 +762,7 @@ public interface CqlOperations {
 	<T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action) throws DataAccessException;
 
 	/**
-	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the ResultSetExtractor implementation provided by the Application Code. The can return any object,
 	 * including a List of Objects to support the ResultSet processing.
@@ -776,7 +776,7 @@ public interface CqlOperations {
 	<T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException;
 
 	/**
-	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the ResultSetExtractor implementation provided by the Application Code. The can return any object,
 	 * including a List of Objects to support the ResultSet processing.
@@ -792,7 +792,7 @@ public interface CqlOperations {
 			throws DataAccessException;
 
 	/**
-	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the RowCallbackHandler implementation provided and nothing is returned.
 	 * 
@@ -804,7 +804,7 @@ public interface CqlOperations {
 	void query(String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException;
 
 	/**
-	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the RowCallbackHandler implementation provided and nothing is returned.
 	 * 
@@ -818,7 +818,7 @@ public interface CqlOperations {
 			throws DataAccessException;
 
 	/**
-	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the RowMapper implementation provided and a List is returned with elements of Type <T> for each Row
 	 * returned.
@@ -832,7 +832,7 @@ public interface CqlOperations {
 	<T> List<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
-	 * Converts the CQL provided into a {@link SimplePreparedStatementCreator}. Then, the PreparedStatementBinder will
+	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the RowMapper implementation provided and a List is returned with elements of Type <T> for each Row
 	 * returned.
