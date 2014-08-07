@@ -1,6 +1,22 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.1.0.M1 (2014-07-10)
+----------------------------------------
+* DATACASS-140 - Release 1.1 M1.
+* DATACASS-135 - Reference documentation build broken.
+* DATACASS-134 - Add plugin repository to pom.xml to make sure Bundlor can be resolved.
+* DATACASS-117 - @Query annotation does not support named parameters.
+
+
+Changes in version 1.0.1.RELEASE (2014-06-30)
+---------------------------------------------
+* DATACASS-138 - Release 1.0.1.
+* DATACASS-137 - Add new ConsistencyLevels to CqlTemplate.
+* DATACASS-135 - Reference documentation build broken.
+* DATACASS-134 - Add plugin repository to pom.xml to make sure Bundlor can be resolved.
+
+
 Changes in version 1.0.0.RELEASE (2014-05-20)
 ---------------------------------------------
 * DATACASS-133 - Binding Dates fails with DSE 2.0.1 Driver.
