@@ -15,6 +15,8 @@
  */
 package org.springframework.cassandra.core;
 
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -71,8 +73,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Truncate;
 import com.datastax.driver.core.querybuilder.Update;
-
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 /**
  * <b>This is the Central class in the Cassandra core package.</b> It simplifies the use of Cassandra and helps to avoid
@@ -843,7 +843,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> T execute(String cql, PreparedStatementCallback<T> action) {
-		return execute(new SimplePreparedStatementCreator(cql), action);
+		return execute(new CachedPreparedStatementCreator(cql), action);
 	}
 
 	@Override
@@ -882,7 +882,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse, QueryOptions options)
 			throws DataAccessException {
-		return query(new SimplePreparedStatementCreator(cql), psb, rse, options);
+		return query(new CachedPreparedStatementCreator(cql), psb, rse, options);
 	}
 
 	@Override
@@ -893,7 +893,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public void query(String cql, PreparedStatementBinder psb, RowCallbackHandler rch, QueryOptions options)
 			throws DataAccessException {
-		query(new SimplePreparedStatementCreator(cql), psb, rch, options);
+		query(new CachedPreparedStatementCreator(cql), psb, rch, options);
 	}
 
 	@Override
@@ -904,7 +904,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> List<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper, QueryOptions options)
 			throws DataAccessException {
-		return query(new SimplePreparedStatementCreator(cql), psb, rowMapper, options);
+		return query(new CachedPreparedStatementCreator(cql), psb, rowMapper, options);
 	}
 
 	@Override
@@ -915,11 +915,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public void ingest(String cql, RowIterator rowIterator, WriteOptions options) {
 
-		PreparedStatement preparedStatement = getSession().prepare(cql);
+		CachedPreparedStatementCreator cpsc = new CachedPreparedStatementCreator(cql);
+
+		PreparedStatement preparedStatement = cpsc.createPreparedStatement(getSession());
 		addPreparedStatementOptions(preparedStatement, options);
 
 		while (rowIterator.hasNext()) {
-			getSession().execute(preparedStatement.bind(rowIterator.next()));
+			getSession().executeAsync(preparedStatement.bind(rowIterator.next()));
 		}
 	}
 

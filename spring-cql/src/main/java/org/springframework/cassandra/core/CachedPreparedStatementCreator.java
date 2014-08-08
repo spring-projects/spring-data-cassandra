@@ -15,6 +15,11 @@
  */
 package org.springframework.cassandra.core;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.PreparedStatement;
@@ -22,8 +27,8 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
 
 /**
- * This Prepared Statement Creator simply prepares a statement from the CQL string. This should not be used in
- * Production systems with high volume reads and writes. Use {@link CachedPreparedStatementCreator}
+ * This Prepared Statement Creator maintains a cache of all prepared statements for the duration of this life of the
+ * container.
  * 
  * When preparing statements with Cassandra, each Statement should be prepared once and only once due to the overhead of
  * preparing the statement.
@@ -31,16 +36,20 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author David Webb
  * 
  */
-public class SimplePreparedStatementCreator implements PreparedStatementCreator {
+public class CachedPreparedStatementCreator implements PreparedStatementCreator {
+
+	private static final Logger log = LoggerFactory.getLogger(CachedPreparedStatementCreator.class);
 
 	private final String cql;
+
+	private static final Map<Session, Map<String, PreparedStatement>> psMap = new ConcurrentHashMap<Session, Map<String, PreparedStatement>>();
 
 	/**
 	 * Create a PreparedStatementCreator from the provided CQL.
 	 * 
 	 * @param cql
 	 */
-	public SimplePreparedStatementCreator(String cql) {
+	public CachedPreparedStatementCreator(String cql) {
 		Assert.notNull(cql, "CQL is required to create a PreparedStatement");
 		this.cql = cql;
 	}
@@ -51,7 +60,27 @@ public class SimplePreparedStatementCreator implements PreparedStatementCreator 
 
 	@Override
 	public PreparedStatement createPreparedStatement(Session session) throws DriverException {
-		return session.prepare(this.cql);
+
+		StringBuilder keyspaceCQLKey = new StringBuilder().append(session.getLoggedKeyspace()).append("|").append(this.cql);
+
+		log.debug(String.format("Cachable PreparedStatement in Keyspace [%s]", session.getLoggedKeyspace()));
+
+		Map<String, PreparedStatement> sessionMap = psMap.get(session);
+		if (sessionMap == null) {
+			sessionMap = new ConcurrentHashMap<String, PreparedStatement>();
+			psMap.put(session, sessionMap);
+		}
+
+		PreparedStatement pstmt = sessionMap.get(keyspaceCQLKey.toString());
+		if (pstmt == null) {
+			log.debug("No Cached PreparedStatement found...Creating and Caching");
+			pstmt = session.prepare(this.cql);
+			sessionMap.put(keyspaceCQLKey.toString(), pstmt);
+		} else {
+			log.debug("Found cached PreparedStatement");
+		}
+
+		return pstmt;
 	}
 
 }
