@@ -35,7 +35,7 @@ import com.datastax.driver.core.querybuilder.Select;
  */
 public class SimpleCassandraRepository<T, ID extends Serializable> implements TypedIdCassandraRepository<T, ID> {
 
-	protected CassandraOperations template;
+	protected CassandraOperations operations;
 	protected CassandraEntityInformation<T, ID> entityInformation;
 
 	/**
@@ -43,45 +43,45 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 * {@link CassandraTemplate}.
 	 * 
 	 * @param metadata must not be {@literal null}.
-	 * @param template must not be {@literal null}.
+	 * @param operations must not be {@literal null}.
 	 */
-	public SimpleCassandraRepository(CassandraEntityInformation<T, ID> metadata, CassandraTemplate template) {
+	public SimpleCassandraRepository(CassandraEntityInformation<T, ID> metadata, CassandraOperations operations) {
 
-		Assert.notNull(template);
+		Assert.notNull(operations);
 		Assert.notNull(metadata);
 
 		this.entityInformation = metadata;
-		this.template = template;
+		this.operations = operations;
 	}
 
 	@Override
 	public <S extends T> S save(S entity) {
-		return template.insert(entity);
+		return operations.insert(entity);
 	}
 
 	@Override
 	public <S extends T> List<S> save(Iterable<S> entities) {
-		return template.insert(CollectionUtils.toList(entities));
+		return operations.insert(CollectionUtils.toList(entities));
 	}
 
 	@Override
 	public T findOne(ID id) {
-		return template.selectOneById(entityInformation.getJavaType(), id);
+		return operations.selectOneById(entityInformation.getJavaType(), id);
 	}
 
 	@Override
 	public boolean exists(ID id) {
-		return template.exists(entityInformation.getJavaType(), id);
+		return operations.exists(entityInformation.getJavaType(), id);
 	}
 
 	@Override
 	public long count() {
-		return template.count(entityInformation.getTableName());
+		return operations.count(entityInformation.getTableName());
 	}
 
 	@Override
 	public void delete(ID id) {
-		template.deleteById(entityInformation.getJavaType(), id);
+		operations.deleteById(entityInformation.getJavaType(), id);
 	}
 
 	@Override
@@ -91,25 +91,25 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 	@Override
 	public void delete(Iterable<? extends T> entities) {
-		template.delete(CollectionUtils.toList(entities));
+		operations.delete(CollectionUtils.toList(entities));
 	}
 
 	@Override
 	public void deleteAll() {
-		template.truncate(entityInformation.getTableName());
+		operations.truncate(entityInformation.getTableName());
 	}
 
 	@Override
 	public List<T> findAll() {
-		return template.selectAll(entityInformation.getJavaType());
+		return operations.selectAll(entityInformation.getJavaType());
 	}
 
 	@Override
 	public Iterable<T> findAll(Iterable<ID> ids) {
-		return template.selectBySimpleIds(entityInformation.getJavaType(), ids);
+		return operations.selectBySimpleIds(entityInformation.getJavaType(), ids);
 	}
 
 	protected List<T> findAll(Select query) {
-		return template.select(query, entityInformation.getJavaType());
+		return operations.select(query, entityInformation.getJavaType());
 	}
 }
