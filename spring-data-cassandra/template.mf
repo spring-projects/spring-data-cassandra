@@ -5,6 +5,7 @@ Bundle-ManifestVersion: 2
 Import-Package:
  sun.reflect;version="0";resolution:=optional
 Import-Template:
+ javax.enterprise.*;version="${cdi:[=.=.=,+1.0.0)}";resolution:=optional,
  org.springframework.beans.*;version="[3.1.0, 4.0.0)",
  org.springframework.cache.*;version="[3.1.0, 4.0.0)",
  org.springframework.context.*;version="[3.1.0, 4.0.0)",
