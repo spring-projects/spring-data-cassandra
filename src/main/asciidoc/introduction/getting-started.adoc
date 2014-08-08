@@ -1,0 +1,31 @@
+[[get-started]]
+= Additional Help Resources
+
+Learning a new framework is not always straight forward. In this section, we try to provide what we think is an easy to follow guide for starting with Spring Data Cassandra module. However, if you encounter issues or you are just looking for an advice, feel free to use one of the links below:
+
+[[get-started.help]]
+== Support
+
+There are a few support options available:
+
+[[get-started.help.community]]
+=== Questions & Answers
+
+Developers post questions and answers on Stack Overflow. The two key tags to search for related answers to this project are:
+
+* http://stackoverflow.com/questions/tagged/spring-data[spring-data]
+* http://stackoverflow.com/questions/tagged/spring-data-cassandra[spring-data-cassandra]
+
+[[get-started.help.professional]]
+=== Professional Support
+
+Professional, from-the-source support, with guaranteed response time, is available from http://www.pivotal.io/support[Pivotal Support].
+
+[[get-started.up-to-date]]
+== Following Development
+
+For information on the Spring Data Cassandra source code repository, nightly builds and snapshot artifacts please see the http://projects.spring.io/spring-data-cassandra/[Spring Data Cassandra homepage].
+
+To follow developer activity look for the mailing list information on the Spring Data Cassandra homepage.
+
+If you encounter a bug or want to suggest an improvement, please create a ticket on the Spring Data issue https://jira.spring.io/browse/DATACASS[tracker].
