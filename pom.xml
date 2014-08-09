@@ -30,10 +30,11 @@
 		<dist.id>spring-data-cassandra</dist.id>
 		<springdata.commons>1.9.0.BUILD-SNAPSHOT</springdata.commons>
 		<cassandra-unit.version>2.0.2.1</cassandra-unit.version>
-		<cassandra-driver-dse.version>2.0.2</cassandra-driver-dse.version>
+		<cassandra-driver-dse>2.0.4</cassandra-driver-dse>
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
 		<jamm.version>0.2.5</jamm.version>
+		<cassandra>2.0.9</cassandra>
 	</properties>
 
 	<developers>
@@ -78,7 +79,7 @@
 			<dependency>
 				<groupId>com.datastax.cassandra</groupId>
 				<artifactId>cassandra-driver-dse</artifactId>
-				<version>${cassandra-driver-dse.version}</version>
+				<version>${cassandra-driver-dse}</version>
 				<exclusions>
 					<exclusion>
 						<artifactId>slf4j-log4j12</artifactId>

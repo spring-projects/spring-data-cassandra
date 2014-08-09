@@ -49,4 +49,9 @@ public class TestHostStateListener implements StateListener {
 		log.info("Host Removed: " + host.getAddress());
 	}
 
+	@Override
+	public void onSuspected(Host host) {
+		log.info("Host Suspected: " + host.getAddress());
+	}
+
 }
