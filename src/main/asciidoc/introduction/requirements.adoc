@@ -1,0 +1,7 @@
+[[requirements]]
+= Requirements
+
+Spring Data Cassandra 1.x binaries requires JDK level 6.0 and above, and http://spring.io/docs[Spring Framework] 3.2.x and above.
+
+Currently we support Cassandra 2.X using the DataStax Java Driver (2.0.X)
+

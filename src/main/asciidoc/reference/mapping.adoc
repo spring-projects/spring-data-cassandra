@@ -1,0 +1,37 @@
+[[mapping-chapter]]
+= Mapping
+
+Rich mapping support is provided by the `CassandraMappingConverter` . `CassandraMappingConverter` has a rich metadata model that provides a full feature set of functionality to map domain objects to CQL Tables. The mapping metadata model is populated using annotations on your domain objects. However, the infrastructure is not limited to using annotations as the only source of metadata information. The `CassandraMappingConverter` also allows you to map objects to documents without providing any additional metadata, by following a set of conventions.
+
+In this section we will describe the features of the CassandraMappingConverter. How to use conventions for mapping objects to documents and how to override those conventions with annotation based mapping metadata.
+
+[[mapping-conventions]]
+== Convention based Mapping
+
+`CassandraMappingConverter` has a few conventions for mapping objects to CQL Tables when no additional mapping metadata is provided. The conventions are:
+
+* The short Java class name is mapped to the table name in the following manner. The class `com.bigbank.SavingsAccount` maps to `savings_account` table name.
+* The converter will use any Spring Converters registered with it to override the default mapping of object properties to document field/values.
+* The fields of an object are used to convert to and from fields in the document. Public JavaBean properties are not used.
+
+[[mapping.conventions.id-field]]
+=== How the CQL Composite Primary Key fields are handled in the mapping layer
+
+TODO
+
+[[mapping-configuration]]
+=== Mapping Configuration
+
+Unless explicitly configured, an instance of `CassandraMappingConverter` is created by default when creating a `CassandraTemplate` . You can create your own instance of the `MappingCassandraConverter` so as to tell it where to scan the classpath at startup your domain classes in order to extract metadata and construct indexes. Also, by creating your own instance you can register Spring converters to use for mapping specific classes to and from the database.
+
+You can configure the `CassandraMappingConverter` and CassandraTemplate either using Java or XML based metadata. Here is an example using Spring's Java based configuration
+
+.@Configuration class to configure Cassandra mapping support
+====
+TODO
+====
+
+.XML schema to configure Cassandra mapping support
+====
+TODO
+====
