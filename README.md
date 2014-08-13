@@ -4,6 +4,12 @@
 
 To begin working with ``spring-cql`` or ``spring-data-cassandra``, add the Spring Maven Snapshot Repository to your ``pom.xml``.
 
+### Releases
+
+Generally available releases are available in Maven Central.
+
+### Snapshots
+
 	<repository>
 		<id>spring-libs-snapshot</id>
   		<url>http://repo.spring.io/libs-snapshot</url>
@@ -12,14 +18,14 @@ To begin working with ``spring-cql`` or ``spring-data-cassandra``, add the Sprin
 		</snapshots>
 	</repository>
 
-### CQL Only (``spring-cql``)
+### Raw CQL only with no POJO mapping (``spring-cql``)
 
 *Maven Coordinates*
 
 	<dependency>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-cql</artifactId>
-		<version>1.0.0.RELEASE</version>
+		<version>1.0.0.RELEASE (or whatever your preferred version is)</version>
 	</dependency>
 
 *Minimal Spring XML Configuration*
@@ -54,14 +60,14 @@ To begin working with ``spring-cql`` or ``spring-data-cassandra``, add the Sprin
 		// ...
 	}
 	
-### CQL and Object Mapping (``spring-data-cassandra``)
+### CQL and POJO mapping (``spring-data-cassandra``)
 
 *Maven Coordinates*
 
 	<dependency>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-cassandra</artifactId>
-		<version>1.0.0.RELEASE</version>
+		<version>1.0.0.RELEASE (or whatever your preferred version is)</version>
 	</dependency>
 
 *Minimal Spring XML Configuration*
@@ -97,7 +103,7 @@ To begin working with ``spring-cql`` or ``spring-data-cassandra``, add the Sprin
 
 There are two modules included in the ``spring-data-cassandra`` repository:  ``spring-cql`` and ``spring-data-cassandra``.
 
-### Module ``spring-cql``
+### Module ``spring-cql``:  Pure CQL support a la Spring's template pattern
 
 This is the low-level core template framework, like the ones you are used to using on all your Spring projects.  Our
 ``CqlTemplate`` provides everything you need for working with Cassandra using Spring's familiar template pattern in a manner very similar to Spring's ``JdbcTemplate``.
@@ -113,7 +119,7 @@ The module also offers convenient builder pattern classes to easily specify the 
 
 The support for Spring JavaConfig and a Spring Cassandra XML namespace makes it easy to configure your context to work with Cassandra, including XML namespace support for automatic keyspace creations, drops & more, which can be convenient when writing integration tests.
 
-### Module ``spring-data-cassandra``
+### Module ``spring-data-cassandra``:  Spring Data POJO persistence over Cassandra
 
 The ``spring-data-cassandra`` module depends on the ``spring-cql`` module and adds the familiar Spring Data features like repositories and lightweight POJO persistence.
 
@@ -123,7 +129,7 @@ We have worked closely with the DataStax Driver Engineering team to ensure that 
 CQL Driver takes advantage of all that it has to offer. If you need access to more than one keyspace in your application,
 create more than one ``CqlTemplate`` (one ``CqlTemplate`` per session, one session per keyspace), then use the appropriate template instance where needed.
 
-Here are some considerations when designing your application for use with ``spring-cql``.
+Here are some considerations when designing your application for use with ``spring-cql`` (as well as ``spring-data-cassandra``).
 
 * When creating a template, wire in a single ``Session`` per keyspace.
 * ``Session`` is threadsafe, so only use one per keyspace per application context!
@@ -133,22 +139,22 @@ Here are some considerations when designing your application for use with ``spri
 
 ### High Performance Ingestion
 
-We have included a variety of overloaded ``ingest()`` methods in ``CqlTemplate`` for high performance batch writes.
+We have included a variety of overloaded ``ingest(..)`` methods in ``CqlTemplate`` for high performance batch writes.
 
-### Cassandra Repository
+### ``CassandraRepository``
 
-The base Spring Data Repository interface for Cassandra is ``CassandraRepository``.
+The base Spring Data Repository interface for Cassandra is ``CassandraRepository``.  This allows you to simply annotate key fields directly in your entity instead of having to define your own primary key classes, although you still can (see the parent interface of ``CassandraRepository``, called ``TypedIdCassandraRepository<T,ID>``).  In fact, ``CassandraRepository`` uses a provided primary key class called ``MapId``, and declares itself to extend ``TypedIdCassandraRepository<T, MapId>``!
 
-### CassandraTemplate
+### ``CassandraTemplate``
 
 ``CassandraTemplate`` extends ``CqlTemplate``, adding mapping information so you can work with Cassandra using annotated POJOs.
-The Spring Data ``CassandraRepository`` implementation also happens to be a client of ``CassandraTemplate`` so, if necessary, a developer can work with annotated POJOs and the template pattern without ever using ``CassandraRespository``.
+The Spring Data ``CassandraRepository`` implementation also happens to be a client of ``CassandraTemplate`` so, if necessary, a developer can work with annotated POJOs and the template pattern without ever using ``CassandraRepository``.
 
-### Cassandra Admin Template
+### ``CassandraAdminTemplate``
 
 This is another Spring template class to help you with your keyspace and table administration tasks.
 
-## CqlTemplate Examples
+## ``CqlTemplate`` Examples
 
 ### JavaConfig
 
