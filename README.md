@@ -80,7 +80,7 @@ Generally available releases are available in Maven Central.
 
 	@Configuration
 	@EnableCassandraRepositories(basePackage = "org.example.domain")
-	public class MyConfig extends AbstractSpringDataCassandraConfiguration {
+	public class MyConfig extends AbstractCassandraConfiguration {
 		
 		@Override
 		public String getKeyspaceName() {
