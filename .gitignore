@@ -12,3 +12,4 @@ build
 .project
 .settings
 .cassandra
+.idea
