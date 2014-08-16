@@ -34,7 +34,8 @@ public class ColumnReader {
 	 * Returns the row's column value.
 	 */
 	public Object get(String name) {
-		return get(columns.getIndexOf(name));
+		int indexOf = getColumnIndex(name);
+		return get(indexOf);
 	}
 
 	public Object get(int i) {
@@ -110,7 +111,7 @@ public class ColumnReader {
 	 * @throws ClassCastException if the value cannot be converted to the requested type.
 	 */
 	public <T> T get(CqlIdentifier name, Class<T> requestedType) {
-		return get(columns.getIndexOf(name.toCql()), requestedType);
+		return get(getColumnIndex(name.toCql()), requestedType);
 	}
 
 	/**
@@ -137,6 +138,14 @@ public class ColumnReader {
 		}
 
 		return (T) o;
+	}
+
+	private int getColumnIndex(String name) {
+		int indexOf = columns.getIndexOf(name);
+		if (indexOf == -1) {
+			throw new IllegalArgumentException("Column does not exist in Cassandra table: " + name);
+		}
+		return indexOf;
 	}
 
 }
