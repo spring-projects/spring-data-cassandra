@@ -79,7 +79,7 @@ Generally available releases are available in Maven Central.
 *Minimal Spring JavaConfig*
 
 	@Configuration
-	@EnableCassandraRepositories(basePackage = "org.example.domain")
+	@EnableCassandraRepositories(basePackages = "org.example.domain")
 	public class MyConfig extends AbstractCassandraConfiguration {
 		
 		@Override
