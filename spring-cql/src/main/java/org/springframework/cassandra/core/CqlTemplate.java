@@ -204,7 +204,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	public CqlTemplate(Session session) {
 		setSession(session);
-		afterPropertiesSet();
 	}
 
 	@Override
