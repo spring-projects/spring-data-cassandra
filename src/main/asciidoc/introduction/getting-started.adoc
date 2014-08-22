@@ -29,3 +29,4 @@ For information on the Spring Data Cassandra source code repository, nightly bui
 To follow developer activity look for the mailing list information on the Spring Data Cassandra homepage.
 
 If you encounter a bug or want to suggest an improvement, please create a ticket on the Spring Data issue https://jira.spring.io/browse/DATACASS[tracker].
+
