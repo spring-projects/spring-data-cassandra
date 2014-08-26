@@ -80,7 +80,6 @@ import com.datastax.driver.core.querybuilder.Update;
  * extraction. This class execute CQL Queries, provides different ways to extract/map results, and provides Exception
  * translation to the generic, more informative exception hierarchy defined in the <code>org.springframework.dao</code>
  * package.
- * 
  * <p>
  * For working with POJOs, use the {@link CassandraDataTemplate}.
  * </p>
@@ -194,8 +193,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	/**
 	 * Blank constructor. You must wire in the Session before use.
 	 */
-	public CqlTemplate() {
-	}
+	public CqlTemplate() {}
 
 	/**
 	 * Constructor used for a basic template configuration
@@ -834,10 +832,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			PreparedStatement ps = psc.createPreparedStatement(getSession());
 			return action.doInPreparedStatement(ps);
 		} catch (DriverException dx) {
-			translateExceptionIfPossible(dx);
+			throw translateExceptionIfPossible(dx);
 		}
-
-		return null;
 	}
 
 	@Override
