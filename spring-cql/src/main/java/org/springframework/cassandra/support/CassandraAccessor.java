@@ -32,7 +32,7 @@ public class CassandraAccessor implements InitializingBean {
 
 	private Session session;
 
-	private CassandraExceptionTranslator exceptionTranslator;
+	private CassandraExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	/**
 	 * Set the exception translator for this instance.
