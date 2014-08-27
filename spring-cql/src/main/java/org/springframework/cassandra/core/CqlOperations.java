@@ -32,6 +32,7 @@ import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.dao.DataAccessException;
 
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
@@ -137,7 +138,6 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
-	 * 
 	 * @see queryAsyncronously for Reads
 	 */
 	void executeAsynchronously(String cql, Runnable listener) throws DataAccessException;
@@ -148,7 +148,6 @@ public interface CqlOperations {
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
-	 * 
 	 * @see queryAsyncronously for Reads
 	 */
 	void executeAsynchronously(String cql, Runnable listener, Executor executor) throws DataAccessException;
@@ -158,7 +157,6 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
-	 * 
 	 * @see queryAsyncronously for Reads
 	 */
 	void executeAsynchronously(String cql, AsynchronousQueryListener listener) throws DataAccessException;
@@ -169,7 +167,6 @@ public interface CqlOperations {
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
-	 * 
 	 * @see queryAsyncronously for Reads
 	 */
 	void executeAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor)
@@ -303,7 +300,6 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The Query
 	 * @param listener {@link Runnable} listener for handling the query in a separate thread
-	 * 
 	 * @see #queryAsynchronously(String, AsynchronousQueryListener)
 	 */
 	void queryAsynchronously(String cql, Runnable listener);
@@ -317,7 +313,6 @@ public interface CqlOperations {
 	 * 
 	 * @param select The Select Query
 	 * @param listener {@link Runnable} listener for handling the query in a separate thread
-	 * 
 	 * @see #queryAsynchronously(Select, AsynchronousQueryListener)
 	 */
 	void queryAsynchronously(Select select, Runnable listener);
@@ -457,7 +452,6 @@ public interface CqlOperations {
 	 * 
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
-	 * 
 	 * @return Type <T> specified in the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
@@ -468,7 +462,6 @@ public interface CqlOperations {
 	 * 
 	 * @param select The SelectQuery
 	 * @param rse The implementation for extracting the ResultSet
-	 * 
 	 * @return Type <T> specified in the ResultSetExtractor
 	 * @throws DataAccessException
 	 */
@@ -480,7 +473,6 @@ public interface CqlOperations {
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
 	 * @param options Query Options
-	 * 
 	 * @return
 	 * @throws DataAccessException
 	 */
@@ -570,7 +562,6 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
-	 * 
 	 * <p>
 	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
 	 * </p>
@@ -584,7 +575,6 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided Select Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
-	 * 
 	 * <p>
 	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
 	 * </p>
@@ -737,26 +727,23 @@ public interface CqlOperations {
 	List<Map<String, Object>> processListOfMap(ResultSet resultSet) throws DataAccessException;
 
 	/**
-	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. <b>This can only be used for CQL
-	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
-	 * PreparedStatementCallback implementation provided by the Application Code.
+	 * Creates and caches a {@link PreparedStatement} from the given CQL, invokes the {@link PreparedStatementCallback}
+	 * with that {@link PreparedStatement}, then returns the value returned by the {@link PreparedStatementCallback}.
 	 * 
-	 * @param cql The CQL Statement to Execute
-	 * @param action What to do with the results of the PreparedStatement
-	 * @return Type<T> as determined by the supplied Callback.
+	 * @param cql The CQL statement from which to create and cache a {@link PreparedStatement}
+	 * @param action The callback that is given the {@link PreparedStatement}
+	 * @return The value returned by the given {@link PreparedStatementCallback}
 	 * @throws DataAccessException
 	 */
 	<T> T execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException;
 
 	/**
-	 * Uses the provided PreparedStatementCreator to prepare a new Session call, then executes the statement and processes
-	 * the statement using the provided Callback. <b>This can only be used for CQL Statements that do not have data
-	 * binding.</b> The results of the PreparedStatement are processed with PreparedStatementCallback implementation
-	 * provided by the Application Code.
+	 * Uses the provided {@link PreparedStatementCreator} to create a {@link PreparedStatement} in the current
+	 * {@link Session}, then passes that {@link PreparedStatement} to the given {@link PreparedStatementCallback}.
 	 * 
-	 * @param psc The implementation to create the PreparedStatement
-	 * @param action What to do with the results of the PreparedStatement
-	 * @return Type<T> as determined by the supplied Callback.
+	 * @param psc The {@link PreparedStatementCreator}
+	 * @param action The callback that receives the {@link PreparedStatement}
+	 * @return The value returned by the given {@link PreparedStatementCallback}
 	 * @throws DataAccessException
 	 */
 	<T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action) throws DataAccessException;
@@ -1036,7 +1023,6 @@ public interface CqlOperations {
 	/**
 	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
 	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
 	 * <p>
 	 * This is used internally by the other ingest() methods, but can be used if you want to write your own RowIterator.
 	 * The Object[] length returned by the next() implementation must match the number of bind variables in the CQL.
@@ -1049,9 +1035,8 @@ public interface CqlOperations {
 	void ingest(String cql, RowIterator rowIterator, WriteOptions options);
 
 	/**
-	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * This is an operation designed for high performance writes. The CQL is used to create a PreparedStatement once, then
 	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
 	 * <p>
 	 * This is used internally by the other ingest() methods, but can be used if you want to write your own RowIterator.
 	 * The Object[] length returned by the next() implementation must match the number of bind variables in the CQL.
@@ -1063,9 +1048,8 @@ public interface CqlOperations {
 	void ingest(String cql, RowIterator rowIterator);
 
 	/**
-	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
+	 * This is an operation designed for high performance writes. The CQL is used to create a PreparedStatement once, then
 	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
 	 * <p>
 	 * The List<?> length must match the number of bind variables in the CQL.
 	 * </p>
@@ -1077,41 +1061,38 @@ public interface CqlOperations {
 	void ingest(String cql, List<List<?>> rows, WriteOptions options);
 
 	/**
-	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
-	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
+	 * This is an operation designed for high performance writes. The CQL is used to create a {@link PreparedStatement}
+	 * once, then all row values are bound to that {@link PreparedStatement} and executed against the {@link Session}.
 	 * <p>
-	 * The List<?> length must match the number of bind variables in the CQL.
+	 * The lengths of the nested {@link List}s must not be less than the number of bind variables in the CQL.
 	 * </p>
 	 * 
 	 * @param cql The CQL
-	 * @param rows List of List<?> with data to bind to the CQL.
+	 * @param rows The data to bind to the CQL statement
 	 */
 	void ingest(String cql, List<List<?>> rows);
 
 	/**
-	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
-	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
+	 * This is an operation designed for high performance writes. The CQL is used to create a {@link PreparedStatement}
+	 * once, then all row values are bound to that {@link PreparedStatement} and executed against the {@link Session}.
 	 * <p>
-	 * The Object[] length of the nested array must match the number of bind variables in the CQL.
+	 * The lengths of the nested object arrays must not be less than the number of bind variables in the CQL.
 	 * </p>
 	 * 
 	 * @param cql The CQL
-	 * @param rows Object array of Object array of values to bind to the CQL.
+	 * @param rows The data to bind to the CQL statement
 	 */
 	void ingest(String cql, Object[][] rows);
 
 	/**
-	 * This is an operation designed for high performance writes. The cql is used to create a PreparedStatement once, then
-	 * all row values are bound to the single PreparedStatement and executed against the Session.
-	 * 
+	 * This is an operation designed for high performance writes. The CQL is used to create a {@link PreparedStatement}
+	 * once, then all row values are bound to that {@link PreparedStatement} and executed against the {@link Session}.
 	 * <p>
-	 * The Object[] length of the nested array must match the number of bind variables in the CQL.
+	 * The lengths of the nested object arrays must not be less than the number of bind variables in the CQL.
 	 * </p>
 	 * 
 	 * @param cql The CQL
-	 * @param rows Object array of Object array of values to bind to the CQL.
+	 * @param rows The data to bind to the CQL statement
 	 * @param options The Query Options Object
 	 */
 	void ingest(String cql, Object[][] rows, WriteOptions options);
