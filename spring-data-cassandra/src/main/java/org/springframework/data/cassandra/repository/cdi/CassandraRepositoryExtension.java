@@ -94,9 +94,8 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 			throw new UnsatisfiedResolutionException(String.format("Unable to resolve a bean for '%s' with qualifiers %s.",
 					CassandraOperations.class.getName(), qualifiers));
 		}
-		Bean<?> customImplementationBean = getCustomImplementationBean(repositoryType, beanManager, qualifiers);
 
-		return new CassandraRepositoryBean<T>(cassandraOperationsBean, qualifiers, repositoryType, beanManager, customImplementationBean);
+		return new CassandraRepositoryBean<T>(cassandraOperationsBean, qualifiers, repositoryType, beanManager, getCustomImplementationDetector());
 	}
 
 

@@ -26,6 +26,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactory;
 import org.springframework.data.repository.cdi.CdiRepositoryBean;
+import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 import org.springframework.util.Assert;
 
 /**
@@ -43,12 +44,12 @@ public class CassandraRepositoryBean<T> extends CdiRepositoryBean<T> {
      * @param qualifiers must not be {@literal null}.
      * @param repositoryType must not be {@literal null}.
      * @param beanManager must not be {@literal null}.
-     * @param customImplementationBean the bean for the custom implementation of the
-     *        {@link org.springframework.data.repository.Repository}, can be {@literal null}.
+     * @param detector detector for the custom {@link org.springframework.data.repository.Repository} implementations
+  	 *          {@link CustomRepositoryImplementationDetector}, can be {@literal null}.
      */
     public CassandraRepositoryBean(Bean<CassandraOperations> operations, Set<Annotation> qualifiers, Class<T> repositoryType,
-            BeanManager beanManager, Bean<?> customImplementationBean) {
-        super(qualifiers, repositoryType, beanManager, customImplementationBean);
+            BeanManager beanManager, CustomRepositoryImplementationDetector detector) {
+        super(qualifiers, repositoryType, beanManager, detector);
 
         Assert.notNull(operations, "Cannot create repository with 'null' for CassandraOperations.");
         this.cassandraOperationsBean = operations;
