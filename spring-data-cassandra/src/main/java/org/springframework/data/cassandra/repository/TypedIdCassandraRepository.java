@@ -24,6 +24,7 @@ import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
 /**
  * Cassandra-specific extension of the {@link CrudRepository} interface that allows the specification of a type for the
@@ -64,5 +65,5 @@ import org.springframework.data.repository.CrudRepository;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-public interface TypedIdCassandraRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
-}
+@NoRepositoryBean
+public interface TypedIdCassandraRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {}
