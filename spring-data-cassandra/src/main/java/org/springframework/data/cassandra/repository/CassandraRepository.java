@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
+import org.springframework.data.repository.NoRepositoryBean;
 
 /**
  * Basic Cassandra repository interface.
@@ -27,12 +28,10 @@ import org.springframework.data.cassandra.repository.support.BasicMapId;
  * </ul>
  * 
  * @param <T> The type of the persistent entity.
- * 
  * @see TypedIdCassandraRepository
  * @see MapId
  * @See {@link MapIdentifiable}
- * 
  * @author Matthew T. Adams
  */
-public interface CassandraRepository<T> extends TypedIdCassandraRepository<T, MapId> {
-}
+@NoRepositoryBean
+public interface CassandraRepository<T> extends TypedIdCassandraRepository<T, MapId> {}
