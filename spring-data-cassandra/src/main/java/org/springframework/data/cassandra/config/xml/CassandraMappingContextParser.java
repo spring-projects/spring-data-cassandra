@@ -25,6 +25,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.EntityMapping;
@@ -63,6 +64,18 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 	}
 
 	protected void parseMapping(Element element, BeanDefinitionBuilder builder) {
+
+		String packages = element.getAttribute("entity-base-packages");
+		if (StringUtils.hasText(packages)) {
+			try {
+				Set<Class<?>> entityClasses = CassandraEntityClassScanner.scan(StringUtils
+						.commaDelimitedListToStringArray(packages));
+				builder.addPropertyValue("initialEntitySet", entityClasses);
+			} catch (Exception x) {
+				throw new IllegalArgumentException(String.format(
+						"encountered exception while scanning for entity classes in package(s) [%s]", packages), x);
+			}
+		}
 
 		Set<EntityMapping> mappings = new HashSet<EntityMapping>();
 
