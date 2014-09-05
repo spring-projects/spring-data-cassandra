@@ -85,7 +85,7 @@ public @interface EnableCassandraRepositories {
 
 	/**
 	 * Configures the location of where to find the Spring Data named queries properties file. Will default to
-	 * {@code META-INFO/casasndra-named-queries.properties}.
+	 * {@code META-INF/cassandra-named-queries.properties}.
 	 * 
 	 * @return
 	 */
