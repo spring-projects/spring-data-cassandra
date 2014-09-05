@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.5.0.BUILD-SNAPSHOT</version>
+		<version>1.5.0.RELEASE</version>
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
 
@@ -28,7 +28,7 @@
 	<properties>
 		<project.type>multi</project.type>
 		<dist.id>spring-data-cassandra</dist.id>
-		<springdata.commons>1.9.0.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.9.0.RELEASE</springdata.commons>
 		<cassandra-unit.version>2.0.2.1</cassandra-unit.version>
 		<cassandra-driver-dse>2.0.4</cassandra-driver-dse>
 		<el.version>1.0</el.version>
@@ -196,8 +196,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>http://repo.spring.io/libs-snapshot</url>
+			<id>spring-libs-release</id>
+			<url>http://repo.spring.io/libs-release</url>
 		</repository>
 	</repositories>
 
