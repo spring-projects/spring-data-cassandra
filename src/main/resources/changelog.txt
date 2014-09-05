@@ -1,6 +1,23 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.1.0.RELEASE (2014-09-05)
+---------------------------------------------
+* DATACASS-165 - Release 1.1 GA.
+* DATACASS-163 - SDC*-provided repository interfaces are missing @NoRepositoryBean annotation.
+* DATACASS-162 - XML <mapping> attribute "entity-base-packages" is ignored.
+* DATACASS-159 - NPE in CqlTemplate due to uninitialized exception translator.
+* DATACASS-158 - Clarify javadoc for CqlOperations methods involving PreparedStatements.
+* DATACASS-157 - CqlTemplate execute(PreparedStatementCreator,PreparedStatementCallback<T>) swallows translated exception.
+
+
+Changes in version 1.0.4.RELEASE (2014-08-27)
+---------------------------------------------
+* DATACASS-157 - CqlTemplate execute(PreparedStatementCreator,PreparedStatementCallback<T>) swallows translated exception.
+* DATACASS-154 - Release 1.0.4.
+* DATACASS-139 - ingest() methods do not cache PreparedStatements causing performance bottleneck.
+
+
 Changes in version 1.1.0.RC1 (2014-08-13)
 -----------------------------------------
 * DATACASS-151 - Release 1.1 RC1.
