@@ -15,6 +15,10 @@
  */
 package org.springframework.data.cassandra.test.integration.template;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,7 +46,6 @@ import com.datastax.driver.core.querybuilder.Select;
  * Unit Tests for CqlTemplate
  * 
  * @author David Webb
- * 
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -161,6 +164,19 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 		template.insertAsynchronously(b5, options);
 
+	}
+
+	@Test
+	public void insertEmptyList() {
+		List<Book> list = template.insert(new ArrayList<Book>());
+		assertNotNull(list);
+		assertEquals(0, list.size());
+	}
+
+	@Test
+	public void insertNullList() {
+		List<Book> list = template.insert((List<Book>) null);
+		assertNull(list);
 	}
 
 	@Test

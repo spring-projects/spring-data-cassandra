@@ -68,8 +68,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	/**
 	 * Default Constructor for wiring in the required components later
 	 */
-	public CassandraTemplate() {
-	}
+	public CassandraTemplate() {}
 
 	public CassandraTemplate(Session session) {
 		this(session, new MappingCassandraConverter());
@@ -536,7 +535,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	protected <T> List<T> batchInsert(List<T> entities, WriteOptions options, boolean asychronously) {
 
-		Assert.notEmpty(entities);
+		if (entities == null || entities.size() == 0) {
+			if (logger.isWarnEnabled()) {
+				logger.warn("no-op due to given null or empty list");
+			}
+			return entities;
+		}
 
 		Batch b = createInsertBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
 				cassandraConverter);
