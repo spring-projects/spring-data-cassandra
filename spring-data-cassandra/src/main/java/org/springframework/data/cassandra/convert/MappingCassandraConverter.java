@@ -299,6 +299,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	protected void writeDeleteWhereFromWrapper(final BeanWrapper<Object> wrapper, final Where where,
 			CassandraPersistentEntity<?> entity) {
 
+		// if the entity itself if a composite primary key, then we've recursed, so just add columns & return
+		if (entity.isCompositePrimaryKey()) {
+			entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+				@Override
+				public void doWithPersistentProperty(CassandraPersistentProperty p) {
+					where.and(QueryBuilder.eq(p.getColumnName().toCql(), wrapper.getProperty(p)));
+				}
+			});
+			return;
+		}
+
+		// else, wrapper is an entity with an id
 		Object id = getId(wrapper, entity);
 		if (id == null) {
 			String msg = String.format("no id value found in object {}", wrapper.getBean());
@@ -335,7 +347,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		final BeanWrapper<?> wrapper = object instanceof BeanWrapper ? (BeanWrapper<?>) object : BeanWrapper.create(object,
 				conversionService);
-		object = wrapper == null ? object : wrapper.getBean();
+		object = wrapper.getBean();
 
 		if (!entity.getType().isAssignableFrom(object.getClass())) {
 			throw new IllegalArgumentException(String.format(
