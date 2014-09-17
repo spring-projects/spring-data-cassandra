@@ -9,11 +9,11 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.springframework" level="info" />
-	<logger name="org.springframework.cassandra" level="debug" />
-	<logger name="com.datastax" level="info" />
+	<logger name="org.springframework" level="error" />
+	<logger name="org.springframework.cassandra" level="error" />
+	<logger name="com.datastax" level="error" />
 
-	<root level="warn">
+	<root level="error">
 		<appender-ref ref="console" />
 	</root>
 
