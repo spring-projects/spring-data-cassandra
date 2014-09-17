@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
@@ -44,20 +44,20 @@ import org.springframework.util.Assert;
 
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
-	private final CassandraTemplate cassandraTemplate;
+	private final CassandraOperations cassandraTemplate;
 	private final CassandraMappingContext mappingContext;
 
 	/**
-	 * Creates a new {@link MongoRepositoryFactory} with the given {@link MongoOperations}.
+	 * Creates a new {@link CassandraRepositoryFactory} with the given {@link CassandraOperations}.
 	 * 
-	 * @param mongoOperations must not be {@literal null}
+	 * @param cassandraOperations must not be {@literal null}
 	 */
-	public CassandraRepositoryFactory(CassandraTemplate cassandraTemplate) {
+	public CassandraRepositoryFactory(CassandraOperations cassandraOperations) {
 
-		Assert.notNull(cassandraTemplate);
+		Assert.notNull(cassandraOperations);
 
-		this.cassandraTemplate = cassandraTemplate;
-		this.mappingContext = cassandraTemplate.getConverter().getMappingContext();
+		this.cassandraTemplate = cassandraOperations;
+		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
 
 		// TODO: remove when supporting declarative query methods
 		setQueryLookupStrategyKey(QueryLookupStrategy.Key.USE_DECLARED_QUERY);
