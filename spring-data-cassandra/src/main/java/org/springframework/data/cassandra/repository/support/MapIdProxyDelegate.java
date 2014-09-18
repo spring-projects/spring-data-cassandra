@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.util.StringUtils;
@@ -27,7 +29,7 @@ class MapIdProxyDelegate implements InvocationHandler {
 
 		@Override
 		public String toString() {
-			return "Signature [name=" + name + ", argTypes=" + Arrays.toString(argTypes) + ", returnType=" + returnType + "]";
+			return String.format("%s %s(%s)", returnType, name, Arrays.toString(argTypes));
 		}
 
 		@Override
@@ -66,19 +68,27 @@ class MapIdProxyDelegate implements InvocationHandler {
 
 		@Override
 		public int hashCode() {
-			return name.hashCode() ^ (argTypes != null ? argTypes.hashCode() : 0)
-					^ (returnType != null ? returnType.hashCode() : 0);
+			int hash = 37 ^ name.hashCode();
+			if (argTypes != null) {
+				for (Class<?> c : argTypes) {
+					hash ^= c.hashCode();
+				}
+			}
+			if (returnType != null) {
+				hash ^= returnType.hashCode();
+			}
+			return hash;
 		}
 	}
 
-	private static final Signature[] MAP_ID_SIGNATURES;
+	private static final Map<Signature, Signature> MAP_ID_SIGNATURES;
 
 	static {
 		Method[] mapIdMethods = MapId.class.getMethods();
-		MAP_ID_SIGNATURES = new Signature[mapIdMethods.length];
-		int i = 0;
+		MAP_ID_SIGNATURES = new HashMap<Signature, Signature>(mapIdMethods.length);
 		for (Method m : mapIdMethods) {
-			MAP_ID_SIGNATURES[i++] = new Signature(m, true);
+			Signature s = new Signature(m, true);
+			MAP_ID_SIGNATURES.put(s, s);
 		}
 	}
 
@@ -100,26 +110,21 @@ class MapIdProxyDelegate implements InvocationHandler {
 					method, idInterface));
 		}
 		boolean isSetter = args != null && args.length == 1;
-		String name = method.getName();
 
 		if (isSetter) {
-			handleSetter(name, args[0]);
+			invokeSetter(method, args[0]);
 			return void.class.equals(method.getReturnType()) ? null : proxy;
 		}
 
-		return handleGetter(name);
+		return invokeGetter(method);
 	}
 
 	private boolean isMapIdMethod(Method method) {
-		for (Signature mapIdSignature : MAP_ID_SIGNATURES) {
-			if (mapIdSignature.equals(new Signature(method, true))) {
-				return true;
-			}
-		}
-		return false;
+		return MAP_ID_SIGNATURES.containsKey(new Signature(method, true));
 	}
 
-	private Serializable handleGetter(String name) {
+	private Serializable invokeGetter(Method method) {
+		String name = method.getName();
 		if (name.startsWith("get")) {
 			if (name.length() == 3) {
 				throw new IllegalArgumentException(String.format("Method [%s] on interface [%s] must be of form "
@@ -131,7 +136,8 @@ class MapIdProxyDelegate implements InvocationHandler {
 		return delegate.get(name);
 	}
 
-	private void handleSetter(String name, Object value) {
+	private void invokeSetter(Method method, Object value) {
+		String name = method.getName();
 		int minLength = 1;
 		boolean isSet = name.startsWith("set");
 		boolean isWith = name.startsWith("with");
