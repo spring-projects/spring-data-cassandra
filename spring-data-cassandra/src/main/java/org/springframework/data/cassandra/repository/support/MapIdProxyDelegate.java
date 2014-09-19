@@ -10,76 +10,14 @@ import java.util.Map;
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.util.StringUtils;
 
+/**
+ * Delegate class for dynamic proxies of id interfaces; delegates to {@link BasicMapId}.
+ * 
+ * @see MapIdFactory#id(Class)
+ * @see MapIdFactory#id(Class, ClassLoader)
+ * @author Matthew T. Adams
+ */
 class MapIdProxyDelegate implements InvocationHandler {
-
-	static class Signature {
-		String name;
-		Class<?>[] argTypes;
-		Class<?> returnType;
-
-		Signature(Method method, boolean includeReturnType) {
-			this(method.getName(), method.getParameterTypes(), includeReturnType ? method.getReturnType() : null);
-		}
-
-		Signature(String name, Class<?>[] argTypes, Class<?> returnType) {
-			this.name = name;
-			this.argTypes = argTypes;
-			this.returnType = returnType;
-		}
-
-		@Override
-		public String toString() {
-			return String.format("%s %s(%s)", returnType, name, Arrays.toString(argTypes));
-		}
-
-		@Override
-		public boolean equals(Object that) {
-			if (that == null) {
-				return false;
-			}
-			if (this == that) {
-				return true;
-			}
-			if (!(that instanceof Signature)) {
-				return false;
-			}
-			Signature that_ = (Signature) that;
-			if (!this.name.equals(that_.name)) {
-				return false;
-			}
-			if ((this.argTypes == null && that_.argTypes != null) || (this.argTypes != null && that_.argTypes == null)) {
-				return false;
-			}
-			if (this.argTypes != null) {
-				if (this.argTypes.length != that_.argTypes.length) {
-					return false;
-				}
-				for (int i = 0; i < this.argTypes.length; i++) {
-					if (!this.argTypes[i].equals(that_.argTypes[i])) {
-						return false;
-					}
-				}
-			}
-			if (this.returnType == null) {
-				return that_.returnType == null;
-			}
-			return this.returnType.equals(that_.returnType);
-		}
-
-		@Override
-		public int hashCode() {
-			int hash = 37 ^ name.hashCode();
-			if (argTypes != null) {
-				for (Class<?> c : argTypes) {
-					hash ^= c.hashCode();
-				}
-			}
-			if (returnType != null) {
-				hash ^= returnType.hashCode();
-			}
-			return hash;
-		}
-	}
 
 	private static final Map<Signature, Signature> MAP_ID_SIGNATURES;
 
@@ -92,10 +30,10 @@ class MapIdProxyDelegate implements InvocationHandler {
 		}
 	}
 
-	MapId delegate = new BasicMapId();
-	Class<?> idInterface;
+	private MapId delegate = new BasicMapId();
+	private Class<?> idInterface;
 
-	MapIdProxyDelegate(Class<?> idInterface) {
+	public MapIdProxyDelegate(Class<?> idInterface) {
 		this.idInterface = idInterface;
 	}
 
@@ -119,11 +57,11 @@ class MapIdProxyDelegate implements InvocationHandler {
 		return invokeGetter(method);
 	}
 
-	private boolean isMapIdMethod(Method method) {
+	public boolean isMapIdMethod(Method method) {
 		return MAP_ID_SIGNATURES.containsKey(new Signature(method, true));
 	}
 
-	private Serializable invokeGetter(Method method) {
+	public Serializable invokeGetter(Method method) {
 		String name = method.getName();
 		if (name.startsWith("get")) {
 			if (name.length() == 3) {
@@ -136,7 +74,7 @@ class MapIdProxyDelegate implements InvocationHandler {
 		return delegate.get(name);
 	}
 
-	private void invokeSetter(Method method, Object value) {
+	public void invokeSetter(Method method, Object value) {
 		String name = method.getName();
 		int minLength = 1;
 		boolean isSet = name.startsWith("set");
@@ -162,5 +100,74 @@ class MapIdProxyDelegate implements InvocationHandler {
 					Serializable.class.getName()));
 		}
 		delegate.put(name, (Serializable) value);
+	}
+}
+
+class Signature {
+	String name;
+	Class<?>[] argTypes;
+	Class<?> returnType;
+
+	Signature(Method method, boolean includeReturnType) {
+		this(method.getName(), method.getParameterTypes(), includeReturnType ? method.getReturnType() : null);
+	}
+
+	Signature(String name, Class<?>[] argTypes, Class<?> returnType) {
+		this.name = name;
+		this.argTypes = argTypes;
+		this.returnType = returnType;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s %s(%s)", returnType, name, Arrays.toString(argTypes));
+	}
+
+	@Override
+	public boolean equals(Object that) {
+		if (that == null) {
+			return false;
+		}
+		if (this == that) {
+			return true;
+		}
+		if (!(that instanceof Signature)) {
+			return false;
+		}
+		Signature that_ = (Signature) that;
+		if (!this.name.equals(that_.name)) {
+			return false;
+		}
+		if ((this.argTypes == null && that_.argTypes != null) || (this.argTypes != null && that_.argTypes == null)) {
+			return false;
+		}
+		if (this.argTypes != null) {
+			if (this.argTypes.length != that_.argTypes.length) {
+				return false;
+			}
+			for (int i = 0; i < this.argTypes.length; i++) {
+				if (!this.argTypes[i].equals(that_.argTypes[i])) {
+					return false;
+				}
+			}
+		}
+		if (this.returnType == null) {
+			return that_.returnType == null;
+		}
+		return this.returnType.equals(that_.returnType);
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 37 ^ name.hashCode();
+		if (argTypes != null) {
+			for (Class<?> c : argTypes) {
+				hash ^= c.hashCode();
+			}
+		}
+		if (returnType != null) {
+			hash ^= returnType.hashCode();
+		}
+		return hash;
 	}
 }

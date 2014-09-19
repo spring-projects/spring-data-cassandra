@@ -75,7 +75,7 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTest extends
 		assertNull(t.selectOneById(SinglePkc.class, id));
 	}
 
-	public interface SinglePkcId extends MapId {
+	public interface SinglePkcId {
 		SinglePkcId key(String key);
 
 		String key();
@@ -149,7 +149,7 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTest extends
 		assertNull(t.selectOneById(MultiPkc.class, id));
 	}
 
-	public interface MultiPkcId extends MapId {
+	public interface MultiPkcId {
 		MultiPkcId key0(String key0);
 
 		String key0();
