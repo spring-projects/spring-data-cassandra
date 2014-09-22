@@ -22,7 +22,7 @@ import com.datastax.driver.core.ResultSetFuture;
  * 
  * @author Matthew T. Adams
  */
-class BasicQueryCancellor implements QueryCancellor {
+public class BasicQueryCancellor implements QueryCancellor {
 
 	ResultSetFuture rsf;
 
