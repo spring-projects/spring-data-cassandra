@@ -43,8 +43,8 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 
 		cql.append("CREATE").append(spec().isCustom() ? " CUSTOM" : "").append(" INDEX ")
 				.append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
-				.append(spec().getName() == null ? "" : spec().getName()).append(" ON ")
-				.append(spec().getTableName()).append(" (").append(spec().getColumnName()).append(")");
+				.append(spec().getName() == null ? "" : spec().getName()).append(" ON ").append(spec().getTableName())
+				.append(" (").append(spec().getColumnName()).append(")");
 
 		if (spec().isCustom()) {
 			cql.append(" USING ").append(spec().getUsing());

@@ -36,7 +36,6 @@ public class CreateIndexCqlGeneratorIntegrationTests {
 	 * Integration test base class that knows how to do everything except instantiate the concrete unit test type T.
 	 * 
 	 * @author Matthew T. Adams
-	 * 
 	 * @param <T> The concrete unit test class to which this integration test corresponds.
 	 */
 	public static abstract class Base<T extends CreateIndexTest> extends AbstractKeyspaceCreatingIntegrationTest {

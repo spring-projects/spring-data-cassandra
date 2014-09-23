@@ -21,7 +21,6 @@ import com.datastax.driver.core.Host;
 
 /**
  * @author David Webb
- * 
  */
 public final class RingMember implements Serializable {
 

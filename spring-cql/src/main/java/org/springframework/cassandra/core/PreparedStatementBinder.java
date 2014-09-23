@@ -21,7 +21,6 @@ import com.datastax.driver.core.exceptions.DriverException;
 
 /**
  * @author David Webb
- * 
  */
 public interface PreparedStatementBinder {
 

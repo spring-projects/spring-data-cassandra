@@ -25,7 +25,6 @@ import org.springframework.beans.factory.FactoryBean;
  * 
  * @author David Webb
  * @param <T>
- * 
  */
 public class MultiLevelListFlattenerFactoryBean<T> implements FactoryBean<List<T>> {
 

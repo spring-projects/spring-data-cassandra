@@ -12,8 +12,7 @@ public class ForceQuotedCompositePrimaryKeyRepositoryJavaConfigIntegrationTests 
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = ImplicitRepository.class)
-	public static class Config extends IntegrationTestConfig {
-	}
+	public static class Config extends IntegrationTestConfig {}
 
 	@Test
 	public void testExplicit() {

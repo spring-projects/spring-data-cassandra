@@ -42,8 +42,7 @@ public class CommentKey implements Serializable {
 	 * @deprecated Only for use by persistence infrastructure
 	 */
 	@Deprecated
-	protected CommentKey() {
-	}
+	protected CommentKey() {}
 
 	public CommentKey(String author, String company) {
 		setAuthor(author);

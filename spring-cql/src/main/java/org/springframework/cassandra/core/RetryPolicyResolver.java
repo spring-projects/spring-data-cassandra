@@ -23,15 +23,13 @@ import com.datastax.driver.core.policies.FallthroughRetryPolicy;
  * Determine driver query retry policy
  * 
  * @author David Webb
- * 
  */
 public final class RetryPolicyResolver {
 
 	/**
 	 * No instances allowed
 	 */
-	private RetryPolicyResolver() {
-	}
+	private RetryPolicyResolver() {}
 
 	/**
 	 * Decode the generic spring data cassandra enum to the type required by the DataStax Driver.
@@ -47,18 +45,18 @@ public final class RetryPolicyResolver {
 		 * Determine the driver level based on our enum
 		 */
 		switch (policy) {
-		case DEFAULT:
-			resolvedPolicy = DefaultRetryPolicy.INSTANCE;
-			break;
-		case DOWNGRADING_CONSISTENCY:
-			resolvedPolicy = DowngradingConsistencyRetryPolicy.INSTANCE;
-			break;
-		case FALLTHROUGH:
-			resolvedPolicy = FallthroughRetryPolicy.INSTANCE;
-			break;
-		default:
-			resolvedPolicy = DefaultRetryPolicy.INSTANCE;
-			break;
+			case DEFAULT:
+				resolvedPolicy = DefaultRetryPolicy.INSTANCE;
+				break;
+			case DOWNGRADING_CONSISTENCY:
+				resolvedPolicy = DowngradingConsistencyRetryPolicy.INSTANCE;
+				break;
+			case FALLTHROUGH:
+				resolvedPolicy = FallthroughRetryPolicy.INSTANCE;
+				break;
+			default:
+				resolvedPolicy = DefaultRetryPolicy.INSTANCE;
+				break;
 		}
 
 		return resolvedPolicy;

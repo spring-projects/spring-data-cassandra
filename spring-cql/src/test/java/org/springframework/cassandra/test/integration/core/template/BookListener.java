@@ -15,9 +15,8 @@
  */
 package org.springframework.cassandra.test.integration.core.template;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.AsynchronousQueryListener;
+import org.springframework.cassandra.test.unit.support.TestListener;
 
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
@@ -26,18 +25,17 @@ import com.datastax.driver.core.Row;
  * Test Implementation of the {@link AsynchronousQueryListener}
  * 
  * @author David Webb
- * 
+ * @author Matthew T. Adams
  */
-public class BookListener implements AsynchronousQueryListener {
-
-	private static Logger log = LoggerFactory.getLogger(BookListener.class);
+public class BookListener extends TestListener implements AsynchronousQueryListener {
 
 	private Book book;
 	private boolean done;
 
 	@Override
 	public void onQueryComplete(ResultSetFuture rsf) {
-		log.info("QueryCompleted");
+		countDown();
+
 		Row row;
 		try {
 			row = rsf.get().one();
@@ -51,8 +49,6 @@ public class BookListener implements AsynchronousQueryListener {
 		book.setPages(row.getInt("pages"));
 
 		done = true;
-		log.info("DONE");
-
 	}
 
 	/**

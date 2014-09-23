@@ -19,7 +19,6 @@ package org.springframework.cassandra.test.integration.core.template;
  * Test POJO
  * 
  * @author David Webb
- * 
  */
 public class Book {
 

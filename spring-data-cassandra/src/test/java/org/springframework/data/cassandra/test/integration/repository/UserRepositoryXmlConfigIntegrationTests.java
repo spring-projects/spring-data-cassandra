@@ -23,5 +23,4 @@ import org.springframework.test.context.ContextConfiguration;
  * @author Matthew T. Adams
  */
 @ContextConfiguration
-public class UserRepositoryXmlConfigIntegrationTests extends UserRepositoryIntegrationTestsDelegator {
-}
+public class UserRepositoryXmlConfigIntegrationTests extends UserRepositoryIntegrationTestsDelegator {}

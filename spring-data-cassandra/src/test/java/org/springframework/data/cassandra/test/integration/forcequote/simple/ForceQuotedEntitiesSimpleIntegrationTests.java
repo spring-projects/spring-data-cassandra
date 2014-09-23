@@ -19,8 +19,7 @@ public class ForceQuotedEntitiesSimpleIntegrationTests {
 	}
 
 	@Table(forceQuote = true)
-	public static class ImplicitTableNameForceQuoted {
-	}
+	public static class ImplicitTableNameForceQuoted {}
 
 	public static final String EXPLICIT_TABLE_NAME = "Xx";
 
@@ -34,8 +33,7 @@ public class ForceQuotedEntitiesSimpleIntegrationTests {
 	}
 
 	@Table(value = EXPLICIT_TABLE_NAME, forceQuote = true)
-	public static class ExplicitTableNameForceQuoted {
-	}
+	public static class ExplicitTableNameForceQuoted {}
 
 	@Test
 	public void testDefaultTableNameForceQuoted() {
@@ -47,6 +45,5 @@ public class ForceQuotedEntitiesSimpleIntegrationTests {
 	}
 
 	@Table
-	public static class DefaultTableNameForceQuoted {
-	}
+	public static class DefaultTableNameForceQuoted {}
 }

@@ -51,13 +51,12 @@ import com.datastax.driver.core.Session;
  * when creating a default definition for the {@link CassandraConverter}.
  * <p/>
  * If a single definition of a required type is present, then it is used. For example, if there is already a
- * {@link CassandraMappingContext} definition present, then it will be used in the
- * {@link BasicCassandraMappingContext} bean definition.
+ * {@link CassandraMappingContext} definition present, then it will be used in the {@link BasicCassandraMappingContext}
+ * bean definition.
  * <p/>
- * It requires that a single {@link Session} or {@link CassandraSessionFactoryBean} definition be present. As
- * described above, multiple {@link Session} definitions, multiple {@link CassandraSessionFactoryBean} definitions,
- * or both a {@link Session} and {@link CassandraSessionFactoryBean} will cause an {@link IllegalStateException} to
- * be thrown.
+ * It requires that a single {@link Session} or {@link CassandraSessionFactoryBean} definition be present. As described
+ * above, multiple {@link Session} definitions, multiple {@link CassandraSessionFactoryBean} definitions, or both a
+ * {@link Session} and {@link CassandraSessionFactoryBean} will cause an {@link IllegalStateException} to be thrown.
  * 
  * @author Matthew T. Adams
  */
@@ -67,8 +66,7 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanDefinitionR
 	 * Does nothing.
 	 */
 	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-	}
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {}
 
 	/**
 	 * Ensures that {@link BeanDefinition}s for a {@link CassandraMappingContext} and a {@link CassandraConverter} exist.

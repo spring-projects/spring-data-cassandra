@@ -31,8 +31,7 @@ public class CommentRepositoryIntegrationTests {
 	CommentRepository repository;
 	CassandraOperations template;
 
-	public CommentRepositoryIntegrationTests() {
-	}
+	public CommentRepositoryIntegrationTests() {}
 
 	public CommentRepositoryIntegrationTests(CommentRepository repository, CassandraOperations template) {
 		this.repository = repository;

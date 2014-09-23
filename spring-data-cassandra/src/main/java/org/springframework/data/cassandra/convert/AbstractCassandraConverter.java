@@ -54,6 +54,5 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 	}
 
 	@Override
-	public void afterPropertiesSet() {
-	}
+	public void afterPropertiesSet() {}
 }

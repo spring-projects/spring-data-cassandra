@@ -167,22 +167,22 @@ class CassandraQueryCreator extends AbstractQueryCreator<Select, Clause> {
 		//
 		// return isSimpleComparisionPossible(part) ? criteria.ne(parameters.nextConverted(property))
 		// : createLikeRegexCriteriaOrThrow(part, property, criteria, parameters, true);
-		default:
-			throw new UnsupportedCassandraQueryOperatorException(String.format(""));
+			default:
+				throw new UnsupportedCassandraQueryOperatorException(String.format(""));
 		}
 	}
 
 	private boolean isSimpleComparisionPossible(Part part) {
 
 		switch (part.shouldIgnoreCase()) {
-		case NEVER:
-			return true;
-		case WHEN_POSSIBLE:
-			return part.getProperty().getType() != String.class;
-		case ALWAYS:
-			return false;
-		default:
-			return true;
+			case NEVER:
+				return true;
+			case WHEN_POSSIBLE:
+				return part.getProperty().getType() != String.class;
+			case ALWAYS:
+				return false;
+			default:
+				return true;
 		}
 	}
 

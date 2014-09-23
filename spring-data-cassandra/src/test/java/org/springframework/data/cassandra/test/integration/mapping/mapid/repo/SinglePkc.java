@@ -19,8 +19,7 @@ public class SinglePkc {
 	 */
 	@Deprecated
 	@SuppressWarnings("unused")
-	private SinglePkc() {
-	}
+	private SinglePkc() {}
 
 	public SinglePkc(String key) {
 		setKey(key);

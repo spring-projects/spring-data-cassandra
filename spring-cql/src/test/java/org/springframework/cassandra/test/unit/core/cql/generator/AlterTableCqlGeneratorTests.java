@@ -57,8 +57,7 @@ public class AlterTableCqlGeneratorTests {
 	 * Convenient base class that other test classes can use so as not to repeat the generics declarations.
 	 */
 	public static abstract class AlterTableTest extends
-			TableOperationCqlGeneratorTest<AlterTableSpecification, AlterTableCqlGenerator> {
-	}
+			TableOperationCqlGeneratorTest<AlterTableSpecification, AlterTableCqlGenerator> {}
 
 	public static class BasicTest extends AlterTableTest {
 
@@ -95,7 +94,6 @@ public class AlterTableCqlGeneratorTests {
 	 * Fully test all available create table options
 	 * 
 	 * @author David Webb
-	 * 
 	 */
 	public static class MultipleOptionsTest extends AlterTableTest {
 

@@ -23,7 +23,6 @@ import org.springframework.data.repository.core.EntityInformation;
  * Cassandra specific {@link EntityInformation}.
  * 
  * @author Alex Shvid
- * 
  */
 public interface CassandraEntityInformation<T, ID extends Serializable> extends EntityInformation<T, ID>,
 		CassandraEntityMetadata<T> {

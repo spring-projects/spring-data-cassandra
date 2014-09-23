@@ -19,8 +19,7 @@ public class Explicit {
 	String stringValue = UUID.randomUUID().toString();
 
 	@SuppressWarnings("unused")
-	private Explicit() {
-	}
+	private Explicit() {}
 
 	public Explicit(ExplicitKey primaryKey) {
 		setPrimaryKey(primaryKey);

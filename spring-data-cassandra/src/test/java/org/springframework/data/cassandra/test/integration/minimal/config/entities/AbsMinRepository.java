@@ -17,5 +17,4 @@ package org.springframework.data.cassandra.test.integration.minimal.config.entit
 
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 
-public interface AbsMinRepository extends TypedIdCassandraRepository<AbsMin, String> {
-}
+public interface AbsMinRepository extends TypedIdCassandraRepository<AbsMin, String> {}

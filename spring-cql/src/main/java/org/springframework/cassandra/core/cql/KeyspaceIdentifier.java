@@ -15,7 +15,6 @@ import org.springframework.util.Assert;
  * @see #toCql()
  * @see #toCql(StringBuilder)
  * @see #toString()
- * 
  * @author Matthew T. Adams
  */
 public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> {

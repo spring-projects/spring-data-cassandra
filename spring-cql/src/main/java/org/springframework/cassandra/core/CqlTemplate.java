@@ -279,7 +279,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(String cql, Runnable listener) {
+	public Cancellable queryAsynchronously(String cql, Runnable listener) {
 		return queryAsynchronously(cql, listener, new Executor() {
 			@Override
 			public void execute(Runnable command) {
@@ -289,7 +289,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(String cql, AsynchronousQueryListener listener) {
+	public Cancellable queryAsynchronously(String cql, AsynchronousQueryListener listener) {
 		return queryAsynchronously(cql, listener, new Executor() {
 			@Override
 			public void execute(Runnable command) {
@@ -299,7 +299,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(String cql, Runnable listener, QueryOptions options) {
+	public Cancellable queryAsynchronously(String cql, Runnable listener, QueryOptions options) {
 		return queryAsynchronously(cql, listener, options, new Executor() {
 			@Override
 			public void execute(Runnable command) {
@@ -309,7 +309,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options) {
+	public Cancellable queryAsynchronously(String cql, AsynchronousQueryListener listener, QueryOptions options) {
 		return queryAsynchronously(cql, listener, options, new Executor() {
 			@Override
 			public void execute(Runnable command) {
@@ -319,36 +319,36 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(String cql, Runnable listener, Executor executor) {
+	public Cancellable queryAsynchronously(String cql, Runnable listener, Executor executor) {
 		return queryAsynchronously(cql, listener, null, executor);
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor) {
+	public Cancellable queryAsynchronously(String cql, AsynchronousQueryListener listener, Executor executor) {
 		return queryAsynchronously(cql, listener, null, executor);
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(final String cql, final Runnable listener, final QueryOptions options,
+	public Cancellable queryAsynchronously(final String cql, final Runnable listener, final QueryOptions options,
 			final Executor executor) {
-		return execute(new SessionCallback<QueryCancellor>() {
+		return execute(new SessionCallback<Cancellable>() {
 			@Override
-			public QueryCancellor doInSession(Session s) throws DataAccessException {
+			public Cancellable doInSession(Session s) throws DataAccessException {
 				Statement statement = new SimpleStatement(cql);
 				addQueryOptions(statement, options);
 				ResultSetFuture rsf = s.executeAsync(statement);
 				rsf.addListener(listener, executor);
-				return new BasicQueryCancellor(rsf);
+				return new ResultSetFutureCancellable(rsf);
 			}
 		});
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(final String cql, final AsynchronousQueryListener listener,
+	public Cancellable queryAsynchronously(final String cql, final AsynchronousQueryListener listener,
 			final QueryOptions options, final Executor executor) {
-		return execute(new SessionCallback<QueryCancellor>() {
+		return execute(new SessionCallback<Cancellable>() {
 			@Override
-			public QueryCancellor doInSession(Session s) throws DataAccessException {
+			public Cancellable doInSession(Session s) throws DataAccessException {
 				Statement statement = new SimpleStatement(cql);
 				addQueryOptions(statement, options);
 				final ResultSetFuture rsf = s.executeAsync(statement);
@@ -359,7 +359,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 					}
 				};
 				rsf.addListener(wrapper, executor);
-				return new BasicQueryCancellor(rsf);
+				return new ResultSetFutureCancellable(rsf);
 			}
 		});
 	}
@@ -518,6 +518,48 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		});
 	}
 
+	protected Cancellable doExecuteAsync(final Statement q, final AsynchronousQueryListener listener) {
+		return doExecuteAsync(q, listener, null);
+	}
+
+	protected Cancellable doExecuteAsync(final Statement q, final AsynchronousQueryListener listener,
+			final QueryOptions options) {
+
+		return doExecute(new SessionCallback<Cancellable>() {
+
+			@Override
+			public Cancellable doInSession(Session s) throws DataAccessException {
+
+				if (log.isDebugEnabled()) {
+					log.debug("asynchronously executing [{}]", q.toString());
+				}
+
+				if (options != null) {
+					addQueryOptions(q, options);
+				}
+
+				final ResultSetFuture rsf = s.executeAsync(q);
+
+				if (listener != null) {
+					rsf.addListener(new Runnable() {
+
+						@Override
+						public void run() {
+							listener.onQueryComplete(rsf);
+						}
+					}, new Executor() {
+
+						@Override
+						public void execute(Runnable command) {
+							command.run();
+						}
+					});
+				}
+				return new ResultSetFutureCancellable(rsf);
+			}
+		});
+	}
+
 	/**
 	 * @param row
 	 * @return
@@ -588,7 +630,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor executeAsynchronously(String cql, Runnable listener) throws DataAccessException {
+	public Cancellable executeAsynchronously(String cql, Runnable listener) throws DataAccessException {
 		return executeAsynchronously(cql, listener, new Executor() {
 			@Override
 			public void execute(Runnable command) {
@@ -598,23 +640,22 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor executeAsynchronously(final String cql, final Runnable listener, final Executor executor)
+	public Cancellable executeAsynchronously(final String cql, final Runnable listener, final Executor executor)
 			throws DataAccessException {
 
-		return execute(new SessionCallback<QueryCancellor>() {
+		return execute(new SessionCallback<Cancellable>() {
 			@Override
-			public QueryCancellor doInSession(Session s) throws DataAccessException {
+			public Cancellable doInSession(Session s) throws DataAccessException {
 				Statement statement = new SimpleStatement(cql);
 				final ResultSetFuture rsf = s.executeAsync(statement);
 				rsf.addListener(listener, executor);
-				return new BasicQueryCancellor(rsf);
+				return new ResultSetFutureCancellable(rsf);
 			}
 		});
 	}
 
 	@Override
-	public QueryCancellor executeAsynchronously(String cql, AsynchronousQueryListener listener)
-			throws DataAccessException {
+	public Cancellable executeAsynchronously(String cql, AsynchronousQueryListener listener) throws DataAccessException {
 
 		return executeAsynchronously(cql, listener, new Executor() {
 			@Override
@@ -625,12 +666,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor executeAsynchronously(final String cql, final AsynchronousQueryListener listener,
+	public Cancellable executeAsynchronously(final String cql, final AsynchronousQueryListener listener,
 			final Executor executor) throws DataAccessException {
 
-		return execute(new SessionCallback<QueryCancellor>() {
+		return execute(new SessionCallback<Cancellable>() {
 			@Override
-			public QueryCancellor doInSession(Session s) throws DataAccessException {
+			public Cancellable doInSession(Session s) throws DataAccessException {
 				Statement statement = new SimpleStatement(cql);
 				final ResultSetFuture rsf = s.executeAsync(statement);
 				Runnable wrapper = new Runnable() {
@@ -640,7 +681,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 					}
 				};
 				rsf.addListener(wrapper, executor);
-				return new BasicQueryCancellor(rsf);
+				return new ResultSetFutureCancellable(rsf);
 			}
 		});
 	}
@@ -651,7 +692,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor executeAsynchronously(Statement query, Runnable listener) throws DataAccessException {
+	public Cancellable executeAsynchronously(Statement query, Runnable listener) throws DataAccessException {
 		return executeAsynchronously(query, listener, new Executor() {
 			@Override
 			public void execute(Runnable command) {
@@ -661,7 +702,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor executeAsynchronously(Statement query, AsynchronousQueryListener listener)
+	public Cancellable executeAsynchronously(Statement query, AsynchronousQueryListener listener)
 			throws DataAccessException {
 		return executeAsynchronously(query, listener, new Executor() {
 			@Override
@@ -672,34 +713,36 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor executeAsynchronously(final Statement query, final Runnable listener, final Executor executor)
+	public Cancellable executeAsynchronously(final Statement query, final Runnable listener, final Executor executor)
 			throws DataAccessException {
-		return execute(new SessionCallback<QueryCancellor>() {
+		return execute(new SessionCallback<Cancellable>() {
 			@Override
-			public QueryCancellor doInSession(Session s) throws DataAccessException {
+			public Cancellable doInSession(Session s) throws DataAccessException {
 				final ResultSetFuture rsf = s.executeAsync(query);
 				rsf.addListener(listener, executor);
-				return new BasicQueryCancellor(rsf);
+				return new ResultSetFutureCancellable(rsf);
 			}
 		});
 	}
 
 	@Override
-	public QueryCancellor executeAsynchronously(final Statement query, final AsynchronousQueryListener listener,
+	public Cancellable executeAsynchronously(final Statement query, final AsynchronousQueryListener listener,
 			final Executor executor) throws DataAccessException {
 
-		return execute(new SessionCallback<QueryCancellor>() {
+		return execute(new SessionCallback<Cancellable>() {
 			@Override
-			public QueryCancellor doInSession(Session s) throws DataAccessException {
+			public Cancellable doInSession(Session s) throws DataAccessException {
 				final ResultSetFuture rsf = s.executeAsync(query);
-				Runnable wrapper = new Runnable() {
-					@Override
-					public void run() {
-						listener.onQueryComplete(rsf);
-					}
-				};
-				rsf.addListener(wrapper, executor);
-				return new BasicQueryCancellor(rsf);
+				if (listener != null) {
+					Runnable wrapper = new Runnable() {
+						@Override
+						public void run() {
+							listener.onQueryComplete(rsf);
+						}
+					};
+					rsf.addListener(wrapper, executor);
+				}
+				return new ResultSetFutureCancellable(rsf);
 			}
 		});
 	}
@@ -1232,6 +1275,35 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
+	public Cancellable executeAsynchronously(Truncate truncate, AsynchronousQueryListener listener)
+			throws DataAccessException {
+		return doExecuteAsync(truncate, listener);
+	}
+
+	@Override
+	public Cancellable executeAsynchronously(Delete delete, AsynchronousQueryListener listener)
+			throws DataAccessException {
+		return doExecuteAsync(delete, listener);
+	}
+
+	@Override
+	public Cancellable executeAsynchronously(Insert insert, AsynchronousQueryListener listener)
+			throws DataAccessException {
+		return doExecuteAsync(insert, listener);
+	}
+
+	@Override
+	public Cancellable executeAsynchronously(Update update, AsynchronousQueryListener listener)
+			throws DataAccessException {
+		return doExecuteAsync(update, listener);
+	}
+
+	@Override
+	public Cancellable executeAsynchronously(Batch batch, AsynchronousQueryListener listener) throws DataAccessException {
+		return doExecuteAsync(batch, listener);
+	}
+
+	@Override
 	public ResultSetFuture queryAsynchronously(final Select select) {
 		return execute(new SessionCallback<ResultSetFuture>() {
 			@Override
@@ -1242,7 +1314,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(Select select, Runnable listener) {
+	public Cancellable queryAsynchronously(Select select, Runnable listener) {
 		return queryAsynchronously(select, listener, new Executor() {
 			@Override
 			public void execute(Runnable command) {
@@ -1252,7 +1324,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(Select select, AsynchronousQueryListener listener) {
+	public Cancellable queryAsynchronously(Select select, AsynchronousQueryListener listener) {
 		return queryAsynchronously(select, listener, new Executor() {
 			@Override
 			public void execute(Runnable command) {
@@ -1262,12 +1334,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(final Select select, final AsynchronousQueryListener listener,
+	public Cancellable queryAsynchronously(final Select select, final AsynchronousQueryListener listener,
 			final Executor executor) {
 
-		return execute(new SessionCallback<QueryCancellor>() {
+		return execute(new SessionCallback<Cancellable>() {
 			@Override
-			public QueryCancellor doInSession(Session s) throws DataAccessException {
+			public Cancellable doInSession(Session s) throws DataAccessException {
 				final ResultSetFuture rsf = s.executeAsync(select);
 				Runnable wrapper = new Runnable() {
 					@Override
@@ -1276,19 +1348,19 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 					}
 				};
 				rsf.addListener(wrapper, executor);
-				return new BasicQueryCancellor(rsf);
+				return new ResultSetFutureCancellable(rsf);
 			}
 		});
 	}
 
 	@Override
-	public QueryCancellor queryAsynchronously(final Select select, final Runnable listener, final Executor executor) {
-		return execute(new SessionCallback<QueryCancellor>() {
+	public Cancellable queryAsynchronously(final Select select, final Runnable listener, final Executor executor) {
+		return execute(new SessionCallback<Cancellable>() {
 			@Override
-			public QueryCancellor doInSession(Session s) throws DataAccessException {
+			public Cancellable doInSession(Session s) throws DataAccessException {
 				ResultSetFuture rsf = s.executeAsync(select);
 				rsf.addListener(listener, executor);
-				return new BasicQueryCancellor(rsf);
+				return new ResultSetFutureCancellable(rsf);
 			}
 		});
 	}
@@ -1345,4 +1417,224 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return processListOfMap(doExecute(select));
 	}
 
+	@Override
+	public <T> Cancellable queryForListAsynchronously(Select select, final Class<T> elementType,
+			final QueryForListListener<T> listener) throws DataAccessException {
+
+		Assert.notNull(select);
+		Assert.notNull(elementType);
+		Assert.notNull(listener);
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processList(rsf.getUninterruptibly(), elementType));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public <T> Cancellable queryForListAsynchronously(String select, final Class<T> elementType,
+			final QueryForListListener<T> listener) throws DataAccessException {
+
+		Assert.hasText(select);
+		Assert.notNull(elementType);
+		Assert.notNull(listener);
+
+		return doExecuteAsync(new SimpleStatement(select), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processList(rsf.getUninterruptibly(), elementType));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public Cancellable queryForListOfMapAsynchronously(Select select,
+			final QueryForListListener<Map<String, Object>> listener) throws DataAccessException {
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processListOfMap(rsf.getUninterruptibly()));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public Cancellable queryForListOfMapAsynchronously(String cql,
+			final QueryForListListener<Map<String, Object>> listener) throws DataAccessException {
+		return queryForListOfMapAsynchronously(cql, listener, null);
+	}
+
+	@Override
+	public Cancellable queryForListOfMapAsynchronously(String cql,
+			final QueryForListListener<Map<String, Object>> listener, QueryOptions options) throws DataAccessException {
+
+		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processListOfMap(rsf.getUninterruptibly()));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		}, options);
+	}
+
+	@Override
+	public Cancellable queryForMapAsynchronously(String cql, QueryForMapListener listener) throws DataAccessException {
+		return queryForMapAsynchronously(cql, listener, null);
+	}
+
+	@Override
+	public Cancellable queryForMapAsynchronously(String cql, final QueryForMapListener listener,
+			final QueryOptions options) throws DataAccessException {
+
+		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processMap(rsf.getUninterruptibly()));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		}, options);
+	}
+
+	@Override
+	public Cancellable queryForMapAsynchronously(Select select, final QueryForMapListener listener)
+			throws DataAccessException {
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processMap(rsf.getUninterruptibly()));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public <T> Cancellable queryForObjectAsynchronously(Select select, final Class<T> requiredType,
+			final QueryForObjectListener<T> listener) throws DataAccessException {
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processOne(rsf.getUninterruptibly(), requiredType));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public <T> Cancellable queryForObjectAsynchronously(String cql, Class<T> requiredType,
+			QueryForObjectListener<T> listener) throws DataAccessException {
+		return queryForObjectAsynchronously(cql, requiredType, listener, null);
+	}
+
+	@Override
+	public <T> Cancellable queryForObjectAsynchronously(String cql, final Class<T> requiredType,
+			final QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException {
+
+		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processOne(rsf.getUninterruptibly(), requiredType));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		}, options);
+	}
+
+	@Override
+	public <T> Cancellable queryForObjectAsynchronously(String cql, RowMapper<T> rowMapper,
+			QueryForObjectListener<T> listener) throws DataAccessException {
+		return queryForObjectAsynchronously(cql, rowMapper, listener, null);
+	}
+
+	@Override
+	public <T> Cancellable queryForObjectAsynchronously(String cql, final RowMapper<T> rowMapper,
+			final QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException {
+
+		return doExecuteAsync(new SimpleStatement(cql), new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processOne(rsf.getUninterruptibly(), rowMapper));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		}, options);
+	}
+
+	@Override
+	public <T> Cancellable queryForObjectAsynchronously(Select select, final RowMapper<T> rowMapper,
+			final QueryForObjectListener<T> listener) throws DataAccessException {
+
+		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
+			@Override
+			public void onQueryComplete(ResultSetFuture rsf) {
+				try {
+					listener.onQueryComplete(processOne(rsf.getUninterruptibly(), rowMapper));
+				} catch (Exception e) {
+					listener.onException(translateExceptionIfPossible(e));
+				}
+			}
+		});
+	}
+
+	@Override
+	public ResultSet getResultSetUninterruptibly(ResultSetFuture rsf) {
+		return getResultSetUninterruptibly(rsf, 0, null);
+	}
+
+	@Override
+	public ResultSet getResultSetUninterruptibly(ResultSetFuture rsf, long millis) {
+		return getResultSetUninterruptibly(rsf, millis, TimeUnit.MILLISECONDS);
+	}
+
+	@Override
+	public ResultSet getResultSetUninterruptibly(ResultSetFuture rsf, long timeout, TimeUnit unit) {
+		try {
+			return timeout <= 0 ? rsf.getUninterruptibly() : rsf.getUninterruptibly(timeout,
+					unit == null ? TimeUnit.MILLISECONDS : unit);
+		} catch (Exception x) {
+			throw translateExceptionIfPossible(x);
+		}
+	}
 }

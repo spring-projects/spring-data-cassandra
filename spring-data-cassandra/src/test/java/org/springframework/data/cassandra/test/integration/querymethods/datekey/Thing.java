@@ -13,8 +13,7 @@ public class Thing {
 	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 	private Date date;
 
-	protected Thing() {
-	}
+	protected Thing() {}
 
 	public Thing(Date date) {
 		setDate(date);

@@ -24,7 +24,6 @@ import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * {@link RepositoryQuery} implementation for Cassandra.
- * 
  */
 public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 

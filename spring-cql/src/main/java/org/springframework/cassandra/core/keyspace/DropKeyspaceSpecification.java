@@ -45,8 +45,7 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification<DropK
 
 	private boolean ifExists;
 
-	public DropKeyspaceSpecification() {
-	}
+	public DropKeyspaceSpecification() {}
 
 	public DropKeyspaceSpecification(String name) {
 		name(name);

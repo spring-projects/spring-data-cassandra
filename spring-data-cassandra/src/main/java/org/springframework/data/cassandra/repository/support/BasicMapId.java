@@ -52,8 +52,7 @@ public class BasicMapId implements MapId {
 
 	protected Map<String, Serializable> map = new HashMap<String, Serializable>();
 
-	public BasicMapId() {
-	}
+	public BasicMapId() {}
 
 	public BasicMapId(Map<String, Serializable> map) {
 

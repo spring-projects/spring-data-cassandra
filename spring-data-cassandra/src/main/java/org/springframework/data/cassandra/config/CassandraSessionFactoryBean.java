@@ -56,17 +56,17 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 
 		switch (schemaAction) {
 
-		case NONE:
-			return;
+			case NONE:
+				return;
 
-		case RECREATE_DROP_UNUSED:
-			dropUnused = true;
-			// don't break!
-		case RECREATE:
-			dropTables = true;
-			// don't break!
-		case CREATE:
-			createTables(dropTables, dropUnused);
+			case RECREATE_DROP_UNUSED:
+				dropUnused = true;
+				// don't break!
+			case RECREATE:
+				dropTables = true;
+				// don't break!
+			case CREATE:
+				createTables(dropTables, dropUnused);
 		}
 	}
 

@@ -35,13 +35,11 @@ import org.springframework.cassandra.core.keyspace.Option;
 import org.springframework.util.Assert;
 
 /**
- * A single keyspace XML Element can result in multiple actions. Example: {@literal CREATE_DROP}.
- * 
- * This FactoryBean inspects the action required to satisfy the keyspace element, and then returns a Set of atomic
+ * A single keyspace XML Element can result in multiple actions. Example: {@literal CREATE_DROP}. This FactoryBean
+ * inspects the action required to satisfy the keyspace element, and then returns a Set of atomic
  * {@link KeyspaceActionSpecification} required to satisfy the configuration action.
  * 
  * @author David Webb
- * 
  */
 public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<KeyspaceActionSpecification<?>>>,
 		InitializingBean, DisposableBean {
@@ -74,14 +72,14 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 		Assert.notNull(action, "Keyspace Action is required for a Keyspace Action");
 
 		switch (action) {
-		case CREATE_DROP:
-			specs.add(generateDropKeyspaceSpecification());
-		case CREATE:
-			// Assert.notNull(replicationStrategy, "Replication Strategy is required to create a Keyspace");
-			specs.add(generateCreateKeyspaceSpecification());
-			break;
-		case ALTER:
-			break;
+			case CREATE_DROP:
+				specs.add(generateDropKeyspaceSpecification());
+			case CREATE:
+				// Assert.notNull(replicationStrategy, "Replication Strategy is required to create a Keyspace");
+				specs.add(generateCreateKeyspaceSpecification());
+				break;
+			case ALTER:
+				break;
 		}
 
 	}

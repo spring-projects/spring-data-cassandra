@@ -23,10 +23,8 @@ import org.springframework.data.cassandra.mapping.Table;
 
 /**
  * This is an example of the Users status table, where all fields are columns in Cassandra row. Some fields can be
- * Set,List,Map like emails.
- * 
- * User contains base information related for separate user, like names, additional information, emails, following
- * users, friends.
+ * Set,List,Map like emails. User contains base information related for separate user, like names, additional
+ * information, emails, following users, friends.
  * 
  * @author Alex Shvid
  */

@@ -15,8 +15,7 @@ public class ResultSetToListConverter implements Converter<ResultSet, List<Map<S
 
 	protected Converter<Row, Map<String, Object>> rowConverter = new RowToMapConverter();
 
-	public ResultSetToListConverter() {
-	}
+	public ResultSetToListConverter() {}
 
 	public ResultSetToListConverter(Converter<Row, Map<String, Object>> rowConverter) {
 		setRowConverter(rowConverter);

@@ -20,7 +20,10 @@ package org.springframework.cassandra.core;
  * 
  * @author Matthew T. Adams
  */
-public interface QueryCancellor {
+public interface Cancellable {
 
-	void cancelQuery(boolean mayInterruptIfRunning);
+	/**
+	 * Cancels the query operation that this cancellable came from.
+	 */
+	void cancel();
 }

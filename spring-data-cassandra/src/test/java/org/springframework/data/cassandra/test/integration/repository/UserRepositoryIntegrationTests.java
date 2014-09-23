@@ -48,8 +48,7 @@ public class UserRepositoryIntegrationTests {
 
 	List<User> all;
 
-	public UserRepositoryIntegrationTests() {
-	}
+	public UserRepositoryIntegrationTests() {}
 
 	public UserRepositoryIntegrationTests(UserRepository repository, CassandraOperations template) {
 		this.repository = repository;

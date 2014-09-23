@@ -27,10 +27,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration
 public class XmlEntityScanningIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-	@Autowired ScannedEntityRepository repository;
-	@Autowired AnotherScannedEntityRepository anotherRepository;
+	@Autowired
+	ScannedEntityRepository repository;
+	@Autowired
+	AnotherScannedEntityRepository anotherRepository;
 
-	@Autowired CassandraOperations template;
+	@Autowired
+	CassandraOperations template;
 
 	@Test
 	public void testInsertScannedEntity() {

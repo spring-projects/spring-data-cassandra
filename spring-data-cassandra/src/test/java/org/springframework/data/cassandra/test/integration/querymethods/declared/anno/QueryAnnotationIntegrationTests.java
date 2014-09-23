@@ -10,6 +10,5 @@ public class QueryAnnotationIntegrationTests extends QueryIntegrationTests {
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = PersonRepositoryWithQueryAnnotations.class)
-	public static class Config extends QueryIntegrationTests.Config {
-	}
+	public static class Config extends QueryIntegrationTests.Config {}
 }

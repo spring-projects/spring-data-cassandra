@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.core;
 import java.util.List;
 
 import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.cassandra.core.Cancellable;
+import org.springframework.cassandra.core.QueryForObjectListener;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -73,6 +75,46 @@ public interface CassandraOperations extends CqlOperations {
 	<T> T selectOne(String cql, Class<T> type);
 
 	/**
+	 * Executes the {@link Select} query asynchronously.
+	 * 
+	 * @param select The {@link Select} query to execute.
+	 * @param type The type of entity to retrieve.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
+	 */
+	<T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener);
+
+	/**
+	 * Executes the string CQL query asynchronously.
+	 * 
+	 * @param select The string query CQL to execute.
+	 * @param type The type of entity to retrieve.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
+	 */
+	<T> Cancellable selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener);
+
+	/**
+	 * Executes the {@link Select} query asynchronously.
+	 * 
+	 * @param select The {@link Select} query to execute.
+	 * @param type The type of entity to retrieve.
+	 * @param options The {@link QueryOptions} to use.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
+	 */
+	<T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener,
+			QueryOptions options);
+
+	/**
+	 * Executes the string CQL query asynchronously.
+	 * 
+	 * @param select The string query CQL to execute.
+	 * @param type The type of entity to retrieve.
+	 * @param options The {@link QueryOptions} to use.
+	 * @return A {@link Cancellable} that can be used to cancel the query.
+	 */
+	<T> Cancellable selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener,
+			QueryOptions options);
+
+	/**
 	 * Execute Select query and convert ResultSet to the entity
 	 * 
 	 * @param query must not be {@literal null}.
@@ -86,125 +128,244 @@ public interface CassandraOperations extends CqlOperations {
 	long count(Class<?> type);
 
 	/**
-	 * Insert the given object to the table by id.
+	 * Insert the given entity.
 	 * 
-	 * @param entity
+	 * @param entity The entity to insert
+	 * @return The entity given
 	 */
 	<T> T insert(T entity);
 
 	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 * @return
+	 * Insert the given entity.
+	 * 
+	 * @param entity The entity to insert
+	 * @param options The {@link WriteOptions} to use.
+	 * @return The entity given
 	 */
 	<T> T insert(T entity, WriteOptions options);
 
 	/**
-	 * Insert the given list of objects to the table by annotation table name.
+	 * Insert the given list of entities.
 	 * 
-	 * @param entities
-	 * @return
+	 * @param entities The entities to insert.
+	 * @return The entities given.
 	 */
 	<T> List<T> insert(List<T> entities);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 * @return
+	 * Insert the given list of entities.
+	 * 
+	 * @param entities The entities to insert.
+	 * @param options The {@link WriteOptions} to use.
+	 * @return The entities given.
 	 */
 	<T> List<T> insert(List<T> entities, WriteOptions options);
 
 	/**
-	 * Insert the given object to the table by id.
+	 * Inserts the given entity asynchronously.
 	 * 
-	 * @param object
+	 * @param entity The entity to insert
+	 * @return The entity given
+	 * @see #insertAsynchronously(Object, WriteListener)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #insertAsynchronously(Object, WriteListener)}.
 	 */
+	@Deprecated
 	<T> T insertAsynchronously(T entity);
 
 	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 * @return
+	 * Inserts the given entity asynchronously.
+	 * 
+	 * @param entity The entity to insert
+	 * @return The entity given
+	 * @see #insertAsynchronously(Object, WriteOptions)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #insertAsynchronously(Object, WriteListener, WriteOptions)}.
 	 */
+	@Deprecated
 	<T> T insertAsynchronously(T entity, WriteOptions options);
 
 	/**
-	 * Insert the given object to the table by id.
+	 * Inserts the given entity asynchronously.
 	 * 
-	 * @param object
+	 * @param entity The entity to insert
+	 * @param listener The listener to receive notification of completion
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
+	<T> Cancellable insertAsynchronously(T entity, WriteListener<T> listener);
+
+	/**
+	 * Inserts the given entity asynchronously.
+	 * 
+	 * @param entity The entity to insert
+	 * @param listener The listener to receive notification of completion
+	 * @param options The {@link WriteOptions} to use
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable insertAsynchronously(T entity, WriteListener<T> listener, WriteOptions options);
+
+	/**
+	 * Inserts the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to insert
+	 * @return The entities given
+	 * @see #insertAsynchronously(List, WriteListener)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #insertAsynchronously(List, WriteListener)}.
+	 */
+	@Deprecated
 	<T> List<T> insertAsynchronously(List<T> entities);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 * @return
+	 * Inserts the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to insert
+	 * @return The entities given
+	 * @see #insertAsynchronously(List, WriteListener, WriteOptions)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #insertAsynchronously(List, WriteListener, WriteOptions)}.
 	 */
+	@Deprecated
 	<T> List<T> insertAsynchronously(List<T> entities, WriteOptions options);
 
 	/**
-	 * Insert the given object to the table by id.
+	 * Inserts the given entities asynchronously in a batch.
 	 * 
-	 * @param object
+	 * @param entity The entities to insert
+	 * @param listener The listener to receive notification of completion
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener);
+
+	/**
+	 * Inserts the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to insert
+	 * @param listener The listener to receive notification of completion
+	 * @param options The {@link WriteOptions} to use
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options);
+
+	/**
+	 * Update the given entity.
+	 * 
+	 * @param entity The entity to update
+	 * @return The entity given
 	 */
 	<T> T update(T entity);
 
 	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 * @return
+	 * Update the given entity.
+	 * 
+	 * @param entity The entity to update
+	 * @param options The {@link WriteOptions} to use.
+	 * @return The entity given
 	 */
 	<T> T update(T entity, WriteOptions options);
 
 	/**
-	 * Insert the given object to the table by id.
+	 * Update the given list of entities.
 	 * 
-	 * @param object
+	 * @param entities The entities to update.
+	 * @return The entities given.
 	 */
 	<T> List<T> update(List<T> entities);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 * @return
+	 * Update the given list of entities.
+	 * 
+	 * @param entities The entities to update.
+	 * @param options The {@link WriteOptions} to use.
+	 * @return The entities given.
 	 */
 	<T> List<T> update(List<T> entities, WriteOptions options);
 
 	/**
-	 * Insert the given object to the table by id.
+	 * Updates the given entity asynchronously.
 	 * 
-	 * @param object
+	 * @param entity The entity to update
+	 * @return The entity given
+	 * @see #updateAsynchronously(Object, WriteListener)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #updateAsynchronously(Object, WriteListener)}.
 	 */
+	@Deprecated
 	<T> T updateAsynchronously(T entity);
 
 	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 * @return
+	 * Updates the given entity asynchronously.
+	 * 
+	 * @param entity The entity to update
+	 * @return The entity given
+	 * @see #updateAsynchronously(Object, WriteOptions)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #updateAsynchronously(Object, WriteListener, WriteOptions)}.
 	 */
+	@Deprecated
 	<T> T updateAsynchronously(T entity, WriteOptions options);
 
 	/**
-	 * Insert the given object to the table by id.
+	 * Updates the given entity asynchronously.
 	 * 
-	 * @param object
+	 * @param entity The entity to update
+	 * @param listener The listener to receive notification of completion
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
+	<T> Cancellable updateAsynchronously(T entity, WriteListener<T> listener);
+
+	/**
+	 * Updates the given entity asynchronously.
+	 * 
+	 * @param entity The entity to update
+	 * @param listener The listener to receive notification of completion
+	 * @param options The {@link WriteOptions} to use
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable updateAsynchronously(T entity, WriteListener<T> listener, WriteOptions options);
+
+	/**
+	 * Updates the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to update
+	 * @return The entities given
+	 * @see #updateAsynchronously(List, WriteListener)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #updateAsynchronously(List, WriteListener)}.
+	 */
+	@Deprecated
 	<T> List<T> updateAsynchronously(List<T> entities);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 * @return
+	 * Updates the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to update
+	 * @return The entities given
+	 * @see #updateAsynchronously(List, WriteListener, WriteOptions)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #updateAsynchronously(List, WriteListener, WriteOptions)}.
 	 */
+	@Deprecated
 	<T> List<T> updateAsynchronously(List<T> entities, WriteOptions options);
+
+	/**
+	 * Updates the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to update
+	 * @param listener The listener to receive notification of completion
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener);
+
+	/**
+	 * Updates the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to update
+	 * @param listener The listener to receive notification of completion
+	 * @param options The {@link WriteOptions} to use
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options);
 
 	/**
 	 * Remove the given object from the table by id.
@@ -227,11 +388,6 @@ public interface CassandraOperations extends CqlOperations {
 	 */
 	<T> void delete(List<T> entities);
 
-	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
-	 */
 	<T> void delete(List<T> entities, QueryOptions options);
 
 	/**
@@ -242,30 +398,66 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Remove the given object from the table by id.
 	 * 
-	 * @param object
+	 * @param entity The object to delete
 	 */
-	<T> void deleteAsynchronously(T entity);
-
-	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 */
-	<T> void deleteAsynchronously(T entity, QueryOptions options);
+	<T> Cancellable deleteAsynchronously(T entity);
 
 	/**
 	 * Remove the given object from the table by id.
 	 * 
-	 * @param object
+	 * @param entity The object to delete
+	 * @param options The {@link QueryOptions} to use
 	 */
-	<T> void deleteAsynchronously(List<T> entities);
+	<T> Cancellable deleteAsynchronously(T entity, QueryOptions options);
 
 	/**
-	 * @param entities
-	 * @param tableName
-	 * @param options
+	 * Remove the given object from the table by id.
+	 * 
+	 * @param entity The object to delete
+	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 */
-	<T> void deleteAsynchronously(List<T> entities, QueryOptions options);
+	<T> Cancellable deleteAsynchronously(T entity, DeletionListener<T> listener);
+
+	/**
+	 * Remove the given object from the table by id.
+	 * 
+	 * @param entity The object to delete
+	 * @param listener The {@link DeletionListener} to receive notification upon completion
+	 * @param options The {@link QueryOptions} to use
+	 */
+	<T> Cancellable deleteAsynchronously(T entity, DeletionListener<T> listener, QueryOptions options);
+
+	/**
+	 * Remove the given objects from the table by id.
+	 * 
+	 * @param entities The objects to delete
+	 */
+	<T> Cancellable deleteAsynchronously(List<T> entities);
+
+	/**
+	 * Remove the given objects from the table by id.
+	 * 
+	 * @param entities The objects to delete
+	 * @param listener The {@link DeletionListener} to receive notification upon completion
+	 */
+	<T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener<T> listener);
+
+	/**
+	 * Remove the given objects from the table by id.
+	 * 
+	 * @param entities The objects to delete
+	 * @param options The {@link QueryOptions} to use
+	 */
+	<T> Cancellable deleteAsynchronously(List<T> entities, QueryOptions options);
+
+	/**
+	 * Remove the given objects from the table by id.
+	 * 
+	 * @param entities The objects to delete
+	 * @param listener The {@link DeletionListener} to receive notification upon completion
+	 * @param options The {@link QueryOptions} to use
+	 */
+	<T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener<T> listener, QueryOptions options);
 
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
@@ -278,5 +470,11 @@ public interface CassandraOperations extends CqlOperations {
 
 	<T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids);
 
+	/**
+	 * @deprecated Calling this method could result in {@link OutOfMemoryError}, as this is a brute force selection.
+	 * @param type The type of entity to select.
+	 * @return A list of all entities of type <code>T</code>.
+	 */
+	@Deprecated
 	<T> List<T> selectAll(Class<T> type);
 }

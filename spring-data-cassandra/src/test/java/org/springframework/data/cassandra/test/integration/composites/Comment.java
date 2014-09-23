@@ -38,8 +38,7 @@ public class Comment {
 	 * @deprecated Only for use by persistence infrastructure
 	 */
 	@Deprecated
-	protected Comment() {
-	}
+	protected Comment() {}
 
 	public Comment(String author, String company) {
 		this(new CommentKey(author, company));

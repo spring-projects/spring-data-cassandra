@@ -23,7 +23,6 @@ import org.springframework.data.cassandra.mapping.Table;
 /**
  * This is an example of the LogEntry static table, where all fields are columns in Cassandra row.
  * 
- * 
  * @author Alex Shvid
  */
 @Table("log_entry")

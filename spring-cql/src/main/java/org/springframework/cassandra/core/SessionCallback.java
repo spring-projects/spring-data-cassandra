@@ -23,7 +23,6 @@ import com.datastax.driver.core.Session;
  * Interface for operations on a Cassandra Session.
  * 
  * @author David Webb
- * 
  * @param <T>
  */
 public interface SessionCallback<T> {

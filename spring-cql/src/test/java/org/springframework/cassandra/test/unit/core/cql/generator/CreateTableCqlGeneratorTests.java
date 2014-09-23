@@ -167,7 +167,6 @@ public class CreateTableCqlGeneratorTests {
 	 * Test just the Read Repair Chance
 	 * 
 	 * @author David Webb
-	 * 
 	 */
 	public static class ReadRepairChanceTest extends CreateTableTest {
 
@@ -203,7 +202,6 @@ public class CreateTableCqlGeneratorTests {
 	 * Fully test all available create table options
 	 * 
 	 * @author David Webb
-	 * 
 	 */
 	public static class MultipleOptionsTest extends CreateTableTest {
 

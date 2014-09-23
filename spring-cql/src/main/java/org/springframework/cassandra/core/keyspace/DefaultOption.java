@@ -96,13 +96,7 @@ public class DefaultOption implements Option {
 			}
 			ctor.newInstance(value.toString());
 			return true;
-		} catch (InstantiationException e) {
-		} catch (IllegalAccessException e) {
-		} catch (IllegalArgumentException e) {
-		} catch (InvocationTargetException e) {
-		} catch (NoSuchMethodException e) {
-		} catch (SecurityException e) {
-		}
+		} catch (InstantiationException e) {} catch (IllegalAccessException e) {} catch (IllegalArgumentException e) {} catch (InvocationTargetException e) {} catch (NoSuchMethodException e) {} catch (SecurityException e) {}
 		return false;
 	}
 

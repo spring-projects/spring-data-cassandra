@@ -21,14 +21,14 @@ import com.datastax.driver.core.ResultSetFuture;
  * Interface used to give an implementation access to a {@link ResultSetFuture} after the query has completed.
  * 
  * @author David Webb
+ * @author Matthew T. Adams
  */
 public interface AsynchronousQueryListener {
 
 	/**
-	 * Called upon Query Completion.
+	 * Called upon query completion.
 	 * 
-	 * @param rsf The {@link ResultSetFuture}. Since this isn't called until the asynchronous query completes, it can be
-	 *          immediately interrogated.
+	 * @param rsf The {@link ResultSetFuture}. Called when the query operation is completed.
 	 */
 	public void onQueryComplete(ResultSetFuture rsf);
 }

@@ -23,7 +23,6 @@ import com.datastax.driver.core.LatencyTracker;
 
 /**
  * @author David Webb
- * 
  */
 public class TestLatencyTracker implements LatencyTracker {
 

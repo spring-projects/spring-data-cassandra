@@ -88,8 +88,7 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractSpringDataEmb
 		 */
 		@Deprecated
 		@SuppressWarnings("unused")
-		private SinglePkc() {
-		}
+		private SinglePkc() {}
 
 		public SinglePkc(String key) {
 			setKey(key);
@@ -160,8 +159,7 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractSpringDataEmb
 		 */
 		@Deprecated
 		@SuppressWarnings("unused")
-		private MultiPkc() {
-		}
+		private MultiPkc() {}
 
 		public MultiPkc(String key0, String key1) {
 			setKey0(key0);

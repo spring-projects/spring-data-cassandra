@@ -23,13 +23,11 @@ import com.datastax.driver.core.exceptions.DriverException;
 
 /**
  * This Prepared Statement Creator simply prepares a statement from the CQL string. This should not be used in
- * Production systems with high volume reads and writes. Use {@link CachedPreparedStatementCreator}
- * 
- * When preparing statements with Cassandra, each Statement should be prepared once and only once due to the overhead of
- * preparing the statement.
+ * Production systems with high volume reads and writes. Use {@link CachedPreparedStatementCreator} When preparing
+ * statements with Cassandra, each Statement should be prepared once and only once due to the overhead of preparing the
+ * statement.
  * 
  * @author David Webb
- * 
  */
 public class SimplePreparedStatementCreator implements PreparedStatementCreator {
 

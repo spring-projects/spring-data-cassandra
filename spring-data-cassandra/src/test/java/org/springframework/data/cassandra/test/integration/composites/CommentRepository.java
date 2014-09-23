@@ -17,5 +17,4 @@ package org.springframework.data.cassandra.test.integration.composites;
 
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 
-public interface CommentRepository extends TypedIdCassandraRepository<Comment, CommentKey> {
-}
+public interface CommentRepository extends TypedIdCassandraRepository<Comment, CommentKey> {}

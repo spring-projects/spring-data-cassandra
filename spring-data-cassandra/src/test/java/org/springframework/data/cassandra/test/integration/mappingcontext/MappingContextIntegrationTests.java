@@ -28,8 +28,7 @@ import org.springframework.data.mapping.model.MappingException;
 
 public class MappingContextIntegrationTests {
 
-	public static class Transient {
-	}
+	public static class Transient {}
 
 	@Table
 	public static class X {

@@ -42,7 +42,6 @@ import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * @author dwebb
- * 
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration

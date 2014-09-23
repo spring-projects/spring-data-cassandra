@@ -8,11 +8,57 @@ import org.springframework.util.StringUtils;
  * 
  * @see <a
  *      href="http://cassandra.apache.org/doc/cql3/CQL.html#appendixA">http://cassandra.apache.org/doc/cql3/CQL.html#appendixA</a>
- * 
  * @author Matthew T. Adams
  */
 public enum ReservedKeyword {
-	ADD, ALTER, AND, ANY, APPLY, ASC, AUTHORIZE, BATCH, BEGIN, BY, COLUMNFAMILY, CREATE, DELETE, DESC, DROP, EACH_QUORUM, FROM, GRANT, IN, INDEX, INSERT, INTO, KEYSPACE, LIMIT, LOCAL_ONE, LOCAL_QUORUM, MODIFY, NORECURSIVE, OF, ON, ONE, ORDER, PRIMARY, QUORUM, REVOKE, SCHEMA, SELECT, SET, TABLE, THREE, TOKEN, TRUNCATE, TWO, UPDATE, USE, USING, WHERE, WITH;
+	ADD,
+	ALTER,
+	AND,
+	ANY,
+	APPLY,
+	ASC,
+	AUTHORIZE,
+	BATCH,
+	BEGIN,
+	BY,
+	COLUMNFAMILY,
+	CREATE,
+	DELETE,
+	DESC,
+	DROP,
+	EACH_QUORUM,
+	FROM,
+	GRANT,
+	IN,
+	INDEX,
+	INSERT,
+	INTO,
+	KEYSPACE,
+	LIMIT,
+	LOCAL_ONE,
+	LOCAL_QUORUM,
+	MODIFY,
+	NORECURSIVE,
+	OF,
+	ON,
+	ONE,
+	ORDER,
+	PRIMARY,
+	QUORUM,
+	REVOKE,
+	SCHEMA,
+	SELECT,
+	SET,
+	TABLE,
+	THREE,
+	TOKEN,
+	TRUNCATE,
+	TWO,
+	UPDATE,
+	USE,
+	USING,
+	WHERE,
+	WITH;
 
 	/**
 	 * @see ReservedKeyword#isReserved(String)

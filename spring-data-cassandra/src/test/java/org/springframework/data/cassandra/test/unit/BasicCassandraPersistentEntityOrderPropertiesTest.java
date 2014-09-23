@@ -36,7 +36,6 @@ import org.springframework.data.mapping.PropertyHandler;
 
 /**
  * @author David Webb
- * 
  */
 public class BasicCassandraPersistentEntityOrderPropertiesTest {
 
@@ -44,8 +43,7 @@ public class BasicCassandraPersistentEntityOrderPropertiesTest {
 	private BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
 
 	@Before
-	public void init() {
-	}
+	public void init() {}
 
 	@Test
 	public void testCompositeKeyPropertyOrder() {

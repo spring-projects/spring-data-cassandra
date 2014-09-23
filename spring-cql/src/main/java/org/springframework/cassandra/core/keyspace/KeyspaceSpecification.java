@@ -23,5 +23,4 @@ package org.springframework.cassandra.core.keyspace;
  * @author Matthew T. Adams
  */
 public class KeyspaceSpecification<T> extends KeyspaceOptionsSpecification<KeyspaceSpecification<T>> implements
-		KeyspaceDescriptor {
-}
+		KeyspaceDescriptor {}
