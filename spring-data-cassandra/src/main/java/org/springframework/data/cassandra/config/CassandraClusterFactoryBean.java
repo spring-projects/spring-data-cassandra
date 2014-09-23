@@ -18,10 +18,9 @@ package org.springframework.data.cassandra.config;
 import org.springframework.cassandra.config.CassandraCqlClusterFactoryBean;
 
 /**
- * Spring Data Cassandra extension of CassandraCqlClusterFactoryBean. This class exists only in the name of symmetry, based
- * on the other CassandraData*FactoryBean classes.
+ * Spring Data Cassandra extension of CassandraCqlClusterFactoryBean. This class exists only in the name of symmetry,
+ * based on the other CassandraData*FactoryBean classes.
  * 
  * @author Matthew T. Adams
  */
-public class CassandraClusterFactoryBean extends CassandraCqlClusterFactoryBean {
-}
+public class CassandraClusterFactoryBean extends CassandraCqlClusterFactoryBean {}

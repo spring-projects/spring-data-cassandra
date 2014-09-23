@@ -31,7 +31,6 @@ import org.w3c.dom.Element;
  * {@link RepositoryConfigurationExtension} for Cassandra.
  * 
  * @author Alex Shvid
- * 
  */
 public class CassandraRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 

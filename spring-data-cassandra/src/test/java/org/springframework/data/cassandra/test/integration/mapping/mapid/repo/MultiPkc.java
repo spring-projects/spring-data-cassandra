@@ -22,8 +22,7 @@ public class MultiPkc {
 	 */
 	@Deprecated
 	@SuppressWarnings("unused")
-	private MultiPkc() {
-	}
+	private MultiPkc() {}
 
 	public MultiPkc(String key0, String key1) {
 		setKey0(key0);

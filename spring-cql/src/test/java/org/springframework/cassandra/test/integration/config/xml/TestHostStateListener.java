@@ -23,7 +23,6 @@ import com.datastax.driver.core.Host.StateListener;
 
 /**
  * @author David Webb
- * 
  */
 public class TestHostStateListener implements StateListener {
 

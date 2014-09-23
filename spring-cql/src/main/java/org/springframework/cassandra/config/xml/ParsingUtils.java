@@ -244,7 +244,6 @@ public class ParsingUtils {
 	 *          null or empty, and <code>defaultValue</code> is null or empty, then no property is added and this method
 	 *          silently returns.
 	 * @param reference If <code>true</code>, this method will add the property as a reference, else as a value.
-	 * 
 	 * @see BeanDefinitionBuilder#addPropertyReference(String, String)
 	 * @see BeanDefinitionBuilder#addPropertyValue(String, Object)
 	 */

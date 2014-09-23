@@ -39,4 +39,38 @@ public class CollectionUtils {
 
 		return list;
 	}
+
+	public static List<?> toList(Object thing) {
+		List<Object> list = new ArrayList<Object>();
+		list.add(thing);
+		return list;
+	}
+
+	public static List<?> toList(Object thing1, Object thing2) {
+		List<Object> list = new ArrayList<Object>();
+		list.add(thing1);
+		list.add(thing2);
+		return list;
+	}
+
+	public static List<?> toList(Object thing1, Object thing2, Object thing3) {
+		List<Object> list = new ArrayList<Object>();
+		list.add(thing1);
+		list.add(thing2);
+		list.add(thing3);
+		return list;
+	}
+
+	public static List<?> toList(Object thing1, Object thing2, Object thing3, Object... rest) {
+		List<Object> list = new ArrayList<Object>();
+		list.add(thing1);
+		list.add(thing2);
+		list.add(thing3);
+		if (rest != null) {
+			for (Object thing : rest) {
+				list.add(thing);
+			}
+		}
+		return list;
+	}
 }

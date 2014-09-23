@@ -33,7 +33,6 @@ import com.datastax.driver.core.TableMetadata;
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew T. Adams
- * 
  * @deprecated need to find a better place for this
  */
 @Deprecated

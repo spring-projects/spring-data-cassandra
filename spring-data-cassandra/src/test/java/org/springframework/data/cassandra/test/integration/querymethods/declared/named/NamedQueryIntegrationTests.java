@@ -9,7 +9,7 @@ import org.springframework.test.context.ContextConfiguration;
 public class NamedQueryIntegrationTests extends QueryIntegrationTests {
 
 	@Configuration
-	@EnableCassandraRepositories(basePackageClasses = PersonRepositoryWithNamedQueries.class, namedQueriesLocation = "classpath:META-INF/PersonRepositoryWithNamedQueries.properties")
-	public static class Config extends QueryIntegrationTests.Config {
-	}
+	@EnableCassandraRepositories(basePackageClasses = PersonRepositoryWithNamedQueries.class,
+			namedQueriesLocation = "classpath:META-INF/PersonRepositoryWithNamedQueries.properties")
+	public static class Config extends QueryIntegrationTests.Config {}
 }

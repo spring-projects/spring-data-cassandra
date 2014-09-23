@@ -19,12 +19,18 @@ package org.springframework.cassandra.core;
  * Contains Query Options for Cassandra queries. This controls the Consistency Tuning and Retry Policy for a Query.
  * 
  * @author David Webb
- * 
  */
 public class QueryOptions {
 
 	private ConsistencyLevel consistencyLevel;
 	private RetryPolicy retryPolicy;
+
+	public QueryOptions() {}
+
+	public QueryOptions(ConsistencyLevel consistencyLevel, RetryPolicy retryPolicy) {
+		setConsistencyLevel(consistencyLevel);
+		setRetryPolicy(retryPolicy);
+	}
 
 	/**
 	 * @return Returns the consistencyLevel.

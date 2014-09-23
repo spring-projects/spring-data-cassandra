@@ -93,23 +93,23 @@ public class CqlTableSpecificationAssertions {
 
 		switch (tableOption) {
 
-		case BLOOM_FILTER_FP_CHANCE:
-		case READ_REPAIR_CHANCE:
-		case DCLOCAL_READ_REPAIR_CHANCE:
-			assertEquals((Double) expected, (Double) actual, DELTA);
-			return;
+			case BLOOM_FILTER_FP_CHANCE:
+			case READ_REPAIR_CHANCE:
+			case DCLOCAL_READ_REPAIR_CHANCE:
+				assertEquals((Double) expected, (Double) actual, DELTA);
+				return;
 
-		case CACHING:
-			assertEquals(((String) expected).toUpperCase(), ((String) actual).toUpperCase());
-			return;
+			case CACHING:
+				assertEquals(((String) expected).toUpperCase(), ((String) actual).toUpperCase());
+				return;
 
-		case COMPACTION:
-			assertCompaction((Map<String, Object>) expected, (Map<String, String>) actual);
-			return;
+			case COMPACTION:
+				assertCompaction((Map<String, Object>) expected, (Map<String, String>) actual);
+				return;
 
-		case COMPRESSION:
-			assertCompression((Map<String, Object>) expected, (Map<String, String>) actual);
-			return;
+			case COMPRESSION:
+				assertCompression((Map<String, Object>) expected, (Map<String, String>) actual);
+				return;
 		}
 
 		log.info(actual.getClass().getName());
@@ -137,26 +137,26 @@ public class CqlTableSpecificationAssertions {
 	@SuppressWarnings("unchecked")
 	public static <T> T getOptionFor(TableOption option, Class<?> type, Options options) {
 		switch (option) {
-		case BLOOM_FILTER_FP_CHANCE:
-			return (T) (Double) options.getBloomFilterFalsePositiveChance();
-		case CACHING:
-			return (T) CqlStringUtils.singleQuote(options.getCaching());
-		case COMMENT:
-			return (T) CqlStringUtils.singleQuote(options.getComment());
-		case COMPACTION:
-			return (T) options.getCompaction();
-		case COMPACT_STORAGE:
-			throw new Error(); // TODO: figure out
-		case COMPRESSION:
-			return (T) options.getCompression();
-		case DCLOCAL_READ_REPAIR_CHANCE:
-			return (T) (Double) options.getLocalReadRepairChance();
-		case GC_GRACE_SECONDS:
-			return (T) new Long(options.getGcGraceInSeconds());
-		case READ_REPAIR_CHANCE:
-			return (T) (Double) options.getReadRepairChance();
-		case REPLICATE_ON_WRITE:
-			return (T) (Boolean) options.getReplicateOnWrite();
+			case BLOOM_FILTER_FP_CHANCE:
+				return (T) (Double) options.getBloomFilterFalsePositiveChance();
+			case CACHING:
+				return (T) CqlStringUtils.singleQuote(options.getCaching());
+			case COMMENT:
+				return (T) CqlStringUtils.singleQuote(options.getComment());
+			case COMPACTION:
+				return (T) options.getCompaction();
+			case COMPACT_STORAGE:
+				throw new Error(); // TODO: figure out
+			case COMPRESSION:
+				return (T) options.getCompression();
+			case DCLOCAL_READ_REPAIR_CHANCE:
+				return (T) (Double) options.getLocalReadRepairChance();
+			case GC_GRACE_SECONDS:
+				return (T) new Long(options.getGcGraceInSeconds());
+			case READ_REPAIR_CHANCE:
+				return (T) (Double) options.getReadRepairChance();
+			case REPLICATE_ON_WRITE:
+				return (T) (Boolean) options.getReplicateOnWrite();
 		}
 		return null;
 	}

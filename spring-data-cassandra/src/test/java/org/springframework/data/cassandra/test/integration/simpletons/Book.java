@@ -24,7 +24,6 @@ import org.springframework.data.cassandra.mapping.Table;
  * Test POJO
  * 
  * @author David Webb
- * 
  */
 @Table("book")
 public class Book {

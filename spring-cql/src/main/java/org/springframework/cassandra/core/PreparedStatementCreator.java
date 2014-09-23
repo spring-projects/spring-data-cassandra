@@ -23,7 +23,6 @@ import com.datastax.driver.core.exceptions.DriverException;
  * Creates a PreparedStatement for the usage with the DataStax Java Driver
  * 
  * @author David Webb
- * 
  */
 public interface PreparedStatementCreator {
 

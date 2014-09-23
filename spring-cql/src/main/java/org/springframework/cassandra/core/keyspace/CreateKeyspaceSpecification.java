@@ -49,8 +49,7 @@ public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKey
 
 	private boolean ifNotExists = false;
 
-	public CreateKeyspaceSpecification() {
-	}
+	public CreateKeyspaceSpecification() {}
 
 	public CreateKeyspaceSpecification(String name) {
 		name(name);

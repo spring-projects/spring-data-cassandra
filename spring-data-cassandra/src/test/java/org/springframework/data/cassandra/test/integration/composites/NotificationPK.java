@@ -26,10 +26,9 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import com.datastax.driver.core.DataType;
 
 /**
- * This is an example of dynamic table that creates each time new column with Notification timestamp.
- * 
- * By default it is active Notification until user deactivate it. This table uses index on the field active to access in
- * WHERE cause only for active notifications.
+ * This is an example of dynamic table that creates each time new column with Notification timestamp. By default it is
+ * active Notification until user deactivate it. This table uses index on the field active to access in WHERE cause only
+ * for active notifications.
  * 
  * @author Alex Shvid
  */

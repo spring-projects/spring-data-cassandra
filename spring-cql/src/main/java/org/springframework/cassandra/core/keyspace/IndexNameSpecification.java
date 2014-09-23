@@ -24,7 +24,6 @@ import org.springframework.util.Assert;
  * Abstract builder class to support the construction of an index.
  * 
  * @param <T> The subtype of the {@link IndexNameSpecification}
- * 
  * @author David Webb
  * @author Matthew T. Adams
  */

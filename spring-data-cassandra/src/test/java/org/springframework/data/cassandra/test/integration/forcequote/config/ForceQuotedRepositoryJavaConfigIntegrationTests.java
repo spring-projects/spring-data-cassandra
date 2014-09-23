@@ -11,8 +11,7 @@ public class ForceQuotedRepositoryJavaConfigIntegrationTests extends ForceQuoted
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = ForceQuotedRepositoryIntegrationTests.class)
-	public static class Config extends IntegrationTestConfig {
-	}
+	public static class Config extends IntegrationTestConfig {}
 
 	@Test
 	public void testExplicit() {

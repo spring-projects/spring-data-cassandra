@@ -15,10 +15,8 @@
  */
 package org.springframework.cassandra.core;
 
-
 /**
  * @author David Webb
- * 
  */
 public interface RowIterator {
 

@@ -24,10 +24,9 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 
 /**
  * This is an example of the users timeline dynamic table, where all columns are dynamically created by @ColumnId field
- * value. The rest fields are places in Cassandra value.
- * 
- * Timeline entity is used to store user's status updates that it follows in the site. Timeline always ordered by @ColumnId
- * field and we can retrieve last top status updates by using limits.
+ * value. The rest fields are places in Cassandra value. Timeline entity is used to store user's status updates that it
+ * follows in the site. Timeline always ordered by @ColumnId field and we can retrieve last top status updates by using
+ * limits.
  * 
  * @author Alex Shvid
  */

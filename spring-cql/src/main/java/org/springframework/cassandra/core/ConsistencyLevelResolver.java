@@ -19,15 +19,13 @@ package org.springframework.cassandra.core;
  * Determine driver consistency level based on ConsistencyLevel
  * 
  * @author David Webb
- * 
  */
 public final class ConsistencyLevelResolver {
 
 	/**
 	 * No instances allowed
 	 */
-	private ConsistencyLevelResolver() {
-	}
+	private ConsistencyLevelResolver() {}
 
 	/**
 	 * Decode the generic spring data cassandra enum to the type required by the DataStax Driver.
@@ -43,41 +41,41 @@ public final class ConsistencyLevelResolver {
 		 * Determine the driver level based on our enum
 		 */
 		switch (level) {
-		case ONE:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.ONE;
-			break;
-		case LOCAL_ONE:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.LOCAL_ONE;
-			break;
-		case ALL:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.ALL;
-			break;
-		case ANY:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.ANY;
-			break;
-		case EACH_QUOROM:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM;
-			break;
-		case LOCAL_QUOROM:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
-			break;
-		case QUOROM:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.QUORUM;
-			break;
-		case THREE:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.THREE;
-			break;
-		case TWO:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.TWO;
-			break;
-		case SERIAL:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.SERIAL;
-			break;
-		case LOCAL_SERIAL:
-			resolvedLevel = com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL;
-			break;
-		default:
-			break;
+			case ONE:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.ONE;
+				break;
+			case LOCAL_ONE:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.LOCAL_ONE;
+				break;
+			case ALL:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.ALL;
+				break;
+			case ANY:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.ANY;
+				break;
+			case EACH_QUOROM:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM;
+				break;
+			case LOCAL_QUOROM:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
+				break;
+			case QUOROM:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.QUORUM;
+				break;
+			case THREE:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.THREE;
+				break;
+			case TWO:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.TWO;
+				break;
+			case SERIAL:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.SERIAL;
+				break;
+			case LOCAL_SERIAL:
+				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL;
+				break;
+			default:
+				break;
 		}
 
 		return resolvedLevel;

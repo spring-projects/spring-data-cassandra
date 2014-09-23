@@ -10,8 +10,7 @@ public class Thing {
 	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
 	private int number;
 
-	public Thing() {
-	}
+	public Thing() {}
 
 	public Thing(int number) {
 		setNumber(number);

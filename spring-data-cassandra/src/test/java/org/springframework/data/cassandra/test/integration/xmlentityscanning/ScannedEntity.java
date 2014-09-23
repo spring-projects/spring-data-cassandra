@@ -24,7 +24,8 @@ public class ScannedEntity {
 	/*
 	 * Primary Row ID
 	 */
-	@Id private String name;
+	@Id
+	private String name;
 
 	@SuppressWarnings("unused")
 	private ScannedEntity() {}

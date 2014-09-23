@@ -30,7 +30,6 @@ import org.springframework.cassandra.core.keyspace.TableNameSpecification;
  * need for encapsulation, and it makes for easier reuse in other tests like integration tests (hint hint).
  * 
  * @author Matthew T. Adams
- * 
  * @param <S> The type of the {@link TableNameSpecification}
  * @param <G> The type of the {@link TableNameCqlGenerator}
  */

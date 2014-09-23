@@ -21,7 +21,6 @@ import com.datastax.driver.core.TableMetadata;
  * @see #toCql()
  * @see #toCql(StringBuilder)
  * @see #toString()
- * 
  * @author John McPeek
  * @author Matthew T. Adams
  */

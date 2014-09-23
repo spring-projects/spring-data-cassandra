@@ -59,8 +59,7 @@ public class CassandraEntityClassScanner {
 	protected Set<Class<?>> entityBasePackageClasses = new HashSet<Class<?>>();
 	protected ClassLoader beanClassLoader;
 
-	public CassandraEntityClassScanner() {
-	}
+	public CassandraEntityClassScanner() {}
 
 	public CassandraEntityClassScanner(Class<?>... entityBasePackageClasses) {
 		this(null, Arrays.asList(entityBasePackageClasses));

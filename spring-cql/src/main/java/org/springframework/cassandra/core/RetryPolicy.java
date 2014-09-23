@@ -19,7 +19,6 @@ package org.springframework.cassandra.core;
  * Retry Policies associated with Cassandra.
  * 
  * @author David Webb
- * 
  */
 public enum RetryPolicy {
 

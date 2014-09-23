@@ -28,13 +28,10 @@ import com.datastax.driver.core.exceptions.DriverException;
 
 /**
  * This Prepared Statement Creator maintains a cache of all prepared statements for the duration of this life of the
- * container.
- * 
- * When preparing statements with Cassandra, each Statement should be prepared once and only once due to the overhead of
- * preparing the statement.
+ * container. When preparing statements with Cassandra, each Statement should be prepared once and only once due to the
+ * overhead of preparing the statement.
  * 
  * @author David Webb
- * 
  */
 public class CachedPreparedStatementCreator implements PreparedStatementCreator {
 

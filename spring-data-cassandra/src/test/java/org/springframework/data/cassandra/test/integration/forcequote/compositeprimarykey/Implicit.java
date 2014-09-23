@@ -14,8 +14,7 @@ public class Implicit {
 	String stringValue = UUID.randomUUID().toString();
 
 	@SuppressWarnings("unused")
-	private Implicit() {
-	}
+	private Implicit() {}
 
 	public Implicit(ImplicitKey primaryKey) {
 		setPrimaryKey(primaryKey);

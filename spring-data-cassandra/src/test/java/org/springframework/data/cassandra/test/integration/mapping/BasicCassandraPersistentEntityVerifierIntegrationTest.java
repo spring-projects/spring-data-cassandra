@@ -35,7 +35,6 @@ import org.springframework.data.mapping.model.MappingException;
 
 /**
  * @author dwebb
- * 
  */
 public class BasicCassandraPersistentEntityVerifierIntegrationTest {
 
@@ -184,8 +183,7 @@ public class BasicCassandraPersistentEntityVerifierIntegrationTest {
 
 	@Table
 	@PrimaryKeyClass
-	static class TooManyAnnotations {
-	}
+	static class TooManyAnnotations {}
 
 	@Table
 	public static class NoPartitionKey {

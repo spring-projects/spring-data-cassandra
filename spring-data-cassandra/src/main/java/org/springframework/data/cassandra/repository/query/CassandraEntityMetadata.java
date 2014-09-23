@@ -23,7 +23,6 @@ import org.springframework.data.repository.core.EntityMetadata;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
- * 
  * @param <T>
  */
 public interface CassandraEntityMetadata<T> extends EntityMetadata<T> {

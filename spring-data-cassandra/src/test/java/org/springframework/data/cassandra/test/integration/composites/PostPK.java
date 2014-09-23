@@ -23,11 +23,10 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 
 /**
- * This is an example of dynamic table that creates each time new column with Post timestamp.
- * 
- * It is possible to use a static table for posts and identify them by PostId(UUID), but in this case we need to use
- * MapReduce for Big Data to find posts for particular user, so it is better to have index (userId) -> index (post time)
- * architecture. It helps a lot to build eventually a search index for the particular user.
+ * This is an example of dynamic table that creates each time new column with Post timestamp. It is possible to use a
+ * static table for posts and identify them by PostId(UUID), but in this case we need to use MapReduce for Big Data to
+ * find posts for particular user, so it is better to have index (userId) -> index (post time) architecture. It helps a
+ * lot to build eventually a search index for the particular user.
  * 
  * @author Alex Shvid
  */

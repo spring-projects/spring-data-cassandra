@@ -192,23 +192,23 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		if (type.isCollection()) {
 			switch (type) {
 
-			case MAP:
-				ensureTypeArguments(annotation.typeArguments().length, 2);
-				return DataType.map(getDataTypeFor(annotation.typeArguments()[0]),
-						getDataTypeFor(annotation.typeArguments()[1]));
+				case MAP:
+					ensureTypeArguments(annotation.typeArguments().length, 2);
+					return DataType.map(getDataTypeFor(annotation.typeArguments()[0]),
+							getDataTypeFor(annotation.typeArguments()[1]));
 
-			case LIST:
-				ensureTypeArguments(annotation.typeArguments().length, 1);
-				return DataType.list(getDataTypeFor(annotation.typeArguments()[0]));
+				case LIST:
+					ensureTypeArguments(annotation.typeArguments().length, 1);
+					return DataType.list(getDataTypeFor(annotation.typeArguments()[0]));
 
-			case SET:
-				ensureTypeArguments(annotation.typeArguments().length, 1);
-				return DataType.set(getDataTypeFor(annotation.typeArguments()[0]));
+				case SET:
+					ensureTypeArguments(annotation.typeArguments().length, 1);
+					return DataType.set(getDataTypeFor(annotation.typeArguments()[0]));
 
-			default:
-				throw new InvalidDataAccessApiUsageException(
-						String.format("unknown multivalued DataType [%s] for property [%s] in entity [%s]", type, getType(),
-								getOwner().getName()));
+				default:
+					throw new InvalidDataAccessApiUsageException(String.format(
+							"unknown multivalued DataType [%s] for property [%s] in entity [%s]", type, getType(), getOwner()
+									.getName()));
 			}
 		} else {
 

@@ -2,5 +2,4 @@ package org.springframework.data.cassandra.test.integration.forcequote.composite
 
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 
-public interface ExplicitRepository extends TypedIdCassandraRepository<Explicit, ExplicitKey> {
-}
+public interface ExplicitRepository extends TypedIdCassandraRepository<Explicit, ExplicitKey> {}

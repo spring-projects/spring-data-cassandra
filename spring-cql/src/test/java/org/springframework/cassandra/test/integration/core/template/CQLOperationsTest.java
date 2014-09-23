@@ -73,7 +73,6 @@ import static org.junit.Assert.assertTrue;
  * Unit Tests for CqlTemplate
  * 
  * @author David Webb
- * 
  */
 public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -106,11 +105,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	@Before
 	public void setupTemplate() {
 
-		log.info("Running setupTemplate()");
-
 		if (cqlTemplate == null) {
-
-			log.info("null Template ... Initialzing DB test CQL");
 
 			// CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
 			// "cassandraOperationsTest-cql-dataload.cql", keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
@@ -130,10 +125,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 		 * running.
 		 */
 		assertNotNull(ring);
-
-		for (RingMember h : ring) {
-			log.info("ringTest Host -> " + h.address);
-		}
 	}
 
 	@Test
@@ -424,7 +415,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	}
 
 	@Test
-	public void queryAsynchronouslyWithListener() {
+	public void queryAsynchronouslyWithListener() throws InterruptedException {
 
 		QueryOptions options = new QueryOptions();
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
@@ -433,25 +424,15 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 		final String isbn = "999999999";
 
 		BookListener listener = new BookListener();
-
 		cqlTemplate.queryAsynchronously("select * from book where isbn='" + isbn + "'", listener);
-
-		// TODO Use better multi threading devices here.
-		while (!listener.isDone()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException muted) {
-			}
-		}
+		listener.await();
 
 		Book book2 = getBook(isbn);
-
 		assertBook(listener.getBook(), book2);
-
 	}
 
 	@Test
-	public void queryAsynchronouslyWithListenerAndExecutor() {
+	public void queryAsynchronouslyWithListenerAndExecutor() throws InterruptedException {
 
 		QueryOptions options = new QueryOptions();
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
@@ -468,23 +449,14 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 				command.run();
 			}
 		});
-
-		// TODO Use better multi threading devices here.
-		while (!listener.isDone()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException muted) {
-			}
-		}
+		listener.await();
 
 		Book book2 = getBook(isbn);
-
 		assertBook(listener.getBook(), book2);
-
 	}
 
 	@Test
-	public void queryAsynchronouslyWithListenerAndExecutorAndOptions() {
+	public void queryAsynchronouslyWithListenerAndExecutorAndOptions() throws InterruptedException {
 
 		QueryOptions options = new QueryOptions();
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
@@ -501,19 +473,10 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 				command.run();
 			}
 		});
-
-		// TODO Use better multi threading devices here.
-		while (!listener.isDone()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException muted) {
-			}
-		}
+		listener.await();
 
 		Book book2 = getBook(isbn);
-
 		assertBook(listener.getBook(), book2);
-
 	}
 
 	@Test
@@ -589,7 +552,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 					}
 				});
 
-		log.debug("Size of Book List -> " + books.size());
 		assertEquals(books.size(), 3);
 		assertBook(books.get(0), getBook(books.get(0).getIsbn()));
 		assertBook(books.get(1), getBook(books.get(1).getIsbn()));
@@ -617,7 +579,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 			}
 		});
 
-		log.debug("Size of Book List -> " + books.size());
 		assertEquals(books.size(), 3);
 		assertBook(books.get(0), getBook(books.get(0).getIsbn()));
 		assertBook(books.get(1), getBook(books.get(1).getIsbn()));
@@ -725,8 +686,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 		Map<String, Object> rsMap = cqlTemplate.queryForMap("select * from book where isbn in ('" + ISBN_NINES + "')");
 
-		log.debug(rsMap.toString());
-
 		Book b1 = objectToBook(rsMap.get("isbn"), rsMap.get("title"), rsMap.get("author"), rsMap.get("pages"));
 
 		Book b2 = getBook(ISBN_NINES);
@@ -746,8 +705,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 		Map<String, Object> rsMap = cqlTemplate.processMap(rs);
 
-		log.debug("Size of Book List -> " + rsMap.size());
-
 		Book b1 = objectToBook(rsMap.get("isbn"), rsMap.get("title"), rsMap.get("author"), rsMap.get("pages"));
 
 		Book b2 = getBook(ISBN_NINES);
@@ -764,8 +721,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 		List<String> titles = cqlTemplate.queryForList("select title from book where isbn in ('1234','2345','3456')",
 				String.class);
-
-		log.debug(titles.toString());
 
 		assertNotNull(titles);
 		assertEquals(titles.size(), 3);
@@ -786,8 +741,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 		List<String> titles = cqlTemplate.processList(rs, String.class);
 
-		log.debug(titles.toString());
-
 		assertNotNull(titles);
 		assertEquals(titles.size(), 3);
 	}
@@ -800,8 +753,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 		List<Map<String, Object>> results = cqlTemplate
 				.queryForListOfMap("select * from book where isbn in ('1234','2345','3456')");
-
-		log.debug(results.toString());
 
 		assertEquals(results.size(), 3);
 
@@ -820,8 +771,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 		assertNotNull(rs);
 
 		List<Map<String, Object>> results = cqlTemplate.processListOfMap(rs);
-
-		log.debug(results.toString());
 
 		assertEquals(results.size(), 3);
 
@@ -981,8 +930,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 			}
 		});
 
-		log.debug("Size of all Books -> " + books.size());
-
 		assertTrue(books.size() > 0);
 	}
 
@@ -1004,10 +951,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 			@Override
 			public void processRow(Row row) throws DriverException {
 
-				Book b = rowToBook(row);
-
-				log.debug("Title -> " + b.getTitle());
-
+				rowToBook(row);
 			}
 		});
 
@@ -1033,8 +977,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 				return rowToBook(row);
 			}
 		});
-
-		log.debug("Size of all Books -> " + books.size());
 
 		assertTrue(books.size() > 0);
 	}
@@ -1072,8 +1014,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 		});
 
 		Book b2 = getBook(isbn);
-
-		log.debug("Book list Size -> " + books.size());
 
 		assertEquals(books.size(), 1);
 		assertBook(books.get(0), b2);
@@ -1143,8 +1083,6 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	@Test
 	public void insertAndTruncateQueryObjectTest() {
-
-		log.info("Starting Insert and Truncate Query Object Test");
 
 		String tableName = "truncate_test";
 

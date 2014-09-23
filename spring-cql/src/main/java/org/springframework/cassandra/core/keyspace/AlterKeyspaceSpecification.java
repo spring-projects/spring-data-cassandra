@@ -35,8 +35,7 @@ public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<Alt
 		return new AlterKeyspaceSpecification(name);
 	}
 
-	public AlterKeyspaceSpecification() {
-	}
+	public AlterKeyspaceSpecification() {}
 
 	public AlterKeyspaceSpecification(String name) {
 		name(name);

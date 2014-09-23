@@ -20,9 +20,7 @@ import java.util.Map;
 /**
  * Enumeration that represents all known table options. If a table option is not listed here, but is supported by
  * Cassandra, use the method {@link CreateTableSpecification#with(String, Object, boolean, boolean)} to write the raw
- * value.
- * 
- * Implements {@link Option} via delegation, since {@link Enum}s can't extend anything.
+ * value. Implements {@link Option} via delegation, since {@link Enum}s can't extend anything.
  * 
  * @author Matthew T. Adams
  * @see CompactionOption

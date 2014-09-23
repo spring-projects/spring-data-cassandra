@@ -25,7 +25,6 @@ import org.springframework.data.mapping.model.MappingException;
  * framework to communicate all verification errors to the user of the framework, rather than one at a time.
  * 
  * @author David Webb
- * 
  */
 @SuppressWarnings("serial")
 public class VerifierMappingExceptions extends MappingException {

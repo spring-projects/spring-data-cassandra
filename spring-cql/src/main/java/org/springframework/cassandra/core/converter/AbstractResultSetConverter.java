@@ -24,7 +24,6 @@ import com.datastax.driver.core.ResultSet;
  * {@link IllegalArgumentException}.
  * 
  * @author Matthew T. Adams
- * 
  * @param <T>
  */
 public abstract class AbstractResultSetConverter<T> implements Converter<ResultSet, T> {

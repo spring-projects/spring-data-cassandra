@@ -27,7 +27,6 @@ import org.springframework.beans.factory.FactoryBean;
  * 
  * @author David Webb
  * @param <T>
- * 
  */
 public class MultiLevelSetFlattenerFactoryBean<T> implements FactoryBean<Set<T>> {
 

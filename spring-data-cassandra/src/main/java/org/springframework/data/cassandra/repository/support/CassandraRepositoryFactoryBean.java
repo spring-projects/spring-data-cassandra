@@ -28,7 +28,6 @@ import org.springframework.util.Assert;
  * {@link org.springframework.beans.factory.FactoryBean} to create {@link TypedIdCassandraRepository} instances.
  * 
  * @author Alex Shvid
- * 
  */
 public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends
 		RepositoryFactoryBeanSupport<T, S, ID> {

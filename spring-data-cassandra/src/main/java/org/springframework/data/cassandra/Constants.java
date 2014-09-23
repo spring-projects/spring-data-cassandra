@@ -17,7 +17,6 @@ package org.springframework.data.cassandra;
 
 /**
  * @author David Webb
- * 
  */
 public interface Constants {
 

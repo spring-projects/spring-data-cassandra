@@ -74,19 +74,15 @@ public class BasicCassandraPersistentEntityIntegrationTests {
 	}
 
 	@Table("messages")
-	static class Message {
-	}
+	static class Message {}
 
-	static class Notification extends Message {
-	}
+	static class Notification extends Message {}
 
 	@Table("#{'a123'}")
-	static class Area {
-	}
+	static class Area {}
 
 	@Table("#{tableNameHolderThingy.tableName}")
-	static class UserLine {
-	}
+	static class UserLine {}
 
 	static class TableNameHolderThingy {
 

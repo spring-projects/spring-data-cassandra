@@ -19,7 +19,6 @@ package org.springframework.cassandra.core;
  * Generic Consistency Levels associated with Cassandra.
  * 
  * @author David Webb
- * 
  */
 public enum ConsistencyLevel {
 

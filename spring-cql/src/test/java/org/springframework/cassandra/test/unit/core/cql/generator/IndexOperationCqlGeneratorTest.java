@@ -26,7 +26,6 @@ import org.springframework.cassandra.core.keyspace.IndexNameSpecification;
  * 
  * @author Matthew T. Adams
  * @author David Webb
- * 
  * @param <S> The type of the {@link IndexNameSpecification}
  * @param <G> The type of the {@link IndexNameCqlGenerator}
  */

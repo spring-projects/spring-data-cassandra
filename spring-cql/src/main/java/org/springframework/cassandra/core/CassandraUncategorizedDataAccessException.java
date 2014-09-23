@@ -21,7 +21,6 @@ import org.springframework.dao.UncategorizedDataAccessException;
  * Wrapper for all non RuntimeExceptions throws by the Cassandra Driver
  * 
  * @author David Webb
- * 
  */
 public class CassandraUncategorizedDataAccessException extends UncategorizedDataAccessException {
 

@@ -17,11 +17,21 @@ package org.springframework.cassandra.core;
 
 /**
  * @author David Webb
- * 
  */
 public class WriteOptions extends QueryOptions {
 
 	private Integer ttl;
+
+	public WriteOptions() {}
+
+	public WriteOptions(ConsistencyLevel consistencyLevel, RetryPolicy retryPolicy) {
+		this(consistencyLevel, retryPolicy, null);
+	}
+
+	public WriteOptions(ConsistencyLevel consistencyLevel, RetryPolicy retryPolicy, Integer ttl) {
+		super(consistencyLevel, retryPolicy);
+		setTtl(ttl);
+	}
 
 	/**
 	 * @return Returns the ttl.

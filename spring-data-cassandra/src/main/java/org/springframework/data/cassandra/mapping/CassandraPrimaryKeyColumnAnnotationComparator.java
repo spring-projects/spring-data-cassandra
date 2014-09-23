@@ -31,7 +31,6 @@ import org.springframework.cassandra.core.PrimaryKeyType;
  * 
  * @see PrimaryKeyType#compareTo(PrimaryKeyType)
  * @see Ordering#compareTo(Ordering)
- * 
  * @author Matthew T. Adams
  */
 public enum CassandraPrimaryKeyColumnAnnotationComparator implements Comparator<PrimaryKeyColumn> {
