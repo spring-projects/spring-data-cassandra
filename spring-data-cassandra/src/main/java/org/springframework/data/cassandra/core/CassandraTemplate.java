@@ -321,11 +321,11 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> List<T> select(Statement select, Class<T> type) {
+	public <T> List<T> select(Statement statement, Class<T> type) {
 
-		Assert.notNull(select);
+		Assert.notNull(statement);
 
-		return select(select, new CassandraConverterRowCallback<T>(cassandraConverter, type));
+		return select(statement, new CassandraConverterRowCallback<T>(cassandraConverter, type));
 	}
 
 	@Override
@@ -983,8 +983,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> Cancellable selectOneAsynchronously(Statement select, Class<T> type, QueryForObjectListener<T> listener) {
-		return selectOneAsynchronously(select, type, listener, null);
+	public <T> Cancellable selectOneAsynchronously(Statement statement, Class<T> type, QueryForObjectListener<T> listener) {
+		return selectOneAsynchronously(statement, type, listener, null);
 	}
 
 	@Override
@@ -993,9 +993,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> Cancellable selectOneAsynchronously(Statement select, Class<T> type, QueryForObjectListener<T> listener,
+	public <T> Cancellable selectOneAsynchronously(Statement statement, Class<T> type, QueryForObjectListener<T> listener,
 			QueryOptions options) {
-		return doSelectOneAsync(select, type, listener, options);
+		return doSelectOneAsync(statement, type, listener, options);
 	}
 
 	@Override
