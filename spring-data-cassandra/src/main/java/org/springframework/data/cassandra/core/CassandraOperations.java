@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import java.util.List;
 
+import com.datastax.driver.core.Statement;
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.Cancellable;
 import org.springframework.cassandra.core.QueryForObjectListener;
@@ -61,7 +62,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param type must not be {@literal null}, mapped entity type.
 	 * @return
 	 */
-	<T> List<T> select(Select select, Class<T> type);
+	<T> List<T> select(Statement select, Class<T> type);
 
 	<T> T selectOneById(Class<T> type, Object id);
 
@@ -81,7 +82,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param type The type of entity to retrieve.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	<T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener);
+	<T> Cancellable selectOneAsynchronously(Statement select, Class<T> type, QueryForObjectListener<T> listener);
 
 	/**
 	 * Executes the string CQL query asynchronously.
@@ -100,7 +101,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options The {@link QueryOptions} to use.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	<T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener,
+	<T> Cancellable selectOneAsynchronously(Statement select, Class<T> type, QueryForObjectListener<T> listener,
 			QueryOptions options);
 
 	/**

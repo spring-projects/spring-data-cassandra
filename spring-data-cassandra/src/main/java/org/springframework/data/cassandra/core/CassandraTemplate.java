@@ -47,7 +47,6 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Clause;
@@ -322,7 +321,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> List<T> select(Select select, Class<T> type) {
+	public <T> List<T> select(Statement select, Class<T> type) {
 
 		Assert.notNull(select);
 
@@ -543,7 +542,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return result;
 	}
 
-	protected <T> List<T> select(final Select query, CassandraConverterRowCallback<T> readRowCallback) {
+	protected <T> List<T> select(final Statement query, CassandraConverterRowCallback<T> readRowCallback) {
 
 		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
 
@@ -984,7 +983,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener) {
+	public <T> Cancellable selectOneAsynchronously(Statement select, Class<T> type, QueryForObjectListener<T> listener) {
 		return selectOneAsynchronously(select, type, listener, null);
 	}
 
@@ -994,7 +993,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener,
+	public <T> Cancellable selectOneAsynchronously(Statement select, Class<T> type, QueryForObjectListener<T> listener,
 			QueryOptions options) {
 		return doSelectOneAsync(select, type, listener, options);
 	}
