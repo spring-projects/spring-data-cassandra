@@ -43,14 +43,15 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	/**
 	 * Constructor used for a basic template configuration
 	 * 
-	 * @param keyspace must not be {@literal null}.
+	 * @param session must not be {@literal null}.
+	 * @param converter must not be {@literal null}.
 	 */
 	public CassandraAdminTemplate(Session session, CassandraConverter converter) {
 		super(session, converter);
 	}
 
 	@Override
-	public void createTable(boolean ifNotExists, final CqlIdentifier tableName, Class<?> entityClass,
+	public void createTable(final boolean ifNotExists, final CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
 
 		final CassandraPersistentEntity<?> entity = getCassandraMappingContext().getPersistentEntity(entityClass);
@@ -59,8 +60,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
 
-				String cql = new CreateTableCqlGenerator(getCassandraMappingContext().getCreateTableSpecificationFor(entity))
-						.toCql();
+				String cql = new CreateTableCqlGenerator(getCassandraMappingContext().
+						getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists)).toCql();
 
 				log.debug(cql);
 
