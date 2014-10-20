@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-
 import java.util.Comparator;
 
 /**
