@@ -106,7 +106,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return getField().getType().isAnnotationPresent(PrimaryKeyClass.class);
+		return getType().isAnnotationPresent(PrimaryKeyClass.class);
 	}
 
 	public Class<?> getCompositePrimaryKeyType() {
@@ -114,7 +114,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return null;
 		}
 
-		return getField().getType();
+		return getType();
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		List<CqlIdentifier> columnNames = getColumnNames();
 		if (columnNames.size() != 1) {
-			throw new IllegalStateException("property does not have a single column mapping");
+			throw new IllegalStateException("property "+this+" does not have a single column mapping");
 		}
 
 		return columnNames.get(0);
@@ -175,6 +175,13 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(getType());
+
+		if (dataType == null) {
+        		CassandraType cassandraType = getType().getAnnotation(CassandraType.class);
+        		if (cassandraType != null) {
+        		    dataType = getDataTypeFor(cassandraType);
+        		}
+    		}
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(
 					String
@@ -290,7 +297,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		// else we're dealing with a single-column field
-		String defaultName = getField().getName(); // TODO: replace with naming strategy class
+		String defaultName = getName(); // TODO: replace with naming strategy class
 		String overriddenName = null;
 		boolean forceQuote = false;
 

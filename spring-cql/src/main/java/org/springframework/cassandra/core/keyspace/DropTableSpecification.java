@@ -24,22 +24,20 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
  */
 public class DropTableSpecification extends TableNameSpecification<DropTableSpecification> {
 
-	// private boolean ifExists;
-
-	// Added in Cassandra 2.0.
-
-	// public DropTableSpecification ifExists() {
-	// return ifExists(true);
-	// }
-	//
-	// public DropTableSpecification ifExists(boolean ifExists) {
-	// this.ifExists = ifExists;
-	// return this;
-	// }
-	//
-	// public boolean getIfExists() {
-	// return ifExists;
-	// }
+        private boolean ifExists;
+    
+        public DropTableSpecification ifExists() {
+            return ifExists(true);
+        }
+    
+        public DropTableSpecification ifExists(boolean ifExists) {
+            this.ifExists = ifExists;
+            return this;
+        }
+    
+        public boolean getIfExists() {
+            return ifExists;
+        }
 
 	/**
 	 * Entry point into the {@link DropTableSpecification}'s fluent API to drop a table. Convenient if imported

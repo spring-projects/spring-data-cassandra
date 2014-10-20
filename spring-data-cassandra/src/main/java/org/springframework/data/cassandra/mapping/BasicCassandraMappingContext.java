@@ -311,4 +311,13 @@ public class BasicCassandraMappingContext extends
 	public void setVerifier(CassandraPersistentEntityMetadataVerifier verifier) {
 		this.verifier = verifier;
 	}
+	
+	@Override
+	protected CassandraPersistentEntity<?> addPersistentEntity(TypeInformation<?> typeInformation) {
+	    if (!verifier.isPersistent(typeInformation)) {
+	        // entity is not persistent
+	        return null;
+	    }
+	    return super.addPersistentEntity(typeInformation);
+	}
 }

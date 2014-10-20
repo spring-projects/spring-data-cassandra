@@ -241,7 +241,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				Object value = wrapper.getProperty(prop, prop.getType());
+			        Class<?> dataClass;
+			        if (prop.isCompositePrimaryKey()) {
+			            dataClass = prop.getType();
+			        } else {
+			            dataClass = prop.getDataType().getName().asJavaClass();
+			        }
+                                Object value = wrapper.getProperty(prop, dataClass);
 
 				log.debug("prop.type -> " + prop.getType().getName());
 				log.debug("prop.value -> " + value);

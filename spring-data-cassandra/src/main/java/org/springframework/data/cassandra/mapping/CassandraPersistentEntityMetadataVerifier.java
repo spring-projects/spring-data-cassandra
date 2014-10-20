@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.mapping;
 
 import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Interface for Cassandra Persistent Entity Mapping Verification.
@@ -31,4 +32,11 @@ public interface CassandraPersistentEntityMetadataVerifier {
 	 */
 	void verify(CassandraPersistentEntity<?> entity) throws MappingException;
 
+	/**
+	 * Checks if given entity is actually persistent.
+	 * @param entity
+	 * @return true if entity is peristent (a table or a primary key class)
+	 */
+	boolean isPersistent(TypeInformation<?> entity);
+	
 }

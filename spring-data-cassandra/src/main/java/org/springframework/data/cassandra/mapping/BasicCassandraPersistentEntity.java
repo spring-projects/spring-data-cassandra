@@ -217,4 +217,9 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	public ApplicationContext getApplicationContext() {
 		return context;
 	}
+
+    @Override
+    public String toString() {
+        return "Entity [" + tableName +"]";
+    }
 }

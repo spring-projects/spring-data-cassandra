@@ -37,7 +37,7 @@ public class DropTableCqlGenerator extends TableNameCqlGenerator<DropTableSpecif
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		return noNull(cql).append("DROP TABLE ")
-		// .append(spec().getIfExists() ? "IF EXISTS " : "")
+		 .append(spec().getIfExists() ? "IF EXISTS " : "")
 				.append(spec().getName()).append(";");
 	}
 }

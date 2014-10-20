@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Default implementation for Cassandra Persistent Entity Verification. Ensures that annotated Persistent Entities will
@@ -56,8 +57,8 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 		 */
 		Class<?> thisType = entity.getType();
 
-		boolean isTable = (thisType.isAnnotationPresent(Table.class) || thisType.isAnnotationPresent(Persistent.class));
-		boolean isPrimaryKeyClass = thisType.isAnnotationPresent(PrimaryKeyClass.class);
+		boolean isTable = isTable(thisType);
+		boolean isPrimaryKeyClass = isPrimaryKeyClass(thisType);
 
 		/*
 		 * Ensure that this is not both a @Table(@Persistent) and a @PrimaryKey
@@ -135,11 +136,11 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 			/*
 			 * Ensure that PrimaryKeyColumn is a supported Type.
 			 */
-			for (CassandraPersistentProperty p : primaryKeyColumns) {
-				if (CassandraSimpleTypeHolder.getDataTypeFor(p.getType()) == null) {
-					exceptions.add(new MappingException("Fields annotated with @PrimaryKeyColumn must be simple CassandraTypes"));
-				}
-			}
+//			for (CassandraPersistentProperty p : primaryKeyColumns) {
+//				if (CassandraSimpleTypeHolder.getDataTypeFor(p.getType()) == null) {
+//					exceptions.add(new MappingException("Fields annotated with @PrimaryKeyColumn must be simple CassandraTypes"));
+//				}
+//			}
 
 			/*
 			 * Ensure PrimaryKeyClass is Serializable
@@ -216,12 +217,12 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 				/*
 				 * Ensure that Id is a supported Type.  At the point there is only 1.
 				 */
-				Class<?> typeClass = idProperties.get(0).getType();
-				if (!typeClass.isAnnotationPresent(PrimaryKeyClass.class)
-						&& CassandraSimpleTypeHolder.getDataTypeFor(typeClass) == null) {
-					exceptions.add(new MappingException(
-							"Fields annotated with @PrimaryKey must be simple CassandraTypes or @PrimaryKeyClass type"));
-				}
+//				Class<?> typeClass = idProperties.get(0).getType();
+//				if (!typeClass.isAnnotationPresent(PrimaryKeyClass.class)
+//						&& CassandraSimpleTypeHolder.getDataTypeFor(typeClass) == null) {
+//					exceptions.add(new MappingException(
+//							"Fields annotated with @PrimaryKey must be simple CassandraTypes or @PrimaryKeyClass type"));
+//				}
 			} else if (idPropertyCount > 0) {
 				/*
 				 * Then we have both PK(s) & PKC(s)
@@ -253,6 +254,23 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 			throw exceptions;
 		}
 	}
+
+    protected boolean isPrimaryKeyClass(Class<?> thisType) {
+        return thisType.isAnnotationPresent(PrimaryKeyClass.class);
+    }
+
+    protected boolean isTable(Class<?> thisType) {
+        return (thisType.isAnnotationPresent(Table.class) || thisType.isAnnotationPresent(Persistent.class));
+    }
+    
+    public boolean isPeristent(Class<?> thisType) {
+        return isPrimaryKeyClass(thisType) || isTable(thisType);
+    }
+    
+    @Override
+    public boolean isPersistent(TypeInformation<?> info) {
+        return isPeristent(info.getType());
+    }
 
 	/**
 	 * @return Returns the strict.
