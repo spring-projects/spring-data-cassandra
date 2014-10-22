@@ -399,7 +399,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 				public void doWithPersistentProperty(CassandraPersistentProperty p) {
 
 					clauseCallback.doWithClause(QueryBuilder.eq(p.getColumnName().toCql(),
-							idWrapper.getProperty(p, p.getActualType())));
+							idWrapper.getProperty(p, p.getDataType().asJavaClass())));
 				}
 			});
 

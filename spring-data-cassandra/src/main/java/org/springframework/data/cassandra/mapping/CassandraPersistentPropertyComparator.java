@@ -49,13 +49,6 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 			return 0;
 		}
 
-		boolean leftIsCompositePrimaryKey = left.isCompositePrimaryKey();
-		boolean rightIsCompositePrimaryKey = right.isCompositePrimaryKey();
-
-		if (leftIsCompositePrimaryKey && rightIsCompositePrimaryKey) {
-			return 0;
-		}
-
 		boolean leftIsPrimaryKey = left.isPrimaryKeyColumn();
 		boolean rightIsPrimaryKey = right.isPrimaryKeyColumn();
 
@@ -64,14 +57,11 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 					right.findAnnotation(PrimaryKeyColumn.class));
 		}
 
-		boolean leftIsKey = leftIsCompositePrimaryKey || leftIsPrimaryKey;
-		boolean rightIsKey = rightIsCompositePrimaryKey || rightIsPrimaryKey;
-
-		if (leftIsKey && !rightIsKey) {
+		if (leftIsPrimaryKey && !rightIsPrimaryKey) {
 			return -1;
 		}
 
-		if (!leftIsKey && rightIsKey) {
+		if (!leftIsPrimaryKey && rightIsPrimaryKey) {
 			return 1;
 		}
 

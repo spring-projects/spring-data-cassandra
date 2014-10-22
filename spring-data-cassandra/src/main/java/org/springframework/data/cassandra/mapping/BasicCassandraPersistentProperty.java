@@ -106,7 +106,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return getType().isAnnotationPresent(PrimaryKeyClass.class);
+		return getType().isAnnotationPresent(PrimaryKeyClass.class) && findAnnotation(PrimaryKey.class) != null;
 	}
 
 	public Class<?> getCompositePrimaryKeyType() {
