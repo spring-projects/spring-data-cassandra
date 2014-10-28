@@ -16,6 +16,7 @@ import java.util.UUID;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
@@ -84,6 +85,9 @@ public class CassandraQueryMethod extends QueryMethod {
 
 		int i = 0;
 		for (Class<?> type : method.getParameterTypes()) {
+		        if (type.getAnnotation(CassandraType.class) != null) {
+		            break;
+		        }
 			if (!ALLOWED_PARAMETER_TYPES.contains(type)) {
 				offendingTypes.add(type);
 			}
