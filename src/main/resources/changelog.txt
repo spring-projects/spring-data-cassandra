@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.1.1.RELEASE (2014-10-30)
+---------------------------------------------
+* DATACASS-178 - Release 1.1.1.
+* DATACASS-166 - Throw IllegalArgumentException if a column is requested that isn't in the table.
+
+
 Changes in version 1.1.0.RELEASE (2014-09-05)
 ---------------------------------------------
 * DATACASS-165 - Release 1.1 GA.
