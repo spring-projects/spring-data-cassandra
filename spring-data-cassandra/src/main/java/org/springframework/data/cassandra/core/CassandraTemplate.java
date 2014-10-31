@@ -516,10 +516,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doUpdateAsync(entity, listener, options);
 	}
 
-	protected <T> CqlIdentifier determineTableName(T obj) {
-		return obj == null ? null : determineTableName(obj.getClass());
-	}
-
 	protected <T> List<T> select(final String query, CassandraConverterRowCallback<T> readRowCallback) {
 
 		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {

@@ -114,7 +114,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	}
 
 	public void dropTable(Class<?> entityClass) {
-		dropTable(determineTableName(entityClass));
+		dropTable(getTableName(entityClass));
 	}
 
 	@Override
