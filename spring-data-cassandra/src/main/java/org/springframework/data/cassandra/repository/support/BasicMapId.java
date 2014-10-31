@@ -54,10 +54,10 @@ public class BasicMapId implements MapId {
 
 	public BasicMapId() {}
 
-	public BasicMapId(Map<String, Serializable> mapId) {
+	public BasicMapId(Map<String, Serializable> map) {
 
-		Assert.notNull(mapId);
-		map.putAll(mapId);
+		Assert.notNull(map);
+		this.map.putAll(map);
 	}
 
 	@Override
