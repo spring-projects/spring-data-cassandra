@@ -94,4 +94,19 @@ public class CassandraAdminTemplateTest extends AbstractSpringDataEmbeddedCassan
 		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
 		assertThat(getKeyspaceMetadata().getTables().size(), is(1));
 	}
+
+	@Test
+	public void testDropTable() throws Exception {
+
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
+		assertThat(getKeyspaceMetadata().getTables().size(), is(1));
+
+		cassandraAdminTemplate.dropTable(Book.class);
+		assertThat(getKeyspaceMetadata().getTables().size(), is(0));
+
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
+		cassandraAdminTemplate.dropTable(CqlIdentifier.cqlId("book"));
+
+		assertThat(getKeyspaceMetadata().getTables().size(), is(0));
+	}
 }
