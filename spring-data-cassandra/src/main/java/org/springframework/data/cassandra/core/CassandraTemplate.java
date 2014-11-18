@@ -31,6 +31,7 @@ import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.util.CollectionUtils;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
@@ -39,8 +40,9 @@ import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.EntityWriter;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ResultSet;
@@ -391,7 +393,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 			CassandraPersistentEntity<?> idEntity = idProperty.getCompositePrimaryKeyEntity();
 
-			final BeanWrapper<Object> idWrapper = BeanWrapper.create(id, cassandraConverter.getConversionService());
+			final ConvertingPropertyAccessor idWrapper = getWrapper(id, idEntity);
 
 			idEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
@@ -1037,4 +1039,22 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		throw new IllegalArgumentException(String.format("Expected type String or Select; got type [%s] with value [%s]",
 				query.getClass(), query));
 	}
+	
+
+        protected ConvertingPropertyAccessor getWrapper(Object object, CassandraPersistentEntity<?> entity) {
+                if (object instanceof ConvertingPropertyAccessor) {
+                    return (ConvertingPropertyAccessor) object;
+                } else if (object instanceof PersistentPropertyAccessor) {
+                    PersistentPropertyAccessor persistentPropertyAccessor = (PersistentPropertyAccessor) object;
+                    return new ConvertingPropertyAccessor(persistentPropertyAccessor, getConversionService());
+                } else {
+                    return new ConvertingPropertyAccessor(entity.getPropertyAccessor(object), getConversionService());
+                }
+        }
+
+        protected ConversionService getConversionService() {
+            return cassandraConverter.getConversionService();
+        }
+
+
 }
