@@ -273,10 +273,16 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		Book b1 = new Book();
 		b1.setIsbn("123456-1");
 		b1.setTitle("Spring Data Cassandra Book");
-		b1.setAuthor("Cassandra Guru");
+		b1.setAuthor(null);
 		b1.setPages(521);
 
 		template.update(b1);
+
+        Select select = QueryBuilder.select().all().from("book");
+        select.where(QueryBuilder.eq("isbn", "123456-1"));
+        Book updatedBook = template.selectOne(select, Book.class);
+        //inserted value still remains, even though author was nullified above.
+        Assert.assertEquals("Cassandra Guru", updatedBook.getAuthor());
 
 		Book b2 = new Book();
 		b2.setIsbn("123456-2");

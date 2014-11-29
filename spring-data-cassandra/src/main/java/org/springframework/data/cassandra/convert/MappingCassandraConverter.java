@@ -64,6 +64,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
+    private final boolean persistNullValues;
 	protected final CassandraMappingContext mappingContext;
 	protected ApplicationContext applicationContext;
 	protected SpELContext spELContext;
@@ -90,7 +91,27 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 
 		this.mappingContext = mappingContext;
 		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
+        this.persistNullValues = false;
 	}
+
+    /**
+     * Creates a new {@link MappingCassandraConverter} with the given {@link CassandraMappingContext}
+     * and an option to either use/ignore null values in insert and update statements.
+     *
+     * @param mappingContext must not be {@literal null}.
+     * @param persistNullValues true will include null values in insert/update statements
+     *
+     */
+    public MappingCassandraConverter(CassandraMappingContext mappingContext, boolean persistNullValues) {
+
+        super(new DefaultConversionService());
+
+        Assert.notNull(mappingContext);
+
+        this.mappingContext = mappingContext;
+        this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
+        this.persistNullValues = persistNullValues;
+    }
 
 	@SuppressWarnings("unchecked")
 	public <R> R readRow(Class<R> clazz, Row row) {
@@ -253,7 +274,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 					return;
 				}
 
-				if (value != null) {
+                if (value != null || persistNullValues) {
 					log.debug(String.format("Adding insert.value [%s] - [%s]", prop.getColumnName().toCql(), value));
 					insert.value(prop.getColumnName().toCql(), value);
 				}
@@ -281,7 +302,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 					return;
 				}
 
-				if (value != null) {
+                if (value != null || persistNullValues) {
 					if (prop.isIdProperty() || entity.isCompositePrimaryKey() || prop.isPrimaryKeyColumn()) {
 						update.where(QueryBuilder.eq(prop.getColumnName().toCql(), value));
 					} else {
