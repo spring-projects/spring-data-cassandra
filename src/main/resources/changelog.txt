@@ -1,6 +1,14 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.2.0.M1 (2014-12-01)
+----------------------------------------
+* DATACASS-166 - Throw IllegalArgumentException if a column is requested that isn't in the table.
+* DATACASS-164 - Support strongly-typed, user-defined primary key interfaces.
+* DATACASS-149 - Add support for custom implementations in CDI repositories.
+* DATACASS-144 - Async repository operations be overloaded to take optional callbacks.
+
+
 Changes in version 1.1.1.RELEASE (2014-10-30)
 ---------------------------------------------
 * DATACASS-178 - Release 1.1.1.
