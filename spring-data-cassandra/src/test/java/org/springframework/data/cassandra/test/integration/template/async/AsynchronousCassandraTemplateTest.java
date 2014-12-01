@@ -26,6 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,6 +198,7 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 	}
 
 	@Test(expected = CancellationException.class)
+	@Ignore
 	public void testUpdateAsynchronouslyCancelled() throws Exception {
 		testInsertOrUpdateAsynchronouslyCancelled(false);
 	}
