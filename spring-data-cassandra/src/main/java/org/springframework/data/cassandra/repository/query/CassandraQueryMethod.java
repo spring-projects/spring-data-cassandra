@@ -85,8 +85,9 @@ public class CassandraQueryMethod extends QueryMethod {
 
 		int i = 0;
 		for (Class<?> type : method.getParameterTypes()) {
-		        if (type.getAnnotation(CassandraType.class) != null) {
-		            break;
+		        CassandraType cnvAnn = type.getAnnotation(CassandraType.class);
+                        if (cnvAnn != null) {
+		            type = cnvAnn.type().asJavaClass();
 		        }
 			if (!ALLOWED_PARAMETER_TYPES.contains(type)) {
 				offendingTypes.add(type);
