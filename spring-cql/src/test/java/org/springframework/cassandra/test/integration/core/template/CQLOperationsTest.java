@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.cassandra.test.integration.core.template;
+
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -65,21 +67,17 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Truncate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Unit Tests for CqlTemplate
  * 
  * @author David Webb
+ * @author Oliver Gierke
  */
 public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
-	private static CqlOperations cqlTemplate;
-
 	private static Logger log = LoggerFactory.getLogger(CQLOperationsTest.class);
 
+	private CqlOperations cqlTemplate;
 	/*
 	 * Objects used for test data
 	 */
@@ -92,27 +90,14 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	/**
 	 * This loads any test specific Cassandra objects
 	 */
-	@Rule
+	@Rule 
 	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
 			"cassandraOperationsTest-cql-dataload.cql", this.keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
 			CASSANDRA_NATIVE_PORT);
 
-	public CQLOperationsTest() {
-		super();
-		// TODO clear = true;
-	}
-
 	@Before
 	public void setupTemplate() {
-
-		if (cqlTemplate == null) {
-
-			// CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
-			// "cassandraOperationsTest-cql-dataload.cql", keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
-			// CASSANDRA_NATIVE_PORT);
-
-			cqlTemplate = new CqlTemplate(SESSION);
-		}
+		this.cqlTemplate = new CqlTemplate(session);
 	}
 
 	@Test

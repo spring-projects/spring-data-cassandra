@@ -29,7 +29,7 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-cassandra</dist.id>
 		<springdata.commons>1.10.0.BUILD-SNAPSHOT</springdata.commons>
-		<cassandra-unit.version>2.0.2.1</cassandra-unit.version>
+		<cassandra-unit.version>2.0.2.2</cassandra-unit.version>
 		<cassandra-driver-dse>2.0.4</cassandra-driver-dse>
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
