@@ -15,6 +15,10 @@
  */
 package org.springframework.cassandra.test.integration.core.template;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,10 +69,6 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Truncate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Unit Tests for CqlTemplate
  * 
@@ -78,6 +78,7 @@ import static org.junit.Assert.assertTrue;
 public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	private static CqlOperations cqlTemplate;
+	private static final String BOOK_INSERT = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
 
 	private static Logger log = LoggerFactory.getLogger(CQLOperationsTest.class);
 
@@ -173,7 +174,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 		WriteOptions options = new WriteOptions();
 		options.setTtl(360);
 
-		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
+		String cql = BOOK_INSERT;
 
 		List<List<?>> values = new LinkedList<List<?>>();
 
@@ -184,26 +185,33 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 		cqlTemplate.ingest(cql, values, options);
 
 		// Assert that the rows were inserted into Cassandra
-		Book b1 = getBook((String) o1[0]);
-		Book b2 = getBook((String) o2[0]);
-		Book b3 = getBook((String) o3[0]);
+		Book b1 = getBookWithRetry((String) o1[0]);
+		Book b2 = getBookWithRetry((String) o2[0]);
+		Book b3 = getBookWithRetry((String) o3[0]);
 
 		assertBook(b1, objectToBook(o1));
 		assertBook(b2, objectToBook(o2));
 		assertBook(b3, objectToBook(o3));
 	}
 
-	@Test
-	public void ingestionTestObjectArray() {
+	/**
+	 * Insert some Books needed to next test steps.
+	 */
+	private void insertTestObjectArray() {
 
-		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
+		String cql = BOOK_INSERT;
 
 		Object[][] values = new Object[3][];
 		values[0] = o1;
 		values[1] = o2;
 		values[2] = o3;
 
-		cqlTemplate.ingest(cql, values);
+		PreparedStatement pstmt = this.SESSION.prepare(cql);
+		BoundStatement binder = null;
+		for (Object[] o : values) {
+			binder = pstmt.bind(o);
+			cqlTemplate.execute(binder);
+		}
 
 		// Assert that the rows were inserted into Cassandra
 		Book b1 = getBook("1234");
@@ -213,6 +221,29 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 		assertBook(b1, objectToBook(o1));
 		assertBook(b2, objectToBook(o2));
 		assertBook(b3, objectToBook(o3));
+	}
+
+	@Test
+	public void ingestTestObjectArray() {
+
+		String cql = BOOK_INSERT;
+
+		Object[][] values = new Object[3][];
+		values[0] = o1;
+		values[1] = o2;
+		values[2] = o3;
+
+		cqlTemplate.ingest(cql, values);
+
+		// Assert that the rows were inserted into Cassandra
+		Book b1 = getBookWithRetry((String) o1[0]);
+		Book b2 = getBookWithRetry((String) o2[0]);
+		Book b3 = getBookWithRetry((String) o3[0]);
+
+		assertBook(b1, objectToBook(o1));
+		assertBook(b2, objectToBook(o2));
+		assertBook(b3, objectToBook(o3));
+
 	}
 
 	/**
@@ -251,7 +282,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	@Test
 	public void ingestionTestRowIterator() {
 
-		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
+		String cql = BOOK_INSERT;
 
 		final Object[][] v = new Object[3][];
 		v[0] = o1;
@@ -262,9 +293,9 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 		cqlTemplate.ingest(cql, ri);
 
 		// Assert that the rows were inserted into Cassandra
-		Book b1 = getBook("1234");
-		Book b2 = getBook("2345");
-		Book b3 = getBook("3456");
+		Book b1 = getBookWithRetry((String) o1[0]);
+		Book b2 = getBookWithRetry((String) o2[0]);
+		Book b3 = getBookWithRetry((String) o3[0]);
 
 		assertBook(b1, objectToBook(o1));
 		assertBook(b2, objectToBook(o2));
@@ -285,7 +316,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
 
-				String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
+				String cql = BOOK_INSERT;
 
 				PreparedStatement ps = s.prepare(cql);
 				BoundStatement bs = ps.bind(isbn, title, author, pages);
@@ -577,7 +608,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	public void queryTestCqlStringRowMapper() {
 
 		// Insert our 3 test books.
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		List<Book> books = cqlTemplate.query("select * from book where isbn in ('1234','2345','3456')",
 				new RowMapper<Book>() {
@@ -600,7 +631,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	public void processTestResultSetRowMapper() {
 
 		// Insert our 3 test books.
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
 
@@ -648,7 +679,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	public void queryForObjectTestCqlStringRowMapperNotOneRowReturned() {
 
 		// Insert our 3 test books.
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		@SuppressWarnings("unused")
 		Book book = cqlTemplate.queryForObject("select * from book where isbn in ('1234','2345','3456')",
@@ -665,7 +696,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	public void processOneTestResultSetRowMapper() {
 
 		// Insert our 3 test books.
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn in ('" + ISBN_NINES + "')");
 
@@ -760,7 +791,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	public void queryForListTestCqlStringType() {
 
 		// Insert our 3 test books.
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		List<String> titles = cqlTemplate.queryForList("select title from book where isbn in ('1234','2345','3456')",
 				String.class);
@@ -776,7 +807,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	public void processListTestResultSetType() {
 
 		// Insert our 3 test books.
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
 
@@ -796,7 +827,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	public void queryForListOfMapCqlString() {
 
 		// Insert our 3 test books.
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		List<Map<String, Object>> results = cqlTemplate
 				.queryForListOfMap("select * from book where isbn in ('1234','2345','3456')");
@@ -811,7 +842,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	public void processListOfMapTestResultSet() {
 
 		// Insert our 3 test books.
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		ResultSetFuture rsf = cqlTemplate.queryAsynchronously("select * from book where isbn in ('1234','2345','3456')");
 
@@ -830,7 +861,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	@Test
 	public void executeTestCqlStringPreparedStatementCallback() {
 
-		String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
+		String cql = BOOK_INSERT;
 
 		BoundStatement statement = cqlTemplate.execute(cql, new PreparedStatementCallback<BoundStatement>() {
 
@@ -848,7 +879,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	@Test
 	public void executeTestPreparedStatementCreatorPreparedStatementCallback() {
 
-		final String cql = "insert into book (isbn, title, author, pages) values (?, ?, ?, ?)";
+		final String cql = BOOK_INSERT;
 
 		BoundStatement statement = cqlTemplate.execute(new PreparedStatementCreator() {
 
@@ -956,7 +987,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	@Test
 	public void queryTestPreparedStatementCreatorResultSetExtractor() {
 
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		final String cql = "select * from book";
 
@@ -989,7 +1020,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	@Test
 	public void queryTestPreparedStatementCreatorRowCallbackHandler() {
 
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		final String cql = "select * from book";
 
@@ -1016,7 +1047,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	@Test
 	public void queryTestPreparedStatementCreatorRowMapper() {
 
-		ingestionTestObjectArray();
+		insertTestObjectArray();
 
 		final String cql = "select * from book";
 
@@ -1224,7 +1255,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	 * @param isbn
 	 * @return
 	 */
-	public Book getBook(final String isbn) {
+	private Book getBook(final String isbn) {
 
 		Book b = cqlTemplate.query("select * from book where isbn = ?", new PreparedStatementBinder() {
 
@@ -1238,6 +1269,9 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 			public Book extractData(ResultSet rs) throws DriverException, DataAccessException {
 				Book b = new Book();
 				Row r = rs.one();
+				if (r == null) {
+					return null;
+				}
 				b.setIsbn(r.getString("isbn"));
 				b.setTitle(r.getString("title"));
 				b.setAuthor(r.getString("author"));
@@ -1248,6 +1282,45 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 		return b;
 
+	}
+
+	/**
+	 * Get a Book from Cassandra for assertions, if the Book is not retruned then retry as needed. This is used for
+	 * assertions after asynchronous insert/ingest to give the datastore time to catch up with the tests.
+	 * 
+	 * @param isbn
+	 * @param retryMillis
+	 * @param numRetries
+	 * @return
+	 */
+	private Book getBookWithRetry(final String isbn, final long retryMillis, final int numRetries) {
+
+		Book b = getBook(isbn);
+
+		for (int i = 1; i <= numRetries && b == null; i++) {
+			log.info(String.format("SLEEP - Trying to get Book after Async Call Waiting [%s]ms, Retry [%s]", retryMillis, i));
+			try {
+				Thread.sleep(retryMillis);
+			} catch (InterruptedException e) {
+				throw new IllegalStateException("Failed to sleep for query retry", e);
+			}
+			b = getBook(isbn);
+		}
+
+		return b;
+	}
+
+	/**
+	 * Get a Book from Cassandra for assertions, if the Book is not retruned then retry as needed. This is used for
+	 * assertions after asynchronous insert/ingest to give the datastore time to catch up with the tests.
+	 * 
+	 * Defaults to 5 retries @ 200ms intervals
+	 * 
+	 * @param isbn
+	 * @return
+	 */
+	private Book getBookWithRetry(final String isbn) {
+		return getBookWithRetry(isbn, 200, 5);
 	}
 
 	/**
