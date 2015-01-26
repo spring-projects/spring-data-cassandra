@@ -59,6 +59,7 @@ import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
@@ -193,7 +194,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	/**
 	 * Blank constructor. You must wire in the Session before use.
 	 */
-	public CqlTemplate() {}
+	public CqlTemplate() {
+	}
 
 	/**
 	 * Constructor used for a basic template configuration
@@ -569,7 +571,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		if (cols.size() == 0) {
 			return null;
 		}
-		return cols.getType(0).deserialize(row.getBytesUnsafe(0));
+		return cols.getType(0).deserialize(row.getBytesUnsafe(0), ProtocolVersion.NEWEST_SUPPORTED);
 	}
 
 	/**
@@ -586,7 +588,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		for (Definition def : cols.asList()) {
 			String name = def.getName();
-			map.put(name, def.getType().deserialize(row.getBytesUnsafe(name)));
+			map.put(name, def.getType().deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return map;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import java.util.UUID;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +34,6 @@ import com.datastax.driver.core.Session;
  * Abstract base integration test class that starts an embedded Cassandra instance.
  * 
  * @author Matthew T. Adams
- * @author Oliver Gierke
  */
 public class AbstractEmbeddedCassandraIntegrationTest {
 
@@ -55,11 +52,12 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 	/**
 	 * The session connected to the system keyspace.
 	 */
-	protected Session system;
+	protected static Session system;
+
 	/**
-	 * The {@link Cluster} that'session connected to Cassandra.
+	 * The {@link Cluster} that's connected to Cassandra.
 	 */
-	protected Cluster cluster;
+	protected static Cluster cluster;
 
 	public static String randomKeyspaceName() {
 		return Utils.randomKeyspaceName();
@@ -76,17 +74,22 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 		return Cluster.builder().addContactPoint(CASSANDRA_HOST).withPort(CASSANDRA_NATIVE_PORT).build();
 	}
 
-	@Before
-	public void connect() {
+	/**
+	 * Ensures that the cluster is created and that the session {@link #SYSTEM} is connected to it.
+	 */
+	public static void ensureClusterConnection() {
 
-		this.cluster = cluster();
-		this.system = cluster.connect();
+		// check cluster
+		if (cluster == null) {
+			cluster = cluster();
+		}
+
+		if (system == null) {
+			system = cluster.connect();
+		}
 	}
 
-	@After
-	public void disconnect() {
-		
-		this.system.close();
-		this.cluster.close();
+	public AbstractEmbeddedCassandraIntegrationTest() {
+		ensureClusterConnection();
 	}
 }

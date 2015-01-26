@@ -11,7 +11,7 @@ class BasicListener extends TestListener implements AsynchronousQueryListener {
 
 	@Override
 	public void onQueryComplete(ResultSetFuture rsf) {
-		countDown();
 		this.rsf = rsf;
+		countDown();
 	}
 }

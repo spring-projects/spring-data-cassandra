@@ -37,6 +37,7 @@ import org.springframework.cassandra.core.keyspace.TableOption;
 import org.springframework.cassandra.core.keyspace.TableOption.CachingOption;
 import org.springframework.cassandra.core.keyspace.TableOption.CompactionOption;
 import org.springframework.cassandra.core.keyspace.TableOption.CompressionOption;
+import org.springframework.cassandra.core.keyspace.TableOption.KeyCachingOption;
 
 import com.datastax.driver.core.DataType;
 
@@ -220,6 +221,7 @@ public class CreateTableCqlGeneratorTests {
 		public String comment = "This is My Table";
 		public Map<Option, Object> compactionMap = new LinkedHashMap<Option, Object>();
 		public Map<Option, Object> compressionMap = new LinkedHashMap<Option, Object>();
+		public Map<Option, Object> cachingMap = new LinkedHashMap<Option, Object>();
 
 		@Override
 		public CreateTableSpecification specification() {
@@ -231,13 +233,15 @@ public class CreateTableCqlGeneratorTests {
 			compressionMap.put(CompressionOption.SSTABLE_COMPRESSION, "SnappyCompressor");
 			compressionMap.put(CompressionOption.CHUNK_LENGTH_KB, 128);
 			compressionMap.put(CompressionOption.CRC_CHECK_CHANCE, 0.75);
+			// Caching
+			cachingMap.put(CachingOption.KEYS, KeyCachingOption.ALL);
+			cachingMap.put(CachingOption.ROWS_PER_PARTITION, "NONE");
 
 			return CreateTableSpecification.createTable().name(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
 					.partitionKeyColumn(partitionKey1, partitionKeyType1).column(column1, columnType1)
 					.with(TableOption.COMPACT_STORAGE).with(TableOption.READ_REPAIR_CHANCE, readRepairChance)
 					.with(TableOption.COMPACTION, compactionMap).with(TableOption.COMPRESSION, compressionMap)
-					.with(TableOption.BLOOM_FILTER_FP_CHANCE, bloomFilterFpChance)
-					.with(TableOption.CACHING, CachingOption.KEYS_ONLY).with(TableOption.REPLICATE_ON_WRITE, replcateOnWrite)
+					.with(TableOption.BLOOM_FILTER_FP_CHANCE, bloomFilterFpChance).with(TableOption.CACHING, cachingMap)
 					.with(TableOption.COMMENT, comment).with(TableOption.DCLOCAL_READ_REPAIR_CHANCE, dcLocalReadRepairChance)
 					.with(TableOption.GC_GRACE_SECONDS, gcGraceSeconds);
 		}
@@ -257,8 +261,6 @@ public class CreateTableCqlGeneratorTests {
 			assertDoubleOption(TableOption.READ_REPAIR_CHANCE.getName(), readRepairChance, cql);
 			assertDoubleOption(TableOption.DCLOCAL_READ_REPAIR_CHANCE.getName(), dcLocalReadRepairChance, cql);
 			assertDoubleOption(TableOption.BLOOM_FILTER_FP_CHANCE.getName(), bloomFilterFpChance, cql);
-			assertStringOption(TableOption.CACHING.getName(), CachingOption.KEYS_ONLY.getValue(), cql);
-			assertStringOption(TableOption.REPLICATE_ON_WRITE.getName(), replcateOnWrite.toString(), cql);
 			assertStringOption(TableOption.COMMENT.getName(), comment, cql);
 			assertLongOption(TableOption.GC_GRACE_SECONDS.getName(), gcGraceSeconds, cql);
 

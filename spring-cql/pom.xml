@@ -113,7 +113,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>15.0</version>
+			<version>${guava}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.liquibase</groupId>

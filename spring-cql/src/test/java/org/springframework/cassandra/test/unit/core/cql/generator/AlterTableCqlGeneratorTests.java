@@ -30,6 +30,7 @@ import org.springframework.cassandra.core.keyspace.TableOption;
 import org.springframework.cassandra.core.keyspace.TableOption.CachingOption;
 import org.springframework.cassandra.core.keyspace.TableOption.CompactionOption;
 import org.springframework.cassandra.core.keyspace.TableOption.CompressionOption;
+import org.springframework.cassandra.core.keyspace.TableOption.KeyCachingOption;
 
 import com.datastax.driver.core.DataType;
 
@@ -57,7 +58,8 @@ public class AlterTableCqlGeneratorTests {
 	 * Convenient base class that other test classes can use so as not to repeat the generics declarations.
 	 */
 	public static abstract class AlterTableTest extends
-			TableOperationCqlGeneratorTest<AlterTableSpecification, AlterTableCqlGenerator> {}
+			TableOperationCqlGeneratorTest<AlterTableSpecification, AlterTableCqlGenerator> {
+	}
 
 	public static class BasicTest extends AlterTableTest {
 
@@ -112,6 +114,7 @@ public class AlterTableCqlGeneratorTests {
 		public String comment = "This is My Table";
 		public Map<Option, Object> compactionMap = new LinkedHashMap<Option, Object>();
 		public Map<Option, Object> compressionMap = new LinkedHashMap<Option, Object>();
+		public Map<Option, Object> cachingMap = new LinkedHashMap<Option, Object>();
 
 		@Override
 		public AlterTableSpecification specification() {
@@ -123,6 +126,9 @@ public class AlterTableCqlGeneratorTests {
 			compressionMap.put(CompressionOption.SSTABLE_COMPRESSION, "SnappyCompressor");
 			compressionMap.put(CompressionOption.CHUNK_LENGTH_KB, 128);
 			compressionMap.put(CompressionOption.CRC_CHECK_CHANCE, 0.75);
+			// Caching
+			cachingMap.put(CachingOption.KEYS, KeyCachingOption.ALL);
+			cachingMap.put(CachingOption.ROWS_PER_PARTITION, "10");
 
 			return AlterTableSpecification
 					.alterTable()
@@ -130,8 +136,8 @@ public class AlterTableCqlGeneratorTests {
 					// .with(TableOption.COMPACT_STORAGE)
 					.with(TableOption.READ_REPAIR_CHANCE, readRepairChance).with(TableOption.COMPACTION, compactionMap)
 					.with(TableOption.COMPRESSION, compressionMap).with(TableOption.BLOOM_FILTER_FP_CHANCE, bloomFilterFpChance)
-					.with(TableOption.CACHING, CachingOption.KEYS_ONLY).with(TableOption.REPLICATE_ON_WRITE, replcateOnWrite)
-					.with(TableOption.COMMENT, comment).with(TableOption.DCLOCAL_READ_REPAIR_CHANCE, dcLocalReadRepairChance)
+					.with(TableOption.CACHING, cachingMap).with(TableOption.COMMENT, comment)
+					.with(TableOption.DCLOCAL_READ_REPAIR_CHANCE, dcLocalReadRepairChance)
 					.with(TableOption.GC_GRACE_SECONDS, gcGraceSeconds);
 		}
 
