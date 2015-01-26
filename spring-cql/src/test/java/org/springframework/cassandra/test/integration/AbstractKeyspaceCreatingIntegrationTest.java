@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.springframework.cassandra.test.integration;
 
 import org.junit.After;
-import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -28,16 +27,15 @@ import com.datastax.driver.core.Session;
  * Abstract base integration test class that creates a keyspace
  * 
  * @author Matthew T. Adams
- * @author Oliver Gierke
  */
 public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
 	static Logger log = LoggerFactory.getLogger(AbstractKeyspaceCreatingIntegrationTest.class);
 
 	/**
-	 * The session that'session connected to the keyspace used in the current instance'session test.
+	 * The session that's connected to the keyspace used in the current instance's test.
 	 */
-	protected Session session;
+	protected static Session session;
 
 	/**
 	 * The name of the keyspace to use for this test instance.
@@ -49,7 +47,16 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 	}
 
 	public AbstractKeyspaceCreatingIntegrationTest(String keyspace) {
+
 		this.keyspace = keyspace;
+		ensureKeyspaceAndSession();
+	}
+
+	/**
+	 * Returns whether we're currently connected to the keyspace.
+	 */
+	public static boolean connected() {
+		return session != null;
 	}
 
 	/**
@@ -60,7 +67,6 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 		return false;
 	}
 
-	@Before
 	public void ensureKeyspaceAndSession() {
 
 		// ensure that test keyspace exists
@@ -104,7 +110,6 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 
 	@After
 	public void after() {
-		
 		if (dropKeyspaceAfterTest() && keyspace != null) {
 
 			session.execute("USE system");
