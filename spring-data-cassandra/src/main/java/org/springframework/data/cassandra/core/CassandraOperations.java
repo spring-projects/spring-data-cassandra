@@ -26,6 +26,7 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * Operations for interacting with Cassandra. These operations are used by the Repository implementation, but can also
