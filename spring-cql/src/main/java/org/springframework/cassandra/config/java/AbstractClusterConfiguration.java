@@ -29,6 +29,7 @@ import com.datastax.driver.core.AuthProvider;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
@@ -38,6 +39,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * shutdown, and optionally drop namespaces.
  * 
  * @author Matthew T. Adams
+ * @author Jorge Davison
  */
 @Configuration
 public abstract class AbstractClusterConfiguration {
@@ -59,6 +61,7 @@ public abstract class AbstractClusterConfiguration {
 		bean.setRetryPolicy(getRetryPolicy());
 		bean.setShutdownScripts(getShutdownScripts());
 		bean.setSocketOptions(getSocketOptions());
+		bean.setQueryOptions(getQueryOptions());
 		bean.setStartupScripts(getStartupScripts());
 		bean.setProtocolVersion(getProtocolVersion());
 
@@ -70,6 +73,10 @@ public abstract class AbstractClusterConfiguration {
 	}
 
 	protected SocketOptions getSocketOptions() {
+		return null;
+	}
+
+	protected QueryOptions getQueryOptions() {
 		return null;
 	}
 
