@@ -1,6 +1,15 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.2.0.RC1 (2015-03-05)
+-----------------------------------------
+* DATACASS-205 - Release 1.2 RC1.
+* DATACASS-199 - ColumnMapper maps varint to Integer.
+* DATACASS-198 - Upgrade for Cassandra 2.1 Support.
+* DATACASS-197 - Reconsider usage of ingestions for general CQL test cases.
+* DATACASS-176 - CassandraCqlClusterFactoryBean doesn't consider maxConnections while validating coreConnection values.
+
+
 Changes in version 1.1.2.RELEASE (2015-01-28)
 ---------------------------------------------
 * DATACASS-199 - ColumnMapper maps varint to Integer.
