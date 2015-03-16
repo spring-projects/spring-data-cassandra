@@ -85,6 +85,10 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		return dataTypesByJavaClass.get(javaClass);
 	}
 
+	public static DataType getUserDefinedDataType() {
+		return getDataTypeFor(DataType.Name.UDT);
+	}
+
 	public static DataType.Name[] getDataTypeNamesFrom(List<TypeInformation<?>> arguments) {
 		DataType.Name[] array = new DataType.Name[arguments.size()];
 		for (int i = 0; i != array.length; i++) {

@@ -58,6 +58,7 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 		boolean isTable = (thisType.isAnnotationPresent(Table.class) || thisType.isAnnotationPresent(Persistent.class));
 		boolean isPrimaryKeyClass = thisType.isAnnotationPresent(PrimaryKeyClass.class);
+		boolean isUserDefinedType = thisType.isAnnotationPresent(UserDefinedType.class);
 
 		/*
 		 * Ensure that this is not both a @Table(@Persistent) and a @PrimaryKey
@@ -67,12 +68,17 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 			throw exceptions;
 		}
 
+		if (isTable && isUserDefinedType) {
+			exceptions.add(new MappingException("Entity cannot be of type Table and UserDefinedType"));
+			throw exceptions;
+		}
+
 		/*
 		 * Ensure that this is either a @Table(@Persistent) or a @PrimaryKey
 		 */
-		if (!isTable && !isPrimaryKeyClass) {
+		if (!isTable && !isPrimaryKeyClass && !isUserDefinedType) {
 			exceptions.add(new MappingException(
-					"Cassandra entities must have the @Table, @Persistent or @PrimaryKeyClass Annotation"));
+					"Cassandra entities must have the @Table, @Persistent, @PrimaryKeyClass or @UserDefinedType Annotation"));
 			throw exceptions;
 		}
 

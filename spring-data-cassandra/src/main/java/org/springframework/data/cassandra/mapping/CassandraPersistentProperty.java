@@ -142,4 +142,24 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 			return source.getColumnName().toCql();
 		}
 	}
+
+	/**
+	 * @return
+	 */
+	boolean isUserDefinedType();
+
+	/**
+	 * @return
+	 */
+	Class<?> getUserDefinedTypeClass();
+
+	/**
+	 * @return
+	 */
+	TypeInformation<?> getUserDefinedTypeClassInformation();
+
+	/**
+	 * @return
+	 */
+	CassandraPersistentEntity<?> getUserDefinedTypeEntity();
 }

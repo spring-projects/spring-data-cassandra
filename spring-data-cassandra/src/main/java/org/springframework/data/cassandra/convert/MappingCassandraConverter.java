@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -44,6 +45,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -179,12 +182,49 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			return;
 		}
 
+		if (prop.isUserDefinedType()) {
+			log.debug("Reading User Defined Type: {}", prop.getUserDefinedTypeEntity().getName());
+			CassandraPersistentEntity<?> udtEntity = prop.getUserDefinedTypeEntity();
+			Object udt = readUserDefinedType(prop.getColumnName(), udtEntity, row);
+			wrapper.setProperty(prop, udt);
+			return;
+		}
+
 		if (!row.getRow().getColumnDefinitions().contains(prop.getColumnName().toCql())) {
 			return;
 		}
 
 		Object obj = row.getPropertyValue(prop);
 		wrapper.setProperty(prop, obj);
+	}
+
+	protected Object readUserDefinedType(CqlIdentifier column, final CassandraPersistentEntity<?> entity, final BasicCassandraRowValueProvider row) {
+		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
+		Object object = instantiator.createInstance(entity, new CassandraPersistentEntityParameterValueProvider(entity, row, null));
+		final BeanWrapper<Object> wrapper = BeanWrapper.create(object, conversionService);
+		final UDTValue udtValue = row.getRow().getUDTValue(column.toCql());
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
+			@Override
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+				if (prop.isUserDefinedType()) {
+					log.debug("Reading User Defined Type: {}", prop.getUserDefinedTypeEntity().getName());
+					CassandraPersistentEntity<?> udtEntity = prop.getUserDefinedTypeEntity();
+					Object udt = readUserDefinedType(prop.getColumnName(), udtEntity, row);
+					wrapper.setProperty(prop, udt);
+					return;
+				}
+
+				Object obj = null;
+				if (prop.getType().isAssignableFrom(String.class)) {
+					obj = udtValue.getString(prop.getColumnName().toCql());
+				} else if (prop.getType().isAssignableFrom(int.class)) {
+					obj = udtValue.getInt(prop.getColumnName().toCql());
+				}
+				wrapper.setProperty(prop, obj);
+			}
+		});
+		return object;
 	}
 
 	protected Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
@@ -253,12 +293,54 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 					return;
 				}
 
+				if (prop.isUserDefinedType()) {
+					log.debug("User defined type");
+					UDTValue udtValue = createUserDefinedType(BeanWrapper.create(value, conversionService), prop.getUserDefinedTypeEntity());
+					insert.value(prop.getColumnName().toCql(), udtValue);
+					return;
+				}
+
 				if (value != null) {
 					log.debug(String.format("Adding insert.value [%s] - [%s]", prop.getColumnName().toCql(), value));
 					insert.value(prop.getColumnName().toCql(), value);
 				}
 			}
 		});
+		log.debug("Created insert: {}", insert);
+	}
+
+	protected UDTValue createUserDefinedType(final BeanWrapper<Object> wrapper, final CassandraPersistentEntity<?> entity) {
+		final UserType userType =  mappingContext.getUserDefinedType(entity);
+		final UDTValue userTypeValue = userType.newValue();
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
+			@Override
+			@SuppressWarnings("deprecation")
+			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+
+				Object value = wrapper.getProperty(prop, prop.getType());
+
+				log.debug("prop.type -> " + prop.getType().getName());
+				log.debug("prop.value -> " + value);
+
+				if (prop.isUserDefinedType()) {
+					log.debug("User defined type");
+					UDTValue innerValue = createUserDefinedType(BeanWrapper.create(value, conversionService), prop.getUserDefinedTypeEntity());
+					userTypeValue.setUDTValue(prop.getColumnName().toCql(), innerValue);
+					return;
+				}
+
+				if (value != null) {
+					log.debug(String.format("Adding insert.value [%s] - [%s]", prop.getColumnName().toCql(), value));
+					if (value instanceof String) {
+						userTypeValue.setString(prop.getColumnName().toCql(), (String) value);
+					} else if (value instanceof Integer) {
+						userTypeValue.setInt(prop.getColumnName().toCql(), (Integer) value);
+					}
+				}
+			}
+		});
+		return userTypeValue;
 	}
 
 	protected void writeUpdateFromObject(final Object object, final Update update, CassandraPersistentEntity<?> entity) {

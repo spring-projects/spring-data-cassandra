@@ -31,6 +31,7 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
+import org.springframework.data.cassandra.mapping.UserDefinedType;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
@@ -51,6 +52,13 @@ public class BasicCassandraPersistentPropertyIntegrationTests {
 		@Column("message")
 		String text;
 
+		Tag tag;
+
+	}
+
+	@UserDefinedType
+	static class Tag {
+		String value;
 	}
 
 	CassandraPersistentEntity<Timeline> entity;
