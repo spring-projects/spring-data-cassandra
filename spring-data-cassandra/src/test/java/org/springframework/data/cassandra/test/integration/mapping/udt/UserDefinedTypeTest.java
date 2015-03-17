@@ -15,16 +15,16 @@
  */
 package org.springframework.data.cassandra.test.integration.mapping.udt;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
+import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -41,16 +41,11 @@ public class UserDefinedTypeTest {
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = CompanyRepository.class)
-	public static class Config extends AbstractCassandraConfiguration {
-
+	public static class Config extends IntegrationTestConfig {
+		
 		@Override
-		protected String getKeyspaceName() {
-			return UserDefinedTypeTest.class.getSimpleName();
-		}
-
-		@Override
-		public SchemaAction getSchemaAction() {
-			return SchemaAction.NONE;
+		public String[] getEntityBasePackages() {
+			return new String[] { Company.class.getPackage().getName() };
 		}
 	}
 
