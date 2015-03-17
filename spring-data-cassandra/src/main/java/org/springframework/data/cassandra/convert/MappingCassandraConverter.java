@@ -201,7 +201,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 		Object object = instantiator.createInstance(entity, null);
 		final BeanWrapper<Object> wrapper = BeanWrapper.create(object, conversionService);
-		final UDTValueAccessor udtValueReader = new UDTValueAccessor(udtValue);
+		final UDTValueReader udtValueReader = new UDTValueReader(udtValue);
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 			@Override
@@ -306,7 +306,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	protected UDTValue createUserDefinedType(final BeanWrapper<Object> wrapper, final CassandraPersistentEntity<?> entity) {
 		UserType userType =  mappingContext.getUserDefinedType(entity);
 		UDTValue userTypeValue = userType.newValue();
-		final UDTValueAccessor udtValueReader = new UDTValueAccessor(userTypeValue);
+		final UDTValueWriter udtValueWriter = new UDTValueWriter(userTypeValue);
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 			@Override
@@ -321,10 +321,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 				if (prop.isUserDefinedType()) {
 					log.debug("User defined type");
 					UDTValue innerValue = createUserDefinedType(BeanWrapper.create(value, conversionService), prop.getUserDefinedTypeEntity());
-					udtValueReader.set(prop.getColumnName().toCql(), innerValue);
+					udtValueWriter.set(prop.getColumnName().toCql(), innerValue);
 					return;
 				}
-				udtValueReader.set(prop.getColumnName().toCql(), value);
+				udtValueWriter.set(prop.getColumnName().toCql(), value);
 			}
 		});
 		return userTypeValue;
