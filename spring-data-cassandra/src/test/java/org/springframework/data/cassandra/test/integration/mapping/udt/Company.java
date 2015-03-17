@@ -24,10 +24,10 @@ import org.springframework.data.cassandra.mapping.Table;
 public class Company {
 	@Id String id;
 
-	Address address;
+	Address addr;
 
 	public Company() {
-		address = new Address();
+		addr = new Address();
 	}
 
 	@Override

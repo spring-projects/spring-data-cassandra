@@ -30,6 +30,14 @@ public class Address {
 
 	public int number;
 
+	public boolean active;
+	
+	public Phone pbx;
+	
+	public Address() {
+		this.pbx = new Phone();
+	}
+
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);

@@ -12,14 +12,14 @@ import com.datastax.driver.core.UserType;
  * 
  * @author Matthew T. Adams
  */
-public class UDTValueReader extends AbstractColumnReader {
+public class UDTValueAccessor extends AbstractColumnAccessor {
 
 	protected UDTValue udtValue;
 	protected UserType udtType;
 	private List<String> fieldNames;
 
-	public UDTValueReader(UDTValue value) {
-		super(value);
+	public UDTValueAccessor(UDTValue value) {
+		super(value, value);
 		this.udtValue = value;
 		this.udtType = value.getType();
 		this.fieldNames = new ArrayList<String>(udtType.getFieldNames());

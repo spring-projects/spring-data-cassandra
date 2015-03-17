@@ -9,7 +9,7 @@ import com.datastax.driver.core.Row;
  * 
  * @author Matthew T. Adams
  */
-public class ColumnReader extends AbstractColumnReader {
+public class ColumnReader extends AbstractColumnAccessor {
 
 	protected Row row;
 	protected ColumnDefinitions columns;
