@@ -50,6 +50,7 @@ public class ColumnSpecification {
 	private DataType type; // TODO: determining if we should be coupling this to Datastax Java Driver type?
 	private PrimaryKeyType keyType;
 	private Ordering ordering;
+	private boolean frozen;
 
 	/**
 	 * Sets the column's name.
@@ -151,6 +152,26 @@ public class ColumnSpecification {
 		this.ordering = ordering;
 		return this;
 	}
+	
+	/**
+	 * Identifies this column as frozen
+	 * 
+	 * @return this
+	 */
+	ColumnSpecification frozen() {
+		frozen(true);
+		return this;
+	}
+
+	/**
+	 * Toggles the identification of this column as frozen 
+	 * 
+	 * @return this
+	 */
+	ColumnSpecification frozen(boolean frozen) {
+		this.frozen = frozen;
+		return this;
+	}
 
 	public CqlIdentifier getName() {
 		return name;
@@ -167,13 +188,21 @@ public class ColumnSpecification {
 	public Ordering getOrdering() {
 		return ordering;
 	}
+	
+	public boolean isFrozen() {
+		return frozen;
+	}
 
 	public String toCql() {
 		return toCql(null).toString();
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return (cql = noNull(cql)).append(name).append(" ").append(type);
+		if (frozen) {
+			return (cql = noNull(cql)).append(name).append(" frozen<").append(type).append(">");
+		} else {
+			return (cql = noNull(cql)).append(name).append(" ").append(type);
+		}
 	}
 
 	@Override
