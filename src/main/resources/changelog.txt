@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.2.0.RELEASE (2015-03-23)
+---------------------------------------------
+* DATACASS-207 - Release 1.2 GA.
+
+
 Changes in version 1.2.0.RC1 (2015-03-05)
 -----------------------------------------
 * DATACASS-205 - Release 1.2 RC1.
