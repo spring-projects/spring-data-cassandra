@@ -114,11 +114,6 @@
 			<artifactId>guava</artifactId>
 			<version>15.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.liquibase</groupId>
-			<artifactId>liquibase-core</artifactId>
-			<version>3.1.1</version>
-		</dependency>
 	</dependencies>
 
 	<build>
