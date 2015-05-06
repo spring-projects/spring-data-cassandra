@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2015 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,12 @@ import org.springframework.util.Assert;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Thomas Darimont
  */
 
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
-	private final CassandraOperations cassandraTemplate;
+	private final CassandraOperations cassandraOperations;
 	private final CassandraMappingContext mappingContext;
 
 	/**
@@ -57,7 +58,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 		Assert.notNull(cassandraOperations);
 
-		this.cassandraTemplate = cassandraOperations;
+		this.cassandraOperations = cassandraOperations;
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
 
 		// TODO: remove when supporting declarative query methods
@@ -71,12 +72,9 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected Object getTargetRepository(RepositoryInformation metadata) {
-
-		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainType());
-
-		return new SimpleCassandraRepository(entityInformation, cassandraTemplate);
-
+	protected Object getTargetRepository(RepositoryInformation information) {
+		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
+		return getTargetRepositoryViaReflection(information, entityInformation, cassandraOperations);
 	}
 
 	@Override
@@ -91,7 +89,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		}
 
 		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
-				cassandraTemplate.getConverter());
+				cassandraOperations.getConverter());
 	}
 
 	@Override
@@ -109,9 +107,9 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 			if (namedQueries.hasQuery(namedQueryName)) {
 				String namedQuery = namedQueries.getQuery(namedQueryName);
-				return new StringBasedCassandraQuery(namedQuery, queryMethod, cassandraTemplate);
+				return new StringBasedCassandraQuery(namedQuery, queryMethod, cassandraOperations);
 			} else if (queryMethod.hasAnnotatedQuery()) {
-				return new StringBasedCassandraQuery(queryMethod, cassandraTemplate);
+				return new StringBasedCassandraQuery(queryMethod, cassandraOperations);
 			} else {
 				throw new InvalidDataAccessApiUsageException("declarative query methods are a todo");
 			}
