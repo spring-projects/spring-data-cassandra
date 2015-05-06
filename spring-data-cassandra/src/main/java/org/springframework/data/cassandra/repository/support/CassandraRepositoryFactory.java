@@ -15,9 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -28,12 +25,16 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.util.Assert;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
 
 /**
  * Factory to create {@link TypedIdCassandraRepository} instances.
@@ -70,7 +71,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected Object getTargetRepository(RepositoryMetadata metadata) {
+	protected Object getTargetRepository(RepositoryInformation metadata) {
 
 		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainType());
 

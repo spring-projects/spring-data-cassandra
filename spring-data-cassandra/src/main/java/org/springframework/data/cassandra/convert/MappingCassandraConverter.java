@@ -15,9 +15,11 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import java.io.Serializable;
-import java.util.Map;
-
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.querybuilder.Delete.Where;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -43,11 +45,8 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.querybuilder.Delete.Where;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Update;
+import java.io.Serializable;
+import java.util.Map;
 
 import static org.springframework.data.cassandra.repository.support.BasicMapId.id;
 
@@ -253,10 +252,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 					return;
 				}
 
-				if (value != null) {
-					log.debug(String.format("Adding insert.value [%s] - [%s]", prop.getColumnName().toCql(), value));
-					insert.value(prop.getColumnName().toCql(), value);
-				}
+				log.debug(String.format("Adding insert.value [%s] - [%s]", prop.getColumnName().toCql(), value));
+				insert.value(prop.getColumnName().toCql(), value);
 			}
 		});
 	}
