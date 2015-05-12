@@ -27,6 +27,7 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
+import org.springframework.data.cassandra.repository.support.SimpleCassandraRepository;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
@@ -113,4 +114,12 @@ public @interface EnableCassandraRepositories {
 	 * @return
 	 */
 	String cassandraTemplateRef() default "cassandraTemplate";
+	
+	/**
+	 * Configure the repository base class to be used to create repository proxies.  Defaults to {@link SimpleCassandraRepository}
+	 * 
+	 * @return
+	 * @since 1.3
+	 */
+	Class<?> repositoryBaseClass() default SimpleCassandraRepository.class;
 }
