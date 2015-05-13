@@ -336,14 +336,37 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
 
-		if (entity.getIdProperty().isCompositePrimaryKey()) {
+		CassandraPersistentProperty idProperty = entity.getIdProperty();
+                if (idProperty.isCompositePrimaryKey() && idProperty.getCompositePrimaryKeyProperties().size() > 1) {
 			throw new IllegalArgumentException(String.format(
 					"entity class [%s] uses a composite primary key class [%s] which this method can't support", type.getName(),
 					entity.getIdProperty().getCompositePrimaryKeyEntity().getType().getName()));
 		}
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
-		select.where(QueryBuilder.in(entity.getIdProperty().getColumnName().toCql(), CollectionUtils.toArray(ids)));
+                final List<Object> identifiers = new ArrayList<Object>();
+                
+                if (idProperty.isCompositePrimaryKey()) {
+                
+                        CassandraPersistentEntity<?> idEntity = idProperty.getCompositePrimaryKeyEntity();
+                        
+                        for(Object id : ids) {
+                            final ConvertingPropertyAccessor idWrapper = getWrapper(id, idEntity);
+                            idEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+                                    @Override
+                                    public void doWithPersistentProperty(CassandraPersistentProperty p) {
+                                        identifiers.add(idWrapper.getProperty(p, p.getDataType().asJavaClass()));
+                                    }
+                            });
+                        }
+                } else {
+                    for (Object id : ids) {
+                        identifiers.add(convertProperty(id, idProperty));
+                    }
+                }
+                
+		select.where(QueryBuilder.in(entity.getIdProperty().getColumnName().toCql(), 
+		        CollectionUtils.toArray(identifiers)));
 
 		return select(select, type);
 	}
@@ -405,11 +428,17 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 				}
 			});
 
-			return;
+		} else {
+		    
+                    clauseCallback.doWithClause(QueryBuilder.eq(idProperty.getColumnName().toCql(), 
+                            convertProperty(id, idProperty)));
 		}
 
-		clauseCallback.doWithClause(QueryBuilder.eq(idProperty.getColumnName().toCql(), id));
 	}
+
+        protected Object convertProperty(Object object, CassandraPersistentProperty prop) {
+            return getConversionService().convert(object, prop.getDataType().asJavaClass());
+        }
 
 	protected void appendIdCriteria(final com.datastax.driver.core.querybuilder.Select.Where where,
 			CassandraPersistentEntity<?> entity, Object id) {

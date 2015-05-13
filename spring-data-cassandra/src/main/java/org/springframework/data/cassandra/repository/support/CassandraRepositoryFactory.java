@@ -28,6 +28,7 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -70,7 +71,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected Object getTargetRepository(RepositoryMetadata metadata) {
+	protected Object getTargetRepository(RepositoryInformation metadata) {
 
 		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainType());
 
