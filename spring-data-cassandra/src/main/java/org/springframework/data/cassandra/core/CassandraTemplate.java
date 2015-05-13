@@ -412,6 +412,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		CassandraPersistentProperty idProperty = entity.getIdProperty();
 
+		Assert.notNull(idProperty, "id property not found for "+entity);
+		
 		if (idProperty.isCompositePrimaryKey()) {
 
 			CassandraPersistentEntity<?> idEntity = idProperty.getCompositePrimaryKeyEntity();
