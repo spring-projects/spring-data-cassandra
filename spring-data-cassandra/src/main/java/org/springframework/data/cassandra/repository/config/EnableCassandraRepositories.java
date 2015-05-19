@@ -35,6 +35,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Greg Turnquist
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -106,6 +107,14 @@ public @interface EnableCassandraRepositories {
 	 * @return
 	 */
 	Class<?> repositoryFactoryBeanClass() default CassandraRepositoryFactoryBean.class;
+
+	/**
+	 * Configure the repository base class to be used to create repository proxies for this particular configuration.
+	 *
+	 * @return
+	 * @since 1.7
+	 * /
+	Class<?> repositoryBaseClass() default DefaultRepositoryBaseClass.class;
 
 	/**
 	 * Configures the name of the {@link CassandraTemplate} bean to be used with the repositories detected.
