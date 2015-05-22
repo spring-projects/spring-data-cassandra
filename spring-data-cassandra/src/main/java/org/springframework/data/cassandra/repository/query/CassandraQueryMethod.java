@@ -1,5 +1,6 @@
 package org.springframework.data.cassandra.repository.query;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -84,11 +85,15 @@ public class CassandraQueryMethod extends QueryMethod {
 		Set<Class<?>> offendingTypes = new HashSet<Class<?>>();
 
 		int i = 0;
+		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		for (Class<?> type : method.getParameterTypes()) {
-		        CassandraType cnvAnn = type.getAnnotation(CassandraType.class);
+		        CassandraType cnvAnn = findAnnotation(parameterAnnotations[i], CassandraType.class);
+		        if (cnvAnn == null) {
+		            cnvAnn = type.getAnnotation(CassandraType.class);
+		        } 
                         if (cnvAnn != null) {
-		            type = cnvAnn.type().asJavaClass();
-		        }
+                            type = cnvAnn.type().asJavaClass();
+                        } 
 			if (!ALLOWED_PARAMETER_TYPES.contains(type)) {
 				offendingTypes.add(type);
 			}
@@ -112,7 +117,17 @@ public class CassandraQueryMethod extends QueryMethod {
 		}
 	}
 
-	@Override
+    @SuppressWarnings("unchecked")
+    private <T> T findAnnotation(Annotation[] annotations, Class<T> annType) {
+        for (Annotation a : annotations) {
+            if (annType.isAssignableFrom(a.annotationType())) {
+                return (T) a;
+            }
+        }
+        return null;
+    }
+
+    @Override
 	protected CassandraParameters createParameters(Method method) {
 		return new CassandraParameters(method);
 	}
