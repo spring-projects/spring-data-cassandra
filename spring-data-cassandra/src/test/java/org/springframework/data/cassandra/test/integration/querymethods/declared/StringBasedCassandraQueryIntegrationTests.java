@@ -71,7 +71,7 @@ public class StringBasedCassandraQueryIntegrationTests {
 		StringBasedCassandraQuery cassandraQuery = new StringBasedCassandraQuery(queryMethod, operations);
 		CassandraParametersParameterAccessor accesor = new CassandraParametersParameterAccessor(queryMethod, "Matthews");
 
-		String stringQuery = cassandraQuery.createQuery(accesor);
+		String stringQuery = cassandraQuery.createQuery(accesor, converter);
 		SimpleStatement actual = new SimpleStatement(stringQuery);
 
 		String table = Person.class.getSimpleName().toLowerCase();
@@ -91,7 +91,7 @@ public class StringBasedCassandraQueryIntegrationTests {
 		CassandraParametersParameterAccessor accesor = new CassandraParametersParameterAccessor(queryMethod, "Matthews",
 				"John");
 
-		String stringQuery = cassandraQuery.createQuery(accesor);
+		String stringQuery = cassandraQuery.createQuery(accesor, converter);
 		SimpleStatement actual = new SimpleStatement(stringQuery);
 
 		String table = Person.class.getSimpleName().toLowerCase();
