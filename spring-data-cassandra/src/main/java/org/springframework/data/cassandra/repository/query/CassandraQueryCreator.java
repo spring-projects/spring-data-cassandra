@@ -22,6 +22,7 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.domain.Sort;
@@ -47,6 +48,7 @@ class CassandraQueryCreator extends AbstractQueryCreator<Select, Clause> {
 	private final CassandraParameterAccessor accessor;
 
 	private final CassandraMappingContext context;
+        private final CassandraConverter converter;
 
 	/**
 	 * Creates a new {@link CassandraQueryCreator} from the given {@link PartTree}, {@link ConvertingParameterAccessor}
@@ -55,8 +57,9 @@ class CassandraQueryCreator extends AbstractQueryCreator<Select, Clause> {
 	 * @param tree
 	 * @param accessor
 	 * @param context
+	 * @param converter 
 	 */
-	public CassandraQueryCreator(PartTree tree, CassandraParameterAccessor accessor, CassandraMappingContext context) {
+	public CassandraQueryCreator(PartTree tree, CassandraParameterAccessor accessor, CassandraMappingContext context, CassandraConverter converter) {
 
 		super(tree, accessor);
 
@@ -64,6 +67,7 @@ class CassandraQueryCreator extends AbstractQueryCreator<Select, Clause> {
 
 		this.accessor = accessor;
 		this.context = context;
+		this.converter = converter;
 	}
 
 	@Override

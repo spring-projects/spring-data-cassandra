@@ -117,7 +117,8 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	public Object execute(Object[] parameters) {
 
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(method, parameters);
-		String query = createQuery(accessor);
+		
+		String query = createQuery(accessor, template.getConverter());
 
 		ResultSet resultSet = template.query(query);
 
@@ -207,6 +208,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 * Creates a string query using the given {@link ParameterAccessor}
 	 * 
 	 * @param accessor must not be {@literal null}.
+	 * @param cassandraConverter 
 	 */
-	protected abstract String createQuery(CassandraParameterAccessor accessor);
+	protected abstract String createQuery(CassandraParameterAccessor accessor, CassandraConverter cassandraConverter);
 }

@@ -14,8 +14,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.cassandra.core.cql.CqlStringUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.Query;
@@ -202,4 +204,16 @@ public class CassandraQueryMethod extends QueryMethod {
 	public boolean isDateParameter(int parameterIndex) {
 		return dateParameterIndexes.contains(parameterIndex);
 	}
+
+    public String convertParameterToCQL(int index, Object value, CassandraConverter converter) {
+        if (isStringLikeParameter(index)) {
+                String string = converter.getConversionService().convert(value, String.class);
+                return "'" + CqlStringUtils.escapeSingle(string) + "'";
+        } else if (isDateParameter(index)) {
+                Date date = converter.getConversionService().convert(value, Date.class);
+                return "" + date.getTime();
+        } else {
+                return value.toString();
+        }
+    }
 }

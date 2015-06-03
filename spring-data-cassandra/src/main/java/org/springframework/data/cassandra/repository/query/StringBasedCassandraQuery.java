@@ -1,12 +1,11 @@
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.core.cql.CqlStringUtils;
+import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 
 public class StringBasedCassandraQuery extends AbstractCassandraQuery {
@@ -28,11 +27,11 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	}
 
 	@Override
-	public String createQuery(CassandraParameterAccessor accessor) {
-		return replacePlaceholders(query, accessor);
+	public String createQuery(CassandraParameterAccessor accessor, CassandraConverter converter) {
+		return replacePlaceholders(query, accessor, converter);
 	}
 
-	private String replacePlaceholders(String input, CassandraParameterAccessor accessor) {
+	private String replacePlaceholders(String input, CassandraParameterAccessor accessor, CassandraConverter converter) {
 
 		Matcher matcher = PLACEHOLDER.matcher(input);
 		String result = input;
@@ -44,14 +43,8 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 			String stringValue = null;
 			CassandraQueryMethod queryMethod = getQueryMethod();
 
-			if (queryMethod.isStringLikeParameter(index)) {
-				stringValue = "'" + CqlStringUtils.escapeSingle(value) + "'";
-			} else if (queryMethod.isDateParameter(index)) {
-				stringValue = "" + ((Date) value).getTime();
-			} else {
-				stringValue = value.toString();
-			}
-
+			stringValue = queryMethod.convertParameterToCQL(index, value, converter);
+			
 			result = result.replace(group, stringValue);
 		}
 

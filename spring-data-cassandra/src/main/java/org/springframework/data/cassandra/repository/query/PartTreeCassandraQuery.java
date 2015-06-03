@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -53,9 +54,9 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	}
 
 	@Override
-	protected String createQuery(CassandraParameterAccessor accessor) {
+	protected String createQuery(CassandraParameterAccessor accessor, CassandraConverter converter) {
 
-		CassandraQueryCreator creator = new CassandraQueryCreator(tree, accessor, context);
+		CassandraQueryCreator creator = new CassandraQueryCreator(tree, accessor, context, converter);
 		return creator.createQuery().getQueryString();
 	}
 }
