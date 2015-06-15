@@ -340,6 +340,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 				return Compression.NONE;
 			case SNAPPY:
 				return Compression.SNAPPY;
+			case LZ4:
+				return Compression.LZ4;
 		}
 		throw new IllegalArgumentException("unknown compression type " + type);
 	}

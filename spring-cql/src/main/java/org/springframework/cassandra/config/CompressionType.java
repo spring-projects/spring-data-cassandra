@@ -21,5 +21,5 @@ package org.springframework.cassandra.config;
  * @author Alex Shvid
  */
 public enum CompressionType {
-	NONE, SNAPPY;
+	NONE, SNAPPY, LZ4;
 }
