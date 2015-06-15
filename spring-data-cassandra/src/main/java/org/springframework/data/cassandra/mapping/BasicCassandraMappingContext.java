@@ -153,7 +153,7 @@ public class BasicCassandraMappingContext extends
 
 	@Override
 	public boolean usesTable(TableMetadata table) {
-		return entitySetsByTableName.containsKey(table.getName());
+                return entitySetsByTableName.containsKey(CqlIdentifier.cqlId(table.getName()));
 	}
 
 	@Override
