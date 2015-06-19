@@ -96,7 +96,7 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 				.getNonPrimaryKeyEntities();
 
 		for (CassandraPersistentEntity<?> entity : entities) {
-			admin.createTable(false, entity.getTableName(), entity.getType(), null); // TODO: allow spec of table options
+			admin.createTable(true, entity.getTableName(), entity.getType(), null); // TODO: allow spec of table options
 		}
 	}
 
