@@ -32,10 +32,10 @@ public class TestLatencyTracker implements LatencyTracker {
 	
 	/* 
 	 * (non-Javadoc)
-	 * @see com.datastax.driver.core.LatencyTracker#update(com.datastax.driver.core.Host, com.datastax.driver.core.Statement, java.lang.Exception, long)
+	 * @see com.datastax.driver.core.LatencyTracker#update(com.datastax.driver.core.Host, long)
 	 */
 	@Override
-	public void update(Host host, Statement statement, Exception exception, long newLatencyNanos) {
+	public void update(Host host, long newLatencyNanos) {
 		LOG.info("Latency Tracker: " + host.getAddress() + ", " + newLatencyNanos + " nanoseconds.");
 	}
 }

@@ -33,7 +33,7 @@
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
 		<jamm.version>0.2.5</jamm.version>
-		<cassandra>2.1.6</cassandra>
+		<cassandra>2.1.5</cassandra>
 	</properties>
 
 	<developers>
