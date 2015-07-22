@@ -23,7 +23,6 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
-import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
 import org.springframework.util.Assert;
 
@@ -61,8 +60,9 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 		Assert.notNull(entity);
 
 		CassandraPersistentProperty idProperty = entityMetadata.getIdProperty();
+
 		if (idProperty != null) {
-			return (ID) BeanWrapper.create(entity, null).getProperty(idProperty);
+			return (ID) entityMetadata.getIdentifierAccessor(entity).getIdentifier();
 		}
 
 		return (ID) converter.getId(entity, entityMetadata);
@@ -71,7 +71,8 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	@SuppressWarnings("unchecked")
 	@Override
 	public Class<ID> getIdType() {
-		return (Class<ID>) (entityMetadata.getIdProperty() == null ? MapId.class : entityMetadata.getIdProperty().getType());
+		return (Class<ID>) (entityMetadata.getIdProperty() == null ? MapId.class
+				: entityMetadata.getIdProperty().getType());
 	}
 
 	@Override
