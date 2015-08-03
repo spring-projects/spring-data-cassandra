@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2015 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
+import org.springframework.data.repository.config.DefaultRepositoryBaseClass;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
@@ -35,6 +36,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Thomas Darimont
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -106,6 +108,14 @@ public @interface EnableCassandraRepositories {
 	 * @return
 	 */
 	Class<?> repositoryFactoryBeanClass() default CassandraRepositoryFactoryBean.class;
+
+	/**
+	 * Configure the repository base class to be used to create repository proxies for this particular configuration.
+	 * 
+	 * @return
+	 * @since 1.3
+	 */
+	Class<?> repositoryBaseClass() default DefaultRepositoryBaseClass.class;
 
 	/**
 	 * Configures the name of the {@link CassandraTemplate} bean to be used with the repositories detected.
