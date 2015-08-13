@@ -43,6 +43,7 @@ import com.datastax.driver.core.Host;
 import com.datastax.driver.core.LatencyTracker;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SocketOptions;
@@ -85,6 +86,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	private LoadBalancingPolicy loadBalancingPolicy;
 	private ReconnectionPolicy reconnectionPolicy;
 	private RetryPolicy retryPolicy;
+	private ProtocolVersion protocolVersion;
 	private boolean metricsEnabled = DEFAULT_METRICS_ENABLED;
 	private boolean jmxReportingEnabled = DEFAULT_JMX_REPORTING_ENABLED;
 	private boolean sslEnabled = DEFAULT_SSL_ENABLED;
@@ -176,6 +178,10 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 			} else {
 				builder.withSSL(sslOptions);
 			}
+		}
+
+		if(protocolVersion != null) {
+			builder.withProtocolVersion(protocolVersion);
 		}
 
 		cluster = builder.build();
@@ -284,6 +290,10 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	public void setPoolingOptions(PoolingOptions poolingOptions) {
 		this.poolingOptions = poolingOptions;
+	}
+
+	public void setProtocolVersion(ProtocolVersion protocolVersion){
+		this.protocolVersion = protocolVersion;
 	}
 
 	public void setSocketOptions(SocketOptions socketOptions) {
