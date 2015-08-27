@@ -35,7 +35,7 @@
 	<properties>
 		<project.type>multi</project.type>
 		<dist.id>spring-data-cassandra</dist.id>
-		<springdata.commons>1.11.0.OT.RELEASE</springdata.commons>
+		<springdata.commons>1.10.1.OT.RELEASE</springdata.commons>
 		<cassandra-unit.version>2.0.2.2</cassandra-unit.version>
 		<cassandra-driver-dse>2.1.4</cassandra-driver-dse>
 		<el.version>1.0</el.version>
@@ -43,6 +43,7 @@
 		<jamm.version>0.2.5</jamm.version>
 		<cassandra>2.1.2</cassandra>
 		<guava>16.0.1</guava>
+		<release.maven.plugin.version>2.5.1</release.maven.plugin.version>
 	</properties>
 
 	<developers>
@@ -326,6 +327,14 @@
 					</execution>
 				</executions>
 			</plugin>
+                        <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-release-plugin</artifactId>
+                                <version>${release.maven.plugin.version}</version>
+                                <configuration>
+                                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                                </configuration>
+                        </plugin>
 		</plugins>
 
 		<resources>
