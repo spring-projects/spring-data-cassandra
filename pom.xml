@@ -19,6 +19,13 @@
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
 
+        <scm>
+                <url>https://github.com/oberthur/spring-data-cassandra</url>
+                <connection>scm:git:git@github.com:oberthur/spring-data-cassandra.git</connection>
+                <developerConnection>scm:git:git@github.com:oberthur/spring-data-cassandra.git</developerConnection>
+                <tag>HEAD</tag>
+        </scm>
+
 	<modules>
 		<module>spring-cql</module>
 		<module>spring-data-cassandra</module>
