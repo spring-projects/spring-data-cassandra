@@ -756,7 +756,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				rch.processRow(row);
 			}
 		} catch (DriverException dx) {
-			translateExceptionIfPossible(dx);
+			throw translateExceptionIfPossible(dx);
 		}
 	}
 
@@ -769,7 +769,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				mappedRows.add(rowMapper.mapRow(row, i++));
 			}
 		} catch (DriverException dx) {
-			translateExceptionIfPossible(dx);
+			throw translateExceptionIfPossible(dx);
 		}
 		return mappedRows;
 	}
@@ -784,7 +784,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			Assert.isTrue(rows.size() == 1, "row list has " + rows.size() + " rows instead of one");
 			row = rowMapper.mapRow(rows.get(0), 0);
 		} catch (DriverException dx) {
-			translateExceptionIfPossible(dx);
+			throw translateExceptionIfPossible(dx);
 		}
 		return row;
 	}
