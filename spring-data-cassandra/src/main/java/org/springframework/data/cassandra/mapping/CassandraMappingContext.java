@@ -21,6 +21,7 @@ import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.data.mapping.context.MappingContext;
 
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.UserType;
 
 /**
  * A {@link MappingContext} for Cassandra.
@@ -91,4 +92,10 @@ public interface CassandraMappingContext extends
 	 * Sets a verifier other than the {@link BasicCassandraPersistentEntityMetadataVerifier}
 	 */
 	void setVerifier(CassandraPersistentEntityMetadataVerifier verifier);
+
+	/**
+	 * @param entity
+	 * @return
+	 */
+	UserType getUserDefinedType(CassandraPersistentEntity<?> entity);
 }

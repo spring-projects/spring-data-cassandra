@@ -32,6 +32,7 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.context.MappingContext;
@@ -43,6 +44,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.UserType;
 
 /**
  * Default implementation of a {@link MappingContext} for Cassandra using {@link CassandraPersistentEntity} and
@@ -65,6 +67,7 @@ public class BasicCassandraMappingContext extends
 	protected Set<CassandraPersistentEntity<?>> nonPrimaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<Class<?>, CassandraPersistentEntity<?>>();
+	private Map<CassandraPersistentEntity<?>, UserType> userDefinedTypes = new HashMap<CassandraPersistentEntity<?>, UserType>();
 
 	/**
 	 * Creates a new {@link BasicCassandraMappingContext}.
@@ -295,6 +298,16 @@ public class BasicCassandraMappingContext extends
 	@Override
 	public boolean contains(Class<?> type) {
 		return entitiesByType.containsKey(type);
+	}
+
+	@Override
+	public UserType getUserDefinedType(CassandraPersistentEntity<?> entity) {
+		UserType userType = userDefinedTypes .get(entity);
+		if (userType == null) {
+			CassandraAdminOperations operations = context.getBean(CassandraAdminOperations.class);
+			userType = operations.getUserTypeMetadata(entity.getTableName());
+		}
+		return userType;
 	}
 
 	/**

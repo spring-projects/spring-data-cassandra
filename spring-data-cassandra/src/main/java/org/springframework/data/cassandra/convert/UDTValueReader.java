@@ -15,40 +15,45 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import com.datastax.driver.core.ColumnDefinitions;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
 
 /**
- * Helpful class to read a column's value from a row, with possible type conversion.
+ * Helpful class to read a user defined type value from a row, with possible type conversion.
  * 
- * @author Matthew T. Adams
+ * @author Fabio Mendes
  */
-public class ColumnReader extends AbstractColumnReader {
+public class UDTValueReader extends AbstractColumnReader {
 
-	protected Row row;
-	protected ColumnDefinitions columns;
+	protected UDTValue udtValue;
+	protected UserType udtType;
+	private List<String> fieldNames;
 
-	public ColumnReader(Row row) {
-		super(row);
-		this.row = row;
-		this.columns = row.getColumnDefinitions();
+	public UDTValueReader(UDTValue value) {
+		super(value);
+		this.udtValue = value;
+		this.udtType = value.getType();
+		this.fieldNames = new ArrayList<String>(udtType.getFieldNames());
 	}
 
 	@Override
 	protected DataType getDataType(int i) {
-		return columns.getType(i);
+		return udtType.getFieldType(fieldNames.get(i));
 	}
 
 	protected int getColumnIndex(String name) {
-		int indexOf = columns.getIndexOf(name);
+		int indexOf = fieldNames.indexOf(name);
 		if (indexOf == -1) {
 			throw new IllegalArgumentException("Column does not exist in Cassandra table: " + name);
 		}
 		return indexOf;
 	}
 
-	public Row getRow() {
-		return row;
+	public UDTValue getUDTValue() {
+		return udtValue;
 	}
 }

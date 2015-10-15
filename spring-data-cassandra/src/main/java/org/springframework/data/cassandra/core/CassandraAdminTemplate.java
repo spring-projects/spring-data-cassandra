@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.UserType;
 
 /**
  * Default implementation of {@link CassandraAdminOperations}.
@@ -134,6 +135,33 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 			@Override
 			public TableMetadata doInSession(Session s) {
 				return s.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName.toCql());
+			}
+		});
+	}
+
+	@Override
+	public UserType getUserTypeMetadata(final String keyspace, final CqlIdentifier userTypeName) {
+
+		Assert.notNull(userTypeName);
+
+		return execute(new SessionCallback<UserType>() {
+			@Override
+			public UserType doInSession(Session s) {
+				return s.getCluster().getMetadata().getKeyspace(keyspace).getUserType(userTypeName.toCql());
+			}
+		});
+	}
+
+	@Override
+	public UserType getUserTypeMetadata(final CqlIdentifier userTypeName) {
+
+		Assert.notNull(userTypeName);
+
+		return execute(new SessionCallback<UserType>() {
+			@Override
+			public UserType doInSession(Session s) {
+
+				return s.getCluster().getMetadata().getKeyspace(s.getLoggedKeyspace()).getUserType(userTypeName.toCql());
 			}
 		});
 	}

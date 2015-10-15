@@ -24,13 +24,14 @@ import org.junit.Test;
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.mapping.UserDefinedType;
 import org.springframework.data.mapping.model.MappingException;
 
 /**
@@ -112,6 +113,11 @@ public class BasicCassandraPersistentEntityVerifierIntegrationTest {
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(MultiPkc.class);
 
 		assertNull(entity.getIdProperty());
+	}
+
+	@Test
+	public void testUserDefinedType() {
+		mappingContext.getPersistentEntity(Company.class);
 	}
 
 	static class NonPersistentClass {
@@ -217,5 +223,19 @@ public class BasicCassandraPersistentEntityVerifierIntegrationTest {
 
 		@PrimaryKeyColumn(ordinal = 1)
 		String pk1;
+	}
+
+	@Table
+	public static class Company {
+
+		@PrimaryKey
+		String id;
+
+		Address address;
+	}
+
+	@UserDefinedType
+	public static class Address {
+		String street;
 	}
 }

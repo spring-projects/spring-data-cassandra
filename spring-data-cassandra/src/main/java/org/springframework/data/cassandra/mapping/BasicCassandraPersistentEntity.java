@@ -191,6 +191,10 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		});
 	}
 
+	public boolean isUserDefinedType() {
+		return getType().isAnnotationPresent(UserDefinedType.class);
+	}
+
 	@Override
 	public void verify() throws MappingException {
 		super.verify();

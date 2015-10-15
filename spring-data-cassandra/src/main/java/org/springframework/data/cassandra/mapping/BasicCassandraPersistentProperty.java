@@ -127,6 +127,27 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Override
+	public boolean isUserDefinedType() {
+		return getField().getType().isAnnotationPresent(UserDefinedType.class);
+	}
+
+	@Override
+	public Class<?> getUserDefinedTypeClass() {
+		if (!isUserDefinedType()) {
+			return null;
+		}
+		return getField().getType();
+	}
+
+	@Override
+	public TypeInformation<?> getUserDefinedTypeClassInformation() {
+		if (!isUserDefinedType()) {
+			return null;
+		}
+		return ClassTypeInformation.from(getUserDefinedTypeClass());
+	}
+
+	@Override
 	public CqlIdentifier getColumnName() {
 
 		List<CqlIdentifier> columnNames = getColumnNames();
@@ -151,6 +172,10 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		CassandraType annotation = findAnnotation(CassandraType.class);
 		if (annotation != null) {
 			return getDataTypeFor(annotation);
+		}
+
+		if (isUserDefinedType()) {
+			return CassandraSimpleTypeHolder.getUserDefinedDataType();
 		}
 
 		if (isMap()) {
@@ -409,6 +434,18 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			throw new IllegalStateException("need CassandraMappingContext");
 		}
 		return mappingContext.getPersistentEntity(getCompositePrimaryKeyTypeInformation());
+	}
+
+	/**
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getUserDefinedTypeEntity()
+	 */
+	@Override
+	public CassandraPersistentEntity<?> getUserDefinedTypeEntity() {
+		CassandraMappingContext mappingContext = getOwner().getMappingContext();
+		if (mappingContext == null) {
+			throw new IllegalStateException("need CassandraMappingContext");
+		}
+		return mappingContext.getPersistentEntity(getUserDefinedTypeClass());
 	}
 
 	@Override
