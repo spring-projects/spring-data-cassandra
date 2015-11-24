@@ -34,7 +34,7 @@ import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
-import org.springframework.cassandra.support.exception.CassandraInsufficientReplicasAvailableException;
+import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -59,7 +59,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
-	public static class Config extends IntegrationTestConfig {}
+	public static class Config extends IntegrationTestConfig {
+	}
 
 	@Table
 	public static class Thing {
@@ -80,7 +81,8 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 		@Column
 		public int number;
 
-		public Thing() {}
+		public Thing() {
+		}
 
 		public Thing(String stuff, int number) {
 			this.stuff = stuff;
@@ -176,7 +178,7 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 		testInsertAsynchronously(ConsistencyLevel.ONE);
 	}
 
-	@Test(expected = CassandraInsufficientReplicasAvailableException.class)
+	@Test(expected = CassandraConnectionFailureException.class)
 	public void testInsertAsynchronouslyThrows() throws Exception {
 		testInsertAsynchronously(ConsistencyLevel.TWO);
 	}
@@ -221,7 +223,7 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 		testUpdateAsynchronously(ConsistencyLevel.ONE);
 	}
 
-	@Test(expected = CassandraInsufficientReplicasAvailableException.class)
+	@Test(expected = CassandraConnectionFailureException.class)
 	public void testUpdateAsynchronouslyThrows() throws Exception {
 		testUpdateAsynchronously(ConsistencyLevel.TWO);
 	}
@@ -243,7 +245,7 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 		testDeleteAsynchronously(ConsistencyLevel.ONE);
 	}
 
-	@Test(expected = CassandraInsufficientReplicasAvailableException.class)
+	@Test(expected = CassandraConnectionFailureException.class)
 	public void testDeleteAsynchronouslyThrows() throws Exception {
 		testDeleteAsynchronously(ConsistencyLevel.TWO);
 	}

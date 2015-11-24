@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -29,11 +30,12 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-cassandra</dist.id>
 		<springdata.commons>1.12.0.BUILD-SNAPSHOT</springdata.commons>
-		<cassandra-unit.version>2.0.2.2</cassandra-unit.version>
+		<cassandra-unit.version>2.1.9.2</cassandra-unit.version>
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
-		<jamm.version>0.2.5</jamm.version>
-		<cassandra>2.1.5</cassandra>
+		<jamm.version>0.3.1</jamm.version>
+		<cassandra.version>2.1.11</cassandra.version>
+		<cassandra-driver-dse.version>2.1.7.1</cassandra-driver-dse.version>
 	</properties>
 
 	<developers>
@@ -78,7 +80,7 @@
 			<dependency>
 				<groupId>com.datastax.cassandra</groupId>
 				<artifactId>cassandra-driver-dse</artifactId>
-				<version>${cassandra}</version>
+				<version>${cassandra-driver-dse.version}</version>
 				<exclusions>
 					<exclusion>
 						<artifactId>slf4j-log4j12</artifactId>
@@ -92,23 +94,20 @@
 						<artifactId>guava</artifactId>
 						<groupId>com.google.guava</groupId>
 					</exclusion>
+					<exclusion>
+						<artifactId>netty-handler</artifactId>
+						<groupId>io.netty</groupId>
+					</exclusion>
 				</exclusions>
 			</dependency>
 			<dependency>
-				<groupId>com.github.stephenc</groupId>
+				<groupId>com.github.jbellis</groupId>
 				<artifactId>jamm</artifactId>
 				<version>${jamm.version}</version>
 				<scope>test</scope>
 			</dependency>
 
 			<!-- Logging Dependencies -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>log4j-over-slf4j</artifactId>
-				<version>${slf4j}</version>
-				<scope>test</scope>
-			</dependency>
-
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>jul-to-slf4j</artifactId>
@@ -148,9 +147,8 @@
 
 			<dependency>
 				<groupId>org.cassandraunit</groupId>
-				<artifactId>cassandra-unit</artifactId>
+				<artifactId>cassandra-unit-spring</artifactId>
 				<version>${cassandra-unit.version}</version>
-				<scope>test</scope>
 				<exclusions>
 					<exclusion>
 						<artifactId>cassandra-all</artifactId>
@@ -160,13 +158,11 @@
 						<groupId>com.datastax.cassandra</groupId>
 						<artifactId>cassandra-driver-core</artifactId>
 					</exclusion>
+					<exclusion>
+						<artifactId>slf4j-log4j12</artifactId>
+						<groupId>org.slf4j</groupId>
+					</exclusion>
 				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.cassandraunit</groupId>
-				<artifactId>cassandra-unit-spring</artifactId>
-				<version>${cassandra-unit.version}</version>
 				<scope>test</scope>
 			</dependency>
 
@@ -190,6 +186,19 @@
 				<version>${jodatime}</version>
 				<scope>test</scope>
 			</dependency>
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.hectorclient</groupId>
+				<artifactId>hector-core</artifactId>
+				<version>1.1-4</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -213,16 +222,26 @@
 			<artifactId>cassandra-driver-dse</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.github.stephenc</groupId>
+			<groupId>com.github.jbellis</groupId>
 			<artifactId>jamm</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.cassandraunit</groupId>
-			<artifactId>cassandra-unit</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.cassandraunit</groupId>
 			<artifactId>cassandra-unit-spring</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>spring-context</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-test</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
@@ -266,7 +285,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.8</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -293,8 +311,7 @@
 				<version>${failsafe.version}</version>
 				<configuration>
 					<forkCount>1</forkCount>
-					<argLine>-Xmx1024m -Xss512m
-						-javaagent:${com.github.stephenc:jamm:jar}</argLine>
+					<argLine>-Xms1g -Xmx1g -Xss256k -javaagent:${com.github.jbellis:jamm:jar}</argLine>
 					<reuseForks>true</reuseForks>
 					<useFile>false</useFile>
 					<includes>

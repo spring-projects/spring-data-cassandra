@@ -29,13 +29,10 @@ import com.datastax.driver.core.Statement;
 public class TestLatencyTracker implements LatencyTracker {
 
 	private final static Logger LOG = LoggerFactory.getLogger(TestLatencyTracker.class);
-	
-	/* 
-	 * (non-Javadoc)
-	 * @see com.datastax.driver.core.LatencyTracker#update(com.datastax.driver.core.Host, long)
-	 */
+
 	@Override
-	public void update(Host host, long newLatencyNanos) {
+	public void update(Host host, Statement statement, Exception exception, long newLatencyNanos) {
 		LOG.info("Latency Tracker: " + host.getAddress() + ", " + newLatencyNanos + " nanoseconds.");
 	}
+
 }
