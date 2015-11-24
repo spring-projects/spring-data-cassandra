@@ -63,7 +63,7 @@ public class CreateIndexCqlGeneratorIntegrationTests {
 		@Rule
 		public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
 				"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace),
-				CASSANDRA_CONFIG, CASSANDRA_HOST, CASSANDRA_NATIVE_PORT);
+				CASSANDRA_CONFIG);
 
 		@Override
 		public BasicTest unit() {

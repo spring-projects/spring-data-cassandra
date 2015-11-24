@@ -18,15 +18,20 @@ package org.springframework.cassandra.test.integration;
 import org.junit.After;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.Host;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Session.State;
 
 /**
  * Abstract base integration test class that creates a keyspace
  * 
  * @author Matthew T. Adams
+ * @author David Webb
  */
 public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
@@ -81,7 +86,7 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 			if (kmd == null) { // then create keyspace
 
 				String cql = "CREATE KEYSPACE " + keyspace
-						+ " WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};";
+						+ " WITH durable_writes = false AND replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};";
 				log.info("creating keyspace {} via CQL [{}]", keyspace, cql);
 
 				system.execute(cql);
@@ -99,13 +104,40 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 
 		} else {
 
+			debugSession();
+
 			log.info("session already connected to a keyspace; attempting to change to use {}", keyspace);
 
 			String cql = "USE " + (keyspace == null ? "system" : keyspace) + ";";
-			session.execute(cql);
+
+			log.debug(cql);
+
+			getTemplate().execute(cql);
 
 			log.info("now using keyspace " + keyspace);
+
 		}
+	}
+
+	protected static CqlOperations getTemplate() {
+
+		return new CqlTemplate(session);
+	}
+
+	protected static void debugSession() {
+		if (session == null) {
+			log.warn("Session is null...cannot debug that");
+			return;
+		}
+
+		State state = session.getState();
+
+		for (Host h : state.getConnectedHosts()) {
+
+			log.debug(String.format("Session Host dc [%s], rack [%s], ver [%s], state [%s]", h.getDatacenter(), h.getRack(),
+					h.getCassandraVersion(), h.getState()));
+		}
+
 	}
 
 	@After

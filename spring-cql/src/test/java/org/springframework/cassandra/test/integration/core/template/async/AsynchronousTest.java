@@ -22,7 +22,7 @@ import org.springframework.cassandra.core.QueryForMapListener;
 import org.springframework.cassandra.core.QueryForObjectListener;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
-import org.springframework.cassandra.support.exception.CassandraInsufficientReplicasAvailableException;
+import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.DataType;
@@ -238,7 +238,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		testString_AsynchronousQueryListener_QueryOptions(ConsistencyLevel.ONE);
 	}
 
-	@Test(expected = CassandraInsufficientReplicasAvailableException.class)
+	@Test(expected = CassandraConnectionFailureException.class)
 	public void testString_AsynchronousQueryListener_QueryOptionsWithConsistencyLevel2() throws InterruptedException {
 		testString_AsynchronousQueryListener_QueryOptions(ConsistencyLevel.TWO);
 	}
@@ -284,7 +284,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		testString_QueryForObjectListener_QueryOptions(ConsistencyLevel.ONE);
 	}
 
-	@Test(expected = CassandraInsufficientReplicasAvailableException.class)
+	@Test(expected = CassandraConnectionFailureException.class)
 	public void testString_QueryForObjectListener_QueryOptionsWithConsistencyLevel2() throws Exception {
 		testString_QueryForObjectListener_QueryOptions(ConsistencyLevel.TWO);
 	}
@@ -324,7 +324,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		testString_QueryForMapListener_QueryOptions(ConsistencyLevel.ONE);
 	}
 
-	@Test(expected = CassandraInsufficientReplicasAvailableException.class)
+	@Test(expected = CassandraConnectionFailureException.class)
 	public void testString_QueryForMapListener_QueryOptionsWithConsistencyLevel2() throws Exception {
 		testString_QueryForMapListener_QueryOptions(ConsistencyLevel.TWO);
 	}
@@ -381,7 +381,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		testString_QueryForListListener_QueryOptions(ConsistencyLevel.ONE);
 	}
 
-	@Test(expected = CassandraInsufficientReplicasAvailableException.class)
+	@Test(expected = CassandraConnectionFailureException.class)
 	public void testString_QueryForListListener_QueryOptionsWithConsistencyLevel2() throws Exception {
 		testString_QueryForListListener_QueryOptions(ConsistencyLevel.TWO);
 	}
