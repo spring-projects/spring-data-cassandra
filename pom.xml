@@ -191,12 +191,14 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
 				<version>3.1</version>
+				<scope>test</scope>
 			</dependency>
 
 			<dependency>
 				<groupId>org.hectorclient</groupId>
 				<artifactId>hector-core</artifactId>
 				<version>1.1-4</version>
+				<scope>test</scope>
 			</dependency>
 
 		</dependencies>
