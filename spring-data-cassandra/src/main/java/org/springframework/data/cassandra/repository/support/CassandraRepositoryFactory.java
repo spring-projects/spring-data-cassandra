@@ -27,6 +27,7 @@ import org.springframework.data.cassandra.repository.query.CassandraEntityInform
 import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
 import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -99,10 +100,15 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	private class CassandraQueryLookupStrategy implements QueryLookupStrategy {
 
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.query.QueryLookupStrategy#resolveQuery(java.lang.reflect.Method, org.springframework.data.repository.core.RepositoryMetadata, org.springframework.data.projection.ProjectionFactory, org.springframework.data.repository.core.NamedQueries)
+		 */
 		@Override
-		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, NamedQueries namedQueries) {
+		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
+				NamedQueries namedQueries) {
 
-			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, mappingContext);
+			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory, mappingContext);
 			String namedQueryName = queryMethod.getNamedQueryName();
 
 			if (namedQueries.hasQuery(namedQueryName)) {
