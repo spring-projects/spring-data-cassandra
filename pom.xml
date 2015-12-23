@@ -230,20 +230,6 @@
 		<dependency>
 			<groupId>org.cassandraunit</groupId>
 			<artifactId>cassandra-unit-spring</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>spring-context</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-test</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-log4j12</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 
