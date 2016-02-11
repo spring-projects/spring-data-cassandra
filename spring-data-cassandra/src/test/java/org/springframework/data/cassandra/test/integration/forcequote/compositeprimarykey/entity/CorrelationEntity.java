@@ -1,12 +1,34 @@
+/*
+ * Copyright 2016 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey.entity;
-
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.*;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.data.cassandra.mapping.Column;
+import org.springframework.data.cassandra.mapping.PrimaryKey;
+import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.mapping.Table;
+
+/**
+ * @author Matthew T. Adams
+ */
 @Table(value = "identity_correlations")
 public class CorrelationEntity {
 
@@ -15,20 +37,17 @@ public class CorrelationEntity {
 
 		private static final long serialVersionUID = 1027559675696864950L;
 
-		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-		private String type;
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private String type;
 
-		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
-		private String value;
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) private String value;
 
-		@PrimaryKeyColumn(name = "correlated_type", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
-		private String correlatedType;
+		@PrimaryKeyColumn(name = "correlated_type", ordinal = 2,
+				type = PrimaryKeyType.CLUSTERED) private String correlatedType;
 
-		@PrimaryKeyColumn(ordinal = 3, type = PrimaryKeyType.CLUSTERED)
-		private Date ts;
+		@PrimaryKeyColumn(ordinal = 3, type = PrimaryKeyType.CLUSTERED) private Date ts;
 
-		@PrimaryKeyColumn(name = "correlated_value", ordinal = 4, type = PrimaryKeyType.CLUSTERED)
-		private String correlatedValue;
+		@PrimaryKeyColumn(name = "correlated_value", ordinal = 4,
+				type = PrimaryKeyType.CLUSTERED) private String correlatedValue;
 
 		public IdentityEntity() {}
 
@@ -132,11 +151,9 @@ public class CorrelationEntity {
 		}
 	}
 
-	@PrimaryKey(forceQuote = true)
-	private IdentityEntity identityEntity;
+	@PrimaryKey(forceQuote = true) private IdentityEntity identityEntity;
 
-	@Column
-	private Map<String, String> extra;
+	@Column private Map<String, String> extra;
 
 	public CorrelationEntity() {}
 

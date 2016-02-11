@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d %5p | %t | %-55logger{55} | %m | %n</pattern>
+        </encoder>
+    </appender>
+
+	<logger name="org.springframework" level="ERROR" />
+	<logger name="org.springframework.cassandra" level="ERROR" />
+	<logger name="com.datastax" level="ERROR" />
+
+	<!-- See https://issues.apache.org/jira/browse/CASSANDRA-8220 -->
+	<logger name="org.apache.cassandra.service.CassandraDaemon" level="OFF" />
+
+	<!-- Suppress "Cannot connect to any host" messages caused by open sessions and
+	and an already shut down embedded Cassandra instance because of concurrent shutdown hooks -->
+	<logger name="com.datastax.driver.core.ControlConnection" level="OFF" />
+	<logger name="com.datastax.driver.core.Session" level="OFF" />
+
+	<!-- This one is noisy and subject to be refactored -->
+	<logger name="org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntityMetadataVerifier" level="OFF" />
+
+	<root level="ERROR">
+		<appender-ref ref="console" />
+	</root>
+
+</configuration>

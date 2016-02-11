@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.repository.User;
+import org.springframework.data.cassandra.test.integration.repository.simple.User;
 
 /**
  * @author Mohsin Husen
  * @author Mark Paluch
  */
-
 public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest {
 
 	private static CdiTestContainer cdiContainer;
@@ -40,9 +39,13 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 
 	@BeforeClass
 	public static void init() throws Exception {
-		startCassandra();
+		// CDI container is booted before the @Rule can be triggered.
+		// Ensure that we have a usable Cassandra instance otherwise the container won't boot
+		// because it needs a CassandraOperations with a working Session/Cluster
+
 		cdiContainer = CdiTestContainerLoader.getCdiContainer();
 		cdiContainer.startApplicationScope();
+		cdiContainer.startContexts();
 		cdiContainer.bootContainer();
 	}
 

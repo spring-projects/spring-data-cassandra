@@ -1,3 +1,0 @@
-name: ks9487fb2da1a541e39a05e5545d64411a
-replicationFactor: 1
-strategy: org.apache.cassandra.locator.SimpleStrategy

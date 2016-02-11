@@ -32,9 +32,15 @@
 		<cassandra-unit.version>2.1.9.2</cassandra-unit.version>
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
-		<jamm.version>0.3.1</jamm.version>
 		<cassandra.version>2.1.11</cassandra.version>
 		<cassandra-driver-dse.version>2.1.7.1</cassandra-driver-dse.version>
+
+		<build.cassandra.mode>embedded</build.cassandra.mode>
+		<build.cassandra.host>localhost</build.cassandra.host>
+		<build.cassandra.native_transport_port>19042</build.cassandra.native_transport_port>
+		<build.cassandra.rpc_port>19160</build.cassandra.rpc_port>
+		<build.cassandra.storage_port>17000</build.cassandra.storage_port>
+		<build.cassandra.ssl_storage_port>17001</build.cassandra.ssl_storage_port>
 	</properties>
 
 	<developers>
@@ -99,12 +105,6 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-			<dependency>
-				<groupId>com.github.jbellis</groupId>
-				<artifactId>jamm</artifactId>
-				<version>${jamm.version}</version>
-				<scope>test</scope>
-			</dependency>
 
 			<!-- Logging Dependencies -->
 			<dependency>
@@ -145,27 +145,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.cassandraunit</groupId>
-				<artifactId>cassandra-unit-spring</artifactId>
-				<version>${cassandra-unit.version}</version>
-				<exclusions>
-					<exclusion>
-						<artifactId>cassandra-all</artifactId>
-						<groupId>org.apache.cassandra</groupId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.datastax.cassandra</groupId>
-						<artifactId>cassandra-driver-core</artifactId>
-					</exclusion>
-					<exclusion>
-						<artifactId>slf4j-log4j12</artifactId>
-						<groupId>org.slf4j</groupId>
-					</exclusion>
-				</exclusions>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
 				<groupId>javax.el</groupId>
 				<artifactId>el-api</artifactId>
 				<version>${el.version}</version>
@@ -192,14 +171,6 @@
 				<version>3.1</version>
 				<scope>test</scope>
 			</dependency>
-
-			<dependency>
-				<groupId>org.hectorclient</groupId>
-				<artifactId>hector-core</artifactId>
-				<version>1.1-4</version>
-				<scope>test</scope>
-			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 
@@ -222,14 +193,6 @@
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-dse</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.github.jbellis</groupId>
-			<artifactId>jamm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.cassandraunit</groupId>
-			<artifactId>cassandra-unit-spring</artifactId>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -248,28 +211,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.8</version>
-				<executions>
-					<execution>
-						<id>reserve-network-port</id>
-						<goals>
-							<goal>reserve-network-port</goal>
-						</goals>
-						<phase>process-resources</phase>
-						<configuration>
-							<portNames>
-								<portName>build.cassandra.native_transport_port</portName>
-								<portName>build.cassandra.rpc_port</portName>
-								<portName>build.cassandra.storage_port</portName>
-								<portName>build.cassandra.ssl_storage_port</portName>
-							</portNames>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
@@ -282,9 +223,11 @@
 					<useFile>false</useFile>
 					<includes>
 						<include>**/test/unit/**/*.java</include>
+						<include>**/*UnitTests.java</include>
 					</includes>
 					<excludes>
 						<exclude>**/test/integration/**/*.java</exclude>
+						<exclude>**/**IntegrationTests.java</exclude>
 						<exclude>**/test/performance/**/*.java</exclude>
 					</excludes>
 					<systemPropertyVariables>
@@ -298,14 +241,16 @@
 				<version>${failsafe.version}</version>
 				<configuration>
 					<forkCount>1</forkCount>
-					<argLine>-Xms1g -Xmx1g -Xss256k -javaagent:${com.github.jbellis:jamm:jar}</argLine>
+					<argLine>-Xms1g -Xmx1g -Xss256k</argLine>
 					<reuseForks>true</reuseForks>
 					<useFile>false</useFile>
 					<includes>
 						<include>**/test/integration/**/*.java</include>
+						<include>**/*IntegrationTests.java</include>
 					</includes>
 					<excludes>
 						<exclude>**/test/unit/**/*.java</exclude>
+						<exclude>**/*UnitTests.java</exclude>
 						<exclude>**/test/performance/**/*.java</exclude>
 					</excludes>
 					<systemPropertyVariables>
@@ -355,6 +300,57 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+
+		<profile>
+			<id>embedded-cassandra</id>
+			<activation>
+    			<activeByDefault>true</activeByDefault>
+  			</activation>
+
+			<properties>
+				<build.cassandra.mode>embedded</build.cassandra.mode>
+			</properties>
+
+			<build>
+				<plugins>
+					<plugin>
+						<!-- Random port generation requires embedded-cassandra.yaml and cassandra-connection.properties
+						in both modules -->
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>1.8</version>
+						<executions>
+							<execution>
+								<id>reserve-network-port</id>
+								<goals>
+									<goal>reserve-network-port</goal>
+								</goals>
+								<phase>generate-test-resources</phase>
+								<configuration>
+									<portNames>
+										<portName>build.cassandra.native_transport_port</portName>
+										<portName>build.cassandra.rpc_port</portName>
+										<portName>build.cassandra.storage_port</portName>
+										<portName>build.cassandra.ssl_storage_port</portName>
+									</portNames>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>external-cassandra</id>
+
+			<properties>
+				<build.cassandra.mode>external</build.cassandra.mode>
+				<build.cassandra.native_transport_port>9042</build.cassandra.native_transport_port>
+                <build.cassandra.rpc_port>9160</build.cassandra.rpc_port>
+                <build.cassandra.storage_port>7000</build.cassandra.storage_port>
+                <build.cassandra.ssl_storage_port>7001</build.cassandra.ssl_storage_port>
+			</properties>
 		</profile>
 	</profiles>
 

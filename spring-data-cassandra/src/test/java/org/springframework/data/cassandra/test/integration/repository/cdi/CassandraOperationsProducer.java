@@ -21,35 +21,52 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
+import javax.inject.Singleton;
 
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.Service;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
+import org.springframework.cassandra.support.RandomKeySpaceName;
+import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.test.integration.repository.User;
+import org.springframework.data.cassandra.test.integration.repository.simple.User;
+
+import com.datastax.driver.core.Cluster;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Service;
 
 /**
  * @author Mark Paluch
  */
-@ApplicationScoped
 class CassandraOperationsProducer {
 
+	public final static String KEYSPACE_NAME = RandomKeySpaceName.create();
+
 	@Produces
-	public CassandraOperations createCassandraOperations() throws Exception {
-		String keySpace = AbstractEmbeddedCassandraIntegrationTest.randomKeyspaceName();
+	@Singleton
+	public Cluster createCluster() throws Exception {
+		CassandraConnectionProperties properties = new CassandraConnectionProperties();
+
+		Cluster cluster = Cluster.builder().addContactPoint(properties.getCassandraHost())
+				.withPort(properties.getCassandraPort()).build();
+		return cluster;
+	}
+
+	@Produces
+	@ApplicationScoped
+	public CassandraOperations createCassandraOperations(Cluster cluster) throws Exception {
 
 		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter();
-		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(AbstractEmbeddedCassandraIntegrationTest
-				.cluster().connect(), cassandraConverter);
 
-		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(keySpace).ifNotExists();
+		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(cluster.connect(), cassandraConverter);
+
+		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(KEYSPACE_NAME)
+				.ifNotExists();
 		cassandraTemplate.execute(createKeyspaceSpecification);
-		cassandraTemplate.execute("USE " + keySpace);
+		cassandraTemplate.execute("USE " + KEYSPACE_NAME);
 
 		cassandraTemplate.createTable(true, CqlIdentifier.cqlId("users"), User.class, new HashMap<String, Object>());
 
@@ -62,7 +79,13 @@ class CassandraOperationsProducer {
 	}
 
 	public void close(@Disposes CassandraOperations cassandraOperations) {
+
+		cassandraOperations.execute(DropKeyspaceSpecification.dropKeyspace(KEYSPACE_NAME));
 		cassandraOperations.getSession().close();
+	}
+
+	public void close(@Disposes Cluster cluster) {
+		cluster.close();
 	}
 
 	@Produces

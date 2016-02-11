@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Map;
@@ -34,6 +33,11 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.TableMetadata.Options;
 
+/**
+ * @author Matthew T. Adams
+ * @author Matthew T. Adams
+ * @author Alex Shvid
+ */
 public class CqlTableSpecificationAssertions {
 
 	private final static Logger log = LoggerFactory.getLogger(CqlTableSpecificationAssertions.class);
@@ -93,23 +97,23 @@ public class CqlTableSpecificationAssertions {
 
 		switch (tableOption) {
 
-		case BLOOM_FILTER_FP_CHANCE:
-		case READ_REPAIR_CHANCE:
-		case DCLOCAL_READ_REPAIR_CHANCE:
-			assertEquals((Double) expected, (Double) actual, DELTA);
-			return;
+			case BLOOM_FILTER_FP_CHANCE:
+			case READ_REPAIR_CHANCE:
+			case DCLOCAL_READ_REPAIR_CHANCE:
+				assertEquals((Double) expected, (Double) actual, DELTA);
+				return;
 
-		case CACHING:
-			assertCaching((Map<String, Object>) expected, (Map<String, String>) actual);
-			return;
+			case CACHING:
+				assertCaching((Map<String, Object>) expected, (Map<String, String>) actual);
+				return;
 
-		case COMPACTION:
-			assertCompaction((Map<String, Object>) expected, (Map<String, String>) actual);
-			return;
+			case COMPACTION:
+				assertCompaction((Map<String, Object>) expected, (Map<String, String>) actual);
+				return;
 
-		case COMPRESSION:
-			assertCompression((Map<String, Object>) expected, (Map<String, String>) actual);
-			return;
+			case COMPRESSION:
+				assertCompression((Map<String, Object>) expected, (Map<String, String>) actual);
+				return;
 		}
 
 		log.info(actual.getClass().getName());
@@ -141,24 +145,24 @@ public class CqlTableSpecificationAssertions {
 	@SuppressWarnings("unchecked")
 	public static <T> T getOptionFor(TableOption option, Class<?> type, Options options) {
 		switch (option) {
-		case BLOOM_FILTER_FP_CHANCE:
-			return (T) (Double) options.getBloomFilterFalsePositiveChance();
-		case CACHING:
-			return (T) options.getCaching();
-		case COMMENT:
-			return (T) CqlStringUtils.singleQuote(options.getComment());
-		case COMPACTION:
-			return (T) options.getCompaction();
-		case COMPACT_STORAGE:
-			throw new Error(); // TODO: figure out
-		case COMPRESSION:
-			return (T) options.getCompression();
-		case DCLOCAL_READ_REPAIR_CHANCE:
-			return (T) (Double) options.getLocalReadRepairChance();
-		case GC_GRACE_SECONDS:
-			return (T) new Long(options.getGcGraceInSeconds());
-		case READ_REPAIR_CHANCE:
-			return (T) (Double) options.getReadRepairChance();
+			case BLOOM_FILTER_FP_CHANCE:
+				return (T) (Double) options.getBloomFilterFalsePositiveChance();
+			case CACHING:
+				return (T) options.getCaching();
+			case COMMENT:
+				return (T) CqlStringUtils.singleQuote(options.getComment());
+			case COMPACTION:
+				return (T) options.getCompaction();
+			case COMPACT_STORAGE:
+				throw new Error(); // TODO: figure out
+			case COMPRESSION:
+				return (T) options.getCompression();
+			case DCLOCAL_READ_REPAIR_CHANCE:
+				return (T) (Double) options.getLocalReadRepairChance();
+			case GC_GRACE_SECONDS:
+				return (T) new Long(options.getGcGraceInSeconds());
+			case READ_REPAIR_CHANCE:
+				return (T) (Double) options.getReadRepairChance();
 		}
 		return null;
 	}
