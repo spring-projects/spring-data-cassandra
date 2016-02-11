@@ -27,5 +27,7 @@ public class KeyspaceCreatingJavaConfigTest extends AbstractIntegrationTest {
 	public void test() {
 		Assert.assertNotNull(session);
 		IntegrationTestUtils.assertKeyspaceExists(KeyspaceCreatingJavaConfig.KEYSPACE_NAME, session);
+
+		session.execute("DROP KEYSPACE " + KeyspaceCreatingJavaConfig.KEYSPACE_NAME + ";");
 	}
 }

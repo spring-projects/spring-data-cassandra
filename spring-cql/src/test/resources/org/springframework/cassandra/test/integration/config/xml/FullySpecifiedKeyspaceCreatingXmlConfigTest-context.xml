@@ -26,16 +26,16 @@
 			</cass:replication>
 		</cass:keyspace>
 		<cass:startup-cql><![CDATA[
-CREATE KEYSPACE script1 WITH durable_writes = true AND replication = { 'replication_factor' : 1, 'class' : 'SimpleStrategy' };
+CREATE KEYSPACE IF NOT EXISTS script1 WITH durable_writes = true AND replication = { 'replication_factor' : 1, 'class' : 'SimpleStrategy' };
 		]]></cass:startup-cql>
 		<cass:startup-cql><![CDATA[
 ${script2}
 		]]></cass:startup-cql>
 		<cass:shutdown-cql><![CDATA[
-DROP KEYSPACE script1
+DROP KEYSPACE script1;
 		]]></cass:shutdown-cql>
 		<cass:shutdown-cql><![CDATA[
-DROP KEYSPACE script2
+DROP KEYSPACE script2;
 		]]></cass:shutdown-cql>
 	</cass:cluster>
 

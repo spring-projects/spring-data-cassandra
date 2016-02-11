@@ -34,18 +34,20 @@ import com.datastax.driver.core.Session;
 public class PropertyPlaceholderNamespaceCreatingXmlConfigTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	@Inject
-	Session s;
+	Session session;
 
 	@Inject
 	CqlOperations ops;
 
 	@Test
 	public void test() {
-		IntegrationTestUtils.assertSession(s);
+		IntegrationTestUtils.assertSession(session);
 
-		IntegrationTestUtils.assertKeyspaceExists("ppncxct", s);
+		IntegrationTestUtils.assertKeyspaceExists("ppncxct", session);
 
 		assertNotNull(ops);
-	}
 
+		session.execute("DROP KEYSPACE IF EXISTS ppncxct;");
+		session.execute("DROP KEYSPACE IF EXISTS foo123;");
+	}
 }

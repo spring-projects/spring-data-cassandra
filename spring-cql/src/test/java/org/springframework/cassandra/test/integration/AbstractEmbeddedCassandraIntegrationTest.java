@@ -29,6 +29,7 @@ import org.springframework.cassandra.test.unit.support.Utils;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
+import org.springframework.util.SocketUtils;
 
 /**
  * Abstract base integration test class that starts an embedded Cassandra instance.
@@ -44,20 +45,21 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 	static Logger log = LoggerFactory.getLogger(AbstractEmbeddedCassandraIntegrationTest.class);
 
 	protected static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
-	protected static String CASSANDRA_HOST = "localhost";
-
 	protected static SpringCqlBuildProperties PROPS = new SpringCqlBuildProperties();
 	protected static int CASSANDRA_NATIVE_PORT = PROPS.getCassandraPort();
+	protected static String CASSANDRA_HOST = PROPS.getCassandraHost();
+
+	/**
+	 * The {@link Cluster} that's connected to Cassandra.
+	 */
+	protected static Cluster cluster;
 
 	/**
 	 * The session connected to the system keyspace.
 	 */
 	protected static Session system;
 
-	/**
-	 * The {@link Cluster} that's connected to Cassandra.
-	 */
-	protected static Cluster cluster;
+
 
 	public static String randomKeyspaceName() {
 		return Utils.randomKeyspaceName();
@@ -67,7 +69,10 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 	public static void startCassandra() throws TTransportException, IOException, InterruptedException,
 			ConfigurationException {
 
-		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
+		if(PROPS.getCassandraType() == SpringCqlBuildProperties.CassandraType.EMBEDDED) {
+			System.setProperty("com.sun.management.jmxremote.port", "" + SocketUtils.findAvailableTcpPort(1024));
+			EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
+		}
 	}
 
 	public static Cluster cluster() {
@@ -81,11 +86,19 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 
 		// check cluster
 		if (cluster == null) {
-			cluster = cluster();
-		}
+			final Cluster cluster = cluster();
+			final Session session = cluster.connect();
 
-		if (system == null) {
-			system = cluster.connect();
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+				@Override
+				public void run() {
+					session.close();
+					cluster.close();
+				}
+			});
+
+			AbstractEmbeddedCassandraIntegrationTest.cluster = cluster;
+			AbstractEmbeddedCassandraIntegrationTest.system = session;
 		}
 	}
 

@@ -18,7 +18,6 @@ package org.springframework.cassandra.test.integration.core.cql.generator;
 import static org.springframework.cassandra.test.integration.core.cql.generator.CqlIndexSpecificationAssertions.assertIndex;
 import static org.springframework.cassandra.test.integration.core.cql.generator.CqlIndexSpecificationAssertions.assertNoIndex;
 
-import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,10 +40,11 @@ public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractKeyspace
 	/**
 	 * This loads any test specific Cassandra objects
 	 */
-	@Rule
-	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
-			"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace),
-			CASSANDRA_CONFIG);
+	@Rule public CassandraRule cassandraCQLUnit = new CassandraRule(CASSANDRA_CONFIG).//
+			before(new ClassPathCQLDataSet("integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql",
+					this.keyspace)).//
+			after(new ClassPathCQLDataSet(
+					"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest-After.cql", this.keyspace));
 
 	@Test
 	public void lifecycleTest() {

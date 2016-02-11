@@ -30,6 +30,8 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
+// TODO: Flakey tests when ran against an extrnal cassandra instance,
+// the tests tends to fail :(
 public class AsynchronousTest extends AbstractAsynchronousTest {
 
 	public static final String TABLE = "book";
@@ -74,6 +76,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 	}
 
 	void ensureTableExists() {
+		ensureKeyspaceAndSession();
 		t.execute(createTable(TABLE).ifNotExists().partitionKeyColumn("title", DataType.ascii())
 				.clusteredKeyColumn("isbn", DataType.ascii()));
 	}

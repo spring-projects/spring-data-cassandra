@@ -53,6 +53,7 @@ import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.test.integration.core.cql.generator.CassandraRule;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.CollectionUtils;
 
@@ -95,8 +96,8 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	 * This loads any test specific Cassandra objects
 	 */
 	@Rule
-	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
-			"cassandraOperationsTest-cql-dataload.cql", this.keyspace), CASSANDRA_CONFIG);
+	public CassandraRule cassandraCQLUnit = new CassandraRule(CASSANDRA_CONFIG).before(new ClassPathCQLDataSet(
+			"cassandraOperationsTest-cql-dataload.cql", this.keyspace));
 
 	@Before
 	public void setupTemplate() {
@@ -1162,8 +1163,8 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	/**
 	 * Assert that 2 Book objects are the same
 	 * 
-	 * @param b
-	 * @param orderedElements
+	 * @param b1
+	 * @param b2
 	 */
 	public static void assertBook(Book b1, Book b2) {
 

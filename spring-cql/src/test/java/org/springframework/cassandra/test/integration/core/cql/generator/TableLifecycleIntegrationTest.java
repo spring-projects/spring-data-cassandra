@@ -52,9 +52,14 @@ public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingInteg
 		return true;
 	}
 
+
+	/**
+	 * This loads any test specific Cassandra objects
+	 */
 	@Rule
-	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
-			"cassandraOperationsTest-cql-dataload.cql", this.keyspace), CASSANDRA_CONFIG);
+	public CassandraRule cassandraCQLUnit = new CassandraRule(CASSANDRA_CONFIG).//
+			before(new ClassPathCQLDataSet(
+			"cassandraOperationsTest-cql-dataload.cql", this.keyspace));
 
 	@Test
 	public void testDrop() {

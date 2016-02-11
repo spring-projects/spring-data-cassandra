@@ -35,6 +35,7 @@ public class SpringCqlBuildProperties extends Properties {
 
 	public void loadProperties() {
 		loadProperties(resourceName);
+		putAll(System.getProperties());
 	}
 
 	protected void loadProperties(String resourceName) {
@@ -45,10 +46,8 @@ public class SpringCqlBuildProperties extends Properties {
 				return;
 			}
 			load(in);
-
 		} catch (Exception x) {
 			throw new RuntimeException(x);
-
 		} finally {
 			if (in != null) {
 				try {
@@ -80,17 +79,47 @@ public class SpringCqlBuildProperties extends Properties {
 		return getLong("build.cql.init.timeout");
 	}
 
+	public String getCassandraHost() {
+		return getProperty("build.cassandra.host");
+	}
+
+	public CassandraType getCassandraType() {
+		String property = getProperty("build.cassandra.mode");
+		if (property != null && property.equalsIgnoreCase(CassandraType.EXTERNAL.name())) {
+			return CassandraType.EXTERNAL;
+		}
+		return CassandraType.EMBEDDED;
+	}
+
 	public int getInt(String key) {
 		String property = getProperty(key);
-		return Integer.parseInt(property);
+		try {
+			return Integer.parseInt(property);
+		} catch (NumberFormatException e) {
+			throw new IllegalStateException(resourceName + ": Cannot parse property " + key + " to int: " + property);
+		}
 	}
 
 	public long getLong(String key) {
 		String property = getProperty(key);
-		return Long.parseLong(property);
+		try {
+			return Long.parseLong(property);
+		} catch (NumberFormatException e) {
+			throw new IllegalStateException(resourceName + ": Cannot parse property " + key + " to long: " + property + "");
+		}
 	}
 
 	public boolean getBoolean(String key) {
-		return Boolean.parseBoolean(getProperty(key));
+		String property = getProperty(key);
+		try {
+			return Boolean.parseBoolean(property);
+		} catch (NumberFormatException e) {
+			throw new IllegalStateException(resourceName + ": Cannot parse property " + key + " to boolean: " + property);
+		}
+	}
+
+	public enum CassandraType {
+		EMBEDDED, EXTERNAL
+
 	}
 }

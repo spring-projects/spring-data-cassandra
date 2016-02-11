@@ -67,7 +67,6 @@ public class CreateIndexCqlGeneratorTests {
 
 			assertPreamble(name, tableName, cql);
 			assertColumn(column1, cql);
-
 		}
 	}
 

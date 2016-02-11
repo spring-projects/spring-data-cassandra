@@ -35,6 +35,13 @@
 		<jamm.version>0.3.1</jamm.version>
 		<cassandra.version>2.1.11</cassandra.version>
 		<cassandra-driver-dse.version>2.1.7.1</cassandra-driver-dse.version>
+
+		<build.cassandra.mode>embedded</build.cassandra.mode>
+		<build.cassandra.host>localhost</build.cassandra.host>
+		<build.cassandra.native_transport_port>19042</build.cassandra.native_transport_port>
+		<build.cassandra.rpc_port>19160</build.cassandra.rpc_port>
+		<build.cassandra.storage_port>17000</build.cassandra.storage_port>
+		<build.cassandra.ssl_storage_port>17001</build.cassandra.ssl_storage_port>
 	</properties>
 
 	<developers>
@@ -248,28 +255,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.8</version>
-				<executions>
-					<execution>
-						<id>reserve-network-port</id>
-						<goals>
-							<goal>reserve-network-port</goal>
-						</goals>
-						<phase>process-resources</phase>
-						<configuration>
-							<portNames>
-								<portName>build.cassandra.native_transport_port</portName>
-								<portName>build.cassandra.rpc_port</portName>
-								<portName>build.cassandra.storage_port</portName>
-								<portName>build.cassandra.ssl_storage_port</portName>
-							</portNames>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
@@ -355,6 +340,52 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+
+		<profile>
+			<id>embedded-cassandra</id>
+
+			<properties>
+				<build.cassandra.type>embedded</build.cassandra.type>
+			</properties>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>1.8</version>
+						<executions>
+							<execution>
+								<id>reserve-network-port</id>
+								<goals>
+									<goal>reserve-network-port</goal>
+								</goals>
+								<phase>generate-test-resources</phase>
+								<configuration>
+									<portNames>
+										<portName>build.cassandra.native_transport_port</portName>
+										<portName>build.cassandra.rpc_port</portName>
+										<portName>build.cassandra.storage_port</portName>
+										<portName>build.cassandra.ssl_storage_port</portName>
+									</portNames>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>external-cassandra</id>
+
+			<properties>
+				<build.cassandra.mode>external</build.cassandra.mode>
+				<build.cassandra.native_transport_port>9042</build.cassandra.native_transport_port>
+                <build.cassandra.rpc_port>9160</build.cassandra.rpc_port>
+                <build.cassandra.storage_port>7000</build.cassandra.storage_port>
+                <build.cassandra.ssl_storage_port>7001</build.cassandra.ssl_storage_port>
+			</properties>
 		</profile>
 	</profiles>
 

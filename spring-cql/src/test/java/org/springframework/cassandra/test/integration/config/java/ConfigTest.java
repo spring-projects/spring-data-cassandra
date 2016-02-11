@@ -23,6 +23,9 @@ public class ConfigTest extends AbstractIntegrationTest {
 
 	@Test
 	public void test() {
+
+		session.execute("DROP KEYSPACE IF EXISTS ConfigTest");
+
 		session
 				.execute("CREATE KEYSPACE ConfigTest WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
 		session.execute("USE ConfigTest");
