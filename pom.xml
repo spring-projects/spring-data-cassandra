@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-cassandra-parent</artifactId>
-	<version>1.3.3.BUILD-SNAPSHOT</version>
+	<version>1.3.4.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data Cassandra</name>
@@ -15,8 +15,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.7.3.BUILD-SNAPSHOT</version>
-		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
+		<version>1.7.4.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<modules>
@@ -28,7 +27,7 @@
 	<properties>
 		<project.type>multi</project.type>
 		<dist.id>spring-data-cassandra</dist.id>
-		<springdata.commons>1.11.3.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.11.4.BUILD-SNAPSHOT</springdata.commons>
 		<cassandra-unit.version>2.0.2.2</cassandra-unit.version>
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
