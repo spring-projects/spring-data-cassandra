@@ -1,6 +1,14 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.4.0.M1 (2016-02-12)
+----------------------------------------
+* DATACASS-252 - Add code of conduct.
+* DATACASS-251 - Release 1.4 M1 (Hopper).
+* DATACASS-245 - Adapt to API changes in Spring Data Commons.
+* DATACASS-239 - Upgrade to latest Cassandra drivers.
+
+
 Changes in version 1.3.2.RELEASE (2015-12-18)
 ---------------------------------------------
 * DATACASS-246 - Release 1.3.2 (Gosling).
