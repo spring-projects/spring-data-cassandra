@@ -15,10 +15,9 @@
  */
 package org.springframework.data.cassandra.test.integration.template.async;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-import static org.springframework.data.cassandra.repository.support.BasicMapId.id;
+import static org.junit.Assert.*;
+import static org.junit.Assume.*;
+import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
 import java.util.Collection;
 import java.util.Random;
@@ -26,14 +25,10 @@ import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.core.ConsistencyLevel;
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.cassandra.core.RetryPolicy;
-import org.springframework.cassandra.core.WriteOptions;
+import org.springframework.cassandra.core.*;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -58,9 +53,150 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration
 public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-	@Configuration
-	public static class Config extends IntegrationTestConfig {
+	@Autowired CassandraOperations cassandraOperations;
+
+	@Before
+	public void before() {
+		deleteAllEntities();
 	}
+
+	@Test
+	public void testInsertAsynchronously() throws Exception {
+		insertAsynchronously(ConsistencyLevel.ONE);
+	}
+
+	@Test(expected = CassandraConnectionFailureException.class)
+	public void testInsertAsynchronouslyThrows() throws Exception {
+		insertAsynchronously(ConsistencyLevel.TWO);
+	}
+
+	public void insertAsynchronously(ConsistencyLevel cl) throws Exception {
+
+		Thing thing = Thing.random();
+		ThingListener listener = new ThingListener();
+
+		cassandraOperations.insertAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+		listener.await();
+
+		if (listener.exception != null) {
+			throw listener.exception;
+		}
+
+		assertEquals(thing, listener.entities.iterator().next());
+	}
+
+	@Test(expected = CancellationException.class)
+	public void testInsertAsynchronouslyCancelled() throws Exception {
+		insertOrUpdateAsynchronouslyCancelled(true);
+	}
+
+	@Test(expected = CancellationException.class)
+	public void testUpdateAsynchronouslyCancelled() throws Exception {
+		insertOrUpdateAsynchronouslyCancelled(false);
+	}
+
+	public void insertOrUpdateAsynchronouslyCancelled(boolean insert) throws Exception {
+
+		Thing thing = Thing.random();
+		ThingListener listener = new ThingListener();
+
+		Cancellable cancellable;
+
+		if (insert) {
+			cancellable = cassandraOperations.insertAsynchronously(thing, listener, null);
+		} else {
+			cancellable = cassandraOperations.updateAsynchronously(thing, listener, null);
+		}
+		cancellable.cancel();
+		listener.await();
+
+		// if listener.success is true then the
+		// async operations was faster than it could be cancelled so we cannot
+		// verify that a CancellationException was thrown.
+		assumeFalse(listener.success);
+
+		if (listener.exception != null) {
+			throw listener.exception;
+		}
+
+		fail("should've thrown CancellationException");
+	}
+
+	@Test
+	public void testUpdateAsynchronously() throws Exception {
+		updateAsynchronously(ConsistencyLevel.ONE);
+	}
+
+	@Test(expected = CassandraConnectionFailureException.class)
+	public void testUpdateAsynchronouslyThrows() throws Exception {
+		updateAsynchronously(ConsistencyLevel.TWO);
+	}
+
+	public void updateAsynchronously(ConsistencyLevel cl) throws Exception {
+
+		Thing thing = Thing.random();
+		cassandraOperations.insert(thing);
+		thing.number = Thing.random().number;
+
+		ThingListener listener = new ThingListener();
+		cassandraOperations.updateAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+
+		listener.await();
+		if (listener.exception != null) {
+			throw listener.exception;
+		}
+
+		assertEquals(thing, listener.entities.iterator().next());
+	}
+
+	@Test
+	public void testDeleteAsynchronously() throws Exception {
+		deleteAsynchronously(ConsistencyLevel.ONE);
+	}
+
+	@Test(expected = CassandraConnectionFailureException.class)
+	public void testDeleteAsynchronouslyThrows() throws Exception {
+		deleteAsynchronously(ConsistencyLevel.TWO);
+	}
+
+	public void deleteAsynchronously(ConsistencyLevel cl) throws Exception {
+
+		Thing thing = Thing.random();
+
+		cassandraOperations.insert(thing);
+
+		ThingListener listener = new ThingListener();
+		cassandraOperations.deleteAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+
+		listener.await();
+		if (listener.exception != null) {
+			throw listener.exception;
+		}
+		assertFalse(cassandraOperations.exists(Thing.class, id("stuff", thing.stuff)));
+	}
+
+	@Test(expected = CancellationException.class)
+	public void testDeleteAsynchronouslyCancelled() throws Exception {
+
+		Thing thing = Thing.random();
+		ThingListener listener = new ThingListener();
+		cassandraOperations.deleteAsynchronously(thing, listener, null).cancel();
+		listener.await();
+
+		// if listener.success is true then the
+		// async operations was faster than it could be cancelled so we cannot
+		// verify that a CancellationException was thrown.
+		assumeFalse(listener.success);
+
+		if (listener.exception != null) {
+			throw listener.exception;
+		}
+
+		fail("should've thrown CancellationException");
+	}
+
+	@Configuration
+	public static class Config extends IntegrationTestConfig {}
 
 	@Table
 	public static class Thing {
@@ -75,14 +211,11 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 			return new Thing(uuid(), RNG.nextInt());
 		}
 
-		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-		public String stuff;
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) public String stuff;
 
-		@Column
-		public int number;
+		@Column public int number;
 
-		public Thing() {
-		}
+		public Thing() {}
 
 		public Thing(String stuff, int number) {
 			this.stuff = stuff;
@@ -118,148 +251,31 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 		}
 	}
 
-	public static class ThingWriteListener extends TestListener implements WriteListener<Thing> {
+	public static class ThingListener extends TestListener implements WriteListener<Thing>, DeletionListener<Thing> {
 
-		public Exception exception;
-		public Collection<Thing> entities;
+		public volatile Exception exception;
+		public volatile Collection<Thing> entities;
+		public volatile boolean success;
 
 		@Override
 		public void onWriteComplete(Collection<Thing> entities) {
 			this.entities = entities;
+			this.success = true;
 			countDown();
 		}
-
-		@Override
-		public void onException(Exception x) {
-			this.exception = x;
-			countDown();
-		}
-	}
-
-	public static class ThingDeletionListener extends TestListener implements DeletionListener<Thing> {
-
-		public Exception exception;
-		public Collection<Thing> entities;
 
 		@Override
 		public void onDeletionComplete(Collection<Thing> entities) {
 			this.entities = entities;
+			this.success = true;
 			countDown();
 		}
 
 		@Override
 		public void onException(Exception x) {
 			this.exception = x;
+			this.success = false;
 			countDown();
 		}
 	}
-
-	@Autowired
-	CassandraOperations t;
-
-	@Before
-	public void before() {
-		deleteAllEntities();
-	}
-
-	public void testInsertAsynchronously(ConsistencyLevel cl) throws Exception {
-		Thing thing = Thing.random();
-		ThingWriteListener listener = new ThingWriteListener();
-		t.insertAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
-		listener.await();
-		if (listener.exception != null) {
-			throw listener.exception;
-		}
-		assertEquals(thing, listener.entities.iterator().next());
-	}
-
-	@Test
-	public void testInsertAsynchronously() throws Exception {
-		testInsertAsynchronously(ConsistencyLevel.ONE);
-	}
-
-	@Test(expected = CassandraConnectionFailureException.class)
-	public void testInsertAsynchronouslyThrows() throws Exception {
-		testInsertAsynchronously(ConsistencyLevel.TWO);
-	}
-
-	public void testInsertOrUpdateAsynchronouslyCancelled(boolean insert) throws Exception {
-		Thing thing = Thing.random();
-		ThingWriteListener listener = new ThingWriteListener();
-		(insert ? t.insertAsynchronously(thing, listener, null) : t.updateAsynchronously(thing, listener, null)).cancel();
-		listener.await();
-		if (listener.exception != null) {
-			throw listener.exception;
-		}
-		fail("should've thrown CancellationException");
-	}
-
-	@Test(expected = CancellationException.class)
-	public void testInsertAsynchronouslyCancelled() throws Exception {
-		testInsertOrUpdateAsynchronouslyCancelled(true);
-	}
-
-	@Test(expected = CancellationException.class)
-	@Ignore
-	public void testUpdateAsynchronouslyCancelled() throws Exception {
-		testInsertOrUpdateAsynchronouslyCancelled(false);
-	}
-
-	public void testUpdateAsynchronously(ConsistencyLevel cl) throws Exception {
-		Thing thing = Thing.random();
-		t.insert(thing);
-		thing.number = Thing.random().number;
-		ThingWriteListener listener = new ThingWriteListener();
-		t.updateAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
-		listener.await();
-		if (listener.exception != null) {
-			throw listener.exception;
-		}
-		assertEquals(thing, listener.entities.iterator().next());
-	}
-
-	@Test
-	public void testUpdateAsynchronously() throws Exception {
-		testUpdateAsynchronously(ConsistencyLevel.ONE);
-	}
-
-	@Test(expected = CassandraConnectionFailureException.class)
-	public void testUpdateAsynchronouslyThrows() throws Exception {
-		testUpdateAsynchronously(ConsistencyLevel.TWO);
-	}
-
-	public void testDeleteAsynchronously(ConsistencyLevel cl) throws Exception {
-		Thing thing = Thing.random();
-		t.insert(thing);
-		ThingDeletionListener listener = new ThingDeletionListener();
-		t.deleteAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
-		listener.await();
-		if (listener.exception != null) {
-			throw listener.exception;
-		}
-		assertFalse(t.exists(Thing.class, id("stuff", thing.stuff)));
-	}
-
-	@Test
-	public void testDeleteAsynchronously() throws Exception {
-		testDeleteAsynchronously(ConsistencyLevel.ONE);
-	}
-
-	@Test(expected = CassandraConnectionFailureException.class)
-	public void testDeleteAsynchronouslyThrows() throws Exception {
-		testDeleteAsynchronously(ConsistencyLevel.TWO);
-	}
-
-	@Test(expected = CancellationException.class)
-	public void testDeleteAsynchronouslyCancelled() throws Exception {
-		Thing thing = Thing.random();
-		ThingDeletionListener listener = new ThingDeletionListener();
-		t.deleteAsynchronously(thing, listener, null).cancel();
-		listener.await();
-		if (listener.exception != null) {
-			throw listener.exception;
-		}
-		fail("should've thrown CancellationException");
-	}
-
 }

@@ -1,28 +1,33 @@
+/*
+ * Copyright 2016 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.cassandra.test.integration.core.template.async;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.createTable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CancellationException;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.cassandra.core.AsynchronousQueryListener;
-import org.springframework.cassandra.core.Cancellable;
-import org.springframework.cassandra.core.ConsistencyLevel;
-import org.springframework.cassandra.core.QueryForListOfMapListener;
-import org.springframework.cassandra.core.QueryForMapListener;
-import org.springframework.cassandra.core.QueryForObjectListener;
-import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.RetryPolicy;
+import org.springframework.cassandra.core.*;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.DataType;
@@ -30,8 +35,9 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
-// TODO: Flakey tests when ran against an extrnal cassandra instance,
-// the tests tends to fail :(
+/**
+ * @author Mark Paluch
+ */
 public class AsynchronousTest extends AbstractAsynchronousTest {
 
 	public static final String TABLE = "book";
@@ -68,6 +74,17 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		}
 	};
 
+    public static final Comparator<? super Map<String, ?>> MAP_WITH_ISBN_COMPARATOR = new Comparator<Map<String, ?>>() {
+        @Override
+        public int compare(Map<String, ?> o1, Map<String, ?> o2) {
+            Assert.isInstanceOf(Comparable.class, o1.get("isbn"),
+                    "Map o1 must contain a key 'isbn' and a Comparable value to compare the maps");
+            Assert.isInstanceOf(Comparable.class, o2.get("isbn"),
+                    "Map o2 must contain a key 'isbn' and a Comparable value to compare the maps");
+            return ((Comparable) o1.get("isbn")).compareTo(o2.get("isbn"));
+        }
+    };
+
 	public static void assertMapEquals(Map<?, ?> expected, Map<?, ?> actual) {
 		for (Object key : expected.keySet()) {
 			assertTrue(actual.containsKey(key));
@@ -76,8 +93,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 	}
 
 	void ensureTableExists() {
-		ensureKeyspaceAndSession();
-		t.execute(createTable(TABLE).ifNotExists().partitionKeyColumn("title", DataType.ascii())
+		cqlOperations.execute(createTable(TABLE).ifNotExists().partitionKeyColumn("title", DataType.ascii())
 				.clusteredKeyColumn("isbn", DataType.ascii()));
 	}
 
@@ -85,7 +101,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		Book[] books = new Book[n];
 		for (int i = 0; i < n; i++) {
 			Book b = books[i] = Book.random();
-			t.execute(String.format("insert into %s (isbn, title) values ('%s', '%s')", TABLE, b.isbn, b.title));
+			cqlOperations.execute(String.format("insert into %s (isbn, title) values ('%s', '%s')", TABLE, b.isbn, b.title));
 		}
 		return books;
 	}
@@ -93,7 +109,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 	@Before
 	public void beforeEach() {
 		ensureTableExists();
-		t.truncate(TABLE);
+		cqlOperations.truncate(TABLE);
 	}
 
 	void assertBook(Book expected, Book actual) {
@@ -118,7 +134,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 			BasicListener listener = new BasicListener();
 			doAsyncQuery(expected, listener);
 			listener.await();
-			Row r = t.getResultSetUninterruptibly(listener.rsf).one();
+			Row r = cqlOperations.getResultSetUninterruptibly(listener.rsf).one();
 			Book actual = new Book(r.getString(0), r.getString(1));
 			assertBook(expected, actual);
 		}
@@ -188,7 +204,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		 */
 		abstract void doAsyncQuery(Book[] books, QueryForListOfMapListener listener);
 
-		List<Map<String, Object>> expected; // subclass should set this value in doAsyncQuery
+		List<Map<String, ? extends Comparable>> expected; // subclass should set this value in doAsyncQuery
 
 		void test(int n) throws Exception {
 			Book[] books = insert(n);
@@ -199,6 +215,9 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 			if (listener.exception != null) {
 				throw listener.exception;
 			}
+
+			// sort results the same way as the books array above
+			Collections.sort(listener.result, MAP_WITH_ISBN_COMPARATOR);
 
 			for (int i = 0; i < expected.size(); i++) {
 				assertMapEquals(expected.get(i), listener.result.get(i));
@@ -211,7 +230,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
 			void doAsyncQuery(Book b, BasicListener listener) {
-				Cancellable qc = t.queryAsynchronously(cql(b), listener);
+				Cancellable qc = cqlOperations.queryAsynchronously(cql(b), listener);
 				qc.cancel();
 			}
 		}.test();
@@ -222,7 +241,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
 			void doAsyncQuery(Book b, BasicListener listener) {
-				t.queryAsynchronously(cql(b), listener);
+				cqlOperations.queryAsynchronously(cql(b), listener);
 			}
 		}.test();
 	}
@@ -231,7 +250,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
 			void doAsyncQuery(Book b, BasicListener listener) {
-				t.queryAsynchronously(cql(b), listener, new QueryOptions(cl, RetryPolicy.LOGGING));
+				cqlOperations.queryAsynchronously(cql(b), listener, new QueryOptions(cl, RetryPolicy.LOGGING));
 			}
 		}.test();
 	}
@@ -251,7 +270,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
 			void doAsyncQuery(Book b, BasicListener listener) {
-				t.queryAsynchronously(cql(b), listener);
+				cqlOperations.queryAsynchronously(cql(b), listener);
 			}
 		}.test();
 	}
@@ -262,7 +281,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 
 			@Override
 			void doAsyncQuery(Book b, QueryForObjectListener<String> listener) {
-				t.queryForObjectAsynchronously(cql(b, "title"), String.class, listener);
+				cqlOperations.queryForObjectAsynchronously(cql(b, "title"), String.class, listener);
 				expected = b.title;
 			}
 
@@ -275,7 +294,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 			@Override
 			void doAsyncQuery(Book b, QueryForObjectListener<String> listener) {
 				QueryOptions opts = new QueryOptions(cl, RetryPolicy.LOGGING);
-				t.queryForObjectAsynchronously(cql(b, "title"), String.class, listener, opts);
+				cqlOperations.queryForObjectAsynchronously(cql(b, "title"), String.class, listener, opts);
 				expected = b.title;
 			}
 
@@ -298,7 +317,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 
 			@Override
 			void doAsyncQuery(Book b, QueryForMapListener listener) {
-				t.queryForMapAsynchronously(cql(b), listener);
+				cqlOperations.queryForMapAsynchronously(cql(b), listener);
 				expected = new HashMap<String, Object>();
 				expected.put("isbn", b.isbn);
 				expected.put("title", b.title);
@@ -313,7 +332,7 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 			@Override
 			void doAsyncQuery(Book b, QueryForMapListener listener) {
 				QueryOptions opts = new QueryOptions(cl, RetryPolicy.LOGGING);
-				t.queryForMapAsynchronously(cql(b), listener, opts);
+				cqlOperations.queryForMapAsynchronously(cql(b), listener, opts);
 				expected = new HashMap<String, Object>();
 				expected.put("isbn", b.isbn);
 				expected.put("title", b.title);
@@ -340,17 +359,17 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 			void doAsyncQuery(Book[] books, QueryForListOfMapListener listener) {
 
 				String[] titles = new String[books.length];
-				expected = new ArrayList<Map<String, Object>>(books.length);
+				expected = new ArrayList<Map<String, ? extends Comparable>>(books.length);
 				for (int i = 0; i < books.length; i++) {
 					Book b = books[i];
 					titles[i] = b.title;
-					HashMap<String, Object> row = new HashMap<String, Object>(2);
+					Map<String, String> row = new HashMap<String, String>(2);
 					row.put("title", b.title);
 					row.put("isbn", b.isbn);
 					expected.add(row);
 				}
 
-				t.queryForListOfMapAsynchronously(cql(titles), listener);
+				cqlOperations.queryForListOfMapAsynchronously(cql(titles), listener);
 			}
 
 		}.test(2);
@@ -363,17 +382,18 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 			void doAsyncQuery(Book[] books, QueryForListOfMapListener listener) {
 
 				String[] titles = new String[books.length];
-				expected = new ArrayList<Map<String, Object>>(books.length);
+				expected = new ArrayList<Map<String, ? extends Comparable>>(books.length);
 				for (int i = 0; i < books.length; i++) {
 					Book b = books[i];
 					titles[i] = b.title;
-					HashMap<String, Object> row = new HashMap<String, Object>(2);
+					Map<String, String> row = new HashMap<String, String>(2);
 					row.put("title", b.title);
 					row.put("isbn", b.isbn);
 					expected.add(row);
 				}
 
-				t.queryForListOfMapAsynchronously(cql(titles), listener, new QueryOptions(cl, RetryPolicy.LOGGING));
+				cqlOperations.queryForListOfMapAsynchronously(cql(titles), listener, new QueryOptions(cl, RetryPolicy.LOGGING));
+
 			}
 
 		}.test(2);
