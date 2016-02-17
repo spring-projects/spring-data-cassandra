@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
-import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,7 +52,6 @@ import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.test.integration.core.cql.generator.CassandraRule;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.CollectionUtils;
 
@@ -75,6 +73,7 @@ import com.datastax.driver.core.querybuilder.Truncate;
  * 
  * @author David Webb
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -92,12 +91,10 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	final Object[] o2 = new Object[] { "2345", "War and Peace", "Russian Dude", new Integer(456) };
 	final Object[] o3 = new Object[] { "3456", "Jane Ayre", "Charlotte", new Integer(456) };
 
-	/**
-	 * This loads any test specific Cassandra objects
-	 */
-	@Rule
-	public CassandraRule cassandraCQLUnit = new CassandraRule(CASSANDRA_CONFIG).before(new ClassPathCQLDataSet(
+	{
+		cassandraRule.before(new ClassPathCQLDataSet(
 			"cassandraOperationsTest-cql-dataload.cql", this.keyspace));
+	}
 
 	@Before
 	public void setupTemplate() {

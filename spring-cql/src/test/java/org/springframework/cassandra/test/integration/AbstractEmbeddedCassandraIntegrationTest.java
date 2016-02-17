@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,94 +15,74 @@
  */
 package org.springframework.cassandra.test.integration;
 
-import java.io.IOException;
 import java.util.UUID;
 
-import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.Rule;
+import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.test.integration.core.cql.generator.CassandraRule;
 import org.springframework.cassandra.test.integration.support.SpringCqlBuildProperties;
 import org.springframework.cassandra.test.unit.support.Utils;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
-import org.springframework.util.SocketUtils;
+import org.springframework.dao.DataAccessException;
 
 /**
  * Abstract base integration test class that starts an embedded Cassandra instance.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class AbstractEmbeddedCassandraIntegrationTest {
 
-	public static String uuid() {
-		return UUID.randomUUID().toString();
-	}
+    protected static SpringCqlBuildProperties PROPS = new SpringCqlBuildProperties();
+    private static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 
-	static Logger log = LoggerFactory.getLogger(AbstractEmbeddedCassandraIntegrationTest.class);
+    /**
+     * The {@link Cluster} that's connected to Cassandra.
+     */
+    protected Cluster cluster;
 
-	protected static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
-	protected static SpringCqlBuildProperties PROPS = new SpringCqlBuildProperties();
-	protected static int CASSANDRA_NATIVE_PORT = PROPS.getCassandraPort();
-	protected static String CASSANDRA_HOST = PROPS.getCassandraHost();
+    /**
+     * The session connected to the system keyspace.
+     */
+    protected Session system;
 
-	/**
-	 * The {@link Cluster} that's connected to Cassandra.
-	 */
-	protected static Cluster cluster;
+    @Rule
+    public final CassandraRule cassandraRule = new CassandraRule(CASSANDRA_CONFIG).before(new SessionCallback<Object>() {
+        @Override
+        public Object doInSession(Session s) throws DataAccessException {
+            AbstractEmbeddedCassandraIntegrationTest.this.cluster = s.getCluster();
+            AbstractEmbeddedCassandraIntegrationTest.this.system = s;
+            return null;
+        }
+    });
 
-	/**
-	 * The session connected to the system keyspace.
-	 */
-	protected static Session system;
+    public static String randomKeyspaceName() {
+        return Utils.randomKeyspaceName();
+    }
 
+    public static String uuid() {
+        return UUID.randomUUID().toString();
+    }
 
+    public static Cluster cluster() {
+        return Cluster.builder().addContactPoint(PROPS.getCassandraHost()).withPort(PROPS.getCassandraPort()).build();
+    }
 
-	public static String randomKeyspaceName() {
-		return Utils.randomKeyspaceName();
-	}
+    /**
+     * Starts the embedded Cassandra instance if it's needed.
+     * @throws Exception
+     */
+    @BeforeClass
+	public static void startCassandraIfNeeded() throws Exception{
 
-	@BeforeClass
-	public static void startCassandra() throws TTransportException, IOException, InterruptedException,
-			ConfigurationException {
+        // initialize Cassandra Rule here to start before anything else is started.
+        // A @Rule would be the better option but there one thing to solve before:
+        // The Spring container boots before the TestRule.before method is called
+        // - a custom runner might not be the best solution, so that's the only pain-point in starting the embedded server.
 
-		if(PROPS.getCassandraType() == SpringCqlBuildProperties.CassandraType.EMBEDDED) {
-			System.setProperty("com.sun.management.jmxremote.port", "" + SocketUtils.findAvailableTcpPort(1024));
-			EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
-		}
-	}
-
-	public static Cluster cluster() {
-		return Cluster.builder().addContactPoint(CASSANDRA_HOST).withPort(CASSANDRA_NATIVE_PORT).build();
-	}
-
-	/**
-	 * Ensures that the cluster is created and that the session {@link #SYSTEM} is connected to it.
-	 */
-	public static void ensureClusterConnection() {
-
-		// check cluster
-		if (cluster == null) {
-			final Cluster cluster = cluster();
-			final Session session = cluster.connect();
-
-			Runtime.getRuntime().addShutdownHook(new Thread(){
-				@Override
-				public void run() {
-					session.close();
-					cluster.close();
-				}
-			});
-
-			AbstractEmbeddedCassandraIntegrationTest.cluster = cluster;
-			AbstractEmbeddedCassandraIntegrationTest.system = session;
-		}
-	}
-
-	public AbstractEmbeddedCassandraIntegrationTest() {
-		ensureClusterConnection();
+        new CassandraRule(CASSANDRA_CONFIG).before();
 	}
 }

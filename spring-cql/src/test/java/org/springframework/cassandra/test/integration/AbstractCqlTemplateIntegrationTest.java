@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,16 @@ import org.springframework.cassandra.core.CqlTemplate;
 /**
  * @author Matthew T. Adams
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class AbstractCqlTemplateIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
 
-	protected CqlOperations t;
+	protected CqlOperations cqlOperations;
 
 	public AbstractCqlTemplateIntegrationTest() {}
 
-	public AbstractCqlTemplateIntegrationTest(String keyspace) {
-		super(keyspace);
-	}
-	
 	@Before
 	public void createTemplate() {
-		this.t = new CqlTemplate(session);
+		this.cqlOperations = new CqlTemplate(session);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package org.springframework.cassandra.test.integration;
 import org.junit.After;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.CqlTemplate;
-import org.springframework.util.StringUtils;
+import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.dao.DataAccessException;
+import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -32,6 +33,7 @@ import com.datastax.driver.core.Session.State;
  * 
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
@@ -40,46 +42,34 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 	/**
 	 * The session that's connected to the keyspace used in the current instance's test.
 	 */
-	protected static Session session;
+	protected Session session;
 
 	/**
 	 * The name of the keyspace to use for this test instance.
 	 */
-	protected String keyspace;
+	protected final String keyspace;
 
 	public AbstractKeyspaceCreatingIntegrationTest() {
 		this(randomKeyspaceName());
 	}
 
 	public AbstractKeyspaceCreatingIntegrationTest(String keyspace) {
-
+		Assert.hasText(keyspace, "Keyspace must not be empty");
 		this.keyspace = keyspace;
-		ensureKeyspaceAndSession();
+		cassandraRule.before(new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				AbstractKeyspaceCreatingIntegrationTest.this.session = s;
+		ensureKeyspaceAndSession(s);
+				return null;
+			}
+		});
+
 	}
 
-	/**
-	 * Returns whether we're currently connected to the keyspace.
-	 */
-	public static boolean connected() {
-		return session != null;
-	}
-
-	/**
-	 * Whether to drop the keyspace that was created after the test has completed. Subclasses should override and return
-	 * {@literal false}, since this default implementation returns {@literal true}.
-	 */
-	public boolean dropKeyspaceAfterTest() {
-		return true;
-	}
-
-	public void ensureKeyspaceAndSession() {
+	private void ensureKeyspaceAndSession(Session session) {
 
 		// ensure that test keyspace exists
-
-		if (!StringUtils.hasText(keyspace)) {
-			keyspace = null;
-		}
-
 		if (keyspace != null) {
 			// see if we need to create the keyspace
 			KeyspaceMetadata kmd = cluster.getMetadata().getKeyspace(keyspace);
@@ -93,38 +83,18 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 			}
 		}
 
-		// keyspace now exists; ensure the session is using it
-		if (session == null) {
 
-			log.info("connecting to keyspace {}", keyspace == null ? "system" : keyspace + "...");
+		debugSession();
+		log.info("session already connected to a keyspace; attempting to change to use {}", keyspace);
 
-			session = keyspace == null ? cluster.connect() : cluster.connect(keyspace);
+		String cql = "USE " + (keyspace == null ? "system" : keyspace) + ";";
+		log.debug(cql);
 
-			log.info("connected to keyspace {}", keyspace == null ? "system" : keyspace);
-
-		} else {
-
-			debugSession();
-
-			log.info("session already connected to a keyspace; attempting to change to use {}", keyspace);
-
-			String cql = "USE " + (keyspace == null ? "system" : keyspace) + ";";
-
-			log.debug(cql);
-
-			getTemplate().execute(cql);
-
-			log.info("now using keyspace " + keyspace);
-
-		}
+		new CqlTemplate(session).execute(cql);
+		log.info("now using keyspace " + keyspace);
 	}
 
-	protected static CqlOperations getTemplate() {
-
-		return new CqlTemplate(session);
-	}
-
-	protected static void debugSession() {
+	protected void debugSession() {
 		if (session == null) {
 			log.warn("Session is null...cannot debug that");
 			return;
@@ -141,16 +111,22 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 	}
 
 	@After
-	public void after() {
-		if (dropKeyspaceAfterTest() && keyspace != null) {
+	public void dropKeyspaceAfterTest() {
+
+		if (keyspace != null && session != null) {
 
 			session.execute("USE system");
-
 			log.info("dropping keyspace {} ...", keyspace);
-
-			system.execute("DROP KEYSPACE " + keyspace);
-
+			dropKeyspace(keyspace);
 			log.info("dropped keyspace {}", keyspace);
 		}
+	}
+
+	/**
+	 * Drop a Keyspace if it exists.
+	 * @param keyspace
+     */
+	public void dropKeyspace(String keyspace) {
+		session.execute("DROP KEYSPACE IF EXISTS " + keyspace);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCql
  * 
  * @author Matthew T. Adams
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class CreateIndexCqlGeneratorIntegrationTests {
 
@@ -56,15 +57,10 @@ public class CreateIndexCqlGeneratorIntegrationTests {
 
 	public static class BasicIntegrationTest extends Base<BasicTest> {
 
-		/**
-		 * This loads any test specific Cassandra objects
-		 */
-		@Rule
-		public CassandraRule cassandraCQLUnit = new CassandraRule(CASSANDRA_CONFIG).//
-				before(new ClassPathCQLDataSet(
-				"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace)).//
-				after(new ClassPathCQLDataSet(
-				"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest-After.cql", this.keyspace));
+		{
+			cassandraRule.before(new ClassPathCQLDataSet(
+					"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace));
+		}
 
 		@Override
 		public BasicTest unit() {

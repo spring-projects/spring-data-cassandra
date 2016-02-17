@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.DropTableCqlGe
  * 
  * @author David Webb
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -43,23 +44,14 @@ public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingInteg
 
 	CreateTableCqlGeneratorTests.MultipleOptionsTest createTableTest = new CreateTableCqlGeneratorTests.MultipleOptionsTest();
 
+	{
+		cassandraRule.before(new ClassPathCQLDataSet(
+			"cassandraOperationsTest-cql-dataload.cql", this.keyspace));
+	}
+
 	public TableLifecycleIntegrationTest() {
 		super("tlit");
 	}
-
-	@Override
-	public boolean dropKeyspaceAfterTest() {
-		return true;
-	}
-
-
-	/**
-	 * This loads any test specific Cassandra objects
-	 */
-	@Rule
-	public CassandraRule cassandraCQLUnit = new CassandraRule(CASSANDRA_CONFIG).//
-			before(new ClassPathCQLDataSet(
-			"cassandraOperationsTest-cql-dataload.cql", this.keyspace));
 
 	@Test
 	public void testDrop() {
