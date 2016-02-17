@@ -54,10 +54,13 @@ public class CqlTemplateConfigIntegrationTest extends AbstractKeyspaceCreatingIn
 	
 	Session session;
 	ConfigurableApplicationContext context;
+
+	public CqlTemplateConfigIntegrationTest() {
+		super(KEYSPACE_NAME);
+	}
 	
 	@Before
 	public void setUp() {
-		
 		this.context = new AnnotationConfigApplicationContext(Config.class);
 		this.session = context.getBean(Session.class);
 	}
@@ -65,10 +68,7 @@ public class CqlTemplateConfigIntegrationTest extends AbstractKeyspaceCreatingIn
 	@After
 	public void tearDown() {
 		context.close();
-	}
-
-	public CqlTemplateConfigIntegrationTest() {
-		super(KEYSPACE_NAME);
+		dropKeyspaceAfterTest();
 	}
 
 	@Test

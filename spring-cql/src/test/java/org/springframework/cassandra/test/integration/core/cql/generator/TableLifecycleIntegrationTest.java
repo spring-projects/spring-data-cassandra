@@ -44,13 +44,13 @@ public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingInteg
 
 	CreateTableCqlGeneratorTests.MultipleOptionsTest createTableTest = new CreateTableCqlGeneratorTests.MultipleOptionsTest();
 
+	public TableLifecycleIntegrationTest() {
+		super("tlit");
+	}
+
 	{
 		cassandraRule.before(new ClassPathCQLDataSet(
 			"cassandraOperationsTest-cql-dataload.cql", this.keyspace));
-	}
-
-	public TableLifecycleIntegrationTest() {
-		super("tlit");
 	}
 
 	@Test

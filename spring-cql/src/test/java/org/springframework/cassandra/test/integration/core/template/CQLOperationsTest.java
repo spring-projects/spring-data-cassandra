@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +69,7 @@ import com.datastax.driver.core.querybuilder.Truncate;
 
 /**
  * Unit Tests for CqlTemplate
- * 
+ *
  * @author David Webb
  * @author Oliver Gierke
  * @author Mark Paluch
@@ -87,13 +86,13 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	 */
 	final String ISBN_NINES = "999999999";
 	final String TITLE_NINES = "Book of Nines";
-	final Object[] o1 = new Object[] { "1234", "Moby Dick", "Herman Manville", new Integer(456) };
-	final Object[] o2 = new Object[] { "2345", "War and Peace", "Russian Dude", new Integer(456) };
-	final Object[] o3 = new Object[] { "3456", "Jane Ayre", "Charlotte", new Integer(456) };
+	final Object[] o1 = new Object[]{"1234", "Moby Dick", "Herman Manville", new Integer(456)};
+	final Object[] o2 = new Object[]{"2345", "War and Peace", "Russian Dude", new Integer(456)};
+	final Object[] o3 = new Object[]{"3456", "Jane Ayre", "Charlotte", new Integer(456)};
 
 	{
 		cassandraRule.before(new ClassPathCQLDataSet(
-			"cassandraOperationsTest-cql-dataload.cql", this.keyspace));
+			"cassandraOperationsTest-cql-dataload.cql", false, false, this.keyspace));
 	}
 
 	@Before
@@ -224,7 +223,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	/**
 	 * This is an implementation of RowIterator for the purposes of testing passing your own Impl to CqlTemplate
-	 * 
+	 *
 	 * @author David Webb
 	 */
 	final class MyRowIterator implements RowIterator {
@@ -1120,7 +1119,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	/**
 	 * Assert that a Book matches the arguments expected
-	 * 
+	 *
 	 * @param b
 	 * @param orderedElements
 	 */
@@ -1144,7 +1143,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	/**
 	 * Convert Object[] to a Book
-	 * 
+	 *
 	 * @param bookElements
 	 * @return
 	 */
@@ -1159,7 +1158,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	/**
 	 * Assert that 2 Book objects are the same
-	 * 
+	 *
 	 * @param b1
 	 * @param b2
 	 */
@@ -1174,7 +1173,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	/**
 	 * Get a Book from Cassandra for assertions.
-	 * 
+	 *
 	 * @param isbn
 	 * @return
 	 */
@@ -1210,7 +1209,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	/**
 	 * Get a Book from Cassandra for assertions, if the Book is not retruned then retry as needed. This is used for
 	 * assertions after asynchronous insert/ingest to give the datastore time to catch up with the tests.
-	 * 
+	 *
 	 * @param isbn
 	 * @param retryMillis
 	 * @param numRetries
@@ -1236,9 +1235,9 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	/**
 	 * Get a Book from Cassandra for assertions, if the Book is not retruned then retry as needed. This is used for
 	 * assertions after asynchronous insert/ingest to give the datastore time to catch up with the tests.
-	 * 
+	 *
 	 * Defaults to 5 retries @ 200ms intervals
-	 * 
+	 *
 	 * @param isbn
 	 * @return
 	 */

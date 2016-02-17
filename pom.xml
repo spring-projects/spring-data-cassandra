@@ -32,7 +32,6 @@
 		<cassandra-unit.version>2.1.9.2</cassandra-unit.version>
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
-		<jamm.version>0.3.1</jamm.version>
 		<cassandra.version>2.1.11</cassandra.version>
 		<cassandra-driver-dse.version>2.1.7.1</cassandra-driver-dse.version>
 
@@ -105,12 +104,6 @@
 						<groupId>io.netty</groupId>
 					</exclusion>
 				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>com.github.jbellis</groupId>
-				<artifactId>jamm</artifactId>
-				<version>${jamm.version}</version>
-				<scope>test</scope>
 			</dependency>
 
 			<!-- Logging Dependencies -->
@@ -230,10 +223,6 @@
 			<artifactId>cassandra-driver-dse</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.github.jbellis</groupId>
-			<artifactId>jamm</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.cassandraunit</groupId>
 			<artifactId>cassandra-unit-spring</artifactId>
 		</dependency>
@@ -283,7 +272,7 @@
 				<version>${failsafe.version}</version>
 				<configuration>
 					<forkCount>1</forkCount>
-					<argLine>-Xms1g -Xmx1g -Xss256k -javaagent:${com.github.jbellis:jamm:jar}</argLine>
+					<argLine>-Xms1g -Xmx1g -Xss256k</argLine>
 					<reuseForks>true</reuseForks>
 					<useFile>false</useFile>
 					<includes>

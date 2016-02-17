@@ -31,6 +31,7 @@ import org.springframework.data.cassandra.test.integration.repository.User;
  * @author Mohsin Husen
  * @author Mark Paluch
  */
+
 public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest {
 
 	private static CdiTestContainer cdiContainer;
@@ -39,7 +40,11 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 
 	@BeforeClass
 	public static void init() throws Exception {
+		// CDI container is booted before the @Rule can be triggered.
+		// Ensure that we have a usable Cassandra instance otherwise the container won't boot
+		// because it needs a CassandraOperations with a working Session/Cluster
 		startCassandraIfNeeded();
+
 		cdiContainer = CdiTestContainerLoader.getCdiContainer();
 		cdiContainer.startApplicationScope();
 		cdiContainer.bootContainer();

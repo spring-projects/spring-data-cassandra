@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,13 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
@@ -26,36 +32,45 @@ import com.datastax.driver.core.DataType;
 /**
  * @author Matthew T. Adams
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
+@RunWith(Parameterized.class)
 public class FunkyIdentifierIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
 
-	public FunkyIdentifierIntegrationTest() {
-		super(randomKeyspaceName());
+	private String cql;
+
+	public FunkyIdentifierIntegrationTest(String cql) {
+		super(FunkyIdentifierIntegrationTest.class.getSimpleName());
+		this.cql = cql;
 	}
 
-	@Test
-	public void testFunkyTableName() {
-		for (String name : FunkyTableNameTest.FUNKY_LEGAL_NAMES) {
-			session.execute(new CreateTableCqlGenerator(CreateTableSpecification.createTable().name(name)
-					.partitionKeyColumn("key", DataType.text())).toCql());
-		}
-	}
+	@Parameters(name = "{0}")
+	public static List<Object[]> parameters() {
 
-	@Test
-	public void testFunkyColumnName() {
+		List<Object[]> parameters = new ArrayList<Object[]>();
+		List<CreateTableCqlGenerator> tableCqlGenerators = new ArrayList<CreateTableCqlGenerator>();
+
 		String table = "funky";
 		int i = 0;
 		for (String name : FunkyTableNameTest.FUNKY_LEGAL_NAMES) {
-			session.execute(new CreateTableCqlGenerator(CreateTableSpecification.createTable().name(table + i++)
-					.partitionKeyColumn(name, DataType.text())).toCql());
+			tableCqlGenerators.add(new CreateTableCqlGenerator(
+					CreateTableSpecification.createTable().name(table + i++).partitionKeyColumn(name, DataType.text())));
 		}
+
+		for (String name : FunkyTableNameTest.FUNKY_LEGAL_NAMES) {
+			tableCqlGenerators.add(new CreateTableCqlGenerator(
+					CreateTableSpecification.createTable().name(name).partitionKeyColumn(name, DataType.text())));
+		}
+
+		for (CreateTableCqlGenerator tableCqlGenerator : tableCqlGenerators) {
+			parameters.add(new Object[] { tableCqlGenerator.toCql() });
+		}
+
+		return parameters;
 	}
 
 	@Test
-	public void testFunkyTableAndColumnName() {
-		for (String name : FunkyTableNameTest.FUNKY_LEGAL_NAMES) {
-			session.execute(new CreateTableCqlGenerator(CreateTableSpecification.createTable().name(name)
-					.partitionKeyColumn(name, DataType.text())).toCql());
-		}
+	public void execute() throws Exception {
+		session.execute(cql);
 	}
 }

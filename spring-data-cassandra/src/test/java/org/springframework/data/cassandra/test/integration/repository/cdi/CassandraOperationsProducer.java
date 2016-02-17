@@ -26,7 +26,9 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Service;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.unit.support.Utils;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -36,20 +38,21 @@ import org.springframework.data.cassandra.test.integration.repository.User;
 /**
  * @author Mark Paluch
  */
-@ApplicationScoped
 class CassandraOperationsProducer {
 
+	public final static String KEYSPACE_NAME = Utils.randomKeyspaceName();
+
 	@Produces
+	@ApplicationScoped
 	public CassandraOperations createCassandraOperations() throws Exception {
-		String keySpace = AbstractEmbeddedCassandraIntegrationTest.randomKeyspaceName();
 
 		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter();
 		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(AbstractEmbeddedCassandraIntegrationTest
 				.cluster().connect(), cassandraConverter);
 
-		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(keySpace).ifNotExists();
+		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(KEYSPACE_NAME).ifNotExists();
 		cassandraTemplate.execute(createKeyspaceSpecification);
-		cassandraTemplate.execute("USE " + keySpace);
+		cassandraTemplate.execute("USE " + KEYSPACE_NAME);
 
 		cassandraTemplate.createTable(true, CqlIdentifier.cqlId("users"), User.class, new HashMap<String, Object>());
 
@@ -62,6 +65,8 @@ class CassandraOperationsProducer {
 	}
 
 	public void close(@Disposes CassandraOperations cassandraOperations) {
+
+		cassandraOperations.execute(DropKeyspaceSpecification.dropKeyspace(KEYSPACE_NAME));
 		cassandraOperations.getSession().close();
 	}
 

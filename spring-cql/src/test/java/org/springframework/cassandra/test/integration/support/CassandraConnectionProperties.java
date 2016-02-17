@@ -19,15 +19,15 @@ import java.io.InputStream;
 import java.util.Properties;
 
 @SuppressWarnings("serial")
-public class SpringCqlBuildProperties extends Properties {
+public class CassandraConnectionProperties extends Properties {
 
 	protected String resourceName = null;
 
-	public SpringCqlBuildProperties() {
-		this("/" + SpringCqlBuildProperties.class.getName() + ".properties");
+	public CassandraConnectionProperties() {
+		this("/config/cassandra-connection.properties");
 	}
 
-	protected SpringCqlBuildProperties(String resourceName) {
+	protected CassandraConnectionProperties(String resourceName) {
 		this.resourceName = resourceName;
 
 		loadProperties();

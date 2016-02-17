@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,18 +31,19 @@ import com.datastax.driver.core.Session;
 /**
  * @author Matthews T. Adams
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class MinimalXmlConfigTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	public static final String KEYSPACE = "minimalxmlconfigtest";
 
+	private Session session;
+	private ConfigurableApplicationContext context;
+
 	public MinimalXmlConfigTest() {
 		super(KEYSPACE);
 	}
 
-	Session session;
-	ConfigurableApplicationContext context;
-	
 	@Before
 	public void setUp() {
 		
@@ -53,6 +54,7 @@ public class MinimalXmlConfigTest extends AbstractKeyspaceCreatingIntegrationTes
 	@After
 	public void tearDown() {
 		context.close();
+		dropKeyspaceAfterTest();
 	}
 
 	@Test

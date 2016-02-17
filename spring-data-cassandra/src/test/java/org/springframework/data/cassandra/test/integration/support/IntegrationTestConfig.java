@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
+import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
 import org.springframework.cassandra.test.unit.support.Utils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;
@@ -35,9 +37,8 @@ import org.springframework.data.cassandra.config.java.AbstractCassandraConfigura
 @Configuration
 public class IntegrationTestConfig extends AbstractCassandraConfiguration {
 
-	public static final SpringCassandraBuildProperties PROPS = new SpringCassandraBuildProperties();
+	public static final CassandraConnectionProperties PROPS = new CassandraConnectionProperties();
 	public static final int PORT = PROPS.getCassandraPort();
-	public static final int RPC_PORT = PROPS.getCassandraRpcPort();
 
 	public String keyspaceName = Utils.randomKeyspaceName();
 
@@ -59,5 +60,10 @@ public class IntegrationTestConfig extends AbstractCassandraConfiguration {
 	@Override
 	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
 		return Arrays.asList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
+	}
+
+	@Override
+	protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
+		return Arrays.asList(DropKeyspaceSpecification.dropKeyspace().name(getKeyspaceName()));
 	}
 }

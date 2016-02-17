@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ import com.datastax.driver.core.Session.State;
 
 /**
  * Abstract base integration test class that creates a keyspace
- * 
+ *
  * @author Matthew T. Adams
  * @author David Webb
  * @author Mark Paluch
@@ -60,7 +60,7 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
 				AbstractKeyspaceCreatingIntegrationTest.this.session = s;
-		ensureKeyspaceAndSession(s);
+				ensureKeyspaceAndSession(s);
 				return null;
 			}
 		});
@@ -90,24 +90,26 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 		String cql = "USE " + (keyspace == null ? "system" : keyspace) + ";";
 		log.debug(cql);
 
-		new CqlTemplate(session).execute(cql);
+		session.execute(cql);
 		log.info("now using keyspace " + keyspace);
 	}
 
 	protected void debugSession() {
-		if (session == null) {
-			log.warn("Session is null...cannot debug that");
-			return;
+
+		if (log.isDebugEnabled()) {
+			if (session == null) {
+				log.warn("Session is null...cannot debug that");
+				return;
+			}
+
+			State state = session.getState();
+
+			for (Host h : state.getConnectedHosts()) {
+
+				log.debug(String.format("Session Host dc [%s], rack [%s], ver [%s], state [%s]", h.getDatacenter(), h.getRack(),
+						h.getCassandraVersion(), h.getState()));
+			}
 		}
-
-		State state = session.getState();
-
-		for (Host h : state.getConnectedHosts()) {
-
-			log.debug(String.format("Session Host dc [%s], rack [%s], ver [%s], state [%s]", h.getDatacenter(), h.getRack(),
-					h.getCassandraVersion(), h.getState()));
-		}
-
 	}
 
 	@After
@@ -124,8 +126,9 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 
 	/**
 	 * Drop a Keyspace if it exists.
+	 *
 	 * @param keyspace
-     */
+	 */
 	public void dropKeyspace(String keyspace) {
 		session.execute("DROP KEYSPACE IF EXISTS " + keyspace);
 	}

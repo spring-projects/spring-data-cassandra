@@ -10,7 +10,7 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
 		">
 
-	<import resource="classpath:/spring-data-cassandra-basic.xml" />
+	<import resource="classpath:/config/spring-data-cassandra-basic.xml" />
 
 	<cass:mapping
 		entity-base-packages="org.springframework.data.cassandra.test.integration.forcequote.config">
@@ -40,9 +40,9 @@
 		</cass:entity>
 	</cass:mapping>
 
-	<cass:cluster port="${cassandra.native_transport_port}">
+	<cass:cluster port="${build.cassandra.native_transport_port}">
 		<cass:keyspace name="ForceQuoteRepositoryXmlConfigIntegrationTests"
-			action="CREATE" durable-writes="true">
+			action="CREATE_DROP" durable-writes="true">
 		</cass:keyspace>
 	</cass:cluster>
 

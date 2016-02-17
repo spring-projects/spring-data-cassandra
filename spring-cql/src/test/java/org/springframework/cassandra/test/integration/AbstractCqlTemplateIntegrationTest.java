@@ -31,7 +31,8 @@ public class AbstractCqlTemplateIntegrationTest extends AbstractKeyspaceCreating
 	public AbstractCqlTemplateIntegrationTest() {}
 
 	@Before
-	public void createTemplate() {
+	public void setUp() {
 		this.cqlOperations = new CqlTemplate(session);
 	}
+
 }

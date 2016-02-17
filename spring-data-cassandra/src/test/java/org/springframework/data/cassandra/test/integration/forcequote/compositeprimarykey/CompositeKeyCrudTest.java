@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey;
 
 import static org.junit.Assert.assertEquals;
@@ -27,6 +43,9 @@ import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
+/**
+ * @author Mark Paluch
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class CompositeKeyCrudTest extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
@@ -36,9 +55,9 @@ public class CompositeKeyCrudTest extends AbstractSpringDataEmbeddedCassandraInt
 	public static class Config extends IntegrationTestConfig {}
 
 	@Autowired
-	CassandraTemplate t;
+	private CassandraTemplate template1;
 
-	CorrelationEntity c1, c2;
+	private CorrelationEntity c1, c2;
 
 	@Before
 	public void setUp() throws Throwable {
@@ -56,14 +75,14 @@ public class CompositeKeyCrudTest extends AbstractSpringDataEmbeddedCassandraInt
 
 	@Test
 	public void test() {
-		t.insert(c1);
-		t.insert(c2);
+		template1.insert(c1);
+		template1.insert(c2);
 
 		Select select = QueryBuilder.select().from("identity_correlations");
 		select.where(QueryBuilder.eq("type", "a")).and(QueryBuilder.eq("value", "b"));
 		select.setRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE);
 		select.setConsistencyLevel(ConsistencyLevel.ONE);
-		List<CorrelationEntity> correlationEntities = t.select(select, CorrelationEntity.class);
+		List<CorrelationEntity> correlationEntities = template1.select(select, CorrelationEntity.class);
 
 		assertEquals(2, correlationEntities.size());
 
@@ -72,9 +91,9 @@ public class CompositeKeyCrudTest extends AbstractSpringDataEmbeddedCassandraInt
 		ArrayList<CorrelationEntity> entities = new ArrayList<CorrelationEntity>();
 		entities.add(c1);
 		entities.add(c2);
-		t.delete(entities, qo);
+		template1.delete(entities, qo);
 
-		correlationEntities = t.select(select, CorrelationEntity.class);
+		correlationEntities = template1.select(select, CorrelationEntity.class);
 
 		assertEquals(0, correlationEntities.size());
 	}

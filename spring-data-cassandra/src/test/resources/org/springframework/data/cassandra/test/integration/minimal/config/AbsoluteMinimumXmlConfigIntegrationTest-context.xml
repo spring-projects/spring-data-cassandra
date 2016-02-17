@@ -11,9 +11,9 @@
 
 	<!-- this is needed just so it runs correctly as part of the build, so ignore it & the port attribute of the cluster below -->
 	<context:property-placeholder
-		location="classpath:/spring-data-cassandra-build.properties" />
+		location="classpath:/config/cassandra-connection.properties" />
 
-	<cass:cluster port="${cassandra.native_transport_port}" />
+	<cass:cluster port="${build.cassandra.native_transport_port}" />
 
 	<cass:session keyspace-name="system" />
 

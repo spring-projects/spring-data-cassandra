@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNotNull;
 
 import javax.inject.Inject;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.cassandra.core.CqlOperations;
@@ -29,15 +30,18 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.datastax.driver.core.Session;
 
+/**
+ * @author Mark Paluch
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class PropertyPlaceholderNamespaceCreatingXmlConfigTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	@Inject
-	Session session;
+	private Session session;
 
 	@Inject
-	CqlOperations ops;
+	private CqlOperations ops;
 
 	@Test
 	public void test() {
@@ -46,8 +50,12 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigTest extends AbstractK
 		IntegrationTestUtils.assertKeyspaceExists("ppncxct", session);
 
 		assertNotNull(ops);
+	}
 
-		session.execute("DROP KEYSPACE IF EXISTS ppncxct;");
-		session.execute("DROP KEYSPACE IF EXISTS foo123;");
+	@After
+	public void tearDown() throws Exception {
+		dropKeyspace("ppncxct");
+		dropKeyspace("foo123");
+		dropKeyspaceAfterTest();
 	}
 }

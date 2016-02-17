@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.springframework.cassandra.test.integration.core.cql.generator;
 import static org.springframework.cassandra.test.integration.core.cql.generator.CqlKeyspaceSpecificationAssertions.assertKeyspace;
 
 import org.junit.Test;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.BasicTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.CreateKeyspaceTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.NetworkTopologyTest;
@@ -28,6 +28,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspace
  * 
  * @author John McPeek
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class CreateKeyspaceCqlGeneratorIntegrationTests {
 
@@ -36,7 +37,7 @@ public class CreateKeyspaceCqlGeneratorIntegrationTests {
 	 * 
 	 * @param <T> The concrete unit test class to which this integration test corresponds.
 	 */
-	public static abstract class Base<T extends CreateKeyspaceTest> extends AbstractEmbeddedCassandraIntegrationTest {
+	public static abstract class Base<T extends CreateKeyspaceTest> extends AbstractKeyspaceCreatingIntegrationTest {
 		T unit;
 
 		public abstract T unit();
@@ -49,6 +50,8 @@ public class CreateKeyspaceCqlGeneratorIntegrationTests {
 			system.execute(unit.cql);
 
 			assertKeyspace(unit.specification, unit.keyspace, system);
+
+			dropKeyspace(unit.keyspace);
 		}
 	}
 

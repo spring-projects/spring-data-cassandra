@@ -18,7 +18,6 @@ package org.springframework.cassandra.test.integration.core.cql.generator;
 import static org.springframework.cassandra.test.integration.core.cql.generator.CqlIndexSpecificationAssertions.assertIndex;
 
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
-import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCqlGeneratorTests.BasicTest;
@@ -57,9 +56,10 @@ public class CreateIndexCqlGeneratorIntegrationTests {
 
 	public static class BasicIntegrationTest extends Base<BasicTest> {
 
-		{
+		public BasicIntegrationTest() {
+
 			cassandraRule.before(new ClassPathCQLDataSet(
-					"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace));
+				"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace));
 		}
 
 		@Override

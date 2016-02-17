@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public abstract class AbstractTestJavaConfig extends AbstractSessionConfiguration {
 
-	public static SpringCqlBuildProperties PROPS = new SpringCqlBuildProperties();
+	public static CassandraConnectionProperties PROPS = new CassandraConnectionProperties();
 	public static final int PORT = PROPS.getCassandraPort();
 
 	@Override

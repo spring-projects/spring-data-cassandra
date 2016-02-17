@@ -19,7 +19,6 @@ import static org.springframework.cassandra.test.integration.core.cql.generator.
 import static org.springframework.cassandra.test.integration.core.cql.generator.CqlIndexSpecificationAssertions.assertNoIndex;
 
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
-import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,32 +35,32 @@ import org.springframework.cassandra.test.unit.core.cql.generator.DropIndexCqlGe
  */
 public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	Logger log = LoggerFactory.getLogger(IndexLifecycleCqlGeneratorIntegrationTests.class);
+    private final static Logger log = LoggerFactory.getLogger(IndexLifecycleCqlGeneratorIntegrationTests.class);
 
-	{
-		cassandraRule.before(new ClassPathCQLDataSet("integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql",
-					this.keyspace));
-	}
+    {
+        cassandraRule.before(new ClassPathCQLDataSet(
+                "integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace));
+    }
 
-	@Test
-	public void lifecycleTest() {
+    @Test
+    public void lifecycleTest() {
 
-		CreateIndexCqlGeneratorTests.BasicTest createTest = new CreateIndexCqlGeneratorTests.BasicTest();
-		DropIndexCqlGeneratorTests.BasicTest dropTest = new DropIndexCqlGeneratorTests.BasicTest();
-		DropIndexCqlGeneratorTests.IfExistsTest dropIfExists = new DropIndexCqlGeneratorTests.IfExistsTest();
+        CreateIndexCqlGeneratorTests.BasicTest createTest = new CreateIndexCqlGeneratorTests.BasicTest();
+        DropIndexCqlGeneratorTests.BasicTest dropTest = new DropIndexCqlGeneratorTests.BasicTest();
+        DropIndexCqlGeneratorTests.IfExistsTest dropIfExists = new DropIndexCqlGeneratorTests.IfExistsTest();
 
-		createTest.prepare();
-		dropTest.prepare();
-		dropIfExists.prepare();
+        createTest.prepare();
+        dropTest.prepare();
+        dropIfExists.prepare();
 
-		log.info(createTest.cql);
-		session.execute(createTest.cql);
+        log.info(createTest.cql);
+        session.execute(createTest.cql);
 
-		assertIndex(createTest.specification, keyspace, session);
+        assertIndex(createTest.specification, keyspace, session);
 
-		log.info(dropTest.cql);
-		session.execute(dropTest.cql);
+        log.info(dropTest.cql);
+        session.execute(dropTest.cql);
 
-		assertNoIndex(createTest.specification, keyspace, session);
-	}
+        assertNoIndex(createTest.specification, keyspace, session);
+    }
 }

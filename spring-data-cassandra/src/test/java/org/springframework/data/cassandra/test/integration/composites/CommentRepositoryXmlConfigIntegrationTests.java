@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.composites;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,18 +30,19 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Base class for xml config tests for {@link UserRepository}.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class CommentRepositoryXmlConfigIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Autowired
-	protected CommentRepository repository;
+	private CommentRepository repository;
 
 	@Autowired
-	protected CassandraOperations template;
+	private CassandraOperations template;
 
-	CommentRepositoryIntegrationTests tests;
+	private CommentRepositoryIntegrationTests tests;
 
 	@Before
 	public void setUp() throws InterruptedException {

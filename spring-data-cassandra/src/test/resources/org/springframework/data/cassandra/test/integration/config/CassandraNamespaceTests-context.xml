@@ -9,10 +9,10 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
 	<context:property-placeholder
-		location="classpath:/org/springframework/data/cassandra/test/integration/config/cassandra.properties" />
+		location="classpath:/config/cassandra-connection.properties,classpath:/org/springframework/data/cassandra/test/integration/config/cassandra.properties" />
 
-	<cass:cluster contact-points="${cassandra.contactPoints}"
-		port="${cassandra.native_transport_port}" compression="SNAPPY">
+	<cass:cluster contact-points="${build.cassandra.host}"
+		port="${build.cassandra.native_transport_port}" compression="SNAPPY">
 		<cass:local-pooling-options
 			min-simultaneous-requests="25" max-simultaneous-requests="100"
 			core-connections="2" max-connections="8" />
@@ -22,7 +22,7 @@
 		<cass:socket-options connect-timeout-millis="5000"
 			keep-alive="true" reuse-address="true" so-linger="60" tcp-no-delay="true"
 			receive-buffer-size="65536" send-buffer-size="65536" />
-		<cass:keyspace name="${cassandra.keyspace}" action="CREATE"
+		<cass:keyspace name="${cassandra.keyspace}" action="CREATE_DROP"
 			durable-writes="true" />
 	</cass:cluster>
 
