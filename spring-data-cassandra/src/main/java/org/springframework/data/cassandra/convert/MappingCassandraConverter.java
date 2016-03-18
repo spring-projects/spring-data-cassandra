@@ -65,11 +65,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		implements CassandraConverter, ApplicationContextAware, BeanClassLoaderAware {
 
 	protected final Logger log = LoggerFactory.getLogger(getClass());
-
 	protected final CassandraMappingContext mappingContext;
+
 	protected ApplicationContext applicationContext;
 	protected SpELContext spELContext;
-
 	protected ClassLoader beanClassLoader;
 
 	/**
@@ -224,7 +223,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		} else if (sink instanceof Where) {
 			writeDeleteWhereFromObject(source, (Where) sink, entity);
 		} else {
-			throw new MappingException("Unknown buildStatement " + sink.getClass().getName());
+			throw new MappingException("Unknown write target " + sink.getClass().getName());
 		}
 	}
 
@@ -240,13 +239,17 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				Object value = accessor.getProperty(prop, prop.isCompositePrimaryKey() ? prop.getType() : prop.getDataType().asJavaClass());
+				Object value = accessor.getProperty(prop,
+						prop.isCompositePrimaryKey() ? prop.getType() : prop.getDataType().asJavaClass());
 
-				log.debug("prop.type -> " + prop.getType().getName());
-				log.debug("prop.value -> " + value);
+				if (log.isDebugEnabled()) {
+					log.debug("doWithProperties Property.type {}, Property.value {}", prop.getType().getName(), value);
+				}
 
 				if (prop.isCompositePrimaryKey()) {
-					log.debug("prop is a compositeKey");
+					if (log.isDebugEnabled()) {
+						log.debug("Property is a compositeKey");
+					}
 
 					writeInsertFromWrapper(getConvertingAccessor(value, prop.getCompositePrimaryKeyEntity()), insert,
 							prop.getCompositePrimaryKeyEntity());
@@ -254,7 +257,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				}
 
 				if (value != null) {
-					log.debug(String.format("Adding insert.value [%s] - [%s]", prop.getColumnName().toCql(), value));
+					if (log.isDebugEnabled()) {
+						log.debug("Adding insert.value [{}] - [{}]", prop.getColumnName().toCql(), value);
+					}
 					insert.value(prop.getColumnName().toCql(), value);
 				}
 			}
@@ -273,7 +278,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-				Object value = accessor.getProperty(prop, prop.isCompositePrimaryKey() ? prop.getType() : prop.getDataType().asJavaClass());
+				Object value = accessor.getProperty(prop,
+						prop.isCompositePrimaryKey() ? prop.getType() : prop.getDataType().asJavaClass());
 
 				if (prop.isCompositePrimaryKey()) {
 					CassandraPersistentEntity<?> keyEntity = prop.getCompositePrimaryKeyEntity();
@@ -305,7 +311,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 				@Override
 				public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-					
+
 					Object value = accessor.getProperty(prop, prop.getDataType().asJavaClass());
 					where.and(QueryBuilder.eq(prop.getColumnName().toCql(), value));
 				}
@@ -316,7 +322,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		// else, wrapper is an entity with an id
 		Object id = getId(accessor, entity);
 		if (id == null) {
-			String msg = String.format("no id value found in object {}", accessor.getBean());
+			String msg = String.format("no id value found in object %s", accessor.getBean());
 			log.error(msg);
 			throw new IllegalArgumentException(msg);
 		}
@@ -367,7 +373,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		CassandraPersistentProperty idProperty = entity.getIdProperty();
 		if (idProperty != null) {
-			return wrapper.getProperty(entity.getIdProperty(), idProperty.isCompositePrimaryKey() ? idProperty.getType() : idProperty.getDataType().asJavaClass());
+			return wrapper.getProperty(entity.getIdProperty(),
+					idProperty.isCompositePrimaryKey() ? idProperty.getType() : idProperty.getDataType().asJavaClass());
 		}
 
 		// if the class doesn't have an id property, then it's using MapId
