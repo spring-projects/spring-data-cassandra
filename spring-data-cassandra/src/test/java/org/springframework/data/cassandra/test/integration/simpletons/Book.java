@@ -36,6 +36,7 @@ public class Book {
 	private int pages;
 	private Date saleDate;
 	private boolean isInStock;
+	private BookCondition condition;
 
 	/**
 	 * @return Returns the isbn.
@@ -121,6 +122,22 @@ public class Book {
 		this.pages = pages;
 	}
 
+	/**
+	 * 
+	 * @param condition The condition to set. 
+	 */
+	public void setCondition(BookCondition condition) {
+		this.condition = condition;
+	}
+
+	/**
+	 * 
+	 * @return Returns the condition.
+	 */
+	public BookCondition getCondition() {
+		return condition;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -131,6 +148,7 @@ public class Book {
 		sb.append("tile -> " + title).append("\n");
 		sb.append("author -> " + author).append("\n");
 		sb.append("pages -> " + pages).append("\n");
+		sb.append("condition -> " + condition).append("\n");
 		return sb.toString();
 	}
 }
