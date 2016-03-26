@@ -54,7 +54,13 @@ public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitio
 		if (!StringUtils.hasText(mappingRef)) {
 			mappingRef = DefaultBeanNames.CONTEXT;
 		}
+		
+		String convSvcRef = element.getAttribute("conversion-service-ref");
+        if (!StringUtils.hasText(convSvcRef)) {
+            convSvcRef = "conversionService";
+        }
 
+        builder.addConstructorArgReference(convSvcRef);
 		builder.addConstructorArgReference(mappingRef);
 	}
 }

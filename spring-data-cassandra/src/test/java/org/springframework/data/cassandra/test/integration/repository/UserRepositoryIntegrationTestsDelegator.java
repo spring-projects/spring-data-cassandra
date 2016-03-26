@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.repository;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +46,11 @@ public abstract class UserRepositoryIntegrationTestsDelegator extends
 	public void before() {
 		tests = new UserRepositoryIntegrationTests(repository, template);
 		tests.before();
+	}
+	
+	@After
+	public void after() {
+	    tests.after();
 	}
 
 	@Test

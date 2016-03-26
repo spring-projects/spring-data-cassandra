@@ -15,11 +15,15 @@
  */
 package org.springframework.data.cassandra.test.integration.repository;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.mapping.Indexed;
 import org.springframework.data.cassandra.mapping.Table;
+
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * This is an example of the Users status table, where all fields are columns in Cassandra row. Some fields can be
@@ -54,6 +58,10 @@ public class User {
 	 * User emails
 	 */
 	private Set<String> emails;
+	
+	
+	@CassandraType(type=Name.LIST, typeArguments={Name.TEXT})
+	private List<Address> addresses;
 
 	/*
 	 * Password
@@ -177,5 +185,31 @@ public class User {
 			return false;
 		return true;
 	}
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
+    }
+
+    @Override
+    public String toString() {
+        return "User [" +
+               (username != null ? "username=" + username + ", " : "") +
+               (firstName != null ? "firstName=" + firstName + ", " : "") +
+               (lastName != null ? "lastName=" + lastName + ", " : "") +
+               (place != null ? "place=" + place + ", " : "") +
+               (emails != null ? "emails=" + emails + ", " : "") +
+               (addresses != null ? "addresses=" + addresses + ", " : "") +
+               (password != null ? "password=" + password + ", " : "") +
+               "birthYear=" +
+               birthYear +
+               ", " +
+               (following != null ? "following=" + following + ", " : "") +
+               (friends != null ? "friends=" + friends : "") +
+               "]";
+    }
 
 }

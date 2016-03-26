@@ -15,21 +15,24 @@
  */
 package org.springframework.data.cassandra.test.integration.repository;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Assert;
-import org.springframework.data.cassandra.core.CassandraOperations;
-
-import com.google.common.collect.Lists;
-
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.cassandra.thrift.Cassandra.AsyncProcessor.add;
+import org.junit.Assert;
+import org.springframework.data.cassandra.core.CassandraOperations;
+
+import com.google.common.collect.Lists;
 
 /**
  * Tests for {@link UserRepository}.
@@ -72,7 +75,21 @@ public class UserRepositoryIntegrationTests {
 		bob.setLastName("White");
 		bob.setPassword("555");
 		bob.setPlace("NY");
-
+		Set<String> emails = new LinkedHashSet<String>();
+		emails.add("bob@system.com");
+        emails.add("bob@gmail.com");
+        bob.setEmails(emails);
+        
+        List<Address> addresses =new ArrayList<Address>();
+        Address addr = new Address();
+        addr.setCity("Lodz");
+        addr.setCountry("PL");
+        addr.setStreet("Niciarniana");
+        addr.setStreetNo("2/6");
+        addr.setState("LDZ");
+        addresses.add(addr);
+        bob.setAddresses(addresses);
+        
 		alice = new User();
 		alice.setUsername("alice");
 		alice.setFirstName("Alice");
@@ -86,14 +103,30 @@ public class UserRepositoryIntegrationTests {
 		scott.setLastName("Van");
 		scott.setPassword("444");
 		scott.setPlace("Boston");
+		
+		all = toList(repository.save(Arrays.asList(tom, bob, alice, scott)));
 
-		all = template.insert(Arrays.asList(tom, bob, alice, scott));
+//		all = template.insert(Arrays.asList(tom, bob, alice, scott));
 	}
 
-	public void before() {
+	private <U> List<U> toList(Iterable<U> it) {
+        List<U> list =new ArrayList<U>();
+        for (U u : it) {
+            list.add(u);
+        }
+        return list;
+    }
+
+    public void before() {
 		repository.deleteAll();
 		setUp();
 	}
+    
+    public void after() {
+        System.out.println(repository.findAll());
+        System.out.println(template.queryForListOfMap("select * from users"));
+        
+    }
 
 	public void findByNamedQuery() {
 		String name = repository.findByNamedQuery("bob");

@@ -750,6 +750,15 @@ Defines a CassandraConverter for getting rich mapping functionality.
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:attribute name="conversion-service-ref" type="conversionServiceRef"
+				use="optional">
+				<xsd:annotation>
+					<xsd:documentation
+						source="org.springframework.data.cassandra.mapping.CassandraMappingContext"><![CDATA[
+The reference to a ConversionService. Will default to 'conversionService'.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 			<xsd:attribute name="mapping-ref" type="mappingContextRef"
 				use="optional">
 				<xsd:annotation>
@@ -762,6 +771,18 @@ The reference to a CassandraMappingContext. Will default to 'cassandraMapping'.
 		</xsd:complexType>
 	</xsd:element>
 
+	<xsd:simpleType name="conversionServiceRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+						type="org.springframework.data.cassandra.mapping.CassandraMappingContext" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string" />
+	</xsd:simpleType>
+	
 	<xsd:simpleType name="mappingContextRef">
 		<xsd:annotation>
 			<xsd:appinfo>

@@ -17,6 +17,7 @@ package org.springframework.cassandra.core;
 
 import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -588,7 +589,10 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		for (Definition def : cols.asList()) {
 			String name = def.getName();
-			map.put(name, def.getType().deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
+			ByteBuffer bytes = row.getBytesUnsafe(name);
+			if (bytes != null) {
+			    map.put(name, def.getType().deserialize(bytes, ProtocolVersion.NEWEST_SUPPORTED));
+			}
 		}
 
 		return map;

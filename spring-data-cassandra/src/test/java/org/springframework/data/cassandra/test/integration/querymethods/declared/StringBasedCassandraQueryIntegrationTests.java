@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -60,7 +61,7 @@ public class StringBasedCassandraQueryIntegrationTests {
 
 		when(operations.getConverter()).thenReturn(converter);
 
-		this.converter = new MappingCassandraConverter(new BasicCassandraMappingContext());
+		this.converter = new MappingCassandraConverter(new DefaultConversionService(), new BasicCassandraMappingContext());
 	}
 
 	@Test

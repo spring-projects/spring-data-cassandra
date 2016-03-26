@@ -19,6 +19,8 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.config.SchemaAction;
@@ -105,10 +107,15 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 */
 	@Bean
 	public CassandraConverter cassandraConverter() throws Exception {
-		return new MappingCassandraConverter(cassandraMapping());
+		return new MappingCassandraConverter(conversionService(), cassandraMapping());
 	}
 
-	@Override
+	@Bean
+	public ConversionService conversionService() {
+        return new DefaultConversionService();
+    }
+
+    @Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
 	}

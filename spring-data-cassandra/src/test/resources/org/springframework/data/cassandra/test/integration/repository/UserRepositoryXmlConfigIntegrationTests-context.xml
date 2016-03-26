@@ -12,6 +12,8 @@
 
 	<import resource="classpath:/spring-data-cassandra-basic.xml" />
 
+	<bean id="conversionService" class="org.springframework.data.cassandra.test.integration.repository.ConversionServiceFactoryBean"/>
+
 	<cass:mapping
 		entity-base-packages="org.springframework.data.cassandra.test.integration.repository">
 		<cass:entity
@@ -19,6 +21,8 @@
 			<cass:table name="users" />
 		</cass:entity>
 	</cass:mapping>
+	
+	<cass:converter/>
 
 	<cass:cluster port="${cassandra.native_transport_port}">
 		<cass:keyspace name="#{randomKeyspaceName}"

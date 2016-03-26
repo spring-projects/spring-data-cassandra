@@ -24,6 +24,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -75,7 +76,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	 * Creates a new {@link MappingCassandraConverter} with a {@link BasicCassandraMappingContext}.
 	 */
 	public MappingCassandraConverter() {
-		this(new BasicCassandraMappingContext());
+		this(new DefaultConversionService(), new BasicCassandraMappingContext());
 	}
 
 	/**
@@ -83,9 +84,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 	 * 
 	 * @param mappingContext must not be {@literal null}.
 	 */
-	public MappingCassandraConverter(CassandraMappingContext mappingContext) {
+	public MappingCassandraConverter(ConversionService convSvc, CassandraMappingContext mappingContext) {
 
-		super(new DefaultConversionService());
+		super(convSvc);
 
 		Assert.notNull(mappingContext);
 
@@ -250,8 +251,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 			        }
                                 Object value = wrapper.getProperty(prop, dataClass);
 
-				log.debug("prop.type -> " + prop.getType().getName());
-				log.debug("prop.value -> " + value);
+				log.debug("prop.type -> {}", prop.getType().getName());
+				log.debug("prop.value -> {}", value);
 
 				if (prop.isCompositePrimaryKey()) {
 					log.debug("prop is a compositeKey");
@@ -263,7 +264,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
 				}
 
 				if (value != null) {
-					log.debug(String.format("Adding insert.value [%s] - [%s]", prop.getColumnName().toCql(), value));
+					log.debug("Adding insert.value [{}] - [{}]", prop.getColumnName().toCql(), value);
 					insert.value(prop.getColumnName().toCql(), value);
 				}
 			}
@@ -393,9 +394,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter implem
     		    return (ConvertingPropertyAccessor) object;
     		} else if (object instanceof PersistentPropertyAccessor) {
     		    PersistentPropertyAccessor persistentPropertyAccessor = (PersistentPropertyAccessor) object;
-                    return new ConvertingPropertyAccessor(persistentPropertyAccessor, getConversionService());
+                    return new CassandraConvertingPropertyAccessor(persistentPropertyAccessor, getConversionService());
     		} else {
-                    return new ConvertingPropertyAccessor(entity.getPropertyAccessor(object), getConversionService());
+                    return new CassandraConvertingPropertyAccessor(entity.getPropertyAccessor(object), getConversionService());
     		}
         }
 

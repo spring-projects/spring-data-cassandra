@@ -35,6 +35,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.CassandraConvertingPropertyAccessor;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
@@ -1077,9 +1078,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
                     return (ConvertingPropertyAccessor) object;
                 } else if (object instanceof PersistentPropertyAccessor) {
                     PersistentPropertyAccessor persistentPropertyAccessor = (PersistentPropertyAccessor) object;
-                    return new ConvertingPropertyAccessor(persistentPropertyAccessor, getConversionService());
+                    return new CassandraConvertingPropertyAccessor(persistentPropertyAccessor, getConversionService());
                 } else {
-                    return new ConvertingPropertyAccessor(entity.getPropertyAccessor(object), getConversionService());
+                    return new CassandraConvertingPropertyAccessor(entity.getPropertyAccessor(object), getConversionService());
                 }
         }
 
