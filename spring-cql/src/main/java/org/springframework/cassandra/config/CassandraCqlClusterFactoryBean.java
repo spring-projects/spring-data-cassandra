@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2013-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,17 +53,17 @@ import com.datastax.driver.core.policies.RetryPolicy;
 
 /**
  * Convenient factory for configuring a Cassandra Cluster.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Kirk Clemens
  */
-public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, InitializingBean, DisposableBean,
-		PersistenceExceptionTranslator {
+public class CassandraCqlClusterFactoryBean
+		implements FactoryBean<Cluster>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
 	public static final String DEFAULT_CONTACT_POINTS = "localhost";
 	public static final boolean DEFAULT_METRICS_ENABLED = true;
-	public static final boolean DEFAULT_DEFERRED_INITIALIZATION = false;
 	public static final boolean DEFAULT_JMX_REPORTING_ENABLED = true;
 	public static final boolean DEFAULT_SSL_ENABLED = false;
 	public static final int DEFAULT_PORT = 9042;
@@ -180,7 +180,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 			}
 		}
 
-		if(protocolVersion != null) {
+		if (protocolVersion != null) {
 			builder.withProtocolVersion(protocolVersion);
 		}
 
@@ -231,9 +231,9 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 				Iterator<?> i = specs.iterator();
 				while (i.hasNext()) {
 					KeyspaceActionSpecification<?> spec = (KeyspaceActionSpecification<?>) i.next();
-					String cql = (spec instanceof CreateKeyspaceSpecification) ? new CreateKeyspaceCqlGenerator(
-							(CreateKeyspaceSpecification) spec).toCql() : new DropKeyspaceCqlGenerator(
-							(DropKeyspaceSpecification) spec).toCql();
+					String cql = (spec instanceof CreateKeyspaceSpecification)
+							? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql()
+							: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
 
 					template.execute(cql);
 				}
@@ -274,84 +274,167 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
-	 * Sets a comma-delimited string of the contact points (hosts) to connect to.
+	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost}, see
+	 * {@link #DEFAULT_CONTACT_POINTS}.
+	 *
+	 * @param contactPoints
 	 */
 	public void setContactPoints(String contactPoints) {
 		this.contactPoints = contactPoints;
 	}
 
+	/**
+	 * Set the port for the contact points. Default is {@code 9042}, see {@link #DEFAULT_PORT}.
+	 *
+	 * @param port
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}
 
+	/**
+	 * Set the {@link CompressionType}. Default is uncompressed.
+	 *
+	 * @param compressionType
+	 */
 	public void setCompressionType(CompressionType compressionType) {
 		this.compressionType = compressionType;
 	}
 
+	/**
+	 * Set the {@link PoolingOptions}.
+	 *
+	 * @param poolingOptions
+	 */
 	public void setPoolingOptions(PoolingOptions poolingOptions) {
 		this.poolingOptions = poolingOptions;
 	}
 
-	public void setProtocolVersion(ProtocolVersion protocolVersion){
+	/**
+	 * Set the {@link ProtocolVersion}.
+	 *
+	 * @param protocolVersion
+	 * @since 1.4
+	 */
+	public void setProtocolVersion(ProtocolVersion protocolVersion) {
 		this.protocolVersion = protocolVersion;
 	}
 
+	/**
+	 * Set the {@link SocketOptions} containing low-level socket options.
+	 *
+	 * @param socketOptions
+	 */
 	public void setSocketOptions(SocketOptions socketOptions) {
 		this.socketOptions = socketOptions;
 	}
 
+	/**
+	 * Set the {@link AuthProvider}. Default is unauthenticated.
+	 *
+	 * @param authProvider
+	 */
 	public void setAuthProvider(AuthProvider authProvider) {
 		this.authProvider = authProvider;
 	}
 
+	/**
+	 * Set the {@link LoadBalancingPolicy}.
+	 *
+	 * @param loadBalancingPolicy
+	 */
 	public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
 		this.loadBalancingPolicy = loadBalancingPolicy;
 	}
 
+	/**
+	 * Set the {@link ReconnectionPolicy}.
+	 *
+	 * @param reconnectionPolicy
+	 */
 	public void setReconnectionPolicy(ReconnectionPolicy reconnectionPolicy) {
 		this.reconnectionPolicy = reconnectionPolicy;
 	}
 
+	/**
+	 * Set the {@link RetryPolicy}.
+	 *
+	 * @param retryPolicy
+	 */
 	public void setRetryPolicy(RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
 	}
 
+	/**
+	 * Set whether metrics are enabled. Default is {@literal true}, see {@link #DEFAULT_METRICS_ENABLED}.
+	 *
+	 * @param metricsEnabled
+	 */
 	public void setMetricsEnabled(boolean metricsEnabled) {
 		this.metricsEnabled = metricsEnabled;
 	}
 
+	/**
+	 * Set a {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications} that are executed when
+	 * this factory is {@link #afterPropertiesSet() initialized}. {@link CreateKeyspaceSpecification Create keyspace
+	 * specifications} are executed on a system session with no keyspace set, before executing
+	 * {@link #setStartupScripts(List)}.
+	 *
+	 * @param specifications
+	 */
 	public void setKeyspaceCreations(List<CreateKeyspaceSpecification> specifications) {
 		this.keyspaceCreations = specifications;
 	}
 
+	/**
+	 * Return a {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
+	 *
+	 * @return
+	 */
 	public List<CreateKeyspaceSpecification> getKeyspaceCreations() {
 		return keyspaceCreations;
 	}
 
+	/**
+	 * Set a {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications} that are executed when this
+	 * factory is {@link #destroy() destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are
+	 * executed on a system session with no keyspace set, before executing {@link #setShutdownScripts(List)}.
+	 *
+	 * @param specifications
+	 */
 	public void setKeyspaceDrops(List<DropKeyspaceSpecification> specifications) {
 		this.keyspaceDrops = specifications;
 	}
 
+	/**
+	 * Reurn the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
+	 *
+	 * @return
+	 */
 	public List<DropKeyspaceSpecification> getKeyspaceDrops() {
 		return keyspaceDrops;
 	}
 
+	/**
+	 * Set a {@link List} of raw {@link String CQL statements} that are executed when this factory is
+	 * {@link #afterPropertiesSet() initialized}. Scripts are executed on a system session with no keyspace set, after
+	 * executing {@link #setKeyspaceCreations(List)}.
+	 *
+	 * @param scripts
+	 */
 	public void setStartupScripts(List<String> scripts) {
 		this.startupScripts = scripts;
 	}
 
+	/**
+	 * Set a {@link List} of raw {@link String CQL statements} that are executed when this factory is {@link #destroy()
+	 * destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are executed on a system session with no
+	 * keyspace set, after executing {@link #setKeyspaceDrops(List)}.
+	 *
+	 * @param scripts
+	 */
 	public void setShutdownScripts(List<String> scripts) {
 		this.shutdownScripts = scripts;
-	}
-
-	private static Compression convertCompressionType(CompressionType type) {
-		switch (type) {
-			case NONE:
-				return Compression.NONE;
-			case SNAPPY:
-				return Compression.SNAPPY;
-		}
-		throw new IllegalArgumentException("unknown compression type " + type);
 	}
 
 	/**
@@ -363,7 +446,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * If accumlating is true, we append to the list, otherwise we replace the list.
-	 * 
+	 *
 	 * @param keyspaceSpecifications The keyspaceSpecifications to set.
 	 */
 	public void setKeyspaceSpecifications(Set<KeyspaceActionSpecification<?>> keyspaceSpecifications) {
@@ -371,6 +454,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
+	 * Set the username to use with {@link com.datastax.driver.core.PlainTextAuthProvider}.
+	 *
 	 * @param username The username to set.
 	 */
 	public void setUsername(String username) {
@@ -378,6 +463,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
+	 * Set the username to use with {@link com.datastax.driver.core.PlainTextAuthProvider}.
+	 *
 	 * @param password The password to set.
 	 */
 	public void setPassword(String password) {
@@ -385,6 +472,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
+	 * Set whether to use JMX reporting. Default is {@literal false}, see {@link #DEFAULT_JMX_REPORTING_ENABLED}.
+	 *
 	 * @param jmxReportingEnabled The jmxReportingEnabled to set.
 	 */
 	public void setJmxReportingEnabled(boolean jmxReportingEnabled) {
@@ -392,6 +481,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
+	 * Set whether to use SSL. Default is plain, see {@link #DEFAULT_SSL_ENABLED}.
+	 *
 	 * @param sslEnabled The sslEnabled to set.
 	 */
 	public void setSslEnabled(boolean sslEnabled) {
@@ -417,5 +508,15 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 */
 	public void setLatencyTracker(LatencyTracker latencyTracker) {
 		this.latencyTracker = latencyTracker;
+	}
+
+	private static Compression convertCompressionType(CompressionType type) {
+		switch (type) {
+			case NONE:
+				return Compression.NONE;
+			case SNAPPY:
+				return Compression.SNAPPY;
+		}
+		throw new IllegalArgumentException("unknown compression type " + type);
 	}
 }
