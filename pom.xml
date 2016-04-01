@@ -28,11 +28,13 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-cassandra</dist.id>
 		<springdata.commons>1.11.4.RELEASE</springdata.commons>
-		<cassandra-unit.version>2.0.2.2</cassandra-unit.version>
+		<!--<cassandra-unit.version>2.0.2.2</cassandra-unit.version>-->
+		<cassandra-unit.version>3.0.0.1</cassandra-unit.version>
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
 		<jamm.version>0.2.5</jamm.version>
-		<cassandra>2.1.5</cassandra>
+		<!--<cassandra>2.1.5</cassandra>-->
+		<cassandra>3.0.0-rc1</cassandra>
 	</properties>
 
 	<developers>

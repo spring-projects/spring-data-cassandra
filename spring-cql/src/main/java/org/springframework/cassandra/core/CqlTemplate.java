@@ -29,6 +29,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.datastax.driver.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -54,18 +55,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Delete;
@@ -571,7 +561,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		if (cols.size() == 0) {
 			return null;
 		}
-		return cols.getType(0).deserialize(row.getBytesUnsafe(0), ProtocolVersion.NEWEST_SUPPORTED);
+		//TODO cassandra3
+//		return cols.getType(0).deserialize(row.getBytesUnsafe(0), ProtocolVersion.NEWEST_SUPPORTED);
+		return CodecRegistry.DEFAULT_INSTANCE.codecFor(cols.getType(0)).deserialize(row.getBytesUnsafe(0), ProtocolVersion.NEWEST_SUPPORTED);
 	}
 
 	/**
@@ -588,7 +580,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		for (Definition def : cols.asList()) {
 			String name = def.getName();
-			map.put(name, def.getType().deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
+			//TODO cassandra3
+//			map.put(name, def.getType().deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
+			map.put(name, CodecRegistry.DEFAULT_INSTANCE.codecFor(cols.getType(0)).deserialize(row.getBytesUnsafe(0), ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return map;

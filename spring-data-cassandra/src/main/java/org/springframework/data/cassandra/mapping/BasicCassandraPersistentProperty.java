@@ -188,8 +188,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	private DataType getDataTypeFor(CassandraType annotation) {
 
 		DataType.Name type = annotation.type();
-
-		if (type.isCollection()) {
+		//TODO
+//		if (type.isCollection()) {
+		if (DataType.Name.MAP.equals(type)||DataType.Name.LIST.equals(type)||DataType.Name.SET.equals(type)) {
 			switch (type) {
 
 				case MAP:

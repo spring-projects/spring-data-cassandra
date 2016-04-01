@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.datastax.driver.core.CodecRegistry;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
@@ -43,7 +44,9 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	private static final Map<Class<?>, DataType> dataTypesByJavaClass = new HashMap<Class<?>, DataType>();
 
 	private static final Map<DataType.Name, DataType> dataTypesByDataTypeName = new HashMap<DataType.Name, DataType>();
-
+	static Class<?>  parseRawType(DataType dataType){
+		return CodecRegistry.DEFAULT_INSTANCE.codecFor(dataType).getJavaType().getRawType();
+	}
 	static {
 
 		primitiveTypesByWrapperType.put(Boolean.class, boolean.class);
@@ -59,7 +62,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		for (DataType dataType : DataType.allPrimitiveTypes()) {
 
-			Class<?> javaClass = dataType.asJavaClass();
+			Class<?> javaClass =parseRawType( dataType);
 			simpleTypes.add(javaClass);
 
 			dataTypesByJavaClass.put(javaClass, dataType);

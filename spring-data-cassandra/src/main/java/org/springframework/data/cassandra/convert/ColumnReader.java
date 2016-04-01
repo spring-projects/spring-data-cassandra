@@ -2,6 +2,7 @@ package org.springframework.data.cassandra.convert;
 
 import java.util.List;
 
+import com.datastax.driver.core.CodecRegistry;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -37,7 +38,9 @@ public class ColumnReader {
 		int indexOf = getColumnIndex(name);
 		return get(indexOf);
 	}
-
+	static Class<?> parseRawType(DataType dataType){
+		return CodecRegistry.DEFAULT_INSTANCE.codecFor(dataType).getJavaType().getRawType();
+	}
 	public Object get(int i) {
 
 		if (row.isNull(i)) {
@@ -50,15 +53,16 @@ public class ColumnReader {
 
 			List<DataType> collectionTypes = type.getTypeArguments();
 			if (collectionTypes.size() == 2) {
-				return row.getMap(i, collectionTypes.get(0).asJavaClass(), collectionTypes.get(1).asJavaClass());
+//				return row.getMap(i, collectionTypes.get(0).asJavaClass(), collectionTypes.get(1).asJavaClass());
+				return row.getMap(i, parseRawType(collectionTypes.get(0)), parseRawType(collectionTypes.get(1)));
 			}
 
 			if (type.equals(DataType.list(collectionTypes.get(0)))) {
-				return row.getList(i, collectionTypes.get(0).asJavaClass());
+				return row.getList(i, parseRawType(collectionTypes.get(0)));
 			}
 
 			if (type.equals(DataType.set(collectionTypes.get(0)))) {
-				return row.getSet(i, collectionTypes.get(0).asJavaClass());
+				return row.getSet(i, parseRawType(collectionTypes.get(0)));
 			}
 
 			throw new IllegalStateException("Unknown Collection type encountered.  Valid collections are Set, List and Map.");

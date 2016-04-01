@@ -3,6 +3,8 @@ package org.springframework.cassandra.core.converter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.ProtocolVersion;
 import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -23,7 +25,10 @@ public class RowToListConverter implements Converter<Row, List<Object>> {
 
 		for (Definition def : cols.asList()) {
 			String name = def.getName();
-			list.add(row.isNull(name) ? null : def.getType().deserialize(row.getBytesUnsafe(name)));
+			//TODO cassandra3
+			;
+//			list.add(row.isNull(name) ? null : def.getType().deserialize(row.getBytesUnsafe(name)));
+			list.add(row.isNull(name) ? null : CodecRegistry.DEFAULT_INSTANCE.codecFor(def.getType()).deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return list;
