@@ -227,11 +227,29 @@
 		</dependency>
 	</dependencies>
 
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>Qunar Nexus Releases</name>
+			<url>http://nexus.corp.qunar.com/nexus/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>Qunar Nexus Snapshots</name>
+			<url>http://nexus.corp.qunar.com/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<version>2.8.2</version>
+
+				<configuration>
+					<skip>false</skip>
+				</configuration>
+
 			</plugin>
 			<plugin>
 				<groupId>org.bitstrings.maven.plugins</groupId>
