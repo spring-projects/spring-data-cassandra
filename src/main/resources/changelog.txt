@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.4.1.RELEASE (2016-04-06)
+---------------------------------------------
+* DATACASS-268 - Release 1.4.1 (Hopper SR1).
+
+
 Changes in version 1.4.0.RELEASE (2016-04-06)
 ---------------------------------------------
 * DATACASS-267 - Add pull request template.
