@@ -39,7 +39,7 @@ public class CassandraConvertingPropertyAccessor extends ConvertingPropertyAcces
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getProperty(PersistentProperty<?> property, Class<T> targetType) {
-        if (property instanceof CassandraPersistentProperty) {
+        if (property instanceof CassandraPersistentProperty && !((CassandraPersistentProperty) property).isCompositePrimaryKey()) {
             Object value = super.getProperty(property);
             CassandraPersistentProperty cpp = (CassandraPersistentProperty) property;
             DataType dt = cpp.getDataType();
@@ -80,7 +80,7 @@ public class CassandraConvertingPropertyAccessor extends ConvertingPropertyAcces
 
     @Override
     public void setProperty(PersistentProperty<?> property, Object value) {
-        if (property instanceof CassandraPersistentProperty) {
+        if (property instanceof CassandraPersistentProperty  && !((CassandraPersistentProperty) property).isCompositePrimaryKey()) {
 
             CassandraPersistentProperty cpp = (CassandraPersistentProperty) property;
             DataType dt = cpp.getDataType();
