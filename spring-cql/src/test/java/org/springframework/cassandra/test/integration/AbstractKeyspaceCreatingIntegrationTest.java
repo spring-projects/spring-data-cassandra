@@ -18,7 +18,6 @@ package org.springframework.cassandra.test.integration;
 import org.junit.After;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
@@ -82,7 +81,6 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 				system.execute(cql);
 			}
 		}
-
 
 		debugSession();
 		log.info("session already connected to a keyspace; attempting to change to use {}", keyspace);

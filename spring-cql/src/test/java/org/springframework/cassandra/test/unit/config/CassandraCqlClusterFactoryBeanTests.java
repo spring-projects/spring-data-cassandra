@@ -48,7 +48,7 @@ public class CassandraCqlClusterFactoryBeanTests extends AbstractEmbeddedCassand
 	public void configuredProtocolVersionShouldBeSet() throws Exception {
 
 		cassandraCqlClusterFactoryBean.setProtocolVersion(ProtocolVersion.V2);
-		cassandraCqlClusterFactoryBean.setPort(CASSANDRA_NATIVE_PORT);
+		cassandraCqlClusterFactoryBean.setPort(PROPS.getCassandraPort());
 		cassandraCqlClusterFactoryBean.afterPropertiesSet();
 
 		assertEquals(ProtocolVersion.V2, getProtocolVersionEnum(cassandraCqlClusterFactoryBean));
@@ -57,7 +57,7 @@ public class CassandraCqlClusterFactoryBeanTests extends AbstractEmbeddedCassand
 	@Test
 	public void defaultProtocolVersionShouldBeSet() throws Exception {
 
-		cassandraCqlClusterFactoryBean.setPort(CASSANDRA_NATIVE_PORT);
+		cassandraCqlClusterFactoryBean.setPort(PROPS.getCassandraPort());
 		cassandraCqlClusterFactoryBean.afterPropertiesSet();
 
 		assertEquals(ProtocolVersion.NEWEST_SUPPORTED, getProtocolVersionEnum(cassandraCqlClusterFactoryBean));
