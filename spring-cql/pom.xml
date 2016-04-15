@@ -82,8 +82,8 @@
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
-					<artifactId>slf4j-log4j12</artifactId>
-					<groupId>org.slf4j</groupId>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-core</artifactId>
 				</exclusion>
 				<exclusion>
 					<artifactId>guava</artifactId>
