@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.test.integration.repository.querymeth
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
@@ -68,4 +69,8 @@ public interface PersonRepositoryWithQueryAnnotations extends PersonRepository {
 	@Override
 	@Query("select numberofchildren from person where lastname = ?0 and firstname = ?1")
 	int findSingleNumberOfChildren(String last, String first);
+
+	@Override
+	@Query("select * from person where lastname = ?0 and firstname = ?1")
+	Optional<Person> findOptionalWithLastnameAndFirstname(String last, String first);
 }

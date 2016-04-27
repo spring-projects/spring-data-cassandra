@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,11 +55,17 @@ import com.datastax.driver.core.querybuilder.Update;
 /**
  * {@link CassandraConverter} that uses a {@link MappingContext} to do sophisticated mapping of domain objects to
  * {@link Row}.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.context.ApplicationContextAware
+ * @see org.springframework.beans.factory.BeanClassLoaderAware
+ * @see org.springframework.data.convert.EntityConverter
+ * @see org.springframework.data.convert.EntityReader
+ * @see org.springframework.data.convert.EntityWriter
  */
 public class MappingCassandraConverter extends AbstractCassandraConverter
 		implements CassandraConverter, ApplicationContextAware, BeanClassLoaderAware {
@@ -80,7 +86,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	/**
 	 * Creates a new {@link MappingCassandraConverter} with the given {@link CassandraMappingContext}.
-	 * 
+	 *
 	 * @param mappingContext must not be {@literal null}.
 	 */
 	public MappingCassandraConverter(CassandraMappingContext mappingContext) {
@@ -104,6 +110,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (Row.class.isAssignableFrom(rawType)) {
 			return (R) row;
+		}
+
+		if (conversions.hasCustomReadTarget(Row.class, rawType) || conversionService.canConvert(Row.class, rawType)) {
+			return conversionService.convert(row, rawType);
+		}
+
+		if (type.isCollectionLike() || type.isMap()) {
+			return conversionService.convert(row, clazz);
 		}
 
 		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>) mappingContext
@@ -416,7 +430,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	/**
 	 * Creates a new {@link ConvertingPropertyAccessor} for the given source and entity.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 * @return

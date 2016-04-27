@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -283,5 +284,29 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 			assertEquals(saved.getLastname(), person.getLastname());
 			assertEquals(saved.getFirstname(), person.getFirstname());
 		}
+	}
+
+	@Test
+	public void findOptionalShouldReturnTargetType() {
+
+		Person saved = new Person();
+		saved.setFirstname(uuid());
+		saved.setLastname(uuid());
+		saved.setNumberOfChildren(1);
+
+		saved = personRepository.save(saved);
+
+		Optional<Person> optional = personRepository.findOptionalWithLastnameAndFirstname(saved.getLastname(), saved.getFirstname());
+
+		assertTrue(optional.isPresent());
+		assertTrue(optional.get() instanceof Person);
+	}
+
+	@Test
+	public void findOptionalShouldAbsentOptional() {
+
+		Optional<Person> optional = personRepository.findOptionalWithLastnameAndFirstname("not", "existent");
+
+		assertFalse(optional.isPresent());
 	}
 }

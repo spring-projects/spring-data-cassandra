@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,10 +27,11 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Simple constant holder for a {@link SimpleTypeHolder} enriched with Cassandra specific simple types.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
@@ -39,66 +40,120 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 	public static final Set<Class<?>> CASSANDRA_SIMPLE_TYPES;
 
-	private static final Map<Class<?>, Class<?>> primitiveTypesByWrapperType = new HashMap<Class<?>, Class<?>>(8);
-
-	private static final Map<Class<?>, DataType> dataTypesByJavaClass = new HashMap<Class<?>, DataType>();
-
-	private static final Map<DataType.Name, DataType> dataTypesByDataTypeName = new HashMap<DataType.Name, DataType>();
+	private static final Map<Class<?>, DataType> classToDataType;
+	private static final Map<DataType.Name, DataType> nameToDataType;
 
 	static {
 
-		primitiveTypesByWrapperType.put(Boolean.class, boolean.class);
-		primitiveTypesByWrapperType.put(Byte.class, byte.class);
-		primitiveTypesByWrapperType.put(Character.class, char.class);
-		primitiveTypesByWrapperType.put(Double.class, double.class);
-		primitiveTypesByWrapperType.put(Float.class, float.class);
-		primitiveTypesByWrapperType.put(Integer.class, int.class);
-		primitiveTypesByWrapperType.put(Long.class, long.class);
-		primitiveTypesByWrapperType.put(Short.class, short.class);
+		Map<Class<?>, Class<?>> primitiveWrappers = new HashMap<Class<?>, Class<?>>(8);
+		primitiveWrappers.put(Boolean.class, boolean.class);
+		primitiveWrappers.put(Byte.class, byte.class);
+		primitiveWrappers.put(Character.class, char.class);
+		primitiveWrappers.put(Double.class, double.class);
+		primitiveWrappers.put(Float.class, float.class);
+		primitiveWrappers.put(Integer.class, int.class);
+		primitiveWrappers.put(Long.class, long.class);
+		primitiveWrappers.put(Short.class, short.class);
 
-		Set<Class<?>> simpleTypes = new HashSet<Class<?>>();
+		Set<Class<?>> simpleTypes = getCassandraPrimitiveTypes();
+		simpleTypes.add(Number.class);
+
+		classToDataType = Collections.unmodifiableMap(classToDataType(primitiveWrappers));
+		nameToDataType = Collections.unmodifiableMap(nameToDataType());
+		CASSANDRA_SIMPLE_TYPES = Collections.unmodifiableSet(simpleTypes);
+	}
+
+	public static final SimpleTypeHolder HOLDER = new CassandraSimpleTypeHolder();
+
+	/**
+	 * @return the map between {@link Name} and {@link DataType}.
+	 */
+	private static Map<Name, DataType> nameToDataType() {
+
+		Map<Name, DataType> nameToDataType = new HashMap<Name, DataType>(16);
+
+		for (DataType dataType : DataType.allPrimitiveTypes()) {
+			nameToDataType.put(dataType.getName(), dataType);
+		}
+
+		return nameToDataType;
+	}
+
+	/**
+	 * @return the map between {@link Class} and {@link DataType}.
+	 * @param primitiveWrappers
+	 */
+	private static Map<Class<?>, DataType> classToDataType(Map<Class<?>, Class<?>> primitiveWrappers) {
+
+		Map<Class<?>, DataType> classToDataType = new HashMap<Class<?>, DataType>(16);
 
 		for (DataType dataType : DataType.allPrimitiveTypes()) {
 
 			Class<?> javaClass = dataType.asJavaClass();
-			simpleTypes.add(javaClass);
+			classToDataType.put(javaClass, dataType);
 
-			dataTypesByJavaClass.put(javaClass, dataType);
-
-			Class<?> primitiveJavaClass = primitiveTypesByWrapperType.get(javaClass);
+			Class<?> primitiveJavaClass = primitiveWrappers.get(javaClass);
 			if (primitiveJavaClass != null) {
-				dataTypesByJavaClass.put(primitiveJavaClass, dataType);
+				classToDataType.put(primitiveJavaClass, dataType);
 			}
-
-			dataTypesByDataTypeName.put(dataType.getName(), dataType);
 		}
 
-		dataTypesByJavaClass.put(String.class, DataType.text());
+		// override String to text datatype as String is used multiple times
+		classToDataType.put(String.class, DataType.text());
 
-		CASSANDRA_SIMPLE_TYPES = Collections.unmodifiableSet(simpleTypes);
+		return classToDataType;
 	}
 
+	/**
+	 * Returns a {@link Set} containing all Cassandra primitive types.
+	 *
+	 * @return
+	 */
+	private static Set<Class<?>> getCassandraPrimitiveTypes() {
+
+		Set<Class<?>> simpleTypes = new HashSet<Class<?>>();
+		for (DataType dataType : DataType.allPrimitiveTypes()) {
+
+			Class<?> javaClass = dataType.asJavaClass();
+			simpleTypes.add(javaClass);
+		}
+		return simpleTypes;
+	}
+
+	/**
+	 * Returns the {@link DataType} for a {@link DataType.Name}.
+	 *
+	 * @param name
+	 * @return
+	 */
 	public static DataType getDataTypeFor(DataType.Name name) {
-		return dataTypesByDataTypeName.get(name);
+		return nameToDataType.get(name);
 	}
 
+	/**
+	 * Returns the default {@link DataType} for a {@link Class}.
+	 *
+	 * @param javaClass
+	 * @return
+	 */
 	public static DataType getDataTypeFor(Class<?> javaClass) {
 
 		if (javaClass.isEnum()) {
 			return DataType.varchar();
 		}
 
-		return dataTypesByJavaClass.get(javaClass);
+		return classToDataType.get(javaClass);
 	}
 
 	public static DataType.Name[] getDataTypeNamesFrom(List<TypeInformation<?>> arguments) {
+
 		DataType.Name[] array = new DataType.Name[arguments.size()];
 		for (int i = 0; i != array.length; i++) {
 			TypeInformation<?> typeInfo = arguments.get(i);
 			DataType dataType = getDataTypeFor(typeInfo.getType());
 			if (dataType == null) {
-				throw new InvalidDataAccessApiUsageException("not found appropriate primitive DataType for type = '"
-						+ typeInfo.getType());
+				throw new InvalidDataAccessApiUsageException(
+						String.format("Did not find appropriate primitive DataType for type '%s'", typeInfo.getType()));
 			}
 			array[i] = dataType.getName();
 		}

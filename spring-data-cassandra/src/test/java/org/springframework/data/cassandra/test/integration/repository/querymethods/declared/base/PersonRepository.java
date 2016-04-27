@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.test.integration.repository.querymeth
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
@@ -48,4 +49,7 @@ public interface PersonRepository extends CassandraRepository<Person> {
 	boolean findSingleCool(String last, String first);
 
 	int findSingleNumberOfChildren(String last, String first);
+
+	Optional<Person> findOptionalWithLastnameAndFirstname(String last, String first);
+
 }

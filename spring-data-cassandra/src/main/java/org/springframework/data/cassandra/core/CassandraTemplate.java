@@ -68,6 +68,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @see CqlTemplate
+ * @see CassandraOperations
  */
 public class CassandraTemplate extends CqlTemplate implements CassandraOperations {
 
@@ -79,44 +80,73 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 */
 	public CassandraTemplate() {}
 
+	/**
+	 * Creates a new {@link} for the given {@link Session}.
+	 *
+	 * @param session must not be {@literal null}.
+	 */
 	public CassandraTemplate(Session session) {
-		this(session, new MappingCassandraConverter());
+		this(session, null);
 	}
 
 	/**
 	 * Constructor if only session and converter are known at time of Template Creation
 	 *
-	 * @param session must not be {@literal null}
+	 * @param session must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 */
 	public CassandraTemplate(Session session, CassandraConverter converter) {
 		setSession(session);
-		setConverter(converter);
+		setConverter(converter != null ? converter : getDefaultCassandraConverter());
 	}
 
+	private static CassandraConverter getDefaultCassandraConverter() {
+
+		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter();
+		mappingCassandraConverter.afterPropertiesSet();
+		return mappingCassandraConverter;
+	}
+
+	/**
+	 * Set the {@link CassandraConverter}.
+	 *
+	 * @param cassandraConverter must not be {@literal null}.
+	 */
 	public void setConverter(CassandraConverter cassandraConverter) {
 
-		Assert.notNull(cassandraConverter);
+		Assert.notNull(cassandraConverter, "CassandraConverter must not be null!");
 
 		this.cassandraConverter = cassandraConverter;
 		mappingContext = cassandraConverter.getMappingContext();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#getConverter()
+	 */
 	@Override
 	public CassandraConverter getConverter() {
 		return cassandraConverter;
 	}
 
+	/**
+	 * Returns the {@link CassandraMappingContext}
+	 *
+	 * @return the {@link CassandraMappingContext}
+	 */
 	public CassandraMappingContext getCassandraMappingContext() {
 		return mappingContext;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.support.CassandraAccessor#afterPropertiesSet()
+	 */
 	@Override
 	public void afterPropertiesSet() {
+
 		super.afterPropertiesSet();
 
-		Assert.notNull(cassandraConverter);
-		Assert.notNull(mappingContext);
+		Assert.notNull(cassandraConverter, "CassandraConverter must not be null!");
+		Assert.notNull(mappingContext, "CassandraMappingContext must not be null!");
 	}
 
 	@Override
@@ -218,8 +248,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	public CqlIdentifier getTableName(Class<?> entityClass) {
 
 		if (entityClass == null) {
-			throw new InvalidDataAccessApiUsageException(
-					"No class parameter provided, entity table can't be determined!");
+			throw new InvalidDataAccessApiUsageException("No class parameter provided, entity table can't be determined!");
 		}
 
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
