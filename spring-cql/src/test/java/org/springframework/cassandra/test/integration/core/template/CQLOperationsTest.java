@@ -1192,11 +1192,12 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 			@Override
 			public Book extractData(ResultSet rs) throws DriverException, DataAccessException {
-				Book b = new Book();
 				Row r = rs.one();
 				if (r == null) {
 					return null;
 				}
+				
+				Book b = new Book();
 				b.setIsbn(r.getString("isbn"));
 				b.setTitle(r.getString("title"));
 				b.setAuthor(r.getString("author"));
