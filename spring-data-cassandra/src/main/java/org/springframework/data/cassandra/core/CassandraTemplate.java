@@ -80,7 +80,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	public CassandraTemplate() {}
 
 	public CassandraTemplate(Session session) {
-		this(session, new MappingCassandraConverter());
+		this(session, null);
 	}
 
 	/**
@@ -91,7 +91,14 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 */
 	public CassandraTemplate(Session session, CassandraConverter converter) {
 		setSession(session);
-		setConverter(converter);
+		setConverter(converter == null ? getDefaultCassandraConverter() : converter);
+	}
+
+	private static CassandraConverter getDefaultCassandraConverter() {
+
+		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter();
+		mappingCassandraConverter.afterPropertiesSet();
+		return mappingCassandraConverter;
 	}
 
 	public void setConverter(CassandraConverter cassandraConverter) {
