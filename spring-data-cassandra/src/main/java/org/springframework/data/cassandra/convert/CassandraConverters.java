@@ -89,7 +89,7 @@ abstract class CassandraConverters {
 		@Override
 		public Date convert(Row row) {
 
-			return row.getDate(0);
+			return row.getTimestamp(0);
 		}
 	}
 

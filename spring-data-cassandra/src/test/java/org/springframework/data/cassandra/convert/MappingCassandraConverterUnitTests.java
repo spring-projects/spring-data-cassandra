@@ -389,7 +389,7 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldReadDateCorrectly() throws UnknownHostException {
 
 		Date date = new Date(1);
-		when(rowMock.getDate(0)).thenReturn(date);
+		when(rowMock.getTimestamp(0)).thenReturn(date);
 
 		Date result = mappingCassandraConverter.readRow(Date.class, rowMock);
 

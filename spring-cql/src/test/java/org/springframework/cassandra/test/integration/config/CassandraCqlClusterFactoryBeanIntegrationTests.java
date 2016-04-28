@@ -47,11 +47,11 @@ public class CassandraCqlClusterFactoryBeanIntegrationTests extends AbstractEmbe
 	@Test
 	public void configuredProtocolVersionShouldBeSet() throws Exception {
 
-		cassandraCqlClusterFactoryBean.setProtocolVersion(ProtocolVersion.V2);
+		cassandraCqlClusterFactoryBean.setProtocolVersion(ProtocolVersion.V4);
 		cassandraCqlClusterFactoryBean.setPort(cassandraEnvironment.getPort());
 		cassandraCqlClusterFactoryBean.afterPropertiesSet();
 
-		assertEquals(ProtocolVersion.V2, getProtocolVersionEnum(cassandraCqlClusterFactoryBean));
+		assertEquals(ProtocolVersion.V4, getProtocolVersionEnum(cassandraCqlClusterFactoryBean));
 	}
 
 	@Test
@@ -68,6 +68,6 @@ public class CassandraCqlClusterFactoryBeanIntegrationTests extends AbstractEmbe
 
 		// initialize connection factory
 		cassandraCqlClusterFactoryBean.getObject().init();
-		return cassandraCqlClusterFactoryBean.getObject().getConfiguration().getProtocolOptions().getProtocolVersionEnum();
+		return cassandraCqlClusterFactoryBean.getObject().getConfiguration().getProtocolOptions().getProtocolVersion();
 	}
 }

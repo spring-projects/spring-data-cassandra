@@ -21,6 +21,25 @@
 	<description>Spring Data Cassandra</description>
 	<url>http://projects.spring.io/spring-data-cassandra/</url>
 
+	<properties>
+		<project.type>multi</project.type>
+		<dist.id>spring-data-cassandra</dist.id>
+		<springdata.commons>1.13.0.BUILD-SNAPSHOT</springdata.commons>
+		<cassandra-unit.version>3.0.0.1</cassandra-unit.version>
+		<el.version>1.0</el.version>
+		<failsafe.version>2.16</failsafe.version>
+		<jamm.version>0.3.1</jamm.version>
+		<cassandra.version>3.0.0</cassandra.version>
+		<cassandra-driver-dse.version>3.0.0-rc1</cassandra-driver-dse.version>
+
+		<build.cassandra.mode>embedded</build.cassandra.mode>
+		<build.cassandra.host>localhost</build.cassandra.host>
+		<build.cassandra.native_transport_port>19042</build.cassandra.native_transport_port>
+		<build.cassandra.rpc_port>19160</build.cassandra.rpc_port>
+		<build.cassandra.storage_port>17000</build.cassandra.storage_port>
+		<build.cassandra.ssl_storage_port>17001</build.cassandra.ssl_storage_port>
+	</properties>
+
 	<developers>
 		<developer>
 			<id>madams</id>
@@ -63,23 +82,6 @@
 		<module>spring-data-cassandra</module>
 		<module>spring-data-cassandra-distribution</module>
 	</modules>
-
-	<properties>
-		<build.cassandra.host>localhost</build.cassandra.host>
-		<build.cassandra.mode>embedded</build.cassandra.mode>
-		<build.cassandra.native_transport_port>19042</build.cassandra.native_transport_port>
-		<build.cassandra.rpc_port>19160</build.cassandra.rpc_port>
-		<build.cassandra.ssl_storage_port>17001</build.cassandra.ssl_storage_port>
-		<build.cassandra.storage_port>17000</build.cassandra.storage_port>
-		<cassandra.version>2.1.11</cassandra.version>
-		<cassandra-driver-dse.version>2.1.7.1</cassandra-driver-dse.version>
-		<cassandra-unit.version>2.1.9.2</cassandra-unit.version>
-		<dist.id>spring-data-cassandra</dist.id>
-		<el.version>1.0</el.version>
-		<failsafe.version>2.16</failsafe.version>
-		<project.type>multi</project.type>
-		<springdata.commons>1.13.0.BUILD-SNAPSHOT</springdata.commons>
-	</properties>
 
 	<repositories>
 		<repository>
@@ -141,7 +143,7 @@
 			<dependency>
 				<groupId>org.xerial.snappy</groupId>
 				<artifactId>snappy-java</artifactId>
-				<version>1.1.0.1</version>
+				<version>1.1.2.1</version>
 				<scope>test</scope>
 			</dependency>
 
