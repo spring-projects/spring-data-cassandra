@@ -225,7 +225,7 @@ We recommend reading the following:
 
 * [PlanetCassandra.org](http://planetcassandra.org/)
 * [Getting Started](http://wiki.apache.org/cassandra/GettingStarted)
-* [Driver Documentation](http://www.datastax.com/documentation/developer/java-driver/1.0/webhelp/index.html)
+* [Driver Documentation](http://docs.datastax.com/en/developer/java-driver/2.1/java-driver/whatsNew2.html)
 
 
 ## Contact

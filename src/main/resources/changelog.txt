@@ -1,6 +1,141 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.4.1.RELEASE (2016-04-06)
+---------------------------------------------
+* DATACASS-268 - Release 1.4.1 (Hopper SR1).
+
+
+Changes in version 1.4.0.RELEASE (2016-04-06)
+---------------------------------------------
+* DATACASS-267 - Add pull request template.
+* DATACASS-264 - Release 1.4 GA (Hopper).
+* DATACASS-261 - Update readme link to Cassandra driver documentation.
+
+
+Changes in version 1.4.0.RC1 (2016-03-18)
+-----------------------------------------
+* DATACASS-257 - CassandraRepositoryConfigurationExtension does not specify IdentifyingAnnotations.
+* DATACASS-256 - Release 1.4 RC1 (Hopper).
+
+
+Changes in version 1.3.4.RELEASE (2016-02-23)
+---------------------------------------------
+* DATACASS-254 - Release 1.3.4 (Gosling SR4).
+
+
+Changes in version 1.4.0.M1 (2016-02-12)
+----------------------------------------
+* DATACASS-252 - Add code of conduct.
+* DATACASS-251 - Release 1.4 M1 (Hopper).
+* DATACASS-245 - Adapt to API changes in Spring Data Commons.
+* DATACASS-239 - Upgrade to latest Cassandra drivers.
+
+
+Changes in version 1.3.2.RELEASE (2015-12-18)
+---------------------------------------------
+* DATACASS-246 - Release 1.3.2 (Gosling).
+
+
+Changes in version 1.3.1.RELEASE (2015-11-15)
+---------------------------------------------
+* DATACASS-237 - Release 1.3.1 (Gosling).
+
+
+Changes in version 1.1.4.RELEASE (2015-10-14)
+---------------------------------------------
+* DATACASS-235 - Release 1.1.4 (Evans).
+
+
+Changes in version 1.3.0.RELEASE (2015-09-01)
+---------------------------------------------
+* DATACASS-232 - Release 1.3 GA (Gosling).
+
+
+Changes in version 1.3.0.RC1 (2015-08-04)
+-----------------------------------------
+* DATACASS-230 - Release 1.3 RC1 (Gosling).
+* DATACASS-227 - Switch from BeanWrapper to PersistentPropertyAccessor.
+* DATACASS-220 - Upgrade to latest Cassandra driver.
+
+
+Changes in version 1.2.2.RELEASE (2015-07-28)
+---------------------------------------------
+* DATACASS-229 - Release 1.2.2 (Fowler).
+
+
+Changes in version 1.1.3.RELEASE (2015-07-01)
+---------------------------------------------
+* DATACASS-223 - Release 1.1.3 (Evans).
+* DATACASS-208 - Remove obsolete Liquibase dependency from Spring CQL.
+
+
+Changes in version 1.0.6.RELEASE (2015-07-01)
+---------------------------------------------
+* DATACASS-222 - Release 1.0.6 (Dijkstra).
+
+
+Changes in version 1.2.1.RELEASE (2015-06-30)
+---------------------------------------------
+* DATACASS-224 - Release 1.2.1 (Fowler).
+* DATACASS-220 - Upgrade to latest Cassandra driver.
+* DATACASS-208 - Remove obsolete Liquibase dependency from Spring CQL.
+
+
+Changes in version 1.3.0.M1 (2015-06-02)
+----------------------------------------
+* DATACASS-215 - Release 1.3 M1 (Gosling).
+* DATACASS-211 - Adapt to changes in Spring Data Commons.
+* DATACASS-208 - Remove obsolete Liquibase dependency from Spring CQL.
+
+
+Changes in version 1.2.0.RELEASE (2015-03-23)
+---------------------------------------------
+* DATACASS-207 - Release 1.2 GA.
+
+
+Changes in version 1.2.0.RC1 (2015-03-05)
+-----------------------------------------
+* DATACASS-205 - Release 1.2 RC1.
+* DATACASS-199 - ColumnMapper maps varint to Integer.
+* DATACASS-198 - Upgrade for Cassandra 2.1 Support.
+* DATACASS-197 - Reconsider usage of ingestions for general CQL test cases.
+* DATACASS-176 - CassandraCqlClusterFactoryBean doesn't consider maxConnections while validating coreConnection values.
+
+
+Changes in version 1.1.2.RELEASE (2015-01-28)
+---------------------------------------------
+* DATACASS-199 - ColumnMapper maps varint to Integer.
+* DATACASS-197 - Reconsider usage of ingestions for general CQL test cases.
+* DATACASS-196 - Release 1.1.2.
+* DATACASS-176 - CassandraCqlClusterFactoryBean doesn't consider maxConnections while validating coreConnection values.
+
+
+Changes in version 1.0.5.RELEASE (2015-01-27)
+---------------------------------------------
+* DATACASS-197 - Reconsider usage of ingestions for general CQL test cases.
+* DATACASS-195 - Release 1.0.5.
+* DATACASS-166 - Throw IllegalArgumentException if a column is requested that isn't in the table.
+* DATACASS-163 - SDC*-provided repository interfaces are missing @NoRepositoryBean annotation.
+* DATACASS-162 - XML <mapping> attribute "entity-base-packages" is ignored.
+* DATACASS-148 - Can't save empty list.
+* DATACASS-142 - CassandraTemplate @PrimaryKeyColumn annotation, name property, not working on delete.
+
+
+Changes in version 1.2.0.M1 (2014-12-01)
+----------------------------------------
+* DATACASS-166 - Throw IllegalArgumentException if a column is requested that isn't in the table.
+* DATACASS-164 - Support strongly-typed, user-defined primary key interfaces.
+* DATACASS-149 - Add support for custom implementations in CDI repositories.
+* DATACASS-144 - Async repository operations be overloaded to take optional callbacks.
+
+
+Changes in version 1.1.1.RELEASE (2014-10-30)
+---------------------------------------------
+* DATACASS-178 - Release 1.1.1.
+* DATACASS-166 - Throw IllegalArgumentException if a column is requested that isn't in the table.
+
+
 Changes in version 1.1.0.RELEASE (2014-09-05)
 ---------------------------------------------
 * DATACASS-165 - Release 1.1 GA.

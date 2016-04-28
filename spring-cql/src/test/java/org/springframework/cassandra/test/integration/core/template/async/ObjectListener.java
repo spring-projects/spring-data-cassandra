@@ -10,13 +10,13 @@ class ObjectListener<T> extends TestListener implements QueryForObjectListener<T
 
 	@Override
 	public void onQueryComplete(T result) {
-		countDown();
 		this.result = result;
+		countDown();
 	}
 
 	@Override
 	public void onException(Exception x) {
-		countDown();
 		this.exception = x;
+		countDown();
 	}
 }

@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2013-2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,6 +59,7 @@ import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
@@ -81,19 +82,20 @@ import com.datastax.driver.core.querybuilder.Update;
  * translation to the generic, more informative exception hierarchy defined in the <code>org.springframework.dao</code>
  * package.
  * <p>
- * For working with POJOs, use the {@link CassandraDataTemplate}.
+ * For working with POJOs, use the {@link CassandraTemplate}.
  * </p>
- * 
+ *
  * @author David Webb
  * @author Matthew Adams
+ * @author Ryan Scheidter
  */
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	protected static final Logger log = LoggerFactory.getLogger(CqlTemplate.class);
 
 	/**
-	 * Add common {@link Statement} options for all types of queries.
-	 * 
+	 * Add common {@link QueryOptions} options for all types of queries.
+	 *
 	 * @param q
 	 * @param options
 	 * @return the {@link Statement} given.
@@ -115,11 +117,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/**
-	 * Add common {@link Query} options for Insert queries.
-	 * 
+	 * Add common {@link WriteOptions} options for {@link Insert} queries.
+	 *
 	 * @param q
 	 * @param options
-	 * @return the {@link Query} given.
+	 * @return the {@link Insert} given.
 	 */
 	public static Insert addWriteOptions(Insert q, WriteOptions options) {
 
@@ -141,11 +143,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/**
-	 * Add common {@link Query} options for Update queries.
-	 * 
+	 * Add common {@link WriteOptions} options for {@link Update} queries.
+	 *
 	 * @param q
 	 * @param options
-	 * @return the {@link Query} given.
+	 * @return the {@link Update} given.
 	 */
 	public static Update addWriteOptions(Update q, WriteOptions options) {
 
@@ -168,9 +170,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
 	 * Add common Query options for all types of queries.
-	 * 
-	 * @param q
-	 * @param optionsByName
+	 *
+	 * @param s the prepared statement
+	 * @param options
 	 */
 	public static void addPreparedStatementOptions(PreparedStatement s, QueryOptions options) {
 
@@ -193,11 +195,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	/**
 	 * Blank constructor. You must wire in the Session before use.
 	 */
-	public CqlTemplate() {}
+	public CqlTemplate() {
+	}
 
 	/**
 	 * Constructor used for a basic template configuration
-	 * 
+	 *
 	 * @param session must not be {@literal null}.
 	 */
 	public CqlTemplate(Session session) {
@@ -456,7 +459,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
 	 * Execute a command at the Session Level
-	 * 
+	 *
 	 * @param callback
 	 * @return
 	 */
@@ -483,9 +486,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
 	 * Execute a command at the Session Level with optional options
-	 * 
+	 *
 	 * @param q The query to execute.
-	 * @param options The {@link QueryOptions}. May be null.
 	 */
 	protected ResultSet doExecute(final Statement q) {
 
@@ -569,7 +571,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		if (cols.size() == 0) {
 			return null;
 		}
-		return cols.getType(0).deserialize(row.getBytesUnsafe(0));
+		return cols.getType(0).deserialize(row.getBytesUnsafe(0), ProtocolVersion.NEWEST_SUPPORTED);
 	}
 
 	/**
@@ -586,7 +588,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		for (Definition def : cols.asList()) {
 			String name = def.getName();
-			map.put(name, def.getType().deserialize(row.getBytesUnsafe(name)));
+			map.put(name, def.getType().deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return map;
@@ -599,7 +601,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
 	 * Pulls the list of Hosts for the current Session
-	 * 
+	 *
 	 * @return
 	 */
 	protected Set<Host> getHosts() {
@@ -754,7 +756,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				rch.processRow(row);
 			}
 		} catch (DriverException dx) {
-			translateExceptionIfPossible(dx);
+			throw translateExceptionIfPossible(dx);
 		}
 	}
 
@@ -767,7 +769,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				mappedRows.add(rowMapper.mapRow(row, i++));
 			}
 		} catch (DriverException dx) {
-			translateExceptionIfPossible(dx);
+			throw translateExceptionIfPossible(dx);
 		}
 		return mappedRows;
 	}
@@ -782,7 +784,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			Assert.isTrue(rows.size() == 1, "row list has " + rows.size() + " rows instead of one");
 			row = rowMapper.mapRow(rows.get(0), 0);
 		} catch (DriverException dx) {
-			translateExceptionIfPossible(dx);
+			throw translateExceptionIfPossible(dx);
 		}
 		return row;
 	}
@@ -831,7 +833,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
 	 * Attempt to translate a Runtime Exception to a Spring Data Exception
-	 * 
+	 *
 	 * @param ex
 	 * @return
 	 */

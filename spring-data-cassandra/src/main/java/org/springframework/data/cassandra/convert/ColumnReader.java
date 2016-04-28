@@ -67,8 +67,11 @@ public class ColumnReader {
 		if (type.equals(DataType.text()) || type.equals(DataType.ascii()) || type.equals(DataType.varchar())) {
 			return row.getString(i);
 		}
-		if (type.equals(DataType.cint()) || type.equals(DataType.varint())) {
+		if (type.equals(DataType.cint())) {
 			return new Integer(row.getInt(i));
+		}
+		if (type.equals(DataType.varint())) {
+			return row.getVarint(i);
 		}
 		if (type.equals(DataType.cdouble())) {
 			return new Double(row.getDouble(i));

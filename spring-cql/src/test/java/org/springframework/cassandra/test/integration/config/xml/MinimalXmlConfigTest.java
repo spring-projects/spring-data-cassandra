@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,23 @@
  */
 package org.springframework.cassandra.test.integration.config.xml;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
-import javax.inject.Inject;
-
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.datastax.driver.core.Session;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+/**
+ * @author Matthews T. Adams
+ * @author Oliver Gierke
+ */
 public class MinimalXmlConfigTest extends AbstractKeyspaceCreatingIntegrationTest {
 
 	public static final String KEYSPACE = "minimalxmlconfigtest";
@@ -39,17 +40,27 @@ public class MinimalXmlConfigTest extends AbstractKeyspaceCreatingIntegrationTes
 		super(KEYSPACE);
 	}
 
-	@Inject
-	Session s;
-
-	@Inject
-	CqlOperations ops;
+	Session session;
+	ConfigurableApplicationContext context;
+	
+	@Before
+	public void setUp() {
+		
+		this.context = new ClassPathXmlApplicationContext("MinimalXmlConfigTest-context.xml", getClass());
+		this.session = context.getBean(Session.class);
+	}
+	
+	@After
+	public void tearDown() {
+		context.close();
+	}
 
 	@Test
 	public void test() {
-		IntegrationTestUtils.assertSession(s);
-		IntegrationTestUtils.assertKeyspaceExists(KEYSPACE, s);
+		
+		IntegrationTestUtils.assertSession(session);
+		IntegrationTestUtils.assertKeyspaceExists(KEYSPACE, session);
 
-		assertNotNull(ops);
+		assertNotNull(context.getBean(CqlOperations.class));
 	}
 }

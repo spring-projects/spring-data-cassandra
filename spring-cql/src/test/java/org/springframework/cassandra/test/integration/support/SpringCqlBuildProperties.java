@@ -76,9 +76,18 @@ public class SpringCqlBuildProperties extends Properties {
 		return getInt("build.cassandra.ssl_storage_port");
 	}
 
+	public long getCqlInitializationTimeout() {
+		return getLong("build.cql.init.timeout");
+	}
+
 	public int getInt(String key) {
 		String property = getProperty(key);
 		return Integer.parseInt(property);
+	}
+
+	public long getLong(String key) {
+		String property = getProperty(key);
+		return Long.parseLong(property);
 	}
 
 	public boolean getBoolean(String key) {

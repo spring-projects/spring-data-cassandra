@@ -1,6 +1,5 @@
 # Cassandra storage config YAML 
 
-# NOTE:
 #   See http://wiki.apache.org/cassandra/StorageConfiguration for
 #   full explanations of configuration directives
 # /NOTE
@@ -37,7 +36,8 @@ cluster_name: 'Test Cluster'
 initial_token:
 
 # See http://wiki.apache.org/cassandra/HintedHandoff
-hinted_handoff_enabled: true
+hinted_handoff_enabled: false
+
 # this defines the maximum amount of time a dead host will have hints
 # generated.  After it has been dead this long, new hints for it will not be
 # created until it has been seen alive and gone down again.
@@ -186,7 +186,7 @@ saved_caches_directory: target/embeddedCassandra/saved_caches
 # and the CommitLog is simply synced every commitlog_sync_period_in_ms
 # milliseconds.
 commitlog_sync: periodic
-commitlog_sync_period_in_ms: 10000
+commitlog_sync_period_in_ms: 5000
 
 # The size of the individual commitlog file segments.  A commitlog
 # segment may be archived, deleted, or recycled once all the data
@@ -197,7 +197,7 @@ commitlog_sync_period_in_ms: 10000
 # archiving commitlog segments (see commitlog_archiving.properties),
 # then you probably want a finer granularity of archiving; 8 or 16 MB
 # is reasonable.
-commitlog_segment_size_in_mb: 32
+commitlog_segment_size_in_mb: 8
 
 # any class that implements the SeedProvider interface and has a
 # constructor that takes a Map<String, String> of parameters will do.
@@ -221,8 +221,8 @@ seed_provider:
 # On the other hand, since writes are almost never IO bound, the ideal
 # number of "concurrent_writes" is dependent on the number of cores in
 # your system; (8 * number_of_cores) is a good rule of thumb.
-concurrent_reads: 32
-concurrent_writes: 32
+concurrent_reads: 4
+concurrent_writes: 4
 
 # Total memory to use for memtables.  Cassandra will flush the largest
 # memtable when this much memory is used.
@@ -245,11 +245,6 @@ concurrent_writes: 32
 # you can increase this value for better flush performance.
 # By default this will be set to the amount of data directories defined.
 #memtable_flush_writers: 1
-
-# the number of full memtables to allow pending flush, that is,
-# waiting for a writer thread.  At a minimum, this should be set to
-# the maximum number of secondary indexes created on a single CF.
-memtable_flush_queue_size: 4
 
 # Whether to, when doing sequential writing, fsync() at intervals in
 # order to force the operating system to flush the dirty
@@ -296,10 +291,10 @@ native_transport_port: ${build.cassandra.native_transport_port}
 # transport is used. They are similar to rpc_min_threads and rpc_max_threads,
 # though the defaults differ slightly.
 # native_transport_min_threads: 16
-# native_transport_max_threads: 128
+#native_transport_max_threads: 48
 
 # Whether to start the thrift rpc server.
-start_rpc: true
+start_rpc: false
 
 # The address to bind the Thrift RPC service to -- clients connect
 # here. Unlike ListenAddress above, you _can_ specify 0.0.0.0 here if
@@ -385,7 +380,7 @@ snapshot_before_compaction: false
 # or dropping of column families. The STRONGLY advised default of true 
 # should be used to provide data safety. If you set this flag to false, you will
 # lose data on truncation or drop.
-auto_snapshot: true
+auto_snapshot: false
 
 # Add column indexes to a row after its contents reach this size.
 # Increase if your column values are large, or if you have a very large
@@ -395,11 +390,6 @@ auto_snapshot: true
 # the index data is read for each access, so you don't want to generate
 # that wastefully either.
 column_index_size_in_kb: 64
-
-# Size limit for rows being compacted in memory.  Larger rows will spill
-# over to disk and use a slower two-pass compaction process.  A message
-# will be logged specifying the row key.
-in_memory_compaction_limit_in_mb: 64
 
 # Number of simultaneous compactions to allow, NOT including
 # validation "compactions" for anti-entropy repair.  Simultaneous
@@ -414,13 +404,6 @@ in_memory_compaction_limit_in_mb: 64
 # Uncomment to make compaction mono-threaded, the pre-0.8 default.
 #concurrent_compactors: 1
 
-# Multi-threaded compaction. When enabled, each compaction will use
-# up to one thread per core, plus one thread per sstable being merged.
-# This is usually only useful for SSD-based hardware: otherwise, 
-# your concern is usually to get compaction to do LESS i/o (see:
-# compaction_throughput_mb_per_sec), not more.
-multithreaded_compaction: false
-
 # Throttles compaction to the given total throughput across the entire
 # system. The faster you insert data, the faster you need to compact in
 # order to keep the sstable count down, but in general, setting this to
@@ -428,11 +411,6 @@ multithreaded_compaction: false
 # Setting this to 0 disables throttling. Note that this account for all types
 # of compaction, including validation compaction.
 compaction_throughput_mb_per_sec: 16
-
-# Track cached row keys during compaction, and re-cache their new
-# positions in the compacted sstable.  Disable if you use really large
-# key caches.
-compaction_preheat_key_cache: true
 
 # Throttles all outbound streaming file transfers on this node to the
 # given total throughput in Mbps. This is necessary because Cassandra does
@@ -442,17 +420,17 @@ compaction_preheat_key_cache: true
 # stream_throughput_outbound_megabits_per_sec: 200
 
 # How long the coordinator should wait for read operations to complete
-read_request_timeout_in_ms: 10000
+read_request_timeout_in_ms: 120000
 # How long the coordinator should wait for seq or index scans to complete
-range_request_timeout_in_ms: 10000
+range_request_timeout_in_ms: 120000
 # How long the coordinator should wait for writes to complete
-write_request_timeout_in_ms: 10000
+write_request_timeout_in_ms: 120000
 # How long the coordinator should wait for truncates to complete
 # (This can be much longer, because unless auto_snapshot is disabled
 # we need to flush first so we can snapshot before removing the data.)
-truncate_request_timeout_in_ms: 60000
+truncate_request_timeout_in_ms: 120000
 # The default timeout for other, miscellaneous operations
-request_timeout_in_ms: 10000
+request_timeout_in_ms: 120000
 
 # Enable operation timeout information exchange between nodes to accurately
 # measure request timeouts, If disabled cassandra will assuming the request
@@ -638,7 +616,7 @@ client_encryption_options:
 # can be:  all  - all traffic is compressed
 #          dc   - traffic between different datacenters is compressed
 #          none - nothing is compressed.
-internode_compression: all
+internode_compression: none
 
 # Enable or disable tcp_nodelay for inter-dc communication.
 # Disabling it will result in larger (but fewer) network packets being sent,

@@ -12,13 +12,13 @@ public class ListListener<T> extends TestListener implements QueryForListListene
 
 	@Override
 	public void onQueryComplete(List<T> results) {
-		countDown();
 		this.result = results;
+		countDown();
 	}
 
 	@Override
 	public void onException(Exception x) {
-		countDown();
 		this.exception = x;
+		countDown();
 	}
 }

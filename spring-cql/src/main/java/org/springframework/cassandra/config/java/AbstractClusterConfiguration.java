@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.datastax.driver.core.AuthProvider;
 import com.datastax.driver.core.PoolingOptions;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.SocketOptions;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
@@ -59,6 +60,7 @@ public abstract class AbstractClusterConfiguration {
 		bean.setShutdownScripts(getShutdownScripts());
 		bean.setSocketOptions(getSocketOptions());
 		bean.setStartupScripts(getStartupScripts());
+		bean.setProtocolVersion(getProtocolVersion());
 
 		return bean;
 	}
@@ -118,4 +120,8 @@ public abstract class AbstractClusterConfiguration {
 	protected AuthProvider getAuthProvider() {
 		return null;
 	}
+
+	protected ProtocolVersion getProtocolVersion(){
+		return null;
+    }
 }

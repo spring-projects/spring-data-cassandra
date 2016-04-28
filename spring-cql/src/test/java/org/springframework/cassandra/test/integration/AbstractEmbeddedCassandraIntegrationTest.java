@@ -52,11 +52,12 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 	/**
 	 * The session connected to the system keyspace.
 	 */
-	protected static Session SYSTEM;
+	protected static Session system;
+
 	/**
 	 * The {@link Cluster} that's connected to Cassandra.
 	 */
-	protected static Cluster CLUSTER;
+	protected static Cluster cluster;
 
 	public static String randomKeyspaceName() {
 		return Utils.randomKeyspaceName();
@@ -79,13 +80,12 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 	public static void ensureClusterConnection() {
 
 		// check cluster
-		if (CLUSTER == null) {
-			CLUSTER = cluster();
+		if (cluster == null) {
+			cluster = cluster();
 		}
 
-		// check system session connected
-		if (SYSTEM == null) {
-			SYSTEM = CLUSTER.connect();
+		if (system == null) {
+			system = cluster.connect();
 		}
 	}
 

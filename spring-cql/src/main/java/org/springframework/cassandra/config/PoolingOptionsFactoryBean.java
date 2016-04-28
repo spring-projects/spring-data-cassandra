@@ -61,37 +61,52 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		if (localMaxConnections != null) {
 			poolingOptions.setMaxConnectionsPerHost(HostDistance.LOCAL, localMaxConnections);
 		}
-		
+
 		if (localCoreConnections != null) {
 			poolingOptions.setCoreConnectionsPerHost(HostDistance.LOCAL, localCoreConnections);
 		}
-		
-		if (localMaxSimultaneousRequests != null) {
-			poolingOptions.setMaxSimultaneousRequestsPerConnectionThreshold(HostDistance.LOCAL, localMaxSimultaneousRequests);
-		}
-		
+
 		if (localMinSimultaneousRequests != null) {
-			poolingOptions.setMinSimultaneousRequestsPerConnectionThreshold(HostDistance.LOCAL, localMinSimultaneousRequests);
+			/*
+			 * If the new min is greater than the current Max, set the current max to the new min first.
+			 * This is enforced by the DSE Driver so you cannot set a new min/max together if either one falls outside of the default 25-100 range.
+			 */
+			int currentMax = poolingOptions.getNewConnectionThreshold(HostDistance.LOCAL);
+			if (currentMax < localMinSimultaneousRequests) {
+				poolingOptions.setNewConnectionThreshold(HostDistance.LOCAL,
+						localMinSimultaneousRequests);
+			}
+		}
+
+		if (localMaxSimultaneousRequests != null) {
+			poolingOptions.setNewConnectionThreshold(HostDistance.LOCAL, localMaxSimultaneousRequests);
 		}
 
 		if (remoteMaxConnections != null) {
 			poolingOptions.setMaxConnectionsPerHost(HostDistance.REMOTE, remoteMaxConnections);
 		}
-		
+
 		if (remoteCoreConnections != null) {
 			poolingOptions.setCoreConnectionsPerHost(HostDistance.REMOTE, remoteCoreConnections);
 		}
-		
+
+		if (remoteMinSimultaneousRequests != null) {
+			/*
+			 * If the new min is greater than the current Max, set the current max to the new min first.
+			 * This is enforced by the DSE Driver so you cannot set a new min/max together if either one falls outside of the default 25-100 range.
+			 */
+			int currentMax = poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE);
+			if (currentMax < remoteMinSimultaneousRequests) {
+				poolingOptions.setNewConnectionThreshold(HostDistance.REMOTE,
+						remoteMinSimultaneousRequests);
+			}
+		}
+
 		if (remoteMaxSimultaneousRequests != null) {
-			poolingOptions.setMaxSimultaneousRequestsPerConnectionThreshold(HostDistance.REMOTE,
+			poolingOptions.setNewConnectionThreshold(HostDistance.REMOTE,
 					remoteMaxSimultaneousRequests);
 		}
-		
-		if (remoteMinSimultaneousRequests != null) {
-			poolingOptions.setMinSimultaneousRequestsPerConnectionThreshold(HostDistance.REMOTE,
-					remoteMinSimultaneousRequests);
-		}
-		
+
 	}
 
 	@Override
