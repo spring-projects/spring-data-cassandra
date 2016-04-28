@@ -1104,14 +1104,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		return result;
 	}
-	
-	@Override
-	public <T> List<T> update(Update update, Class<T> type) {
-		return update(update, type,null);
-	}
+
 
 	@Override
-	public <T> List<T> update(Update update, Class<T> type, WriteOptions options) {
+	public <T> List<T> update(Update update, Class<T> type) {
 		Assert.notNull(update);
 		update = CqlTemplate.addWriteOptions(update, options);
 
@@ -1133,15 +1129,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> List<T> update(List<Update> updateList, Class<T> type) {
-		return update(updateList, type,null);
-	}
-
-	@Override
-	public <T> List<T> update(List<Update> updateList, Class<T> type, WriteOptions options) {
-		return doBatchUpdate(updateList, options, type);
+		return doBatchUpdate(updateList, type);
 	}
 	
-	protected <T> List<T> doBatchUpdate(List<Update> updateList, WriteOptions options, Class<T> type) {
+	protected <T> List<T> doBatchUpdate(List<Update> updateList, Class<T> type) {
 
 		if (updateList == null || updateList.size() == 0) {
 			if (logger.isWarnEnabled()) {
@@ -1155,7 +1146,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			b.add(update);
 		}
 
-		CqlTemplate.addQueryOptions(b, options);
+		CqlTemplate.addQueryOptions(b);
 		ResultSet resultSet = doExecute(b);
 		if (resultSet == null) {
 			return null;
