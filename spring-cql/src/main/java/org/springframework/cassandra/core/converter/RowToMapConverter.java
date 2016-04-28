@@ -22,6 +22,7 @@ import java.util.Map;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.ProtocolVersion;
@@ -52,8 +53,10 @@ public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
 		for (Definition def : cols.asList()) {
 
 			String name = def.getName();
-			map.put(name, row.isNull(name) ? null
-					: def.getType().deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
+			map.put(
+					name,
+					row.isNull(name) ? null : CodecRegistry.DEFAULT_INSTANCE.codecFor(def.getType())
+							.deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return map;

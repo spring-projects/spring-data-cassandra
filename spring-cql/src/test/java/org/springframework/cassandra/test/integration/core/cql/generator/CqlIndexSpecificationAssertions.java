@@ -19,8 +19,9 @@ import static org.junit.Assert.*;
 
 import org.springframework.cassandra.core.keyspace.IndexDescriptor;
 
-import com.datastax.driver.core.ColumnMetadata.IndexMetadata;
+import com.datastax.driver.core.IndexMetadata;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TableMetadata;
 
 /**
  * @author David Webb
@@ -29,15 +30,19 @@ import com.datastax.driver.core.Session;
 public class CqlIndexSpecificationAssertions {
 
 	public static void assertIndex(IndexDescriptor expected, String keyspace, Session session) {
-		IndexMetadata imd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
-				.getTable(expected.getTableName().toCql()).getColumn(expected.getColumnName().toCql()).getIndex();
+		TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
+				.getTable(expected.getTableName().toCql());
+	    
+		IndexMetadata imd = tableMetadata.getIndex(expected.getName().toCql());
 
-		assertEquals(expected.getName(), imd.getName());
+		assertEquals(expected.getName(), imd == null ? null : imd.getName());
 	}
 
 	public static void assertNoIndex(IndexDescriptor expected, String keyspace, Session session) {
-		IndexMetadata imd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
-				.getTable(expected.getTableName().toCql()).getColumn(expected.getColumnName().toCql()).getIndex();
+		TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
+				.getTable(expected.getTableName().toCql());
+	    
+		IndexMetadata imd = tableMetadata.getIndex(expected.getName().toCql());
 
 		assertNull(imd);
 	}
