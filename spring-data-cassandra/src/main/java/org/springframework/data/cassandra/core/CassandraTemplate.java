@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2013-2016 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,6 +33,7 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -60,11 +61,12 @@ import com.datastax.driver.core.querybuilder.Update;
 /**
  * The CassandraTemplate is a convenient API for all Cassandra operations using POJOs with their Spring Data Cassandra
  * mapping information. For low-level Cassandra operation, see {@link CqlTemplate}.
- * 
+ *
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew T. Adams
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @see CqlTemplate
  */
 public class CassandraTemplate extends CqlTemplate implements CassandraOperations {
@@ -83,7 +85,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Constructor if only session and converter are known at time of Template Creation
-	 * 
+	 *
 	 * @param session must not be {@literal null}
 	 * @param converter must not be {@literal null}.
 	 */
@@ -213,8 +215,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public CqlIdentifier getTableName(Class<?> type) {
-		return mappingContext.getPersistentEntity(type).getTableName();
+	public CqlIdentifier getTableName(Class<?> entityClass) {
+
+		if (entityClass == null) {
+			throw new InvalidDataAccessApiUsageException(
+					"No class parameter provided, entity table can't be determined!");
+		}
+
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+		if (entity == null) {
+			throw new InvalidDataAccessApiUsageException(
+					"No Persistent Entity information found for the class " + entityClass.getName());
+		}
+		return entity.getTableName();
 	}
 
 	@Override
@@ -689,7 +702,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Asynchronously performs a batch insert or update.
-	 * 
+	 *
 	 * @param entities The entities to insert or update.
 	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
 	 *          <code>null</code>.
@@ -703,7 +716,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Asynchronously performs a batch insert or update.
-	 * 
+	 *
 	 * @param entities The entities to insert or update.
 	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
 	 *          <code>null</code>.
@@ -717,7 +730,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Asynchronously performs a batch insert or update.
-	 * 
+	 *
 	 * @param entities The entities to insert or update.
 	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
 	 *          <code>null</code>.
@@ -824,7 +837,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Generates a Query Object for an insert
-	 * 
+	 *
 	 * @param tableName
 	 * @param objectToSave
 	 * @param entity
@@ -852,7 +865,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Generates a Query Object for an Update
-	 * 
+	 *
 	 * @param tableName
 	 * @param objectToSave
 	 * @param entity
@@ -880,7 +893,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Generates a Batch Object for multiple Updates
-	 * 
+	 *
 	 * @param tableName
 	 * @param objectsToSave
 	 * @param entity
@@ -903,7 +916,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Generates a Batch Object for multiple inserts
-	 * 
+	 *
 	 * @param tableName
 	 * @param entities
 	 * @param entity
@@ -926,7 +939,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Create a Delete Query Object from an annotated POJO
-	 * 
+	 *
 	 * @param tableName
 	 * @param object
 	 * @param entity
@@ -946,7 +959,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Create a Batch Query object for multiple deletes.
-	 * 
+	 *
 	 * @param tableName
 	 * @param entities
 	 * @param entity
