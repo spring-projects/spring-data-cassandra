@@ -1047,4 +1047,61 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		throw new IllegalArgumentException(
 				String.format("Expected type String or Select; got type [%s] with value [%s]", query.getClass(), query));
 	}
+
+	@Override
+	public <T> List<T> update(Update update, Class<T> type) {
+		Assert.notNull(update);
+		update = CqlTemplate.addWriteOptions(update, null);
+
+		ResultSet resultSet = doExecute(update);
+		if (resultSet == null) {
+			return null;
+		}
+
+		List<T> result = new ArrayList<T>();
+		Iterator<Row> iterator = resultSet.iterator();
+		CassandraConverterRowCallback<T> readRowCallback = new CassandraConverterRowCallback<T>(cassandraConverter, type);
+		while (iterator.hasNext()) {
+			Row row = iterator.next();
+			result.add(readRowCallback.doWith(row));
+		}
+
+		return result;
+	}
+
+	@Override
+	public <T> List<T> update(List<Update> updateList, Class<T> type) {
+		return doBatchUpdate(updateList, type);
+	}
+	
+	protected <T> List<T> doBatchUpdate(List<Update> updateList, Class<T> type) {
+
+		if (updateList == null || updateList.size() == 0) {
+			if (logger.isWarnEnabled()) {
+				logger.warn("no-op due to given null or empty list");
+			}
+			return null;
+		}
+
+		Batch b = QueryBuilder.batch();
+		for (Update update : updateList) {
+			b.add(update);
+		}
+
+		CqlTemplate.addQueryOptions(b, null);
+		ResultSet resultSet = doExecute(b);
+		if (resultSet == null) {
+			return null;
+		}
+
+		List<T> result = new ArrayList<T>();
+		Iterator<Row> iterator = resultSet.iterator();
+		CassandraConverterRowCallback<T> readRowCallback = new CassandraConverterRowCallback<T>(cassandraConverter, type);
+		while (iterator.hasNext()) {
+			Row row = iterator.next();
+			result.add(readRowCallback.doWith(row));
+		}
+
+		return result;
+	}
 }

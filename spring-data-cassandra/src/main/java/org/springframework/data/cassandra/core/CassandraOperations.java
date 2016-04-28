@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core;
 
 import java.util.List;
 
-import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.Cancellable;
+import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.QueryForObjectListener;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.WriteOptions;
@@ -26,6 +26,7 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * Operations for interacting with Cassandra. These operations are used by the Repository implementation, but can also
@@ -280,6 +281,24 @@ public interface CassandraOperations extends CqlOperations {
 	 * @return The entities given.
 	 */
 	<T> List<T> update(List<T> entities, WriteOptions options);
+	
+	/**
+	 * Execute the Update Query and convert to the list of entities
+	 * 
+	 * @param Update must not be {@literal null}.
+	 * @param type must not be {@literal null}, mapped entity type.
+	 * @return
+	 */
+	<T> List<T> update(Update update, Class<T> type);
+	
+	/**
+	 * Execute the Update Query list and convert to the list of entities
+	 * 
+	 * @param Update must not be {@literal null}.
+	 * @param type must not be {@literal null}, mapped entity type.
+	 * @return
+	 */
+	<T> List<T> update(List<Update> updateList, Class<T> type);
 
 	/**
 	 * Updates the given entity asynchronously.
