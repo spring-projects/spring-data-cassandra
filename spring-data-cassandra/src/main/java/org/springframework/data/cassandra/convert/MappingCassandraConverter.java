@@ -46,6 +46,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -240,7 +241,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
 				Object value = accessor.getProperty(prop,
-						prop.isCompositePrimaryKey() ? prop.getType() : prop.getDataType().asJavaClass());
+						prop.isCompositePrimaryKey() ? prop.getType() : CodecRegistry.DEFAULT_INSTANCE.codecFor(prop.getDataType()).getJavaType().getRawType());
 
 				if (log.isDebugEnabled()) {
 					log.debug("doWithProperties Property.type {}, Property.value {}", prop.getType().getName(), value);
@@ -279,7 +280,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
 				Object value = accessor.getProperty(prop,
-						prop.isCompositePrimaryKey() ? prop.getType() : prop.getDataType().asJavaClass());
+						prop.isCompositePrimaryKey() ? prop.getType() : CodecRegistry.DEFAULT_INSTANCE.codecFor(prop.getDataType()).getJavaType().getRawType());
 
 				if (prop.isCompositePrimaryKey()) {
 					CassandraPersistentEntity<?> keyEntity = prop.getCompositePrimaryKeyEntity();
@@ -312,7 +313,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				@Override
 				public void doWithPersistentProperty(CassandraPersistentProperty prop) {
 
-					Object value = accessor.getProperty(prop, prop.getDataType().asJavaClass());
+					Object value = accessor.getProperty(prop, CodecRegistry.DEFAULT_INSTANCE.codecFor(prop.getDataType()).getJavaType().getRawType());
 					where.and(QueryBuilder.eq(prop.getColumnName().toCql(), value));
 				}
 			});
@@ -374,7 +375,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		CassandraPersistentProperty idProperty = entity.getIdProperty();
 		if (idProperty != null) {
 			return wrapper.getProperty(entity.getIdProperty(),
-					idProperty.isCompositePrimaryKey() ? idProperty.getType() : idProperty.getDataType().asJavaClass());
+					idProperty.isCompositePrimaryKey() ? idProperty.getType() : CodecRegistry.DEFAULT_INSTANCE.codecFor(idProperty.getDataType()).getJavaType().getRawType());
 		}
 
 		// if the class doesn't have an id property, then it's using MapId

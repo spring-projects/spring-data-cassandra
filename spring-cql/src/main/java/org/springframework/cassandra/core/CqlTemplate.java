@@ -55,6 +55,7 @@ import org.springframework.dao.QueryTimeoutException;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Host;
@@ -571,7 +572,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		if (cols.size() == 0) {
 			return null;
 		}
-		return cols.getType(0).deserialize(row.getBytesUnsafe(0), ProtocolVersion.NEWEST_SUPPORTED);
+		return CodecRegistry.DEFAULT_INSTANCE.codecFor(cols.getType(0)).deserialize(row.getBytesUnsafe(0), ProtocolVersion.NEWEST_SUPPORTED);
 	}
 
 	/**
@@ -588,7 +589,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		for (Definition def : cols.asList()) {
 			String name = def.getName();
-			map.put(name, def.getType().deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
+			map.put(name, CodecRegistry.DEFAULT_INSTANCE.codecFor(def.getType()).deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return map;

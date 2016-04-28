@@ -26,6 +26,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 
 /**
@@ -60,7 +61,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		for (DataType dataType : DataType.allPrimitiveTypes()) {
 
-			Class<?> javaClass = dataType.asJavaClass();
+			Class<?> javaClass = CodecRegistry.DEFAULT_INSTANCE.codecFor(dataType).getJavaType().getRawType();
 			simpleTypes.add(javaClass);
 
 			dataTypesByJavaClass.put(javaClass, dataType);

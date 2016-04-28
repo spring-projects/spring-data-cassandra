@@ -32,7 +32,7 @@ import org.springframework.cassandra.core.keyspace.TableOption;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.TableMetadata.Options;
+import com.datastax.driver.core.TableOptionsMetadata;
 
 public class CqlTableSpecificationAssertions {
 
@@ -66,7 +66,7 @@ public class CqlTableSpecificationAssertions {
 		assertColumns(expected.getPrimaryKeyColumns(), actual.getPrimaryKey());
 	}
 
-	public static void assertOptions(Map<String, Object> expected, Options actual) {
+	public static void assertOptions(Map<String, Object> expected, TableOptionsMetadata actual) {
 
 		for (String key : expected.keySet()) {
 
@@ -139,7 +139,7 @@ public class CqlTableSpecificationAssertions {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T getOptionFor(TableOption option, Class<?> type, Options options) {
+	public static <T> T getOptionFor(TableOption option, Class<?> type, TableOptionsMetadata options) {
 		switch (option) {
 		case BLOOM_FILTER_FP_CHANCE:
 			return (T) (Double) options.getBloomFilterFalsePositiveChance();

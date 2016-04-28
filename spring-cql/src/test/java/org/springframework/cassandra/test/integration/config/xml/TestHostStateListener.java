@@ -18,6 +18,7 @@ package org.springframework.cassandra.test.integration.config.xml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Host.StateListener;
 
@@ -49,8 +50,13 @@ public class TestHostStateListener implements StateListener {
 	}
 
 	@Override
-	public void onSuspected(Host host) {
-		log.info("Host Suspected: " + host.getAddress());
+	public void onRegister(Cluster cluster) {
+		log.info("Cluster registered: " + cluster.getClusterName());
+	}
+
+	@Override
+	public void onUnregister(Cluster cluster) {
+		log.info("Cluster unregistered: " + cluster.getClusterName());
 	}
 
 }
