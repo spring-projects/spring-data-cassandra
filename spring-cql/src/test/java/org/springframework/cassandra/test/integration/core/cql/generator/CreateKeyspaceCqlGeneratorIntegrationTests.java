@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspace
  * Integration tests that reuse unit tests.
  * 
  * @author John McPeek
+ * @author Oliver Gierke
  */
 public class CreateKeyspaceCqlGeneratorIntegrationTests {
 
@@ -45,9 +46,9 @@ public class CreateKeyspaceCqlGeneratorIntegrationTests {
 			unit = unit();
 			unit.prepare();
 
-			SYSTEM.execute(unit.cql);
+			system.execute(unit.cql);
 
-			assertKeyspace(unit.specification, unit.keyspace, SYSTEM);
+			assertKeyspace(unit.specification, unit.keyspace, system);
 		}
 	}
 

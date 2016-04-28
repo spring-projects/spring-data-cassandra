@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCql
  * Integration tests that reuse unit tests.
  * 
  * @author Matthew T. Adams
+ * @author Oliver Gierke
  */
 public class CreateTableCqlGeneratorIntegrationTests {
 
@@ -37,18 +38,20 @@ public class CreateTableCqlGeneratorIntegrationTests {
 	 * @param <T> The concrete unit test class to which this integration test corresponds.
 	 */
 	public static abstract class Base<T extends CreateTableTest> extends AbstractKeyspaceCreatingIntegrationTest {
+		
 		T unit;
 
 		public abstract T unit();
 
 		@Test
 		public void test() {
+			
 			unit = unit();
 			unit.prepare();
 
-			SESSION.execute(unit.cql);
+			session.execute(unit.cql);
 
-			assertTable(unit.specification, keyspace, SESSION);
+			assertTable(unit.specification, keyspace, session);
 		}
 	}
 

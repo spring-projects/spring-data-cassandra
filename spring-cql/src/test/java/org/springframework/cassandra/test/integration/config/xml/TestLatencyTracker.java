@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,19 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.LatencyTracker;
+import com.datastax.driver.core.Statement;
 
 /**
  * @author David Webb
+ * @author Oliver Gierke
  */
 public class TestLatencyTracker implements LatencyTracker {
 
-	private final static Logger log = LoggerFactory.getLogger(TestLatencyTracker.class);
+	private final static Logger LOG = LoggerFactory.getLogger(TestLatencyTracker.class);
 
 	@Override
-	public void update(Host host, long newLatencyNanos) {
-		log.info("Latency Tracker: " + host.getAddress() + ", " + newLatencyNanos + " nanoseconds.");
+	public void update(Host host, Statement statement, Exception exception, long newLatencyNanos) {
+		LOG.info("Latency Tracker: " + host.getAddress() + ", " + newLatencyNanos + " nanoseconds.");
 	}
 
 }

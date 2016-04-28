@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core;
 
 import java.util.List;
 
-import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.Cancellable;
+import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.QueryForObjectListener;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.WriteOptions;
@@ -281,6 +281,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @return The entities given.
 	 */
 	<T> List<T> update(List<T> entities, WriteOptions options);
+
 	/**
 	 * Execute the Update Query and convert to the list of entities
 	 * 
@@ -289,15 +290,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @return
 	 */
 	<T> List<T> update(Update update, Class<T> type);
-	/**
-	 * Execute the Update Query and convert to the list of entities
-	 * 
-	 * @param Update must not be {@literal null}.
-	 * @param type must not be {@literal null}, mapped entity type.
-	 * @param options The {@link WriteOptions} to use.
-	 * @return
-	 */
-	<T> List<T> update(Update update, Class<T> type, WriteOptions options);
+
 	/**
 	 * Execute the Update Query list and convert to the list of entities
 	 * 
@@ -306,15 +299,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @return
 	 */
 	<T> List<T> update(List<Update> updateList, Class<T> type);
-	/**
-	 * Execute the Update Query list and convert to the list of entities
-	 * 
-	 * @param Update must not be {@literal null}.
-	 * @param type must not be {@literal null}, mapped entity type.
-	 * @param options The {@link WriteOptions} to use.
-	 * @return
-	 */
-	<T> List<T> update(List<Update> updateList, Class<T> type, WriteOptions options);
+
 	/**
 	 * Updates the given entity asynchronously.
 	 * 

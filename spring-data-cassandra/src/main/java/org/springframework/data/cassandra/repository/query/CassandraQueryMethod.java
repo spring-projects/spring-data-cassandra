@@ -17,6 +17,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.ClassTypeInformation;
@@ -61,9 +62,9 @@ public class CassandraQueryMethod extends QueryMethod {
 	protected Set<Integer> stringLikeParameterIndexes = new HashSet<Integer>();
 	protected Set<Integer> dateParameterIndexes = new HashSet<Integer>();
 
-	public CassandraQueryMethod(Method method, RepositoryMetadata metadata, CassandraMappingContext mappingContext) {
+	public CassandraQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory, CassandraMappingContext mappingContext) {
 
-		super(method, metadata);
+		super(method, metadata, factory);
 
 		verify(method, metadata);
 

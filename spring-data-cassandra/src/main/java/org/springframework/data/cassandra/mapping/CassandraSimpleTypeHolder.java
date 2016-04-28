@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.datastax.driver.core.DataType;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
@@ -82,6 +83,11 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	}
 
 	public static DataType getDataTypeFor(Class<?> javaClass) {
+
+		if (javaClass.isEnum()) {
+			return DataType.varchar();
+		}
+
 		return dataTypesByJavaClass.get(javaClass);
 	}
 

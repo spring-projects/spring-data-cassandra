@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCql
  * Integration tests that reuse unit tests.
  * 
  * @author Matthew T. Adams
+ * @author Oliver Gierke
  */
 public class CreateIndexCqlGeneratorIntegrationTests {
 
@@ -48,9 +49,9 @@ public class CreateIndexCqlGeneratorIntegrationTests {
 			unit = unit();
 			unit.prepare();
 
-			SESSION.execute(unit.cql);
+			session.execute(unit.cql);
 
-			assertIndex(unit.specification, keyspace, SESSION);
+			assertIndex(unit.specification, keyspace, session);
 		}
 	}
 
@@ -62,7 +63,7 @@ public class CreateIndexCqlGeneratorIntegrationTests {
 		@Rule
 		public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
 				"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace),
-				CASSANDRA_CONFIG, CASSANDRA_HOST, CASSANDRA_NATIVE_PORT);
+				CASSANDRA_CONFIG);
 
 		@Override
 		public BasicTest unit() {

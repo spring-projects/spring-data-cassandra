@@ -49,15 +49,11 @@ public enum TableOption implements Option {
 	 */
 	COMPRESSION("compression", Map.class, true, false, false),
 	/**
-	 * <code>replicate_on_write</code>
-	 */
-	REPLICATE_ON_WRITE("replicate_on_write", Boolean.class, true, false, true),
-	/**
 	 * <code>caching</code>
 	 * 
 	 * @see CachingOption
 	 */
-	CACHING("caching", CachingOption.class, true, false, true),
+	CACHING("caching", Map.class, true, false, false),
 	/**
 	 * <code>bloom_filter_fp_chance</code>
 	 */
@@ -81,57 +77,70 @@ public enum TableOption implements Option {
 		this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
 	}
 
+	@Override
 	public Class<?> getType() {
 		return delegate.getType();
 	}
 
+	@Override
 	public boolean takesValue() {
 		return delegate.takesValue();
 	}
 
+	@Override
 	public String getName() {
 		return delegate.getName();
 	}
 
+	@Override
 	public boolean escapesValue() {
 		return delegate.escapesValue();
 	}
 
+	@Override
 	public boolean quotesValue() {
 		return delegate.quotesValue();
 	}
 
+	@Override
 	public boolean requiresValue() {
 		return delegate.requiresValue();
 	}
 
+	@Override
 	public void checkValue(Object value) {
 		delegate.checkValue(value);
 	}
 
+	@Override
 	public boolean isCoerceable(Object value) {
 		return delegate.isCoerceable(value);
 	}
 
+	@Override
 	public String toString() {
 		return delegate.toString();
 	}
 
+	@Override
 	public String toString(Object value) {
 		return delegate.toString(value);
 	}
 
 	/**
-	 * Known caching options.
+	 * Known KeyCaching Options
 	 * 
-	 * @author Matthew T. Adams
+	 * @author David Webb
+	 * @since 1.2.0
+	 *
 	 */
-	public enum CachingOption {
-		ALL("all"), KEYS_ONLY("keys_only"), ROWS_ONLY("rows_only"), NONE("none");
+	public enum KeyCachingOption {
+
+		ALL("all"), NONE("none");
 
 		private String value;
 
-		private CachingOption(String value) {
+		private KeyCachingOption(String value) {
 			this.value = value;
 		}
 
@@ -139,9 +148,81 @@ public enum TableOption implements Option {
 			return value;
 		}
 
+		@Override
 		public String toString() {
 			return getValue();
 		}
+	}
+
+	/**
+	 * Known caching options.
+	 * 
+	 * @author Matthew T. Adams
+	 * @author David Webb
+	 * @since 1.2.0
+	 */
+	public enum CachingOption implements Option {
+
+		KEYS("keys", KeyCachingOption.class, true, false, true),
+
+		ROWS_PER_PARTITION("rows_per_partition", String.class, true, false, true);
+
+		private Option delegate;
+
+		private CachingOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
+			this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
+		}
+
+		@Override
+		public Class<?> getType() {
+			return delegate.getType();
+		}
+
+		@Override
+		public boolean takesValue() {
+			return delegate.takesValue();
+		}
+
+		@Override
+		public String getName() {
+			return delegate.getName();
+		}
+
+		@Override
+		public boolean escapesValue() {
+			return delegate.escapesValue();
+		}
+
+		@Override
+		public boolean quotesValue() {
+			return delegate.quotesValue();
+		}
+
+		@Override
+		public boolean requiresValue() {
+			return delegate.requiresValue();
+		}
+
+		@Override
+		public void checkValue(Object value) {
+			delegate.checkValue(value);
+		}
+
+		@Override
+		public boolean isCoerceable(Object value) {
+			return delegate.isCoerceable(value);
+		}
+
+		@Override
+		public String toString() {
+			return delegate.toString();
+		}
+
+		@Override
+		public String toString(Object value) {
+			return delegate.toString(value);
+		}
+
 	}
 
 	/**
@@ -151,7 +232,7 @@ public enum TableOption implements Option {
 	 */
 	public enum CompactionOption implements Option {
 		/**
-		 * <code>tombstone_threshold</code>
+		 * <code>class</code>
 		 */
 		CLASS("class", String.class, true, false, true),
 		/**
@@ -194,42 +275,52 @@ public enum TableOption implements Option {
 			this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
 		}
 
+		@Override
 		public Class<?> getType() {
 			return delegate.getType();
 		}
 
+		@Override
 		public boolean takesValue() {
 			return delegate.takesValue();
 		}
 
+		@Override
 		public String getName() {
 			return delegate.getName();
 		}
 
+		@Override
 		public boolean escapesValue() {
 			return delegate.escapesValue();
 		}
 
+		@Override
 		public boolean quotesValue() {
 			return delegate.quotesValue();
 		}
 
+		@Override
 		public boolean requiresValue() {
 			return delegate.requiresValue();
 		}
 
+		@Override
 		public void checkValue(Object value) {
 			delegate.checkValue(value);
 		}
 
+		@Override
 		public boolean isCoerceable(Object value) {
 			return delegate.isCoerceable(value);
 		}
 
+		@Override
 		public String toString() {
 			return delegate.toString();
 		}
 
+		@Override
 		public String toString(Object value) {
 			return delegate.toString(value);
 		}
@@ -261,42 +352,52 @@ public enum TableOption implements Option {
 			this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
 		}
 
+		@Override
 		public Class<?> getType() {
 			return delegate.getType();
 		}
 
+		@Override
 		public boolean takesValue() {
 			return delegate.takesValue();
 		}
 
+		@Override
 		public String getName() {
 			return delegate.getName();
 		}
 
+		@Override
 		public boolean escapesValue() {
 			return delegate.escapesValue();
 		}
 
+		@Override
 		public boolean quotesValue() {
 			return delegate.quotesValue();
 		}
 
+		@Override
 		public boolean requiresValue() {
 			return delegate.requiresValue();
 		}
 
+		@Override
 		public void checkValue(Object value) {
 			delegate.checkValue(value);
 		}
 
+		@Override
 		public boolean isCoerceable(Object value) {
 			return delegate.isCoerceable(value);
 		}
 
+		@Override
 		public String toString() {
 			return delegate.toString();
 		}
 
+		@Override
 		public String toString(Object value) {
 			return delegate.toString(value);
 		}

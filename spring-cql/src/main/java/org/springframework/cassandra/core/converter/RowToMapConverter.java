@@ -7,6 +7,7 @@ import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Row;
 
 public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
@@ -24,7 +25,10 @@ public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
 		for (Definition def : cols.asList()) {
 
 			String name = def.getName();
-			map.put(name, row.isNull(name) ? null : def.getType().deserialize(row.getBytesUnsafe(name)));
+			map.put(
+					name,
+					row.isNull(name) ? null : def.getType().deserialize(row.getBytesUnsafe(name),
+							ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return map;

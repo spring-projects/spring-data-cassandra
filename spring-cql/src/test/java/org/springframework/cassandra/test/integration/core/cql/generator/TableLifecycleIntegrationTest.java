@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.DropTableCqlGe
  * Test CREATE TABLE / ALTER TABLE / DROP TABLE
  * 
  * @author David Webb
+ * @author Oliver Gierke
  */
 public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -51,12 +52,9 @@ public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingInteg
 		return true;
 	}
 
-	// This only ensures the keyspace exists before each test, while using a static SESSION from the parent object.
-	// TODO - DW Make this better.
 	@Rule
 	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
-			"cassandraOperationsTest-cql-dataload.cql", this.keyspace), CASSANDRA_CONFIG, CASSANDRA_HOST,
-			CASSANDRA_NATIVE_PORT);
+			"cassandraOperationsTest-cql-dataload.cql", this.keyspace), CASSANDRA_CONFIG);
 
 	@Test
 	public void testDrop() {
@@ -65,18 +63,18 @@ public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingInteg
 
 		log.info(createTableTest.cql);
 
-		SESSION.execute(createTableTest.cql);
+		session.execute(createTableTest.cql);
 
-		assertTable(createTableTest.specification, keyspace, SESSION);
+		assertTable(createTableTest.specification, keyspace, session);
 
 		DropTableTest dropTest = new DropTableTest();
 		dropTest.prepare();
 
 		log.info(dropTest.cql);
 
-		SESSION.execute(dropTest.cql);
+		session.execute(dropTest.cql);
 
-		assertNoTable(dropTest.specification, keyspace, SESSION);
+		assertNoTable(dropTest.specification, keyspace, session);
 	}
 
 	@Test
@@ -86,34 +84,37 @@ public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingInteg
 
 		log.info(createTableTest.cql);
 
-		SESSION.execute(createTableTest.cql);
+		session.execute(createTableTest.cql);
 
-		assertTable(createTableTest.specification, keyspace, SESSION);
+		assertTable(createTableTest.specification, keyspace, session);
 
 		AlterTableCqlGeneratorTests.MultipleOptionsTest alterTest = new AlterTableCqlGeneratorTests.MultipleOptionsTest();
 		alterTest.prepare();
 
 		log.info(alterTest.cql);
 
-		SESSION.execute(alterTest.cql);
+		session.execute(alterTest.cql);
 
-		// assertTable(alterTest.specification, keyspace, SESSION);
+		// assertTable(alterTest.specification, keyspace, session);
+
+		DropTableTest dropTest = new DropTableTest();
+		dropTest.prepare();
+
+		log.info(dropTest.cql);
+
+		session.execute(dropTest.cql);
+
+		assertNoTable(dropTest.specification, keyspace, session);
 
 	}
 
 	public class DropTableTest extends DropTableCqlGeneratorTests.DropTableTest {
 
-		/* (non-Javadoc)
-		 * @see org.springframework.cassandra.test.unit.core.cql.generator.TableOperationCqlGeneratorTest#specification()
-		 */
 		@Override
 		public DropTableSpecification specification() {
 			return DropTableSpecification.dropTable().name(createTableTest.specification.getName());
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.cassandra.test.unit.core.cql.generator.TableOperationCqlGeneratorTest#generator()
-		 */
 		@Override
 		public DropTableCqlGenerator generator() {
 			return new DropTableCqlGenerator(specification);

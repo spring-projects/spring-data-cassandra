@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.DropIndexCqlGe
  * Integration tests that reuse unit tests.
  * 
  * @author Matthew T. Adams
+ * @author Oliver Gierke
  */
 public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -43,7 +44,7 @@ public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractKeyspace
 	@Rule
 	public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet(
 			"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace),
-			CASSANDRA_CONFIG, CASSANDRA_HOST, CASSANDRA_NATIVE_PORT);
+			CASSANDRA_CONFIG);
 
 	@Test
 	public void lifecycleTest() {
@@ -57,20 +58,13 @@ public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractKeyspace
 		dropIfExists.prepare();
 
 		log.info(createTest.cql);
-		SESSION.execute(createTest.cql);
+		session.execute(createTest.cql);
 
-		assertIndex(createTest.specification, keyspace, SESSION);
+		assertIndex(createTest.specification, keyspace, session);
 
 		log.info(dropTest.cql);
-		SESSION.execute(dropTest.cql);
+		session.execute(dropTest.cql);
 
-		assertNoIndex(createTest.specification, keyspace, SESSION);
-
-		// log.info(dropIfExists.cql);
-		// SESSION.execute(dropIfExists.cql);
-		//
-		// assertNoIndex(createTest.specification, keyspace, SESSION);
-
+		assertNoIndex(createTest.specification, keyspace, session);
 	}
-
 }

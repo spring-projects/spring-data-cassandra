@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2015 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ import org.springframework.data.cassandra.repository.query.CassandraEntityInform
 import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
 import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -40,11 +42,12 @@ import org.springframework.util.Assert;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Thomas Darimont
  */
 
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
-	private final CassandraOperations cassandraTemplate;
+	private final CassandraOperations cassandraOperations;
 	private final CassandraMappingContext mappingContext;
 
 	/**
@@ -56,7 +59,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 		Assert.notNull(cassandraOperations);
 
-		this.cassandraTemplate = cassandraOperations;
+		this.cassandraOperations = cassandraOperations;
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
 
 		// TODO: remove when supporting declarative query methods
@@ -69,13 +72,10 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	}
 
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected Object getTargetRepository(RepositoryMetadata metadata) {
+	protected Object getTargetRepository(RepositoryInformation information) {
 
-		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainType());
-
-		return new SimpleCassandraRepository(entityInformation, cassandraTemplate);
-
+		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
+		return getTargetRepositoryViaReflection(information, entityInformation, cassandraOperations);
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		}
 
 		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
-				cassandraTemplate.getConverter());
+				cassandraOperations.getConverter());
 	}
 
 	@Override
@@ -100,17 +100,22 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	private class CassandraQueryLookupStrategy implements QueryLookupStrategy {
 
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.repository.query.QueryLookupStrategy#resolveQuery(java.lang.reflect.Method, org.springframework.data.repository.core.RepositoryMetadata, org.springframework.data.projection.ProjectionFactory, org.springframework.data.repository.core.NamedQueries)
+		 */
 		@Override
-		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, NamedQueries namedQueries) {
+		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
+				NamedQueries namedQueries) {
 
-			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, mappingContext);
+			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory, mappingContext);
 			String namedQueryName = queryMethod.getNamedQueryName();
 
 			if (namedQueries.hasQuery(namedQueryName)) {
 				String namedQuery = namedQueries.getQuery(namedQueryName);
-				return new StringBasedCassandraQuery(namedQuery, queryMethod, cassandraTemplate);
+				return new StringBasedCassandraQuery(namedQuery, queryMethod, cassandraOperations);
 			} else if (queryMethod.hasAnnotatedQuery()) {
-				return new StringBasedCassandraQuery(queryMethod, cassandraTemplate);
+				return new StringBasedCassandraQuery(queryMethod, cassandraOperations);
 			} else {
 				throw new InvalidDataAccessApiUsageException("declarative query methods are a todo");
 			}

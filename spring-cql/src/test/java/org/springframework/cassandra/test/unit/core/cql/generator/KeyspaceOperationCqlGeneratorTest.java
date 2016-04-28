@@ -17,7 +17,7 @@ package org.springframework.cassandra.test.unit.core.cql.generator;
 
 import java.util.UUID;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.generator.KeyspaceNameCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.TableNameCqlGenerator;

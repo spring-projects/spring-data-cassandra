@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCql
  * Test CREATE TABLE for all Options and assert against C* TableMetaData
  * 
  * @author David Webb
+ * @author Oliver Gierke
  */
 public class TableOptionsIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -41,8 +42,8 @@ public class TableOptionsIntegrationTest extends AbstractKeyspaceCreatingIntegra
 
 		log.info(optionsTest.cql);
 
-		SESSION.execute(optionsTest.cql);
+		session.execute(optionsTest.cql);
 
-		assertTable(optionsTest.specification, keyspace, SESSION);
+		assertTable(optionsTest.specification, keyspace, session);
 	}
 }

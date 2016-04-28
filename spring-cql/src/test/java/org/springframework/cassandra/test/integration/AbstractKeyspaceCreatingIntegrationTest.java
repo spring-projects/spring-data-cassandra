@@ -18,15 +18,20 @@ package org.springframework.cassandra.test.integration;
 import org.junit.After;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.Host;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Session.State;
 
 /**
  * Abstract base integration test class that creates a keyspace
  * 
  * @author Matthew T. Adams
+ * @author David Webb
  */
 public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
@@ -35,7 +40,7 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 	/**
 	 * The session that's connected to the keyspace used in the current instance's test.
 	 */
-	protected static Session SESSION;
+	protected static Session session;
 
 	/**
 	 * The name of the keyspace to use for this test instance.
@@ -56,7 +61,7 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 	 * Returns whether we're currently connected to the keyspace.
 	 */
 	public static boolean connected() {
-		return SESSION != null;
+		return session != null;
 	}
 
 	/**
@@ -77,46 +82,73 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 
 		if (keyspace != null) {
 			// see if we need to create the keyspace
-			KeyspaceMetadata kmd = CLUSTER.getMetadata().getKeyspace(keyspace);
+			KeyspaceMetadata kmd = cluster.getMetadata().getKeyspace(keyspace);
 			if (kmd == null) { // then create keyspace
 
 				String cql = "CREATE KEYSPACE " + keyspace
-						+ " WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};";
+						+ " WITH durable_writes = false AND replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};";
 				log.info("creating keyspace {} via CQL [{}]", keyspace, cql);
 
-				SYSTEM.execute(cql);
+				system.execute(cql);
 			}
 		}
 
 		// keyspace now exists; ensure the session is using it
-		if (SESSION == null) {
+		if (session == null) {
 
 			log.info("connecting to keyspace {}", keyspace == null ? "system" : keyspace + "...");
 
-			SESSION = keyspace == null ? CLUSTER.connect() : CLUSTER.connect(keyspace);
+			session = keyspace == null ? cluster.connect() : cluster.connect(keyspace);
 
 			log.info("connected to keyspace {}", keyspace == null ? "system" : keyspace);
 
 		} else {
 
+			debugSession();
+
 			log.info("session already connected to a keyspace; attempting to change to use {}", keyspace);
 
 			String cql = "USE " + (keyspace == null ? "system" : keyspace) + ";";
-			SESSION.execute(cql);
+
+			log.debug(cql);
+
+			getTemplate().execute(cql);
 
 			log.info("now using keyspace " + keyspace);
+
 		}
+	}
+
+	protected static CqlOperations getTemplate() {
+
+		return new CqlTemplate(session);
+	}
+
+	protected static void debugSession() {
+		if (session == null) {
+			log.warn("Session is null...cannot debug that");
+			return;
+		}
+
+		State state = session.getState();
+
+		for (Host h : state.getConnectedHosts()) {
+
+			log.debug(String.format("Session Host dc [%s], rack [%s], ver [%s], state [%s]", h.getDatacenter(), h.getRack(),
+					h.getCassandraVersion(), h.getState()));
+		}
+
 	}
 
 	@After
 	public void after() {
 		if (dropKeyspaceAfterTest() && keyspace != null) {
 
-			SESSION.execute("USE system");
+			session.execute("USE system");
 
 			log.info("dropping keyspace {} ...", keyspace);
 
-			SYSTEM.execute("DROP KEYSPACE " + keyspace);
+			system.execute("DROP KEYSPACE " + keyspace);
 
 			log.info("dropped keyspace {}", keyspace);
 		}

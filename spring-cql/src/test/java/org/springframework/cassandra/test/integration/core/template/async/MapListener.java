@@ -12,13 +12,13 @@ public class MapListener extends TestListener implements QueryForMapListener {
 
 	@Override
 	public void onQueryComplete(Map<String, Object> results) {
-		countDown();
 		this.result = results;
+		countDown();
 	}
 
 	@Override
 	public void onException(Exception x) {
-		countDown();
 		this.exception = x;
+		countDown();
 	}
 }

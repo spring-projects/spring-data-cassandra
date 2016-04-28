@@ -34,7 +34,6 @@ public class BookListener extends TestListener implements AsynchronousQueryListe
 
 	@Override
 	public void onQueryComplete(ResultSetFuture rsf) {
-		countDown();
 
 		Row row;
 		try {
@@ -49,6 +48,8 @@ public class BookListener extends TestListener implements AsynchronousQueryListe
 		book.setPages(row.getInt("pages"));
 
 		done = true;
+
+		countDown();
 	}
 
 	/**

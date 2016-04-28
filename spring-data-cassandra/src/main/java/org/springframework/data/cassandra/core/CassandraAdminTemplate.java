@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2013-2016 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,6 +35,8 @@ import com.datastax.driver.core.TableMetadata;
 
 /**
  * Default implementation of {@link CassandraAdminOperations}.
+ *
+ * @author Mark Paluch
  */
 public class CassandraAdminTemplate extends CassandraTemplate implements CassandraAdminOperations {
 
@@ -42,15 +44,16 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/**
 	 * Constructor used for a basic template configuration
-	 * 
-	 * @param keyspace must not be {@literal null}.
+	 *
+	 * @param session must not be {@literal null}.
+	 * @param converter must not be {@literal null}.
 	 */
 	public CassandraAdminTemplate(Session session, CassandraConverter converter) {
 		super(session, converter);
 	}
 
 	@Override
-	public void createTable(boolean ifNotExists, final CqlIdentifier tableName, Class<?> entityClass,
+	public void createTable(final boolean ifNotExists, final CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
 
 		final CassandraPersistentEntity<?> entity = getCassandraMappingContext().getPersistentEntity(entityClass);
@@ -59,8 +62,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
 
-				String cql = new CreateTableCqlGenerator(getCassandraMappingContext().getCreateTableSpecificationFor(entity))
-						.toCql();
+				String cql = new CreateTableCqlGenerator(getCassandraMappingContext().
+						getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists)).toCql();
 
 				log.debug(cql);
 
@@ -84,7 +87,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/**
 	 * Create a list of query operations to alter the table for the given entity
-	 * 
+	 *
 	 * @param entityClass
 	 * @param tableName
 	 */
@@ -113,7 +116,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	}
 
 	public void dropTable(Class<?> entityClass) {
-		dropTable(determineTableName(entityClass));
+		dropTable(getTableName(entityClass));
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
+import org.springframework.data.cassandra.test.integration.simpletons.BookCondition;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.test.context.ContextConfiguration;
@@ -48,6 +49,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * Unit Tests for CqlTemplate
  * 
  * @author David Webb
+ * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -77,6 +79,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b1.setPages(521);
 		b1.setSaleDate(new Date());
 		b1.setInStock(true);
+		b1.setCondition(BookCondition.NEW);
 
 		template.insert(b1);
 
@@ -85,6 +88,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b2.setTitle("Spring Data Cassandra Guide");
 		b2.setAuthor("Cassandra Guru");
 		b2.setPages(521);
+		b2.setCondition(BookCondition.NEW);
 
 		template.insert(b2);
 
@@ -93,6 +97,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b3.setTitle("Spring Data Cassandra Guide");
 		b3.setAuthor("Cassandra Guru");
 		b3.setPages(265);
+		b3.setCondition(BookCondition.USED);
 
 		WriteOptions options = new WriteOptions();
 		options.setTtl(60);
@@ -106,6 +111,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b5.setTitle("Spring Data Cassandra Guide");
 		b5.setAuthor("Cassandra Guru");
 		b5.setPages(265);
+		b5.setCondition(BookCondition.USED);
 
 		template.insert(b5, options);
 
@@ -119,6 +125,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b1.setTitle("Spring Data Cassandra Guide");
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
+		b1.setCondition(BookCondition.NEW);
 
 		template.insertAsynchronously(b1);
 
@@ -127,6 +134,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b2.setTitle("Spring Data Cassandra Guide");
 		b2.setAuthor("Cassandra Guru");
 		b2.setPages(521);
+		b2.setCondition(BookCondition.NEW);
 
 		template.insertAsynchronously(b2);
 
@@ -138,6 +146,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b3.setTitle("Spring Data Cassandra Guide");
 		b3.setAuthor("Cassandra Guru");
 		b3.setPages(265);
+		b3.setCondition(BookCondition.USED);
 
 		WriteOptions options = new WriteOptions();
 		options.setTtl(60);
@@ -154,6 +163,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b4.setTitle("Spring Data Cassandra Guide");
 		b4.setAuthor("Cassandra Guru");
 		b4.setPages(465);
+		b4.setCondition(BookCondition.USED);
 
 		/*
 		 * Test Single Insert with entity
@@ -163,6 +173,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		b5.setTitle("Spring Data Cassandra Guide");
 		b5.setAuthor("Cassandra Guru");
 		b5.setPages(265);
+		b5.setCondition(BookCondition.USED);
 
 		template.insertAsynchronously(b5, options);
 
@@ -253,6 +264,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 			b.setPages(i * 10 + 5);
 			b.setInStock(true);
 			b.setSaleDate(new Date());
+			b.setCondition(BookCondition.NEW);
 			books.add(b);
 		}
 
@@ -406,7 +418,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		alterBooks(books);
 
 		template.update(books, options);
-				
+
 		books = getBookList(20);
 
 		template.insert(books, options);
@@ -425,7 +437,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 			update.where(QueryBuilder.eq("isbn", book.getIsbn()));
 			updateList.add(update);
 		}
-		template.update(updateList, Book.class, options);
+		template.update(updateList, Book.class);
 
 	}
 
@@ -681,6 +693,7 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 
 		for (Book b : bookz) {
 			Assert.assertTrue(b.isInStock());
+			Assert.assertEquals(BookCondition.NEW, b.getCondition());
 		}
 	}
 

@@ -30,7 +30,11 @@ import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.repository.query.CassandraParametersParameterAccessor;
 import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -39,8 +43,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import static org.hamcrest.Matchers.is;
 
 import static org.junit.Assert.assertThat;
-
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link StringBasedCassandraQuery}.
@@ -50,24 +53,26 @@ public class StringBasedCassandraQueryIntegrationTests {
 
 	@Mock
 	CassandraOperations operations;
-	@Mock
+	
 	RepositoryMetadata metadata;
-
 	CassandraConverter converter;
+	ProjectionFactory factory;
 
 	@Before
 	public void setUp() {
 
 		when(operations.getConverter()).thenReturn(converter);
 
+		this.metadata = AbstractRepositoryMetadata.getMetadata(SampleRepository.class);
 		this.converter = new MappingCassandraConverter(new BasicCassandraMappingContext());
+		this.factory = new SpelAwareProxyProjectionFactory();
 	}
 
 	@Test
 	public void bindsSimplePropertyCorrectly() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("findByLastname", String.class);
-		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, converter.getMappingContext());
+		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory, converter.getMappingContext());
 		StringBasedCassandraQuery cassandraQuery = new StringBasedCassandraQuery(queryMethod, operations);
 		CassandraParametersParameterAccessor accesor = new CassandraParametersParameterAccessor(queryMethod, "Matthews");
 
@@ -86,7 +91,7 @@ public class StringBasedCassandraQueryIntegrationTests {
 	public void bindsMultipleParametersCorrectly() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("findByLastnameAndFirstname", String.class, String.class);
-		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, converter.getMappingContext());
+		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,  converter.getMappingContext());
 		StringBasedCassandraQuery cassandraQuery = new StringBasedCassandraQuery(queryMethod, operations);
 		CassandraParametersParameterAccessor accesor = new CassandraParametersParameterAccessor(queryMethod, "Matthews",
 				"John");
@@ -102,7 +107,7 @@ public class StringBasedCassandraQueryIntegrationTests {
 		assertThat(actual.getQueryString(), is(expected.getQueryString()));
 	}
 
-	private interface SampleRepository {
+	private interface SampleRepository extends Repository<Person, String> {
 
 		@Query("SELECT * FROM person WHERE lastname=?0;")
 		Person findByLastname(String lastname);
