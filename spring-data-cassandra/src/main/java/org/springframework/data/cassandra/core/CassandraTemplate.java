@@ -1109,7 +1109,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	@Override
 	public <T> List<T> update(Update update, Class<T> type) {
 		Assert.notNull(update);
-		update = CqlTemplate.addWriteOptions(update, options);
+		update = CqlTemplate.addWriteOptions(update);
 
 		ResultSet resultSet = doExecute(update);
 		if (resultSet == null) {
@@ -1146,7 +1146,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			b.add(update);
 		}
 
-		CqlTemplate.addQueryOptions(b);
+		CqlTemplate.addQueryOptions(b,null);
 		ResultSet resultSet = doExecute(b);
 		if (resultSet == null) {
 			return null;
