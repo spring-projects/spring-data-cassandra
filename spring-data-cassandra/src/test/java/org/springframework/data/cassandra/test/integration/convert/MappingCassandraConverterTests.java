@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.test.integration.convert;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assume.assumeThat;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraType;
@@ -48,7 +50,7 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
 
 /**
  * Tests for {@link MappingCassandraConverter}.
- * 
+ *
  * @author Mark Paluch
  * @soundtrack Outlandich - Dont Leave Me Feat Cyt (Sun Kidz Electrocore Mix)
  */
@@ -78,7 +80,9 @@ public class MappingCassandraConverterTests {
 	 * @see DATACASS-260
 	 */
 	@Test
-	public void insertEnumDoesNotMapToOrdinal() {
+	public void insertEnumDoesNotMapToOrdinalBeforeSpring43() {
+
+		assumeThat(SpringVersion.getVersion(), not(startsWith("4.3")));
 
 		expectedException.expect(ConverterNotFoundException.class);
 		expectedException.expectMessage(allOf(containsString("No converter found"), containsString("java.lang.Integer")));
@@ -89,6 +93,25 @@ public class MappingCassandraConverterTests {
 		Insert insert = QueryBuilder.insertInto("table");
 
 		mappingCassandraConverter.write(unsupportedEnumToOrdinalMapping, insert);
+	}
+
+
+	/**
+	 * @see DATACASS-255
+	 */
+	@Test
+	public void insertEnumMapsToOrdinalWithSpring43() {
+
+		assumeThat(SpringVersion.getVersion(), startsWith("4.3"));
+
+		UnsupportedEnumToOrdinalMapping unsupportedEnumToOrdinalMapping = new UnsupportedEnumToOrdinalMapping();
+		unsupportedEnumToOrdinalMapping.setAsOrdinal(Condition.USED);
+
+		Insert insert = QueryBuilder.insertInto("table");
+
+		mappingCassandraConverter.write(unsupportedEnumToOrdinalMapping, insert);
+
+		assertThat(getValues(insert), contains((Object) Integer.valueOf(Condition.USED.ordinal())));
 	}
 
 	/**
