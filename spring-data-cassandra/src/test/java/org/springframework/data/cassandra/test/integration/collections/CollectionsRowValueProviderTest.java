@@ -146,11 +146,7 @@ public class CollectionsRowValueProviderTest extends AbstractSpringDataEmbeddedC
 		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
 
 	}
-<<<<<<< HEAD
-	
-=======
-		
->>>>>>> master
+
 	@Test
 	public void mapCollectionUpdateTest() {
 

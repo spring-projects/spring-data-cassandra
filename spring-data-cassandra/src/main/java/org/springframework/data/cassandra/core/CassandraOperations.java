@@ -281,10 +281,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @return The entities given.
 	 */
 	<T> List<T> update(List<T> entities, WriteOptions options);
-<<<<<<< HEAD
-	
-=======
->>>>>>> master
+
 	/**
 	 * Execute the Update Query and convert to the list of entities
 	 * 
@@ -293,19 +290,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @return
 	 */
 	<T> List<T> update(Update update, Class<T> type);
-<<<<<<< HEAD
-	
-=======
-	/**
-	 * Execute the Update Query and convert to the list of entities
-	 * 
-	 * @param Update must not be {@literal null}.
-	 * @param type must not be {@literal null}, mapped entity type.
-	 * @param options The {@link WriteOptions} to use.
-	 * @return
-	 */
-	<T> List<T> update(Update update, Class<T> type, WriteOptions options);
->>>>>>> master
+
 	/**
 	 * Execute the Update Query list and convert to the list of entities
 	 * 
@@ -314,19 +299,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @return
 	 */
 	<T> List<T> update(List<Update> updateList, Class<T> type);
-<<<<<<< HEAD
 
-=======
-	/**
-	 * Execute the Update Query list and convert to the list of entities
-	 * 
-	 * @param Update must not be {@literal null}.
-	 * @param type must not be {@literal null}, mapped entity type.
-	 * @param options The {@link WriteOptions} to use.
-	 * @return
-	 */
-	<T> List<T> update(List<Update> updateList, Class<T> type, WriteOptions options);
->>>>>>> master
 	/**
 	 * Updates the given entity asynchronously.
 	 * 
