@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +43,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * Unit Tests for CqlTemplate
@@ -416,6 +418,26 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		alterBooks(books);
 
 		template.update(books, options);
+		
+		books = getBookList(20);
+
+		template.insert(books, options);
+
+		alterBooks(books);
+
+		List<Update> updateList = new ArrayList<Update>();
+		for (Iterator<Book>iterator = books.iterator(); iterator.hasNext();) {
+			Book book = iterator.next();
+			Update update = QueryBuilder.update(template.getSession().getLoggedKeyspace(), template.getTableName(Book.class).toCql()); 
+			update.with(QueryBuilder.set("title", book.getTitle()));
+			update.with(QueryBuilder.set("author", book.getAuthor()));
+			update.with(QueryBuilder.set("pages", book.getPages()));
+			update.with(QueryBuilder.set("saleDate", book.getSaleDate()));
+			update.with(QueryBuilder.set("isInStock", book.isInStock()));
+			update.where(QueryBuilder.eq("isbn", book.getIsbn()));
+			updateList.add(update);
+		}
+		template.update(updateList, Book.class);
 
 	}
 

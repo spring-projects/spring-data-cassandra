@@ -145,4 +145,45 @@ public class CollectionsRowValueProviderTest extends AbstractSpringDataEmbeddedC
 		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
 
 	}
+	
+	@Test
+	public void mapCollectionUpdateTest() {
+
+		BookHistory b1 = new BookHistory();
+		b1.setIsbn("123456-1");
+		b1.setTitle("Spring Data Cassandra Guide");
+		b1.setAuthor("Cassandra Guru");
+		b1.setPages(521);
+		b1.setSaleDate(new Date());
+		b1.setInStock(true);
+
+		Map<String, Integer> checkOutMap = new HashMap<String, Integer>();
+		checkOutMap.put("dwebb", 50);
+		checkOutMap.put("madams", 100);
+		checkOutMap.put("jmcpeek", 150);
+
+		b1.setCheckOuts(checkOutMap);
+
+		template.insert(b1);
+		log.debug("Updating collection : Adding to checkouts map data");
+		Update update = QueryBuilder.update(template.getSession().getLoggedKeyspace(), template.getTableName(BookHistory.class).toCql()); 
+		checkOutMap = new HashMap<String, Integer>();
+		checkOutMap.put("skumar", 200);
+		update.with(QueryBuilder.putAll("checkOuts", checkOutMap));
+		update.where(QueryBuilder.eq("isbn", b1.getIsbn()));
+
+		Select select = QueryBuilder.select().all().from("bookHistory");
+		select.where(QueryBuilder.eq("isbn", "123456-1"));
+
+		BookHistory b = template.selectOne(select, BookHistory.class);
+
+		Assert.assertNotNull(b.getCheckOuts());
+		Assert.assertEquals(b.getCheckOuts().size(), 4);
+
+		log.debug("Checkouts map data");
+		for (String username : b.getCheckOuts().keySet()) {
+			log.debug(username + " has " + b.getCheckOuts().get(username) + " checkouts of this book.");
+		}
+
+	}
 }
