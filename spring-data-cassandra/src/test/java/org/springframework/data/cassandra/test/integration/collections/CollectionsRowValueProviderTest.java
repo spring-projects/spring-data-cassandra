@@ -39,6 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * @author dwebb
@@ -145,7 +146,11 @@ public class CollectionsRowValueProviderTest extends AbstractSpringDataEmbeddedC
 		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
 
 	}
+<<<<<<< HEAD
 	
+=======
+		
+>>>>>>> master
 	@Test
 	public void mapCollectionUpdateTest() {
 

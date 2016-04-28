@@ -418,7 +418,11 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 		alterBooks(books);
 
 		template.update(books, options);
+<<<<<<< HEAD
 		
+=======
+				
+>>>>>>> master
 		books = getBookList(20);
 
 		template.insert(books, options);
@@ -437,7 +441,11 @@ public class CassandraDataOperationsTest extends AbstractSpringDataEmbeddedCassa
 			update.where(QueryBuilder.eq("isbn", book.getIsbn()));
 			updateList.add(update);
 		}
+<<<<<<< HEAD
 		template.update(updateList, Book.class);
+=======
+		template.update(updateList, Book.class, options);
+>>>>>>> master
 
 	}
 

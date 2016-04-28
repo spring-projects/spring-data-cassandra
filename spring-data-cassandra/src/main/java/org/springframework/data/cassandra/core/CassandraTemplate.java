@@ -1104,4 +1104,71 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		return result;
 	}
+	
+	@Override
+	public <T> List<T> update(Update update, Class<T> type) {
+		return update(update, type,null);
+	}
+
+	@Override
+	public <T> List<T> update(Update update, Class<T> type, WriteOptions options) {
+		Assert.notNull(update);
+		update = CqlTemplate.addWriteOptions(update, options);
+
+		ResultSet resultSet = doExecute(update);
+		if (resultSet == null) {
+			return null;
+		}
+
+		List<T> result = new ArrayList<T>();
+		Iterator<Row> iterator = resultSet.iterator();
+		CassandraConverterRowCallback<T> readRowCallback = new CassandraConverterRowCallback<T>(cassandraConverter, type);
+		while (iterator.hasNext()) {
+			Row row = iterator.next();
+			result.add(readRowCallback.doWith(row));
+		}
+
+		return result;
+	}
+
+	@Override
+	public <T> List<T> update(List<Update> updateList, Class<T> type) {
+		return update(updateList, type,null);
+	}
+
+	@Override
+	public <T> List<T> update(List<Update> updateList, Class<T> type, WriteOptions options) {
+		return doBatchUpdate(updateList, options, type);
+	}
+	
+	protected <T> List<T> doBatchUpdate(List<Update> updateList, WriteOptions options, Class<T> type) {
+
+		if (updateList == null || updateList.size() == 0) {
+			if (logger.isWarnEnabled()) {
+				logger.warn("no-op due to given null or empty list");
+			}
+			return null;
+		}
+
+		Batch b = QueryBuilder.batch();
+		for (Update update : updateList) {
+			b.add(update);
+		}
+
+		CqlTemplate.addQueryOptions(b, options);
+		ResultSet resultSet = doExecute(b);
+		if (resultSet == null) {
+			return null;
+		}
+
+		List<T> result = new ArrayList<T>();
+		Iterator<Row> iterator = resultSet.iterator();
+		CassandraConverterRowCallback<T> readRowCallback = new CassandraConverterRowCallback<T>(cassandraConverter, type);
+		while (iterator.hasNext()) {
+			Row row = iterator.next();
+			result.add(readRowCallback.doWith(row));
+		}
+
+		return result;
+	}
 }
