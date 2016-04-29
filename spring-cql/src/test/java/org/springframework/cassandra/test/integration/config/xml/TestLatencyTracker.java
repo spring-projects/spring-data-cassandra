@@ -18,6 +18,7 @@ package org.springframework.cassandra.test.integration.config.xml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.LatencyTracker;
 import com.datastax.driver.core.Statement;
@@ -33,6 +34,14 @@ public class TestLatencyTracker implements LatencyTracker {
 	@Override
 	public void update(Host host, Statement statement, Exception exception, long newLatencyNanos) {
 		LOG.info("Latency Tracker: " + host.getAddress() + ", " + newLatencyNanos + " nanoseconds.");
+	}
+	
+	@Override
+	public void onRegister(Cluster cluster) {
+	}
+	
+	@Override
+	public void onUnregister(Cluster cluster) {
 	}
 
 }
