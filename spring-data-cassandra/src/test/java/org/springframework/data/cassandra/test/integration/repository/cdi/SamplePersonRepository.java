@@ -16,7 +16,7 @@
 
 package org.springframework.data.cassandra.test.integration.repository.cdi;
 
-import org.springframework.data.cassandra.test.integration.querymethods.declared.Person;
+import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.repository.Repository;
 
 /**

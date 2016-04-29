@@ -19,6 +19,9 @@
 	<logger name="com.datastax.driver.core.ControlConnection" level="OFF" />
 	<logger name="com.datastax.driver.core.Session" level="OFF" />
 
+	<!-- This one is noisy and subject to be refactored -->
+	<logger name="org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntityMetadataVerifier" level="OFF" />
+
 	<root level="ERROR">
 		<appender-ref ref="console" />
 	</root>

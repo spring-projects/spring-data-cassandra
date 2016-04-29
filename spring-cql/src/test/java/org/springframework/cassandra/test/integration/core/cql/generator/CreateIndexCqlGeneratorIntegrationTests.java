@@ -15,13 +15,13 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
-import static org.springframework.cassandra.test.integration.core.cql.generator.CqlIndexSpecificationAssertions.assertIndex;
+import static org.springframework.cassandra.test.integration.core.cql.generator.CqlIndexSpecificationAssertions.*;
 
 import org.junit.Test;
+import org.springframework.cassandra.core.cql.generator.CreateIndexCqlGeneratorUnitTests.BasicTest;
+import org.springframework.cassandra.core.cql.generator.CreateIndexCqlGeneratorUnitTests.CreateIndexTest;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.test.integration.CqlDataSet;
-import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCqlGeneratorTests.BasicTest;
-import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCqlGeneratorTests.CreateIndexTest;
+import org.springframework.cassandra.test.integration.support.CqlDataSet;
 
 /**
  * Integration tests that reuse unit tests.
@@ -58,8 +58,9 @@ public class CreateIndexCqlGeneratorIntegrationTests {
 
 		public BasicIntegrationTest() {
 
-			cassandraRule.before(CqlDataSet.fromClassPath(
-				"integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql").executeIn(this.keyspace));
+			cassandraRule.before(
+					CqlDataSet.fromClassPath("integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql")
+							.executeIn(this.keyspace));
 		}
 
 		@Override

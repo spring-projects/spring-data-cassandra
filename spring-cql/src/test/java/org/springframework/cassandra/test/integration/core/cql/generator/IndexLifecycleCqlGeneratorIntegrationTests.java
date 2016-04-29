@@ -15,17 +15,15 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
-import static org.springframework.cassandra.test.integration.core.cql.generator.CqlIndexSpecificationAssertions.assertIndex;
-import static org.springframework.cassandra.test.integration.core.cql.generator.CqlIndexSpecificationAssertions.assertNoIndex;
+import static org.springframework.cassandra.test.integration.core.cql.generator.CqlIndexSpecificationAssertions.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.cql.generator.CreateIndexCqlGeneratorUnitTests;
+import org.springframework.cassandra.core.cql.generator.DropIndexCqlGeneratorUnitTests;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.test.integration.CqlDataSet;
-import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCqlGeneratorTests;
-import org.springframework.cassandra.test.unit.core.cql.generator.DropIndexCqlGeneratorTests;
 
 /**
  * Integration tests that reuse unit tests.
@@ -36,33 +34,32 @@ import org.springframework.cassandra.test.unit.core.cql.generator.DropIndexCqlGe
  */
 public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-    private final static Logger log = LoggerFactory.getLogger(IndexLifecycleCqlGeneratorIntegrationTests.class);
+	private final static Logger log = LoggerFactory.getLogger(IndexLifecycleCqlGeneratorIntegrationTests.class);
 
 	@Before
 	public void setUp() throws Exception {
-		cassandraRule.execute(CqlDataSet.fromClassPath(
-                "integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql").executeIn(this.keyspace));
+		execute("integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace);
 	}
 
 	@Test
-    public void lifecycleTest() {
+	public void lifecycleTest() {
 
-        CreateIndexCqlGeneratorTests.BasicTest createTest = new CreateIndexCqlGeneratorTests.BasicTest();
-        DropIndexCqlGeneratorTests.BasicTest dropTest = new DropIndexCqlGeneratorTests.BasicTest();
-        DropIndexCqlGeneratorTests.IfExistsTest dropIfExists = new DropIndexCqlGeneratorTests.IfExistsTest();
+		CreateIndexCqlGeneratorUnitTests.BasicTest createTest = new CreateIndexCqlGeneratorUnitTests.BasicTest();
+		DropIndexCqlGeneratorUnitTests.BasicTest dropTest = new DropIndexCqlGeneratorUnitTests.BasicTest();
+		DropIndexCqlGeneratorUnitTests.IfExistsTest dropIfExists = new DropIndexCqlGeneratorUnitTests.IfExistsTest();
 
-        createTest.prepare();
-        dropTest.prepare();
-        dropIfExists.prepare();
+		createTest.prepare();
+		dropTest.prepare();
+		dropIfExists.prepare();
 
-        log.info(createTest.cql);
-        session.execute(createTest.cql);
+		log.info(createTest.cql);
+		session.execute(createTest.cql);
 
-        assertIndex(createTest.specification, keyspace, session);
+		assertIndex(createTest.specification, keyspace, session);
 
-        log.info(dropTest.cql);
-        session.execute(dropTest.cql);
+		log.info(dropTest.cql);
+		session.execute(dropTest.cql);
 
-        assertNoIndex(createTest.specification, keyspace, session);
-    }
+		assertNoIndex(createTest.specification, keyspace, session);
+	}
 }

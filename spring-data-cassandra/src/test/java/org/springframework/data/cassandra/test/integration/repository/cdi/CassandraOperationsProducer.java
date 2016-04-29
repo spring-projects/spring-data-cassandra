@@ -23,34 +23,35 @@ import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import com.datastax.driver.core.Cluster;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.Service;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.support.RandomKeySpaceName;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
-import org.springframework.cassandra.test.unit.support.Utils;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.test.integration.repository.User;
+import org.springframework.data.cassandra.test.integration.repository.simple.User;
+
+import com.datastax.driver.core.Cluster;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Service;
 
 /**
  * @author Mark Paluch
  */
 class CassandraOperationsProducer {
 
-	public final static String KEYSPACE_NAME = Utils.randomKeyspaceName();
+	public final static String KEYSPACE_NAME = RandomKeySpaceName.create();
 
 	@Produces
 	@Singleton
 	public Cluster createCluster() throws Exception {
-		     CassandraConnectionProperties properties = new CassandraConnectionProperties();
+		CassandraConnectionProperties properties = new CassandraConnectionProperties();
 
-		Cluster cluster = Cluster.builder().addContactPoint(properties.getCassandraHost()).withPort(properties.getCassandraPort()).build();
+		Cluster cluster = Cluster.builder().addContactPoint(properties.getCassandraHost())
+				.withPort(properties.getCassandraPort()).build();
 		return cluster;
 	}
 
@@ -60,10 +61,10 @@ class CassandraOperationsProducer {
 
 		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter();
 
-
 		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(cluster.connect(), cassandraConverter);
 
-		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(KEYSPACE_NAME).ifNotExists();
+		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(KEYSPACE_NAME)
+				.ifNotExists();
 		cassandraTemplate.execute(createKeyspaceSpecification);
 		cassandraTemplate.execute("USE " + KEYSPACE_NAME);
 

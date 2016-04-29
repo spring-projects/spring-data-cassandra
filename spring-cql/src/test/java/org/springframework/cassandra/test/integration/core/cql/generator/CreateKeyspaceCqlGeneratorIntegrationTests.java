@@ -15,13 +15,13 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
-import static org.springframework.cassandra.test.integration.core.cql.generator.CqlKeyspaceSpecificationAssertions.assertKeyspace;
+import static org.springframework.cassandra.test.integration.core.cql.generator.CqlKeyspaceSpecificationAssertions.*;
 
 import org.junit.Test;
+import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGeneratorUnitTests.BasicTest;
+import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGeneratorUnitTests.CreateKeyspaceTest;
+import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGeneratorUnitTests.NetworkTopologyTest;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.BasicTest;
-import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.CreateKeyspaceTest;
-import org.springframework.cassandra.test.unit.core.cql.generator.CreateKeyspaceCqlGeneratorTests.NetworkTopologyTest;
 
 /**
  * Integration tests that reuse unit tests.

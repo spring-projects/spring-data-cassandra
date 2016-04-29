@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.cdi;
 
-import org.springframework.data.cassandra.test.integration.repository.User;
+import org.springframework.data.cassandra.test.integration.repository.simple.User;
 import org.springframework.data.repository.CrudRepository;
 
 /**

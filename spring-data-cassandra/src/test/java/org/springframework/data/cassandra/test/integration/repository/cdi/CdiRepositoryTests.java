@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.repository.User;
+import org.springframework.data.cassandra.test.integration.repository.simple.User;
 
 /**
  * @author Mohsin Husen

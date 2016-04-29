@@ -26,6 +26,7 @@ import java.util.Map;
 import org.junit.rules.ExternalResource;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
+import org.springframework.cassandra.test.integration.support.CqlDataSet;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
@@ -35,7 +36,16 @@ import com.datastax.driver.core.Session;
 
 /**
  * Rule to provide a Cassandra context for integration tests. This rule can use/spin up either an embedded Cassandra
- * instance or use an external instance.
+ * instance or use an external instance. Typical usage:
+ *
+ * <pre>
+ * {
+ * 	public class MyIntegrationTest {
+ * 		&#064;Rule public CassandraRule rule = new CassandraRule(CONFIG). //
+ * 				before(new ClassPathCQLDataSet("CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", "keyspace"));
+ * 	}
+ * }
+ * </pre>
  *
  * @author Mark Paluch
  */

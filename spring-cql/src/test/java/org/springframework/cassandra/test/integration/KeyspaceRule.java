@@ -17,7 +17,7 @@ package org.springframework.cassandra.test.integration;
 
 import org.junit.rules.ExternalResource;
 import org.springframework.cassandra.core.SessionCallback;
-import org.springframework.cassandra.test.unit.support.Utils;
+import org.springframework.cassandra.support.RandomKeySpaceName;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 
@@ -29,8 +29,8 @@ import com.datastax.driver.core.Session;
  * Cassandra connection context. It can be used as {@link org.junit.ClassRule} and {@link org.junit.rules.TestRule}.
  * <p>
  * This rule maintains the keyspace throughout the test lifecycle. The keyspace is created when running the preparing
- * {@link #before()} methods. At the same time, the {@link #getSession() session} is logged into the created keyspace and
- * can be used for further interaction during the test. {@link #after()} the test is finished this rule drops the
+ * {@link #before()} methods. At the same time, the {@link #getSession() session} is logged into the created keyspace
+ * and can be used for further interaction during the test. {@link #after()} the test is finished this rule drops the
  * keyspace.
  * <p>
  * Neither {@link Cluster} nor {@link Session} should be closed outside by any caller otherwise the rule cannot perform
@@ -50,7 +50,7 @@ public class KeyspaceRule extends ExternalResource {
 	 * @param cassandraRule
 	 */
 	public KeyspaceRule(CassandraRule cassandraRule) {
-		this(cassandraRule, Utils.randomKeyspaceName());
+		this(cassandraRule, RandomKeySpaceName.create());
 	}
 
 	/**

@@ -22,7 +22,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 
 /**
- * Provides access to Cassandra connection properties.
+ * Cassandra connection properties using {@code config/cassandra-connection.properties}. Properties are generated during
+ * the build and can be override using system properties.
  *
  * @author Mark Paluch
  */

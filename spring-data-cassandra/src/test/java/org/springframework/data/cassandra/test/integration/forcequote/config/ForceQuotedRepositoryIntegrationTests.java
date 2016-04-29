@@ -1,99 +1,78 @@
+/*
+ * Copyright 2016 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.cassandra.test.integration.forcequote.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import org.springframework.data.cassandra.core.CassandraTemplate;
+/**
+ * @author Matthew T. Adams
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+public abstract class ForceQuotedRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-public class ForceQuotedRepositoryIntegrationTests {
+	@Autowired CassandraOperations template;
+	@Autowired ImplicitRepository implicitRepository;
+	@Autowired ImplicitPropertiesRepository implicitPropertiesRepository;
+	@Autowired ExplicitRepository explicitRepository;
+	@Autowired ExplicitPropertiesRepository explicitPropertiesRepository;
 
-	ImplicitRepository i;
-	ImplicitPropertiesRepository ip;
-	ExplicitRepository e;
-	ExplicitPropertiesRepository ep;
-	CassandraTemplate t;
+	ForceQuotedRepositoryTests tests;
 
+	@Before
 	public void before() {
-		t.deleteAll(Implicit.class);
+		tests = new ForceQuotedRepositoryTests();
+		tests.implicitRepository = implicitRepository;
+		tests.implicitPropertiesRepository = implicitPropertiesRepository;
+		tests.explicitRepository = explicitRepository;
+		tests.explicitPropertiesRepository = explicitPropertiesRepository;
+		tests.cassandraTemplate = template;
+
+		tests.before();
 	}
 
-	public String query(String columnName, String tableName, String keyColumnName, String key) {
-		return t.queryForObject(
-				String.format("select %s from %s where %s = '%s'", columnName, tableName, keyColumnName, key), String.class);
-	}
-
+	@Test
 	public void testImplicit() {
-		Implicit entity = new Implicit();
-		String key = entity.getPrimaryKey();
-
-		Implicit s = i.save(entity);
-		assertSame(s, entity);
-
-		Implicit f = i.findOne(key);
-		assertNotSame(f, entity);
-
-		String stringValue = query("stringvalue", "\"Implicit\"", "primarykey", f.getPrimaryKey());
-		assertEquals(f.getStringValue(), stringValue);
-
-		i.delete(key);
-
-		assertNull(i.findOne(key));
+		tests.testImplicit();
 	}
 
+	/**
+	 * Not a @Test -- used by subclasses!
+	 */
 	public void testExplicit(String tableName) {
-		Explicit entity = new Explicit();
-		String key = entity.getPrimaryKey();
-
-		Explicit s = e.save(entity);
-		assertSame(s, entity);
-
-		Explicit f = e.findOne(key);
-		assertNotSame(f, entity);
-
-		String stringValue = query("stringvalue", String.format("\"%s\"", tableName), "primarykey", f.getPrimaryKey());
-		assertEquals(f.getStringValue(), stringValue);
-
-		e.delete(key);
-
-		assertNull(e.findOne(key));
+		tests.testExplicit(tableName);
 	}
 
+	@Test
 	public void testImplicitProperties() {
-		ImplicitProperties entity = new ImplicitProperties();
-		String key = entity.getPrimaryKey();
-
-		ImplicitProperties s = ip.save(entity);
-		assertSame(s, entity);
-
-		ImplicitProperties f = ip.findOne(key);
-		assertNotSame(f, entity);
-
-		String stringValue = query("\"stringValue\"", "implicitproperties", "\"primaryKey\"", f.getPrimaryKey());
-		assertEquals(f.getStringValue(), stringValue);
-
-		ip.delete(key);
-
-		assertNull(ip.findOne(key));
+		tests.testImplicitProperties();
 	}
 
+	/**
+	 * Not a @Test -- used by subclasses!
+	 *
+	 * @see ForceQuotedRepositoryJavaConfigIntegrationTests#testExplicitPropertiesWithJavaValues()
+	 * @see ForceQuotedRepositoryXmlConfigIntegrationTests#testExplicitPropertiesWithXmlValues()
+	 */
 	public void testExplicitProperties(String stringValueColumnName, String primaryKeyColumnName) {
-		ExplicitProperties entity = new ExplicitProperties();
-		String key = entity.getPrimaryKey();
-
-		ExplicitProperties s = ep.save(entity);
-		assertSame(s, entity);
-
-		ExplicitProperties f = ep.findOne(key);
-		assertNotSame(f, entity);
-
-		String stringValue = query(String.format("\"%s\"", stringValueColumnName), "explicitproperties",
-				String.format("\"%s\"", primaryKeyColumnName), f.getPrimaryKey());
-		assertEquals(f.getStringValue(), stringValue);
-
-		ip.delete(key);
-
-		assertNull(ip.findOne(key));
+		tests.testExplicitProperties(stringValueColumnName, primaryKeyColumnName);
 	}
 }

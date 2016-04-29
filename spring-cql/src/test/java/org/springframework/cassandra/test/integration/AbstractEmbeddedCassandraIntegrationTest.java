@@ -20,6 +20,7 @@ import java.util.UUID;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.test.integration.support.CqlDataSet;
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.Cluster;
@@ -59,6 +60,11 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	 */
 	protected Cluster cluster;
 
+	/**
+	 * Creates a random UUID.
+	 *
+	 * @return
+	 */
 	public static String uuid() {
 		return UUID.randomUUID().toString();
 	}
