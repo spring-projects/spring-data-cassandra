@@ -27,6 +27,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Simple constant holder for a {@link SimpleTypeHolder} enriched with Cassandra specific simple types.
@@ -39,70 +40,120 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 	public static final Set<Class<?>> CASSANDRA_SIMPLE_TYPES;
 
-	private static final Map<Class<?>, Class<?>> primitiveTypesByWrapperType = new HashMap<Class<?>, Class<?>>(8);
-
-	private static final Map<Class<?>, DataType> dataTypesByJavaClass = new HashMap<Class<?>, DataType>();
-
-	private static final Map<DataType.Name, DataType> dataTypesByDataTypeName = new HashMap<DataType.Name, DataType>();
-
+	private static final Map<Class<?>, DataType> classToDataType;
+	private static final Map<DataType.Name, DataType> nameToDataType;
 
 	static {
 
-		primitiveTypesByWrapperType.put(Boolean.class, boolean.class);
-		primitiveTypesByWrapperType.put(Byte.class, byte.class);
-		primitiveTypesByWrapperType.put(Character.class, char.class);
-		primitiveTypesByWrapperType.put(Double.class, double.class);
-		primitiveTypesByWrapperType.put(Float.class, float.class);
-		primitiveTypesByWrapperType.put(Integer.class, int.class);
-		primitiveTypesByWrapperType.put(Long.class, long.class);
-		primitiveTypesByWrapperType.put(Short.class, short.class);
+		Map<Class<?>, Class<?>> primitiveWrappers = new HashMap<Class<?>, Class<?>>(8);
+		primitiveWrappers.put(Boolean.class, boolean.class);
+		primitiveWrappers.put(Byte.class, byte.class);
+		primitiveWrappers.put(Character.class, char.class);
+		primitiveWrappers.put(Double.class, double.class);
+		primitiveWrappers.put(Float.class, float.class);
+		primitiveWrappers.put(Integer.class, int.class);
+		primitiveWrappers.put(Long.class, long.class);
+		primitiveWrappers.put(Short.class, short.class);
 
-		Set<Class<?>> simpleTypes = new HashSet<Class<?>>();
-
-		for (DataType dataType : DataType.allPrimitiveTypes()) {
-
-			Class<?> javaClass = dataType.asJavaClass();
-			simpleTypes.add(javaClass);
-
-			dataTypesByJavaClass.put(javaClass, dataType);
-
-			Class<?> primitiveJavaClass = primitiveTypesByWrapperType.get(javaClass);
-			if (primitiveJavaClass != null) {
-				dataTypesByJavaClass.put(primitiveJavaClass, dataType);
-			}
-
-			dataTypesByDataTypeName.put(dataType.getName(), dataType);
-		}
-
-		dataTypesByJavaClass.put(String.class, DataType.text());
+		Set<Class<?>> simpleTypes = getCassandraPrimitiveTypes();
 		simpleTypes.add(Number.class);
 
+		classToDataType = Collections.unmodifiableMap(classToDataType(primitiveWrappers));
+		nameToDataType = Collections.unmodifiableMap(nameToDataType());
 		CASSANDRA_SIMPLE_TYPES = Collections.unmodifiableSet(simpleTypes);
 	}
 
 	public static final SimpleTypeHolder HOLDER = new CassandraSimpleTypeHolder();
 
-	public static DataType getDataTypeFor(DataType.Name name) {
-		return dataTypesByDataTypeName.get(name);
+	/**
+	 * @return the map between {@link Name} and {@link DataType}.
+	 */
+	private static Map<Name, DataType> nameToDataType() {
+
+		Map<Name, DataType> dataTypesByDataTypeName = new HashMap<Name, DataType>(16);
+
+		for (DataType dataType : DataType.allPrimitiveTypes()) {
+			dataTypesByDataTypeName.put(dataType.getName(), dataType);
+		}
+
+		return dataTypesByDataTypeName;
 	}
 
+	/**
+	 * @return the map between {@link Class} and {@link DataType}.
+	 * @param primitiveWrappers
+	 */
+	private static Map<Class<?>, DataType> classToDataType(Map<Class<?>, Class<?>> primitiveWrappers) {
+
+		Map<Class<?>, DataType> dataTypesByJavaClass = new HashMap<Class<?>, DataType>(16);
+
+		for (DataType dataType : DataType.allPrimitiveTypes()) {
+
+			Class<?> javaClass = dataType.asJavaClass();
+			dataTypesByJavaClass.put(javaClass, dataType);
+
+			Class<?> primitiveJavaClass = primitiveWrappers.get(javaClass);
+			if (primitiveJavaClass != null) {
+				dataTypesByJavaClass.put(primitiveJavaClass, dataType);
+			}
+		}
+
+		// override String to text datatype as String is used multiple times
+		dataTypesByJavaClass.put(String.class, DataType.text());
+
+		return dataTypesByJavaClass;
+	}
+
+	/**
+	 * Returns a {@link Set} containing all Cassandra primitive types.
+	 *
+	 * @return
+	 */
+	private static Set<Class<?>> getCassandraPrimitiveTypes() {
+
+		Set<Class<?>> simpleTypes = new HashSet<Class<?>>();
+		for (DataType dataType : DataType.allPrimitiveTypes()) {
+
+			Class<?> javaClass = dataType.asJavaClass();
+			simpleTypes.add(javaClass);
+		}
+		return simpleTypes;
+	}
+
+	/**
+	 * Returns the {@link DataType} for a {@link DataType.Name}.
+	 *
+	 * @param name
+	 * @return
+	 */
+	public static DataType getDataTypeFor(DataType.Name name) {
+		return nameToDataType.get(name);
+	}
+
+	/**
+	 * Returns the default {@link DataType} for a {@link Class}.
+	 *
+	 * @param javaClass
+	 * @return
+	 */
 	public static DataType getDataTypeFor(Class<?> javaClass) {
 
 		if (javaClass.isEnum()) {
 			return DataType.varchar();
 		}
 
-		return dataTypesByJavaClass.get(javaClass);
+		return classToDataType.get(javaClass);
 	}
 
 	public static DataType.Name[] getDataTypeNamesFrom(List<TypeInformation<?>> arguments) {
+
 		DataType.Name[] array = new DataType.Name[arguments.size()];
 		for (int i = 0; i != array.length; i++) {
 			TypeInformation<?> typeInfo = arguments.get(i);
 			DataType dataType = getDataTypeFor(typeInfo.getType());
 			if (dataType == null) {
-				throw new InvalidDataAccessApiUsageException("not found appropriate primitive DataType for type = '"
-						+ typeInfo.getType());
+				throw new InvalidDataAccessApiUsageException(
+						String.format("Did not find appropriate primitive DataType for type '%s'", typeInfo.getType()));
 			}
 			array[i] = dataType.getName();
 		}
