@@ -22,6 +22,36 @@ package org.springframework.cassandra.core;
  */
 public enum ConsistencyLevel {
 
-	ANY, ONE, TWO, THREE, QUOROM, LOCAL_QUOROM, EACH_QUOROM, ALL, LOCAL_ONE, SERIAL, LOCAL_SERIAL
+	ANY, ONE, TWO, THREE,
+	/**
+	 * @deprecated Use {@link #QUORUM}
+	 */
+	@Deprecated QUOROM,
 
+	/**
+	 * @deprecated Use {@link #LOCAL_QUORUM}
+	 */
+	@Deprecated LOCAL_QUOROM,
+
+	/**
+	 * @deprecated Use {@link #EACH_QUORUM}
+	 */
+	@Deprecated EACH_QUOROM, //
+
+	ALL, LOCAL_ONE, SERIAL, LOCAL_SERIAL,
+
+	/**
+	 * @since 1.5
+	 */
+	QUORUM,
+
+	/**
+	 * @since 1.5
+	 */
+	LOCAL_QUORUM,
+
+	/**
+	 * @since 1.5
+	 */
+	EACH_QUORUM,
 }
