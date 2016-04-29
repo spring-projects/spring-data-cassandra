@@ -53,12 +53,15 @@ public final class ConsistencyLevelResolver {
 			case ANY:
 				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.ANY;
 				break;
+			case EACH_QUORUM:
 			case EACH_QUOROM:
 				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM;
 				break;
+			case LOCAL_QUORUM:
 			case LOCAL_QUOROM:
 				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
 				break;
+			case QUORUM:
 			case QUOROM:
 				resolvedLevel = com.datastax.driver.core.ConsistencyLevel.QUORUM;
 				break;
