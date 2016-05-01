@@ -3,167 +3,215 @@
 
 The Cassandra support contains a wide range of features which are summarized below.
 
-* Spring configuration support using Java based @Configuration classes or an XML namespace for a Cassandra driver instance and replica sets
-* CassandraTemplate helper class that increases productivity performing common Cassandra operations. Includes integrated object mapping between CQL Tables and POJOs.
-* Exception translation into Spring's portable Data Access Exception hierarchy
-* Feature Rich Object Mapping integrated with Spring's Conversion Service
-* Annotation based mapping metadata but extensible to support other metadata formats
-* Persistence and mapping lifecycle events
-* Java based Query, Criteria, and Update DSLs
-* Automatic implementation of Repository interfaces including support for custom finder methods.
+* Spring configuration support using Java-based @Configuration classes or the XML namespace to create
+a Cassandra instance with replica sets using the driver.
+* CassandraTemplate helper class that increases productivity by handling common Cassandra operations properly.
+Includes integrated object mapping between CQL Tables and POJOs.
+* Exception translation into Spring's portable http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[Data Access Exception Hierarchy].
+* Feature rich object mapping integrated with Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#core-convert[Conversion Service].
+* Annotation-based mapping metadata but extensible to support other metadata formats.
+* Persistence and mapping lifecycle events.
+* Java-based Query, Criteria, and Update DSLs.
+* Automatic implementation of `Repository` interfaces including support for custom finder methods.
 
-For most tasks you will find yourself using `CassandraTemplate` or the Repository support that both leverage the rich mapping functionality. CassandraTemplate is the place to look for accessing functionality such as incrementing counters or ad-hoc CRUD operations. CassandraTemplate also provides callback methods so that it is easy for you to get a hold of the low level API artifacts such as `com.datastax.driver.core.Session` to communicate directly with Cassandra. The goal with naming conventions on various API artifacts is to copy those in the base DataStax Java driver so you can easily map your existing knowledge onto the Spring APIs.
+For most data oriented tasks you will use the `CassandraTemplate` or the `Repository` support, which leverage the
+rich mapping functionality. `CassandraTemplate` is commonly used to increment counters or perform ad-hoc CRUD
+operations. `CassandraTemplate` also provides callback methods making it easy to get a hold of low-level API objects
+such as `com.datastax.driver.core.Session` allowing you to communicate directly with Cassandra. Spring Data Cassandra
+uses consistent naming conventions on objects in various APIs to those found in the DataStax Java Driver so that they
+are familiar and so you can  map your existing knowledge onto the Spring APIs.
 
 [[cassandra-getting-started]]
 == Getting Started
 
-Spring Data for Apache Cassandra uses the DataStax Java Driver version 2.X, which supports DataStax Enterprise 4/Cassandra 2.0, and Java SE 6 or higher. The latest commercial release (2.X as of this writing) is recommended. An easy way to bootstrap setting up a working environment is to create a Spring based project in http://spring.io/tools/sts[STS].
+Spring Data Cassandra uses the DataStax Java Driver version 2.X, which supports DataStax Enterprise 4/Apache Cassandra 2.0
+with Java SE 6 or higher. The latest commercial or open source release is recommended. The easiest way to setup
+a working environment is to create a Spring-based project in http://spring.io/tools/sts[STS].
 
-First you need to set up a running Cassandra server.
+First, you need to setup a running Cassandra server.
 
-To create a Spring project in STS go to File -> New -> Spring Template Project -> Simple Spring Utility Project -> press Yes when prompted. Then enter a project and a package name such as org.spring.cassandra.example.
+To create a Spring project in STS go to File -> New -> Spring Template Project -> Simple Spring Utility Project ->
+and press "Yes" when prompted.  Then, enter a project and a package name such as "org.spring.data.cassandra.example".
 
-Then add the following to pom.xml dependencies section.
+Then add the following to the `pom.xml` dependencies section.
 
 [source,xml]
 ----
 <dependencies>
 
-  <!-- other dependency elements omitted -->
+  <!-- other dependencies omitted -->
 
   <dependency>
     <groupId>org.springframework.data</groupId>
     <artifactId>spring-data-cassandra</artifactId>
-    <version>1.0.0.RELEASE</version>
+    <version>1.4.1.RELEASE</version>
   </dependency>
 
 </dependencies>
 ----
 
-Also change the version of Spring in the pom.xml to be
+Also, change the version of Spring in `pom.xml` to be
 
 [source,xml]
 ----
-<spring.framework.version>3.2.8.RELEASE</spring.framework.version>
+<spring.framework.version>4.2.5.RELEASE</spring.framework.version>
 ----
 
-You will also need to add the location of the Spring Milestone repository for maven to your pom.xml which is at the same level of your <dependencies/> element
+If you are using a milestone version (e.g. M1 or RC1) of Spring Data Cassandra, you will also need to include the
+Spring Milestone repository declaration to your `pom.xml`, like so...
 
 [source,xml]
 ----
 <repositories>
   <repository>
     <id>spring-milestone</id>
-    <name>Spring Maven MILESTONE Repository</name>
+    <name>Spring Milestones Maven Repository</name>
     <url>http://repo.spring.io/libs-milestone</url>
   </repository>
 </repositories>
 ----
 
-The repository is also http://shrub.appspot.com/maven.springframework.org/milestone/org/springframework/data/[browseable here].
+If you are on the bleeding edge and use build snapshots, then you will need to include the Spring Snapshots repository
+declaration to your `pom.xml`, like so...
 
-Create a simple Employee class to persist.
+[source,xml]
+----
+<repositories>
+  <repository>
+    <id>spring-snapshot</id>
+    <name>Spring Snapshots Maven Repository</name>
+    <url>http://repo.spring.io/libs-snapshot</url>
+  </repository>
+</repositories>
+----
+
+You can also browse the Spring repositories https://repo.spring.io/webapp/#/home[here].
+
+Now we will create a simple little Java application that stores and reads a domain object to/from Cassandra.
+
+First, create a simple domain object class to persist.
 
 [source,java]
 ----
-package org.spring.cassandra.example; 
- 
-import org.springframework.data.cassandra.mapping.PrimaryKey; 
-import org.springframework.data.cassandra.mapping.Table; 
- 
-@Table 
-public class Person { 
- 
- @PrimaryKey 
- private String id; 
- 
- private String name; 
- private int age; 
- 
- public Person(String id, String name, int age) { 
-  this.id = id; 
-  this.name = name; 
-  this.age = age; 
- } 
- 
- public String getId() { 
-  return id; 
- } 
- 
- public String getName() { 
-  return name; 
- } 
- 
- public int getAge() { 
-  return age; 
- } 
- 
- @Override 
- public String toString() { 
-  return "Person [id=" + id + ", name=" + name + ", age=" + age + "]"; 
- } 
- 
+package org.spring.data.cassandra.example;
+
+import org.springframework.data.cassandra.mapping.PrimaryKey;
+import org.springframework.data.cassandra.mapping.Table;
+
+@Table
+public class Person {
+
+	@PrimaryKey
+	private final String id;
+
+	private final String name;
+	private final int age;
+
+	public Person(String id, String name, int age) {
+		this.id = id;
+		this.name = name;
+		this.age = age;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("{ @type = %1$s, id = %2$s, name = %3$s, age = %4$d }",
+			getClass().getName(), getId(), getName(), getAge());
+	}
 }
 ----
 
-And a main application to run
+Next, create the main application to run.
 
 [source,java]
 ----
-package org.spring.cassandra.example; 
- 
-import java.net.InetAddress; 
-import java.net.UnknownHostException; 
- 
-import org.slf4j.Logger; 
-import org.slf4j.LoggerFactory; 
-import org.springframework.data.cassandra.core.CassandraOperations; 
-import org.springframework.data.cassandra.core.CassandraTemplate; 
- 
-import com.datastax.driver.core.Cluster; 
-import com.datastax.driver.core.Session; 
-import com.datastax.driver.core.querybuilder.QueryBuilder; 
-import com.datastax.driver.core.querybuilder.Select; 
- 
-public class CassandraApp { 
- 
- private static final Logger LOG = LoggerFactory.getLogger(CassandraApp.class); 
- 
- private static Cluster cluster; 
- private static Session session; 
- 
- public static void main(String[] args) { 
- 
-  try { 
- 
-   cluster = Cluster.builder().addContactPoints(InetAddress.getLocalHost()).build(); 
- 
-   session = cluster.connect("mykeyspace"); 
- 
-   CassandraOperations cassandraOps = new CassandraTemplate(session); 
- 
-   cassandraOps.insert(new Person("1234567890", "David", 40)); 
- 
-   Select s = QueryBuilder.select().from("person"); 
-   s.where(QueryBuilder.eq("id", "1234567890")); 
- 
-   LOG.info(cassandraOps.queryForObject(s, Person.class).getId()); 
- 
-   cassandraOps.truncate("person"); 
- 
-  } catch (UnknownHostException e) { 
-   e.printStackTrace(); 
-  } 
- 
- } 
-} 
+package org.spring.data.cassandra.example;
+
+import java.io.Closeable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.CassandraTemplate;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+
+public class CassandraApplication {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(CassandraApplication.class);
+
+	private static Cluster cluster;
+	private static Session session;
+
+	protected static boolean close(Closeable obj) {
+		if (obj != null) {
+			try {
+				obj.close();
+				return true;
+			}
+			catch (Exception ignore) {
+			}
+		}
+
+		return false;
+	}
+
+	protected static Person newPerson(String name, int age) {
+		return newPerson(UUID.randomUUID().toString(), name, age);
+	}
+
+	protected static Person newPerson(String id, String name, int age) {
+		return new Person(id, name, age);
+	}
+
+	public static void main(String[] args) throws UnknownHostException {
+		try {
+			cluster = Cluster.builder().addContactPoints(InetAddress.getLocalHost()).build();
+			session = cluster.connect("mykeyspace");
+
+			CassandraOperations template = new CassandraTemplate(session);
+
+			Person jonDoe = template.insert(newPerson("Jon Doe", 40));
+
+			Select selectStatement = QueryBuilder.select().from("person");
+			selectStatement.where(QueryBuilder.eq("id", jonDoe.getId()));
+
+			LOGGER.info(template.queryForObject(selectStatement, Person.class).getId());
+
+			template.truncate("person");
+		}
+		finally {
+			close(session);
+			close(cluster);
+		}
+	}
+}
 ----
 
 Even in this simple example, there are a few things to observe.
 
-* You can create an instance of CassandraTemplate with a Cassandra Session, derived from the Cluster.
-* You must annotate your POJO as a Cassandra @Table, and also annotate the @PrimaryKey. Optionally you can override these mapping names to match your Cassandra database table and column names.
-* You can use CQL String, or the DataStax QueryBuilder to construct you queries.
+* You can create an instance of `CassandraTemplate` with a Cassandra `Session`, derived from a `Cluster`.
+* You must annotate your POJO as a Cassandra `@Table` and also annotate the `@PrimaryKey`. Optionally, you can
+override these mapping names to match your Cassandra database table and column names.
+* You can either use a CQL String or the DataStax `QueryBuilder` API to construct you queries.
 
 == Examples Repository
 
@@ -175,9 +223,10 @@ After the initial release of Spring Data for Apache Cassandra 1.0.0, we will sta
 [[cassandra-connectors.ext_properties]]
 === Externalize Connection Properties
 
-Create a properties file with the information you need to connect to Cassandra. The contact points are keyspace are the minimal required fields, but port is added here for clarity.
+Create a properties file containing the information needed to connect to Cassandra. `contactpoints` and `keyspace`
+are required fields; `port` has been added for clarity.
 
-We will call this cassandra.properties
+We will call this properties file, `cassandra.properties`.
 
 [source]
 ----
@@ -186,7 +235,7 @@ cassandra.port=9042
 cassandra.keyspace=showcase
 ----
 
-We will use spring to load these properties into the Spring Context in the next two examples.
+We will use Spring to load these properties into the Spring context in the next two examples.
 
 [[cassandra-connectors.xmlconfig]]
 === XML Configuration
