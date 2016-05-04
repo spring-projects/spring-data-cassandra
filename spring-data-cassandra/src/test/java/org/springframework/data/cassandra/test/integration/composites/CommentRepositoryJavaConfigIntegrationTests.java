@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Base class for Java config tests for {@link UserRepository}.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -40,11 +41,6 @@ public class CommentRepositoryJavaConfigIntegrationTests extends AbstractSpringD
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = CommentRepository.class)
 	public static class Config extends IntegrationTestConfig {
-
-		// @Override
-		// protected String getKeyspaceName() {
-		// return CommentRepositoryJavaConfigIntegrationTests.class.getSimpleName();
-		// }
 
 		@Override
 		public String[] getEntityBasePackages() {

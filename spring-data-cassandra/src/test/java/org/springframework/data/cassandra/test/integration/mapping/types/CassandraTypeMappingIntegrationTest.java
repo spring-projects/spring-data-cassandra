@@ -10,7 +10,7 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * see the License for the specific language governing permissions and
  * limitations under the License.
  */
 
@@ -28,31 +28,27 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.mapping.CassandraType;
-import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.LocalDate;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 /**
  * Integration tests for type mapping using {@link CassandraOperations}.
@@ -69,7 +65,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 
 		@Override
 		public String[] getEntityBasePackages() {
-			return new String[] { AllPossibleTypes.class.getPackage().getName() };
+			return new String[] { AllPossibleTypes.class.getPackage().getName(), CounterEntity.class.getPackage().getName() };
 		}
 	}
 
@@ -81,7 +77,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteInetAddress() throws Exception {
@@ -96,7 +92,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteUUID() {
@@ -111,10 +107,10 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
-	public void shouldReadAndWriteBoxedLongShort() {
+	public void shouldReadAndWriteBoxedShort() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBoxedShort(Short.MAX_VALUE);
@@ -126,7 +122,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWritePrimitiveShort() {
@@ -141,7 +137,37 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-271
+	 */
+	@Test
+	public void shouldReadAndWriteBoxedByte() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setBoxedByte(Byte.MAX_VALUE);
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getBoxedByte(), is(equalTo(entity.getBoxedByte())));
+	}
+
+	/**
+	 * @see DATACASS-271
+	 */
+	@Test
+	public void shouldReadAndWritePrimitiveByte() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setPrimitiveByte(Byte.MAX_VALUE);
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getPrimitiveByte(), is(equalTo(entity.getPrimitiveByte())));
+	}
+
+	/**
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteBoxedLong() {
@@ -156,7 +182,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWritePrimitiveLong() {
@@ -171,7 +197,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteBoxedInteger() {
@@ -186,7 +212,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWritePrimitiveInteger() {
@@ -201,7 +227,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteBoxedFloat() {
@@ -216,7 +242,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWritePrimitiveFloat() {
@@ -231,7 +257,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteBoxedDouble() {
@@ -246,7 +272,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWritePrimitiveDouble() {
@@ -261,7 +287,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteBoxedBoolean() {
@@ -276,7 +302,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWritePrimitiveBoolean() {
@@ -291,10 +317,11 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
+	 * @see DATACASS-271
 	 */
 	@Test
-	public void shouldReadAndWriteDate() {
+	public void shouldReadAndWriteTimestamp() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setTimestamp(new Date(1));
@@ -306,7 +333,22 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-271
+	 */
+	@Test
+	public void shouldReadAndWriteDate() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setDate(LocalDate.fromDaysSinceEpoch(1));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getDate(), is(equalTo(entity.getDate())));
+	}
+
+	/**
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteBigInteger() {
@@ -321,7 +363,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteBigDecimal() {
@@ -336,7 +378,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteBlob() {
@@ -354,7 +396,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteSetOfString() {
@@ -369,7 +411,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteEmptySetOfString() {
@@ -384,7 +426,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteListOfString() {
@@ -399,7 +441,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteEmptyListOfString() {
@@ -414,7 +456,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteMapOfString() {
@@ -429,7 +471,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteEmptyMapOfString() {
@@ -444,7 +486,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * see DATACASS-280.
+	 * @see DATACASS-280
 	 */
 	@Test
 	public void shouldReadAndWriteEnum() {
@@ -458,52 +500,59 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 		assertThat(loaded.getAnEnum(), is(equalTo(entity.getAnEnum())));
 	}
 
-	@Table
-	@Data
-	@NoArgsConstructor
-	@RequiredArgsConstructor
-	public static class AllPossibleTypes {
+	/**
+	 * @see DATACASS-271
+	 */
+	@Test
+	public void shouldReadAndWriteTime() {
 
-		@PrimaryKey @NonNull private String id;
+		// writing of time is not supported with Insert/Update statements as they mix up types.
+		// The only way to insert a time right now seems a PreparedStatement
+		String id = "1";
+		long time = 21312214L;
 
-		private InetAddress inet;
+		PreparedStatement prepare = cassandraOperations.getSession()
+				.prepare("INSERT INTO timeentity (id, time) values(?,?)");
+		BoundStatement boundStatement = prepare.bind(id, time);
+		cassandraOperations.execute(boundStatement);
 
-		@CassandraType(type = Name.UUID) private UUID uuid;
+		TimeEntity loaded = cassandraOperations.selectOneById(TimeEntity.class, id);
 
-		@CassandraType(type = Name.INT) private Number justNumber;
-
-		@CassandraType(type = Name.INT) private Short boxedShort;
-		@CassandraType(type = Name.INT) private short primitiveShort;
-
-		@CassandraType(type = Name.BIGINT) private Long boxedLong;
-		@CassandraType(type = Name.BIGINT) private long primitiveLong;
-
-		private Integer boxedInteger;
-		private int primitiveInteger;
-
-		private Float boxedFloat;
-		private float primitiveFloat;
-
-		private Double boxedDouble;
-		private double primitiveDouble;
-
-		private Boolean boxedBoolean;
-		private boolean primitiveBoolean;
-
-		private Date timestamp;
-		private BigDecimal bigDecimal;
-		private BigInteger bigInteger;
-		private ByteBuffer blob;
-
-		private Set<String> setOfString;
-		private List<String> listOfString;
-		private Map<String, String> mapOfString;
-
-		private Condition anEnum;
-
+		assertThat(loaded.getTime(), is(equalTo(time)));
 	}
 
-	public static enum Condition {
-		MINT, USED;
+	/**
+	 * @see DATACASS-271
+	 */
+	@Test(expected = InvalidQueryException.class)
+	public void insertFailsOnWriteTime() {
+
+		// writing of time is not supported with Insert/Update statements as they mix up types.
+		// The only way to insert a time right now seems a PreparedStatement
+		String id = "1";
+		long time = 21312214L;
+
+		Insert insert = QueryBuilder.insertInto("timeentity").value("id", id).value("time", time);
+		cassandraOperations.getSession().execute(insert);
+	}
+
+	/**
+	 * @see DATACASS-285
+	 */
+	@Test
+	@Ignore("Counter columns are not supported with Spring Data Cassandra as the value of counter columns can only be incremented/decremented, not set")
+	public void shouldReadAndWriteCounter() {
+
+		CounterEntity entity = new CounterEntity("1");
+		entity.setCount(1);
+
+		cassandraOperations.update(entity);
+		CounterEntity loaded = cassandraOperations.selectOneById(CounterEntity.class, entity.getId());
+
+		assertThat(loaded.getCount(), is(equalTo(entity.getCount())));
+	}
+
+	public enum Condition {
+		MINT;
 	}
 }

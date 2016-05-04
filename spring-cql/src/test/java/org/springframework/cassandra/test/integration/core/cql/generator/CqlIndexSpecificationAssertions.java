@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.springframework.cassandra.core.keyspace.IndexDescriptor;
@@ -26,24 +27,40 @@ import com.datastax.driver.core.TableMetadata;
 /**
  * @author David Webb
  * @author Matthew T. Adams
+ * @author Antoine Toulme
  */
 public class CqlIndexSpecificationAssertions {
 
+	/**
+	 * Assert the existence of an index using the index name.
+	 *
+	 * @param expected
+	 * @param keyspace
+	 * @param session
+	 */
 	public static void assertIndex(IndexDescriptor expected, String keyspace, Session session) {
 		TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
 				.getTable(expected.getTableName().toCql());
-	    
-		IndexMetadata imd = tableMetadata.getIndex(expected.getName().toCql());
 
-		assertEquals(expected.getName(), imd == null ? null : imd.getName());
+		IndexMetadata indexMetadata = tableMetadata.getIndex(expected.getName().toCql());
+
+		assertThat(indexMetadata, is(not(nullValue())));
+		assertThat(indexMetadata.getName(), is(equalTo(expected.getName().toCql())));
 	}
 
+	/**
+	 * Assert the absence of an index using the index name.
+	 *
+	 * @param expected
+	 * @param keyspace
+	 * @param session
+	 */
 	public static void assertNoIndex(IndexDescriptor expected, String keyspace, Session session) {
 		TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
 				.getTable(expected.getTableName().toCql());
-	    
-		IndexMetadata imd = tableMetadata.getIndex(expected.getName().toCql());
 
-		assertNull(imd);
+		IndexMetadata indexMetadata = tableMetadata.getIndex(expected.getName().toCql());
+
+		assertThat(indexMetadata, is(nullValue()));
 	}
 }

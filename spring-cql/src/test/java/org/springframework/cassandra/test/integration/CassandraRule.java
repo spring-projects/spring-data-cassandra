@@ -27,11 +27,13 @@ import org.junit.rules.ExternalResource;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
 import org.springframework.cassandra.test.integration.support.CqlDataSet;
+import org.springframework.cassandra.test.integration.support.FastShutdownNettyOptions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.Session;
 
 /**
@@ -48,6 +50,7 @@ import com.datastax.driver.core.Session;
  * </pre>
  *
  * @author Mark Paluch
+ * @since 1.5
  */
 public class CassandraRule extends ExternalResource {
 
@@ -70,7 +73,7 @@ public class CassandraRule extends ExternalResource {
 	 * @param yamlConfigurationResource name of the configuration resource, must not be {@literal null} and not empty
 	 */
 	public CassandraRule(String yamlConfigurationResource) {
-		this(yamlConfigurationResource, EmbeddedCassandraServerHelper.DEFAULT_STARTUP_TIMEOUT);
+		this(yamlConfigurationResource, EmbeddedCassandraServerHelper.DEFAULT_STARTUP_TIMEOUT_MS);
 	}
 
 	/**
@@ -310,7 +313,15 @@ public class CassandraRule extends ExternalResource {
 				port = properties.getCassandraPort();
 			}
 			cassandraPort = port;
-			cluster = new Cluster.Builder().addContactPoints(hostIp).withPort(port).build();
+
+			QueryOptions queryOptions = new QueryOptions();
+			queryOptions.setRefreshSchemaIntervalMillis(0);
+
+			cluster = new Cluster.Builder().addContactPoints(hostIp).//
+					withPort(port).//
+					withQueryOptions(queryOptions).//
+					withNettyOptions(FastShutdownNettyOptions.INSTANCE).//
+					build();
 		} else {
 			cluster = parent.cluster;
 			cassandraPort = parent.cassandraPort;

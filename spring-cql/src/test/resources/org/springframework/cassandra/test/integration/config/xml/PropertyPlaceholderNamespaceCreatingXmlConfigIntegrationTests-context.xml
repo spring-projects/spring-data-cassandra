@@ -9,9 +9,12 @@
 	<context:property-placeholder
 		location="classpath:/org/springframework/cassandra/test/integration/config/xml/ppncxct.properties" />
 
-	<bean id="authProvider" class="com.datastax.driver.auth.DseAuthProvider" />
+	<bean id="authProvider" class="com.datastax.driver.core.PlainTextAuthProvider">
+		<constructor-arg index="0" value="foo" />
+		<constructor-arg index="1" value="bar" />
+	</bean>
 
-	<!-- 
+	<!--
 	<bean id="loadBalancingPolicy"
 		class="com.datastax.driver.core.policies.DCAwareRoundRobinPolicy">
 		<constructor-arg name="localDc" value="${lb.policy.dcAware.localDc}" />

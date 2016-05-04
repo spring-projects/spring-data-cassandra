@@ -61,6 +61,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Matthew T. Adams
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Antoine Toulme
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.context.ApplicationContextAware
  * @see org.springframework.beans.factory.BeanClassLoaderAware

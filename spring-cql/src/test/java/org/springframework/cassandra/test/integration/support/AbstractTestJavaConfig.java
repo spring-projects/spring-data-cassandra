@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,14 @@ package org.springframework.cassandra.test.integration.support;
 import org.springframework.cassandra.config.java.AbstractSessionConfiguration;
 import org.springframework.context.annotation.Configuration;
 
+import com.datastax.driver.core.NettyOptions;
+import com.datastax.driver.core.QueryOptions;
+
 /**
+ * Java-based configuration for integration tests using defaults for a smooth test run.
+ *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @Configuration
 public abstract class AbstractTestJavaConfig extends AbstractSessionConfiguration {
@@ -29,5 +35,21 @@ public abstract class AbstractTestJavaConfig extends AbstractSessionConfiguratio
 	@Override
 	protected int getPort() {
 		return PROPERTIES.getCassandraPort();
+	}
+
+	@Override
+	protected NettyOptions getNettyOptions() {
+		return FastShutdownNettyOptions.INSTANCE;
+	}
+
+	@Override
+	protected QueryOptions getQueryOptions() {
+
+		// The driver blocks otherwise up to 1 sec on schema refreshes.
+		// see also https://datastax-oss.atlassian.net/browse/JAVA-1120
+		// ideally, this issue will be resolved with Cassandra Java Driver 3.0.2
+		QueryOptions queryOptions = new QueryOptions();
+		queryOptions.setRefreshSchemaIntervalMillis(0);
+		return queryOptions;
 	}
 }

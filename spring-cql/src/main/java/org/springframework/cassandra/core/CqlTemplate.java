@@ -89,6 +89,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author David Webb
  * @author Matthew Adams
  * @author Ryan Scheidter
+ * @author Antoine Toulme
  */
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 

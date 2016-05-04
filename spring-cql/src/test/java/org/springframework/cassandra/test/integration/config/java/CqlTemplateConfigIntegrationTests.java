@@ -23,22 +23,23 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.config.java.AbstractCqlTemplateConfiguration;
 import org.springframework.cassandra.core.CqlTemplate;
-import org.springframework.cassandra.support.RandomKeySpaceName;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.support.FastShutdownNettyOptions;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 
+import com.datastax.driver.core.NettyOptions;
 import com.datastax.driver.core.Session;
 
 /**
+ * Integration tests for {@link AbstractCqlTemplateConfiguration}.
+ *
  * @author Matthews T. Adams
  * @author Oliver Gierke
  * @author Mark Paluch
  */
 public class CqlTemplateConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
-
-	public static final String KEYSPACE_NAME = RandomKeySpaceName.create();
 
 	@Configuration
 	public static class Config extends AbstractCqlTemplateConfiguration {
@@ -52,6 +53,11 @@ public class CqlTemplateConfigIntegrationTests extends AbstractEmbeddedCassandra
 		protected int getPort() {
 			return cassandraEnvironment.getPort();
 		}
+
+		@Override
+		protected NettyOptions getNettyOptions() {
+			return FastShutdownNettyOptions.INSTANCE;
+		}
 	}
 
 	Session session;
@@ -59,6 +65,7 @@ public class CqlTemplateConfigIntegrationTests extends AbstractEmbeddedCassandra
 
 	@Before
 	public void setUp() {
+
 		this.context = new AnnotationConfigApplicationContext(Config.class);
 		this.session = context.getBean(Session.class);
 	}

@@ -54,6 +54,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Assignment;
 import com.datastax.driver.core.querybuilder.BuiltStatement;
@@ -384,14 +385,29 @@ public class MappingCassandraConverterUnitTests {
 
 	/**
 	 * @see DATACASS-280
+	 * @see DATACASS-271
 	 */
 	@Test
-	public void shouldReadDateCorrectly() throws UnknownHostException {
+	public void shouldReadTimestampCorrectly() throws UnknownHostException {
 
 		Date date = new Date(1);
 		when(rowMock.getTimestamp(0)).thenReturn(date);
 
 		Date result = mappingCassandraConverter.readRow(Date.class, rowMock);
+
+		assertThat(result, is(equalTo(date)));
+	}
+
+	/**
+	 * @see DATACASS-271
+	 */
+	@Test
+	public void shouldReadDateCorrectly() throws UnknownHostException {
+
+		LocalDate date = LocalDate.fromDaysSinceEpoch(1234);
+		when(rowMock.getDate(0)).thenReturn(date);
+
+		LocalDate result = mappingCassandraConverter.readRow(LocalDate.class, rowMock);
 
 		assertThat(result, is(equalTo(date)));
 	}
@@ -497,8 +513,7 @@ public class MappingCassandraConverterUnitTests {
 
 		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) private Condition condition;
 
-		public EnumCompositePrimaryKey() {
-		}
+		public EnumCompositePrimaryKey() {}
 
 		public EnumCompositePrimaryKey(Condition condition) {
 			this.condition = condition;
@@ -532,8 +547,7 @@ public class MappingCassandraConverterUnitTests {
 
 		@PrimaryKey private EnumCompositePrimaryKey key;
 
-		public CompositeKeyThing() {
-		}
+		public CompositeKeyThing() {}
 
 		public CompositeKeyThing(EnumCompositePrimaryKey key) {
 			this.key = key;

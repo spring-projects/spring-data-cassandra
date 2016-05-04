@@ -31,6 +31,7 @@ import org.springframework.data.convert.ReadingConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.NumberUtils;
 
+import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.Row;
 
 /**
@@ -55,6 +56,7 @@ abstract class CassandraConverters {
 
 		List<Object> converters = new ArrayList<Object>();
 
+		converters.add(RowToCassandraLocalDateConverter.INSTANCE);
 		converters.add(RowToNumberConverterFactory.INSTANCE);
 		converters.add(RowToBooleanConverter.INSTANCE);
 		converters.add(RowToDateConverter.INSTANCE);
@@ -182,6 +184,21 @@ abstract class CassandraConverters {
 		@Override
 		public UUID convert(Row row) {
 			return row.getUUID(0);
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link Row}s to their Cassandra {@link LocalDate} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	@ReadingConverter
+	public enum RowToCassandraLocalDateConverter implements Converter<Row, LocalDate> {
+		INSTANCE;
+
+		@Override
+		public LocalDate convert(Row row) {
+			return row.getDate(0);
 		}
 	}
 }

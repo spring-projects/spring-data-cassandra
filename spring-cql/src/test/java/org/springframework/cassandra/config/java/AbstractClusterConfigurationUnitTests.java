@@ -245,7 +245,7 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(getConfiguration(cluster).getMetricsOptions(), is(nullValue()));
+		assertThat(getConfiguration(cluster).getMetricsOptions().isEnabled(), is(false));
 	}
 
 	/**
