@@ -34,6 +34,7 @@ import com.datastax.driver.core.Row;
  * @author Matthew T. Adams
  * @author David Webb
  * @author Mark Paluch
+ * @author Antoine Toulme
  */
 @ReadingConverter
 public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
@@ -47,16 +48,18 @@ public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
 			return null;
 		}
 
+		CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 		ColumnDefinitions cols = row.getColumnDefinitions();
 		Map<String, Object> map = new HashMap<String, Object>(cols.size());
 
 		for (Definition def : cols.asList()) {
 
 			String name = def.getName();
-			map.put(
-					name,
-					row.isNull(name) ? null : CodecRegistry.DEFAULT_INSTANCE.codecFor(def.getType())
-							.deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
+
+			map.put(name,
+					row.isNull(name) ? null
+							: codecRegistry.codecFor(def.getType()).deserialize(row.getBytesUnsafe(name),
+									ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return map;

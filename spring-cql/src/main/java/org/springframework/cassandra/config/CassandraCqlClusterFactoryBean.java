@@ -42,6 +42,7 @@ import com.datastax.driver.core.AuthProvider;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.LatencyTracker;
+import com.datastax.driver.core.NettyOptions;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.ProtocolVersion;
@@ -93,6 +94,7 @@ public class CassandraCqlClusterFactoryBean
 	private AuthProvider authProvider;
 	private String username;
 	private String password;
+	private NettyOptions nettyOptions;
 	private ProtocolVersion protocolVersion;
 
 	// Policies
@@ -189,6 +191,10 @@ public class CassandraCqlClusterFactoryBean
 			}
 		}
 
+		if (nettyOptions != null) {
+			builder.withNettyOptions(nettyOptions);
+		}
+
 		if (loadBalancingPolicy != null) {
 			builder.withLoadBalancingPolicy(loadBalancingPolicy);
 		}
@@ -275,8 +281,8 @@ public class CassandraCqlClusterFactoryBean
 
 				for (Object spec : specs) {
 					String cql = (spec instanceof CreateKeyspaceSpecification)
-						? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql()
-						: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
+							? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql()
+							: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
 
 					if (log.isDebugEnabled()) {
 						log.debug("executing raw CQL [{}]", cql);
@@ -329,7 +335,7 @@ public class CassandraCqlClusterFactoryBean
 	}
 
 	/**
-	 * Set the {@link PoolingOptions}.
+	 * Set the {@link PoolingOptions} to configure the connection pooling behavior.
 	 */
 	public void setPoolingOptions(PoolingOptions poolingOptions) {
 		this.poolingOptions = poolingOptions;
@@ -352,7 +358,7 @@ public class CassandraCqlClusterFactoryBean
 	}
 
 	/**
-	 * Set the {@link QueryOptions}.
+	 * Set the {@link QueryOptions} to tune to defaults for individual queries.
 	 */
 	public void setQueryOptions(QueryOptions queryOptions) {
 		this.queryOptions = queryOptions;
@@ -366,21 +372,31 @@ public class CassandraCqlClusterFactoryBean
 	}
 
 	/**
-	 * Set the {@link LoadBalancingPolicy}.
+	 * Set the {@link NettyOptions} used by a client to customize the driver's underlying Netty layer.
+	 *
+	 * @param nettyOptions
+	 * @since 1.5
+	 */
+	public void setNettyOptions(NettyOptions nettyOptions) {
+		this.nettyOptions = nettyOptions;
+	}
+
+	/**
+	 * Set the {@link LoadBalancingPolicy} that decides which Cassandra hosts to contact for each new query.
 	 */
 	public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
 		this.loadBalancingPolicy = loadBalancingPolicy;
 	}
 
 	/**
-	 * Set the {@link ReconnectionPolicy}.
+	 * Set the {@link ReconnectionPolicy} that decides how often the reconnection to a dead node is attempted.
 	 */
 	public void setReconnectionPolicy(ReconnectionPolicy reconnectionPolicy) {
 		this.reconnectionPolicy = reconnectionPolicy;
 	}
 
 	/**
-	 * Set the {@link RetryPolicy}.
+	 * Set the {@link RetryPolicy} that defines a default behavior to adopt when a request fails.
 	 */
 	public void setRetryPolicy(RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;

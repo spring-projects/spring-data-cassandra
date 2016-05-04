@@ -35,11 +35,6 @@ public class UserRepositoryJavaConfigIntegrationTests extends UserRepositoryInte
 	@EnableCassandraRepositories(basePackageClasses = UserRepository.class)
 	public static class Config extends IntegrationTestConfig {
 
-		// @Override
-		// protected String getKeyspaceName() {
-		// return UserRepositoryJavaConfigIntegrationTests.class.getSimpleName();
-		// }
-
 		@Override
 		public String[] getEntityBasePackages() {
 			return new String[] { User.class.getPackage().getName() };

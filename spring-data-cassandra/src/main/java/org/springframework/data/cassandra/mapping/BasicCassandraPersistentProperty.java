@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2013-2016 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,23 +47,27 @@ import com.datastax.driver.core.DataType;
 
 /**
  * Cassandra specific {@link org.springframework.data.mapping.model.AnnotationBasedPersistentProperty} implementation.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Antoine Toulme
  */
 public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentProperty<CassandraPersistentProperty>
 		implements CassandraPersistentProperty, ApplicationContextAware {
 
 	protected ApplicationContext context;
 	protected StandardEvaluationContext spelContext;
+
 	/**
 	 * An unmodifiable list of this property's column names.
 	 */
 	protected List<CqlIdentifier> columnNames;
+
 	/**
 	 * An unmodifiable list of this property's explicitly set column names.
 	 */
 	protected List<CqlIdentifier> explicitColumnNames;
+
 	/**
 	 * Whether this property has been explicitly instructed to force quote column names.
 	 */
@@ -71,7 +75,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	/**
 	 * Creates a new {@link BasicCassandraPersistentProperty}.
-	 * 
+	 *
 	 * @param field
 	 * @param propertyDescriptor
 	 * @param owner
@@ -140,17 +144,17 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public Ordering getPrimaryKeyOrdering() {
 
-		PrimaryKeyColumn anno = findAnnotation(PrimaryKeyColumn.class);
+		PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
 
-		return anno == null ? null : anno.ordering();
+		return primaryKeyColumn == null ? null : primaryKeyColumn.ordering();
 	}
 
 	@Override
 	public DataType getDataType() {
 
-		CassandraType annotation = findAnnotation(CassandraType.class);
-		if (annotation != null) {
-			return getDataTypeFor(annotation);
+		CassandraType cassandraType = findAnnotation(CassandraType.class);
+		if (cassandraType != null) {
+			return getDataTypeFor(cassandraType);
 		}
 
 		if (isMap()) {

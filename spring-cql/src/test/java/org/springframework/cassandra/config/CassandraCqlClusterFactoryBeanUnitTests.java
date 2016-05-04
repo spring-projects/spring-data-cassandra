@@ -24,6 +24,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.AuthProvider;
 import com.datastax.driver.core.Configuration;
+import com.datastax.driver.core.JdkSSLOptions;
 import com.datastax.driver.core.PlainTextAuthProvider;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
@@ -257,7 +258,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 	@Test
 	public void shouldSetSslOptions() throws Exception {
 
-		SSLOptions sslOptions = new SSLOptions();
+		SSLOptions sslOptions = JdkSSLOptions.builder().build();
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
 		bean.setSslEnabled(true);
@@ -278,7 +279,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		bean.setMetricsEnabled(false);
 		bean.afterPropertiesSet();
 
-		assertThat(getConfiguration(bean).getMetricsOptions(), is(nullValue()));
+		assertThat(getConfiguration(bean).getMetricsOptions().isEnabled(), is(false));
 	}
 
 	/**

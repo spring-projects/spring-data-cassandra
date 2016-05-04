@@ -15,13 +15,16 @@
  */
 package org.springframework.cassandra.test.integration.config;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.config.CassandraCqlClusterFactoryBean;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.support.FastShutdownNettyOptions;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.ProtocolVersion;
 
@@ -29,8 +32,9 @@ import com.datastax.driver.core.ProtocolVersion;
  * Unit tests for {@link CassandraCqlClusterFactoryBean}.
  *
  * @author Kirk Clemens
+ * @author Mark Paluch
  */
-public class CassandraCqlClusterFactoryBeanIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
+public class CassandraCqlClusterFactoryBeanIntegrationTests {
 
 	private CassandraCqlClusterFactoryBean cassandraCqlClusterFactoryBean;
 
@@ -47,27 +51,26 @@ public class CassandraCqlClusterFactoryBeanIntegrationTests extends AbstractEmbe
 	@Test
 	public void configuredProtocolVersionShouldBeSet() throws Exception {
 
-		cassandraCqlClusterFactoryBean.setProtocolVersion(ProtocolVersion.V4);
-		cassandraCqlClusterFactoryBean.setPort(cassandraEnvironment.getPort());
+		cassandraCqlClusterFactoryBean.setNettyOptions(FastShutdownNettyOptions.INSTANCE);
+		cassandraCqlClusterFactoryBean.setProtocolVersion(ProtocolVersion.V2);
 		cassandraCqlClusterFactoryBean.afterPropertiesSet();
 
-		assertEquals(ProtocolVersion.V4, getProtocolVersionEnum(cassandraCqlClusterFactoryBean));
+		assertEquals(ProtocolVersion.V2, getProtocolVersionEnum(cassandraCqlClusterFactoryBean));
 	}
 
 	@Test
 	public void defaultProtocolVersionShouldBeSet() throws Exception {
 
-		cassandraCqlClusterFactoryBean.setPort(cassandraEnvironment.getPort());
 		cassandraCqlClusterFactoryBean.afterPropertiesSet();
 
-		assertEquals(ProtocolVersion.NEWEST_SUPPORTED, getProtocolVersionEnum(cassandraCqlClusterFactoryBean));
+		assertThat(getProtocolVersionEnum(cassandraCqlClusterFactoryBean), is(nullValue()));
 	}
 
 	private ProtocolVersion getProtocolVersionEnum(CassandraCqlClusterFactoryBean cassandraCqlClusterFactoryBean)
 			throws Exception {
 
 		// initialize connection factory
-		cassandraCqlClusterFactoryBean.getObject().init();
-		return cassandraCqlClusterFactoryBean.getObject().getConfiguration().getProtocolOptions().getProtocolVersion();
+		return (ProtocolVersion) ReflectionTestUtils.getField(
+				cassandraCqlClusterFactoryBean.getObject().getConfiguration().getProtocolOptions(), "initialProtocolVersion");
 	}
 }

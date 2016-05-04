@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.cassandra.core.converter;
 
 import java.util.ArrayList;
@@ -34,6 +33,7 @@ import com.datastax.driver.core.Row;
  * @author Matthew T. Adams
  * @author Stefan Birkner
  * @author Mark Paluch
+ * @author Antoine Toulme
  */
 @ReadingConverter
 public class RowToListConverter implements Converter<Row, List<Object>> {
@@ -47,13 +47,16 @@ public class RowToListConverter implements Converter<Row, List<Object>> {
 			return null;
 		}
 
+		CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 		ColumnDefinitions cols = row.getColumnDefinitions();
 		List<Object> list = new ArrayList<Object>(cols.size());
 
 		for (Definition def : cols.asList()) {
 			String name = def.getName();
-			list.add(row.isNull(name) ? null : CodecRegistry.DEFAULT_INSTANCE.codecFor(def.getType()).deserialize(
-					row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
+
+			list.add(row.isNull(name) ? null
+					: codecRegistry.codecFor(def.getType()).deserialize(row.getBytesUnsafe(name),
+							ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return list;

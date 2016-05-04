@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.datastax.driver.core.AuthProvider;
+import com.datastax.driver.core.NettyOptions;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.QueryOptions;
@@ -61,6 +62,7 @@ public abstract class AbstractClusterConfiguration {
 		bean.setReconnectionPolicy(getReconnectionPolicy());
 		bean.setRetryPolicy(getRetryPolicy());
 		bean.setMetricsEnabled(getMetricsEnabled());
+		bean.setNettyOptions(getNettyOptions());
 
 		bean.setPoolingOptions(getPoolingOptions());
 		bean.setQueryOptions(getQueryOptions());
@@ -156,6 +158,16 @@ public abstract class AbstractClusterConfiguration {
 	 */
 	protected boolean getMetricsEnabled() {
 		return CassandraCqlClusterFactoryBean.DEFAULT_METRICS_ENABLED;
+	}
+
+	/**
+	 * Returns the {@link NettyOptions}. Defaults to {@link NettyOptions#DEFAULT_INSTANCE}.
+	 *
+	 * @return
+	 * @since 1.5
+	 */
+	protected NettyOptions getNettyOptions() {
+		return NettyOptions.DEFAULT_INSTANCE;
 	}
 
 	/**
