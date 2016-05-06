@@ -43,7 +43,6 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 		// CDI container is booted before the @Rule can be triggered.
 		// Ensure that we have a usable Cassandra instance otherwise the container won't boot
 		// because it needs a CassandraOperations with a working Session/Cluster
-		startCassandraIfNeeded();
 
 		cdiContainer = CdiTestContainerLoader.getCdiContainer();
 		cdiContainer.startApplicationScope();

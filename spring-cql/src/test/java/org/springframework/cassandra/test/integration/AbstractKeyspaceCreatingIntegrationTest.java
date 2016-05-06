@@ -15,20 +15,22 @@
  */
 package org.springframework.cassandra.test.integration;
 
-import org.junit.After;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.ClassRule;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Session.State;
 
 /**
- * Abstract base integration test class that creates a keyspace
+ * Abstract base integration test class that provides a keyspace during the test runtime.
+ * <p>
+ * Keyspaces are created and removed by this base class. The {@link #getKeyspace() keyspace} and {@link #getSession()
+ * session} are provided by this class during the test lifecycle (before test/test/after test). The keyspace is retained
+ * until the whole test class is completed. Any tables created in a test will be visible in subsequent tests of the same
+ * class.
+ * <p>
+ * This class is intended to be subclassed by integration test classes.
  *
  * @author Matthew T. Adams
  * @author David Webb
@@ -36,7 +38,11 @@ import com.datastax.driver.core.Session.State;
  */
 public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
-	static Logger log = LoggerFactory.getLogger(AbstractKeyspaceCreatingIntegrationTest.class);
+	/**
+	 * Class rule to prepare a keyspace to give tests a keyspace context. The keyspace name is random and changes per
+	 * test.
+	 */
+	@ClassRule public final static KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment);
 
 	/**
 	 * The session that's connected to the keyspace used in the current instance's test.
@@ -48,78 +54,49 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 	 */
 	protected final String keyspace;
 
+	/**
+	 * Creates a new {@link AbstractKeyspaceCreatingIntegrationTest}.
+	 */
 	public AbstractKeyspaceCreatingIntegrationTest() {
-		this(randomKeyspaceName());
+		this(keyspaceRule.getKeyspaceName());
 	}
 
-	public AbstractKeyspaceCreatingIntegrationTest(String keyspace) {
+	private AbstractKeyspaceCreatingIntegrationTest(final String keyspace) {
+
 		Assert.hasText(keyspace, "Keyspace must not be empty");
+
 		this.keyspace = keyspace;
+		this.session = keyspaceRule.getSession();
+
 		cassandraRule.before(new SessionCallback<Object>() {
+
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
-				AbstractKeyspaceCreatingIntegrationTest.this.session = s;
-				ensureKeyspaceAndSession(s);
+
+				if (!keyspace.equals(s.getLoggedKeyspace())) {
+					s.execute(String.format("USE %s;", keyspace));
+				}
 				return null;
 			}
 		});
-
 	}
 
-	private void ensureKeyspaceAndSession(Session session) {
-
-		// ensure that test keyspace exists
-		if (keyspace != null) {
-			// see if we need to create the keyspace
-			KeyspaceMetadata kmd = cluster.getMetadata().getKeyspace(keyspace);
-			if (kmd == null) { // then create keyspace
-
-				String cql = "CREATE KEYSPACE " + keyspace
-						+ " WITH durable_writes = false AND replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};";
-				log.info("creating keyspace {} via CQL [{}]", keyspace, cql);
-
-				system.execute(cql);
-			}
-		}
-
-		debugSession();
-		log.info("session already connected to a keyspace; attempting to change to use {}", keyspace);
-
-		String cql = "USE " + (keyspace == null ? "system" : keyspace) + ";";
-		log.debug(cql);
-
-		session.execute(cql);
-		log.info("now using keyspace " + keyspace);
+	/**
+	 * Returns the {@link Session}. The session is logged into the {@link #getKeyspace()}.
+	 *
+	 * @return
+	 */
+	public Session getSession() {
+		return session;
 	}
 
-	protected void debugSession() {
-
-		if (log.isDebugEnabled()) {
-			if (session == null) {
-				log.warn("Session is null...cannot debug that");
-				return;
-			}
-
-			State state = session.getState();
-
-			for (Host h : state.getConnectedHosts()) {
-
-				log.debug(String.format("Session Host dc [%s], rack [%s], ver [%s], state [%s]", h.getDatacenter(), h.getRack(),
-						h.getCassandraVersion(), h.getState()));
-			}
-		}
-	}
-
-	@After
-	public void dropKeyspaceAfterTest() {
-
-		if (keyspace != null && session != null) {
-
-			session.execute("USE system");
-			log.info("dropping keyspace {} ...", keyspace);
-			dropKeyspace(keyspace);
-			log.info("dropped keyspace {}", keyspace);
-		}
+	/**
+	 * Returns the keyspace name.
+	 *
+	 * @return
+	 */
+	public String getKeyspace() {
+		return keyspace;
 	}
 
 	/**

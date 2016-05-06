@@ -145,27 +145,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.cassandraunit</groupId>
-				<artifactId>cassandra-unit-spring</artifactId>
-				<version>${cassandra-unit.version}</version>
-				<exclusions>
-					<exclusion>
-						<artifactId>cassandra-all</artifactId>
-						<groupId>org.apache.cassandra</groupId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.datastax.cassandra</groupId>
-						<artifactId>cassandra-driver-core</artifactId>
-					</exclusion>
-					<exclusion>
-						<artifactId>slf4j-log4j12</artifactId>
-						<groupId>org.slf4j</groupId>
-					</exclusion>
-				</exclusions>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
 				<groupId>javax.el</groupId>
 				<artifactId>el-api</artifactId>
 				<version>${el.version}</version>
@@ -192,14 +171,6 @@
 				<version>3.1</version>
 				<scope>test</scope>
 			</dependency>
-
-			<dependency>
-				<groupId>org.hectorclient</groupId>
-				<artifactId>hector-core</artifactId>
-				<version>1.1-4</version>
-				<scope>test</scope>
-			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 
@@ -221,10 +192,6 @@
 		<dependency>
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-dse</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.cassandraunit</groupId>
-			<artifactId>cassandra-unit-spring</artifactId>
 		</dependency>
 	</dependencies>
 

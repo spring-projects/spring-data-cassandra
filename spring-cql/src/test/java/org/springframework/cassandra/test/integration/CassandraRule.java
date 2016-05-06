@@ -23,12 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cassandraunit.CQLDataLoader;
-import org.cassandraunit.dataset.CQLDataSet;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.rules.ExternalResource;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
 import org.springframework.dao.DataAccessException;
@@ -56,6 +51,7 @@ public class CassandraRule extends ExternalResource {
 
 	private Session session;
 	private Cluster cluster;
+	private CassandraRule parent;
 
 	/**
 	 * Creates a new {@link CassandraRule} and allows the use of a config file.
@@ -73,42 +69,62 @@ public class CassandraRule extends ExternalResource {
 	 * @param startUpTimeout
 	 */
 	public CassandraRule(String configurationFileName, long startUpTimeout) {
+
+		Assert.hasText(configurationFileName, "Configuration file name must not be empty!");
+
 		this.configurationFileName = configurationFileName;
 		this.startUpTimeout = startUpTimeout;
 	}
 
+	/**
+	 * Creates a new {@link CassandraRule} using a parent {@link CassandraRule} to preserve cluster/connection facilities.
+	 *
+	 * @param parent
+	 */
+	private CassandraRule(CassandraRule parent) {
+
+		this.configurationFileName = null;
+		this.startUpTimeout = -1;
+		this.parent = parent;
+	}
 
 	/**
-	 * Add a {@link CQLDataSet} to execute before each test run.
+	 * Add a {@link CqlDataSet} to execute before each test run.
 	 *
 	 * @param cqlDataSet must not be {@literal null}
 	 * @return the rule
 	 */
-	public CassandraRule before(CQLDataSet cqlDataSet) {
+	public CassandraRule before(CqlDataSet cqlDataSet) {
 		return before(each(), cqlDataSet);
 	}
 
 	/**
-	 * Add a {@link CQLDataSet} to execute before the test run.
+	 * Add a {@link CqlDataSet} to execute before the test run.
 	 *
 	 * @param invocationMode must not be {@literal null}
 	 * @param cqlDataSet must not be {@literal null}
 	 * @return the rule
 	 */
-	public CassandraRule before(InvocationMode invocationMode, final CQLDataSet cqlDataSet) {
+	public CassandraRule before(InvocationMode invocationMode, final CqlDataSet cqlDataSet) {
 
 		Assert.notNull(cqlDataSet, "CQLDataSet must not be null");
+
 		SessionCallback<Void> sessionCallback = new SessionCallback<Void>() {
 			@Override
 			public Void doInSession(Session s) throws DataAccessException {
-				CQLDataLoader dataLoader = new CQLDataLoader(session);
-				dataLoader.load(cqlDataSet);
+				load(s, cqlDataSet);
 				return null;
 			}
 		};
 
 		before(invocationMode, sessionCallback);
 		return this;
+	}
+
+	public void execute(CqlDataSet cqlDataSet) {
+
+		Assert.notNull(cqlDataSet, "CQLDataSet must not be null");
+		load(session, cqlDataSet);
 	}
 
 	/**
@@ -120,6 +136,7 @@ public class CassandraRule extends ExternalResource {
 	public CassandraRule before(final SessionCallback<?> sessionCallback) {
 
 		Assert.notNull(sessionCallback, "SessionCallback must not be null");
+
 		return before(each(), sessionCallback);
 	}
 
@@ -133,25 +150,26 @@ public class CassandraRule extends ExternalResource {
 	public CassandraRule before(InvocationMode invocationMode, final SessionCallback<?> sessionCallback) {
 
 		Assert.notNull(sessionCallback, "SessionCallback must not be null");
+
 		before.add((SessionCallback<Void>) sessionCallback);
 		invocationModeMap.put(sessionCallback, invocationMode);
 		return this;
 	}
 
 	/**
-	 * Add a {@link CQLDataSet} to execute before the test run.
+	 * Add a {@link CqlDataSet} to execute before the test run.
 	 *
 	 * @param cqlDataSet must not be {@literal null}
 	 * @return the rule
 	 */
-	public CassandraRule after(final CQLDataSet cqlDataSet) {
+	public CassandraRule after(final CqlDataSet cqlDataSet) {
 
 		Assert.notNull(cqlDataSet, "CQLDataSet must not be null");
+
 		after.add(new SessionCallback<Void>() {
 			@Override
 			public Void doInSession(Session s) throws DataAccessException {
-				CQLDataLoader dataLoader = new CQLDataLoader(session);
-				dataLoader.load(cqlDataSet);
+				load(session, cqlDataSet);
 				return null;
 			}
 		});
@@ -161,15 +179,51 @@ public class CassandraRule extends ExternalResource {
 
 	@Override
 	public void before() throws Exception {
-		startCassandraIfNeeded();
 
-		/* create structure and load data */
-		load();
+		startCassandraIfNeeded();
+		setupConnection();
+		executeBeforeHooks();
 	}
 
-	void startCassandraIfNeeded() throws Exception {
+	@Override
+	protected void after() {
 
-		if (properties.getCassandraType() == CassandraConnectionProperties.CassandraType.EMBEDDED) {
+		super.after();
+		executeAfterHooks();
+		cleanupConnection();
+	}
+
+	/**
+	 * Returns the {@link Cluster}.
+	 *
+	 * @return
+	 */
+	public Cluster getCluster() {
+		return cluster;
+	}
+
+	/**
+	 * Returns the {@link Session}. The session state can be initialized and pointing to a keyspace other than
+	 * {@code system}.
+	 *
+	 * @return
+	 */
+	public Session getSession() {
+		return session;
+	}
+
+	/**
+	 * Creates a {@link CassandraRule} for each test instance. Derived
+	 *
+	 * @return
+	 */
+	public CassandraRule testInstance() {
+		return new CassandraRule(this);
+	}
+
+	private void startCassandraIfNeeded() throws Exception {
+
+		if (parent == null && properties.getCassandraType() == CassandraConnectionProperties.CassandraType.EMBEDDED) {
 
 			/* start an embedded Cassandra instance*/
 			if (!System.getProperties().containsKey("com.sun.management.jmxremote.port")) {
@@ -178,18 +232,18 @@ public class CassandraRule extends ExternalResource {
 
 			if (configurationFileName != null) {
 				EmbeddedCassandraServerHelper.startEmbeddedCassandra(configurationFileName, startUpTimeout);
-			} else {
-				EmbeddedCassandraServerHelper.startEmbeddedCassandra(startUpTimeout);
 			}
 		}
 	}
 
-	/**
-	 * Load the environment.
-	 */
-	protected void load() {
+	private void executeAfterHooks() {
 
-		setupConnection();
+		for (SessionCallback<Void> sessionCallback : after) {
+			sessionCallback.doInSession(session);
+		}
+	}
+
+	private void executeBeforeHooks() {
 
 		for (SessionCallback<Void> sessionCallback : before) {
 
@@ -207,42 +261,50 @@ public class CassandraRule extends ExternalResource {
 	}
 
 	private void setupConnection() {
-		String hostIp;
-		int port;
 
-		if (properties.getCassandraType() == CassandraConnectionProperties.CassandraType.EMBEDDED) {
-			hostIp = EmbeddedCassandraServerHelper.getHost();
-			port = EmbeddedCassandraServerHelper.getNativeTransportPort();
+		if (parent == null) {
+			String hostIp;
+			int port;
+
+			if (properties.getCassandraType() == CassandraConnectionProperties.CassandraType.EMBEDDED) {
+				hostIp = EmbeddedCassandraServerHelper.getHost();
+				port = EmbeddedCassandraServerHelper.getNativeTransportPort();
+			} else {
+				hostIp = properties.getCassandraHost();
+				port = properties.getCassandraPort();
+			}
+
+			cluster = new Cluster.Builder().addContactPoints(hostIp).withPort(port).build();
 		} else {
-			hostIp = properties.getCassandraHost();
-			port = properties.getCassandraPort();
+			cluster = parent.cluster;
 		}
 
-		cluster = new Cluster.Builder().addContactPoints(hostIp).withPort(port).build();
 		session = cluster.connect();
 	}
 
-	@Override
-	protected void after() {
+	private void cleanupConnection() {
 
-		super.after();
-
-		for (SessionCallback<Void> sessionCallback : after) {
-			sessionCallback.doInSession(session);
+		if (parent == null) {
+			session.close();
+			cluster.closeAsync();
+			cluster = null;
+		} else {
+			session.closeAsync();
 		}
 
-		session.close();
-		cluster.close();
 		session = null;
-		cluster = null;
 	}
 
-	public Session getSession() {
-		return session;
-	}
+	private void load(Session session, final CqlDataSet cqlDataSet) {
 
-	public Cluster getCluster() {
-		return cluster;
+
+		if(cqlDataSet.getKeyspaceName() != null && !cqlDataSet.getKeyspaceName().equals(session.getLoggedKeyspace())){
+			session.execute(String.format("USE %s;", cqlDataSet.getKeyspaceName()));
+		}
+
+		for (String statement : cqlDataSet.getCqlStatements()) {
+			session.execute(statement);
+		}
 	}
 
 	/**

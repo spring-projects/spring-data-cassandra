@@ -47,8 +47,9 @@ class CassandraOperationsProducer {
 	public CassandraOperations createCassandraOperations() throws Exception {
 
 		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter();
+
 		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(AbstractEmbeddedCassandraIntegrationTest
-				.cluster().connect(), cassandraConverter);
+				.createCluster().connect(), cassandraConverter);
 
 		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(KEYSPACE_NAME).ifNotExists();
 		cassandraTemplate.execute(createKeyspaceSpecification);

@@ -28,7 +28,6 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
-import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -51,6 +50,7 @@ import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.test.integration.CqlDataSet;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.CollectionUtils;
 
@@ -81,6 +81,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	private static Logger log = LoggerFactory.getLogger(CQLOperationsTest.class);
 
 	private CqlOperations cqlTemplate;
+
 	/*
 	 * Objects used for test data
 	 */
@@ -90,13 +91,11 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	final Object[] o2 = new Object[]{"2345", "War and Peace", "Russian Dude", new Integer(456)};
 	final Object[] o3 = new Object[]{"3456", "Jane Ayre", "Charlotte", new Integer(456)};
 
-	{
-		cassandraRule.before(new ClassPathCQLDataSet(
-			"cassandraOperationsTest-cql-dataload.cql", false, false, this.keyspace));
-	}
-
 	@Before
 	public void setupTemplate() {
+
+		cassandraRule.execute(CqlDataSet.fromClassPath(
+			"cassandraOperationsTest-cql-dataload.cql").executeIn(this.keyspace));
 		this.cqlTemplate = new CqlTemplate(session);
 	}
 

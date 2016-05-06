@@ -20,9 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.config.java.AbstractCqlTemplateConfiguration;
 import org.springframework.cassandra.core.CqlTemplate;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
-import org.springframework.cassandra.test.unit.support.Utils;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -34,16 +33,14 @@ import com.datastax.driver.core.Session;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class CqlTemplateConfigIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
-
-	public static final String KEYSPACE_NAME = Utils.randomKeyspaceName();
+public class CqlTemplateConfigIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
 	@Configuration
 	public static class Config extends AbstractCqlTemplateConfiguration {
 
 		@Override
 		protected String getKeyspaceName() {
-			return KEYSPACE_NAME;
+			return "system";
 		}
 
 		@Override
@@ -51,24 +48,19 @@ public class CqlTemplateConfigIntegrationTest extends AbstractKeyspaceCreatingIn
 			return PROPS.getCassandraPort();
 		}
 	}
-	
+
 	Session session;
 	ConfigurableApplicationContext context;
 
-	public CqlTemplateConfigIntegrationTest() {
-		super(KEYSPACE_NAME);
-	}
-	
 	@Before
 	public void setUp() {
 		this.context = new AnnotationConfigApplicationContext(Config.class);
 		this.session = context.getBean(Session.class);
 	}
-	
+
 	@After
 	public void tearDown() {
 		context.close();
-		dropKeyspaceAfterTest();
 	}
 
 	@Test

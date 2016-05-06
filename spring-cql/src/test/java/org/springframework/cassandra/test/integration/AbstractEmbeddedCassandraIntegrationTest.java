@@ -17,72 +17,70 @@ package org.springframework.cassandra.test.integration;
 
 import java.util.UUID;
 
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
-import org.springframework.cassandra.test.unit.support.Utils;
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 /**
- * Abstract base integration test class that starts an embedded Cassandra instance.
+ * Abstract base integration test class that starts an embedded Cassandra instance. Test clients can use the
+ * {@link #cluster} instance to create sessions and get access. Expect the {@link #cluster} instance to be closed once
+ * the test has been run.
+ * <p>
+ * This class is intended to be subclassed by integration test classes.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class AbstractEmbeddedCassandraIntegrationTest {
+public abstract class AbstractEmbeddedCassandraIntegrationTest {
+
+	/**
+	 * Initiate a Cassandra environment in test class scope.
+	 */
+	@ClassRule public final static CassandraRule cassandraEnvironment = new CassandraRule("embedded-cassandra.yaml");
+
+	/**
+	 * Initiate a Cassandra environment in test scope.
+	 */
+	@Rule public final CassandraRule cassandraRule = cassandraEnvironment.testInstance()
+			.before(new SessionCallback<Object>() {
+				@Override
+				public Object doInSession(Session s) throws DataAccessException {
+					AbstractEmbeddedCassandraIntegrationTest.this.cluster = s.getCluster();
+					return null;
+				}
+			});
 
 	protected static CassandraConnectionProperties PROPS = new CassandraConnectionProperties();
-	private static String CASSANDRA_CONFIG = "embedded-cassandra.yaml";
 
 	/**
 	 * The {@link Cluster} that's connected to Cassandra.
 	 */
 	protected Cluster cluster;
 
-	/**
-	 * The session connected to the system keyspace.
-	 */
-	protected Session system;
-
-	@Rule public final CassandraRule cassandraRule = new CassandraRule(CASSANDRA_CONFIG)
-			.before(new SessionCallback<Object>() {
-				@Override
-				public Object doInSession(Session s) throws DataAccessException {
-					AbstractEmbeddedCassandraIntegrationTest.this.cluster = s.getCluster();
-					AbstractEmbeddedCassandraIntegrationTest.this.system = s;
-					return null;
-				}
-			});
-
-	public static String randomKeyspaceName() {
-		return Utils.randomKeyspaceName();
-	}
-
 	public static String uuid() {
 		return UUID.randomUUID().toString();
 	}
 
-	public static Cluster cluster() {
-		return Cluster.builder().addContactPoint(PROPS.getCassandraHost()).withPort(PROPS.getCassandraPort()).build();
+	/**
+	 * Returns the {@link Cluster}.
+	 *
+	 * @return
+	 */
+	public Cluster getCluster() {
+		return cluster;
 	}
 
 	/**
-	 * Starts the embedded Cassandra instance if it's needed.
+	 * Creates a new {@link Cluster}.
 	 *
-	 * @throws Exception
+	 * @return
 	 */
-	@BeforeClass
-	public static void startCassandraIfNeeded() throws Exception {
-
-		// initialize Cassandra Rule here to start before anything else is started.
-		// A @Rule would be the better option but there one thing to solve before:
-		// The Spring container boots before the TestRule.before method is called
-		// - a custom runner might not be the best solution, so that's the only pain-point in starting the embedded server.
-
-		new CassandraRule(CASSANDRA_CONFIG).startCassandraIfNeeded();
+	public static Cluster createCluster() {
+		return Cluster.builder().addContactPoint(PROPS.getCassandraHost()).withPort(PROPS.getCassandraPort()).build();
 	}
 }
