@@ -13,64 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cassandra.core.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class CollectionUtils {
+public abstract class CollectionUtils extends org.springframework.util.CollectionUtils {
 
-	@SuppressWarnings("unchecked")
-	public static <T> T[] toArray(Iterable<T> i) {
-		return (T[]) toList(i).toArray();
+	public static Object[] toArray(Iterable<?> iterable) {
+		return toList(iterable).toArray();
 	}
 
-	public static <T> List<T> toList(Iterable<T> i) {
+	public static <T> List<T> toList(T... elements) {
+		List<T> list = Collections.emptyList();
 
-		List<T> list = null;
-		if (i instanceof List) {
-			list = (List<T>) i;
-		} else {
-			list = new ArrayList<T>();
-			for (T t : i) {
-				list.add(t);
-			}
+		if (elements != null) {
+			list = new ArrayList<T>(elements.length);
+			Collections.addAll(list, elements);
 		}
 
 		return list;
 	}
 
-	public static List<?> toList(Object thing) {
-		List<Object> list = new ArrayList<Object>();
-		list.add(thing);
-		return list;
-	}
+	public static <T> List<T> toList(Iterable<T> iterable) {
+		if (!(iterable instanceof List)) {
+			List<T> list = new ArrayList<T>();
 
-	public static List<?> toList(Object thing1, Object thing2) {
-		List<Object> list = new ArrayList<Object>();
-		list.add(thing1);
-		list.add(thing2);
-		return list;
-	}
-
-	public static List<?> toList(Object thing1, Object thing2, Object thing3) {
-		List<Object> list = new ArrayList<Object>();
-		list.add(thing1);
-		list.add(thing2);
-		list.add(thing3);
-		return list;
-	}
-
-	public static List<?> toList(Object thing1, Object thing2, Object thing3, Object... rest) {
-		List<Object> list = new ArrayList<Object>();
-		list.add(thing1);
-		list.add(thing2);
-		list.add(thing3);
-		if (rest != null) {
-			for (Object thing : rest) {
-				list.add(thing);
+			if (iterable != null) {
+				for (T element : iterable) {
+					list.add(element);
+				}
 			}
+
+			iterable = list;
 		}
-		return list;
+
+		return (List<T>) iterable;
 	}
+
 }

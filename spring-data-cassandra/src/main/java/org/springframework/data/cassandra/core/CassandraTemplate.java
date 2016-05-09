@@ -94,12 +94,25 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		setConverter(converter);
 	}
 
+	private static CassandraConverter getDefaultCassandraConverter() {
+
+		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter();
+		mappingCassandraConverter.afterPropertiesSet();
+		return mappingCassandraConverter;
+	}
+
+	/**
+	 * Set the {@link CassandraConverter} used by this template to perform conversions.
+	 *
+	 * @param cassandraConverter Converter used to perform conversion of Cassandra data types to entity types.
+	 * Must not be {@literal null}.
+	 */
 	public void setConverter(CassandraConverter cassandraConverter) {
 
-		Assert.notNull(cassandraConverter);
+		Assert.notNull(cassandraConverter, "CassandraConverter must not be null");
 
 		this.cassandraConverter = cassandraConverter;
-		mappingContext = cassandraConverter.getMappingContext();
+		this.mappingContext = cassandraConverter.getMappingContext();
 	}
 
 	@Override
@@ -838,10 +851,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	/**
 	 * Generates a Query Object for an insert
 	 *
-	 * @param tableName
-	 * @param objectToSave
-	 * @param entity
-	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
 	public static Insert createInsertQuery(String tableName, Object objectToSave, WriteOptions options,
@@ -866,10 +875,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	/**
 	 * Generates a Query Object for an Update
 	 *
-	 * @param tableName
-	 * @param objectToSave
-	 * @param entity
-	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
 	public static Update createUpdateQuery(String tableName, Object objectToSave, WriteOptions options,
@@ -894,10 +899,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	/**
 	 * Generates a Batch Object for multiple Updates
 	 *
-	 * @param tableName
-	 * @param objectsToSave
-	 * @param entity
-	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
 	public static <T> Batch createUpdateBatchQuery(String tableName, List<T> objectsToSave, WriteOptions options,
@@ -917,10 +918,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	/**
 	 * Generates a Batch Object for multiple inserts
 	 *
-	 * @param tableName
-	 * @param entities
-	 * @param entity
-	 * @param optionsByName
 	 * @return The Query object to run with session.execute();
 	 */
 	public static <T> Batch createInsertBatchQuery(String tableName, List<T> entities, WriteOptions options,
@@ -939,12 +936,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Create a Delete Query Object from an annotated POJO
-	 *
-	 * @param tableName
-	 * @param object
-	 * @param entity
-	 * @param optionsByName
-	 * @return
 	 */
 	public static Delete createDeleteQuery(String tableName, Object object, QueryOptions options,
 			EntityWriter<Object, Object> entityWriter) {
@@ -959,12 +950,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	/**
 	 * Create a Batch Query object for multiple deletes.
-	 *
-	 * @param tableName
-	 * @param entities
-	 * @param entity
-	 * @param optionsByName
-	 * @return
 	 */
 	public static <T> Batch createDeleteBatchQuery(String tableName, List<T> entities, QueryOptions options,
 			EntityWriter<Object, Object> entityWriter) {

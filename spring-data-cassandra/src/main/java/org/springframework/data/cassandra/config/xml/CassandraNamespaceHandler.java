@@ -29,14 +29,12 @@ public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
 	public void init() {
-
-		registerBeanDefinitionParser("repositories", new RepositoryBeanDefinitionParser(
-				new CassandraRepositoryConfigurationExtension()));
-
 		registerBeanDefinitionParser("cluster", new CassandraClusterParser());
 		registerBeanDefinitionParser("session", new CassandraSessionParser());
 		registerBeanDefinitionParser("template", new CassandraTemplateParser());
 		registerBeanDefinitionParser("converter", new CassandraMappingConverterParser());
 		registerBeanDefinitionParser("mapping", new CassandraMappingContextParser());
+		registerBeanDefinitionParser("repositories", new RepositoryBeanDefinitionParser(
+			new CassandraRepositoryConfigurationExtension()));
 	}
 }

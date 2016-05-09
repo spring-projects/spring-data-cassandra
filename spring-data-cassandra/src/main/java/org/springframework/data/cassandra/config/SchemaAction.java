@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.cassandra.config;
 
 /**
  * Enum identifying any schema actions to take at startup.
  * 
  * @author Matthew T. Adams
+ * @author John Blum
  */
 public enum SchemaAction {
 
@@ -33,6 +35,11 @@ public enum SchemaAction {
 	CREATE,
 
 	/**
+	 * Create each table as necessary. Avoid table creation if the table already exists.
+	 */
+	CREATE_IF_NOT_EXISTS,
+
+	/**
 	 * Create each table as necessary, dropping the table first if it exists.
 	 */
 	RECREATE,
@@ -44,11 +51,6 @@ public enum SchemaAction {
 
 	// TODO:
 	// /**
-	// * Validate that each required table and column exists. Fail if any required table or column does not exists.
-	// */
-	// VALIDATE,
-	//
-	// /**
 	// * Alter or create each table and column as necessary, leaving unused tables and columns untouched.
 	// */
 	// UPDATE,
@@ -56,5 +58,11 @@ public enum SchemaAction {
 	// /**
 	// * Alter or create each table and column as necessary, removing unused tables and columns.
 	// */
-	// UPDATE_DROP_UNUNSED;
+	// UPDATE_DROP_UNUNSED,
+	//
+	// /**
+	// * Validate that each required table and column exists. Fail if any required table or column does not exists.
+	// */
+	// VALIDATE
+
 }

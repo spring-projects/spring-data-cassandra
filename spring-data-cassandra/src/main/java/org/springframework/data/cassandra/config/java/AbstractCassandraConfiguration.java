@@ -19,15 +19,15 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
+import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.context.MappingContext;
 
@@ -36,68 +36,43 @@ import org.springframework.data.mapping.context.MappingContext;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author John Blum
  */
 @Configuration
-public abstract class AbstractCassandraConfiguration extends AbstractClusterConfiguration implements
-		BeanClassLoaderAware {
-
-	protected abstract String getKeyspaceName();
+public abstract class AbstractCassandraConfiguration extends AbstractClusterConfiguration
+		implements BeanClassLoaderAware {
 
 	protected ClassLoader beanClassLoader;
-
-	/**
-	 * The {@link SchemaAction} to perform. Defaults to {@link SchemaAction#NONE}.
-	 */
-	public SchemaAction getSchemaAction() {
-		return SchemaAction.NONE;
-	}
-
-	/**
-	 * The base packages to scan for entities annotated with {@link Table} annotations. By default, returns the package
-	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>). This method must never return null.
-	 */
-	public String[] getEntityBasePackages() {
-		return new String[] { getClass().getPackage().getName() };
-	}
 
 	@Bean
 	public CassandraSessionFactoryBean session() throws Exception {
 
-		CassandraSessionFactoryBean bean = new CassandraSessionFactoryBean();
+		CassandraSessionFactoryBean session = new CassandraSessionFactoryBean();
 
-		bean.setCluster(cluster().getObject());
-		bean.setConverter(cassandraConverter());
-		bean.setSchemaAction(getSchemaAction());
-		bean.setKeyspaceName(getKeyspaceName());
-		bean.setStartupScripts(getStartupScripts());
-		bean.setShutdownScripts(getShutdownScripts());
+		session.setCluster(cluster().getObject());
+		session.setConverter(cassandraConverter());
+		session.setKeyspaceName(getKeyspaceName());
+		session.setSchemaAction(getSchemaAction());
+		session.setStartupScripts(getStartupScripts());
+		session.setShutdownScripts(getShutdownScripts());
 
-		return bean;
-	}
-
-	/**
-	 * Creates a {@link CassandraAdminTemplate}.
-	 * 
-	 * @throws Exception
-	 */
-	@Bean
-	public CassandraAdminOperations cassandraTemplate() throws Exception {
-		return new CassandraAdminTemplate(session().getObject(), cassandraConverter());
+		return session;
 	}
 
 	/**
 	 * Return the {@link MappingContext} instance to map Entities to properties.
-	 * 
+	 *
 	 * @throws ClassNotFoundException
 	 */
 	@Bean
 	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
 
-		BasicCassandraMappingContext bean = new BasicCassandraMappingContext();
-		bean.setInitialEntitySet(CassandraEntityClassScanner.scan(getEntityBasePackages()));
-		bean.setBeanClassLoader(beanClassLoader);
+		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
 
-		return bean;
+		mappingContext.setBeanClassLoader(beanClassLoader);
+		mappingContext.setInitialEntitySet(CassandraEntityClassScanner.scan(getEntityBasePackages()));
+
+		return mappingContext;
 	}
 
 	/**
@@ -108,8 +83,37 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 		return new MappingCassandraConverter(cassandraMapping());
 	}
 
+	/**
+	 * Creates a {@link CassandraAdminTemplate}.
+	 *
+	 * @throws Exception if the {@link com.datastax.driver.core.Session} could not be obtained.
+	 */
+	@Bean
+	public CassandraAdminOperations cassandraTemplate() throws Exception {
+		return new CassandraAdminTemplate(session().getObject(), cassandraConverter());
+	}
+
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
+	}
+
+	/**
+	 * Base packages to scan for entities annotated with {@link Table} annotations. By default, returns the package
+	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>).
+	 *
+	 * This method must never return null.
+	 */
+	public String[] getEntityBasePackages() {
+		return new String[] { getClass().getPackage().getName() };
+	}
+
+	protected abstract String getKeyspaceName();
+
+	/**
+	 * The {@link SchemaAction} to perform at startup.  Defaults to {@link SchemaAction#NONE}.
+	 */
+	public SchemaAction getSchemaAction() {
+		return SchemaAction.NONE;
 	}
 }

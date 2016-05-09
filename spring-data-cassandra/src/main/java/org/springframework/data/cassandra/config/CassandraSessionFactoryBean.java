@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.cassandra.config;
+
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 import java.util.Collection;
 
 import org.springframework.cassandra.config.CassandraCqlSessionFactoryBean;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
@@ -26,96 +30,136 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-
+/**
+ * Factory to create and configure a Cassandra {@link com.datastax.driver.core.Session} with support
+ * for executing CQL and initializing the database schema (a.k.a. keyspace).
+ *
+ * @author Mathew Adams
+ * @author David Webb
+ * @author John Blum
+ * @see com.datastax.driver.core.KeyspaceMetadata
+ * @see com.datastax.driver.core.TableMetadata
+ */
 public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean {
 
-	protected SchemaAction schemaAction = SchemaAction.NONE;
-	protected CassandraAdminTemplate admin;
-	protected CassandraConverter converter;
-	protected CassandraMappingContext mappingContext;
+	protected static final boolean DEFAULT_CREATE_IF_NOT_EXISTS = false;
+	protected static final boolean DEFAULT_DROP_TABLES = false;
+	protected static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
+
+	private CassandraAdminOperations admin;
+
+	private CassandraConverter converter;
+
+	private SchemaAction schemaAction = SchemaAction.NONE;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-
 		super.afterPropertiesSet();
 
-		Assert.notNull(converter);
+		Assert.state(converter != null, "Converter must not be null");
 
-		admin = new CassandraAdminTemplate(session, converter);
+		admin = newCassandraAdminOperations(getObject(), converter);
 
 		performSchemaAction();
 	}
 
+	/* (non-Javadoc) */
+	CassandraAdminOperations newCassandraAdminOperations(Session session, CassandraConverter converter) {
+		return new CassandraAdminTemplate(session, converter);
+	}
+
+	/* (non-Javadoc) */
 	protected void performSchemaAction() {
 
-		boolean dropTables = false;
-		boolean dropUnused = false;
+		boolean dropTables = DEFAULT_DROP_TABLES;
+		boolean dropUnused = DEFAULT_DROP_UNUSED_TABLES;
+		boolean ifNotExists = DEFAULT_CREATE_IF_NOT_EXISTS;
 
 		switch (schemaAction) {
-
-			case NONE:
-				return;
-
 			case RECREATE_DROP_UNUSED:
 				dropUnused = true;
-				// don't break!
 			case RECREATE:
 				dropTables = true;
-				// don't break!
+			case CREATE_IF_NOT_EXISTS:
+				ifNotExists = SchemaAction.CREATE_IF_NOT_EXISTS.equals(schemaAction);
 			case CREATE:
-				createTables(dropTables, dropUnused);
+				createTables(dropTables, dropUnused, ifNotExists);
+			case NONE:
+			default:
+				// do nothing
 		}
 	}
 
-	protected void createTables(boolean dropTables, boolean dropUnused) {
+	/* (non-Javadoc) */
+	protected void createTables(boolean dropTables, boolean dropUnused, boolean ifNotExists) {
 
-		Metadata md = session.getCluster().getMetadata();
-		KeyspaceMetadata kmd = md.getKeyspace(keyspaceName);
-
-		// TODO: fix this with KeyspaceIdentifier
-		if (kmd == null) { // try lower-cased keyspace name
-			kmd = md.getKeyspace(keyspaceName.toLowerCase());
+		if (dropTables) {
+			dropTables(dropUnused);
 		}
 
-		if (kmd == null) {
-			throw new IllegalStateException(String.format("keyspace [%s] does not exist", keyspaceName));
-		}
-
-		for (TableMetadata table : kmd.getTables()) {
-			if (dropTables) {
-				if (dropUnused || mappingContext.usesTable(table)) {
-					admin.dropTable(cqlId(table.getName()));
-				}
-			}
-		}
-
-		Collection<? extends CassandraPersistentEntity<?>> entities = converter.getMappingContext()
-				.getNonPrimaryKeyEntities();
+		Collection<? extends CassandraPersistentEntity<?>> entities =
+			getConverter().getMappingContext().getNonPrimaryKeyEntities();
 
 		for (CassandraPersistentEntity<?> entity : entities) {
-			admin.createTable(false, entity.getTableName(), entity.getType(), null); // TODO: allow spec of table options
+			// TODO: pass specification of user configurable table options
+			getCassandraAdminOperations().createTable(ifNotExists, entity.getTableName(), entity.getType(), null);
 		}
 	}
 
-	public SchemaAction getSchemaAction() {
-		return schemaAction;
+	/* (non-Javadoc) */
+	@SuppressWarnings("all")
+	protected void dropTables(boolean dropUnused) {
+
+		String keyspaceName = getKeyspaceName();
+
+		Metadata clusterMetadata = getSession().getCluster().getMetadata();
+		KeyspaceMetadata keyspaceMetadata = clusterMetadata.getKeyspace(keyspaceName);
+
+		// TODO: fix this with KeyspaceIdentifier
+		keyspaceMetadata = (keyspaceMetadata != null ? keyspaceMetadata
+			: clusterMetadata.getKeyspace(keyspaceName.toLowerCase()));
+
+		Assert.state(keyspaceMetadata != null, String.format("keyspace [%s] does not exist", keyspaceName));
+
+		for (TableMetadata table : keyspaceMetadata.getTables()) {
+			if (dropUnused || getMappingContext().usesTable(table)) {
+				getCassandraAdminOperations().dropTable(cqlId(table.getName()));
+			}
+		}
 	}
 
+	/* (non-Javadoc) */
+	protected CassandraAdminOperations getCassandraAdminOperations() {
+		return this.admin;
+	}
+
+	/* (non-Javadoc) */
+	public void setConverter(CassandraConverter converter) {
+		Assert.notNull(converter, "CassandraConverter must not be null");
+		this.converter = converter;
+	}
+
+	/* (non-Javadoc) */
+	public CassandraConverter getConverter() {
+		return this.converter;
+	}
+
+	/* (non-Javadoc) */
+	protected CassandraMappingContext getMappingContext() {
+		return getConverter().getMappingContext();
+	}
+
+	/* (non-Javadoc) */
 	public void setSchemaAction(SchemaAction schemaAction) {
-		Assert.notNull(schemaAction);
+		Assert.notNull(schemaAction, "SchemaAction must not be null");
 		this.schemaAction = schemaAction;
 	}
 
-	public CassandraConverter getConverter() {
-		return converter;
-	}
-
-	public void setConverter(CassandraConverter converter) {
-		Assert.notNull(converter);
-		this.converter = converter;
-		this.mappingContext = converter.getMappingContext();
+	/* (non-Javadoc) */
+	public SchemaAction getSchemaAction() {
+		return schemaAction;
 	}
 }

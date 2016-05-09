@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cassandra.config;
 
 import java.util.ArrayList;
@@ -24,136 +25,210 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 /**
- * Factory for configuring a Cassandra {@link Session}, which is a thread-safe singleton. As such, it is sufficient to
- * have one {@link Session} per application and keyspace.
+ * Factory for creating and configuring a Cassandra {@link Session}, which is a thread-safe singleton.
+ * As such, it is sufficient to have one {@link Session} per application and keyspace.
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author John Blum
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.dao.support.PersistenceExceptionTranslator
+ * @see org.springframework.cassandra.core.CqlTemplate
+ * @see org.springframework.cassandra.support.CassandraExceptionTranslator
+ * @see com.datastax.driver.core.Cluster
+ * @see com.datastax.driver.core.Session
  */
-
+@SuppressWarnings("unused")
 public class CassandraCqlSessionFactoryBean implements FactoryBean<Session>, InitializingBean, DisposableBean,
 		PersistenceExceptionTranslator {
 
-	private static final Logger log = LoggerFactory.getLogger(CassandraCqlSessionFactoryBean.class);
+	private Cluster cluster;
 
-	protected Cluster cluster;
-	protected Session session;
-	protected String keyspaceName;
-	protected List<String> startupScripts = new ArrayList<String>();
-	protected List<String> shutdownScripts = new ArrayList<String>();
+	private List<String> startupScripts = Collections.emptyList();
+	private List<String> shutdownScripts = Collections.emptyList();
+
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+
 	protected final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
+	private Session session;
+
+	private String keyspaceName;
+
+	/* (non-Javadoc) */
 	@Override
 	public Session getObject() {
-		return session;
+		return this.session;
 	}
 
+	/* (non-Javadoc) */
 	@Override
 	public Class<? extends Session> getObjectType() {
-		return Session.class;
+		return (this.session != null ? this.session.getClass() : Session.class);
 	}
 
+	/* (non-Javadoc) */
 	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
-	@Override
-	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
-		return exceptionTranslator.translateExceptionIfPossible(ex);
-	}
-
+	/* (non-Javadoc) */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-
-		Assert.notNull(cluster);
-
-		session = StringUtils.hasText(keyspaceName) ? cluster.connect(keyspaceName) : cluster.connect();
-		executeScripts(startupScripts);
+		this.session = connect(getKeyspaceName());
+		executeScripts(getStartupScripts());
 	}
 
-	/**
-	 * Executes given scripts. Session must be connected when this method is called.
-	 */
-	protected void executeScripts(List<String> scripts) {
-
-		if (scripts == null || scripts.size() == 0) {
-			return;
-		}
-
-		CqlTemplate template = new CqlTemplate(session);
-
-		for (String script : scripts) {
-
-			if (log.isInfoEnabled()) {
-				log.info("executing raw CQL [{}]", script);
-			}
-
-			template.execute(script);
-		}
+	/* (non-Javadoc) */
+	Session connect(String keyspaceName) {
+		return (StringUtils.hasText(keyspaceName) ? getCluster().connect(keyspaceName) : getCluster().connect());
 	}
 
+	/* (non-Javadoc) */
 	@Override
 	public void destroy() throws Exception {
-
-		executeScripts(shutdownScripts);
-		session.close();
+		executeScripts(getShutdownScripts());
+		getSession().close();
 	}
 
 	/**
-	 * Sets the keyspace name to connect to. Using <code>null</code>, empty string, or only whitespace will cause the
-	 * system keyspace to be used.
+	 * Executes the given Cassandra CQL scripts.  The {@link Session} must be connected when this method is called.
+	 */
+	protected void executeScripts(List<String> scripts) {
+		if (!CollectionUtils.isEmpty(scripts)) {
+			CqlOperations template = newCqlOperations(getSession());
+
+			for (String script : scripts) {
+				logger.info("executing raw CQL [{}]", script);
+				template.execute(script);
+			}
+		}
+	}
+
+	/* (non-Javadoc) */
+	CqlOperations newCqlOperations(Session session) {
+		return new CqlTemplate(session);
+	}
+
+	/* (non-Javadoc) */
+	@Override
+	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
+		return this.exceptionTranslator.translateExceptionIfPossible(e);
+	}
+
+	/**
+	 * Null-safe operation to determine whether the Cassandra {@link Session} is connected or not.
+	 *
+	 * @return a boolean value indicating whether the Cassandra {@link Session} is connected.
+	 * @see com.datastax.driver.core.Session#isClosed()
+	 * @see #getObject()
+	 */
+	public boolean isConnected() {
+		Session session = getObject();
+		return !(session == null || session.isClosed());
+	}
+
+	/**
+	 * Sets a reference to the Cassandra {@link Cluster} to use.
+	 *
+	 * @param cluster a reference to the Cassandra {@link Cluster} used by this application.
+	 * @throws IllegalArgumentException if the {@link Cluster} reference is null.
+	 * @see com.datastax.driver.core.Cluster
+	 * @see #getCluster()
+	 */
+	public void setCluster(Cluster cluster) {
+		Assert.notNull(cluster, "Cluster must not be null");
+		this.cluster = cluster;
+	}
+
+	/**
+	 * Returns a reference to the configured Cassandra {@link Cluster} used by this application.
+	 *
+	 * @return a reference to the configured Cassandra {@link Cluster}.
+	 * @throws IllegalStateException if the reference to the {@link Cluster} was not properly initialized.
+	 * @see com.datastax.driver.core.Cluster
+	 * @see #setCluster(Cluster)
+	 */
+	protected Cluster getCluster() {
+		Assert.state(this.cluster != null, "Cluster was not properly initialized");
+		return this.cluster;
+	}
+
+	/**
+	 * Sets the name of the Cassandra Keyspace to connect to.  Passing <code>null</code>, an empty String,
+	 * or whitespace will cause the Cassandra System Keyspace to be used.
+	 *
+	 * @param keyspaceName a String indicating the name of the Keyspace in which to connect.
+	 * @see #getKeyspaceName()
 	 */
 	public void setKeyspaceName(String keyspaceName) {
 		this.keyspaceName = keyspaceName;
 	}
 
 	/**
-	 * Sets the cluster to use. Must not be null.
+	 * Gets the name of the Cassandra Keyspace to connect to.
+	 *
+	 * @return the name of the Cassandra Keyspace to connect to as a String.
+	 * @see #setKeyspaceName(String)
 	 */
-	public void setCluster(Cluster cluster) {
-		if (cluster == null) {
-			throw new IllegalArgumentException("cluster must not be null");
-		}
-		this.cluster = cluster;
+	protected String getKeyspaceName() {
+		return this.keyspaceName;
+	}
+
+	/**
+	 * Returns a reference to the connected Cassandra {@link Session}.
+	 *
+	 * @return a reference to the connected Cassandra {@link Session}.
+	 * @throws IllegalStateException if the Cassandra {@link Session} was not properly initialized.
+	 * @see com.datastax.driver.core.Session
+	 */
+	protected Session getSession() {
+		Session session = getObject();
+		Assert.state(session != null, "Session was not properly initialized");
+		return session;
 	}
 
 	/**
 	 * Sets CQL scripts to be executed immediately after the session is connected.
 	 */
 	public void setStartupScripts(List<String> scripts) {
-		this.startupScripts = scripts == null ? new ArrayList<String>() : new ArrayList<String>(scripts);
+		this.startupScripts = (scripts != null ? new ArrayList<String>(scripts) : Collections.<String>emptyList());
 	}
 
 	/**
 	 * Returns an unmodifiable list of startup scripts.
 	 */
 	public List<String> getStartupScripts() {
-		return Collections.unmodifiableList(startupScripts);
+		return Collections.unmodifiableList(this.startupScripts);
 	}
 
 	/**
 	 * Sets CQL scripts to be executed immediately before the session is shutdown.
 	 */
 	public void setShutdownScripts(List<String> scripts) {
-		this.shutdownScripts = scripts == null ? new ArrayList<String>() : new ArrayList<String>(scripts);
+		this.shutdownScripts = (scripts != null ? new ArrayList<String>(scripts) : Collections.<String>emptyList());
 	}
 
 	/**
 	 * Returns an unmodifiable list of shutdown scripts.
 	 */
 	public List<String> getShutdownScripts() {
-		return Collections.unmodifiableList(shutdownScripts);
+		return Collections.unmodifiableList(this.shutdownScripts);
 	}
 }
