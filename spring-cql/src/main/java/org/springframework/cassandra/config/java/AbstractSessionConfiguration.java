@@ -19,28 +19,32 @@ import org.springframework.cassandra.config.CassandraCqlSessionFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.datastax.driver.core.Cluster;
-
 /**
- * Base class for Spring Cassandra configuration that can handle creating namespaces, execute arbitrary CQL on startup &
- * shutdown, and optionally drop namespaces.
- * 
+ * Spring {@link @Configuration} class used to configure a Cassandra client application
+ * {@link com.datastax.driver.core.Session} connected to a Cassandra {@link com.datastax.driver.core.Cluster}.
+ *
+ * Enables a Cassandra Keyspace to be specified along with the ability to execute arbitrary CQL on startup
+ * as well as shutdown.
+ *
  * @author Matthew T. Adams
+ * @author John Blum
+ * @see org.springframework.cassandra.config.java.AbstractClusterConfiguration
+ * @see org.springframework.context.annotation.Configuration
  */
 @Configuration
 public abstract class AbstractSessionConfiguration extends AbstractClusterConfiguration {
 
-	protected abstract String getKeyspaceName();
-
 	@Bean
 	public CassandraCqlSessionFactoryBean session() throws Exception {
 
-		Cluster cluster = cluster().getObject();
-
 		CassandraCqlSessionFactoryBean bean = new CassandraCqlSessionFactoryBean();
-		bean.setCluster(cluster);
+
+		bean.setCluster(cluster().getObject());
 		bean.setKeyspaceName(getKeyspaceName());
 
 		return bean;
 	}
+
+	protected abstract String getKeyspaceName();
+
 }

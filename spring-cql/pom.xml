@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-
-	<artifactId>spring-cql</artifactId>
-
-	<name>Spring CQL</name>
-	<description>Raw Cassandra CQL Support for Spring Core</description>
 
 	<parent>
 		<groupId>org.springframework.data</groupId>
@@ -15,6 +11,12 @@
 		<version>1.5.0.BUILD-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
+
+	<artifactId>spring-cql</artifactId>
+
+	<name>Spring CQL</name>
+	<description>Raw Cassandra CQL Support for Spring Core</description>
+	<url>https://github.com/spring-projects/spring-data-cassandra/tree/master/spring-cql</url>
 
 	<properties>
 		<validation>1.0.0.GA</validation>

@@ -108,16 +108,17 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * Set the {@link CassandraConverter}.
+	 * Set the {@link CassandraConverter} used by this template to perform conversions.
 	 *
-	 * @param cassandraConverter must not be {@literal null}.
+	 * @param cassandraConverter Converter used to perform conversion of Cassandra data types to entity types.
+	 * Must not be {@literal null}.
 	 */
 	public void setConverter(CassandraConverter cassandraConverter) {
 
-		Assert.notNull(cassandraConverter, "CassandraConverter must not be null!");
+		Assert.notNull(cassandraConverter, "CassandraConverter must not be null");
 
 		this.cassandraConverter = cassandraConverter;
-		mappingContext = cassandraConverter.getMappingContext();
+		this.mappingContext = cassandraConverter.getMappingContext();
 	}
 
 	/* (non-Javadoc)
