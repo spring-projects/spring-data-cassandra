@@ -15,12 +15,25 @@
  */
 package org.springframework.cassandra.config;
 
+import com.datastax.driver.core.AuthProvider;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.LatencyTracker;
+import com.datastax.driver.core.PoolingOptions;
+import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.QueryOptions;
+import com.datastax.driver.core.SSLOptions;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.policies.LoadBalancingPolicy;
+import com.datastax.driver.core.policies.ReconnectionPolicy;
+import com.datastax.driver.core.policies.RetryPolicy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -37,20 +50,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.AuthProvider;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.LatencyTracker;
-import com.datastax.driver.core.PoolingOptions;
-import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.SSLOptions;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SocketOptions;
-import com.datastax.driver.core.policies.LoadBalancingPolicy;
-import com.datastax.driver.core.policies.ReconnectionPolicy;
-import com.datastax.driver.core.policies.RetryPolicy;
-
 /**
  * Convenient factory for configuring a Cassandra Cluster.
  *
@@ -58,6 +57,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author Matthew T. Adams
  * @author David Webb
  * @author Kirk Clemens
+ * @author Jorge Davison
  */
 public class CassandraCqlClusterFactoryBean
 		implements FactoryBean<Cluster>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
@@ -80,6 +80,7 @@ public class CassandraCqlClusterFactoryBean
 	private CompressionType compressionType;
 	private PoolingOptions poolingOptions;
 	private SocketOptions socketOptions;
+	private QueryOptions queryOptions;
 	private AuthProvider authProvider;
 	private String username;
 	private String password;
@@ -142,6 +143,10 @@ public class CassandraCqlClusterFactoryBean
 
 		if (socketOptions != null) {
 			builder.withSocketOptions(socketOptions);
+		}
+
+		if (queryOptions != null) {
+			builder.withQueryOptions(queryOptions);
 		}
 
 		if (authProvider != null) {
@@ -327,6 +332,15 @@ public class CassandraCqlClusterFactoryBean
 	 */
 	public void setSocketOptions(SocketOptions socketOptions) {
 		this.socketOptions = socketOptions;
+	}
+
+	/**
+	 * Set the {@link QueryOptions}.
+	 *
+	 * @param queryOptions
+	 */
+	public void setQueryOptions(QueryOptions queryOptions) {
+		this.queryOptions = queryOptions;
 	}
 
 	/**
