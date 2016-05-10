@@ -65,7 +65,7 @@ public class CqlDataSet {
 	}
 
 	/**
-	 * Bing the {@link CqlDataSet} to a particular keyspace. Creates a new instance of the {@link CqlDataSet} with the
+	 * Bind the {@link CqlDataSet} to a particular keyspace. Creates a new instance of the {@link CqlDataSet} with the
 	 * keyspace name set.
 	 *
 	 * @param keyspaceName
@@ -74,7 +74,6 @@ public class CqlDataSet {
 	public CqlDataSet executeIn(String keyspaceName) {
 
 		Assert.hasText(keyspaceName, "KeyspaceName must not be empty!");
-
 		return new CqlDataSet(location, keyspaceName);
 	}
 
@@ -84,7 +83,7 @@ public class CqlDataSet {
 	 * @param resource
 	 * @return
 	 */
-	public final static CqlDataSet fromClassPath(String resource) {
+	public static CqlDataSet fromClassPath(String resource) {
 
 		URL url = Resources.getResource(resource);
 		return new CqlDataSet(url, null);

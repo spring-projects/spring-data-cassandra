@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.test.integration.CqlDataSet;
 import org.springframework.cassandra.test.unit.core.cql.generator.AlterTableCqlGeneratorTests;
 import org.springframework.cassandra.test.unit.core.cql.generator.CreateTableCqlGeneratorTests;
 import org.springframework.cassandra.test.unit.core.cql.generator.DropTableCqlGeneratorTests;
@@ -44,8 +43,7 @@ public class TableLifecycleIntegrationTest extends AbstractKeyspaceCreatingInteg
 
 	@Before
 	public void setUp() throws Exception {
-		cassandraRule
-				.execute(CqlDataSet.fromClassPath("cassandraOperationsTest-cql-dataload.cql").executeIn(this.keyspace));
+		execute("cassandraOperationsTest-cql-dataload.cql", this.keyspace);
 	}
 
 	@Test

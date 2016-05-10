@@ -38,6 +38,7 @@ public class XmlConfigTest extends AbstractEmbeddedCassandraIntegrationTest {
 
 	@Rule
 	public KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment, KEYSPACE);
+
 	private Session session;
 	private ConfigurableApplicationContext context;
 
@@ -55,7 +56,6 @@ public class XmlConfigTest extends AbstractEmbeddedCassandraIntegrationTest {
 
 	@Test
 	public void test() {
-		IntegrationTestUtils.assertSession(session);
 		IntegrationTestUtils.assertKeyspaceExists(KEYSPACE, session);
 	}
 }

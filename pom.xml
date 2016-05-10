@@ -300,14 +300,19 @@
 
 		<profile>
 			<id>embedded-cassandra</id>
+			<activation>
+    			<activeByDefault>true</activeByDefault>
+  			</activation>
 
 			<properties>
-				<build.cassandra.type>embedded</build.cassandra.type>
+				<build.cassandra.mode>embedded</build.cassandra.mode>
 			</properties>
 
 			<build>
 				<plugins>
 					<plugin>
+						<!-- Random port generation requires embedded-cassandra.yaml and cassandra-connection.properties
+						in both modules -->
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
 						<version>1.8</version>

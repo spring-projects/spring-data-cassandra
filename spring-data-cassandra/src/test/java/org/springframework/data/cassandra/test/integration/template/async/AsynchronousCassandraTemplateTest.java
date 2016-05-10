@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,7 +46,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Asynchronous {@link CassandraTemplate} tests.
- * 
+ *
  * @author Matthew T. Adams
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -61,12 +61,12 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 	}
 
 	@Test
-	public void testInsertAsynchronously() throws Exception {
+	public void insertAsynchronously() throws Exception {
 		insertAsynchronously(ConsistencyLevel.ONE);
 	}
 
 	@Test(expected = CassandraConnectionFailureException.class)
-	public void testInsertAsynchronouslyThrows() throws Exception {
+	public void insertAsynchronouslyThrows() throws Exception {
 		insertAsynchronously(ConsistencyLevel.TWO);
 	}
 
@@ -86,12 +86,12 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 	}
 
 	@Test(expected = CancellationException.class)
-	public void testInsertAsynchronouslyCancelled() throws Exception {
+	public void insertAsynchronouslyCancelled() throws Exception {
 		insertOrUpdateAsynchronouslyCancelled(true);
 	}
 
 	@Test(expected = CancellationException.class)
-	public void testUpdateAsynchronouslyCancelled() throws Exception {
+	public void updateAsynchronouslyCancelled() throws Exception {
 		insertOrUpdateAsynchronouslyCancelled(false);
 	}
 
@@ -123,12 +123,12 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 	}
 
 	@Test
-	public void testUpdateAsynchronously() throws Exception {
+	public void updateAsynchronously() throws Exception {
 		updateAsynchronously(ConsistencyLevel.ONE);
 	}
 
 	@Test(expected = CassandraConnectionFailureException.class)
-	public void testUpdateAsynchronouslyThrows() throws Exception {
+	public void updateAsynchronouslyThrows() throws Exception {
 		updateAsynchronously(ConsistencyLevel.TWO);
 	}
 
@@ -150,12 +150,12 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 	}
 
 	@Test
-	public void testDeleteAsynchronously() throws Exception {
+	public void deleteAsynchronously() throws Exception {
 		deleteAsynchronously(ConsistencyLevel.ONE);
 	}
 
 	@Test(expected = CassandraConnectionFailureException.class)
-	public void testDeleteAsynchronouslyThrows() throws Exception {
+	public void deleteAsynchronouslyThrows() throws Exception {
 		deleteAsynchronously(ConsistencyLevel.TWO);
 	}
 
@@ -176,7 +176,7 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 	}
 
 	@Test(expected = CancellationException.class)
-	public void testDeleteAsynchronouslyCancelled() throws Exception {
+	public void deleteAsynchronouslyCancelled() throws Exception {
 
 		Thing thing = Thing.random();
 		ThingListener listener = new ThingListener();
@@ -201,18 +201,9 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 	@Table
 	public static class Thing {
 
-		public static final String uuid() {
-			return UUID.randomUUID().toString();
-		}
-
-		static final Random RNG = new Random();
-
-		public static Thing random() {
-			return new Thing(uuid(), RNG.nextInt());
-		}
+		private static final Random RNG = new Random();
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) public String stuff;
-
 		@Column public int number;
 
 		public Thing() {}
@@ -220,6 +211,13 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 		public Thing(String stuff, int number) {
 			this.stuff = stuff;
 			this.number = number;
+		}
+
+		public static final String uuid() {
+			return UUID.randomUUID().toString();
+		}
+		public static Thing random() {
+			return new Thing(uuid(), RNG.nextInt());
 		}
 
 		@Override

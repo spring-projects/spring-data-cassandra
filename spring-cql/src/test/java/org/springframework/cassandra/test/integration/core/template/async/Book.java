@@ -9,7 +9,9 @@ public class Book {
 	}
 
 	public static Book random() {
-		return new Book("title-" + uuid(), "isbn-" + uuid());
+
+		String uuid = uuid();
+		return new Book("title-" + uuid, "isbn-" + uuid);
 	}
 
 	public Book() {}

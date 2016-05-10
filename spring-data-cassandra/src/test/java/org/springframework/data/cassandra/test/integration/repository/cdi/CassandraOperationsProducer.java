@@ -21,13 +21,16 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
+import javax.inject.Singleton;
 
+import com.datastax.driver.core.Cluster;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Service;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
 import org.springframework.cassandra.test.unit.support.Utils;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
@@ -43,13 +46,22 @@ class CassandraOperationsProducer {
 	public final static String KEYSPACE_NAME = Utils.randomKeyspaceName();
 
 	@Produces
+	@Singleton
+	public Cluster createCluster() throws Exception {
+		     CassandraConnectionProperties properties = new CassandraConnectionProperties();
+
+		Cluster cluster = Cluster.builder().addContactPoint(properties.getCassandraHost()).withPort(properties.getCassandraPort()).build();
+		return cluster;
+	}
+
+	@Produces
 	@ApplicationScoped
-	public CassandraOperations createCassandraOperations() throws Exception {
+	public CassandraOperations createCassandraOperations(Cluster cluster) throws Exception {
 
 		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter();
 
-		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(AbstractEmbeddedCassandraIntegrationTest
-				.createCluster().connect(), cassandraConverter);
+
+		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(cluster.connect(), cassandraConverter);
 
 		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(KEYSPACE_NAME).ifNotExists();
 		cassandraTemplate.execute(createKeyspaceSpecification);
@@ -69,6 +81,10 @@ class CassandraOperationsProducer {
 
 		cassandraOperations.execute(DropKeyspaceSpecification.dropKeyspace(KEYSPACE_NAME));
 		cassandraOperations.getSession().close();
+	}
+
+	public void close(@Disposes Cluster cluster) {
+		cluster.close();
 	}
 
 	@Produces

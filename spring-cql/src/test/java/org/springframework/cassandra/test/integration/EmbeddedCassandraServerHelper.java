@@ -18,30 +18,23 @@ package org.springframework.cassandra.test.integration;
 import static java.util.concurrent.TimeUnit.*;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.commitlog.CommitLog;
 import org.apache.cassandra.io.util.FileUtils;
 import org.apache.cassandra.service.CassandraDaemon;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.SocketUtils;
-import org.yaml.snakeyaml.reader.UnicodeReader;
+import org.springframework.util.FileCopyUtils;
 
 /**
  * Imported Embedded Cassandra server startup helper.
@@ -54,101 +47,11 @@ class EmbeddedCassandraServerHelper {
 
 	public static final long DEFAULT_STARTUP_TIMEOUT = 10000;
 	public static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
-	/** Default configuration file. Starts embedded cassandra under the well known ports */
-	private static final String INTERNAL_CASSANDRA_KEYSPACE = "system";
-	private static final String INTERNAL_CASSANDRA_AUTH_KEYSPACE = "system_auth";
-	private static final String INTERNAL_CASSANDRA_TRACES_KEYSPACE = "system_traces";
 
-	private static CassandraDaemon cassandraDaemon = null;
+	private final static AtomicReference<Object> sync = new AtomicReference<Object>();
+	private final static AtomicReference<CassandraDaemon> cassandraRef = new AtomicReference<CassandraDaemon>();
+
 	private static String launchedYamlFile;
-
-	public static void startEmbeddedCassandra(String yamlFile, long timeout) throws Exception {
-		startEmbeddedCassandra(yamlFile, DEFAULT_TMP_DIR, timeout);
-	}
-
-	public static void startEmbeddedCassandra(String yamlFile, String tmpDir, long timeout) throws Exception {
-		if (cassandraDaemon != null) {
-			/* nothing to do Cassandra is already started */
-			return;
-		}
-
-		if (!StringUtils.startsWith(yamlFile, "/")) {
-			yamlFile = "/" + yamlFile;
-		}
-
-		rmdir(tmpDir);
-		copy(yamlFile, tmpDir);
-		File file = new File(tmpDir + yamlFile);
-		readAndAdaptYaml(file);
-		startEmbeddedCassandra(file, tmpDir, timeout);
-	}
-
-	/**
-	 * Set embedded cassandra up and spawn it in a new thread.
-	 */
-	public static void startEmbeddedCassandra(File file, String tmpDir, long timeout) throws Exception {
-		if (cassandraDaemon != null) {
-			/* nothing to do Cassandra is already started */
-			return;
-		}
-
-		checkConfigNameForRestart(file.getAbsolutePath());
-
-		log.debug("Starting cassandra...");
-		log.debug("Initialization needed");
-
-		System.setProperty("cassandra.config", "file:" + file.getAbsolutePath());
-		System.setProperty("cassandra-foreground", "true");
-		System.setProperty("cassandra.native.epoll.enabled", "false"); // JNA doesnt cope with relocated netty
-
-		cleanupAndLeaveDirs();
-		final CountDownLatch startupLatch = new CountDownLatch(1);
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		executor.execute(new Runnable() {
-			@Override
-			public void run() {
-				cassandraDaemon = new CassandraDaemon();
-				cassandraDaemon.activate();
-				startupLatch.countDown();
-			}
-		});
-		try {
-			if (!startupLatch.await(timeout, MILLISECONDS)) {
-				log.error("Cassandra daemon did not start after " + timeout + " ms. Consider increasing the timeout");
-				throw new AssertionError("Cassandra daemon did not start within timeout");
-			}
-		} catch (InterruptedException e) {
-			log.error("Interrupted waiting for Cassandra daemon to start:", e);
-			throw new AssertionError(e);
-		} finally {
-			executor.shutdown();
-		}
-	}
-
-	private static void checkConfigNameForRestart(String yamlFile) {
-		boolean wasPreviouslyLaunched = launchedYamlFile != null;
-		if (wasPreviouslyLaunched && !launchedYamlFile.equals(yamlFile)) {
-			throw new UnsupportedOperationException("We can't launch two Cassandra configurations in the same JVM instance");
-		}
-		launchedYamlFile = yamlFile;
-	}
-
-	/**
-	 * Now deprecated, previous version was not fully operating. This is now an empty method, will be pruned in future
-	 * versions.
-	 */
-	@Deprecated
-	public static void stopEmbeddedCassandra() {
-		log.warn("EmbeddedCassandraServerHelper.stopEmbeddedCassandra() is now deprecated, "
-				+ "previous version was not fully operating");
-	}
-
-	/**
-	 * drop all keyspaces (expect system)
-	 */
-	public static void cleanEmbeddedCassandra() {
-		dropKeyspaces();
-	}
 
 	/**
 	 * Get the embedded cassandra cluster name
@@ -186,172 +89,170 @@ class EmbeddedCassandraServerHelper {
 		return DatabaseDescriptor.getNativeTransportPort();
 	}
 
-	private static void dropKeyspaces() {
-		dropKeyspacesWithNativeDriver();
+	/**
+	 * Start an embedded Cassandra instance.
+	 *
+	 * @param yamlResource
+	 * @param timeout
+	 * @throws Exception
+	 */
+	public static void startEmbeddedCassandra(String yamlResource, long timeout) throws Exception {
+		startEmbeddedCassandra(yamlResource, DEFAULT_TMP_DIR, timeout);
 	}
 
-	private static void dropKeyspacesWithNativeDriver() {
-		String host = DatabaseDescriptor.getRpcAddress().getHostName();
-		int port = DatabaseDescriptor.getNativeTransportPort();
+	/**
+	 * Start an embedded Cassandra instance.
+	 *
+	 * @param yamlResource
+	 * @param tmpDir
+	 * @param timeout
+	 * @throws Exception
+	 */
+	public static void startEmbeddedCassandra(String yamlResource, String tmpDir, long timeout) throws Exception {
 
-		com.datastax.driver.core.Cluster cluster = com.datastax.driver.core.Cluster.builder().addContactPoint(host)
-				.withPort(port).build();
-		com.datastax.driver.core.Session session = cluster.connect();
+		if (cassandraRef.get() != null) {
+			/* nothing to do Cassandra is already started */
+			return;
+		}
+
+		if (!sync.compareAndSet(null, new Object())) {
+			/* A different Thread was faster, so nothing to do for us here */
+			return;
+		}
+
+		File yamlFile = new File(tmpDir, new File(yamlResource).getName());
+		prepareCassandraDirectory(yamlResource, tmpDir, yamlFile);
+		startEmbeddedCassandra(yamlFile, timeout);
+	}
+
+	/**
+	 * Cleanup directory, copy YAML file to configuration directory and
+	 *
+	 * @param yamlFileName
+	 * @param cassandraDirectoryName
+	 * @param yamlFile
+	 * @throws IOException
+	 */
+	private static void prepareCassandraDirectory(String yamlFileName, String cassandraDirectoryName, File yamlFile)
+			throws IOException {
+
+		File cassandraDirectory = new File(cassandraDirectoryName);
+
+		rmdirs(cassandraDirectory);
+		copy(yamlFileName, cassandraDirectory);
+	}
+
+	/**
+	 * Set embedded cassandra up and spawn it in a new thread.
+	 */
+	private static void startEmbeddedCassandra(File file, long timeout) throws Exception {
+
+		checkConfigNameForRestart(file.getAbsolutePath());
+
+		log.debug("Starting cassandra...");
+		log.debug("Initialization needed");
+
+		System.setProperty("cassandra.config", "file:" + file.getAbsolutePath());
+		System.setProperty("cassandra-foreground", "true");
+		System.setProperty("cassandra.native.epoll.enabled", "false"); // JNA doesn't cope with relocated netty
+
+		cleanupAndRecreateDirectories();
+
+		final CassandraDaemon cassandraDaemon = new CassandraDaemon();
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		Future<?> future = executor.submit(new Runnable() {
+			@Override
+			public void run() {
+				cassandraDaemon.activate();
+				cassandraRef.compareAndSet(null, cassandraDaemon);
+			}
+		});
 
 		try {
-			List<String> keyspaces = new ArrayList<String>();
-			for (com.datastax.driver.core.KeyspaceMetadata keyspace : cluster.getMetadata().getKeyspaces()) {
-				if (!isSystemKeyspaceName(keyspace.getName())) {
-					keyspaces.add(keyspace.getName());
-				}
-			}
-			for (String keyspace : keyspaces) {
-				session.execute("DROP KEYSPACE " + keyspace);
-			}
+			future.get(timeout, MILLISECONDS);
+		} catch (ExecutionException e) {
+
+			log.error("Cassandra daemon did not start after " + timeout + " ms. Consider increasing the timeout");
+			throw new IllegalStateException("Cassandra daemon did not start within timeout", e);
+		} catch (InterruptedException e) {
+
+			log.error("Interrupted waiting for Cassandra daemon to start:", e);
+			Thread.currentThread().interrupt();
+
+			throw new IllegalStateException(e);
 		} finally {
-			session.close();
-			cluster.close();
-
+			executor.shutdown();
 		}
 	}
 
-	private static boolean isSystemKeyspaceName(String keyspaceName) {
-		return INTERNAL_CASSANDRA_KEYSPACE.equals(keyspaceName) || INTERNAL_CASSANDRA_AUTH_KEYSPACE.equals(keyspaceName)
-				|| INTERNAL_CASSANDRA_TRACES_KEYSPACE.equals(keyspaceName);
-	}
+	private static void cleanupAndRecreateDirectories() throws IOException {
 
-	private static void rmdir(String dir) throws IOException {
-		File dirFile = new File(dir);
-		if (dirFile.exists()) {
-			FileUtils.deleteRecursive(new File(dir));
-		}
-	}
-
-	/**
-	 * Copies a resource from within the jar to a directory.
-	 *
-	 * @param resource
-	 * @param directory
-	 * @throws IOException
-	 */
-	private static void copy(String resource, String directory) throws IOException {
-		mkdir(directory);
-		String fileName = resource.substring(resource.lastIndexOf("/") + 1);
-		File file = new File(directory + System.getProperty("file.separator") + fileName);
-		InputStream is = EmbeddedCassandraServerHelper.class.getResourceAsStream(resource);
-		OutputStream out = new FileOutputStream(file);
-		byte buf[] = new byte[1024];
-		int len;
-		while ((len = is.read(buf)) > 0) {
-			out.write(buf, 0, len);
-		}
-		out.close();
-	}
-
-	/**
-	 * Creates a directory
-	 *
-	 * @param dir
-	 * @throws IOException
-	 */
-	private static void mkdir(String dir) throws IOException {
-		FileUtils.createDirectory(dir);
-	}
-
-	private static void cleanupAndLeaveDirs() throws IOException {
-		mkdirs();
+		createCassandraDirectories();
 		cleanup();
-		mkdirs();
+		createCassandraDirectories();
+
 		CommitLog commitLog = CommitLog.instance;
 		commitLog.getContext(); // wait for commit log allocator instantiation to avoid hanging on a race condition
 		commitLog.resetUnsafe(); // cleanup screws w/ CommitLog, this brings it back to safe state
 	}
 
 	private static void cleanup() throws IOException {
-		// clean up commitlog
-		String[] directoryNames = { DatabaseDescriptor.getCommitLogLocation(), };
-		for (String dirName : directoryNames) {
-			File dir = new File(dirName);
-			if (!dir.exists())
-				throw new RuntimeException("No such directory: " + dir.getAbsolutePath());
-			FileUtils.deleteRecursive(dir);
-		}
 
-		// clean up data directory which are stored as data directory/table/data
-		// files
-		for (String dirName : DatabaseDescriptor.getAllDataFileLocations()) {
-			File dir = new File(dirName);
-			if (!dir.exists())
-				throw new RuntimeException("No such directory: " + dir.getAbsolutePath());
-			FileUtils.deleteRecursive(dir);
-		}
+		// clean up commitlog and data locations
+		rmdirs(DatabaseDescriptor.getCommitLogLocation());
+		rmdirs(DatabaseDescriptor.getAllDataFileLocations());
 	}
 
-	public static void mkdirs() {
+	private static void checkConfigNameForRestart(String yamlFile) {
+
+		boolean wasPreviouslyLaunched = cassandraRef.get() != null;
+
+		if (wasPreviouslyLaunched && !launchedYamlFile.equals(yamlFile)) {
+			throw new UnsupportedOperationException("We can't launch two Cassandra configurations in the same JVM instance");
+		}
+
+		launchedYamlFile = yamlFile;
+	}
+
+	/**
+	 * Copies a resource from within the jar to a directory.
+	 *
+	 * @param resource name of the resource
+	 * @param targetDirectory name of the target directory
+	 * @throws IOException
+	 */
+	private static void copy(String resource, File targetDirectory) throws IOException {
+
+		FileUtils.createDirectory(targetDirectory);
+
+		File file = new File(targetDirectory, new File(resource).getName());
+		InputStream is = EmbeddedCassandraServerHelper.class.getClassLoader().getResourceAsStream(resource);
+		OutputStream out = new FileOutputStream(file);
+
+		FileCopyUtils.copy(is, out);
+
+		out.close();
+		is.close();
+	}
+
+	private static void createCassandraDirectories() {
 		DatabaseDescriptor.createAllDirectories();
-
 	}
 
-	private static void readAndAdaptYaml(File cassandraConfig) throws IOException {
-		String yaml = readYamlFileToString(cassandraConfig);
+	private static void rmdirs(String... fileOrDirectories) throws IOException {
 
-		// read the ports and replace them if zero. dump back the changed string, preserving comments (thus no snakeyaml)
-		Pattern portPattern = Pattern.compile("^([a-z_]+)_port:\\s*([0-9]+)\\s*$", Pattern.MULTILINE);
-		Matcher portMatcher = portPattern.matcher(yaml);
-		StringBuffer sb = new StringBuffer();
-		boolean replaced = false;
-		while (portMatcher.find()) {
-			String portName = portMatcher.group(1);
-			int portValue = Integer.parseInt(portMatcher.group(2));
-			String replacement;
-			if (portValue == 0) {
-				portValue = findUnusedLocalPort();
-				replacement = portName + "_port: " + portValue;
-				replaced = true;
-			} else {
-				replacement = portMatcher.group(0);
+		for (String fileOrDirectory : fileOrDirectories) {
+			rmdirs(new File(fileOrDirectory));
+		}
+	}
+
+	private static void rmdirs(File... fileOrDirectories) throws IOException {
+
+		for (File fileOrDirectory : fileOrDirectories) {
+			if (!fileOrDirectory.exists()) {
+				continue;
 			}
-			portMatcher.appendReplacement(sb, replacement);
-		}
-		portMatcher.appendTail(sb);
-
-		if (replaced) {
-			writeStringToYamlFile(cassandraConfig, sb.toString());
+			FileUtils.deleteRecursive(fileOrDirectory);
 		}
 	}
-
-	private static String readYamlFileToString(File yamlFile) throws IOException {
-		// using UnicodeReader to read the correct encoding according to BOM
-		UnicodeReader reader = new UnicodeReader(new FileInputStream(yamlFile));
-		try {
-			StringBuffer sb = new StringBuffer();
-			char[] cbuf = new char[1024];
-
-			int readden = reader.read(cbuf);
-			while (readden >= 0) {
-				sb.append(cbuf, 0, readden);
-				readden = reader.read(cbuf);
-			}
-			return sb.toString();
-		} finally {
-			reader.close();
-
-		}
-	}
-
-	private static void writeStringToYamlFile(File yamlFile, String yaml) throws IOException {
-		// write utf-8 without BOM
-
-		Writer writer = new OutputStreamWriter(new FileOutputStream(yamlFile), "utf-8");
-		try {
-			writer.write(yaml);
-		} finally {
-			writer.close();
-		}
-	}
-
-	private static int findUnusedLocalPort() throws IOException {
-		return SocketUtils.findAvailableTcpPort();
-	}
-
 }

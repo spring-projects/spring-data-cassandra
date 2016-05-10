@@ -49,8 +49,8 @@ import ch.qos.logback.classic.LoggerContext;
  */
 public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 
-	private static LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-	private Logger logger = lc.getLogger(BasicCassandraPersistentEntityMetadataVerifier.class);
+	private static LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+	private Logger logger = loggerContext.getLogger(BasicCassandraPersistentEntityMetadataVerifier.class);
 	private CassandraMappingContext mappingContext;
 
 	@Before
@@ -140,8 +140,7 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 	@Table
 	static class Animal {
 
-		@PrimaryKey private AnimalPK key;
-
+		@PrimaryKey AnimalPK key;
 		private String name;
 	}
 
@@ -158,24 +157,18 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 			return super.equals(obj);
 		}
 
-		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private String species;
-
-		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) private String breed;
-
-		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED,
-				ordering = Ordering.DESCENDING) private String color;
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) String breed;
+		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING) String color;
 
 	}
 
 	@PrimaryKeyClass
 	static class AnimalPkNoOverrides {
 
-		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private String species;
-
-		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) private String breed;
-
-		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED,
-				ordering = Ordering.DESCENDING) private String color;
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) String breed;
+		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING) String color;
 	}
 
 	@Table
@@ -192,7 +185,6 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 	public static class PkAndPkc {
 
 		@PrimaryKey String primaryKey;
-
 		@PrimaryKeyColumn(ordinal = 0) String primaryKeyColumn;
 	}
 
@@ -206,7 +198,6 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 	public static class MultiPkc {
 
 		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) String pk0;
-
 		@PrimaryKeyColumn(ordinal = 1) String pk1;
 	}
 }

@@ -11,6 +11,9 @@
 	<logger name="org.springframework.cassandra" level="ERROR" />
 	<logger name="com.datastax" level="ERROR" />
 
+	<!-- See https://issues.apache.org/jira/browse/CASSANDRA-8220 -->
+	<logger name="org.apache.cassandra.service.CassandraDaemon" level="OFF" />
+
 	<!-- Suppress "Cannot connect to any host" messages caused by open sessions and
 	and an already shut down embedded Cassandra instance because of concurrent shutdown hooks -->
 	<logger name="com.datastax.driver.core.ControlConnection" level="OFF" />

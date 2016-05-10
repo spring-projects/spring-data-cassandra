@@ -15,13 +15,15 @@
  */
 package org.springframework.cassandra.test.integration.config.xml;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.cassandra.test.integration.KeyspaceRule;
 import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
@@ -42,8 +44,7 @@ public class MinimalXmlConfigTest extends AbstractEmbeddedCassandraIntegrationTe
 	private Session session;
 	private ConfigurableApplicationContext context;
 
-	@Rule
-	public final KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment, KEYSPACE);
+	@Rule public final KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment, KEYSPACE);
 
 	@Before
 	public void setUp() {
@@ -60,9 +61,9 @@ public class MinimalXmlConfigTest extends AbstractEmbeddedCassandraIntegrationTe
 	@Test
 	public void test() {
 
-		IntegrationTestUtils.assertSession(session);
 		IntegrationTestUtils.assertKeyspaceExists(KEYSPACE, session);
 
-		assertNotNull(context.getBean(CqlOperations.class));
+		CqlOperations cqlOperations = context.getBean(CqlOperations.class);
+		assertThat(cqlOperations.describeRing().size(), is(greaterThan(0)));
 	}
 }

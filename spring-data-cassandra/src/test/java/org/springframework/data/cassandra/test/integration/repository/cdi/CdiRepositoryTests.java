@@ -31,7 +31,6 @@ import org.springframework.data.cassandra.test.integration.repository.User;
  * @author Mohsin Husen
  * @author Mark Paluch
  */
-
 public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest {
 
 	private static CdiTestContainer cdiContainer;
@@ -46,6 +45,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 
 		cdiContainer = CdiTestContainerLoader.getCdiContainer();
 		cdiContainer.startApplicationScope();
+		cdiContainer.startContexts();
 		cdiContainer.bootContainer();
 	}
 

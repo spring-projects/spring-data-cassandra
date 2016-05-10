@@ -57,7 +57,7 @@ public class CompositeKeyCrudTest extends AbstractSpringDataEmbeddedCassandraInt
 	@Autowired
 	private CassandraTemplate template1;
 
-	private CorrelationEntity c1, c2;
+	private CorrelationEntity correlationEntity1, correlationEntity2;
 
 	@Before
 	public void setUp() throws Throwable {
@@ -69,14 +69,14 @@ public class CompositeKeyCrudTest extends AbstractSpringDataEmbeddedCassandraInt
 		map2.put("v", "1");
 		map2.put("labels", "4,5,6");
 
-		c1 = new CorrelationEntity("a", "b", "c", new Date(1), "d", map1);
-		c2 = new CorrelationEntity("a", "b", "c", new Date(2), "e", map2);
+		correlationEntity1 = new CorrelationEntity("a", "b", "c", new Date(1), "d", map1);
+		correlationEntity2 = new CorrelationEntity("a", "b", "c", new Date(2), "e", map2);
 	}
 
 	@Test
 	public void test() {
-		template1.insert(c1);
-		template1.insert(c2);
+		template1.insert(correlationEntity1);
+		template1.insert(correlationEntity2);
 
 		Select select = QueryBuilder.select().from("identity_correlations");
 		select.where(QueryBuilder.eq("type", "a")).and(QueryBuilder.eq("value", "b"));
@@ -89,8 +89,8 @@ public class CompositeKeyCrudTest extends AbstractSpringDataEmbeddedCassandraInt
 		QueryOptions qo = new QueryOptions();
 		qo.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.ONE);
 		ArrayList<CorrelationEntity> entities = new ArrayList<CorrelationEntity>();
-		entities.add(c1);
-		entities.add(c2);
+		entities.add(correlationEntity1);
+		entities.add(correlationEntity2);
 		template1.delete(entities, qo);
 
 		correlationEntities = template1.select(select, CorrelationEntity.class);

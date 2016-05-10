@@ -20,7 +20,6 @@ import java.util.UUID;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.springframework.cassandra.core.SessionCallback;
-import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.Cluster;
@@ -55,8 +54,6 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 				}
 			});
 
-	protected static CassandraConnectionProperties PROPS = new CassandraConnectionProperties();
-
 	/**
 	 * The {@link Cluster} that's connected to Cassandra.
 	 */
@@ -76,11 +73,13 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	}
 
 	/**
-	 * Creates a new {@link Cluster}.
+	 * Executes a CQL script from a classpath resource in given {@code keyspace}.
 	 *
-	 * @return
+	 * @param cqlResourceName
+	 * @param keyspace
 	 */
-	public static Cluster createCluster() {
-		return Cluster.builder().addContactPoint(PROPS.getCassandraHost()).withPort(PROPS.getCassandraPort()).build();
+	public void execute(String cqlResourceName, String keyspace) {
+		cassandraRule.execute(CqlDataSet.fromClassPath(cqlResourceName).executeIn(keyspace));
 	}
+
 }

@@ -70,7 +70,6 @@ public class KeyspaceRule extends ExternalResource {
 			this.cluster = cassandraRule.getCluster();
 			this.session = cluster.connect();
 		} else {
-
 			cassandraRule.before(new SessionCallback<Object>() {
 				@Override
 				public Object doInSession(Session s) throws DataAccessException {
@@ -103,9 +102,7 @@ public class KeyspaceRule extends ExternalResource {
 	@Override
 	protected void before() throws Throwable {
 
-		if (session == null) {
-			throw new IllegalStateException("Session was not initialized");
-		}
+		Assert.state(session != null, "Session was not initialized");
 
 		session.execute(String.format("CREATE KEYSPACE %s WITH durable_writes = false AND "
 				+ "replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};", keyspaceName));

@@ -15,13 +15,15 @@
  */
 package org.springframework.cassandra.test.integration.config.java;
 
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.config.java.AbstractCqlTemplateConfiguration;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +47,7 @@ public class CqlTemplateConfigIntegrationTest extends AbstractEmbeddedCassandraI
 
 		@Override
 		protected int getPort() {
-			return PROPS.getCassandraPort();
+			return cassandraEnvironment.getPort();
 		}
 	}
 
@@ -65,6 +67,8 @@ public class CqlTemplateConfigIntegrationTest extends AbstractEmbeddedCassandraI
 
 	@Test
 	public void test() {
-		IntegrationTestUtils.assertCqlTemplate(context.getBean(CqlTemplate.class));
+
+		CqlTemplate cqlTemplate = context.getBean(CqlTemplate.class);
+		assertThat(cqlTemplate.describeRing().size(), is(greaterThan(0)));
 	}
 }

@@ -94,8 +94,7 @@ public class CQLOperationsTest extends AbstractKeyspaceCreatingIntegrationTest {
 	@Before
 	public void setupTemplate() {
 
-		cassandraRule.execute(CqlDataSet.fromClassPath(
-			"cassandraOperationsTest-cql-dataload.cql").executeIn(this.keyspace));
+		execute("cassandraOperationsTest-cql-dataload.cql", this.keyspace);
 		this.cqlTemplate = new CqlTemplate(session);
 	}
 
