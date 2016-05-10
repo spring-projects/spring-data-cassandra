@@ -15,25 +15,12 @@
  */
 package org.springframework.cassandra.config;
 
-import com.datastax.driver.core.AuthProvider;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.LatencyTracker;
-import com.datastax.driver.core.PoolingOptions;
-import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.QueryOptions;
-import com.datastax.driver.core.SSLOptions;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SocketOptions;
-import com.datastax.driver.core.policies.LoadBalancingPolicy;
-import com.datastax.driver.core.policies.ReconnectionPolicy;
-import com.datastax.driver.core.policies.RetryPolicy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -50,14 +37,33 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.AuthProvider;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.LatencyTracker;
+import com.datastax.driver.core.PoolingOptions;
+import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.QueryOptions;
+import com.datastax.driver.core.SSLOptions;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.policies.LoadBalancingPolicy;
+import com.datastax.driver.core.policies.ReconnectionPolicy;
+import com.datastax.driver.core.policies.RetryPolicy;
+
 /**
- * Convenient factory for configuring a Cassandra Cluster.
+ * Convenient {@link org.springframework.beans.factory.FactoryBean} for configuring a Cassandra {@link Cluster}.
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author David Webb
  * @author Kirk Clemens
  * @author Jorge Davison
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see com.datastax.driver.core.Cluster
  */
 public class CassandraCqlClusterFactoryBean
 		implements FactoryBean<Cluster>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
@@ -77,23 +83,32 @@ public class CassandraCqlClusterFactoryBean
 	 */
 	private String contactPoints = DEFAULT_CONTACT_POINTS;
 	private int port = CassandraCqlClusterFactoryBean.DEFAULT_PORT;
+
+	// Protocol options
 	private CompressionType compressionType;
-	private PoolingOptions poolingOptions;
-	private SocketOptions socketOptions;
-	private QueryOptions queryOptions;
+	private SSLOptions sslOptions;
+	private boolean sslEnabled = DEFAULT_SSL_ENABLED;
 	private AuthProvider authProvider;
 	private String username;
 	private String password;
+	private ProtocolVersion protocolVersion;
+
+	// Policies
 	private LoadBalancingPolicy loadBalancingPolicy;
 	private ReconnectionPolicy reconnectionPolicy;
 	private RetryPolicy retryPolicy;
-	private ProtocolVersion protocolVersion;
+
+	private PoolingOptions poolingOptions;
+	private QueryOptions queryOptions;
+	private SocketOptions socketOptions;
+
 	private boolean metricsEnabled = DEFAULT_METRICS_ENABLED;
 	private boolean jmxReportingEnabled = DEFAULT_JMX_REPORTING_ENABLED;
-	private boolean sslEnabled = DEFAULT_SSL_ENABLED;
-	private SSLOptions sslOptions;
+
 	private Host.StateListener hostStateListener;
 	private LatencyTracker latencyTracker;
+
+	// Startup and shutdown actions
 	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<KeyspaceActionSpecification<?>>();
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
@@ -102,26 +117,41 @@ public class CassandraCqlClusterFactoryBean
 
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
 	@Override
-	public Cluster getObject() throws Exception {
+	public Cluster getObject() {
 		return cluster;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
 	@Override
 	public Class<? extends Cluster> getObjectType() {
 		return Cluster.class;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+	 */
 	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
+	 */
 	@Override
 	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 		return exceptionTranslator.translateExceptionIfPossible(ex);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
@@ -204,6 +234,16 @@ public class CassandraCqlClusterFactoryBean
 		executeSpecsAndScripts(keyspaceCreations, startupScripts);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
+	@Override
+	public void destroy() throws Exception {
+
+		executeSpecsAndScripts(keyspaceDrops, shutdownScripts);
+		cluster.close();
+	}
+
 	/**
 	 * Examines the contents of all the KeyspaceSpecificationFactoryBeans and generates the proper KeyspaceSpecification
 	 * from them.
@@ -218,9 +258,7 @@ public class CassandraCqlClusterFactoryBean
 			if (spec instanceof DropKeyspaceSpecification) {
 				keyspaceDrops.add((DropKeyspaceSpecification) spec);
 			}
-
 		}
-
 	}
 
 	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
@@ -269,13 +307,6 @@ public class CassandraCqlClusterFactoryBean
 				system.close();
 			}
 		}
-	}
-
-	@Override
-	public void destroy() throws Exception {
-
-		executeSpecsAndScripts(keyspaceDrops, shutdownScripts);
-		cluster.close();
 	}
 
 	/**
@@ -440,6 +471,10 @@ public class CassandraCqlClusterFactoryBean
 		this.startupScripts = scripts;
 	}
 
+	public List<String> getStartupScripts() {
+		return startupScripts;
+	}
+
 	/**
 	 * Set a {@link List} of raw {@link String CQL statements} that are executed when this factory is {@link #destroy()
 	 * destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are executed on a system session with no
@@ -451,6 +486,10 @@ public class CassandraCqlClusterFactoryBean
 		this.shutdownScripts = scripts;
 	}
 
+	public List<String> getShutdownScripts() {
+		return shutdownScripts;
+	}
+
 	/**
 	 * @return Returns the keyspaceSpecifications.
 	 */
@@ -459,8 +498,6 @@ public class CassandraCqlClusterFactoryBean
 	}
 
 	/**
-	 * If accumlating is true, we append to the list, otherwise we replace the list.
-	 *
 	 * @param keyspaceSpecifications The keyspaceSpecifications to set.
 	 */
 	public void setKeyspaceSpecifications(Set<KeyspaceActionSpecification<?>> keyspaceSpecifications) {
