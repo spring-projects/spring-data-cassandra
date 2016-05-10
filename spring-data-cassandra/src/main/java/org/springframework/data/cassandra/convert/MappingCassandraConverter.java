@@ -60,6 +60,12 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Matthew T. Adams
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.context.ApplicationContextAware
+ * @see org.springframework.beans.factory.BeanClassLoaderAware
+ * @see org.springframework.data.convert.EntityConverter
+ * @see org.springframework.data.convert.EntityReader
+ * @see org.springframework.data.convert.EntityWriter
  */
 public class MappingCassandraConverter extends AbstractCassandraConverter
 		implements CassandraConverter, ApplicationContextAware, BeanClassLoaderAware {
@@ -110,7 +116,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return conversionService.convert(row, rawType);
 		}
 
-		if(type.isCollectionLike() || type.isMap()){
+		if (type.isCollectionLike() || type.isMap()) {
 			return conversionService.convert(row, clazz);
 		}
 

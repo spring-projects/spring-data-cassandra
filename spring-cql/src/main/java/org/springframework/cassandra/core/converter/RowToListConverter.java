@@ -23,17 +23,21 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
 import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.ColumnDefinitions.Definition;
 
 /**
  * Converter to convert {@link Row}s to a {@link List} of {@link Object} representation.
  *
+ * @author Matthew T. Adams
+ * @author Stefan Birkner
  * @author Mark Paluch
  */
 @ReadingConverter
 public class RowToListConverter implements Converter<Row, List<Object>> {
+
+	public final static RowToListConverter INSTANCE = new RowToListConverter();
 
 	@Override
 	public List<Object> convert(Row row) {
@@ -47,8 +51,8 @@ public class RowToListConverter implements Converter<Row, List<Object>> {
 
 		for (Definition def : cols.asList()) {
 			String name = def.getName();
-			list.add(row.isNull(name) ? null : def.getType().deserialize(
-					row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
+			list.add(row.isNull(name) ? null
+					: def.getType().deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return list;

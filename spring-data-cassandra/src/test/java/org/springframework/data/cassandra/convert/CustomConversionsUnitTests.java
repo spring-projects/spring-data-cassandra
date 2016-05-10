@@ -113,7 +113,7 @@ public class CustomConversionsUnitTests {
 	 * @see DATACASS-280
 	 */
 	@Test
-	public void discoversConvertersForSubtypesOfMongoTypes() {
+	public void discoversConvertersForSubtypesOfCassandraTypes() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(StringToIntegerConverter.INSTANCE));
 		assertThat(conversions.hasCustomReadTarget(String.class, Integer.class), is(true));

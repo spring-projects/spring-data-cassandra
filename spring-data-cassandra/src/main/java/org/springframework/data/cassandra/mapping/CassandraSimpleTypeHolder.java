@@ -70,13 +70,13 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	private static Map<Name, DataType> nameToDataType() {
 
-		Map<Name, DataType> dataTypesByDataTypeName = new HashMap<Name, DataType>(16);
+		Map<Name, DataType> nameToDataType = new HashMap<Name, DataType>(16);
 
 		for (DataType dataType : DataType.allPrimitiveTypes()) {
-			dataTypesByDataTypeName.put(dataType.getName(), dataType);
+			nameToDataType.put(dataType.getName(), dataType);
 		}
 
-		return dataTypesByDataTypeName;
+		return nameToDataType;
 	}
 
 	/**
@@ -85,23 +85,23 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	private static Map<Class<?>, DataType> classToDataType(Map<Class<?>, Class<?>> primitiveWrappers) {
 
-		Map<Class<?>, DataType> dataTypesByJavaClass = new HashMap<Class<?>, DataType>(16);
+		Map<Class<?>, DataType> classToDataType = new HashMap<Class<?>, DataType>(16);
 
 		for (DataType dataType : DataType.allPrimitiveTypes()) {
 
 			Class<?> javaClass = dataType.asJavaClass();
-			dataTypesByJavaClass.put(javaClass, dataType);
+			classToDataType.put(javaClass, dataType);
 
 			Class<?> primitiveJavaClass = primitiveWrappers.get(javaClass);
 			if (primitiveJavaClass != null) {
-				dataTypesByJavaClass.put(primitiveJavaClass, dataType);
+				classToDataType.put(primitiveJavaClass, dataType);
 			}
 		}
 
 		// override String to text datatype as String is used multiple times
-		dataTypesByJavaClass.put(String.class, DataType.text());
+		classToDataType.put(String.class, DataType.text());
 
-		return dataTypesByJavaClass;
+		return classToDataType;
 	}
 
 	/**

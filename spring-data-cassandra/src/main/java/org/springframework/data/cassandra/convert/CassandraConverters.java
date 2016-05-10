@@ -27,8 +27,8 @@ import org.springframework.cassandra.core.converter.RowToListConverter;
 import org.springframework.cassandra.core.converter.RowToMapConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.convert.ReadingConverter;
+import org.springframework.util.Assert;
 import org.springframework.util.NumberUtils;
 
 import com.datastax.driver.core.Row;
@@ -61,14 +61,14 @@ abstract class CassandraConverters {
 		converters.add(RowToInetAddressConverter.INSTANCE);
 		converters.add(RowToStringConverter.INSTANCE);
 		converters.add(RowToUuidConverter.INSTANCE);
-		converters.add(new RowToListConverter());
-		converters.add(new RowToMapConverter());
+		converters.add(RowToListConverter.INSTANCE);
+		converters.add(RowToMapConverter.INSTANCE);
 
 		return converters;
 	}
 
 	@ReadingConverter
-	public static enum RowToBooleanConverter implements Converter<Row, Boolean> {
+	public enum RowToBooleanConverter implements Converter<Row, Boolean> {
 		INSTANCE;
 
 		@Override
@@ -83,7 +83,7 @@ abstract class CassandraConverters {
 	 * @author Mark Paluch
 	 */
 	@ReadingConverter
-	public static enum RowToDateConverter implements Converter<Row, Date> {
+	public enum RowToDateConverter implements Converter<Row, Date> {
 		INSTANCE;
 
 		@Override
@@ -99,7 +99,7 @@ abstract class CassandraConverters {
 	 * @author Mark Paluch
 	 */
 	@ReadingConverter
-	public static enum RowToInetAddressConverter implements Converter<Row, InetAddress> {
+	public enum RowToInetAddressConverter implements Converter<Row, InetAddress> {
 		INSTANCE;
 
 		@Override
@@ -124,11 +124,13 @@ abstract class CassandraConverters {
 	 * @see java.math.BigDecimal
 	 */
 	@ReadingConverter
-	public static enum RowToNumberConverterFactory implements ConverterFactory<Row, Number> {
+	public enum RowToNumberConverterFactory implements ConverterFactory<Row, Number> {
 		INSTANCE;
 
 		@Override
 		public <T extends Number> Converter<Row, T> getConverter(Class<T> targetType) {
+
+			Assert.notNull(targetType, "Target type must not be null");
 			return new RowToNumber<T>(targetType);
 		}
 
@@ -159,7 +161,7 @@ abstract class CassandraConverters {
 	 * @author Mark Paluch
 	 */
 	@ReadingConverter
-	public static enum RowToStringConverter implements Converter<Row, String> {
+	public enum RowToStringConverter implements Converter<Row, String> {
 		INSTANCE;
 
 		@Override
@@ -174,7 +176,7 @@ abstract class CassandraConverters {
 	 * @author Mark Paluch
 	 */
 	@ReadingConverter
-	public static enum RowToUuidConverter implements Converter<Row, UUID> {
+	public enum RowToUuidConverter implements Converter<Row, UUID> {
 		INSTANCE;
 
 		@Override

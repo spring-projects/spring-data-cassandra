@@ -119,7 +119,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Populates the given {@link GenericConversionService} with the convertes registered.
+	 * Populates the given {@link GenericConversionService} with the registered converters.
 	 *
 	 * @param conversionService
 	 */
@@ -212,7 +212,7 @@ public class CustomConversions {
 
 	/**
 	 * Returns the target type to convert to in case we have a custom conversion registered to convert the given source
-	 * type into a Mongo native one.
+	 * type into a Cassandra native one.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @return
@@ -229,7 +229,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns the target type we can readTargetWriteLocl an inject of the given source type to. The returned type might
+	 * Returns the target type we can inject of the given source type to. The returned type might
 	 * be a subclass of the given expected type though. If {@code expectedTargetType} is {@literal null} we will simply
 	 * return the first target type matching or {@literal null} if no conversion can be found.
 	 *
@@ -254,7 +254,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to readTargetWriteLocl into a Mongo native type. The
+	 * Returns whether we have a custom conversion registered into a Cassandra native type. The
 	 * returned type might be a subclass of the given expected type though.
 	 *
 	 * @param sourceType must not be {@literal null}
@@ -265,8 +265,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to readTargetWriteLocl an object of the given source type
-	 * into an object of the given Mongo native target type.
+	 * Returns whether we have a custom conversion registered to an object of the given source type
+	 * into an object of the given Cassandra native target type.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param requestedTargetType
@@ -277,7 +277,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to readTargetReadLock the given source into the given target
+	 * Returns whether we have a custom conversion registered to the given source into the given target
 	 * type.
 	 *
 	 * @param sourceType must not be {@literal null}

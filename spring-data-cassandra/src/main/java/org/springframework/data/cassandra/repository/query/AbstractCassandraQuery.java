@@ -34,7 +34,6 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryExecuti
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultSetQuery;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SingleEntityExecution;
-import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -187,7 +186,8 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 */
 	@Deprecated
 	public void setConversionService(ConversionService conversionService) {
-		// not supported anymore
+		throw new UnsupportedOperationException("setConversionService(ConversionService) is not supported anymore. "
+				+ "Please use CassandraMappingContext instead");
 	}
 
 	/**

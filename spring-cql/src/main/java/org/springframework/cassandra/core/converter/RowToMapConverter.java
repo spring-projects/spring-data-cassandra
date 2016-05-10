@@ -17,7 +17,6 @@
 package org.springframework.cassandra.core.converter;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.core.convert.converter.Converter;
@@ -31,10 +30,14 @@ import com.datastax.driver.core.Row;
 /**
  * Converter to convert {@link Row}s to a {@link Map} of {@link String}/{@link Object} representation.
  *
+ * @author Matthew T. Adams
+ * @author David Webb
  * @author Mark Paluch
  */
 @ReadingConverter
 public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
+
+	public final static RowToMapConverter INSTANCE = new RowToMapConverter();
 
 	@Override
 	public Map<String, Object> convert(Row row) {
@@ -49,10 +52,8 @@ public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
 		for (Definition def : cols.asList()) {
 
 			String name = def.getName();
-			map.put(
-					name,
-					row.isNull(name) ? null : def.getType().deserialize(row.getBytesUnsafe(name),
-							ProtocolVersion.NEWEST_SUPPORTED));
+			map.put(name, row.isNull(name) ? null
+					: def.getType().deserialize(row.getBytesUnsafe(name), ProtocolVersion.NEWEST_SUPPORTED));
 		}
 
 		return map;

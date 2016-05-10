@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
  * Conversion registration information.
  *
  * @author Mark Paluch
+ * @since 1.5
  */
 class ConverterRegistration {
 
@@ -64,7 +65,7 @@ class ConverterRegistration {
 	 * @return
 	 */
 	public boolean isWriting() {
-		return writing == true || (!reading && isSimpleTargetType());
+		return writing || (!reading && isSimpleTargetType());
 	}
 
 	/**
@@ -73,7 +74,7 @@ class ConverterRegistration {
 	 * @return
 	 */
 	public boolean isReading() {
-		return reading == true || (!writing && isSimpleSourceType());
+		return reading || (!writing && isSimpleSourceType());
 	}
 
 	/**

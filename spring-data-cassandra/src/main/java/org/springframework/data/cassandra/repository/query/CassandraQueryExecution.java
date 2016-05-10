@@ -16,18 +16,14 @@
 
 package org.springframework.data.cassandra.repository.query;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.convert.EntityInstantiators;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.ClassUtils;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Query executions for Cassandra.
@@ -45,7 +41,7 @@ interface CassandraQueryExecution {
 	 * @author Mark Paluch
 	 */
 	@RequiredArgsConstructor
-	static final class CollectionExecution implements CassandraQueryExecution {
+	final class CollectionExecution implements CassandraQueryExecution {
 
 		private final @NonNull CassandraOperations operations;
 
@@ -61,9 +57,9 @@ interface CassandraQueryExecution {
 	 * @author Mark Paluch
 	 */
 	@RequiredArgsConstructor
-	static final class SingleEntityExecution implements CassandraQueryExecution {
+	final class SingleEntityExecution implements CassandraQueryExecution {
 
-		private final CassandraOperations operations;
+		private final @NonNull CassandraOperations operations;
 
 		@Override
 		public Object execute(String query, Class<?> type) {
@@ -77,9 +73,9 @@ interface CassandraQueryExecution {
 	 * @author Mark Paluch
 	 */
 	@RequiredArgsConstructor
-	static final class ResultSetQuery implements CassandraQueryExecution {
+	final class ResultSetQuery implements CassandraQueryExecution {
 
-		private final CassandraOperations operations;
+		private final @NonNull CassandraOperations operations;
 
 		@Override
 		public Object execute(String query, Class<?> type) {
@@ -93,7 +89,7 @@ interface CassandraQueryExecution {
 	 * @author Mark Paluch
 	 */
 	@RequiredArgsConstructor
-	static final class ResultProcessingExecution implements CassandraQueryExecution {
+	final class ResultProcessingExecution implements CassandraQueryExecution {
 
 		private final @NonNull CassandraQueryExecution delegate;
 		private final @NonNull Converter<Object, Object> converter;
@@ -110,7 +106,7 @@ interface CassandraQueryExecution {
 	 * @author Mark Paluch
 	 */
 	@RequiredArgsConstructor
-	static final class ResultProcessingConverter implements Converter<Object, Object> {
+	final class ResultProcessingConverter implements Converter<Object, Object> {
 
 		private final @NonNull ResultProcessor processor;
 

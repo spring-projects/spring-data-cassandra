@@ -62,6 +62,9 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 		this.conversions = conversions;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
 	@Override
 	public void afterPropertiesSet() {
 		initializeConverters();
@@ -82,5 +85,4 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 	public ConversionService getConversionService() {
 		return conversionService;
 	}
-
 }
