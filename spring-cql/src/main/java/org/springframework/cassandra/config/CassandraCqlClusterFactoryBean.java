@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cassandra.config;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -32,6 +32,7 @@ import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.KeyspaceActionSpecification;
+import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -60,6 +61,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author David Webb
  * @author Kirk Clemens
  * @author Jorge Davison
+ * @author John Blum
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
@@ -264,36 +266,32 @@ public class CassandraCqlClusterFactoryBean
 	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
 
 		Session system = null;
-		CqlTemplate template = null;
 
 		try {
-			if (specs != null) {
-				system = specs.size() == 0 ? null : cluster.connect();
-				template = system == null ? null : new CqlTemplate(system);
+			if (!CollectionUtils.isEmpty(specs)) {
+				system = cluster.connect();
 
-				Iterator<?> i = specs.iterator();
-				while (i.hasNext()) {
-					KeyspaceActionSpecification<?> spec = (KeyspaceActionSpecification<?>) i.next();
+				CqlTemplate template = new CqlTemplate(system);
+
+				for (Object spec : specs) {
 					String cql = (spec instanceof CreateKeyspaceSpecification)
-							? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql()
-							: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
+						? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql()
+						: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
+
+					if (log.isDebugEnabled()) {
+						log.debug("executing raw CQL [{}]", cql);
+					}
 
 					template.execute(cql);
 				}
 			}
 
-			if (scripts != null) {
+			if (!CollectionUtils.isEmpty(scripts)) {
+				system = (system != null ? system : cluster.connect());
 
-				if (system == null) {
-					system = scripts.size() == 0 ? null : cluster.connect();
-				}
-
-				if (template == null) {
-					template = system == null ? null : new CqlTemplate(system);
-				}
+				CqlTemplate template = new CqlTemplate(system);
 
 				for (String script : scripts) {
-
 					if (log.isDebugEnabled()) {
 						log.debug("executing raw CQL [{}]", script);
 					}
@@ -302,7 +300,6 @@ public class CassandraCqlClusterFactoryBean
 				}
 			}
 		} finally {
-
 			if (system != null) {
 				system.close();
 			}
@@ -312,8 +309,6 @@ public class CassandraCqlClusterFactoryBean
 	/**
 	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost}, see
 	 * {@link #DEFAULT_CONTACT_POINTS}.
-	 *
-	 * @param contactPoints
 	 */
 	public void setContactPoints(String contactPoints) {
 		this.contactPoints = contactPoints;
@@ -321,8 +316,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set the port for the contact points. Default is {@code 9042}, see {@link #DEFAULT_PORT}.
-	 *
-	 * @param port
 	 */
 	public void setPort(int port) {
 		this.port = port;
@@ -330,8 +323,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set the {@link CompressionType}. Default is uncompressed.
-	 *
-	 * @param compressionType
 	 */
 	public void setCompressionType(CompressionType compressionType) {
 		this.compressionType = compressionType;
@@ -339,8 +330,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set the {@link PoolingOptions}.
-	 *
-	 * @param poolingOptions
 	 */
 	public void setPoolingOptions(PoolingOptions poolingOptions) {
 		this.poolingOptions = poolingOptions;
@@ -349,7 +338,6 @@ public class CassandraCqlClusterFactoryBean
 	/**
 	 * Set the {@link ProtocolVersion}.
 	 *
-	 * @param protocolVersion
 	 * @since 1.4
 	 */
 	public void setProtocolVersion(ProtocolVersion protocolVersion) {
@@ -358,8 +346,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set the {@link SocketOptions} containing low-level socket options.
-	 *
-	 * @param socketOptions
 	 */
 	public void setSocketOptions(SocketOptions socketOptions) {
 		this.socketOptions = socketOptions;
@@ -367,8 +353,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set the {@link QueryOptions}.
-	 *
-	 * @param queryOptions
 	 */
 	public void setQueryOptions(QueryOptions queryOptions) {
 		this.queryOptions = queryOptions;
@@ -376,8 +360,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set the {@link AuthProvider}. Default is unauthenticated.
-	 *
-	 * @param authProvider
 	 */
 	public void setAuthProvider(AuthProvider authProvider) {
 		this.authProvider = authProvider;
@@ -385,8 +367,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set the {@link LoadBalancingPolicy}.
-	 *
-	 * @param loadBalancingPolicy
 	 */
 	public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
 		this.loadBalancingPolicy = loadBalancingPolicy;
@@ -394,8 +374,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set the {@link ReconnectionPolicy}.
-	 *
-	 * @param reconnectionPolicy
 	 */
 	public void setReconnectionPolicy(ReconnectionPolicy reconnectionPolicy) {
 		this.reconnectionPolicy = reconnectionPolicy;
@@ -403,8 +381,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set the {@link RetryPolicy}.
-	 *
-	 * @param retryPolicy
 	 */
 	public void setRetryPolicy(RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
@@ -412,8 +388,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Set whether metrics are enabled. Default is {@literal true}, see {@link #DEFAULT_METRICS_ENABLED}.
-	 *
-	 * @param metricsEnabled
 	 */
 	public void setMetricsEnabled(boolean metricsEnabled) {
 		this.metricsEnabled = metricsEnabled;
@@ -424,8 +398,6 @@ public class CassandraCqlClusterFactoryBean
 	 * this factory is {@link #afterPropertiesSet() initialized}. {@link CreateKeyspaceSpecification Create keyspace
 	 * specifications} are executed on a system session with no keyspace set, before executing
 	 * {@link #setStartupScripts(List)}.
-	 *
-	 * @param specifications
 	 */
 	public void setKeyspaceCreations(List<CreateKeyspaceSpecification> specifications) {
 		this.keyspaceCreations = specifications;
@@ -433,8 +405,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Return a {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
-	 *
-	 * @return
 	 */
 	public List<CreateKeyspaceSpecification> getKeyspaceCreations() {
 		return keyspaceCreations;
@@ -444,8 +414,6 @@ public class CassandraCqlClusterFactoryBean
 	 * Set a {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications} that are executed when this
 	 * factory is {@link #destroy() destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are
 	 * executed on a system session with no keyspace set, before executing {@link #setShutdownScripts(List)}.
-	 *
-	 * @param specifications
 	 */
 	public void setKeyspaceDrops(List<DropKeyspaceSpecification> specifications) {
 		this.keyspaceDrops = specifications;
@@ -453,8 +421,6 @@ public class CassandraCqlClusterFactoryBean
 
 	/**
 	 * Reurn the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
-	 *
-	 * @return
 	 */
 	public List<DropKeyspaceSpecification> getKeyspaceDrops() {
 		return keyspaceDrops;
@@ -464,8 +430,6 @@ public class CassandraCqlClusterFactoryBean
 	 * Set a {@link List} of raw {@link String CQL statements} that are executed when this factory is
 	 * {@link #afterPropertiesSet() initialized}. Scripts are executed on a system session with no keyspace set, after
 	 * executing {@link #setKeyspaceCreations(List)}.
-	 *
-	 * @param scripts
 	 */
 	public void setStartupScripts(List<String> scripts) {
 		this.startupScripts = scripts;
@@ -479,8 +443,6 @@ public class CassandraCqlClusterFactoryBean
 	 * Set a {@link List} of raw {@link String CQL statements} that are executed when this factory is {@link #destroy()
 	 * destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are executed on a system session with no
 	 * keyspace set, after executing {@link #setKeyspaceDrops(List)}.
-	 *
-	 * @param scripts
 	 */
 	public void setShutdownScripts(List<String> scripts) {
 		this.shutdownScripts = scripts;
@@ -568,6 +530,7 @@ public class CassandraCqlClusterFactoryBean
 			case SNAPPY:
 				return Compression.SNAPPY;
 		}
+
 		throw new IllegalArgumentException("unknown compression type " + type);
 	}
 }

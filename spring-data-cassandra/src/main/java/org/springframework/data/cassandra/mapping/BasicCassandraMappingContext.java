@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.cassandra.mapping;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.createTable;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -51,20 +52,23 @@ import com.datastax.driver.core.TableMetadata;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-public class BasicCassandraMappingContext extends
-		AbstractMappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty> implements
-		CassandraMappingContext, ApplicationContextAware {
+public class BasicCassandraMappingContext extends AbstractMappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty>
+		implements CassandraMappingContext, ApplicationContextAware {
 
 	protected ApplicationContext context;
-	protected Mapping mapping = new Mapping();
+
 	protected ClassLoader beanClassLoader;
+
 	protected CassandraPersistentEntityMetadataVerifier verifier = new BasicCassandraPersistentEntityMetadataVerifier();
 
+	protected Mapping mapping = new Mapping();
+
 	// useful caches
+	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<Class<?>, CassandraPersistentEntity<?>>();
 	protected Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<CqlIdentifier, Set<CassandraPersistentEntity<?>>>();
+
 	protected Set<CassandraPersistentEntity<?>> nonPrimaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
-	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<Class<?>, CassandraPersistentEntity<?>>();
 
 	/**
 	 * Creates a new {@link BasicCassandraMappingContext}.
@@ -75,9 +79,7 @@ public class BasicCassandraMappingContext extends
 
 	@Override
 	public void initialize() {
-
 		super.initialize();
-
 		processMappingOverrides();
 	}
 
@@ -129,9 +131,11 @@ public class BasicCassandraMappingContext extends
 		// now do some caching of the entity
 
 		Set<CassandraPersistentEntity<?>> entities = entitySetsByTableName.get(entity.getTableName());
+
 		if (entities == null) {
 			entities = new HashSet<CassandraPersistentEntity<?>>();
 		}
+
 		entities.add(entity);
 		entitySetsByTableName.put(entity.getTableName(), entities);
 
@@ -180,13 +184,13 @@ public class BasicCassandraMappingContext extends
 							if (pkProp.isPartitionKeyColumn()) {
 								spec.partitionKeyColumn(pkProp.getColumnName(), pkProp.getDataType());
 							} else { // it's a cluster column
-								spec.clusteredKeyColumn(pkProp.getColumnName(), pkProp.getDataType(), pkProp.getPrimaryKeyOrdering());
+								spec.clusteredKeyColumn(pkProp.getColumnName(), pkProp.getDataType(),
+									pkProp.getPrimaryKeyOrdering());
 							}
 						}
 					});
 
 				} else {
-
 					if (prop.isIdProperty() || prop.isPartitionKeyColumn()) {
 						spec.partitionKeyColumn(prop.getColumnName(), prop.getDataType());
 					} else if (prop.isClusterKeyColumn()) {
@@ -226,20 +230,25 @@ public class BasicCassandraMappingContext extends
 			}
 
 			String entityClassName = entityMapping.getEntityClassName();
+
 			Class<?> entityClass;
+
 			try {
 				entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
 			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException(String.format("unknown persistent entity name [%s]", entityClassName), e);
+				throw new IllegalStateException(String.format("unknown persistent entity name [%s]",
+					entityClassName), e);
 			}
 
 			CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
 
 			if (entity == null) {
-				throw new IllegalStateException(String.format("unknown persistent entity class name [%s]", entityClassName));
+				throw new IllegalStateException(String.format("unknown persistent entity class name [%s]",
+					entityClassName));
 			}
 
 			String tableName = entityMapping.getTableName();
+
 			if (StringUtils.hasText(tableName)) {
 				entity.setTableName(cqlId(tableName, Boolean.valueOf(entityMapping.getForceQuote())));
 			}
@@ -258,13 +267,16 @@ public class BasicCassandraMappingContext extends
 	protected void processMappingOverride(CassandraPersistentEntity<?> entity, PropertyMapping mapping) {
 
 		CassandraPersistentProperty property = entity.getPersistentProperty(mapping.getPropertyName());
+
 		if (property == null) {
 			throw new IllegalArgumentException(String.format("entity class [%s] has no persistent property named [%s]",
-					entity.getType().getName(), mapping.getPropertyName()));
+				entity.getType().getName(), mapping.getPropertyName()));
 		}
 
 		boolean forceQuote = false;
+
 		String value = mapping.getForceQuote();
+
 		if (StringUtils.hasText(value)) {
 			property.setForceQuote(forceQuote = Boolean.valueOf(value));
 		}
@@ -274,7 +286,6 @@ public class BasicCassandraMappingContext extends
 		if (StringUtils.hasText(value)) {
 			property.setColumnName(cqlId(value, forceQuote));
 		}
-
 	}
 
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {
@@ -285,6 +296,7 @@ public class BasicCassandraMappingContext extends
 	public CassandraPersistentEntity<?> getExistingPersistentEntity(Class<?> type) {
 
 		CassandraPersistentEntity<?> entity = entitiesByType.get(type);
+
 		if (entity != null) {
 			return entity;
 		}

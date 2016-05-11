@@ -16,13 +16,8 @@
 
 package org.springframework.data.cassandra.test.integration.config;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isA;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -56,15 +51,12 @@ import com.datastax.driver.core.exceptions.AlreadyExistsException;
  * of various {@link SchemaAction}s on startup of a Spring configured, Cassandra application client.
  *
  * @author John Blum
- * @see org.junit.Test
- * @see org.junit.Rule
- * @see org.junit.rules.ExpectedException
  * @see org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest
  * @see org.springframework.cassandra.test.integration.KeyspaceRule
  * @see org.springframework.data.cassandra.config.CassandraSessionFactoryBean
  * @see org.springframework.data.cassandra.config.SchemaAction
- * @see org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration
- * @since 1.0.0
+ * @see <a href="https://jira.spring.io/browse/DATACASS-219>DATACASS-219</a>
+ * @since 1.5.0
  */
 public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
 
@@ -99,8 +91,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 		try {
 			applicationContext = newApplicationContext(annotatedClass);
 			return sessionCallback.doInSession(applicationContext.getBean(Session.class));
-		}
-		finally {
+		} finally {
 			close(applicationContext);
 		}
 	}
@@ -267,6 +258,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 				@Override public void afterPropertiesSet() throws Exception {
 					// avoid Cassandra Cluster creation; use embedded
 				}
+
 				@Override public Cluster getObject() {
 					return cassandraEnvironment.getCluster();
 				}

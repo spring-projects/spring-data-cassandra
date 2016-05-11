@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.cassandra.config.xml;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
@@ -21,7 +22,7 @@ import org.springframework.data.repository.config.RepositoryBeanDefinitionParser
 
 /**
  * Namespace handler for spring-data-cassandra.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
