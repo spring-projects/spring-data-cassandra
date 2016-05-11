@@ -16,28 +16,14 @@
 
 package org.springframework.data.cassandra.config;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.DEFAULT_CREATE_IF_NOT_EXISTS;
-import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.DEFAULT_DROP_TABLES;
-import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.DEFAULT_DROP_UNUSED_TABLES;
+import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.*;
 
 import java.util.Collections;
 import java.util.Map;
@@ -68,14 +54,8 @@ import com.datastax.driver.core.TableMetadata;
  * of the {@link CassandraSessionFactoryBean} class.
  *
  * @author John Blum
- * @see org.junit.Rule
- * @see org.junit.Test
- * @see org.junit.rules.ExpectedException
- * @see org.junit.runner.RunWith
- * @see org.mockito.Mock
- * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
  * @see org.springframework.data.cassandra.config.CassandraSessionFactoryBean
+ * @see <a href="https://jira.spring.io/browse/DATACASS-219>DATACASS-219</a>
  * @since 1.5.0
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -136,7 +116,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 	public void afterPropertiesSetThrowsIllegalStateExceptionWhenConverterIsNull() throws Exception {
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Converter must not be null");
+		exception.expectMessage("Converter was not properly initialized");
 
 		factoryBean.setCluster(mockCluster);
 		factoryBean.afterPropertiesSet();

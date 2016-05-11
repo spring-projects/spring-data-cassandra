@@ -40,7 +40,7 @@ import com.datastax.driver.core.Session;
 /**
  * Factory for creating and configuring a Cassandra {@link Session}, which is a thread-safe singleton.
  * As such, it is sufficient to have one {@link Session} per application and keyspace.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author John Blum

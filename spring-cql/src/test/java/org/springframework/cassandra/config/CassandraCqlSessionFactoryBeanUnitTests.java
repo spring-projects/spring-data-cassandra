@@ -16,24 +16,11 @@
 
 package org.springframework.cassandra.config;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,14 +45,8 @@ import com.datastax.driver.core.Session;
  * and functionality of the {@link CassandraCqlSessionFactoryBean} class.
  *
  * @author John Blum
- * @see org.junit.Rule
- * @see org.junit.Test
- * @see org.junit.rules.ExpectedException
- * @see org.junit.runner.RunWith
- * @see org.mockito.Mock
- * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
  * @see org.springframework.cassandra.config.CassandraCqlSessionFactoryBean
+ * @see <a href="https://jira.spring.io/browse/DATACASS-219>DATACASS-219</a>
  * @since 1.5.0
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -293,8 +274,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		try {
 			exception.expect(UnsupportedOperationException.class);
 			actualStartupScripts.add("/path/to/yetAnother.cql");
-		}
-		finally {
+		} finally {
 			assertThat(actualStartupScripts.size(), is(equalTo(1)));
 		}
 	}
@@ -340,10 +320,8 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		try {
 			exception.expect(UnsupportedOperationException.class);
 			actualShutdownScripts.add("/path/to/blowUpCluster.cql");
-		}
-		finally {
+		} finally {
 			assertThat(actualShutdownScripts.size(), is(equalTo(1)));
 		}
 	}
-
 }

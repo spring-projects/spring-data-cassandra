@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cassandra.config;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.KeyspaceActionSpecification;
+import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -57,6 +59,13 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author Matthew T. Adams
  * @author David Webb
  * @author Mark Paluch
+ * @author Kirk Clemens
+ * @author Jorge Davison
+ * @author John Blum
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see com.datastax.driver.core.Cluster
  */
 public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, InitializingBean, DisposableBean,
 		PersistenceExceptionTranslator {
@@ -214,12 +223,12 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
 
 		Session system = null;
-		CqlTemplate template = null;
 
 		try {
-			if (specs != null) {
-				system = specs.size() == 0 ? null : cluster.connect();
-				template = system == null ? null : new CqlTemplate(system);
+			if (!CollectionUtils.isEmpty(specs)) {
+				system = cluster.connect();
+
+				CqlTemplate template = new CqlTemplate(system);
 
 				Iterator<?> i = specs.iterator();
 				while (i.hasNext()) {
@@ -232,18 +241,12 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 				}
 			}
 
-			if (scripts != null) {
+			if (!CollectionUtils.isEmpty(scripts)) {
+				system = (system != null ? system : cluster.connect());
 
-				if (system == null) {
-					system = scripts.size() == 0 ? null : cluster.connect();
-				}
-
-				if (template == null) {
-					template = system == null ? null : new CqlTemplate(system);
-				}
+				CqlTemplate template = new CqlTemplate(system);
 
 				for (String script : scripts) {
-
 					if (log.isDebugEnabled()) {
 						log.debug("executing raw CQL [{}]", script);
 					}
@@ -252,7 +255,6 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 				}
 			}
 		} finally {
-
 			if (system != null) {
 				system.close();
 			}
@@ -273,54 +275,98 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 		this.contactPoints = contactPoints;
 	}
 
+	/**
+	 * Set the port for the contact points. Default is {@code 9042}, see {@link #DEFAULT_PORT}.
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}
 
+	/**
+	 * Set the {@link CompressionType}. Default is uncompressed.
+	 */
 	public void setCompressionType(CompressionType compressionType) {
 		this.compressionType = compressionType;
 	}
 
+	/**
+	 * Set the {@link PoolingOptions}.
+	 */
 	public void setPoolingOptions(PoolingOptions poolingOptions) {
 		this.poolingOptions = poolingOptions;
 	}
 
+	/**
+	 * Set the {@link SocketOptions} containing low-level socket options.
+	 */
 	public void setSocketOptions(SocketOptions socketOptions) {
 		this.socketOptions = socketOptions;
 	}
 
+	/**
+	 * Set the {@link AuthProvider}. Default is unauthenticated.
+	 */
 	public void setAuthProvider(AuthProvider authProvider) {
 		this.authProvider = authProvider;
 	}
 
+	/**
+	 * Set the {@link LoadBalancingPolicy}.
+	 */
 	public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
 		this.loadBalancingPolicy = loadBalancingPolicy;
 	}
 
+	/**
+	 * Set the {@link ReconnectionPolicy}.
+	 */
 	public void setReconnectionPolicy(ReconnectionPolicy reconnectionPolicy) {
 		this.reconnectionPolicy = reconnectionPolicy;
 	}
 
+	/**
+	 * Set the {@link RetryPolicy}.
+	 */
 	public void setRetryPolicy(RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
 	}
 
+	/**
+	 * Set whether metrics are enabled. Default is {@literal true}, see {@link #DEFAULT_METRICS_ENABLED}.
+	 */
 	public void setMetricsEnabled(boolean metricsEnabled) {
 		this.metricsEnabled = metricsEnabled;
 	}
 
+	/**
+	 * Set a {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications} that are executed when
+	 * this factory is {@link #afterPropertiesSet() initialized}. {@link CreateKeyspaceSpecification Create keyspace
+	 * specifications} are executed on a system session with no keyspace set, before executing
+	 * {@link #setStartupScripts(List)}.
+	 */
 	public void setKeyspaceCreations(List<CreateKeyspaceSpecification> specifications) {
 		this.keyspaceCreations = specifications;
 	}
 
+	/**
+	 * Return a {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
+	 */
 	public List<CreateKeyspaceSpecification> getKeyspaceCreations() {
 		return keyspaceCreations;
 	}
 
+	/**
+	 * Set a {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications} that are executed when this
+	 * factory is {@link #destroy() destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are
+	 * executed on a system session with no keyspace set, before executing {@link #setShutdownScripts(List)}.
+	 */
 	public void setKeyspaceDrops(List<DropKeyspaceSpecification> specifications) {
 		this.keyspaceDrops = specifications;
 	}
 
+	/**
+	 * Reurn the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
+	 */
 	public List<DropKeyspaceSpecification> getKeyspaceDrops() {
 		return keyspaceDrops;
 	}

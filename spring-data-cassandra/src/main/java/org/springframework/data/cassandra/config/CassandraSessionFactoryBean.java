@@ -16,7 +16,7 @@
 
 package org.springframework.data.cassandra.config;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import java.util.Collection;
 
@@ -59,7 +59,7 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
 
-		Assert.state(converter != null, "Converter must not be null");
+		Assert.state(converter != null, "Converter was not properly initialized");
 
 		admin = newCassandraAdminOperations(getObject(), converter);
 

@@ -16,11 +16,8 @@
 
 package org.springframework.cassandra.core.util;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +31,6 @@ import org.junit.Test;
  * of the {@link CollectionUtils} class.
  *
  * @author John Blum
- * @see org.junit.Test
  * @see org.springframework.cassandra.core.util.CollectionUtils
  * @since 1.5.0
  */
