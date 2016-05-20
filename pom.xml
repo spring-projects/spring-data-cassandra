@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -310,8 +310,8 @@
 			<id>embedded-cassandra</id>
 
 			<activation>
-    			<activeByDefault>true</activeByDefault>
-  			</activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 
 			<properties>
 				<build.cassandra.mode>embedded</build.cassandra.mode>
@@ -352,9 +352,9 @@
 			<properties>
 				<build.cassandra.mode>external</build.cassandra.mode>
 				<build.cassandra.native_transport_port>9042</build.cassandra.native_transport_port>
-                <build.cassandra.rpc_port>9160</build.cassandra.rpc_port>
-                <build.cassandra.storage_port>7000</build.cassandra.storage_port>
-                <build.cassandra.ssl_storage_port>7001</build.cassandra.ssl_storage_port>
+				<build.cassandra.rpc_port>9160</build.cassandra.rpc_port>
+				<build.cassandra.storage_port>7000</build.cassandra.storage_port>
+				<build.cassandra.ssl_storage_port>7001</build.cassandra.ssl_storage_port>
 			</properties>
 		</profile>
 	</profiles>
