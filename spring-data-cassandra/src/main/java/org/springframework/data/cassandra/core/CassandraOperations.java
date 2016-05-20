@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core;
 
 import java.util.List;
 
-import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.Cancellable;
+import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.QueryForObjectListener;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.WriteOptions;
