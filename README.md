@@ -225,20 +225,22 @@ We recommend reading the following:
 
 * [PlanetCassandra.org](http://planetcassandra.org/)
 * [Getting Started](http://wiki.apache.org/cassandra/GettingStarted)
-* [Driver Documentation](http://docs.datastax.com/en/developer/java-driver/2.1/java-driver/whatsNew2.html)
+* [Driver Documentation](http://docs.datastax.com/en/developer/java-driver/3.0/java-driver/whatsNew2.html)
 
 
 ## Contact
 
-For more information, feel free to contact the individuals listed
-below:
-
-* David Webb:  dwebb _at_ prowaveconsulting _dot_ com
-* Matthew Adams:  matthew _dot_ adams _at_ scispike _dot_ com
+You can contact maintainers and users of Spring Data Cassandra through [Gitter](https://gitter.im/spring-projects/spring-data) or on the Spring channel on Freenode (irc://chat.freenode.net/#spring).
 
 Also, developer discussions are being hosted on [StackOverflow](https://www.stackoverflow.com) using the tag ``spring-data-cassandra``.
 
 ## Contributing Individuals
+
+* John Blum
+* Oliver Gierke
+* Mark Paluch
+
+### Alumni
 
 * David Webb
 * Matthew Adams
@@ -246,14 +248,7 @@ Also, developer discussions are being hosted on [StackOverflow](https://www.stac
 
 ## Sponsoring Companies
 
-Spring Data Cassandra is being led and supported by the following
-companies and individuals:
-
-* [Prowave Consulting](http://www.prowaveconsulting.com) - David Webb
-* [SciSpike](http://www.scispike.com) - Matthew Adams
-
-The following companies and individuals are also generously providing
-support:
+The following companies and individuals are generously providing support:
 
 * [DataStax](http://www.datastax.com)
 * [Spring](http://www.spring.io) @ [Pivotal](http://www.gopivotal.com)
