@@ -97,11 +97,16 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 */
 	public CassandraTemplate(Session session, CassandraConverter converter) {
 		setSession(session);
-		setConverter(converter != null ? converter : getDefaultCassandraConverter());
+		setConverter(resolveConverter(converter));
 	}
 
-	private static CassandraConverter getDefaultCassandraConverter() {
+	/* (non-Javadoc) */
+	private static CassandraConverter resolveConverter(CassandraConverter cassandraConverter) {
+		return (cassandraConverter != null ? cassandraConverter : getDefaultCassandraConverter());
+	}
 
+	/* (non-Javadoc) */
+	private static CassandraConverter getDefaultCassandraConverter() {
 		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter();
 		mappingCassandraConverter.afterPropertiesSet();
 		return mappingCassandraConverter;
@@ -146,8 +151,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		super.afterPropertiesSet();
 
-		Assert.notNull(cassandraConverter, "CassandraConverter must not be null!");
-		Assert.notNull(mappingContext, "CassandraMappingContext must not be null!");
+		Assert.notNull(cassandraConverter, "CassandraConverter must not be null");
+		Assert.notNull(mappingContext, "CassandraMappingContext must not be null");
 	}
 
 	@Override

@@ -23,70 +23,84 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.Session;
 
 /**
- * A {@link CassandraAccessor} is able to access a Cassandra {@link Session} and the
- * {@link CassandraExceptionTranslator}.
+ * {@link CassandraAccessor} provides access to a Cassandra {@link Session}
+ * and the {@link CassandraExceptionTranslator}.
  * <p>
  * Classes providing a higher abstraction level usually extend {@link CassandraAccessor} to provide a richer set of
  * functionality on top of a {@link Session}.
  *
  * @author David Webb
  * @author Mark Paluch
+ * @author John Blum
  * @see org.springframework.beans.factory.InitializingBean
+ * @see com.datastax.driver.core.Session
  */
 public class CassandraAccessor implements InitializingBean {
 
-	/** Logger available to subclasses */
+	CassandraExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private Session session;
-	private CassandraExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	/**
-	 * Ensure that the Cassandra Session has been set
+	 * Ensures the Cassandra {@link Session} and exception translator has been propertly set.
 	 */
 	@Override
 	public void afterPropertiesSet() {
+		Assert.state(session != null, "Session must not be null");
+	}
 
-		Assert.notNull(session, "Session must not be null!");
-		Assert.notNull(exceptionTranslator, "CassandraExceptionTranslator must not be null!");
+	/* (non-Javadoc) */
+	protected void logDebug(String logMessage, Object... array) {
+		if (logger.isDebugEnabled()) {
+			logger.debug(logMessage, array);
+		}
 	}
 
 	/**
-	 * Set the exception translator for this instance.
+	 * Sets the exception translator used by this template to translate Cassandra specific Exceptions
+	 * into Spring DAO's Exception Hierarchy.
 	 *
-	 * @param exceptionTranslator the exception translator to set, must not be {@literal null}.
+	 * @param exceptionTranslator exception translator to set; must not be {@literal null}.
 	 * @see org.springframework.cassandra.support.CassandraExceptionTranslator
 	 */
 	public void setExceptionTranslator(CassandraExceptionTranslator exceptionTranslator) {
-
-		Assert.notNull(exceptionTranslator, "CassandraExceptionTranslator must not be null!");
+		Assert.notNull(exceptionTranslator, "CassandraExceptionTranslator must not be null");
 		this.exceptionTranslator = exceptionTranslator;
 	}
 
 	/**
-	 * Return the exception translator for this instance.
+	 * Return the exception translator used by this template to translate Cassandra specific Exceptions
+	 * into Spring DAO's Exception Hierarchy.
 	 *
-	 * @return the exception translator
+	 * @return the Cassandra exception translator.
+	 * @see org.springframework.cassandra.support.CassandraExceptionTranslator
 	 */
 	public CassandraExceptionTranslator getExceptionTranslator() {
+		Assert.state(this.exceptionTranslator != null, "CassandraExceptionTranslator was not properly initialized");
 		return this.exceptionTranslator;
 	}
 
 	/**
-	 * Returns the session.
+	 * Sets the Cassandra {@link Session} used by this template to perform Cassandra data access operations.
 	 *
-	 * @return the session.
+	 * @param session Cassandra {@link Session} used by this template.  Must not be{@literal null}.
+	 * @see com.datastax.driver.core.Session
 	 */
-	public Session getSession() {
-		return session;
+	public void setSession(Session session) {
+		Assert.notNull(session, "Session must not be null");
+		this.session = session;
 	}
 
 	/**
-	 * @param session The session to set, must not be{@literal null}
+	 * Returns the Cassandra {@link Session} used by this template to perform Cassandra data access operations.
+	 *
+	 * @return the Cassandra {@link Session} used by this template.
+	 * @see com.datastax.driver.core.Session
 	 */
-	public void setSession(Session session) {
-
-		Assert.notNull(session, "Session must not be null!");
-		this.session = session;
+	public Session getSession() {
+		Assert.state(this.session != null, "Session was not properly initialized");
+		return this.session;
 	}
 }

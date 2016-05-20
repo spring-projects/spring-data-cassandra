@@ -31,6 +31,7 @@ import org.springframework.cassandra.core.keyspace.DropIndexSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
@@ -693,14 +694,17 @@ public interface CqlOperations {
 	<T> T queryForObject(Select select, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
-	 * Process a ResultSet through a RowMapper. This is used internal to the Template for core operations, but is made
-	 * available through Operations in the event you have a ResultSet to process. The ResultsSet could come from a
-	 * ResultSetFuture after an asynchronous query.
-	 * 
-	 * @param resultSet
-	 * @param rowMapper
-	 * @return
-	 * @throws DataAccessException
+	 * Process {@link ResultSet} with {@link RowMapper}. This method is used internally to the template
+	 * for core operations, but is made available through this interface in the event you have a {@link ResultSet}
+	 * to process.  The {@link ResultSet} could come from a {@link ResultSetFuture} after an asynchronous query.
+	 *
+	 * @param resultSet {@link ResultSet} to process.
+	 * @param rowMapper {@link RowMapper} used to process the single row of the result set.
+	 * @throws IllegalArgumentException if {@link ResultSet} is null.
+	 * @throws IncorrectResultSizeDataAccessException if no rows are found, or more than 1 row is found.
+	 * @throws DataAccessException if a Cassandra driver error occurs.
+	 * @see org.springframework.cassandra.core.RowMapper
+	 * @see com.datastax.driver.core.ResultSet
 	 */
 	<T> T processOne(ResultSet resultSet, RowMapper<T> rowMapper) throws DataAccessException;
 
