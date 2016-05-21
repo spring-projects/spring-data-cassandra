@@ -48,6 +48,7 @@ import com.datastax.driver.core.querybuilder.Select;
  *
  * @author David Webb
  * @author Mark Paluch
+ * @author Antoine Toulme
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -105,6 +106,15 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
 		template.insert(b3, options);
+		
+		Book b4 = new Book();
+		b4.setIsbn("123456-4");
+		b4.setTitle("Spring Data Cassandra Guide");
+		b4.setAuthor("Cassandra Guru");
+		b4.setPages(265);
+		b4.setCondition(BookCondition.USED);
+		
+		template.insertIfNotExists(b4, options);
 
 		Book b5 = new Book();
 		b5.setIsbn("123456-5");
@@ -114,6 +124,8 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b5.setCondition(BookCondition.USED);
 
 		template.insert(b5, options);
+		
+		template.insertIfNotExists(b5, options);
 
 	}
 
@@ -164,6 +176,8 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b4.setAuthor("Cassandra Guru");
 		b4.setPages(465);
 		b4.setCondition(BookCondition.USED);
+		
+		template.insertAsynchronouslyIfNotExists(b4, options);
 
 		/*
 		 * Test Single Insert with entity
@@ -236,7 +250,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		books = getBookList(20);
 
-		template.insertAsynchronously(books);
+		template.insertAsynchronouslyIfNotExists(books);
 
 		books = getBookList(20);
 
@@ -364,6 +378,14 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		template.updateAsynchronously(b3, options);
 
+		Book missingBook = new Book();
+		missingBook.setIsbn("123456-missing");
+		missingBook.setTitle("Spring Data Cassandra Book");
+		missingBook.setAuthor("Cassandra Guru");
+		missingBook.setPages(265);
+		
+		template.updateAsynchronouslyIfExists(missingBook, options);
+		
 		/*
 		 * Test Single Insert with entity
 		 */
@@ -373,8 +395,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b5.setAuthor("Cassandra Guru");
 		b5.setPages(265);
 
-		template.updateAsynchronously(b5, options);
-
+		template.updateAsynchronouslyIfExists(b5, options);
 	}
 
 	@Test
@@ -432,6 +453,8 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		List<Book> books = null;
 
 		books = getBookList(20);
+		
+		template.updateAsynchronouslyIfExists(books);
 
 		template.insert(books);
 
@@ -461,7 +484,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		alterBooks(books);
 
-		template.updateAsynchronously(books, options);
+		template.updateAsynchronouslyIfExists(books, options);
 
 	}
 

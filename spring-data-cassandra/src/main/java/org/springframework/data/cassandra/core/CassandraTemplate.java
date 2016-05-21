@@ -67,6 +67,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Matthew T. Adams
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Antoine Toulme
  * @see CqlTemplate
  * @see CassandraOperations
  */
@@ -267,7 +268,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> List<T> insert(List<T> entities, WriteOptions options) {
-		return doBatchInsert(entities, options);
+		return doBatchInsert(entities, options, false);
 	}
 
 	@Override
@@ -277,7 +278,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> T insert(T entity, WriteOptions options) {
-		return doInsert(entity, options);
+		return doInsert(entity, options, false);
 	}
 
 	/**
@@ -296,18 +297,73 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	@Deprecated
 	@Override
 	public <T> List<T> insertAsynchronously(List<T> entities, WriteOptions options) {
-		doInsertAsynchronously(entities, null, options);
+		doInsertAsynchronously(entities, null, options, false);
 		return entities;
 	}
 
 	@Override
 	public <T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener) {
-		return doInsertAsynchronously(entities, listener, null);
+		return doInsertAsynchronously(entities, listener, null, false);
 	}
 
 	@Override
 	public <T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options) {
-		return doInsertAsynchronously(entities, listener, options);
+		return doInsertAsynchronously(entities, listener, options, false);
+	}
+	
+	@Deprecated
+	@Override
+	public <T> T insertAsynchronouslyIfNotExists(T entity) {
+		insertAsynchronouslyIfNotExists(entity, null, null);
+		return entity;
+	}
+
+	@Deprecated
+	@Override
+	public <T> T insertAsynchronouslyIfNotExists(T entity, WriteOptions options) {
+		insertAsynchronouslyIfNotExists(entity, null, options);
+		return entity;
+	}
+
+	@Override
+	public <T> Cancellable insertAsynchronouslyIfNotExists(T entity, WriteListener<T> listener) {
+		return insertAsynchronouslyIfNotExists(entity, listener, null);
+	}
+
+	@Override
+	public <T> Cancellable insertAsynchronouslyIfNotExists(T entity, WriteListener<T> listener, WriteOptions options) {
+		return doInsertAsync(entity, listener, options, true);
+	}
+	
+	/**
+	 * @deprecated See {@link CassandraTemplate#insertAsynchronouslyIfNotExists(List)}
+	 */
+	@Deprecated
+	@Override
+	public <T> List<T> insertAsynchronouslyIfNotExists(List<T> entities) {
+		insertAsynchronouslyIfNotExists(entities, (WriteOptions) null);
+		return entities;
+	}
+
+	/**
+	 * @deprecated See {@link CassandraTemplate#insertAsynchronouslyIfNotExists(List, WriteOptions)}
+	 */
+	@Deprecated
+	@Override
+	public <T> List<T> insertAsynchronouslyIfNotExists(List<T> entities, WriteOptions options) {
+		doInsertAsynchronously(entities, null, options, true);
+		return entities;
+	}
+
+	
+	@Override
+	public <T> Cancellable insertAsynchronouslyIfNotExists(List<T> entities, WriteListener<T> listener) {
+		return doInsertAsynchronously(entities, listener, null, true);
+	}
+
+	@Override
+	public <T> Cancellable insertAsynchronouslyIfNotExists(List<T> entities, WriteListener<T> listener, WriteOptions options) {
+		return doInsertAsynchronously(entities, listener, options, true);
 	}
 
 	/**
@@ -315,8 +371,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * {@link #insertAsynchronously(Object, WriteListener, WriteOptions)} and {@link #insertAsynchronously(List<T>,
 	 * WriteListener<T>, WriteOptions)}.
 	 */
-	protected <T> Cancellable doInsertAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options) {
-		return doBatchInsertAsync(entities, listener, options);
+	protected <T> Cancellable doInsertAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options, boolean ifNotExists) {
+		return doBatchInsertAsync(entities, listener, options, ifNotExists);
 	}
 
 	/**
@@ -346,7 +402,27 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> Cancellable insertAsynchronously(T entity, WriteListener<T> listener, WriteOptions options) {
-		return doInsertAsync(entity, listener, options);
+		return doInsertAsync(entity, listener, options, false);
+	}
+	
+	@Override
+	public <T> T insertIfNotExists(T entity) {
+		return insertIfNotExists(entity, null);
+	}
+
+	@Override
+	public <T> T insertIfNotExists(T entity, WriteOptions options) {
+		return doInsert(entity, options, true);
+	}
+	
+	@Override
+	public <T> List<T> insertIfNotExists(List<T> entities) {
+		return insertIfNotExists(entities, null);
+	}
+	
+	@Override
+	public <T> List<T> insertIfNotExists(List<T> entities, WriteOptions options) {
+		return doBatchInsert(entities, options, true);
 	}
 
 	@Override
@@ -493,7 +569,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> List<T> update(List<T> entities, WriteOptions options) {
-		return doBatchUpdate(entities, options);
+		return doBatchUpdate(entities, options, false);
 	}
 
 	@Override
@@ -503,29 +579,29 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> T update(T entity, WriteOptions options) {
-		return doUpdate(entity, options);
+		return doUpdate(entity, options, false);
 	}
 
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities) {
-		doUpdateAsynchronously(entities, null, null);
+		doUpdateAsynchronously(entities, null, null, false);
 		return entities;
 	}
 
 	@Override
 	public <T> List<T> updateAsynchronously(List<T> entities, WriteOptions options) {
-		doUpdateAsynchronously(entities, null, options);
+		doUpdateAsynchronously(entities, null, options, false);
 		return entities;
 	}
 
 	@Override
 	public <T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener) {
-		return doUpdateAsynchronously(entities, listener, null);
+		return doUpdateAsynchronously(entities, listener, null, false);
 	}
 
 	@Override
 	public <T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options) {
-		return doUpdateAsynchronously(entities, listener, options);
+		return doUpdateAsynchronously(entities, listener, options, false);
 	}
 
 	/**
@@ -533,8 +609,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * {@link #updateAsynchronously(Object, WriteListener, WriteOptions)} and {@link #updateAsynchronously(List<T>,
 	 * WriteListener<T>, WriteOptions)}.
 	 */
-	protected <T> Cancellable doUpdateAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options) {
-		return doBatchUpdateAsync(entities, listener, options);
+	protected <T> Cancellable doUpdateAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options, boolean ifExists) {
+		return doBatchUpdateAsync(entities, listener, options, ifExists);
 	}
 
 	@Override
@@ -556,7 +632,71 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public <T> Cancellable updateAsynchronously(T entity, WriteListener<T> listener, WriteOptions options) {
-		return doUpdateAsync(entity, listener, options);
+		return doUpdateAsync(entity, listener, options, false);
+	}
+	
+	@Override
+	public <T> T updateAsynchronouslyIfExists(T entity) {
+		doUpdateAsync(entity, null, null, true);
+		return entity;
+	}
+
+	@Override
+	public <T> T updateAsynchronouslyIfExists(T entity, WriteOptions options) {
+		doUpdateAsync(entity, null, options, true);
+		return entity;
+	}
+
+	@Override
+	public <T> Cancellable updateAsynchronouslyIfExists(T entity, WriteListener<T> listener) {
+		return doUpdateAsync(entity, listener, null, true);
+	}
+
+	@Override
+	public <T> Cancellable updateAsynchronouslyIfExists(T entity, WriteListener<T> listener, WriteOptions options) {
+		return doUpdateAsync(entity, listener, options, true);
+	}
+	
+	@Override
+	public <T> List<T> updateAsynchronouslyIfExists(List<T> entities) {
+		doUpdateAsynchronously(entities, null, null, true);
+		return entities;
+	}
+
+	@Override
+	public <T> List<T> updateAsynchronouslyIfExists(List<T> entities, WriteOptions options) {
+		doUpdateAsynchronously(entities, null, options, true);
+		return entities;
+	}
+
+	@Override
+	public <T> Cancellable updateAsynchronouslyIfExists(List<T> entities, WriteListener<T> listener) {
+		return doUpdateAsynchronously(entities, listener, null, true);
+	}
+
+	@Override
+	public <T> Cancellable updateAsynchronouslyIfExists(List<T> entities, WriteListener<T> listener, WriteOptions options) {
+		return doUpdateAsynchronously(entities, listener, options, true);
+	}
+	
+	@Override
+	public <T> T updateIfExists(T entity) {
+		return updateIfExists(entity, null);
+	}
+
+	@Override
+	public <T> T updateIfExists(T entity, WriteOptions options) {
+		return doUpdate(entity, options, true);
+	}
+	
+	@Override
+	public <T> List<T> updateIfExists(List<T> entities) {
+		return updateIfExists(entities, null);
+	}
+	
+	@Override
+	public <T> List<T> updateIfExists(List<T> entities, WriteOptions options) {
+		return doBatchUpdate(entities, options, true);
 	}
 
 	protected <T> List<T> select(final String query, CassandraConverterRowCallback<T> readRowCallback) {
@@ -674,19 +814,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 				aql);
 	}
 
-	protected <T> T doInsert(T entity, WriteOptions options) {
+	protected <T> T doInsert(T entity, WriteOptions options, boolean ifNotExists) {
 
 		Assert.notNull(entity);
-		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter, ifNotExists);
 		execute(insert);
 		return entity;
 	}
-
-	protected <T> Cancellable doInsertAsync(final T entity, final WriteListener<T> listener, WriteOptions options) {
+	
+	protected <T> Cancellable doInsertAsync(final T entity, final WriteListener<T> listener, WriteOptions options, boolean ifNotExists) {
 
 		Assert.notNull(entity);
 
-		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter, ifNotExists);
 
 		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
 
@@ -705,15 +845,15 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return executeAsynchronously(insert, aql);
 	}
 
-	protected <T> List<T> doBatchInsert(List<T> entities, WriteOptions options) {
-		return doBatchWrite(entities, options, true);
+	protected <T> List<T> doBatchInsert(List<T> entities, WriteOptions options, boolean ifNotExists) {
+		return doBatchWrite(entities, options, true, ifNotExists, false);
 	}
 
-	protected <T> List<T> doBatchUpdate(List<T> entities, WriteOptions options) {
-		return doBatchWrite(entities, options, false);
+	protected <T> List<T> doBatchUpdate(List<T> entities, WriteOptions options, boolean ifExists) {
+		return doBatchWrite(entities, options, false, false, ifExists);
 	}
 
-	protected <T> List<T> doBatchWrite(List<T> entities, WriteOptions options, boolean insert) {
+	protected <T> List<T> doBatchWrite(List<T> entities, WriteOptions options, boolean insert, boolean ifNotExists, boolean ifExists) {
 
 		if (entities == null || entities.size() == 0) {
 			if (logger.isWarnEnabled()) {
@@ -723,8 +863,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		}
 
 		String tableName = getTableName(entities.get(0).getClass()).toCql();
-		Batch b = insert ? createInsertBatchQuery(tableName, entities, options, cassandraConverter)
-				: createUpdateBatchQuery(tableName, entities, options, cassandraConverter);
+		Batch b = insert ? createInsertBatchQuery(tableName, entities, options, cassandraConverter, ifNotExists)
+				: createUpdateBatchQuery(tableName, entities, options, cassandraConverter, ifExists);
 		execute(b);
 
 		return entities;
@@ -737,11 +877,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
 	 *          <code>null</code>.
 	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
+	 * @param ifNotExists use lightweight transactions to insert each record only if it doesn't exist already.
 	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 */
 	protected <T> Cancellable doBatchInsertAsync(final List<T> entities, final WriteListener<T> listener,
-			WriteOptions options) {
-		return doBatchWriteAsync(entities, listener, options, true);
+			WriteOptions options, boolean ifNotExists) {
+		return doBatchWriteAsync(entities, listener, options, true, ifNotExists, false);
 	}
 
 	/**
@@ -751,11 +892,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param listener The listener that will receive notification of the completion of the batch insert or update. May be
 	 *          <code>null</code>.
 	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
+	 * @param ifExists whether to add a ifExists clause to the update statement.
 	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 */
 	protected <T> Cancellable doBatchUpdateAsync(final List<T> entities, final WriteListener<T> listener,
-			WriteOptions options) {
-		return doBatchWriteAsync(entities, listener, options, false);
+			WriteOptions options, boolean ifExists) {
+		return doBatchWriteAsync(entities, listener, options, false, false, ifExists);
 	}
 
 	/**
@@ -766,10 +908,14 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 *          <code>null</code>.
 	 * @param options The {@link WriteOptions} to use. May be <code>null</code>.
 	 * @param insert If <code>true</code>, then an insert is performed, else an update is performed.
+	 * @param insertIfNotExists If <code>true</code>, and combined with <code>insert</code>, adds a lightweight transaction
+	 *  to only insert if the record doesn't already exist.
+	 * @param insertIfNotExists If <code>true</code>, and combined with <code>insert</code>, adds a lightweight transaction
+	 *  to only update the record if it doesn't already exist.
 	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
 	 */
 	protected <T> Cancellable doBatchWriteAsync(final List<T> entities, final WriteListener<T> listener,
-			WriteOptions options, boolean insert) {
+			WriteOptions options, boolean insert, boolean ifNotExists, boolean ifExists) {
 
 		if (entities == null || entities.size() == 0) {
 			if (logger.isWarnEnabled()) {
@@ -787,8 +933,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		}
 
 		String tableName = getTableName(entities.get(0).getClass()).toCql();
-		Batch b = insert ? createInsertBatchQuery(tableName, entities, options, cassandraConverter)
-				: createUpdateBatchQuery(tableName, entities, options, cassandraConverter);
+		Batch b = insert ? createInsertBatchQuery(tableName, entities, options, cassandraConverter, ifNotExists)
+				: createUpdateBatchQuery(tableName, entities, options, cassandraConverter, ifExists);
 
 		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
 
@@ -834,19 +980,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return executeAsynchronously(delete, aql);
 	}
 
-	protected <T> T doUpdate(T entity, WriteOptions options) {
+	protected <T> T doUpdate(T entity, WriteOptions options, boolean ifExists) {
 
 		Assert.notNull(entity);
-		Update update = createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		Update update = createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter, ifExists);
 		execute(update);
 		return entity;
 	}
 
-	protected <T> Cancellable doUpdateAsync(final T entity, final WriteListener<T> listener, WriteOptions options) {
+	protected <T> Cancellable doUpdateAsync(final T entity, final WriteListener<T> listener, WriteOptions options, boolean ifExists) {
 
 		Assert.notNull(entity);
 
-		Update update = createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		Update update = createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter, ifExists);
 
 		AsynchronousQueryListener aql = listener == null ? null : new AsynchronousQueryListener() {
 
@@ -871,15 +1017,20 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param tableName
 	 * @param objectToSave
 	 * @param entity
-	 * @param optionsByName
+	 * @param options
+	 * @param entityWriter
+	 * @param ifNotExists
 	 * @return The Query object to run with session.execute();
 	 */
 	public static Insert createInsertQuery(String tableName, Object objectToSave, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
+			EntityWriter<Object, Object> entityWriter, boolean ifNotExists) {
 
 		Insert insert = QueryBuilder.insertInto(tableName);
 		entityWriter.write(objectToSave, insert);
 		CqlTemplate.addWriteOptions(insert, options);
+		if (ifNotExists) {
+			insert.ifNotExists();
+		}
 		return insert;
 	}
 
@@ -890,7 +1041,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	@Deprecated
 	public static Update toUpdateQueryX(String tableName, Object objectToSave, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
-		return createUpdateQuery(tableName, objectToSave, options, entityWriter);
+		return createUpdateQuery(tableName, objectToSave, options, entityWriter, false);
 	}
 
 	/**
@@ -899,14 +1050,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param tableName
 	 * @param objectToSave
 	 * @param entity
-	 * @param optionsByName
+	 * @param options
+	 * @param entityWriter
+	 * @param ifExists
 	 * @return The Query object to run with session.execute();
 	 */
 	public static Update createUpdateQuery(String tableName, Object objectToSave, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
+			EntityWriter<Object, Object> entityWriter, boolean ifExists) {
 
 		Update update = QueryBuilder.update(tableName);
 		entityWriter.write(objectToSave, update);
+		if (ifExists) {
+			update.where().ifExists();
+		}
 		CqlTemplate.addWriteOptions(update, options);
 		return update;
 	}
@@ -918,7 +1074,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	@Deprecated
 	public static <T> Batch toUpdateBatchQuery(String tableName, List<T> objectsToSave, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
-		return createUpdateBatchQuery(tableName, objectsToSave, options, entityWriter);
+		return createUpdateBatchQuery(tableName, objectsToSave, options, entityWriter, false);
 	}
 
 	/**
@@ -927,16 +1083,18 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @param tableName
 	 * @param objectsToSave
 	 * @param entity
-	 * @param optionsByName
+	 * @param options
+	 * @param entityWriter
+	 * @param ifExists
 	 * @return The Query object to run with session.execute();
 	 */
 	public static <T> Batch createUpdateBatchQuery(String tableName, List<T> objectsToSave, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
+			EntityWriter<Object, Object> entityWriter, boolean ifExists) {
 
 		Batch b = QueryBuilder.batch();
 
 		for (T objectToSave : objectsToSave) {
-			b.add(createUpdateQuery(tableName, objectToSave, options, entityWriter));
+			b.add(createUpdateQuery(tableName, objectToSave, options, entityWriter, ifExists));
 		}
 
 		CqlTemplate.addQueryOptions(b, options);
@@ -949,17 +1107,18 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 *
 	 * @param tableName
 	 * @param entities
-	 * @param entity
-	 * @param optionsByName
+	 * @param options
+	 * @param entityWriter
+	 * @param ifNotExists
 	 * @return The Query object to run with session.execute();
 	 */
 	public static <T> Batch createInsertBatchQuery(String tableName, List<T> entities, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
+			EntityWriter<Object, Object> entityWriter, boolean ifNotExists) {
 
 		Batch batch = QueryBuilder.batch();
 
 		for (T entity : entities) {
-			batch.add(createInsertQuery(tableName, entity, options, entityWriter));
+			batch.add(createInsertQuery(tableName, entity, options, entityWriter, ifNotExists));
 		}
 
 		CqlTemplate.addQueryOptions(batch, options);

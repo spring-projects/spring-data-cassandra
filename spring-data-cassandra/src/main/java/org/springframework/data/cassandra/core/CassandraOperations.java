@@ -34,6 +34,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew Adams
+ * @author Antoine Toulme
  */
 public interface CassandraOperations extends CqlOperations {
 
@@ -248,6 +249,126 @@ public interface CassandraOperations extends CqlOperations {
 	<T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options);
 
 	/**
+	 * Inserts the given entity asynchronously.
+	 * 
+	 * @param entity The entity to insert
+	 * @return The entity given
+	 * @see #insertAsynchronously(Object, WriteListener)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #insertAsynchronously(Object, WriteListener)}.
+	 */
+	@Deprecated
+	<T> T insertAsynchronouslyIfNotExists(T entity);
+
+	/**
+	 * Inserts the given entity asynchronously.
+	 * 
+	 * @param entity The entity to insert
+	 * @return The entity given
+	 * @see #insertAsynchronously(Object, WriteOptions)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #insertAsynchronously(Object, WriteListener, WriteOptions)}.
+	 */
+	@Deprecated
+	<T> T insertAsynchronouslyIfNotExists(T entity, WriteOptions options);
+
+	/**
+	 * Inserts the given entity asynchronously.
+	 * 
+	 * @param entity The entity to insert
+	 * @param listener The listener to receive notification of completion
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable insertAsynchronouslyIfNotExists(T entity, WriteListener<T> listener);
+
+	/**
+	 * Inserts the given entity asynchronously.
+	 * 
+	 * @param entity The entity to insert
+	 * @param listener The listener to receive notification of completion
+	 * @param options The {@link WriteOptions} to use
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable insertAsynchronouslyIfNotExists(T entity, WriteListener<T> listener, WriteOptions options);
+
+	/**
+	 * Inserts the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to insert
+	 * @return The entities given
+	 * @see #insertAsynchronously(List, WriteListener)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #insertAsynchronously(List, WriteListener)}.
+	 */
+	@Deprecated
+	<T> List<T> insertAsynchronouslyIfNotExists(List<T> entities);
+
+	/**
+	 * Inserts the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to insert
+	 * @return The entities given
+	 * @see #insertAsynchronously(List, WriteListener, WriteOptions)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #insertAsynchronously(List, WriteListener, WriteOptions)}.
+	 */
+	@Deprecated
+	<T> List<T> insertAsynchronouslyIfNotExists(List<T> entities, WriteOptions options);
+
+	/**
+	 * Inserts the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to insert
+	 * @param listener The listener to receive notification of completion
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable insertAsynchronouslyIfNotExists(List<T> entities, WriteListener<T> listener);
+
+	/**
+	 * Inserts the given entities asynchronously in a batch.
+	 * 
+	 * @param entity The entities to insert
+	 * @param listener The listener to receive notification of completion
+	 * @param options The {@link WriteOptions} to use
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable insertAsynchronouslyIfNotExists(List<T> entities, WriteListener<T> listener, WriteOptions options);
+	
+	/**
+	 * Insert the given entity if it doesn't exist, using Cassandra lightweight transactions.
+	 * 
+	 * @param entity The entity to insert
+	 * @return The entity given
+	 */
+	<T> T insertIfNotExists(T entity);
+
+	/**
+	 * Insert the given entity if it doesn't exist, using Cassandra lightweight transactions.
+	 * 
+	 * @param entity The entity to insert
+	 * @param options The {@link WriteOptions} to use.
+	 * @return The entity given
+	 */
+	<T> T insertIfNotExists(T entity, WriteOptions options);
+
+	/**
+	 * Insert the given list of entities if they don't exist, using Cassandra lightweight transactions.
+	 * 
+	 * @param entities The entities to insert.
+	 * @return The entities given.
+	 */
+	<T> List<T> insertIfNotExists(List<T> entities);
+
+	/**
+	 * Insert the given list of entities if they don't exist, using Cassandra lightweight transactions.
+	 * 
+	 * @param entities The entities to insert.
+	 * @param options The {@link WriteOptions} to use.
+	 * @return The entities given.
+	 */
+	<T> List<T> insertIfNotExists(List<T> entities, WriteOptions options);
+	
+	/**
 	 * Update the given entity.
 	 * 
 	 * @param entity The entity to update
@@ -367,6 +488,124 @@ public interface CassandraOperations extends CqlOperations {
 	 */
 	<T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options);
 
+	/**
+	 * Updates the given entities asynchronously in a batch if they exist.
+	 * 
+	 * @param entity The entities to update
+	 * @return The entities given
+	 * @see #updateAsynchronously(List, WriteListener)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #updateAsynchronously(List, WriteListener)}.
+	 */
+	public <T> T updateAsynchronouslyIfExists(T entity);
+
+	/**
+	 * Updates the given entity asynchronously in a batch if it exists.
+	 * 
+	 * @param entity The entities to update
+	 * @return The entities given
+	 * @see #updateAsynchronously(List, WriteListener, WriteOptions)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #updateAsynchronously(List, WriteListener, WriteOptions)}.
+	 */
+	public <T> T updateAsynchronouslyIfExists(T entity, WriteOptions options);
+	
+	/**
+	 * Updates the given entities asynchronously in a batch if they exist.
+	 * 
+	 * @param entity The entities to update
+	 * @param listener The listener to receive notification of completion
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	public <T> Cancellable updateAsynchronouslyIfExists(T entity, WriteListener<T> listener);
+	
+	/**
+	 * Updates the given entities asynchronously in a batch if they exist.
+	 * 
+	 * @param entity The entities to update
+	 * @param listener The listener to receive notification of completion
+	 * @param options The {@link WriteOptions} to use
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	public <T> Cancellable updateAsynchronouslyIfExists(T entity, WriteListener<T> listener, WriteOptions options);
+	
+	/**
+	 * Updates the given entities asynchronously in a batch, if they exist.
+	 * 
+	 * @param entity The entities to update
+	 * @return The entities given
+	 * @see #updateAsynchronously(List, WriteListener)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #updateAsynchronously(List, WriteListener)}.
+	 */
+	@Deprecated
+	<T> List<T> updateAsynchronouslyIfExists(List<T> entities);
+
+	/**
+	 * Updates the given entities asynchronously in a batch, if they exist.
+	 * 
+	 * @param entity The entities to update
+	 * @return The entities given
+	 * @see #updateAsynchronously(List, WriteListener, WriteOptions)
+	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 *             {@link #updateAsynchronously(List, WriteListener, WriteOptions)}.
+	 */
+	@Deprecated
+	<T> List<T> updateAsynchronouslyIfExists(List<T> entities, WriteOptions options);
+
+	/**
+	 * Updates the given entities asynchronously in a batch, if they exist.
+	 * 
+	 * @param entity The entities to update
+	 * @param listener The listener to receive notification of completion
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable updateAsynchronouslyIfExists(List<T> entities, WriteListener<T> listener);
+
+	/**
+	 * Updates the given entities asynchronously in a batch, if they exist.
+	 * 
+	 * @param entity The entities to update
+	 * @param listener The listener to receive notification of completion
+	 * @param options The {@link WriteOptions} to use
+	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 */
+	<T> Cancellable updateAsynchronouslyIfExists(List<T> entities, WriteListener<T> listener, WriteOptions options);
+	
+	/**
+	 * Update the given entity if it exists using Cassandra lightweight transactions.
+	 * 
+	 * @param entity The entity to update
+	 * @return The entity given
+	 */
+	<T> T updateIfExists(T entity);
+
+	/**
+	 * Update the given entity if it exists using Cassandra lightweight transactions.
+	 * 
+	 * @param entity The entity to update
+	 * @param options The {@link WriteOptions} to use.
+	 * @return The entity given
+	 */
+	<T> T updateIfExists(T entity, WriteOptions options);
+
+	/**
+	 * Update the given list of entities if they exist using Cassandra lightweight transactions.
+	 * 
+	 * @param entities The entities to update.
+	 * @return The entities given.
+	 */
+	<T> List<T> updateIfExists(List<T> entities);
+
+	/**
+	 * Update the given list of entities if they exist using Cassandra lightweight transactions.
+	 * 
+	 * @param entities The entities to update.
+	 * @param options The {@link WriteOptions} to use.
+	 * @return The entities given.
+	 */
+	<T> List<T> updateIfExists(List<T> entities, WriteOptions options);
+	
 	/**
 	 * Remove the given object from the table by id.
 	 * 
