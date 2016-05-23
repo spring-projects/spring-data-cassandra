@@ -52,6 +52,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Integration tests for asynchronous {@link CassandraTemplate} operations.
  *
  * @author Matthew T. Adams
+ * @author Antoine Toulme
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -68,6 +69,11 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 	public void insertAsynchronously() throws Exception {
 		insertAsynchronously(ConsistencyLevel.ONE);
 	}
+	
+	@Test
+	public void insertAsynchronouslyIfNotExists() throws Exception {
+		insertAsynchronouslyIfNotExists(ConsistencyLevel.ONE);
+	}
 
 	@Test(expected = CassandraConnectionFailureException.class)
 	public void insertAsynchronouslyThrows() throws Exception {
@@ -80,6 +86,21 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 		ThingListener listener = new ThingListener();
 
 		cassandraOperations.insertAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+		listener.await();
+
+		if (listener.exception != null) {
+			throw listener.exception;
+		}
+
+		assertEquals(thing, listener.entities.iterator().next());
+	}
+	
+	public void insertAsynchronouslyIfNotExists(ConsistencyLevel cl) throws Exception {
+
+		Thing thing = Thing.random();
+		ThingListener listener = new ThingListener();
+
+		cassandraOperations.insertAsynchronouslyIfNotExists(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
 		listener.await();
 
 		if (listener.exception != null) {
@@ -130,6 +151,11 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 	public void updateAsynchronously() throws Exception {
 		updateAsynchronously(ConsistencyLevel.ONE);
 	}
+	
+	@Test
+	public void updateAsynchronouslyIfExists() throws Exception {
+		updateAsynchronouslyIfExists(ConsistencyLevel.ONE);
+	}
 
 	@Test(expected = CassandraConnectionFailureException.class)
 	public void updateAsynchronouslyThrows() throws Exception {
@@ -144,6 +170,23 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 
 		ThingListener listener = new ThingListener();
 		cassandraOperations.updateAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+
+		listener.await();
+		if (listener.exception != null) {
+			throw listener.exception;
+		}
+
+		assertEquals(thing, listener.entities.iterator().next());
+	}
+	
+	public void updateAsynchronouslyIfExists(ConsistencyLevel cl) throws Exception {
+
+		Thing thing = Thing.random();
+		cassandraOperations.insert(thing);
+		thing.number = Thing.random().number;
+
+		ThingListener listener = new ThingListener();
+		cassandraOperations.updateAsynchronouslyIfExists(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
 
 		listener.await();
 		if (listener.exception != null) {
