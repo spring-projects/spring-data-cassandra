@@ -15,8 +15,6 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -75,6 +73,8 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Truncate;
 import com.datastax.driver.core.querybuilder.Update;
+
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 /**
  * <b>This is the Central class in the Cassandra core package.</b> It simplifies the use of Cassandra and helps to avoid
@@ -934,7 +934,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void ingest(String cql, RowIterator rowIterator, WriteOptions options) {
+	public void ingest(String cql, RowIterator rowIterator, QueryOptions options) {
 
 		CachedPreparedStatementCreator cpsc = new CachedPreparedStatementCreator(cql);
 
@@ -953,7 +953,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void ingest(String cql, final List<List<?>> rows, WriteOptions options) {
+	public void ingest(String cql, final List<List<?>> rows, QueryOptions options) {
 
 		Assert.notNull(rows);
 		Assert.notEmpty(rows);
@@ -982,7 +982,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void ingest(String cql, final Object[][] rows, WriteOptions options) {
+	public void ingest(String cql, final Object[][] rows, QueryOptions options) {
 
 		ingest(cql, new RowIterator() {
 
