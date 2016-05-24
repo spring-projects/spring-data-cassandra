@@ -49,6 +49,7 @@ import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.util.CollectionUtils;
 
 import com.datastax.driver.core.BoundStatement;
@@ -607,21 +608,21 @@ public class CqlOperationsIntegrationTests extends AbstractKeyspaceCreatingInteg
 	/**
 	 * Test that CQL for QueryForObject must only return 1 row or an IllegalArgumentException is thrown.
 	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IncorrectResultSizeDataAccessException.class)
 	public void queryForObjectTestCqlStringRowMapperNotOneRowReturned() {
 
 		// Insert our 3 test books.
 		insertTestObjectArray();
 
 		@SuppressWarnings("unused")
-		Book book = cqlTemplate.queryForObject("select * from book where isbn in ('1234','2345','3456')",
-				new RowMapper<Book>() {
-					@Override
-					public Book mapRow(Row row, int rowNum) throws DriverException {
-						Book b = rowToBook(row);
-						return b;
-					}
-				});
+		Book book = cqlTemplate.queryForObject("SELECT * FROM book WHERE isbn IN('1234','2345','3456')",
+			new RowMapper<Book>() {
+				@Override
+				public Book mapRow(Row row, int rowNum) throws DriverException {
+					return rowToBook(row);
+				}
+			}
+		);
 	}
 
 	@Test
