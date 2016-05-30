@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2016 the original author or authors
+ *  Copyright 2016 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.springframework.cassandra.support;
 
 import static org.hamcrest.Matchers.*;
@@ -34,8 +33,6 @@ import com.datastax.driver.core.Session;
  * {@link CassandraAccessor} class.
  *
  * @author John Blum
- * @see org.springframework.cassandra.support.CassandraAccessor
- * @since 1.5.0
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraAccessorUnitTests {
@@ -53,8 +50,12 @@ public class CassandraAccessorUnitTests {
 		cassandraAccessor = new CassandraAccessor();
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void afterPropertiesSetWithUnitializedSessionThrowsIllegalStateException() {
+
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("Session must not be null");
@@ -62,14 +63,22 @@ public class CassandraAccessorUnitTests {
 		cassandraAccessor.afterPropertiesSet();
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void setAndGetExceptionTranslator() {
+
 		cassandraAccessor.setExceptionTranslator(mockExceptionTranslator);
 		assertThat(cassandraAccessor.getExceptionTranslator(), is(sameInstance(mockExceptionTranslator)));
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void setExceptionTranslatorToNullThrowsIllegalArgumentException() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(is(equalTo("CassandraExceptionTranslator must not be null")));
@@ -77,19 +86,30 @@ public class CassandraAccessorUnitTests {
 		cassandraAccessor.setExceptionTranslator(null);
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void getUninitializedExceptionTranslatorReturnsDefault() {
 		assertThat(cassandraAccessor.getExceptionTranslator(), is(equalTo(cassandraAccessor.exceptionTranslator)));
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void setAndGetSession() {
+
 		cassandraAccessor.setSession(mockSession);
 		assertThat(cassandraAccessor.getSession(), is(sameInstance(mockSession)));
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void setSessionToNullThrowsIllegalArgumentException() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(is(equalTo("Session must not be null")));
@@ -97,8 +117,12 @@ public class CassandraAccessorUnitTests {
 		cassandraAccessor.setSession(null);
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void getUninitializedSessionThrowsIllegalStateException() {
+
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage(is(equalTo("Session was not properly initialized")));

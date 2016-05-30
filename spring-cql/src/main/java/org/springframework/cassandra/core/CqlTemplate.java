@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.cassandra.core;
 
 import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
@@ -80,13 +79,14 @@ import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * <b>This is the central class in the Cassandra core package.</b> {@link CqlTemplate} simplifies the use of Cassandra
- * and helps to avoid common errors. The template executes the core Cassandra workflow, leaving application code
- * to provide CQL and result handling. The template executes CQL queries, provides different ways to extract and map
+ * and helps to avoid common errors. The template executes the core Cassandra workflow, leaving application code to
+ * provide CQL and result handling. The template executes CQL queries, provides different ways to extract and map
  * results, and provides Exception translation to the generic, more informative exception hierarchy defined in the
  * <code>org.springframework.dao</code> package.
  * <p>
  * For working with POJOs, use the CassandraTemplate.
  * </p>
+ *
  * @author David Webb
  * @author Matthew Adams
  * @author Ryan Scheidter
@@ -105,20 +105,18 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		}
 	};
 
-	protected static final ResultSetExtractor<ResultSet> RESULT_SET_RETURNING_EXTRACTOR =
-		new ResultSetExtractor<ResultSet>() {
-			@Override
-			public ResultSet extractData(ResultSet resultSet) throws DriverException, DataAccessException {
-				return resultSet;
-			}
-		};
+	protected static final ResultSetExtractor<ResultSet> RESULT_SET_RETURNING_EXTRACTOR = new ResultSetExtractor<ResultSet>() {
 
-	/* (non-Javadoc) */
+		@Override
+		public ResultSet extractData(ResultSet resultSet) {
+			return resultSet;
+		}
+	};
+
 	protected String logCql(String cql) {
 		return logCql("executing CQL [{}]", cql);
 	}
 
-	/* (non-Javadoc) */
 	protected String logCql(String message, String cql) {
 		logDebug(message, cql);
 		return cql;
@@ -134,9 +132,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	public static Statement addQueryOptions(Statement statement, QueryOptions queryOptions) {
 
 		if (queryOptions != null) {
+
 			if (queryOptions.getConsistencyLevel() != null) {
 				statement.setConsistencyLevel(ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
 			}
+
 			if (queryOptions.getRetryPolicy() != null) {
 				statement.setRetryPolicy(RetryPolicyResolver.resolve(queryOptions.getRetryPolicy()));
 			}
@@ -155,6 +155,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	public static Insert addWriteOptions(Insert insert, WriteOptions writeOptions) {
 
 		if (writeOptions != null) {
+
 			addQueryOptions(insert, writeOptions);
 
 			if (writeOptions.getTtl() != null) {
@@ -175,6 +176,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	public static Update addWriteOptions(Update update, WriteOptions writeOptions) {
 
 		if (writeOptions != null) {
+
 			addQueryOptions(update, writeOptions);
 
 			if (writeOptions.getTtl() != null) {
@@ -195,13 +197,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			QueryOptions queryOptions) {
 
 		if (queryOptions != null) {
+
 			if (queryOptions.getConsistencyLevel() != null) {
-				preparedStatement.setConsistencyLevel(ConsistencyLevelResolver.resolve(
-					queryOptions.getConsistencyLevel()));
+				preparedStatement.setConsistencyLevel(ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
 			}
+
 			if (queryOptions.getRetryPolicy() != null) {
-				preparedStatement.setRetryPolicy(RetryPolicyResolver.resolve(
-					queryOptions.getRetryPolicy()));
+				preparedStatement.setRetryPolicy(RetryPolicyResolver.resolve(queryOptions.getRetryPolicy()));
 			}
 		}
 
@@ -209,19 +211,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/**
-	 * Constructs an uninitialized instance of {@link CqlTemplate}. A Cassandra {@link Session}
-	 * is required before use.
+	 * Constructs an uninitialized instance of {@link CqlTemplate}. A Cassandra {@link Session} is required before use.
 	 *
 	 * @see #CqlTemplate(Session)
 	 */
-	public CqlTemplate() {
-	}
+	public CqlTemplate() {}
 
 	/**
 	 * Constructs an instance of {@link CqlTemplate} initialized with the given {@link Session}.
 	 *
-	 * @param session Cassandra {@link Session} used by this template to perform CQL operations.
-	 * Must not be {@literal null}.
+	 * @param session Cassandra {@link Session} used by this template to perform CQL operations. Must not be
+	 *          {@literal null}.
 	 * @see com.datastax.driver.core.Session
 	 * @see #setSession(Session)
 	 */
@@ -250,49 +250,53 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> T execute(SessionCallback<T> sessionCallback) throws DataAccessException {
+	public <T> T execute(SessionCallback<T> sessionCallback) {
 		return doExecute(sessionCallback);
 	}
 
 	@Override
-	public void execute(String cql) throws DataAccessException {
+	public void execute(String cql) {
 		execute(cql, (QueryOptions) null);
 	}
 
 	@Override
-	public void execute(String cql, QueryOptions options) throws DataAccessException {
+	public void execute(String cql, QueryOptions options) {
 		doExecute(cql, options);
 	}
 
 	@Override
-	public void execute(Statement statement) throws DataAccessException {
+	public void execute(Statement statement) {
 		doExecute(statement);
 	}
 
 	@Override
 	public ResultSetFuture queryAsynchronously(final String cql) {
+
 		return execute(new SessionCallback<ResultSetFuture>() {
+
 			@Override
-			public ResultSetFuture doInSession(Session session) throws DataAccessException {
+			public ResultSetFuture doInSession(Session session) {
 				return session.executeAsync(logCql("async execute CQL [{}]", cql));
 			}
 		});
 	}
 
 	@Override
-	public <T> T queryAsynchronously(String cql, ResultSetExtractor<T> resultSetExtractor,
-			Long timeout, TimeUnit timeUnit) {
+	public <T> T queryAsynchronously(String cql, ResultSetExtractor<T> resultSetExtractor, Long timeout,
+			TimeUnit timeUnit) {
 
 		return queryAsynchronously(cql, resultSetExtractor, timeout, timeUnit, null);
 	}
 
 	@Override
-	public <T> T queryAsynchronously(final String cql, final ResultSetExtractor<T> resultSetExtractor,
-			final Long timeout, final TimeUnit timeUnit, final QueryOptions options) {
+	public <T> T queryAsynchronously(final String cql, final ResultSetExtractor<T> resultSetExtractor, final Long timeout,
+			final TimeUnit timeUnit, final QueryOptions options) {
 
 		return resultSetExtractor.extractData(execute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
+
 				Statement statement = addQueryOptions(new SimpleStatement(logCql(cql)), options);
 
 				ResultSetFuture resultSetFuture = session.executeAsync(statement);
@@ -301,11 +305,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 					return resultSetFuture.get(timeout, timeUnit);
 				} catch (TimeoutException e) {
 					throw new QueryTimeoutException(String.format(
-						"timeout occurred in [%1$d %2$s] while asynchronously executing CQL [%3$s]",
-							timeout, timeUnit, cql), e);
+							"timeout occurred in [%1$d %2$s] while asynchronously executing CQL [%3$s]", timeout, timeUnit, cql), e);
 				} catch (InterruptedException e) {
 					throw translateExceptionIfPossible(e);
 				} catch (ExecutionException e) {
+
 					if (e.getCause() instanceof Exception) {
 						throw translateExceptionIfPossible((Exception) e.getCause());
 					}
@@ -317,9 +321,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSetFuture queryAsynchronously(final String cql, final QueryOptions queryOptions) {
+
 		return execute(new SessionCallback<ResultSetFuture>() {
+
 			@Override
-			public ResultSetFuture doInSession(Session session) throws DataAccessException {
+			public ResultSetFuture doInSession(Session session) {
 				return session.executeAsync(addQueryOptions(new SimpleStatement(logCql(cql)), queryOptions));
 			}
 		});
@@ -360,15 +366,14 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			final Executor executor) {
 
 		return execute(new SessionCallback<Cancellable>() {
+
 			@Override
-			public Cancellable doInSession(Session session) throws DataAccessException {
-				Statement statement = addQueryOptions(new SimpleStatement(logCql("async execute CQL [{}]", cql)),
-					queryOptions);
+			public Cancellable doInSession(Session session) {
+
+				Statement statement = addQueryOptions(new SimpleStatement(logCql("async execute CQL [{}]", cql)), queryOptions);
 
 				ResultSetFuture resultSetFuture = session.executeAsync(statement);
-
 				resultSetFuture.addListener(listener, executor);
-
 				return new ResultSetFutureCancellable(resultSetFuture);
 			}
 		});
@@ -379,10 +384,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			final QueryOptions queryOptions, final Executor executor) {
 
 		return execute(new SessionCallback<Cancellable>() {
+
 			@Override
-			public Cancellable doInSession(Session session) throws DataAccessException {
-				Statement statement = addQueryOptions(new SimpleStatement(logCql("async execute CQL [{}]", cql)),
-					queryOptions);
+			public Cancellable doInSession(Session session) {
+
+				Statement statement = addQueryOptions(new SimpleStatement(logCql("async execute CQL [{}]", cql)), queryOptions);
 
 				final ResultSetFuture resultSetFuture = session.executeAsync(statement);
 
@@ -401,32 +407,30 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@SuppressWarnings("unused")
-	public <T> T queryAsynchronously(String cql, ResultSetFutureExtractor<T> resultSetFutureExtractor)
-		throws DataAccessException {
-
+	public <T> T queryAsynchronously(String cql, ResultSetFutureExtractor<T> resultSetFutureExtractor) {
 		return queryAsynchronously(cql, resultSetFutureExtractor, null);
 	}
 
 	public <T> T queryAsynchronously(final String cql, ResultSetFutureExtractor<T> resultSetFutureExtractor,
-			final QueryOptions queryOptions) throws DataAccessException {
+			final QueryOptions queryOptions) {
 
 		return resultSetFutureExtractor.extractData(execute(new SessionCallback<ResultSetFuture>() {
+
 			@Override
-			public ResultSetFuture doInSession(Session session) throws DataAccessException {
-				return session.executeAsync(addQueryOptions(new SimpleStatement(
-					logCql("async execute CQL [{}]", cql)), queryOptions));
+			public ResultSetFuture doInSession(Session session) {
+				return session
+						.executeAsync(addQueryOptions(new SimpleStatement(logCql("async execute CQL [{}]", cql)), queryOptions));
 			}
 		}));
 	}
 
 	@Override
-	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
+	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor) {
 		return query(cql, resultSetExtractor, null);
 	}
 
 	@Override
-	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor, QueryOptions queryOptions)
-			throws DataAccessException {
+	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor, QueryOptions queryOptions) {
 
 		Assert.notNull(cql, "CQL must not be null");
 
@@ -434,21 +438,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void query(String cql, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
+	public void query(String cql, RowCallbackHandler rowCallbackHandler) {
 		query(cql, rowCallbackHandler, null);
 	}
 
 	@Override
-	public void query(String cql, RowCallbackHandler rowCallbackHandler, QueryOptions queryOptions)
-			throws DataAccessException {
-
+	public void query(String cql, RowCallbackHandler rowCallbackHandler, QueryOptions queryOptions) {
 		process(doExecute(cql, queryOptions), rowCallbackHandler);
 	}
 
 	@Override
-	public <T> List<T> query(String cql, RowMapper<T> rowMapper, QueryOptions queryOptions)
-			throws DataAccessException {
-
+	public <T> List<T> query(String cql, RowMapper<T> rowMapper, QueryOptions queryOptions) {
 		return process(doExecute(cql, queryOptions), rowMapper);
 	}
 
@@ -463,32 +463,32 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> List<T> query(String cql, RowMapper<T> rowMapper) {
 		return query(cql, rowMapper, null);
 	}
 
 	@Override
-	public List<Map<String, Object>> queryForListOfMap(String cql) throws DataAccessException {
+	public List<Map<String, Object>> queryForListOfMap(String cql) {
 		return processListOfMap(doExecute(cql, null));
 	}
 
 	@Override
-	public <T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException {
+	public <T> List<T> queryForList(String cql, Class<T> elementType) {
 		return processList(doExecute(cql, null), elementType);
 	}
 
 	@Override
-	public Map<String, Object> queryForMap(String cql) throws DataAccessException {
+	public Map<String, Object> queryForMap(String cql) {
 		return processMap(doExecute(cql, null));
 	}
 
 	@Override
-	public <T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
+	public <T> T queryForObject(String cql, Class<T> requiredType) {
 		return processOne(doExecute(cql, null), requiredType);
 	}
 
 	@Override
-	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) {
 		return processOne(doExecute(cql, null), rowMapper);
 	}
 
@@ -507,9 +507,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @param statement The query to execute.
 	 */
 	protected ResultSet doExecute(final Statement statement) {
+
 		return doExecute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
+
 				logDebug("execute [{}]", statement);
 				return session.execute(statement);
 			}
@@ -517,9 +520,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	protected ResultSetFuture doExecuteAsync(final Statement statement) {
+
 		return doExecute(new SessionCallback<ResultSetFuture>() {
+
 			@Override
-			public ResultSetFuture doInSession(Session session) throws DataAccessException {
+			public ResultSetFuture doInSession(Session session) {
+
 				logDebug("async execute [{}]", statement);
 				return session.executeAsync(statement);
 			}
@@ -534,8 +540,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			final QueryOptions queryOptions) {
 
 		return doExecute(new SessionCallback<Cancellable>() {
+
 			@Override
-			public Cancellable doInSession(Session session) throws DataAccessException {
+			public Cancellable doInSession(Session session) {
 				logDebug("async execute [{}]", statement);
 
 				final ResultSetFuture resultSetFuture = session.executeAsync(addQueryOptions(statement, queryOptions));
@@ -555,6 +562,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	protected Object firstColumnToObject(Row row) {
+
 		Iterator<Definition> columnDefinitions = row.getColumnDefinitions().iterator();
 		return (columnDefinitions.hasNext() ? columnToObject(row, columnDefinitions.next()) : null);
 	}
@@ -566,6 +574,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	protected Map<String, Object> toMap(Row row) {
+
 		Map<String, Object> map = null;
 
 		if (row != null) {
@@ -581,7 +590,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public List<RingMember> describeRing() throws DataAccessException {
+	public List<RingMember> describeRing() {
 		return new ArrayList<RingMember>(describeRing(new RingMemberHostMapper()));
 	}
 
@@ -589,63 +598,69 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * Requests the set of hosts in the Cassandra cluster from the current {@link Session}.
 	 */
 	protected Set<Host> getHosts() {
+
 		return doExecute(new SessionCallback<Set<Host>>() {
+
 			@Override
-			public Set<Host> doInSession(Session session) throws DataAccessException {
+			public Set<Host> doInSession(Session session) {
 				return session.getCluster().getMetadata().getAllHosts();
 			}
 		});
 	}
 
 	@Override
-	public <T> Collection<T> describeRing(HostMapper<T> hostMapper) throws DataAccessException {
+	public <T> Collection<T> describeRing(HostMapper<T> hostMapper) {
 		return hostMapper.mapHosts(getHosts());
 	}
 
 	@Override
-	public ResultSetFuture executeAsynchronously(String cql) throws DataAccessException {
+	public ResultSetFuture executeAsynchronously(String cql) {
 		return executeAsynchronously(cql, (QueryOptions) null);
 	}
 
 	@Override
-	public ResultSetFuture executeAsynchronously(String cql, QueryOptions queryOptions) throws DataAccessException {
+	public ResultSetFuture executeAsynchronously(String cql, QueryOptions queryOptions) {
 		return doExecuteAsync(addQueryOptions(new SimpleStatement(logCql(cql)), queryOptions));
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(String cql, Runnable listener) throws DataAccessException {
+	public Cancellable executeAsynchronously(String cql, Runnable listener) {
 		return executeAsynchronously(cql, listener, RUN_RUNNABLE_EXECUTOR);
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(final String cql, final Runnable listener, final Executor executor)
-			throws DataAccessException {
+	public Cancellable executeAsynchronously(final String cql, final Runnable listener, final Executor executor) {
 
 		return execute(new SessionCallback<Cancellable>() {
+
 			@Override
-			public Cancellable doInSession(Session session) throws DataAccessException {
+			public Cancellable doInSession(Session session) {
+
 				Statement statement = new SimpleStatement(logCql("async execute CQL [{}]", cql));
+
 				ResultSetFuture resultSetFuture = session.executeAsync(statement);
 				resultSetFuture.addListener(listener, executor);
+
 				return new ResultSetFutureCancellable(resultSetFuture);
 			}
 		});
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(String cql, AsynchronousQueryListener listener)
-			throws DataAccessException {
+	public Cancellable executeAsynchronously(String cql, AsynchronousQueryListener listener) {
 
 		return executeAsynchronously(cql, listener, RUN_RUNNABLE_EXECUTOR);
 	}
 
 	@Override
 	public Cancellable executeAsynchronously(final String cql, final AsynchronousQueryListener listener,
-			final Executor executor) throws DataAccessException {
+			final Executor executor) {
 
 		return execute(new SessionCallback<Cancellable>() {
+
 			@Override
-			public Cancellable doInSession(Session session) throws DataAccessException {
+			public Cancellable doInSession(Session session) {
+
 				Statement statement = new SimpleStatement(logCql("async execute CQL [{}]", cql));
 
 				final ResultSetFuture resultSetFuture = session.executeAsync(statement);
@@ -665,32 +680,35 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public ResultSetFuture executeAsynchronously(Statement statement) throws DataAccessException {
+	public ResultSetFuture executeAsynchronously(Statement statement) {
 		return doExecuteAsync(statement);
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(Statement statement, Runnable listener) throws DataAccessException {
+	public Cancellable executeAsynchronously(Statement statement, Runnable listener) {
 		return executeAsynchronously(statement, listener, RUN_RUNNABLE_EXECUTOR);
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(Statement statement, AsynchronousQueryListener listener)
-			throws DataAccessException {
+	public Cancellable executeAsynchronously(Statement statement, AsynchronousQueryListener listener) {
 
 		return executeAsynchronously(statement, listener, RUN_RUNNABLE_EXECUTOR);
 	}
 
 	@Override
 	public Cancellable executeAsynchronously(final Statement statement, final Runnable listener,
-			final Executor executor) throws DataAccessException {
+			final Executor executor) {
 
 		return execute(new SessionCallback<Cancellable>() {
+
 			@Override
-			public Cancellable doInSession(Session session) throws DataAccessException {
+			public Cancellable doInSession(Session session) {
+
 				logDebug("executing [{}]", statement);
+
 				final ResultSetFuture resultSetFuture = session.executeAsync(statement);
 				resultSetFuture.addListener(listener, executor);
+
 				return new ResultSetFutureCancellable(resultSetFuture);
 			}
 		});
@@ -698,11 +716,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public Cancellable executeAsynchronously(final Statement statement, final AsynchronousQueryListener listener,
-			final Executor executor) throws DataAccessException {
+			final Executor executor) {
 
 		return execute(new SessionCallback<Cancellable>() {
+
 			@Override
-			public Cancellable doInSession(Session session) throws DataAccessException {
+			public Cancellable doInSession(Session session) {
+
 				logDebug("executing [{}]", statement);
 
 				final ResultSetFuture resultSetFuture = session.executeAsync(statement);
@@ -722,7 +742,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void process(ResultSet resultSet, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
+	public void process(ResultSet resultSet, RowCallbackHandler rowCallbackHandler) {
+
 		try {
 			for (Row row : resultSet.all()) {
 				rowCallbackHandler.processRow(row);
@@ -733,8 +754,10 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> List<T> process(ResultSet resultSet, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> List<T> process(ResultSet resultSet, RowMapper<T> rowMapper) {
+
 		try {
+
 			List<Row> rows = resultSet.all();
 			List<T> mappedRows = new ArrayList<T>(rows.size());
 
@@ -751,10 +774,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> T processOne(ResultSet resultSet, RowMapper<T> rowMapper) throws DataAccessException {
-		Assert.notNull(resultSet, "ResultSet cannot be null");
+	public <T> T processOne(ResultSet resultSet, RowMapper<T> rowMapper) {
+
+		Assert.notNull(resultSet, "ResultSet must not be null");
+		Assert.notNull(rowMapper, "RowMapper must not be null");
 
 		try {
+
 			Row row = resultSet.one();
 
 			if (row == null) {
@@ -773,10 +799,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T processOne(ResultSet resultSet, Class<T> requiredType) throws DataAccessException {
-		Assert.notNull(resultSet, "ResultSet cannot be null");
+	public <T> T processOne(ResultSet resultSet, Class<T> requiredType) {
+
+		Assert.notNull(resultSet, "ResultSet must not be null");
 
 		try {
+
 			Row row = resultSet.one();
 
 			if (row == null) {
@@ -794,13 +822,14 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public Map<String, Object> processMap(ResultSet resultSet) throws DataAccessException {
+	public Map<String, Object> processMap(ResultSet resultSet) {
 		return (resultSet != null ? toMap(resultSet.one()) : null);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> List<T> processList(ResultSet resultSet, Class<T> elementType) throws DataAccessException {
+	public <T> List<T> processList(ResultSet resultSet, Class<T> elementType) {
+
 		List<Row> rows = resultSet.all();
 		List<T> list = new ArrayList<T>(rows.size());
 
@@ -812,7 +841,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public List<Map<String, Object>> processListOfMap(ResultSet resultSet) throws DataAccessException {
+	public List<Map<String, Object>> processListOfMap(ResultSet resultSet) {
+
 		List<Row> rows = resultSet.all();
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>(rows.size());
 
@@ -828,14 +858,15 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@SuppressWarnings("all")
 	protected RuntimeException translateExceptionIfPossible(RuntimeException e) {
+
 		RuntimeException resolved = getExceptionTranslator().translateExceptionIfPossible(e);
 		return (resolved != null ? resolved : e);
 	}
 
 	@SuppressWarnings("all")
 	protected RuntimeException translateExceptionIfPossible(Exception e) {
-		return (e instanceof RuntimeException ? translateExceptionIfPossible((RuntimeException) e) :
-			new CassandraUncategorizedDataAccessException("Caught Uncategorized Exception", e));
+		return (e instanceof RuntimeException ? translateExceptionIfPossible((RuntimeException) e)
+				: new CassandraUncategorizedDataAccessException("Caught Uncategorized Exception", e));
 	}
 
 	@Override
@@ -843,8 +874,10 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			PreparedStatementCallback<T> preparedStatementCallback) {
 
 		try {
+
 			PreparedStatement preparedStatement = preparedStatementCreator.createPreparedStatement(getSession());
 			logDebug("executing [{}]", preparedStatement);
+
 			return preparedStatementCallback.doInPreparedStatement(preparedStatement);
 		} catch (DriverException dx) {
 			throw translateExceptionIfPossible(dx);
@@ -857,99 +890,83 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor)
-		throws DataAccessException {
-
+	public <T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor) {
 		return query(preparedStatementCreator, resultSetExtractor, null);
 	}
 
 	@Override
 	public <T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor,
-			QueryOptions queryOptions) throws DataAccessException {
-
+			QueryOptions queryOptions) {
 		return query(preparedStatementCreator, null, resultSetExtractor, queryOptions);
 	}
 
 	@Override
-	public void query(PreparedStatementCreator preparedStatementCreator, RowCallbackHandler rowCallbackHandler)
-		throws DataAccessException {
-
+	public void query(PreparedStatementCreator preparedStatementCreator, RowCallbackHandler rowCallbackHandler) {
 		query(preparedStatementCreator, rowCallbackHandler, null);
 	}
 
 	@Override
 	public void query(PreparedStatementCreator preparedStatementCreator, RowCallbackHandler rowCallbackHandler,
-			QueryOptions queryOptions) throws DataAccessException {
-
+			QueryOptions queryOptions) {
 		query(preparedStatementCreator, null, rowCallbackHandler, queryOptions);
 	}
 
 	@Override
-	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
-		throws DataAccessException {
-
+	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper) {
 		return query(preparedStatementCreator, rowMapper, null);
 	}
 
 	@Override
 	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper,
-			QueryOptions queryOptions) throws DataAccessException {
-
+			QueryOptions queryOptions) {
 		return query(preparedStatementCreator, null, rowMapper, queryOptions);
 	}
 
 	@Override
 	public <T> T query(String cql, PreparedStatementBinder preparedStatementBinder,
-		ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
-
+			ResultSetExtractor<T> resultSetExtractor) {
 		return query(cql, preparedStatementBinder, resultSetExtractor, null);
 	}
 
 	@Override
 	public <T> T query(String cql, PreparedStatementBinder preparedStatementBinder,
-			ResultSetExtractor<T> resultSetExtractor, QueryOptions queryOptions) throws DataAccessException {
+			ResultSetExtractor<T> resultSetExtractor, QueryOptions queryOptions) {
 
-		return query(new CachedPreparedStatementCreator(logCql(cql)),
-			preparedStatementBinder, resultSetExtractor, queryOptions);
+		return query(new CachedPreparedStatementCreator(logCql(cql)), preparedStatementBinder, resultSetExtractor,
+				queryOptions);
 	}
 
 	@Override
 	public void query(String cql, PreparedStatementBinder preparedStatementBinder,
-		RowCallbackHandler rowCallbackHandler) throws DataAccessException {
-
+			RowCallbackHandler rowCallbackHandler) {
 		query(cql, preparedStatementBinder, rowCallbackHandler, null);
 	}
 
 	@Override
-	public void query(String cql, PreparedStatementBinder preparedStatementBinder,
-			RowCallbackHandler rowCallbackHandler, QueryOptions queryOptions) throws DataAccessException {
+	public void query(String cql, PreparedStatementBinder preparedStatementBinder, RowCallbackHandler rowCallbackHandler,
+			QueryOptions queryOptions) {
 
-		query(new CachedPreparedStatementCreator(logCql(cql)), preparedStatementBinder, rowCallbackHandler,
-			queryOptions);
+		query(new CachedPreparedStatementCreator(logCql(cql)), preparedStatementBinder, rowCallbackHandler, queryOptions);
 	}
 
 	@Override
-	public <T> List<T> query(String cql, PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper)
-		throws DataAccessException {
-
+	public <T> List<T> query(String cql, PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper) {
 		return query(cql, preparedStatementBinder, rowMapper, null);
 	}
 
 	@Override
 	public <T> List<T> query(String cql, PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper,
-			QueryOptions queryOptions) throws DataAccessException {
-
+			QueryOptions queryOptions) {
 		return query(new CachedPreparedStatementCreator(logCql(cql)), preparedStatementBinder, rowMapper, queryOptions);
 	}
 
 	@Override
 	public void ingest(String cql, RowIterator rowIterator, WriteOptions options) {
 
-		CachedPreparedStatementCreator cachedPreparedStatementCreator =
-			new CachedPreparedStatementCreator(logCql(cql));
+		CachedPreparedStatementCreator cachedPreparedStatementCreator = new CachedPreparedStatementCreator(logCql(cql));
 
 		PreparedStatement preparedStatement = addPreparedStatementOptions(
-			cachedPreparedStatementCreator.createPreparedStatement(getSession()), options);
+				cachedPreparedStatementCreator.createPreparedStatement(getSession()), options);
 
 		Session session = getSession();
 
@@ -970,6 +987,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public void ingest(String cql, final List<List<?>> rows, WriteOptions writeOptions) {
+
 		Assert.notNull(rows);
 		Assert.notEmpty(rows);
 
@@ -997,12 +1015,14 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public void ingest(String cql, final Object[][] rows, WriteOptions writeOptions) {
+
 		ingest(cql, new RowIterator() {
 
 			int index = 0;
 
 			@Override
 			public Object[] next() {
+
 				if (!hasNext()) {
 					throw new NoSuchElementException("No more elements");
 				}
@@ -1017,19 +1037,18 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void truncate(String tableName) throws DataAccessException {
+	public void truncate(String tableName) {
 		truncate(cqlId(tableName));
 	}
 
 	@Override
-	public void truncate(CqlIdentifier tableName) throws DataAccessException {
+	public void truncate(CqlIdentifier tableName) {
 		doExecute(QueryBuilder.truncate(logCql(tableName.toCql())));
 	}
 
 	@Override
-	public <T> T query(PreparedStatementCreator preparedStatementCreator,
-			PreparedStatementBinder preparedStatementBinder, ResultSetExtractor<T> resultSetExtractor)
-				throws DataAccessException {
+	public <T> T query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
+			ResultSetExtractor<T> resultSetExtractor) {
 
 		return query(preparedStatementCreator, preparedStatementBinder, resultSetExtractor, null);
 	}
@@ -1037,16 +1056,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> T query(PreparedStatementCreator preparedStatementCreator,
 			final PreparedStatementBinder preparedStatementBinder, final ResultSetExtractor<T> resultSetExtractor,
-			final QueryOptions queryOptions) throws DataAccessException {
+			final QueryOptions queryOptions) {
 
 		Assert.notNull(resultSetExtractor, "ResultSetExtractor must not be null");
 
 		return execute(preparedStatementCreator, new PreparedStatementCallback<T>() {
+
 			@Override
-			public T doInPreparedStatement(PreparedStatement preparedStatement) throws DriverException {
+			public T doInPreparedStatement(PreparedStatement preparedStatement) {
+
 				BoundStatement boundStatement = (preparedStatementBinder != null
-					? preparedStatementBinder.bindValues(preparedStatement)
-					: preparedStatement.bind());
+						? preparedStatementBinder.bindValues(preparedStatement) : preparedStatement.bind());
 
 				return resultSetExtractor.extractData(doExecute(addQueryOptions(boundStatement, queryOptions)));
 			}
@@ -1056,16 +1076,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public void query(PreparedStatementCreator preparedStatementCreator,
 			final PreparedStatementBinder preparedStatementBinder, final RowCallbackHandler rowCallbackHandler,
-			final QueryOptions queryOptions) throws DataAccessException {
+			final QueryOptions queryOptions) {
 
 		Assert.notNull(rowCallbackHandler, "RowCallbackHandler must not be null");
 
 		execute(preparedStatementCreator, new PreparedStatementCallback<Object>() {
+
 			@Override
-			public Object doInPreparedStatement(PreparedStatement preparedStatement) throws DriverException {
+			public Object doInPreparedStatement(PreparedStatement preparedStatement) {
+
 				BoundStatement boundStatement = (preparedStatementBinder != null
-					? preparedStatementBinder.bindValues(preparedStatement)
-					: preparedStatement.bind());
+						? preparedStatementBinder.bindValues(preparedStatement) : preparedStatement.bind());
 
 				process(doExecute(addQueryOptions(boundStatement, queryOptions)), rowCallbackHandler);
 
@@ -1075,9 +1096,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public void query(PreparedStatementCreator preparedStatementCreator,
-			PreparedStatementBinder preparedStatementBinder, RowCallbackHandler rowCallbackHandler)
-				throws DataAccessException {
+	public void query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
+			RowCallbackHandler rowCallbackHandler) {
 
 		query(preparedStatementCreator, preparedStatementBinder, rowCallbackHandler, null);
 	}
@@ -1085,16 +1105,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator,
 			final PreparedStatementBinder preparedStatementBinder, final RowMapper<T> rowMapper,
-			final QueryOptions queryOptions) throws DataAccessException {
+			final QueryOptions queryOptions) {
 
 		Assert.notNull(rowMapper, "RowMapper must not be null");
 
 		return execute(preparedStatementCreator, new PreparedStatementCallback<List<T>>() {
+
 			@Override
-			public List<T> doInPreparedStatement(PreparedStatement preparedStatement) throws DriverException {
+			public List<T> doInPreparedStatement(PreparedStatement preparedStatement) {
+
 				BoundStatement boundStatement = (preparedStatementBinder != null
-					? preparedStatementBinder.bindValues(preparedStatement)
-					: preparedStatement.bind());
+						? preparedStatementBinder.bindValues(preparedStatement) : preparedStatement.bind());
 
 				return process(doExecute(addQueryOptions(boundStatement, queryOptions)), rowMapper);
 			}
@@ -1103,16 +1124,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator,
-			PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper) throws DataAccessException {
-
+			PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper) {
 		return query(preparedStatementCreator, preparedStatementBinder, rowMapper, null);
 	}
 
 	@Override
 	public ResultSet execute(final AlterKeyspaceSpecification specification) {
+
 		return execute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
 				return session.execute(logCql(AlterKeyspaceCqlGenerator.toCql(specification)));
 			}
 		});
@@ -1120,9 +1142,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSet execute(final CreateKeyspaceSpecification specification) {
+
 		return execute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
 				return session.execute(logCql(CreateKeyspaceCqlGenerator.toCql(specification)));
 			}
 		});
@@ -1130,9 +1154,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSet execute(final DropKeyspaceSpecification specification) {
+
 		return execute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
 				return session.execute(logCql(DropKeyspaceCqlGenerator.toCql(specification)));
 			}
 		});
@@ -1140,9 +1166,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSet execute(final AlterTableSpecification specification) {
+
 		return execute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
 				return session.execute(logCql(AlterTableCqlGenerator.toCql(specification)));
 			}
 		});
@@ -1150,9 +1178,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSet execute(final CreateTableSpecification specification) {
+
 		return execute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
 				return session.execute(logCql(CreateTableCqlGenerator.toCql(specification)));
 			}
 		});
@@ -1160,9 +1190,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSet execute(final DropTableSpecification specification) {
+
 		return execute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
 				return session.execute(logCql(DropTableCqlGenerator.toCql(specification)));
 			}
 		});
@@ -1170,9 +1202,11 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSet execute(final CreateIndexSpecification specification) {
+
 		return execute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
 				return session.execute(logCql(CreateIndexCqlGenerator.toCql(specification)));
 			}
 		});
@@ -1180,36 +1214,38 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSet execute(final DropIndexSpecification specification) {
+
 		return execute(new SessionCallback<ResultSet>() {
+
 			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
+			public ResultSet doInSession(Session session) {
 				return session.execute(logCql(DropIndexCqlGenerator.toCql(specification)));
 			}
 		});
 	}
 
 	@Override
-	public void execute(Batch batch) throws DataAccessException {
+	public void execute(Batch batch) {
 		doExecute(batch);
 	}
 
 	@Override
-	public void execute(Delete delete) throws DataAccessException {
+	public void execute(Delete delete) {
 		doExecute(delete);
 	}
 
 	@Override
-	public void execute(Insert insert) throws DataAccessException {
+	public void execute(Insert insert) {
 		doExecute(insert);
 	}
 
 	@Override
-	public void execute(Truncate truncate) throws DataAccessException {
+	public void execute(Truncate truncate) {
 		doExecute(truncate);
 	}
 
 	@Override
-	public void execute(Update update) throws DataAccessException {
+	public void execute(Update update) {
 		doExecute(update);
 	}
 
@@ -1224,14 +1260,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	protected long selectCount(final Select select) {
+
 		return query(select, new ResultSetExtractor<Long>() {
+
 			@Override
-			public Long extractData(ResultSet resultSet) throws DriverException, DataAccessException {
+			public Long extractData(ResultSet resultSet) {
+
 				Row row = resultSet.one();
 
 				if (row == null) {
-					throw new InvalidDataAccessApiUsageException(String.format(
-						"count query [%1$s] did not return any results", select));
+					throw new InvalidDataAccessApiUsageException(
+							String.format("count query [%1$s] did not return any results", select));
 				}
 
 				return row.getLong(0);
@@ -1240,70 +1279,65 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public ResultSetFuture executeAsynchronously(Batch batch) throws DataAccessException {
+	public ResultSetFuture executeAsynchronously(Batch batch) {
 		return doExecuteAsync(batch);
 	}
 
 	@Override
-	public ResultSetFuture executeAsynchronously(Delete delete) throws DataAccessException {
+	public ResultSetFuture executeAsynchronously(Delete delete) {
 		return doExecuteAsync(delete);
 	}
 
 	@Override
-	public ResultSetFuture executeAsynchronously(Insert insert) throws DataAccessException {
+	public ResultSetFuture executeAsynchronously(Insert insert) {
 		return doExecuteAsync(insert);
 	}
 
 	@Override
-	public ResultSetFuture executeAsynchronously(Truncate truncate) throws DataAccessException {
+	public ResultSetFuture executeAsynchronously(Truncate truncate) {
 		return doExecuteAsync(truncate);
 	}
 
 	@Override
-	public ResultSetFuture executeAsynchronously(Update update) throws DataAccessException {
+	public ResultSetFuture executeAsynchronously(Update update) {
 		return doExecuteAsync(update);
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(Batch batch, AsynchronousQueryListener listener)
-			throws DataAccessException {
-
+	public Cancellable executeAsynchronously(Batch batch, AsynchronousQueryListener listener) {
 		return doExecuteAsync(batch, listener);
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(Delete delete, AsynchronousQueryListener listener)
-			throws DataAccessException {
-
+	public Cancellable executeAsynchronously(Delete delete, AsynchronousQueryListener listener) {
 		return doExecuteAsync(delete, listener);
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(Insert insert, AsynchronousQueryListener listener)
-			throws DataAccessException {
+	public Cancellable executeAsynchronously(Insert insert, AsynchronousQueryListener listener) {
 
 		return doExecuteAsync(insert, listener);
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(Truncate truncate, AsynchronousQueryListener listener)
-			throws DataAccessException {
+	public Cancellable executeAsynchronously(Truncate truncate, AsynchronousQueryListener listener) {
 
 		return doExecuteAsync(truncate, listener);
 	}
 
 	@Override
-	public Cancellable executeAsynchronously(Update update, AsynchronousQueryListener listener)
-			throws DataAccessException {
+	public Cancellable executeAsynchronously(Update update, AsynchronousQueryListener listener) {
 
 		return doExecuteAsync(update, listener);
 	}
 
 	@Override
 	public ResultSetFuture queryAsynchronously(final Select select) {
+
 		return execute(new SessionCallback<ResultSetFuture>() {
 			@Override
-			public ResultSetFuture doInSession(Session session) throws DataAccessException {
+			public ResultSetFuture doInSession(Session session) {
+
 				logDebug("async query [{}]", select);
 				return session.executeAsync(select);
 			}
@@ -1320,13 +1354,16 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			final Executor executor) {
 
 		return execute(new SessionCallback<Cancellable>() {
+
 			@Override
-			public Cancellable doInSession(Session session) throws DataAccessException {
+			public Cancellable doInSession(Session session) {
+
 				logDebug("async query [{}]", select);
 
 				final ResultSetFuture resultSetFuture = session.executeAsync(select);
 
 				Runnable wrapper = new Runnable() {
+
 					@Override
 					public void run() {
 						listener.onQueryComplete(resultSetFuture);
@@ -1347,12 +1384,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public Cancellable queryAsynchronously(final Select select, final Runnable listener, final Executor executor) {
+
 		return execute(new SessionCallback<Cancellable>() {
+
 			@Override
-			public Cancellable doInSession(Session session) throws DataAccessException {
+			public Cancellable doInSession(Session session) {
+
 				logDebug("async query [{}]", select);
+
 				ResultSetFuture resultSetFuture = session.executeAsync(select);
 				resultSetFuture.addListener(listener, executor);
+
 				return new ResultSetFutureCancellable(resultSetFuture);
 			}
 		});
@@ -1364,57 +1406,61 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> T query(Select select, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
+	public <T> T query(Select select, ResultSetExtractor<T> resultSetExtractor) {
+
 		Assert.notNull(select);
+
 		return resultSetExtractor.extractData(doExecute(select));
 	}
 
 	@Override
-	public void query(Select select, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
+	public void query(Select select, RowCallbackHandler rowCallbackHandler) {
 		process(doExecute(select), rowCallbackHandler);
 	}
 
 	@Override
-	public <T> List<T> query(Select select, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> List<T> query(Select select, RowMapper<T> rowMapper) {
 		return process(doExecute(select), rowMapper);
 	}
 
 	@Override
-	public <T> T queryForObject(Select select, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> T queryForObject(Select select, RowMapper<T> rowMapper) {
 		return processOne(doExecute(select), rowMapper);
 	}
 
 	@Override
-	public <T> T queryForObject(Select select, Class<T> requiredType) throws DataAccessException {
+	public <T> T queryForObject(Select select, Class<T> requiredType) {
 		return processOne(doExecute(select), requiredType);
 	}
 
 	@Override
-	public Map<String, Object> queryForMap(Select select) throws DataAccessException {
+	public Map<String, Object> queryForMap(Select select) {
 		return processMap(doExecute(select));
 	}
 
 	@Override
-	public <T> List<T> queryForList(Select select, Class<T> elementType) throws DataAccessException {
+	public <T> List<T> queryForList(Select select, Class<T> elementType) {
 		return processList(doExecute(select), elementType);
 	}
 
 	@Override
-	public List<Map<String, Object>> queryForListOfMap(Select select) throws DataAccessException {
+	public List<Map<String, Object>> queryForListOfMap(Select select) {
 		return processListOfMap(doExecute(select));
 	}
 
 	@Override
 	public <T> Cancellable queryForListAsynchronously(Select select, final Class<T> requiredType,
-			final QueryForListListener<T> listener) throws DataAccessException {
+			final QueryForListListener<T> listener) {
 
-		Assert.notNull(select, "Select cannot be null");
-		Assert.notNull(requiredType, "Required type cannot be null");
-		Assert.notNull(listener, "Listener cannot be null");
+		Assert.notNull(select, "Select must not be null");
+		Assert.notNull(requiredType, "Required type must not be null");
+		Assert.notNull(listener, "Listener must not be null");
 
 		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
 				try {
 					listener.onQueryComplete(processList(resultSetFuture.getUninterruptibly(), requiredType));
 				} catch (Exception e) {
@@ -1426,15 +1472,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> Cancellable queryForListAsynchronously(String select, final Class<T> requiredType,
-			final QueryForListListener<T> listener) throws DataAccessException {
+			final QueryForListListener<T> listener) {
 
-		Assert.hasText(select, "Select cannot be null");
-		Assert.notNull(requiredType, "Required type cannot be null");
-		Assert.notNull(listener, "Listener cannot be null");
+		Assert.hasText(select, "Select must not be null");
+		Assert.notNull(requiredType, "Required type must not be null");
+		Assert.notNull(listener, "Listener must not be null");
 
 		return doExecuteAsync(new SimpleStatement(logCql(select)), new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
 				try {
 					listener.onQueryComplete(processList(resultSetFuture.getUninterruptibly(), requiredType));
 				} catch (Exception e) {
@@ -1446,11 +1494,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public Cancellable queryForListOfMapAsynchronously(Select select,
-			final QueryForListListener<Map<String, Object>> listener) throws DataAccessException {
+			final QueryForListListener<Map<String, Object>> listener) {
 
 		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
 				try {
 					listener.onQueryComplete(processListOfMap(resultSetFuture.getUninterruptibly()));
 				} catch (Exception e) {
@@ -1462,19 +1512,20 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public Cancellable queryForListOfMapAsynchronously(String cql,
-			final QueryForListListener<Map<String, Object>> listener) throws DataAccessException {
+			final QueryForListListener<Map<String, Object>> listener) {
 
 		return queryForListOfMapAsynchronously(cql, listener, null);
 	}
 
 	@Override
 	public Cancellable queryForListOfMapAsynchronously(String cql,
-			final QueryForListListener<Map<String, Object>> listener, QueryOptions queryOptions)
-				throws DataAccessException {
+			final QueryForListListener<Map<String, Object>> listener, QueryOptions queryOptions) {
 
 		return doExecuteAsync(new SimpleStatement(logCql(cql)), new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture rsf) {
+
 				try {
 					listener.onQueryComplete(processListOfMap(rsf.getUninterruptibly()));
 				} catch (Exception e) {
@@ -1485,19 +1536,20 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public Cancellable queryForMapAsynchronously(String cql, QueryForMapListener listener)
-			throws DataAccessException {
+	public Cancellable queryForMapAsynchronously(String cql, QueryForMapListener listener) {
 
 		return queryForMapAsynchronously(cql, listener, null);
 	}
 
 	@Override
 	public Cancellable queryForMapAsynchronously(String cql, final QueryForMapListener listener,
-			final QueryOptions queryOptions) throws DataAccessException {
+			final QueryOptions queryOptions) {
 
 		return doExecuteAsync(new SimpleStatement(logCql(cql)), new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
 				try {
 					listener.onQueryComplete(processMap(resultSetFuture.getUninterruptibly()));
 				} catch (Exception e) {
@@ -1508,12 +1560,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public Cancellable queryForMapAsynchronously(Select select, final QueryForMapListener listener)
-			throws DataAccessException {
+	public Cancellable queryForMapAsynchronously(Select select, final QueryForMapListener listener) {
 
 		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
 				try {
 					listener.onQueryComplete(processMap(resultSetFuture.getUninterruptibly()));
 				} catch (Exception e) {
@@ -1525,11 +1578,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> Cancellable queryForObjectAsynchronously(Select select, final Class<T> requiredType,
-			final QueryForObjectListener<T> listener) throws DataAccessException {
+			final QueryForObjectListener<T> listener) {
 
 		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
 				try {
 					listener.onQueryComplete(processOne(resultSetFuture.getUninterruptibly(), requiredType));
 				} catch (Exception e) {
@@ -1541,18 +1596,20 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> Cancellable queryForObjectAsynchronously(String cql, Class<T> requiredType,
-			QueryForObjectListener<T> listener) throws DataAccessException {
+			QueryForObjectListener<T> listener) {
 
 		return queryForObjectAsynchronously(cql, requiredType, listener, null);
 	}
 
 	@Override
 	public <T> Cancellable queryForObjectAsynchronously(String cql, final Class<T> requiredType,
-			final QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException {
+			final QueryForObjectListener<T> listener, QueryOptions options) {
 
 		return doExecuteAsync(new SimpleStatement(logCql(cql)), new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
 				try {
 					listener.onQueryComplete(processOne(resultSetFuture.getUninterruptibly(), requiredType));
 				} catch (Exception e) {
@@ -1564,18 +1621,20 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> Cancellable queryForObjectAsynchronously(String cql, RowMapper<T> rowMapper,
-			QueryForObjectListener<T> listener) throws DataAccessException {
+			QueryForObjectListener<T> listener) {
 
 		return queryForObjectAsynchronously(cql, rowMapper, listener, null);
 	}
 
 	@Override
 	public <T> Cancellable queryForObjectAsynchronously(String cql, final RowMapper<T> rowMapper,
-			final QueryForObjectListener<T> listener, QueryOptions options) throws DataAccessException {
+			final QueryForObjectListener<T> listener, QueryOptions options) {
 
 		return doExecuteAsync(new SimpleStatement(logCql(cql)), new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
 				try {
 					listener.onQueryComplete(processOne(resultSetFuture.getUninterruptibly(), rowMapper));
 				} catch (Exception e) {
@@ -1587,11 +1646,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> Cancellable queryForObjectAsynchronously(Select select, final RowMapper<T> rowMapper,
-			final QueryForObjectListener<T> listener) throws DataAccessException {
+			final QueryForObjectListener<T> listener) {
 
 		return doExecuteAsync(select, new AsynchronousQueryListener() {
+
 			@Override
 			public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
 				try {
 					listener.onQueryComplete(processOne(resultSetFuture.getUninterruptibly(), rowMapper));
 				} catch (Exception e) {
@@ -1613,11 +1674,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSet getResultSetUninterruptibly(ResultSetFuture resultSetFuture, long timeout, TimeUnit timeUnit) {
+
 		try {
 			timeUnit = (timeUnit != null ? timeUnit : TimeUnit.MILLISECONDS);
 
 			return (timeout > 0 ? resultSetFuture.getUninterruptibly(timeout, timeUnit)
-				: resultSetFuture.getUninterruptibly());
+					: resultSetFuture.getUninterruptibly());
 		} catch (Exception e) {
 			throw translateExceptionIfPossible(e);
 		}

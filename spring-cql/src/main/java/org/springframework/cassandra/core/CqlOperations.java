@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * 
  * @author David Webb
  * @author Matthew Adams
+ * @author John Blum
  */
 public interface CqlOperations {
 
@@ -322,7 +323,8 @@ public interface CqlOperations {
 	 * @param options Query Options
 	 * @return
 	 */
-	<T> T queryAsynchronously(String cql, ResultSetExtractor<T> rse, Long timeout, TimeUnit timeUnit, QueryOptions options);
+	<T> T queryAsynchronously(String cql, ResultSetExtractor<T> rse, Long timeout, TimeUnit timeUnit,
+			QueryOptions options);
 
 	/**
 	 * Executes the provided CQL Query and returns the ResultSetFuture for user processing.
@@ -664,8 +666,8 @@ public interface CqlOperations {
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 * @throws DataAccessException
 	 */
-	<T> Cancellable queryForObjectAsynchronously(Select select, RowMapper<T> rowMapper, QueryForObjectListener<T> listener)
-			throws DataAccessException;
+	<T> Cancellable queryForObjectAsynchronously(Select select, RowMapper<T> rowMapper,
+			QueryForObjectListener<T> listener) throws DataAccessException;
 
 	/**
 	 * Executes the provided CQL Query, and maps <b>ONE</b> Row returned with the supplied RowMapper.
@@ -694,17 +696,14 @@ public interface CqlOperations {
 	<T> T queryForObject(Select select, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
-	 * Process {@link ResultSet} with {@link RowMapper}. This method is used internally to the template
-	 * for core operations, but is made available through this interface in the event you have a {@link ResultSet}
-	 * to process.  The {@link ResultSet} could come from a {@link ResultSetFuture} after an asynchronous query.
+	 * Process {@link ResultSet} with {@link RowMapper}. This method is used internally to the template for core
+	 * operations, but is made available through this interface in the event you have a {@link ResultSet} to process. The
+	 * {@link ResultSet} could come from a {@link ResultSetFuture} after an asynchronous query.
 	 *
-	 * @param resultSet {@link ResultSet} to process.
-	 * @param rowMapper {@link RowMapper} used to process the single row of the result set.
-	 * @throws IllegalArgumentException if {@link ResultSet} is null.
+	 * @param resultSet {@link ResultSet} to process, must not be {@literal null}.
+	 * @param rowMapper {@link RowMapper} used to process the single row of the result set, must not be {@literal null}.
 	 * @throws IncorrectResultSizeDataAccessException if no rows are found, or more than 1 row is found.
 	 * @throws DataAccessException if a Cassandra driver error occurs.
-	 * @see org.springframework.cassandra.core.RowMapper
-	 * @see com.datastax.driver.core.ResultSet
 	 */
 	<T> T processOne(ResultSet resultSet, RowMapper<T> rowMapper) throws DataAccessException;
 

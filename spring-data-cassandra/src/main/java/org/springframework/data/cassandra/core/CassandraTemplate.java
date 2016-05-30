@@ -67,6 +67,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Matthew T. Adams
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author John Blum
  * @see CqlTemplate
  * @see CassandraOperations
  */
@@ -100,13 +101,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		setConverter(resolveConverter(converter));
 	}
 
-	/* (non-Javadoc) */
 	private static CassandraConverter resolveConverter(CassandraConverter cassandraConverter) {
 		return (cassandraConverter != null ? cassandraConverter : getDefaultCassandraConverter());
 	}
 
-	/* (non-Javadoc) */
 	private static CassandraConverter getDefaultCassandraConverter() {
+
 		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter();
 		mappingCassandraConverter.afterPropertiesSet();
 		return mappingCassandraConverter;

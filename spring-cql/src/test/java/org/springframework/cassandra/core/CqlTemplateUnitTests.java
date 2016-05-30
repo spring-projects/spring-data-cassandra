@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2016 the original author or authors
+ *  Copyright 2016 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.springframework.cassandra.core;
 
 import static org.hamcrest.Matchers.*;
@@ -41,11 +40,10 @@ import com.datastax.driver.core.Session;
  * {@link CqlTemplate} class.
  *
  * @author John Blum
- * @see org.springframework.cassandra.core.CqlTemplate
- * @since 1.5.0
  */
 // TODO: add many more unit tests until SUT test coverage is 100%!
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("unchecked")
 public class CqlTemplateUnitTests {
 
 	@Rule public ExpectedException exception = ExpectedException.none();
@@ -59,9 +57,12 @@ public class CqlTemplateUnitTests {
 		template = new CqlTemplate(mockSession);
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void firstColumnToObjectReturnsColumnValue() {
+
 		final Row mockRow = mock(Row.class);
 		ColumnDefinitions mockColumnDefinitions = mock(ColumnDefinitions.class);
 		Iterator<ColumnDefinitions.Definition> mockIterator = mock(Iterator.class);
@@ -73,8 +74,10 @@ public class CqlTemplateUnitTests {
 		when(mockIterator.next()).thenReturn(mockColumnDefinition);
 
 		template = new CqlTemplate() {
+
 			@Override
 			<T> T columnToObject(Row row, ColumnDefinitions.Definition columnDefinition) {
+
 				assertThat(row, is(sameInstance(mockRow)));
 				assertThat(columnDefinition, is(sameInstance(mockColumnDefinition)));
 				return (T) "test";
@@ -90,9 +93,12 @@ public class CqlTemplateUnitTests {
 		verifyZeroInteractions(mockColumnDefinition);
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void firstColumnToObjectReturnsNull() {
+
 		Row mockRow = mock(Row.class);
 		ColumnDefinitions mockColumnDefinitions = mock(ColumnDefinitions.class);
 		Iterator<ColumnDefinitions.Definition> mockIterator = mock(Iterator.class);
@@ -109,9 +115,12 @@ public class CqlTemplateUnitTests {
 		verify(mockIterator, never()).next();
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void processOneIsSuccessful() {
+
 		ResultSet mockResultSet = mock(ResultSet.class);
 		Row mockRow = mock(Row.class);
 		RowMapper<String> mockRowMapper = mock(RowMapper.class);
@@ -128,14 +137,19 @@ public class CqlTemplateUnitTests {
 		verifyZeroInteractions(mockRow);
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void processOneThrowsIncorrectResultSetSizeDataAccessExceptionWhenNoRowsFound() {
+
 		ResultSet mockResultSet = mock(ResultSet.class);
 		RowMapper mockRowMapper = mock(RowMapper.class);
 
 		when(mockResultSet.one()).thenReturn(null);
 
 		try {
+
 			exception.expect(IncorrectResultSizeDataAccessException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage(containsString("expected 1, actual 0"));
@@ -149,8 +163,12 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void processOneThrowsIncorrectResultSetSizeDataAccessExceptionWhenTooManyRowsFound() {
+
 		ResultSet mockResultSet = mock(ResultSet.class);
 		Row mockRow = mock(Row.class);
 		RowMapper mockRowMapper = mock(RowMapper.class);
@@ -159,6 +177,7 @@ public class CqlTemplateUnitTests {
 		when(mockResultSet.isExhausted()).thenReturn(false);
 
 		try {
+
 			exception.expect(IncorrectResultSizeDataAccessException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage("ResultSet size exceeds 1");
@@ -173,14 +192,18 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void processOnePassingNullResultSetThrowsIllegalArgumentException() {
+
 		RowMapper mockRowMapper = mock(RowMapper.class);
 
 		try {
+
 			exception.expect(IllegalArgumentException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
-			exception.expectMessage("ResultSet cannot be null");
 
 			template.processOne(null, mockRowMapper);
 		} finally {
@@ -188,9 +211,12 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void processOneWithRequiredTypeIsSuccessful() {
+
 		ResultSet mockResultSet = mock(ResultSet.class);
 		final Row mockRow = mock(Row.class);
 
@@ -201,27 +227,32 @@ public class CqlTemplateUnitTests {
 			@Override
 			protected Object firstColumnToObject(Row row) {
 				assertThat(row, is(equalTo(mockRow)));
-				return 1l;
+				return 1L;
 			}
 		};
 
 		Number value = template.processOne(mockResultSet, Long.class);
 
 		assertThat(value, is(instanceOf(Long.class)));
-		assertThat(value.longValue(), is(equalTo(1l)));
+		assertThat(value.longValue(), is(equalTo(1L)));
 
 		verify(mockResultSet, times(1)).one();
 		verify(mockResultSet, times(1)).isExhausted();
 		verifyZeroInteractions(mockRow);
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void processOneWithRequiredTypeThrowsIncorrectResultSetSizeDataAccessExceptionWhenNoRowsFound() {
+
 		ResultSet mockResultSet = mock(ResultSet.class);
 
 		when(mockResultSet.one()).thenReturn(null);
 
 		try {
+
 			exception.expect(IncorrectResultSizeDataAccessException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage(containsString("expected 1, actual 0"));
@@ -234,8 +265,12 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void processOneWithRequiredTypeThrowsIncorrectResultSetSizeDataAccessExceptionWhenTooManyRowsFound() {
+
 		ResultSet mockResultSet = mock(ResultSet.class);
 		Row mockRow = mock(Row.class);
 
@@ -243,6 +278,7 @@ public class CqlTemplateUnitTests {
 		when(mockResultSet.isExhausted()).thenReturn(false);
 
 		try {
+
 			exception.expect(IncorrectResultSizeDataAccessException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage(containsString("ResultSet size exceeds 1"));
@@ -256,11 +292,14 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
+	/**
+	 * @see DATACASS-286
+	 */
 	@Test
 	public void processOneWithRequiredTypePassingNullResultSetThrowsIllegalArgumentException() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage(is(equalTo("ResultSet cannot be null")));
 
 		template.processOne(null, String.class);
 	}

@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2013-2016 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ import com.datastax.driver.core.querybuilder.Select;
 /**
  * Operations for interacting with Cassandra. These operations are used by the Repository implementation, but can also
  * be used directly when that is desired by the developer.
- * 
+ *
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew Adams
@@ -39,7 +39,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * The table name used for the specified class by this template.
-	 * 
+	 *
 	 * @param entityClass must not be {@literal null}.
 	 * @return
 	 */
@@ -47,7 +47,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Execute query and convert ResultSet to the list of entities
-	 * 
+	 *
 	 * @param query must not be {@literal null}.
 	 * @param type must not be {@literal null}, mapped entity type.
 	 * @return
@@ -56,7 +56,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Execute the Select Query and convert to the list of entities
-	 * 
+	 *
 	 * @param select must not be {@literal null}.
 	 * @param type must not be {@literal null}, mapped entity type.
 	 * @return
@@ -67,7 +67,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Execute CQL and convert ResultSet to the entity
-	 * 
+	 *
 	 * @param query must not be {@literal null}.
 	 * @param type must not be {@literal null}, mapped entity type.
 	 * @return
@@ -76,7 +76,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Executes the {@link Select} query asynchronously.
-	 * 
+	 *
 	 * @param select The {@link Select} query to execute.
 	 * @param type The type of entity to retrieve.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
@@ -85,7 +85,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Executes the string CQL query asynchronously.
-	 * 
+	 *
 	 * @param select The string query CQL to execute.
 	 * @param type The type of entity to retrieve.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
@@ -94,7 +94,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Executes the {@link Select} query asynchronously.
-	 * 
+	 *
 	 * @param select The {@link Select} query to execute.
 	 * @param type The type of entity to retrieve.
 	 * @param options The {@link QueryOptions} to use.
@@ -105,7 +105,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Executes the string CQL query asynchronously.
-	 * 
+	 *
 	 * @param select The string query CQL to execute.
 	 * @param type The type of entity to retrieve.
 	 * @param options The {@link QueryOptions} to use.
@@ -116,7 +116,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Execute Select query and convert ResultSet to the entity
-	 * 
+	 *
 	 * @param query must not be {@literal null}.
 	 * @param type must not be {@literal null}, mapped entity type.
 	 * @return
@@ -129,7 +129,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Insert the given entity.
-	 * 
+	 *
 	 * @param entity The entity to insert
 	 * @return The entity given
 	 */
@@ -137,7 +137,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Insert the given entity.
-	 * 
+	 *
 	 * @param entity The entity to insert
 	 * @param options The {@link WriteOptions} to use.
 	 * @return The entity given
@@ -146,7 +146,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Insert the given list of entities.
-	 * 
+	 *
 	 * @param entities The entities to insert.
 	 * @return The entities given.
 	 */
@@ -154,7 +154,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Insert the given list of entities.
-	 * 
+	 *
 	 * @param entities The entities to insert.
 	 * @param options The {@link WriteOptions} to use.
 	 * @return The entities given.
@@ -163,7 +163,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Inserts the given entity asynchronously.
-	 * 
+	 *
 	 * @param entity The entity to insert
 	 * @return The entity given
 	 * @see #insertAsynchronously(Object, WriteListener)
@@ -175,7 +175,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Inserts the given entity asynchronously.
-	 * 
+	 *
 	 * @param entity The entity to insert
 	 * @return The entity given
 	 * @see #insertAsynchronously(Object, WriteOptions)
@@ -187,7 +187,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Inserts the given entity asynchronously.
-	 * 
+	 *
 	 * @param entity The entity to insert
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
@@ -196,7 +196,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Inserts the given entity asynchronously.
-	 * 
+	 *
 	 * @param entity The entity to insert
 	 * @param listener The listener to receive notification of completion
 	 * @param options The {@link WriteOptions} to use
@@ -206,7 +206,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Inserts the given entities asynchronously in a batch.
-	 * 
+	 *
 	 * @param entity The entities to insert
 	 * @return The entities given
 	 * @see #insertAsynchronously(List, WriteListener)
@@ -218,7 +218,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Inserts the given entities asynchronously in a batch.
-	 * 
+	 *
 	 * @param entity The entities to insert
 	 * @return The entities given
 	 * @see #insertAsynchronously(List, WriteListener, WriteOptions)
@@ -230,7 +230,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Inserts the given entities asynchronously in a batch.
-	 * 
+	 *
 	 * @param entity The entities to insert
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
@@ -239,7 +239,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Inserts the given entities asynchronously in a batch.
-	 * 
+	 *
 	 * @param entity The entities to insert
 	 * @param listener The listener to receive notification of completion
 	 * @param options The {@link WriteOptions} to use
@@ -249,7 +249,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Update the given entity.
-	 * 
+	 *
 	 * @param entity The entity to update
 	 * @return The entity given
 	 */
@@ -257,7 +257,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Update the given entity.
-	 * 
+	 *
 	 * @param entity The entity to update
 	 * @param options The {@link WriteOptions} to use.
 	 * @return The entity given
@@ -266,7 +266,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Update the given list of entities.
-	 * 
+	 *
 	 * @param entities The entities to update.
 	 * @return The entities given.
 	 */
@@ -274,7 +274,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Update the given list of entities.
-	 * 
+	 *
 	 * @param entities The entities to update.
 	 * @param options The {@link WriteOptions} to use.
 	 * @return The entities given.
@@ -283,7 +283,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Updates the given entity asynchronously.
-	 * 
+	 *
 	 * @param entity The entity to update
 	 * @return The entity given
 	 * @see #updateAsynchronously(Object, WriteListener)
@@ -295,7 +295,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Updates the given entity asynchronously.
-	 * 
+	 *
 	 * @param entity The entity to update
 	 * @return The entity given
 	 * @see #updateAsynchronously(Object, WriteOptions)
@@ -307,7 +307,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Updates the given entity asynchronously.
-	 * 
+	 *
 	 * @param entity The entity to update
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
@@ -316,7 +316,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Updates the given entity asynchronously.
-	 * 
+	 *
 	 * @param entity The entity to update
 	 * @param listener The listener to receive notification of completion
 	 * @param options The {@link WriteOptions} to use
@@ -326,7 +326,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Updates the given entities asynchronously in a batch.
-	 * 
+	 *
 	 * @param entity The entities to update
 	 * @return The entities given
 	 * @see #updateAsynchronously(List, WriteListener)
@@ -338,7 +338,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Updates the given entities asynchronously in a batch.
-	 * 
+	 *
 	 * @param entity The entities to update
 	 * @return The entities given
 	 * @see #updateAsynchronously(List, WriteListener, WriteOptions)
@@ -350,7 +350,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Updates the given entities asynchronously in a batch.
-	 * 
+	 *
 	 * @param entity The entities to update
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
@@ -359,7 +359,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Updates the given entities asynchronously in a batch.
-	 * 
+	 *
 	 * @param entity The entities to update
 	 * @param listener The listener to receive notification of completion
 	 * @param options The {@link WriteOptions} to use
@@ -369,7 +369,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Remove the given object from the table by id.
-	 * 
+	 *
 	 * @param object
 	 */
 	<T> void delete(T entity);
@@ -383,7 +383,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Remove the given object from the table by id.
-	 * 
+	 *
 	 * @param object
 	 */
 	<T> void delete(List<T> entities);
@@ -397,14 +397,14 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Remove the given object from the table by id.
-	 * 
+	 *
 	 * @param entity The object to delete
 	 */
 	<T> Cancellable deleteAsynchronously(T entity);
 
 	/**
 	 * Remove the given object from the table by id.
-	 * 
+	 *
 	 * @param entity The object to delete
 	 * @param options The {@link QueryOptions} to use
 	 */
@@ -412,7 +412,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Remove the given object from the table by id.
-	 * 
+	 *
 	 * @param entity The object to delete
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 */
@@ -420,7 +420,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Remove the given object from the table by id.
-	 * 
+	 *
 	 * @param entity The object to delete
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 * @param options The {@link QueryOptions} to use
@@ -429,14 +429,14 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Remove the given objects from the table by id.
-	 * 
+	 *
 	 * @param entities The objects to delete
 	 */
 	<T> Cancellable deleteAsynchronously(List<T> entities);
 
 	/**
 	 * Remove the given objects from the table by id.
-	 * 
+	 *
 	 * @param entities The objects to delete
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 */
@@ -444,7 +444,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Remove the given objects from the table by id.
-	 * 
+	 *
 	 * @param entities The objects to delete
 	 * @param options The {@link QueryOptions} to use
 	 */
@@ -452,7 +452,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Remove the given objects from the table by id.
-	 * 
+	 *
 	 * @param entities The objects to delete
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 * @param options The {@link QueryOptions} to use
@@ -461,7 +461,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
-	 * 
+	 *
 	 * @return
 	 */
 	CassandraConverter getConverter();
