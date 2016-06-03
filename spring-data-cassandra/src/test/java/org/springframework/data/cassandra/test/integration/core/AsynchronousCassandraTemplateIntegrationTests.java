@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.core;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
@@ -34,6 +35,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
+import org.springframework.cassandra.test.integration.core.async.ObjectListener;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -197,6 +199,40 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 		}
 
 		fail("should've thrown CancellationException");
+	}
+
+	/**
+	 * @see DATACASS-287
+	 */
+	@Test(timeout = 10000)
+	public void shouldSelectOneAsynchronously() throws Exception {
+
+		Thing thing = Thing.random();
+		cassandraOperations.insert(thing);
+
+		ObjectListener<Thing> objectListener = new ObjectListener<Thing>();
+		String cql = String.format("SELECT * from thing where stuff = '%s'", thing.stuff);
+
+		cassandraOperations.selectOneAsynchronously(cql, Thing.class, objectListener);
+		objectListener.await();
+
+		assertThat(objectListener.result, is(notNullValue()));
+		assertThat(objectListener.result.stuff, is(equalTo(thing.stuff)));
+	}
+
+	/**
+	 * @see DATACASS-287
+	 */
+	@Test(timeout = 10000)
+	public void shouldSelectOneAsynchronouslyIfObjectIsAbsent() throws Exception {
+
+		ObjectListener<Thing> objectListener = new ObjectListener<Thing>();
+		String cql = String.format("SELECT * from thing where stuff = '%s'", UUID.randomUUID());
+
+		cassandraOperations.selectOneAsynchronously(cql, Thing.class, objectListener);
+		objectListener.await();
+
+		assertThat(objectListener.result, is(nullValue()));
 	}
 
 	@Configuration
