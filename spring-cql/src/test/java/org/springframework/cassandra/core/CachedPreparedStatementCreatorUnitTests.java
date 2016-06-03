@@ -41,6 +41,7 @@ import edu.umd.cs.mtc.MultithreadedTestCase;
  * Unit tests for {@link CachedPreparedStatementCreator}.
  * 
  * @author Mark Paluch
+ * @see <a href="https://jira.spring.io/browse/DATACASS-253">DATACASS-253</a>
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CachedPreparedStatementCreatorUnitTests {
@@ -95,6 +96,7 @@ public class CachedPreparedStatementCreatorUnitTests {
 
 		cachedPreparedStatementCreator.createPreparedStatement(sessionMock);
 		cachedPreparedStatementCreator.createPreparedStatement(sessionMock);
+
 		PreparedStatement result = cachedPreparedStatementCreator.createPreparedStatement(sessionMock);
 
 		assertThat(result, is(sameInstance(preparedStatement)));
@@ -117,9 +119,9 @@ public class CachedPreparedStatementCreatorUnitTests {
 	@SuppressWarnings("unused")
 	private static class CreatePreparedStatementIsThreadSafe extends MultithreadedTestCase {
 
+		final AtomicInteger atomicInteger = new AtomicInteger();
 		final CachedPreparedStatementCreator preparedStatementCreator;
 		final Session session;
-		final AtomicInteger atomicInteger = new AtomicInteger();
 
 		public CreatePreparedStatementIsThreadSafe(final PreparedStatement preparedStatement,
 				CachedPreparedStatementCreator preparedStatementCreator) {
@@ -132,7 +134,6 @@ public class CachedPreparedStatementCreatorUnitTests {
 				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
 					if (method.getName().equals("prepare") && args.length == 1) {
-
 						waitForTick(2);
 						atomicInteger.incrementAndGet();
 						return preparedStatement;
@@ -150,7 +151,6 @@ public class CachedPreparedStatementCreatorUnitTests {
 			preparedStatementCreator.createPreparedStatement(session);
 
 			assertThat(atomicInteger.get(), is(1));
-
 		}
 
 		public void thread2() {
@@ -180,6 +180,7 @@ public class CachedPreparedStatementCreatorUnitTests {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private static <T> T newProxy(Class<T> theClass, InvocationHandler invocationHandler) {
 		return (T) Proxy.newProxyInstance(CachedPreparedStatementCreatorUnitTests.class.getClassLoader(),
 				new Class[] { theClass }, invocationHandler);
