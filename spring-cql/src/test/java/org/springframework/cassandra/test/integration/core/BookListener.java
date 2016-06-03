@@ -16,7 +16,7 @@
 package org.springframework.cassandra.test.integration.core;
 
 import org.springframework.cassandra.core.AsynchronousQueryListener;
-import org.springframework.cassandra.support.TestListener;
+import org.springframework.cassandra.test.integration.support.CallbackSynchronizationSupport;
 
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
@@ -26,8 +26,9 @@ import com.datastax.driver.core.Row;
  *
  * @author David Webb
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-public class BookListener extends TestListener implements AsynchronousQueryListener {
+public class BookListener extends CallbackSynchronizationSupport implements AsynchronousQueryListener {
 
 	private Book book;
 	private boolean done;
