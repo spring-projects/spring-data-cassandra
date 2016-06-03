@@ -44,7 +44,6 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.exceptions.AlreadyExistsException;
 
 /**
  * The SchemaActionIntegrationTests class is a test suite of test cases testing the contract and behavior
@@ -136,7 +135,6 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 	@Test
 	public void createWithExistingTableThrowsErrorWhenCreatingTableFromEntity() {
 		exception.expect(BeanCreationException.class);
-		exception.expectCause(isA(AlreadyExistsException.class));
 		exception.expectMessage(containsString(String.format("Table %s.person already exists", KEYSPACE_NAME)));
 
 		doInSessionWithConfiguration(CreateWithExistingTableConfiguration.class,
