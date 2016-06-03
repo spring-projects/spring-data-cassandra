@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-cassandra-parent</artifactId>
-		<version>1.5.0.BUILD-SNAPSHOT</version>
+		<version>1.5.0.DATACASS-253-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -85,6 +85,11 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>edu.umd.cs.mtc</groupId>
+			<artifactId>multithreadedtc</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
