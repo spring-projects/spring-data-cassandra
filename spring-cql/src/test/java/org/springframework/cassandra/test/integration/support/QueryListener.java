@@ -13,24 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cassandra.test.integration.core.async;
+package org.springframework.cassandra.test.integration.support;
 
 import org.springframework.cassandra.core.AsynchronousQueryListener;
-import org.springframework.cassandra.support.TestListener;
 
 import com.datastax.driver.core.ResultSetFuture;
 
 /**
+ * {@link AsynchronousQueryListener} suitable for usage in tests.
+ * 
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
-class BasicListener extends TestListener implements AsynchronousQueryListener {
+public class QueryListener extends CallbackSynchronizationSupport implements AsynchronousQueryListener {
 
-	ResultSetFuture rsf;
+	private volatile ResultSetFuture rsf;
+
+	/**
+	 * Allow instances only using {@link #create()}
+	 */
+	private QueryListener() {
+		super();
+	}
+
+	/**
+	 * @return a new {@link QueryListener}.
+	 */
+	public static QueryListener create() {
+		return new QueryListener();
+	}
 
 	@Override
-	public void onQueryComplete(ResultSetFuture rsf) {
-		this.rsf = rsf;
+	public void onQueryComplete(ResultSetFuture resultSetFuture) {
+
+		this.rsf = resultSetFuture;
 		countDown();
+	}
+
+	public ResultSetFuture getResultSetFuture() {
+		return rsf;
 	}
 }

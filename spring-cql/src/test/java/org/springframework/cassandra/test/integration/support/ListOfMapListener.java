@@ -13,31 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cassandra.test.integration.core.async;
+package org.springframework.cassandra.test.integration.support;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.cassandra.core.QueryForListListener;
-import org.springframework.cassandra.support.TestListener;
+import org.springframework.cassandra.core.QueryForListOfMapListener;
 
 /**
+ * {@link QueryForListListener} suitable for tests.
+ * 
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
-public class ListListener<T> extends TestListener implements QueryForListListener<T> {
+public class ListOfMapListener extends CallbackSynchronizationSupport implements QueryForListOfMapListener {
 
-	Exception exception;
-	List<T> result;
+	private volatile Exception exception;
+	private volatile List<Map<String, Object>> result;
+
+	/**
+	 * Allow instances only using {@link #create()}
+	 */
+	private ListOfMapListener() {
+		super();
+	}
+
+	/**
+	 * @return a new {@link QueryForListListener}.
+	 */
+	public static ListOfMapListener create() {
+		return new ListOfMapListener();
+	}
 
 	@Override
-	public void onQueryComplete(List<T> results) {
+	public void onQueryComplete(List<Map<String, Object>> results) {
+
 		this.result = results;
 		countDown();
 	}
 
 	@Override
 	public void onException(Exception x) {
+
 		this.exception = x;
 		countDown();
+	}
+
+	public Exception getException() {
+		return exception;
+	}
+
+	public List<Map<String, Object>> getResult() {
+		return result;
 	}
 }

@@ -13,19 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cassandra.test.integration.core.async;
+package org.springframework.cassandra.test.integration.support;
 
 import org.springframework.cassandra.core.QueryForObjectListener;
-import org.springframework.cassandra.support.TestListener;
 
 /**
+ * {@link QueryForObjectListener} suitable for tests.
+ * 
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
-public class ObjectListener<T> extends TestListener implements QueryForObjectListener<T> {
+public class ObjectListener<T> extends CallbackSynchronizationSupport implements QueryForObjectListener<T> {
 
-	public volatile T result;
-	public volatile Exception exception;
+	private volatile T result;
+	private volatile Exception exception;
+
+	/**
+	 * Allow instances only using {@link #create()}
+	 */
+	private ObjectListener(){
+		super();
+	}
+
+	/**
+	 * @return a new {@link ObjectListener}.
+	 */
+	public static <T> ObjectListener<T> create() {
+		return new ObjectListener<T>();
+	}
 
 	@Override
 	public void onQueryComplete(T result) {
@@ -39,5 +55,13 @@ public class ObjectListener<T> extends TestListener implements QueryForObjectLis
 
 		this.exception = x;
 		countDown();
+	}
+
+	public T getResult() {
+		return result;
+	}
+
+	public Exception getException() {
+		return exception;
 	}
 }

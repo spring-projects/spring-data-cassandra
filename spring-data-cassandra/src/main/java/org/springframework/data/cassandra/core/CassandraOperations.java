@@ -34,6 +34,12 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew Adams
+ * @author Mark Paluch
+ * @see CqlOperations
+ * @see Select
+ * @see WriteListener
+ * @see DeletionListener
+ * @see QueryForObjectListener
  */
 public interface CassandraOperations extends CqlOperations {
 
@@ -41,38 +47,71 @@ public interface CassandraOperations extends CqlOperations {
 	 * The table name used for the specified class by this template.
 	 *
 	 * @param entityClass must not be {@literal null}.
-	 * @return
+	 * @return the {@link CqlIdentifier}
 	 */
 	CqlIdentifier getTableName(Class<?> entityClass);
 
 	/**
-	 * Execute query and convert ResultSet to the list of entities
+	 * Execute query and convert ResultSet to the list of entities.
 	 *
-	 * @param query must not be {@literal null}.
+	 * @param cql must not be {@literal null}.
 	 * @param type must not be {@literal null}, mapped entity type.
-	 * @return
+	 * @return the converted results
 	 */
 	<T> List<T> select(String cql, Class<T> type);
 
 	/**
-	 * Execute the Select Query and convert to the list of entities
+	 * Execute the Select Query and convert to the list of entities.
 	 *
 	 * @param select must not be {@literal null}.
 	 * @param type must not be {@literal null}, mapped entity type.
-	 * @return
+	 * @return the converted results
 	 */
 	<T> List<T> select(Select select, Class<T> type);
 
+	/**
+	 * Select objects for the given {@code type} and {@code ids}.
+	 *
+	 * @param type must not be {@literal null}, mapped entity type.
+	 * @param ids must not be {@literal null}.
+	 * @return the converted results
+	 */
+	<T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids);
+
+	/**
+	 * @deprecated Calling this method could result in {@link OutOfMemoryError}, as this is a brute force selection.
+	 * @param type The type of entity to select.
+	 * @return A list of all entities of type <code>T</code>.
+	 */
+	@Deprecated
+	<T> List<T> selectAll(Class<T> type);
+
+	/**
+	 * Execute the Select by {@code id} for the given {@code type}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @param id must not be {@literal null}.
+	 * @return the converted object or {@literal null}.
+	 */
 	<T> T selectOneById(Class<T> type, Object id);
 
 	/**
 	 * Execute CQL and convert ResultSet to the entity
 	 *
-	 * @param query must not be {@literal null}.
+	 * @param cql must not be {@literal null}.
 	 * @param type must not be {@literal null}, mapped entity type.
-	 * @return
+	 * @return the converted object or {@literal null}.
 	 */
 	<T> T selectOne(String cql, Class<T> type);
+
+	/**
+	 * Execute Select query and convert ResultSet to the entity
+	 *
+	 * @param select must not be {@literal null}.
+	 * @param type must not be {@literal null}, mapped entity type.
+	 * @return the converted object or {@literal null}.
+	 */
+	<T> T selectOne(Select select, Class<T> type);
 
 	/**
 	 * Executes the {@link Select} query asynchronously.
@@ -86,7 +125,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Executes the string CQL query asynchronously.
 	 *
-	 * @param select The string query CQL to execute.
+	 * @param cql The string query CQL to execute.
 	 * @param type The type of entity to retrieve.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
@@ -106,7 +145,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Executes the string CQL query asynchronously.
 	 *
-	 * @param select The string query CQL to execute.
+	 * @param cql The string query CQL to execute.
 	 * @param type The type of entity to retrieve.
 	 * @param options The {@link QueryOptions} to use.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
@@ -115,16 +154,20 @@ public interface CassandraOperations extends CqlOperations {
 			QueryOptions options);
 
 	/**
-	 * Execute Select query and convert ResultSet to the entity
+	 * Determine whether the row {@code type} with the given {@code id} exists.
 	 *
-	 * @param query must not be {@literal null}.
-	 * @param type must not be {@literal null}, mapped entity type.
-	 * @return
+	 * @param type must not be {@literal null}.
+	 * @param id must not be {@literal null}.
+	 * @return true, if the object exists
 	 */
-	<T> T selectOne(Select select, Class<T> type);
-
 	boolean exists(Class<?> type, Object id);
 
+	/**
+	 * Returns the number of rows for the given {@code type} by querying the table of the given entity class.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return number of rows
+	 */
 	long count(Class<?> type);
 
 	/**
@@ -207,7 +250,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Inserts the given entities asynchronously in a batch.
 	 *
-	 * @param entity The entities to insert
+	 * @param entities The entities to insert
 	 * @return The entities given
 	 * @see #insertAsynchronously(List, WriteListener)
 	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
@@ -219,7 +262,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Inserts the given entities asynchronously in a batch.
 	 *
-	 * @param entity The entities to insert
+	 * @param entities The entities to insert
 	 * @return The entities given
 	 * @see #insertAsynchronously(List, WriteListener, WriteOptions)
 	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
@@ -231,7 +274,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Inserts the given entities asynchronously in a batch.
 	 *
-	 * @param entity The entities to insert
+	 * @param entities The entities to insert
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
@@ -240,7 +283,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Inserts the given entities asynchronously in a batch.
 	 *
-	 * @param entity The entities to insert
+	 * @param entities The entities to insert
 	 * @param listener The listener to receive notification of completion
 	 * @param options The {@link WriteOptions} to use
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
@@ -327,7 +370,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Updates the given entities asynchronously in a batch.
 	 *
-	 * @param entity The entities to update
+	 * @param entities The entities to update
 	 * @return The entities given
 	 * @see #updateAsynchronously(List, WriteListener)
 	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
@@ -339,7 +382,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Updates the given entities asynchronously in a batch.
 	 *
-	 * @param entity The entities to update
+	 * @param entities The entities to update
 	 * @return The entities given
 	 * @see #updateAsynchronously(List, WriteListener, WriteOptions)
 	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
@@ -351,7 +394,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Updates the given entities asynchronously in a batch.
 	 *
-	 * @param entity The entities to update
+	 * @param entities The entities to update
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
 	 */
@@ -360,7 +403,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Updates the given entities asynchronously in a batch.
 	 *
-	 * @param entity The entities to update
+	 * @param entities The entities to update
 	 * @param listener The listener to receive notification of completion
 	 * @param options The {@link WriteOptions} to use
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
@@ -370,24 +413,39 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Remove the given object from the table by id.
 	 *
-	 * @param object
+	 * @param type must not be {@literal null}.
+	 * @param id must not be {@literal null}.
 	 */
-	<T> void delete(T entity);
-
-	/**
-	 * @param entity
-	 * @param tableName
-	 * @param options
-	 */
-	<T> void delete(T entity, QueryOptions options);
+	void deleteById(Class<?> type, Object id);
 
 	/**
 	 * Remove the given object from the table by id.
 	 *
-	 * @param object
+	 * @param entity must not be {@literal null}.
+	 */
+	<T> void delete(T entity);
+
+	/**
+	 * Remove the given object from the table by id.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @param options may be {@literal null}.
+	 */
+	<T> void delete(T entity, QueryOptions options);
+
+	/**
+	 * Remove the given objects from the table by id.
+	 *
+	 * @param entities must not be {@literal null}.
 	 */
 	<T> void delete(List<T> entities);
 
+	/**
+	 * Remove the given objects from the table by id.
+	 *
+	 * @param entities must not be {@literal null}.
+	 * @param options may be {@literal null}.
+	 */
 	<T> void delete(List<T> entities, QueryOptions options);
 
 	/**
@@ -462,19 +520,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
 	 *
-	 * @return
+	 * @return the underlying {@link CassandraConverter}.
 	 */
 	CassandraConverter getConverter();
-
-	void deleteById(Class<?> type, Object id);
-
-	<T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids);
-
-	/**
-	 * @deprecated Calling this method could result in {@link OutOfMemoryError}, as this is a brute force selection.
-	 * @param type The type of entity to select.
-	 * @return A list of all entities of type <code>T</code>.
-	 */
-	@Deprecated
-	<T> List<T> selectAll(Class<T> type);
 }
