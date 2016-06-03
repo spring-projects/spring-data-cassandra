@@ -87,6 +87,11 @@
 			<artifactId>commons-lang3</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>edu.umd.cs.mtc</groupId>
+			<artifactId>multithreadedtc</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
