@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.cassandra.config;
 
 import java.util.ArrayList;
@@ -63,6 +62,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author Kirk Clemens
  * @author Jorge Davison
  * @author John Blum
+ * @author Mark Paluch
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
@@ -185,10 +185,8 @@ public class CassandraCqlClusterFactoryBean
 
 		if (authProvider != null) {
 			builder.withAuthProvider(authProvider);
-
-			if (username != null) {
-				builder.withCredentials(username, password);
-			}
+		} else if (username != null) {
+			builder.withCredentials(username, password);
 		}
 
 		if (nettyOptions != null) {

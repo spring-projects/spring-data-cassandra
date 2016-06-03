@@ -173,27 +173,31 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 
 	/**
 	 * @see DATACASS-226
+	 * @see DATACASS-263
 	 * @throws Exception
 	 */
 	@Test
-	public void doesNotSetPlainTextAuthenticationUnlessAuthProviderIsSet() throws Exception {
+	public void shouldSetAuthenticationProvider() throws Exception {
 
-		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
-		bean.setUsername("user");
-		bean.setPassword("password");
-		bean.afterPropertiesSet();
-
-		AuthProvider result = getConfiguration(bean).getProtocolOptions().getAuthProvider();
-		assertThat(result, is(AuthProvider.NONE));
-	}
-
-	@Test
-	public void shouldSetAuthentication() throws Exception {
-
-		PlainTextAuthProvider authProvider = new PlainTextAuthProvider("x", "y");
+		AuthProvider authProvider = new PlainTextAuthProvider("x", "y");
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
 		bean.setAuthProvider(authProvider);
+		bean.afterPropertiesSet();
+
+		AuthProvider result = getConfiguration(bean).getProtocolOptions().getAuthProvider();
+		assertThat(result, is(equalTo(authProvider)));
+	}
+
+	/**
+	 * @see DATACASS-226
+	 * @see DATACASS-263
+	 * @throws Exception
+	 */
+	@Test
+	public void shouldSetAuthentication() throws Exception {
+
+		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
 		bean.setUsername("user");
 		bean.setPassword("password");
 		bean.afterPropertiesSet();
