@@ -100,7 +100,7 @@ public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbedde
 	@Table
 	public static class Thing {
 
-		public static final String uuid() {
+		public static String uuid() {
 			return UUID.randomUUID().toString();
 		}
 
