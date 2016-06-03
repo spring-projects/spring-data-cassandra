@@ -1068,6 +1068,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 						}
 						listener.onQueryComplete(result);
 					}
+					else{
+						listener.onQueryComplete(null);
+					}
 				} catch (Exception e) {
 					listener.onException(translateExceptionIfPossible(e));
 				}

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.core;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
@@ -24,6 +25,9 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +38,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
+import org.springframework.cassandra.test.integration.support.ObjectListener;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -52,6 +57,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Integration tests for asynchronous {@link CassandraTemplate} operations.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -76,17 +82,17 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 
 	public void insertAsynchronously(ConsistencyLevel cl) throws Exception {
 
-		Thing thing = Thing.random();
-		ThingListener listener = new ThingListener();
+		Person person = Person.random();
+		PersonListener listener = new PersonListener();
 
-		cassandraOperations.insertAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+		cassandraOperations.insertAsynchronously(person, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
 		listener.await();
 
 		if (listener.exception != null) {
 			throw listener.exception;
 		}
 
-		assertEquals(thing, listener.entities.iterator().next());
+		assertEquals(person, listener.entities.iterator().next());
 	}
 
 	@Test(expected = CancellationException.class)
@@ -101,15 +107,15 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 
 	public void insertOrUpdateAsynchronouslyCancelled(boolean insert) throws Exception {
 
-		Thing thing = Thing.random();
-		ThingListener listener = new ThingListener();
+		Person person = Person.random();
+		PersonListener listener = new PersonListener();
 
 		Cancellable cancellable;
 
 		if (insert) {
-			cancellable = cassandraOperations.insertAsynchronously(thing, listener, null);
+			cancellable = cassandraOperations.insertAsynchronously(person, listener, null);
 		} else {
-			cancellable = cassandraOperations.updateAsynchronously(thing, listener, null);
+			cancellable = cassandraOperations.updateAsynchronously(person, listener, null);
 		}
 		cancellable.cancel();
 		listener.await();
@@ -138,19 +144,19 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 
 	public void updateAsynchronously(ConsistencyLevel cl) throws Exception {
 
-		Thing thing = Thing.random();
-		cassandraOperations.insert(thing);
-		thing.number = Thing.random().number;
+		Person person = Person.random();
+		person.setFirstname("Homer");
+		cassandraOperations.insert(person);
 
-		ThingListener listener = new ThingListener();
-		cassandraOperations.updateAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+		PersonListener listener = new PersonListener();
+		cassandraOperations.updateAsynchronously(person, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
 
 		listener.await();
 		if (listener.exception != null) {
 			throw listener.exception;
 		}
 
-		assertEquals(thing, listener.entities.iterator().next());
+		assertEquals(person, listener.entities.iterator().next());
 	}
 
 	@Test
@@ -165,26 +171,26 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 
 	public void deleteAsynchronously(ConsistencyLevel cl) throws Exception {
 
-		Thing thing = Thing.random();
+		Person person = Person.random();
 
-		cassandraOperations.insert(thing);
+		cassandraOperations.insert(person);
 
-		ThingListener listener = new ThingListener();
-		cassandraOperations.deleteAsynchronously(thing, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+		PersonListener listener = new PersonListener();
+		cassandraOperations.deleteAsynchronously(person, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
 
 		listener.await();
 		if (listener.exception != null) {
 			throw listener.exception;
 		}
-		assertFalse(cassandraOperations.exists(Thing.class, id("stuff", thing.stuff)));
+		assertFalse(cassandraOperations.exists(Person.class, id("id", person.id)));
 	}
 
 	@Test(expected = CancellationException.class)
 	public void deleteAsynchronouslyCancelled() throws Exception {
 
-		Thing thing = Thing.random();
-		ThingListener listener = new ThingListener();
-		cassandraOperations.deleteAsynchronously(thing, listener, null).cancel();
+		Person person = Person.random();
+		PersonListener listener = new PersonListener();
+		cassandraOperations.deleteAsynchronously(person, listener, null).cancel();
 		listener.await();
 
 		// if listener.success is true then the
@@ -199,76 +205,81 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 		fail("should've thrown CancellationException");
 	}
 
+	/**
+	 * @see DATACASS-287
+	 */
+	@Test(timeout = 10000)
+	public void shouldSelectOneAsynchronously() throws Exception {
+
+		Person person = Person.random();
+		cassandraOperations.insert(person);
+
+		ObjectListener<Person> objectListener = ObjectListener.create();
+		String cql = String.format("SELECT * from person where id = '%s'", person.id);
+
+		cassandraOperations.selectOneAsynchronously(cql, Person.class, objectListener);
+		objectListener.await();
+
+		assertThat(objectListener.getResult(), is(notNullValue()));
+		assertThat(objectListener.getResult().id, is(equalTo(person.id)));
+	}
+
+	/**
+	 * @see DATACASS-287
+	 */
+	@Test(timeout = 10000)
+	public void shouldSelectOneAsynchronouslyIfObjectIsAbsent() throws Exception {
+
+		ObjectListener<Person> objectListener = ObjectListener.create();
+		String cql = String.format("SELECT * from person where id = '%s'", "unknown");
+
+		cassandraOperations.selectOneAsynchronously(cql, Person.class, objectListener);
+		objectListener.await();
+
+		assertThat(objectListener.getResult(), is(nullValue()));
+	}
+
 	@Configuration
 	public static class Config extends IntegrationTestConfig {}
 
 	@Table
-	public static class Thing {
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class Person {
 
 		private static final Random RNG = new Random();
 
-		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) public String stuff;
-		@Column public int number;
-
-		public Thing() {}
-
-		public Thing(String stuff, int number) {
-			this.stuff = stuff;
-			this.number = number;
-		}
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String id;
+		@Column String firstname;
 
 		public static final String uuid() {
 			return UUID.randomUUID().toString();
 		}
 
-		public static Thing random() {
-			return new Thing(uuid(), RNG.nextInt());
+		public static Person random() {
+			return new Person(uuid(), null);
 		}
 
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + number;
-			result = prime * result + ((stuff == null) ? 0 : stuff.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Thing other = (Thing) obj;
-			if (number != other.number)
-				return false;
-			if (stuff == null) {
-				if (other.stuff != null)
-					return false;
-			} else if (!stuff.equals(other.stuff))
-				return false;
-			return true;
-		}
 	}
 
-	public static class ThingListener extends TestListener implements WriteListener<Thing>, DeletionListener<Thing> {
+	public static class PersonListener extends TestListener implements WriteListener<Person>, DeletionListener<Person> {
 
 		public volatile Exception exception;
-		public volatile Collection<Thing> entities;
+		public volatile Collection<Person> entities;
 		public volatile boolean success;
 
 		@Override
-		public void onWriteComplete(Collection<Thing> entities) {
+		public void onWriteComplete(Collection<Person> entities) {
+
 			this.entities = entities;
 			this.success = true;
 			countDown();
 		}
 
 		@Override
-		public void onDeletionComplete(Collection<Thing> entities) {
+		public void onDeletionComplete(Collection<Person> entities) {
+
 			this.entities = entities;
 			this.success = true;
 			countDown();
@@ -276,6 +287,7 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 
 		@Override
 		public void onException(Exception x) {
+
 			this.exception = x;
 			this.success = false;
 			countDown();

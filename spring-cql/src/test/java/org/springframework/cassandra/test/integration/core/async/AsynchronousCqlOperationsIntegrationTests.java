@@ -41,6 +41,10 @@ import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.test.integration.support.QueryListener;
+import org.springframework.cassandra.test.integration.support.ListOfMapListener;
+import org.springframework.cassandra.test.integration.support.MapListener;
+import org.springframework.cassandra.test.integration.support.ObjectListener;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -135,7 +139,7 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 
 	/**
 	 * Tests that test {@link AsynchronousQueryListener} should create an anonymous subclass of this class then call
-	 * either {@link #test()} or {@link #test(int)}
+	 * {@link #test()}.
 	 */
 	abstract class AsynchronousQueryListenerTestTemplate {
 
@@ -143,22 +147,22 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 		 * Subclass must perform the asynchronous query using the given data and listener and set <code>this.expected</code>
 		 * to the appropriate value before returning.
 		 */
-		abstract void doAsyncQuery(Book b, BasicListener listener);
+		abstract void doAsyncQuery(Book b, QueryListener listener);
 
 		void test() throws InterruptedException {
 			Book expected = insert(1)[0];
-			BasicListener listener = new BasicListener();
+			QueryListener listener = QueryListener.create();
 			doAsyncQuery(expected, listener);
 			listener.await();
-			Row r = cqlOperations.getResultSetUninterruptibly(listener.rsf).one();
+			Row r = cqlOperations.getResultSetUninterruptibly(listener.getResultSetFuture()).one();
 			Book actual = new Book(r.getString(0), r.getString(1));
 			assertBook(expected, actual);
 		}
 	}
 
 	/**
-	 * Tests that test {@link QueryForObjectListener} should create an anonymous subclass of this class then call either
-	 * {@link #test()} or {@link #test(int)}
+	 * Tests that test {@link QueryForObjectListener} should create an anonymous subclass of this class then call
+	 * {@link #test()}
 	 */
 	abstract class QueryForObjectListenerTestTemplate<T> {
 
@@ -172,19 +176,19 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 
 		void test() throws Exception {
 			Book book = insert(1)[0];
-			ObjectListener<T> listener = new ObjectListener<T>();
+			ObjectListener<T> listener = ObjectListener.create();
 			doAsyncQuery(book, listener);
 			listener.await();
-			if (listener.exception != null) {
-				throw listener.exception;
+			if (listener.getException() != null) {
+				throw listener.getException();
 			}
-			assertEquals(expected, listener.result);
+			assertEquals(expected, listener.getResult());
 		}
 	}
 
 	/**
-	 * Tests that test {@link QueryForMapListener} should create an anonymous subclass of this class then call either
-	 * {@link #test()} or {@link #test(int)}
+	 * Tests that test {@link QueryForMapListener} should create an anonymous subclass of this class then call
+	 * {@link #test()}
 	 */
 	abstract class QueryForMapListenerTestTemplate {
 
@@ -198,19 +202,18 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 
 		void test() throws Exception {
 			Book book = insert(1)[0];
-			MapListener listener = new MapListener();
+			MapListener listener = MapListener.create();
 			doAsyncQuery(book, listener);
 			listener.await();
-			if (listener.exception != null) {
-				throw listener.exception;
+			if (listener.getException() != null) {
+				throw listener.getException();
 			}
-			assertMapEquals(expected, listener.result);
+			assertMapEquals(expected, listener.getResult());
 		}
 	}
 
 	/**
-	 * Tests that test {@link QueryForMapListener} should create an anonymous subclass of this class then call either
-	 * {@link #test()} or {@link #test(int)}
+	 * Tests that test {@link QueryForMapListener} should create an anonymous subclass of this class then call or {@link #test(int)}
 	 */
 	abstract class QueryForListListenerTestTemplate {
 
@@ -224,19 +227,19 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 
 		void test(int n) throws Exception {
 			Book[] books = insert(n);
-			ListOfMapListener listener = new ListOfMapListener();
+			ListOfMapListener listener = ListOfMapListener.create();
 			Arrays.sort(books, BOOK_COMPARATOR);
 			doAsyncQuery(books, listener);
 			listener.await();
-			if (listener.exception != null) {
-				throw listener.exception;
+			if (listener.getException() != null) {
+				throw listener.getException();
 			}
 
 			// sort results the same way as the books array above
-			Collections.sort(listener.result, MAP_WITH_ISBN_COMPARATOR);
+			Collections.sort(listener.getResult(), MAP_WITH_ISBN_COMPARATOR);
 
 			for (int i = 0; i < expected.size(); i++) {
-				assertMapEquals(expected.get(i), listener.result.get(i));
+				assertMapEquals(expected.get(i), listener.getResult().get(i));
 			}
 		}
 	}
@@ -245,7 +248,7 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 	public void testString_AsynchronousQueryListener_Cancelled() throws InterruptedException {
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
-			void doAsyncQuery(Book b, BasicListener listener) {
+			void doAsyncQuery(Book b, QueryListener listener) {
 				Cancellable qc = cqlOperations.queryAsynchronously(cql(b), listener);
 				qc.cancel();
 			}
@@ -256,7 +259,7 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 	public void testString_AsynchronousQueryListener() throws InterruptedException {
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
-			void doAsyncQuery(Book b, BasicListener listener) {
+			void doAsyncQuery(Book b, QueryListener listener) {
 				cqlOperations.queryAsynchronously(cql(b), listener);
 			}
 		}.test();
@@ -265,7 +268,7 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 	public void testString_AsynchronousQueryListener_QueryOptions(final ConsistencyLevel cl) throws InterruptedException {
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
-			void doAsyncQuery(Book b, BasicListener listener) {
+			void doAsyncQuery(Book b, QueryListener listener) {
 				cqlOperations.queryAsynchronously(cql(b), listener, new QueryOptions(cl, RetryPolicy.LOGGING));
 			}
 		}.test();
@@ -285,7 +288,7 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 	public void testSelect_AsynchronousQueryListener() throws InterruptedException {
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
-			void doAsyncQuery(Book b, BasicListener listener) {
+			void doAsyncQuery(Book b, QueryListener listener) {
 				cqlOperations.queryAsynchronously(cql(b), listener);
 			}
 		}.test();
