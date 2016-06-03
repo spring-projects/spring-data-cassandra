@@ -33,6 +33,7 @@
 		<failsafe.version>2.16</failsafe.version>
 		<jamm.version>0.2.5</jamm.version>
 		<cassandra>2.1.5</cassandra>
+		<multithreadedtc.version>1.01</multithreadedtc.version>
 	</properties>
 
 	<developers>
@@ -187,6 +188,13 @@
 				<groupId>joda-time</groupId>
 				<artifactId>joda-time</artifactId>
 				<version>${jodatime}</version>
+				<scope>test</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>edu.umd.cs.mtc</groupId>
+				<artifactId>multithreadedtc</artifactId>
+				<version>${multithreadedtc.version}</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>

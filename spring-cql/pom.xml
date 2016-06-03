@@ -115,6 +115,11 @@
 			<artifactId>guava</artifactId>
 			<version>${guava}</version>
 		</dependency>
+		<dependency>
+			<groupId>edu.umd.cs.mtc</groupId>
+			<artifactId>multithreadedtc</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
