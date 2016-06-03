@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
  */
 package org.springframework.data.cassandra.test.integration.template.async;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-import static org.springframework.data.cassandra.repository.support.BasicMapId.id;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
 import java.util.Collection;
 import java.util.Random;
@@ -35,6 +34,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
+import org.springframework.cassandra.test.integration.core.template.async.ObjectListener;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -53,10 +53,45 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Asynchronous {@link CassandraTemplate} tests.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class AsynchronousCassandraTemplateTest extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+
+	/**
+	 * @see DATACASS-287
+	 */
+	@Test(timeout = 10000)
+	public void shouldSelectOneAsynchronously() throws Exception {
+
+		Thing thing = Thing.random();
+		template.insert(thing);
+
+		ObjectListener<Thing> objectListener = new ObjectListener<Thing>();
+		String cql = String.format("SELECT * from thing where stuff = '%s'", thing.stuff);
+
+		template.selectOneAsynchronously(cql, Thing.class, objectListener);
+		objectListener.await();
+
+		assertThat(objectListener.result, is(notNullValue()));
+		assertThat(objectListener.result.stuff, is(equalTo(thing.stuff)));
+	}
+
+	/**
+	 * @see DATACASS-287
+	 */
+	@Test(timeout = 10000)
+	public void shouldSelectOneAsynchronouslyIfObjectIsAbsent() throws Exception {
+
+		ObjectListener<Thing> objectListener = new ObjectListener<Thing>();
+		String cql = String.format("SELECT * from thing where stuff = '%s'", UUID.randomUUID());
+
+		template.selectOneAsynchronously(cql, Thing.class, objectListener);
+		objectListener.await();
+
+		assertThat(objectListener.result, is(nullValue()));
+	}
 
 	@Configuration
 	public static class Config extends IntegrationTestConfig {

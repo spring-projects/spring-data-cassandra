@@ -3,10 +3,10 @@ package org.springframework.cassandra.test.integration.core.template.async;
 import org.springframework.cassandra.core.QueryForObjectListener;
 import org.springframework.cassandra.test.unit.support.TestListener;
 
-class ObjectListener<T> extends TestListener implements QueryForObjectListener<T> {
+public class ObjectListener<T> extends TestListener implements QueryForObjectListener<T> {
 
-	T result;
-	Exception exception;
+	public T result;
+	public Exception exception;
 
 	@Override
 	public void onQueryComplete(T result) {
