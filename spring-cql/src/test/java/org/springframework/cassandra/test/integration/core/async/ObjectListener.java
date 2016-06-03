@@ -22,19 +22,21 @@ import org.springframework.cassandra.support.TestListener;
  * @author Matthew T. Adams
  * @author David Webb
  */
-class ObjectListener<T> extends TestListener implements QueryForObjectListener<T> {
+public class ObjectListener<T> extends TestListener implements QueryForObjectListener<T> {
 
-	T result;
-	Exception exception;
+	public volatile T result;
+	public volatile Exception exception;
 
 	@Override
 	public void onQueryComplete(T result) {
+
 		this.result = result;
 		countDown();
 	}
 
 	@Override
 	public void onException(Exception x) {
+
 		this.exception = x;
 		countDown();
 	}
