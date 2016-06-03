@@ -76,6 +76,7 @@
 		<dist.id>spring-data-cassandra</dist.id>
 		<el.version>1.0</el.version>
 		<failsafe.version>2.16</failsafe.version>
+		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<project.type>multi</project.type>
 		<springdata.commons>1.13.0.BUILD-SNAPSHOT</springdata.commons>
 	</properties>
@@ -187,6 +188,13 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
 				<version>3.1</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>edu.umd.cs.mtc</groupId>
+				<artifactId>multithreadedtc</artifactId>
+				<version>${multithreadedtc.version}</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>
