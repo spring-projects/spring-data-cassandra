@@ -37,7 +37,6 @@ public class ListOfMapListener extends CallbackSynchronizationSupport implements
 	 * Allow instances only using {@link #create()}
 	 */
 	private ListOfMapListener() {
-		super();
 	}
 
 	/**

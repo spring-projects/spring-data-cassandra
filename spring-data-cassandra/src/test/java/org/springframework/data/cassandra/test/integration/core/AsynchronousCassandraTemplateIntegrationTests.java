@@ -21,7 +21,6 @@ import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
 import java.util.Collection;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
@@ -206,7 +205,7 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 	}
 
 	/**
-	 * @see DATACASS-287
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-287">DATACASS-287</a>
 	 */
 	@Test(timeout = 10000)
 	public void shouldSelectOneAsynchronously() throws Exception {
@@ -225,7 +224,7 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 	}
 
 	/**
-	 * @see DATACASS-287
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-287">DATACASS-287</a>
 	 */
 	@Test(timeout = 10000)
 	public void shouldSelectOneAsynchronouslyIfObjectIsAbsent() throws Exception {
@@ -246,14 +245,13 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 	@Data
 	@AllArgsConstructor
 	@NoArgsConstructor
+	@SuppressWarnings("unused")
 	public static class Person {
-
-		private static final Random RNG = new Random();
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String id;
 		@Column String firstname;
 
-		public static final String uuid() {
+		public static String uuid() {
 			return UUID.randomUUID().toString();
 		}
 

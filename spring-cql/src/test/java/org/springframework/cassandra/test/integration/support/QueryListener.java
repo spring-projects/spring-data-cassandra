@@ -28,13 +28,12 @@ import com.datastax.driver.core.ResultSetFuture;
  */
 public class QueryListener extends CallbackSynchronizationSupport implements AsynchronousQueryListener {
 
-	private volatile ResultSetFuture rsf;
+	private volatile ResultSetFuture resultSetFuture;
 
 	/**
 	 * Allow instances only using {@link #create()}
 	 */
 	private QueryListener() {
-		super();
 	}
 
 	/**
@@ -47,11 +46,11 @@ public class QueryListener extends CallbackSynchronizationSupport implements Asy
 	@Override
 	public void onQueryComplete(ResultSetFuture resultSetFuture) {
 
-		this.rsf = resultSetFuture;
+		this.resultSetFuture = resultSetFuture;
 		countDown();
 	}
 
 	public ResultSetFuture getResultSetFuture() {
-		return rsf;
+		return resultSetFuture;
 	}
 }

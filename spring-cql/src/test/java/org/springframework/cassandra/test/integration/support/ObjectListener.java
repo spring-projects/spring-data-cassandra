@@ -32,8 +32,7 @@ public class ObjectListener<T> extends CallbackSynchronizationSupport implements
 	/**
 	 * Allow instances only using {@link #create()}
 	 */
-	private ObjectListener(){
-		super();
+	private ObjectListener() {
 	}
 
 	/**

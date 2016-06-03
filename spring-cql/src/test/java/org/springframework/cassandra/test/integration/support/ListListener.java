@@ -34,7 +34,6 @@ public class ListListener<T> extends CallbackSynchronizationSupport implements Q
 	 * Allow instances only using {@link #create()}
 	 */
 	private ListListener() {
-		super();
 	}
 
 	/**

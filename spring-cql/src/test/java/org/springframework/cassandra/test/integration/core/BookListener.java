@@ -34,14 +34,16 @@ public class BookListener extends CallbackSynchronizationSupport implements Asyn
 	private boolean done;
 
 	@Override
-	public void onQueryComplete(ResultSetFuture rsf) {
+	public void onQueryComplete(ResultSetFuture resultSetFuture) {
 
 		Row row;
+
 		try {
-			row = rsf.get().one();
+			row = resultSetFuture.get().one();
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to get ResultSet from ResultSetFuture", e);
 		}
+
 		book = new Book();
 		book.setIsbn(row.getString("isbn"));
 		book.setTitle(row.getString("title"));
@@ -66,5 +68,4 @@ public class BookListener extends CallbackSynchronizationSupport implements Asyn
 	public Book getBook() {
 		return book;
 	}
-
 }
