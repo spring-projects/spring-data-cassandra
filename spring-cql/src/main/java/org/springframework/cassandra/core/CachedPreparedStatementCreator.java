@@ -39,15 +39,16 @@ import com.datastax.driver.core.exceptions.DriverException;
  */
 public class CachedPreparedStatementCreator implements PreparedStatementCreator {
 
-	private static final Logger log = LoggerFactory.getLogger(CachedPreparedStatementCreator.class);
 	private static final Map<Session, Map<String, PreparedStatement>> CACHE = new ConcurrentHashMap<Session, Map<String, PreparedStatement>>();
+
+	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final String cql;
 
 	/**
 	 * Create a {@link PreparedStatementCreator} from the provided CQL.
 	 * 
-	 * @param cql must not be empty and not {@literal null}.
+	 * @param cql must not be empty or {@literal null}.
 	 */
 	public CachedPreparedStatementCreator(String cql) {
 
@@ -56,6 +57,11 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 		this.cql = cql;
 	}
 
+	/**
+	 * Returns the CQL statement on which the {@link PreparedStatement} will be based.
+	 *
+	 * @return a String containing the CQL of the {@link PreparedStatement}.
+	 */
 	public String getCql() {
 		return this.cql;
 	}
@@ -66,14 +72,16 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	@Override
 	public PreparedStatement createPreparedStatement(Session session) throws DriverException {
 
-		StringBuilder cacheKey = new StringBuilder().append(session.getLoggedKeyspace()).append("|").append(this.cql);
+		String cacheKey = String.valueOf(session.getLoggedKeyspace()).concat("|").concat(this.cql);
 
-		log.debug("Cachable PreparedStatement in Keyspace {}", session.getLoggedKeyspace());
+		log.debug("Cacheable PreparedStatement in Keyspace {}", session.getLoggedKeyspace());
 
 		Map<String, PreparedStatement> sessionCache = getOrCreateSessionLocalCache(session);
-		return getOrPrepareStatement(session, cacheKey.toString(), sessionCache);
+
+		return getOrPrepareStatement(session, cacheKey, sessionCache);
 	}
 
+	@SuppressWarnings("all")
 	private Map<String, PreparedStatement> getOrCreateSessionLocalCache(Session session) {
 
 		Map<String, PreparedStatement> sessionMap = CACHE.get(session);
@@ -85,7 +93,6 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 				if (CACHE.containsKey(session)) {
 					sessionMap = CACHE.get(session);
 				} else {
-
 					sessionMap = new ConcurrentHashMap<String, PreparedStatement>();
 					CACHE.put(session, sessionMap);
 				}
@@ -95,32 +102,28 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 		return sessionMap;
 	}
 
+	@SuppressWarnings("all")
 	private PreparedStatement getOrPrepareStatement(Session session, String cacheKey,
 			Map<String, PreparedStatement> sessionCache) {
 
-		PreparedStatement pstmt = sessionCache.get(cacheKey);
+		PreparedStatement preparedStatement = sessionCache.get(cacheKey);
 
-		if (pstmt == null) {
+		if (preparedStatement == null) {
 
 			synchronized (sessionCache) {
 
 				if (sessionCache.containsKey(cacheKey)) {
-
 					log.debug("Found cached PreparedStatement");
-					return sessionCache.get(cacheKey);
+					preparedStatement = sessionCache.get(cacheKey);
 				}
-
-				log.debug("No Cached PreparedStatement found...Creating and Caching");
-
-				pstmt = session.prepare(this.cql);
-				sessionCache.put(cacheKey, pstmt);
-
-				return pstmt;
+				else {
+					log.debug("No cached PreparedStatement found... creating and caching");
+					preparedStatement = session.prepare(this.cql);
+					sessionCache.put(cacheKey, preparedStatement);
+				}
 			}
 		}
 
-		log.debug("Found cached PreparedStatement");
-
-		return pstmt;
+		return preparedStatement;
 	}
 }
