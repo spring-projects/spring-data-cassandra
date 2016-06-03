@@ -35,6 +35,7 @@
 		<jamm.version>0.3.1</jamm.version>
 		<cassandra.version>2.1.11</cassandra.version>
 		<cassandra-driver-dse.version>2.1.7.1</cassandra-driver-dse.version>
+		<multithreadedtc.version>1.01</multithreadedtc.version>
 	</properties>
 
 	<developers>
@@ -200,6 +201,12 @@
 				<scope>test</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>edu.umd.cs.mtc</groupId>
+				<artifactId>multithreadedtc</artifactId>
+				<version>${multithreadedtc.version}</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
