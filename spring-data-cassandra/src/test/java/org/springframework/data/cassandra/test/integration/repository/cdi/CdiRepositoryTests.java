@@ -36,6 +36,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 	private static CdiTestContainer cdiContainer;
 	private CdiUserRepository repository;
 	private SamplePersonRepository personRepository;
+	private QualifiedUserRepository qualifiedUserRepository;
 
 	@BeforeClass
 	public static void init() throws Exception {
@@ -51,20 +52,29 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 
 	@AfterClass
 	public static void shutdown() throws Exception {
+		
 		cdiContainer.stopContexts();
 		cdiContainer.shutdownContainer();
 	}
 
 	@Before
 	public void setUp() {
+		
 		CdiRepositoryClient client = cdiContainer.getInstance(CdiRepositoryClient.class);
 		repository = client.getRepository();
 		personRepository = client.getSamplePersonRepository();
+		qualifiedUserRepository = client.getQualifiedUserRepository();
 	}
 
+	/**
+	 * @see DATACASS-149
+	 */
 	@Test
 	public void testCdiRepository() {
+		
 		assertNotNull(repository);
+		
+		repository.deleteAll();
 
 		User bean = new User();
 		bean.setUsername("username");
@@ -90,6 +100,25 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 		assertEquals(0, repository.count());
 		retrieved = repository.findOne(bean.getUsername());
 		assertNull(retrieved);
+	}
+
+	/**
+	 * @see DATACASS-249
+	 */
+	@Test
+	public void testQualifiedCdiRepository() {
+		
+		assertNotNull(qualifiedUserRepository);
+		qualifiedUserRepository.deleteAll();
+
+		User bean = new User();
+		bean.setUsername("username");
+		bean.setFirstName("first");
+		bean.setLastName("last");
+
+		qualifiedUserRepository.save(bean);
+
+		assertTrue(qualifiedUserRepository.exists(bean.getUsername()));
 	}
 
 	/**
