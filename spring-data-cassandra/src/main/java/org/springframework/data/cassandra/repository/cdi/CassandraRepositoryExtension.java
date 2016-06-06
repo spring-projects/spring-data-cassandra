@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.repository.cdi;
 
 import javax.enterprise.event.Observes;
@@ -39,7 +38,7 @@ import org.springframework.data.repository.cdi.CdiRepositoryExtensionSupport;
  */
 public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport {
 
-	private final Map<String, Bean<CassandraOperations>> cassandraOperationsMap = new HashMap<String, Bean<CassandraOperations>>();
+	private final Map<Set<Annotation>, Bean<CassandraOperations>> cassandraOperationsMap = new HashMap<Set<Annotation>, Bean<CassandraOperations>>();
 
 	/**
 	 * Implementation of a an observer which checks for CassandraOperations beans and stores them in
@@ -53,7 +52,7 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 		Bean<T> bean = processBean.getBean();
 		for (Type type : bean.getTypes()) {
 			if (type instanceof Class<?> && CassandraOperations.class.isAssignableFrom((Class<?>) type)) {
-				cassandraOperationsMap.put(bean.getQualifiers().toString(), ((Bean<CassandraOperations>) bean));
+				cassandraOperationsMap.put(bean.getQualifiers(), ((Bean<CassandraOperations>) bean));
 			}
 		}
 	}
@@ -89,7 +88,7 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 	private <T> CdiRepositoryBean<T> createRepositoryBean(Class<T> repositoryType, Set<Annotation> qualifiers,
 			BeanManager beanManager) {
 
-		Bean<CassandraOperations> cassandraOperationsBean = this.cassandraOperationsMap.get(qualifiers.toString());
+		Bean<CassandraOperations> cassandraOperationsBean = this.cassandraOperationsMap.get(qualifiers);
 
 		if (cassandraOperationsBean == null) {
 			throw new UnsatisfiedResolutionException(String.format("Unable to resolve a bean for '%s' with qualifiers %s.",
