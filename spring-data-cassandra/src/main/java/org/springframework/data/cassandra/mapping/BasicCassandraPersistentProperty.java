@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.util.SpelUtils;
 import org.springframework.data.mapping.Association;
@@ -106,7 +107,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return getField().getType().isAnnotationPresent(PrimaryKeyClass.class);
+		return AnnotatedElementUtils.findMergedAnnotation(getType(), PrimaryKeyClass.class) != null;
 	}
 
 	public Class<?> getCompositePrimaryKeyType() {
@@ -114,7 +115,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return null;
 		}
 
-		return getField().getType();
+		return getType();
 	}
 
 	@Override
@@ -290,7 +291,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		// else we're dealing with a single-column field
-		String defaultName = getField().getName(); // TODO: replace with naming strategy class
+		String defaultName = getName(); // TODO: replace with naming strategy class
 		String overriddenName = null;
 		boolean forceQuote = false;
 
@@ -396,7 +397,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (!isCompositePrimaryKey()) {
 			throw new IllegalStateException(String.format("[%s] does not represent a composite primary key property",
-					getField()));
+					getName()));
 		}
 
 		return getCompositePrimaryKeyEntity().getCompositePrimaryKeyProperties();

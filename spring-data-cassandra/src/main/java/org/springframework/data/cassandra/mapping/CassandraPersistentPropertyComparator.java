@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import java.lang.reflect.Field;
 import java.util.Comparator;
 
 /**
@@ -25,6 +24,7 @@ import java.util.Comparator;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public enum CassandraPersistentPropertyComparator implements Comparator<CassandraPersistentProperty> {
 
@@ -60,12 +60,10 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 		boolean leftIsPrimaryKey = left.isPrimaryKeyColumn();
 		boolean rightIsPrimaryKey = right.isPrimaryKeyColumn();
 
-		Field leftField = left.getField();
-		Field rightField = right.getField();
-
+		
 		if (leftIsPrimaryKey && rightIsPrimaryKey) {
-			return CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(leftField.getAnnotation(PrimaryKeyColumn.class),
-					rightField.getAnnotation(PrimaryKeyColumn.class));
+			return CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(left.findAnnotation(PrimaryKeyColumn.class),
+					right.findAnnotation(PrimaryKeyColumn.class));
 		}
 
 		boolean leftIsKey = leftIsCompositePrimaryKey || leftIsPrimaryKey;
@@ -81,11 +79,11 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 
 		// else, neither property is a composite primary key nor a primary key; compare @Column annotations
 
-		Column leftColumn = leftField.getAnnotation(Column.class);
-		Column rightColumn = rightField.getAnnotation(Column.class);
+		Column leftColumn = left.findAnnotation(Column.class);
+		Column rightColumn = right.findAnnotation(Column.class);
 
 		if (leftColumn == null && rightColumn == null) {
-			return leftField.getName().compareTo(rightField.getName());
+			return left.getName().compareTo(right.getName());
 		}
 
 		if (leftColumn != null && rightColumn != null) {
@@ -93,10 +91,10 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 		}
 
 		if (leftColumn != null && rightColumn == null) {
-			return leftColumn.value().compareTo(rightField.getName());
+			return leftColumn.value().compareTo(left.getName());
 		}
 
 		// else leftColumn == null && rightColumn != null)
-		return leftField.getName().compareTo(rightColumn.value());
+		return left.getName().compareTo(rightColumn.value());
 	}
 }
