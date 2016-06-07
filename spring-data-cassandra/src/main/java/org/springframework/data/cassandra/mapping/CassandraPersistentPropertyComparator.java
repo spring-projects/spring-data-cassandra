@@ -21,32 +21,30 @@ import java.util.Comparator;
  * {@link Comparator} implementation that orders {@link CassandraPersistentProperty} instances.
  * <p/>
  * Composite primary key properties and primary key properties sort before non-primary key properties.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author John Blum
+ * @see java.util.Comparator
+ * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty
  */
 public enum CassandraPersistentPropertyComparator implements Comparator<CassandraPersistentProperty> {
-
-	/**
-	 * The sole instance of this class.
-	 */
 	IT;
 
 	@Override
 	public int compare(CassandraPersistentProperty left, CassandraPersistentProperty right) {
 
-		if (left != null && right == null) {
-			return 1;
-		}
-		if (left == null && right != null) {
-			return -1;
-		}
 		if (left == null && right == null) {
 			return 0;
 		}
-
-		if (left.equals(right)) {
+		else if (left != null && right == null) {
+			return 1;
+		}
+		else if (left == null) {
+			return -1;
+		}
+		else if (left.equals(right)) {
 			return 0;
 		}
 
@@ -60,10 +58,9 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 		boolean leftIsPrimaryKey = left.isPrimaryKeyColumn();
 		boolean rightIsPrimaryKey = right.isPrimaryKeyColumn();
 
-		
 		if (leftIsPrimaryKey && rightIsPrimaryKey) {
 			return CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(left.findAnnotation(PrimaryKeyColumn.class),
-					right.findAnnotation(PrimaryKeyColumn.class));
+				right.findAnnotation(PrimaryKeyColumn.class));
 		}
 
 		boolean leftIsKey = leftIsCompositePrimaryKey || leftIsPrimaryKey;
@@ -72,8 +69,7 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 		if (leftIsKey && !rightIsKey) {
 			return -1;
 		}
-
-		if (!leftIsKey && rightIsKey) {
+		else if (!leftIsKey && rightIsKey) {
 			return 1;
 		}
 
@@ -82,19 +78,17 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 		Column leftColumn = left.findAnnotation(Column.class);
 		Column rightColumn = right.findAnnotation(Column.class);
 
-		if (leftColumn == null && rightColumn == null) {
-			return left.getName().compareTo(right.getName());
-		}
-
 		if (leftColumn != null && rightColumn != null) {
 			return CassandraColumnAnnotationComparator.IT.compare(leftColumn, rightColumn);
 		}
-
-		if (leftColumn != null && rightColumn == null) {
+		else if (leftColumn != null) {
 			return leftColumn.value().compareTo(left.getName());
 		}
-
-		// else leftColumn == null && rightColumn != null)
-		return left.getName().compareTo(rightColumn.value());
+		else if (rightColumn != null) {
+			return left.getName().compareTo(rightColumn.value());
+		}
+		else {
+			return left.getName().compareTo(right.getName());
+		}
 	}
 }
