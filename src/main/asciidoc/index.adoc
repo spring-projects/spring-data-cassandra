@@ -15,14 +15,9 @@ in print or electronically.
 toc::[]
 include::preface.adoc[]
 
-[[introduction]]
-= Introduction
-
-include::introduction/introduction.adoc[]
-
 :leveloffset: +1
-include::introduction/requirements.adoc[]
-include::introduction/getting-started.adoc[]
+include::new-features.adoc[]
+include::{spring-data-commons-docs}/dependencies.adoc[]
 include::{spring-data-commons-docs}/repositories.adoc[]
 :leveloffset: -1
 

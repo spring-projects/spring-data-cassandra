@@ -3,7 +3,7 @@
 
 The Cassandra support contains a wide range of features which are summarized below.
 
-* Spring configuration support using Java-based @Configuration classes or the XML namespace to create
+* Spring configuration support using Java-based `@Configuration` classes or the XML namespace to create
 a Cassandra instance with replica sets using the driver.
 * CassandraTemplate helper class that increases productivity by handling common Cassandra operations properly.
 Includes integrated object mapping between CQL Tables and POJOs.
@@ -24,8 +24,7 @@ are familiar and so you can  map your existing knowledge onto the Spring APIs.
 [[cassandra-getting-started]]
 == Getting Started
 
-Spring Data Cassandra uses the DataStax Java Driver version 2.X, which supports DataStax Enterprise 4/Apache Cassandra 2.0
-with Java SE 6 or higher. The latest commercial or open source release is recommended. The easiest way to setup
+Spring Data Cassandra uses the DataStax Java Driver, which supports DataStax Enterprise and Apache Cassandra. The latest commercial or open source release is recommended. The easiest way to setup
 a working environment is to create a Spring-based project in http://spring.io/tools/sts[STS].
 
 First, you need to setup a running Cassandra server.
@@ -35,7 +34,7 @@ and press "Yes" when prompted.  Then, enter a project and a package name such as
 
 Then add the following to the `pom.xml` dependencies section.
 
-[source,xml]
+[source,xml,subs="verbatim,attributes"]
 ----
 <dependencies>
 
@@ -44,7 +43,7 @@ Then add the following to the `pom.xml` dependencies section.
   <dependency>
     <groupId>org.springframework.data</groupId>
     <artifactId>spring-data-cassandra</artifactId>
-    <version>1.4.1.RELEASE</version>
+    <version>{version}</version>
   </dependency>
 
 </dependencies>
@@ -52,9 +51,9 @@ Then add the following to the `pom.xml` dependencies section.
 
 Also, change the version of Spring in `pom.xml` to be
 
-[source,xml]
+[source,xml,subs="verbatim,attributes"]
 ----
-<spring.framework.version>4.2.5.RELEASE</spring.framework.version>
+<spring.framework.version>{springVersion}</spring.framework.version>
 ----
 
 If you are using a milestone version (e.g. M1 or RC1) of Spring Data Cassandra, you will also need to include the
@@ -640,7 +639,7 @@ cassandraOperations.execute(cql);
 
 CQLOperations, which is extended by CassandraOperations is a lower level Template that you can use for just about anything you need to accomplish with Cassandra. CqlOperations includes several overloaded methods named `ingest()`.
 
-Use these methods to pass a CQL String with Bind Markers, and your preferred flavor of data set (Object[][] and List<List<T>>).
+Use these methods to pass a CQL String with Bind Markers, and your preferred flavor of data set (`Object[][]` and `List<List<T>>`).
 
 The ingest method takes advantage of static PreparedStatements that are only prepared once for performance. Each record in your data list is bound to the same PreparedStatement, then executed asynchronously for high performance.
 

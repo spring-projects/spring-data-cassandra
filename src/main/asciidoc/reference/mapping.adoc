@@ -12,12 +12,108 @@ In this section we will describe the features of the CassandraMappingConverter. 
 
 * The short Java class name is mapped to the table name in the following manner. The class `com.bigbank.SavingsAccount` maps to `savings_account` table name.
 * The converter will use any Spring Converters registered with it to override the default mapping of object properties to document field/values.
-* The fields of an object are used to convert to and from fields in the document. Public JavaBean properties are not used.
+* The properties of an object are used to convert to and from properties in the document.
 
-[[mapping.conventions.id-field]]
+[[mapping-conventions-id-field]]
 === How the CQL Composite Primary Key fields are handled in the mapping layer
 
 TODO
+
+[[mapping-conversion]]
+== Data mapping and type conversion
+
+This section explain how types are mapped to a Cassandra representation and vice versa. Spring Data Cassandra supports several types that are provided by Apache Cassandra.
+In addition to these types, Spring Data Cassandra provides a set of built-in converters to map additional types. You can provide your own converters to adjust type conversion, see <<mapping-explicit-converters>> for further details.
+
+[cols="3,2", options="header"]
+.Type
+|===
+| Type
+| Cassandra types
+
+| `String`
+| `text` (default), `varchar`, `ascii`
+
+| `double`, `Double`
+| `double`
+
+| `float`, `Float`
+| `float`
+
+| `long`, `Long`
+| `bigint` (default), `counter`
+
+| `int`, `Integer`
+| `int`
+
+| `short`, `Short`
+| `smallint`
+
+| `byte`, `Byte`
+| `tinyint`
+
+| `boolean`, `Boolean`
+| `boolean`
+
+| `BigInteger`
+| `varint`
+
+| `BigDecimal`
+| `decimal`
+
+| `java.util.Date`
+| `timestamp`
+
+| `com.datastax.driver.core.LocalDate`
+| `date`
+
+| `InetAddress`
+| `inet`
+
+| `ByteBuffer`
+| `blob`
+
+| `java.util.UUID`
+| `timeuuid`
+
+| `java.util.Map<K, V>`
+| `map`
+
+| `java.util.List<E>`
+| `list`
+
+| `java.util.Set<E>`
+| `set`
+
+| `Enum`
+| `text` (default), `bigint`, `varint`, `int`, `smallint`, `tinyint`
+
+|===
+
+Each supported type maps to a default
+https://docs.datastax.com/en/cql/3.3/cql/cql_reference/cql_data_types_c.html[Cassandra data type].
+Java types can be mapped to other Cassandra types by using `@CassandraType`.
+
+ .Enum Mapping to Numeric types
+====
+[source,java]
+----
+@Table
+public class EnumToOrdinalMapping {
+
+  @PrimaryKey String id;
+
+  @CassandraType(type = Name.INT) Condition asOrdinal;
+}
+
+public enum Condition {
+  NEW, USED
+}
+----
+====
+
+NOTE: `Enum` mapping using ordinal values requires at least Spring 4.3.0. Using earlier Spring versions require
+<<mapping-explicit-converters,custom converters>> for each `Enum` type.
 
 [[mapping-configuration]]
 === Mapping Configuration
@@ -35,3 +131,27 @@ TODO
 ====
 TODO
 ====
+
+[[mapping-explicit-converters]]
+=== Overriding Mapping with explicit Converters
+
+When storing and querying your objects it is convenient to have a `CassandraConverter` instance handle the mapping of all Java types to Rows. However, sometimes you may want the `CassandraConverter` s do most of the work but allow you to selectively handle the conversion for a particular type or to optimize performance.
+
+To selectively handle the conversion yourself, register one or more one or more `org.springframework.core.convert.converter.Converter` instances with the `CassandraConverter`.
+
+NOTE: Spring 3.0 introduced a core.convert package that provides a general type conversion system. This is described in detail in the Spring reference documentation section entitled http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/html/validation.html#core-convert[Spring Type Conversion].
+
+Below is an example of a Spring Converter implementation that converts from a Row to a Person POJO.
+
+[source,java]
+----
+@ReadingConverter
+ public class PersonReadConverter implements Converter<Row, Person> {
+
+  public Person convert(Row source) {
+    Person p = new Person(row.getString("id"));
+    p.setAge(source.getInt("age");
+    return p;
+  }
+}
+----
