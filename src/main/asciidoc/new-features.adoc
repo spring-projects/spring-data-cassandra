@@ -1,0 +1,9 @@
+[[new-features]]
+= New & Noteworthy
+
+[[new-features:1-5-0]]
+== What's new in Spring Data Cassandra 1.5
+* Assert compatibility with Cassandra 3.0 and Cassandra Java Driver 3.0.
+* Configurable `ProtocolVersion` and `QueryOptions` on `Cluster` level.
+* Support for `Optional` as query method result and argument.
+
