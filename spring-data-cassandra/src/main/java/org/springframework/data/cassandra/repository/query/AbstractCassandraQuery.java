@@ -34,6 +34,7 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryExecuti
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultSetQuery;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SingleEntityExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.StreamExecution;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -100,13 +101,15 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	private CassandraQueryExecution getExecution(String query, CassandraParameterAccessor accessor,
 			Converter<Object, Object> resultProcessing) {
 
-		return new ResultProcessingExecution(getExecutionToWrap(accessor), resultProcessing);
+		return new ResultProcessingExecution(getExecutionToWrap(accessor, resultProcessing), resultProcessing);
 	}
 
-	private CassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor accessor) {
+	private CassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor accessor, Converter<Object, Object> resultProcessing) {
 
 		if (method.isResultSetQuery()) {
 			return new ResultSetQuery(template);
+		} else if (method.isStreamQuery()) {
+			return new StreamExecution(template, resultProcessing);
 		} else if (method.isCollectionQuery()) {
 			return new CollectionExecution(template);
 		} else {

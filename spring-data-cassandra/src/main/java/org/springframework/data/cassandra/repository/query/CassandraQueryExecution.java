@@ -16,10 +16,13 @@
 
 package org.springframework.data.cassandra.repository.query;
 
+import java.util.function.Function;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.util.ClassUtils;
 
 import lombok.NonNull;
@@ -36,6 +39,33 @@ interface CassandraQueryExecution {
 	Object execute(String query, Class<?> type);
 
 	/**
+	 * {@link CassandraQueryExecution} for a Stream.
+	 *
+	 * @author Mark Paluch
+	 */
+	@RequiredArgsConstructor
+	final class StreamExecution implements CassandraQueryExecution {
+
+		private final @NonNull CassandraOperations operations;
+		private final @NonNull Converter<Object, Object> resultProcessing;
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
+		 */
+		@Override
+		public Object execute(String query, Class<?> type) {
+
+			return StreamUtils.createStreamFromIterator(operations.stream(query, type)).map(new Function<Object, Object>() {
+
+				@Override
+				public Object apply(Object t) {
+					return resultProcessing.convert(t);
+				}
+			});
+		}
+	}
+
+	/**
 	 * {@link CassandraQueryExecution} for collection returning queries.
 	 *
 	 * @author Mark Paluch
@@ -45,6 +75,9 @@ interface CassandraQueryExecution {
 
 		private final @NonNull CassandraOperations operations;
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
+		 */
 		@Override
 		public Object execute(String query, Class<?> type) {
 			return operations.select(query, type);
@@ -61,6 +94,9 @@ interface CassandraQueryExecution {
 
 		private final @NonNull CassandraOperations operations;
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
+		 */
 		@Override
 		public Object execute(String query, Class<?> type) {
 			return operations.selectOne(query, type);
@@ -77,6 +113,9 @@ interface CassandraQueryExecution {
 
 		private final @NonNull CassandraOperations operations;
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
+		 */
 		@Override
 		public Object execute(String query, Class<?> type) {
 			return operations.query(query);
@@ -94,6 +133,9 @@ interface CassandraQueryExecution {
 		private final @NonNull CassandraQueryExecution delegate;
 		private final @NonNull Converter<Object, Object> converter;
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
+		 */
 		@Override
 		public Object execute(String query, Class<?> type) {
 			return converter.convert(delegate.execute(query, type));
@@ -110,6 +152,9 @@ interface CassandraQueryExecution {
 
 		private final @NonNull ResultProcessor processor;
 
+		/* (non-Javadoc)
+		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+		 */
 		@Override
 		public Object convert(Object source) {
 

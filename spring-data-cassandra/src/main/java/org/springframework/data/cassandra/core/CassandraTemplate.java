@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -588,6 +590,29 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#stream(java.lang.String, java.lang.Class)
+	 */
+	public <T> Iterator<T> stream(final String query, Class<T> type) {
+
+		Assert.hasText(query, "Query must not be empty");
+		Assert.notNull(type, "Type must not be null");
+
+		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
+
+			@Override
+			public ResultSet doInSession(Session s) throws DataAccessException {
+				return s.execute(query);
+			}
+		});
+
+		if (resultSet == null) {
+			return Collections.<T>emptyList().iterator();
+		}
+
+		return new ResultSetIteratorAdapter(resultSet.iterator(), getExceptionTranslator(), new CassandraConverterRowCallback<T>(cassandraConverter, type));
+	}
+
 	protected <T> List<T> select(final Select query, CassandraConverterRowCallback<T> readRowCallback) {
 
 		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
@@ -1067,8 +1092,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 							throw new DuplicateKeyException("found two or more results in query " + query);
 						}
 						listener.onQueryComplete(result);
-					}
-					else{
+					} else {
 						listener.onQueryComplete(null);
 					}
 				} catch (Exception e) {
@@ -1084,5 +1108,39 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		}
 		throw new IllegalArgumentException(
 				String.format("Expected type String or Select; got type [%s] with value [%s]", query.getClass(), query));
+	}
+	
+	private static class ResultSetIteratorAdapter<T> implements Iterator<T>{
+
+		private final Iterator<Row> iterator;
+		private final PersistenceExceptionTranslator exceptionTranslator;
+		private final CassandraConverterRowCallback<T> rowCallback;
+
+		public ResultSetIteratorAdapter(Iterator<Row> iterator, PersistenceExceptionTranslator exceptionTranslator, CassandraConverterRowCallback<T> rowCallback) {
+			
+			this.iterator = iterator;
+			this.exceptionTranslator = exceptionTranslator;
+			this.rowCallback = rowCallback;
+		}
+
+		@Override
+		public boolean hasNext() {
+			
+			try {
+				return iterator.hasNext();
+			} catch (Exception e) {
+				throw translateExceptionIfPossible(e, exceptionTranslator);
+			}
+		}
+
+		@Override
+		public T next() {
+			
+			try {
+				return rowCallback.doWith(iterator.next());
+			} catch (Exception e) {
+				throw translateExceptionIfPossible(e, exceptionTranslator);
+			}
+		}
 	}
 }
