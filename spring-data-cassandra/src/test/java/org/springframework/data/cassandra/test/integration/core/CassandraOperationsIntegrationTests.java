@@ -15,10 +15,12 @@
  */
 package org.springframework.data.cassandra.test.integration.core;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -651,8 +653,8 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		log.debug("SingleSelect Book Title -> " + b.getTitle());
 		log.debug("SingleSelect Book Author -> " + b.getAuthor());
 
-		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
-		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
+		assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
+		assertEquals(b.getAuthor(), "Cassandra Guru");
 
 	}
 
@@ -669,11 +671,11 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		log.debug("Book Count -> " + bookz.size());
 
-		Assert.assertEquals(bookz.size(), 20);
+		assertEquals(bookz.size(), 20);
 
 		for (Book b : bookz) {
 			Assert.assertTrue(b.isInStock());
-			Assert.assertEquals(BookCondition.NEW, b.getCondition());
+			assertEquals(BookCondition.NEW, b.getCondition());
 		}
 	}
 
@@ -685,7 +687,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		template.insert(books);
 
-		Assert.assertEquals(count, template.count(Book.class));
+		assertEquals(count, template.count(Book.class));
 	}
 
 
@@ -697,7 +699,25 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		template.insert(books);
 
-		Assert.assertEquals(count, template.count(Book.class));
+		assertEquals(count, template.count(Book.class));
 	}
 
+	/**
+	 * @see DATACASS-297
+	 */
+	@Test
+	public void stream() {
+
+		List<Book> books = getBookList(20);
+		template.insert(books);
+
+		Iterator<Book> iterator = template.stream("select * from book", Book.class);
+		List<Book> result = new ArrayList<Book>();
+		while (iterator.hasNext()) {
+			result.add(iterator.next());
+		}
+
+		assertThat(books.size(), is(20));
+		assertThat(books.get(0), is(instanceOf(Book.class)));
+	}
 }
