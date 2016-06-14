@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
@@ -28,6 +29,7 @@ import com.datastax.driver.core.ResultSet;
 
 /**
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @NoRepositoryBean
 public interface PersonRepository extends CassandraRepository<Person> {
@@ -51,5 +53,7 @@ public interface PersonRepository extends CassandraRepository<Person> {
 	int findSingleNumberOfChildren(String last, String first);
 
 	Optional<Person> findOptionalWithLastnameAndFirstname(String last, String first);
+
+	Stream<Person> findAllPeople();
 
 }

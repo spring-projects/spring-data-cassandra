@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.declared;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Collection;
@@ -22,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +38,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
@@ -231,21 +235,6 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		assertEquals(saved.getNumberOfChildren(), value);
 	}
 
-	// TODO: @Test
-	// public void testUuidMethodResult() {
-	//
-	// Person saved = new Person();
-	// saved.setFirstname(uuid());
-	// saved.setLastname(uuid());
-	// saved.setUuid(UUID.randomUUID());
-	//
-	// saved = r.save(saved);
-	//
-	// UUID value = r.findSingleUuid(saved.getLastname(), saved.getFirstname());
-	//
-	// assertEquals(saved.getUuid(), value);
-	// }
-
 	@Test
 	public void testArrayMethodSingleResult() {
 
@@ -308,5 +297,32 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		Optional<Person> optional = personRepository.findOptionalWithLastnameAndFirstname("not", "existent");
 
 		assertFalse(optional.isPresent());
+	}
+
+	/**
+	 * @see DATACASS-297
+	 */
+	@Test
+	public void streamShouldReturnEntities() {
+
+		for (int i = 0; i < 100; i++) {
+		
+			Person person = new Person();
+			person.setFirstname(uuid());
+			person.setLastname(uuid());
+			person.setNumberOfChildren(i);
+			
+			personRepository.save(person);
+		}
+
+		Stream<Person> allPeople = personRepository.findAllPeople();
+		long count = allPeople.peek(new Consumer<Person>() {
+			@Override
+			public void accept(Person person) {
+				assertThat(person, is(instanceOf(Person.class)));
+			}
+		}).count();
+
+		assertThat(count, is(100L));
 	}
 }
