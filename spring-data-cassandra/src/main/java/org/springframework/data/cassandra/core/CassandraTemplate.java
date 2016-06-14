@@ -602,15 +602,22 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 			@Override
 			public ResultSet doInSession(Session s) throws DataAccessException {
-				return s.execute(query);
+				return s.execute(logCql(query));
 			}
 		});
 
-		if (resultSet == null) {
-			return Collections.<T>emptyList().iterator();
-		}
+		return (resultSet != null ? toIterator(resultSet, type) : Collections.<T>emptyIterator());
+	}
 
-		return new ResultSetIteratorAdapter(resultSet.iterator(), getExceptionTranslator(), new CassandraConverterRowCallback<T>(cassandraConverter, type));
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraTemplate.ResultSetIteratorAdapter
+	 */
+	@SuppressWarnings("unchecked")
+	private <T> Iterator<T> toIterator(ResultSet resultSet, Class<T> type) {
+
+		return new ResultSetIteratorAdapter(resultSet.iterator(), getExceptionTranslator(),
+			new CassandraConverterRowCallback<T>(cassandraConverter, type));
 	}
 
 	protected <T> List<T> select(final Select query, CassandraConverterRowCallback<T> readRowCallback) {
@@ -1109,7 +1116,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		throw new IllegalArgumentException(
 				String.format("Expected type String or Select; got type [%s] with value [%s]", query.getClass(), query));
 	}
-	
+
 	private static class ResultSetIteratorAdapter<T> implements Iterator<T>{
 
 		private final Iterator<Row> iterator;
@@ -1117,7 +1124,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		private final CassandraConverterRowCallback<T> rowCallback;
 
 		public ResultSetIteratorAdapter(Iterator<Row> iterator, PersistenceExceptionTranslator exceptionTranslator, CassandraConverterRowCallback<T> rowCallback) {
-			
+
 			this.iterator = iterator;
 			this.exceptionTranslator = exceptionTranslator;
 			this.rowCallback = rowCallback;
@@ -1125,7 +1132,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		@Override
 		public boolean hasNext() {
-			
+
 			try {
 				return iterator.hasNext();
 			} catch (Exception e) {
@@ -1135,7 +1142,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		@Override
 		public T next() {
-			
+
 			try {
 				return rowCallback.doWith(iterator.next());
 			} catch (Exception e) {

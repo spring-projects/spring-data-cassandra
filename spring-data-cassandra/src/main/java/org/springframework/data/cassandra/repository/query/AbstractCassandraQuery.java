@@ -104,14 +104,15 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		return new ResultProcessingExecution(getExecutionToWrap(accessor, resultProcessing), resultProcessing);
 	}
 
-	private CassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor accessor, Converter<Object, Object> resultProcessing) {
+	private CassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor accessor,
+			Converter<Object, Object> resultProcessing) {
 
-		if (method.isResultSetQuery()) {
+		if (method.isCollectionQuery()) {
+			return new CollectionExecution(template);
+		} else if (method.isResultSetQuery()) {
 			return new ResultSetQuery(template);
 		} else if (method.isStreamQuery()) {
 			return new StreamExecution(template, resultProcessing);
-		} else if (method.isCollectionQuery()) {
-			return new CollectionExecution(template);
 		} else {
 			return new SingleEntityExecution(template);
 		}

@@ -278,17 +278,20 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 	@Test
 	public void findOptionalShouldReturnTargetType() {
 
-		Person saved = new Person();
-		saved.setFirstname(uuid());
-		saved.setLastname(uuid());
-		saved.setNumberOfChildren(1);
+		Person personToSave = new Person();
 
-		saved = personRepository.save(saved);
+		personToSave.setFirstname(uuid());
+		personToSave.setLastname(uuid());
+		personToSave.setNumberOfChildren(1);
 
-		Optional<Person> optional = personRepository.findOptionalWithLastnameAndFirstname(saved.getLastname(), saved.getFirstname());
+		personToSave = personRepository.save(personToSave);
 
-		assertTrue(optional.isPresent());
-		assertTrue(optional.get() instanceof Person);
+		Optional<Person> savedPerson = personRepository.findOptionalWithLastnameAndFirstname(
+			personToSave.getLastname(), personToSave.getFirstname());
+
+		assertThat(savedPerson, is(notNullValue(Optional.class)));
+		assertThat(savedPerson.isPresent(), is(true));
+		assertThat(savedPerson.get(), is(notNullValue(Person.class)));
 	}
 
 	@Test
@@ -296,26 +299,27 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		Optional<Person> optional = personRepository.findOptionalWithLastnameAndFirstname("not", "existent");
 
-		assertFalse(optional.isPresent());
+		assertThat(optional.isPresent(), is(false));
 	}
 
 	/**
-	 * @see DATACASS-297
+	 * @see <a href="DATACASS-297">https://jira.spring.io/browse/DATACASS-297</a>
 	 */
 	@Test
 	public void streamShouldReturnEntities() {
 
 		for (int i = 0; i < 100; i++) {
-		
 			Person person = new Person();
+
 			person.setFirstname(uuid());
 			person.setLastname(uuid());
 			person.setNumberOfChildren(i);
-			
+
 			personRepository.save(person);
 		}
 
 		Stream<Person> allPeople = personRepository.findAllPeople();
+
 		long count = allPeople.peek(new Consumer<Person>() {
 			@Override
 			public void accept(Person person) {
@@ -323,6 +327,6 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 			}
 		}).count();
 
-		assertThat(count, is(100L));
+		assertThat(count, is(equalTo(100L)));
 	}
 }

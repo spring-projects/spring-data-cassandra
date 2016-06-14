@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -184,14 +183,16 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 	@Test
 	public void insertEmptyList() {
 		List<Book> list = template.insert(new ArrayList<Book>());
-		assertNotNull(list);
-		assertEquals(0, list.size());
+
+		assertThat(list, is(notNullValue(List.class)));
+		assertThat(list.isEmpty(), is(true));
 	}
 
 	@Test
 	public void insertNullList() {
 		List<Book> list = template.insert((List<Book>) null);
-		assertNull(list);
+
+		assertThat(list, is(nullValue(List.class)));
 	}
 
 	@Test
@@ -253,21 +254,21 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 	/**
 	 * @return
 	 */
-	private List<Book> getBookList(int numBooks) {
+	private List<Book> getBookList(long numBooks) {
 
 		List<Book> books = new ArrayList<Book>();
+		Book book;
 
-		Book b = null;
-		for (int i = 0; i < numBooks; i++) {
-			b = new Book();
-			b.setIsbn(UUID.randomUUID().toString());
-			b.setTitle("Spring Data Cassandra Guide");
-			b.setAuthor("Cassandra Guru");
-			b.setPages(i * 10 + 5);
-			b.setInStock(true);
-			b.setSaleDate(new Date());
-			b.setCondition(BookCondition.NEW);
-			books.add(b);
+		for (int index = 0; index < numBooks; index++) {
+			book = new Book();
+			book.setIsbn(UUID.randomUUID().toString());
+			book.setTitle("Spring Data Cassandra Guide");
+			book.setAuthor("Cassandra Guru");
+			book.setPages(index * 10 + 5);
+			book.setInStock(true);
+			book.setSaleDate(new Date());
+			book.setCondition(BookCondition.NEW);
+			books.add(book);
 		}
 
 		return books;
@@ -648,13 +649,13 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		Select select = QueryBuilder.select().all().from("book");
 		select.where(QueryBuilder.eq("isbn", "123456-1"));
 
-		Book b = template.selectOne(select, Book.class);
+		Book book = template.selectOne(select, Book.class);
 
-		log.debug("SingleSelect Book Title -> " + b.getTitle());
-		log.debug("SingleSelect Book Author -> " + b.getAuthor());
+		log.debug("SingleSelect Book Title -> " + book.getTitle());
+		log.debug("SingleSelect Book Author -> " + book.getAuthor());
 
-		assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
-		assertEquals(b.getAuthor(), "Cassandra Guru");
+		assertThat(book.getTitle(), is(equalTo("Spring Data Cassandra Guide")));
+		assertThat(book.getAuthor(), is(equalTo("Cassandra Guru")));
 
 	}
 
@@ -667,39 +668,39 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		Select select = QueryBuilder.select().all().from("book");
 
-		List<Book> bookz = template.select(select, Book.class);
+		List<Book> selectedBooks = template.select(select, Book.class);
 
-		log.debug("Book Count -> " + bookz.size());
+		log.debug("Book Count -> " + selectedBooks.size());
 
-		assertEquals(bookz.size(), 20);
+		assertThat(selectedBooks.size(), is(equalTo(20)));
 
-		for (Book b : bookz) {
-			Assert.assertTrue(b.isInStock());
-			assertEquals(BookCondition.NEW, b.getCondition());
+		for (Book book : selectedBooks) {
+			assertThat(book.isInStock(), is(true));
+			assertThat(book.getCondition(), is(equalTo(BookCondition.NEW)));
 		}
 	}
 
 	@Test
 	public void selectCountTest() {
 
-		int count = 20;
+		long count = 20;
 		List<Book> books = getBookList(count);
 
 		template.insert(books);
 
-		assertEquals(count, template.count(Book.class));
+		assertThat(template.count(Book.class), is(equalTo(count)));
 	}
 
 
 	@Test
 	public void insertAndSelect() {
 
-		int count = 20;
+		long count = 20;
 		List<Book> books = getBookList(count);
 
 		template.insert(books);
 
-		assertEquals(count, template.count(Book.class));
+		assertThat(template.count(Book.class), is(equalTo(count)));
 	}
 
 	/**
@@ -708,16 +709,27 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 	@Test
 	public void stream() {
 
-		List<Book> books = getBookList(20);
-		template.insert(books);
+		template.insert(getBookList(20));
 
-		Iterator<Book> iterator = template.stream("select * from book", Book.class);
-		List<Book> result = new ArrayList<Book>();
-		while (iterator.hasNext()) {
-			result.add(iterator.next());
+		Iterator<Book> iterator = template.stream("SELECT * FROM book", Book.class);
+
+		assertThat(iterator, is(notNullValue(Iterator.class)));
+
+		List<Book> selectedBooks = new ArrayList<Book>();
+
+		for (Book book : toIterable(iterator)) {
+			selectedBooks.add(book);
 		}
 
-		assertThat(books.size(), is(20));
-		assertThat(books.get(0), is(instanceOf(Book.class)));
+		assertThat(selectedBooks.size(), is(equalTo(20)));
+		assertThat(selectedBooks.get(0), is(instanceOf(Book.class)));
+	}
+
+	<T> Iterable<T> toIterable(final Iterator<T> iterator) {
+		return new Iterable<T>() {
+			@Override public Iterator<T> iterator() {
+				return iterator;
+			}
+		};
 	}
 }

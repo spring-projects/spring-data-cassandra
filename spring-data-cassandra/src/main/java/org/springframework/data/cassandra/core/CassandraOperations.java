@@ -56,12 +56,12 @@ public interface CassandraOperations extends CqlOperations {
 	 * Executes the given select {@code query} on the entity table of the specified {@code type} backed by a Cassandra
 	 * {@link com.datastax.driver.core.ResultSet}.
 	 * <p>
-	 * Returns a {@link java.util.Iterator} that wraps the a Cassandra {@link com.datastax.driver.core.ResultSet}.
-	 * 
-	 * @param <T> element return type
-	 * @param query must not be empty and not {@literal null}.
-	 * @param type must not be {@literal null}.
-	 * @return
+	 * Returns a {@link java.util.Iterator} that wraps the Cassandra {@link com.datastax.driver.core.ResultSet}.
+	 *
+	 * @param <T> element return type.
+	 * @param query query to execute.  Must not be empty or {@literal null}.
+	 * @param type Class type of the elements in the {@link Iterator} stream. Must not be {@literal null}.
+	 * @return an {@link Iterator} (stream) over the elements in the query result set.
 	 * @since 1.5
 	 */
 	<T> Iterator<T> stream(String query, Class<T> type);

@@ -99,6 +99,7 @@ import com.datastax.driver.core.querybuilder.Update;
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	protected static final Executor RUN_RUNNABLE_EXECUTOR = new Executor() {
+
 		@Override
 		@SuppressWarnings("all")
 		public void execute(Runnable command) {
@@ -856,48 +857,50 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
 	 * Attempts to translate the {@link Exception} into a Spring Data {@link Exception}.
-	 * @param ex the Exception
-	 * @return the translated {@link RuntimeException}
+	 *
+	 * @param e the {@link Exception} to translate.
+	 * @return the translated {@link RuntimeException}.
+	 * @see <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions">Consistent exception hierarchy</a>
 	 */
 	@SuppressWarnings("all")
-	protected RuntimeException translateExceptionIfPossible(Exception ex) {
-		return translateExceptionIfPossible(ex, getExceptionTranslator());
+	protected RuntimeException translateExceptionIfPossible(Exception e) {
+		return translateExceptionIfPossible(e, getExceptionTranslator());
 	}
 
 	/**
 	 * Tries to convert the given {@link RuntimeException} into a {@link DataAccessException} but returns the original
 	 * exception if the conversation failed. Thus allows safe re-throwing of the return value.
 	 *
-	 * @param ex the exception to translate
+	 * @param e the exception to translate
 	 * @param exceptionTranslator the {@link PersistenceExceptionTranslator} to be used for translation
 	 * @return
 	 */
 	@SuppressWarnings("all")
-	protected static RuntimeException translateExceptionIfPossible(Exception ex, PersistenceExceptionTranslator exceptionTranslator) {
-
-		Assert.notNull(ex, "Exception must not be null");
-		Assert.notNull(exceptionTranslator, "PersistenceExceptionTranslator must not be null");
-
-		if (ex instanceof RuntimeException) {
-			return potentiallyConvertRuntimeException((RuntimeException) ex, exceptionTranslator);
-		}
-
-		return new CassandraUncategorizedDataAccessException("Caught Uncategorized Exception", ex);
-	}
-
-	/**
-	 * Tries to convert the given {@link RuntimeException} into a {@link DataAccessException} but returns the original
-	 * exception if the conversation failed. Thus allows safe re-throwing of the return value.
-	 *
-	 * @param ex the exception to translate
-	 * @param exceptionTranslator the {@link PersistenceExceptionTranslator} to be used for translation
-	 * @return
-	 */
-	private static RuntimeException potentiallyConvertRuntimeException(RuntimeException ex,
+	protected static RuntimeException translateExceptionIfPossible(Exception e,
 			PersistenceExceptionTranslator exceptionTranslator) {
 
-		RuntimeException resolved = exceptionTranslator.translateExceptionIfPossible(ex);
-		return resolved == null ? ex : resolved;
+		Assert.notNull(e, "Exception must not be null");
+		Assert.notNull(exceptionTranslator, "PersistenceExceptionTranslator must not be null");
+
+		return (e instanceof RuntimeException) ? potentiallyConvertRuntimeException((RuntimeException) e, exceptionTranslator)
+			:  new CassandraUncategorizedDataAccessException("Caught Uncategorized Exception", e);
+	}
+
+	/**
+	 * Tries to convert the given {@link RuntimeException} into a {@link DataAccessException} but returns the original
+	 * exception if the conversation failed. Thus allows safe re-throwing of the return value.
+	 *
+	 * @param e the exception to translate
+	 * @param exceptionTranslator the {@link PersistenceExceptionTranslator} to be used for translation
+	 * @return
+	 */
+	@SuppressWarnings("all")
+	private static RuntimeException potentiallyConvertRuntimeException(RuntimeException e,
+			PersistenceExceptionTranslator exceptionTranslator) {
+
+		RuntimeException resolved = exceptionTranslator.translateExceptionIfPossible(e);
+
+		return (resolved != null ? resolved : e);
 	}
 
 	@Override
