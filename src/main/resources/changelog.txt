@@ -1,6 +1,21 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.4.2.RELEASE (2016-06-15)
+---------------------------------------------
+* DATACASS-287 - QueryForObjectListener will not be called, if result set is empty.
+* DATACASS-275 - Remove usage of deprecated methods.
+* DATACASS-270 - Release 1.4.2 (Hopper SR2).
+* DATACASS-263 - AuthProvider required when using with username/password.
+* DATACASS-262 - Add missing throws to catch blocks in CqlTemplate.
+* DATACASS-253 - CachedPreparedStatementCreator class is not threadsafe.
+* DATACASS-249 - CDI support can fail due to Set.toString() used as Map key.
+* DATACASS-248 - @PrimaryKeyColumn does not work when applied to methods.
+* DATACASS-233 - CassandraCqlClusterFactoryBean won't allow configuration of username/password unless authProvider also given.
+* DATACASS-219 - On startup CREATE TABLE from entities should only add 'if not exists'.
+* DATACASS-174 - StackOverflowError in CassandraAdminTemplate#dropTable(Class<?>).
+
+
 Changes in version 1.4.1.RELEASE (2016-04-06)
 ---------------------------------------------
 * DATACASS-268 - Release 1.4.1 (Hopper SR1).
