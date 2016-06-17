@@ -15,36 +15,45 @@
  */
 package org.springframework.cassandra.test.integration.config.xml;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification.*;
 
-import javax.inject.Inject;
-
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.HostDistance;
+import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SocketOptions;
 
 /**
  * @author Mark Paluch
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
+@SuppressWarnings("unused")
 public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		extends AbstractEmbeddedCassandraIntegrationTest {
 
-	@Inject private Session session;
+	@Autowired
+	private Cluster cassandraCluster;
 
-	@Inject private CqlOperations ops;
+	@Autowired
+	private CqlOperations ops;
+
+	@Autowired
+	private Session session;
 
 	@Test
-	public void test() {
+	public void keyspaceExists() {
 
 		IntegrationTestUtils.assertSession(session);
 		IntegrationTestUtils.assertKeyspaceExists("ppncxct", session);
@@ -52,9 +61,38 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		assertNotNull(ops);
 	}
 
-	@After
-	public void tearDown() throws Exception {
-		dropKeyspace("ppncxct");
-		dropKeyspace("foo123");
+	@Test
+	public void localAndRemotePoolingOptionsWereConfiguredProperly() {
+
+		PoolingOptions poolingOptions = cassandraCluster.getConfiguration().getPoolingOptions();
+
+		assertThat(poolingOptions, is(notNullValue(PoolingOptions.class)));
+		assertThat(poolingOptions.getHeartbeatIntervalSeconds(), is(equalTo(60)));
+		assertThat(poolingOptions.getIdleTimeoutSeconds(), is(equalTo(180)));
+		assertThat(poolingOptions.getPoolTimeoutMillis(), is(equalTo(30000)));
+		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.LOCAL), is(equalTo(4)));
+		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.LOCAL), is(equalTo(8)));
+		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.LOCAL), is(equalTo(20)));
+		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.LOCAL), is(equalTo(10)));
+		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.REMOTE), is(equalTo(2)));
+		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.REMOTE), is(equalTo(4)));
+		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.REMOTE), is(equalTo(10)));
+		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE), is(equalTo(5)));
+	}
+
+	@Test
+	public void socketOptionsWereConfiguredProperly() {
+
+		SocketOptions socketOptions = cassandraCluster.getConfiguration().getSocketOptions();
+
+		assertThat(socketOptions, is(notNullValue(SocketOptions.class)));
+		assertThat(socketOptions.getConnectTimeoutMillis(), is(equalTo(15000)));
+		assertThat(socketOptions.getKeepAlive(), is(true));
+		assertThat(socketOptions.getReadTimeoutMillis(), is(equalTo(60000)));
+		assertThat(socketOptions.getReceiveBufferSize(), is(equalTo(1024)));
+		assertThat(socketOptions.getReuseAddress(), is(true));
+		assertThat(socketOptions.getSendBufferSize(), is(equalTo(2048)));
+		assertThat(socketOptions.getSoLinger(), is(equalTo(5)));
+		assertThat(socketOptions.getTcpNoDelay(), is(false));
 	}
 }
