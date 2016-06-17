@@ -19,6 +19,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -53,6 +55,15 @@ public class CassandraCqlClusterParserUnitTests {
 	private Element mockElement;
 
 	private CassandraCqlClusterParser parser = new CassandraCqlClusterParser();
+
+	protected <T> void assertElements(List<T> list, T... elements) {
+		assertThat(list, is(notNullValue()));
+		assertThat(list.size(), is(equalTo(elements.length)));
+
+		for (int index = 0; index < elements.length; index++) {
+			assertThat(list.get(index), is(equalTo(elements[index])));
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> T getPropertyValue(BeanDefinition beanDefinition, String propertyName) {
@@ -285,6 +296,42 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("max-connections"));
 		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("max-simultaneous-requests"));
 		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("min-simultaneous-requests"));
+	}
+
+	@Test
+	public void parseChildElementsWithStartupAndShutdownScripts() {
+		Element mockStartupCqlOne = mock(Element.class, "MockStartupCqlOne");
+		Element mockStartupCqlTwo = mock(Element.class, "MockStartupCqlTwo");
+		Element mockShutdownCqlOne = mock(Element.class, "MockShutdownCqlOne");
+		Element mockShutdownCqlTwo = mock(Element.class, "MockShutdownCqlTwo");
+
+		when(mockStartupCqlOne.getLocalName()).thenReturn("startup-cql");
+		when(mockStartupCqlTwo.getLocalName()).thenReturn("startup-cql");
+		when(mockStartupCqlOne.getTextContent()).thenReturn("CREATE KEYSPACE test;");
+		when(mockStartupCqlTwo.getTextContent()).thenReturn("CREATE TABLE test.table;");
+		when(mockShutdownCqlOne.getLocalName()).thenReturn("shutdown-cql");
+		when(mockShutdownCqlTwo.getLocalName()).thenReturn("shutdown-cql");
+		when(mockShutdownCqlOne.getTextContent()).thenReturn("DROP KEYSPACE test;");
+		when(mockShutdownCqlTwo.getTextContent()).thenReturn("DROP USER jblum;");
+
+		NodeList mockNodeList = mockNodeList(mockStartupCqlOne, mockStartupCqlTwo,
+			mockShutdownCqlOne, mockShutdownCqlTwo);
+
+		when(mockElement.getChildNodes()).thenReturn(mockNodeList);
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
+
+		parser.parseChildElements(mockElement, mockParserContext(), builder);
+
+		BeanDefinition beanDefinition = builder.getBeanDefinition();
+
+		List<String> startupScripts = getPropertyValue(beanDefinition, "startupScripts");
+
+		assertElements(startupScripts, "CREATE KEYSPACE test;", "CREATE TABLE test.table;");
+
+		List<String> shutdownScripts = getPropertyValue(beanDefinition, "shutdownScripts");
+
+		assertElements(shutdownScripts, "DROP KEYSPACE test;", "DROP USER jblum;");
 	}
 
 	@Test

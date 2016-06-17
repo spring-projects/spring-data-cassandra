@@ -161,7 +161,7 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 			poolingOptionsBuilder, parserContext, element));
 
 		builder.addPropertyValue("startupScripts", startupScripts);
-		builder.addPropertyValue("shutdownScripts", startupScripts);
+		builder.addPropertyValue("shutdownScripts", shutdownScripts);
 	}
 
 	/**
