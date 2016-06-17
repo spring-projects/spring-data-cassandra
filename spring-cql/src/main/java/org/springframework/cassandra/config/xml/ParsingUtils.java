@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,182 +24,69 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
-public class ParsingUtils {
+/**
+ * Utility class for parsing Cassandra XML namespace configuration meta-data.
+ *
+ * @author John Blum
+ * @see org.springframework.beans.factory.config.BeanDefinition
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.xml.ParserContext
+ * @see org.w3c.dom.Attr
+ * @see org.w3c.dom.Element
+ */
+public abstract class ParsingUtils {
 
 	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
-	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, Element element,
-			String attrName, String defaultValue) {
+	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, Attr attribute) {
 
-		addProperty(builder, propertyName, element.getAttribute(attrName), defaultValue, false, false);
+		addProperty(builder, propertyName, attribute.getValue(), null, false, true);
 	}
 
 	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, Attr attribute,
+			String defaultValue) {
+
+		addProperty(builder, propertyName, attribute.getValue(), defaultValue, false, true);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
 	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, Element element,
-			String attrName, String defaultValue) {
+			String attributeName) {
 
-		addProperty(builder, propertyName, element.getAttribute(attrName), defaultValue, false, true);
+		addProperty(builder, propertyName, element.getAttribute(attributeName), null, false, true);
 	}
 
 	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
-	public static void addRequiredPropertyValue(BeanDefinitionBuilder builder, String propertyName, Element element,
-			String attrName) {
+	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, Element element,
+			String attributeName, String defaultValue) {
 
-		addProperty(builder, propertyName, element.getAttribute(attrName), null, true, false);
+		addProperty(builder, propertyName, element.getAttribute(attributeName), defaultValue, false, true);
 	}
 
 	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
+	 * Convenience method delegating to
+	 * {@link ParsingUtils#addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
-	public static void addRequiredPropertyReference(BeanDefinitionBuilder builder, String propertyName, Element element,
-			String attrName) {
+	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, String value) {
 
-		addProperty(builder, propertyName, element.getAttribute(attrName), null, true, true);
+		addProperty(builder, propertyName, value, null, false, true);
 	}
 
 	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addPropertyValue(BeanDefinitionBuilder builder, String propertyName, Element element,
-			String attrName, String defaultValue, boolean required) {
-
-		addProperty(builder, propertyName, element.getAttribute(attrName), defaultValue, required, false);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addPropertyReference(BeanDefinitionBuilder builder, String propertyName, Element element,
-			String attrName, String defaultValue, boolean required) {
-
-		addProperty(builder, propertyName, element.getAttribute(attrName), defaultValue, required, true);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addProperty(BeanDefinitionBuilder builder, String propertyName, Element element, String attrName,
-			String defaultValue, boolean required, boolean reference) {
-
-		Assert.notNull(element, "Element must not be null!");
-		Assert.hasText(attrName, "Attribute name must not be null!");
-
-		addProperty(builder, propertyName, element.getAttribute(attrName), defaultValue, required, reference);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, Attr attr,
-			String defaultValue) {
-
-		addProperty(builder, propertyName, attr, defaultValue, false, false);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, Attr attr,
-			String defaultValue) {
-
-		addProperty(builder, propertyName, attr, defaultValue, false, true);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addRequiredPropertyValue(BeanDefinitionBuilder builder, String propertyName, Attr attr) {
-
-		addProperty(builder, propertyName, attr, null, true, false);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addRequiredPropertyReference(BeanDefinitionBuilder builder, String propertyName, Attr attr) {
-
-		addProperty(builder, propertyName, attr, null, true, true);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addPropertyValue(BeanDefinitionBuilder builder, String propertyName, Attr attr,
-			String defaultValue, boolean required) {
-
-		addProperty(builder, propertyName, attr, defaultValue, required, false);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addPropertyReference(BeanDefinitionBuilder builder, String propertyName, Attr attr,
-			String defaultValue, boolean required) {
-
-		addProperty(builder, propertyName, attr, defaultValue, required, true);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addProperty(BeanDefinitionBuilder builder, String propertyName, Attr attr, String defaultValue,
-			boolean required, boolean reference) {
-
-		Assert.notNull(attr, "Attr must not be null!");
-
-		addProperty(builder, propertyName, attr.getValue(), defaultValue, required, reference);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addRequiredPropertyValue(BeanDefinitionBuilder builder, String propertyName, String value) {
-
-		addProperty(builder, propertyName, value, null, true, false);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addRequiredPropertyReference(BeanDefinitionBuilder builder, String propertyName, String value) {
-
-		addProperty(builder, propertyName, value, null, true, true);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
-	 */
-	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, String value,
-			String defaultValue) {
-
-		addProperty(builder, propertyName, value, defaultValue, false, false);
-	}
-
-	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
+	 * Convenience method delegating to
+	 * {@link ParsingUtils#addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
 	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, String value,
 			String defaultValue) {
@@ -208,102 +95,206 @@ public class ParsingUtils {
 	}
 
 	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
-	public static void addPropertyValue(BeanDefinitionBuilder builder, String propertyName, String value,
-			String defaultValue, boolean required) {
+	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, Attr attribute) {
 
-		addProperty(builder, propertyName, value, defaultValue, required, false);
+		addProperty(builder, propertyName, attribute.getValue(), null, false, false);
 	}
 
 	/**
-	 * Convenience method that ultimately delegates to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, Element, String, String, boolean, boolean)}.
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
-	public static void addPropertyReference(BeanDefinitionBuilder builder, String propertyName, String value,
-			String defaultValue, boolean required) {
+	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, Attr attribute,
+			String defaultValue) {
 
-		addProperty(builder, propertyName, value, defaultValue, required, true);
+		addProperty(builder, propertyName, attribute.getValue(), defaultValue, false, false);
 	}
 
 	/**
-	 * Adds the named property as a value or reference to the given {@link BeanDefinitionBuilder}, with an optional
-	 * default value.
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, Element element,
+			String attributeName) {
+
+		addProperty(builder, propertyName, element.getAttribute(attributeName), null, false, false);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, Element element,
+			String attributeName, String defaultValue) {
+
+		addProperty(builder, propertyName, element.getAttribute(attributeName), defaultValue, false, false);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, String value) {
+
+		addProperty(builder, propertyName, value, null, false, false);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, String value,
+			String defaultValue) {
+
+		addProperty(builder, propertyName, value, defaultValue, false, false);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addRequiredPropertyReference(BeanDefinitionBuilder builder, String propertyName, Attr attribute) {
+
+		addProperty(builder, propertyName, attribute.getValue(), null, true, true);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addRequiredPropertyReference(BeanDefinitionBuilder builder, String propertyName, Element element,
+		String attributeName) {
+
+		addProperty(builder, propertyName, element.getAttribute(attributeName), null, true, true);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addRequiredPropertyReference(BeanDefinitionBuilder builder, String propertyName, String value) {
+
+		addProperty(builder, propertyName, value, null, true, true);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addRequiredPropertyValue(BeanDefinitionBuilder builder, String propertyName, Attr attribute) {
+
+		addProperty(builder, propertyName, attribute.getValue(), null, true, false);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addRequiredPropertyValue(BeanDefinitionBuilder builder, String propertyName, Element element,
+			String attributeName) {
+
+		addProperty(builder, propertyName, element.getAttribute(attributeName), null, true, false);
+	}
+
+	/**
+	 * Convenience method delegating to
+	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
+	 */
+	public static void addRequiredPropertyValue(BeanDefinitionBuilder builder, String propertyName, String value) {
+
+		addProperty(builder, propertyName, value, null, true, false);
+	}
+
+	/**
+	 * Adds the named property and value, or reference to the given {@link BeanDefinitionBuilder} with an optional
+	 * default value if the value has not been specified.
 	 * <p/>
-	 * Note: If <code>required</code> is <code>false</code>, <code>value</code> is null or empty, and
-	 * <code>defaultValue</code> is null or empty, then no property is added and this method silently returns.
-	 * 
-	 * @param builder The {@link BeanDefinitionBuilder}; must not be null.
-	 * @param propertyName The name of the property being added; must not be null or empty.
-	 * @param value The value of the property being added; may be null.
-	 * @param defaultValue The default value of the property being set.
-	 * @param required If <code>true</code>, then the <code>value</code> parameter must not be null or empty. If
-	 *          <code>false</code>, the <code>value</code> parameter may be null, in which case the
-	 *          <code>defaultValue</code> is used. If <code>required</code> is <code>false</code>, <code>value</code> is
-	 *          null or empty, and <code>defaultValue</code> is null or empty, then no property is added and this method
-	 *          silently returns.
-	 * @param reference If <code>true</code>, this method will add the property as a reference, else as a value.
+	 * If <code>required</code> is <code>false</code>, <code>value</code> is null or empty,
+	 * and <code>defaultValue</code> is null or empty, then no property is added to the bean definition
+	 * and this method silently returns.
+	 *
+	 * @param builder {@link BeanDefinitionBuilder} used to build the {@link BeanDefinition}.
+	 * @param propertyName name of the property to add.
+	 * @param value value for the property being added.
+	 * @param defaultValue default value for the property if value is null or empty.
+	 * @param required If <code>true</code>, then <code>value</code> must not be null or empty. If <code>false</code>,
+	 * then <code>value</code> may be null and the <code>defaultValue</code> will be used. If <code>required</code> is
+	 * <code>false</code>, <code>value</code> is null or empty, and <code>defaultValue</code> is null or empty,
+	 * then no property is added to the bean definition and this method silently returns.
+	 * @param reference If <code>true</code>, then the <code>value</code>value for the named property is
+	 * considered a reference to another bean in the Spring context.
+	 * @return the given {@link BeanDefinitionBuilder}.
+	 * @throws IllegalArgumentException if either the {@link BeanDefinitionBuilder} is null
+	 * or the <code>propertyName</code> has not been specified.
 	 * @see BeanDefinitionBuilder#addPropertyReference(String, String)
 	 * @see BeanDefinitionBuilder#addPropertyValue(String, Object)
 	 */
-	public static void addProperty(BeanDefinitionBuilder builder, String propertyName, String value, String defaultValue,
-			boolean required, boolean reference) {
+	public static BeanDefinitionBuilder addProperty(BeanDefinitionBuilder builder, String propertyName,
+			String value, String defaultValue, boolean required, boolean reference) {
 
-		Assert.notNull(builder, "BeanDefinitionBuilder must not be null!");
-		Assert.hasText(propertyName, "Property name must not be null!");
+		Assert.notNull(builder, "BeanDefinitionBuilder must not be null");
+		Assert.hasText(propertyName, "Property name must not be null");
 
 		if (!StringUtils.hasText(value)) {
 			if (required) {
-				throw new IllegalStateException(String.format("value required for property %s [%s] on class [%s]",
-						reference ? "reference" : "", propertyName, builder.getBeanDefinition().getClass().getName()));
+				throw new IllegalArgumentException(String.format("value required for property %1$s[%2$s] on class [%3$s]",
+					reference ? "reference " : "", propertyName, builder.getRawBeanDefinition().getBeanClassName()));
 			}
-			// else optional; use default
-			if (defaultValue != null) {
+			else {
 				value = defaultValue;
-			} else { // no default value given; quietly ignore & return
-				return;
 			}
 		}
 
-		if (reference) {
-			builder.addPropertyReference(propertyName, value);
-		} else {
-			builder.addPropertyValue(propertyName, value);
+		if (StringUtils.hasText(value)) {
+			if (reference) {
+				builder.addPropertyReference(propertyName, value);
+			} else {
+				builder.addPropertyValue(propertyName, value);
+			}
 		}
+
+		return builder;
 	}
 
 	/**
-	 * Returns the {@link BeanDefinition} built by the given {@link BeanDefinitionBuilder} enriched with source
-	 * information derived from the given {@link Element}.
-	 * 
-	 * @param builder must not be {@literal null}.
-	 * @param context must not be {@literal null}.
-	 * @param element must not be {@literal null}.
-	 * @return
+	 * Returns a {@link BeanDefinition} built from the given {@link BeanDefinitionBuilder} enriched with
+	 * source meta-data derived from the given {@link Element}.
+	 *
+	 * @param builder {@link BeanDefinitionBuilder} used to build the {@link BeanDefinition}.
+	 * @param parserContext {@link ParserContext} used to track state during the parsing operation.
+	 * @param element DOM {@link Element} defining the meta-data that is the source of the {@link BeanDefinition}s
+	 * configuration.
+	 * @return the {@link BeanDefinition} built by the given {@link BeanDefinitionBuilder}.
+	 * @throws IllegalArgumentException if the {@link BeanDefinitionBuilder} or {@link ParserContext} are null.
 	 */
-	public static AbstractBeanDefinition getSourceBeanDefinition(BeanDefinitionBuilder builder, ParserContext context,
-			Element element) {
+	public static AbstractBeanDefinition getSourceBeanDefinition(BeanDefinitionBuilder builder,
+			ParserContext parserContext, Element element) {
 
-		Assert.notNull(element, "Element must not be null!");
-		Assert.notNull(context, "ParserContext must not be null!");
+		Assert.notNull(parserContext, "ParserContext must not be null");
 
-		return getSourceBeanDefinition(builder, context.extractSource(element));
+		return getSourceBeanDefinition(builder, parserContext.extractSource(element));
 	}
 
 	/**
-	 * Returns the {@link AbstractBeanDefinition} built by the given builder with the given extracted source applied.
-	 * 
-	 * @param builder must not be {@literal null}.
-	 * @param source
-	 * @return
+	 * Returns a {@link AbstractBeanDefinition} built from the given {@link BeanDefinitionBuilder} with the given
+	 * extracted source applied.
+	 *
+	 * @param builder {@link BeanDefinitionBuilder} used to build the {@link BeanDefinition}.
+	 * @param source source meta-data used by the builder to construct the {@link BeanDefinition}.
+	 * @return a raw {@link BeanDefinition} built by the given {@link BeanDefinitionBuilder}.
+	 * @throws IllegalArgumentException if {@link BeanDefinitionBuilder} is null.
 	 */
 	public static AbstractBeanDefinition getSourceBeanDefinition(BeanDefinitionBuilder builder, Object source) {
 
-		Assert.notNull(builder, "Builder must not be null!");
+		Assert.notNull(builder, "BeanDefinitionBuilder must not be null");
 
-		AbstractBeanDefinition definition = builder.getRawBeanDefinition();
-		definition.setSource(source);
-		return definition;
+		AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
+
+		beanDefinition.setSource(source);
+
+		return beanDefinition;
 	}
 }
