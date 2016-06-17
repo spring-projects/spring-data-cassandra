@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.cassandra.support.BeanDefinitionTestUtils.*;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -260,6 +262,44 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(localPoolingOptionsElement).getAttribute(eq("max-connections"));
 		verify(localPoolingOptionsElement).getAttribute(eq("max-simultaneous-requests"));
 		verify(localPoolingOptionsElement).getAttribute(eq("min-simultaneous-requests"));
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-242">DATACASS-242</a>
+	 */
+	@Test
+	public void parseChildElementsWithStartupAndShutdownScripts() {
+
+		Element mockStartupCqlOne = mock(Element.class, "MockStartupCqlOne");
+		Element mockStartupCqlTwo = mock(Element.class, "MockStartupCqlTwo");
+		Element mockShutdownCqlOne = mock(Element.class, "MockShutdownCqlOne");
+		Element mockShutdownCqlTwo = mock(Element.class, "MockShutdownCqlTwo");
+
+		when(mockStartupCqlOne.getLocalName()).thenReturn("startup-cql");
+		when(mockStartupCqlTwo.getLocalName()).thenReturn("startup-cql");
+		when(mockStartupCqlOne.getTextContent()).thenReturn("CREATE KEYSPACE test;");
+		when(mockStartupCqlTwo.getTextContent()).thenReturn("CREATE TABLE test.table;");
+		when(mockShutdownCqlOne.getLocalName()).thenReturn("shutdown-cql");
+		when(mockShutdownCqlTwo.getLocalName()).thenReturn("shutdown-cql");
+		when(mockShutdownCqlOne.getTextContent()).thenReturn("DROP KEYSPACE test;");
+		when(mockShutdownCqlTwo.getTextContent()).thenReturn("DROP USER jblum;");
+
+		NodeList mockNodeList = mockNodeList(mockStartupCqlOne, mockStartupCqlTwo,
+			mockShutdownCqlOne, mockShutdownCqlTwo);
+
+		when(mockElement.getChildNodes()).thenReturn(mockNodeList);
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
+
+		parser.parseChildElements(mockElement, mockParserContext(null), builder);
+
+		BeanDefinition beanDefinition = builder.getBeanDefinition();
+
+		List<String> startupScripts = getPropertyValue(beanDefinition, "startupScripts");
+		assertThat(startupScripts, contains("CREATE KEYSPACE test;", "CREATE TABLE test.table;"));
+
+		List<String> shutdownScripts = getPropertyValue(beanDefinition, "shutdownScripts");
+		assertThat(shutdownScripts, contains("DROP KEYSPACE test;", "DROP USER jblum;"));
 	}
 
 	/**
