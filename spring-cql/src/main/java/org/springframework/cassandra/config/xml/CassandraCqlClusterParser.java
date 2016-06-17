@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.cassandra.config.xml;
+
+import static org.springframework.cassandra.config.xml.ParsingUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,20 +39,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.SocketOptions;
 
-import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
-import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyValue;
-import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyValue;
-import static org.springframework.cassandra.config.xml.ParsingUtils.getSourceBeanDefinition;
-
 /**
  * Parses the {@literal <cluster>} element of the XML Configuration.
- * 
+ *
  * @author Matthew T. Adams
  * @author David Webb
+ * @author John Blum
  */
 public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 
@@ -59,23 +56,23 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : DefaultCqlBeanNames.CLUSTER;
+
+		return (StringUtils.hasText(id) ? id : DefaultCqlBeanNames.CLUSTER);
 	}
 
 	@Override
 	protected AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(CassandraCqlClusterFactoryBean.class);
-		builder.getRawBeanDefinition().setSource(parserContext.extractSource(element));
-		builder.getRawBeanDefinition().setDestroyMethodName("destroy");
-		if (parserContext.isNested()) {
-			// Inner bean definition must receive same scope as containing bean.
-			builder.setScope(parserContext.getContainingBeanDefinition().getScope());
-		}
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
+			CassandraCqlClusterFactoryBean.class);
 
-		if (parserContext.isDefaultLazyInit()) {
-			// Default-lazy-init applies to custom bean definitions as well.
-			builder.setLazyInit(true);
+		builder.setLazyInit(parserContext.isDefaultLazyInit());
+		builder.getRawBeanDefinition().setDestroyMethodName("destroy");
+		builder.getRawBeanDefinition().setSource(parserContext.extractSource(element));
+
+		if (parserContext.isNested()) {
+			// inner bean definitions must have same scope as containing bean
+			builder.setScope(parserContext.getContainingBeanDefinition().getScope());
 		}
 
 		doParse(element, parserContext, builder);
@@ -84,75 +81,72 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 	}
 
 	/**
-	 * Parses the attributes on the top level element, then parses all children.
-	 * 
-	 * @param element The Element being parsed
-	 * @param context The Parser Context
-	 * @param builder The parent {@link BeanDefinitionBuilder}
+	 * Parses cluster meta-data.
+	 *
+	 * @param element {@link Element} to parse.
+	 * @param parserContext XML parser context and state.
+	 * @param builder parent {@link BeanDefinitionBuilder}.
 	 */
-	protected void doParse(Element element, ParserContext context, BeanDefinitionBuilder builder) {
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		addOptionalPropertyValue(builder, "contactPoints", element, "contact-points", null);
-		addOptionalPropertyValue(builder, "port", element, "port", null);
-		addOptionalPropertyValue(builder, "compressionType", element, "compression", null);
-		addOptionalPropertyValue(builder, "username", element, "username", null);
-		addOptionalPropertyValue(builder, "password", element, "password", null);
-		addOptionalPropertyValue(builder, "metricsEnabled", element, "metrics-enabled", null);
-		addOptionalPropertyValue(builder, "jmxReportingEnabled", element, "jmx-reporting-enabled", null);
-		addOptionalPropertyValue(builder, "sslEnabled", element, "ssl-enabled", null);
+		addOptionalPropertyReference(builder, "authProvider", element, "auth-info-provider-ref");
+		addOptionalPropertyReference(builder, "hostStateListener", element, "host-state-listener-ref");
+		addOptionalPropertyReference(builder, "latencyTracker", element, "latency-tracker-ref");
+		addOptionalPropertyReference(builder, "loadBalancingPolicy", element, "load-balancing-policy-ref");
+		addOptionalPropertyReference(builder, "reconnectionPolicy", element, "reconnection-policy-ref");
+		addOptionalPropertyReference(builder, "retryPolicy", element, "retry-policy-ref");
+		addOptionalPropertyReference(builder, "sslOptions", element, "ssl-options-ref");
 
-		addOptionalPropertyReference(builder, "authProvider", element, "auth-info-provider-ref", null);
-		addOptionalPropertyReference(builder, "loadBalancingPolicy", element, "load-balancing-policy-ref", null);
-		addOptionalPropertyReference(builder, "reconnectionPolicy", element, "reconnection-policy-ref", null);
-		addOptionalPropertyReference(builder, "retryPolicy", element, "retry-policy-ref", null);
-		addOptionalPropertyReference(builder, "sslOptions", element, "ssl-options-ref", null);
-		addOptionalPropertyReference(builder, "hostStateListener", element, "host-state-listener-ref", null);
-		addOptionalPropertyReference(builder, "latencyTracker", element, "latency-tracker-ref", null);
+		addOptionalPropertyValue(builder, "contactPoints", element, "contact-points");
+		addOptionalPropertyValue(builder, "compressionType", element, "compression");
+		addOptionalPropertyValue(builder, "jmxReportingEnabled", element, "jmx-reporting-enabled");
+		addOptionalPropertyValue(builder, "metricsEnabled", element, "metrics-enabled");
+		addOptionalPropertyValue(builder, "password", element, "password");
+		addOptionalPropertyValue(builder, "port", element, "port");
+		addOptionalPropertyValue(builder, "sslEnabled", element, "ssl-enabled");
+		addOptionalPropertyValue(builder, "username", element, "username");
 
-		parseChildElements(element, context, builder);
+		parseChildElements(element, parserContext, builder);
 	}
 
 	/**
-	 * Parse the Child Element of {@link DefaultCqlBeanNames.CLUSTER}
-	 * 
-	 * @param element The Element being parsed
-	 * @param context The Parser Context
-	 * @param builder The parent {@link BeanDefinitionBuilder}
+	 * Parses child elements of cluster.
+	 *
+	 * @param element {@link Element} to parse.
+	 * @param parserContext XML parser context and state.
+	 * @param builder parent {@link BeanDefinitionBuilder}.
 	 */
-	protected void parseChildElements(Element element, ParserContext context, BeanDefinitionBuilder builder) {
+	protected void parseChildElements(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
 		ManagedSet<BeanDefinition> keyspaceActionSpecificationBeanDefinitions = new ManagedSet<BeanDefinition>();
+
 		List<String> startupScripts = new ArrayList<String>();
 		List<String> shutdownScripts = new ArrayList<String>();
 
-		List<Element> elements = DomUtils.getChildElements(element);
-		BeanDefinition keyspaceActionSpecificationBeanDefinition = null;
+		BeanDefinitionBuilder poolingOptionsBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+			PoolingOptionsFactoryBean.class);
 
-		/*
-		 * PoolingOptionsBuilder has two potential parsing cycles so it is defined
-		 * before the child elements are iterated over, then converted to a BeanDefinition
-		 * just in time.
-		 */
-		BeanDefinitionBuilder poolingOptionsBuilder = null;
+		addOptionalPropertyReference(poolingOptionsBuilder, "initializationExecutor",
+			element, "initialization-executor-ref");
 
-		/*
-		 * Parse each of the child elements
-		 */
-		for (Element subElement : elements) {
+		addOptionalPropertyValue(poolingOptionsBuilder, "heartbeatIntervalSeconds", element, "heartbeat-interval-seconds");
+		addOptionalPropertyValue(poolingOptionsBuilder, "idleTimeoutSeconds", element, "idle-timeout-seconds");
+		addOptionalPropertyValue(poolingOptionsBuilder, "poolTimeoutMilliseconds", element, "pool-timeout-milliseconds");
+
+		// parse child elements
+		for (Element subElement : DomUtils.getChildElements(element)) {
 
 			String name = subElement.getLocalName();
 
-			if ("local-pooling-options".equals(name)) {
-				poolingOptionsBuilder = parsePoolingOptions(subElement, poolingOptionsBuilder, HostDistance.LOCAL);
+			if ("keyspace".equals(name)) {
+				keyspaceActionSpecificationBeanDefinitions.add(
+					newKeyspaceActionSpecificationBeanDefinition(subElement, parserContext));
+			} else if ("local-pooling-options".equals(name)) {
+				parseLocalPoolingOptions(subElement, poolingOptionsBuilder);
 			} else if ("remote-pooling-options".equals(name)) {
-				poolingOptionsBuilder = parsePoolingOptions(subElement, poolingOptionsBuilder, HostDistance.REMOTE);
+				parseRemotePoolingOptions(subElement, poolingOptionsBuilder);
 			} else if ("socket-options".equals(name)) {
-				builder.addPropertyValue("socketOptions", getSocketOptionsBeanDefinition(subElement, context));
-			} else if ("keyspace".equals(name)) {
-
-				keyspaceActionSpecificationBeanDefinition = getKeyspaceSpecificationBeanDefinition(subElement, context);
-				keyspaceActionSpecificationBeanDefinitions.add(keyspaceActionSpecificationBeanDefinition);
-
+				builder.addPropertyValue("socketOptions", newSocketOptionsBeanDefinition(subElement, parserContext));
 			} else if ("startup-cql".equals(name)) {
 				startupScripts.add(parseScript(subElement));
 			} else if ("shutdown-cql".equals(name)) {
@@ -160,59 +154,64 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 			}
 		}
 
-		/*
-		 * If the PoolingOptionsBuilder was initialized during parsing, process it now.
-		 */
-		if (poolingOptionsBuilder != null) {
-			builder.addPropertyValue("poolingOptions", getSourceBeanDefinition(poolingOptionsBuilder, context, element));
-		}
+		builder.addPropertyValue("keyspaceSpecifications", newKeyspaceSetFlattenerBeanDefinition(
+			element, parserContext, keyspaceActionSpecificationBeanDefinitions));
 
-		builder.addPropertyValue("keyspaceSpecifications",
-				getKeyspaceSetFlattenerBeanDefinition(element, context, keyspaceActionSpecificationBeanDefinitions));
+		builder.addPropertyValue("poolingOptions", getSourceBeanDefinition(
+			poolingOptionsBuilder, parserContext, element));
+
 		builder.addPropertyValue("startupScripts", startupScripts);
 		builder.addPropertyValue("shutdownScripts", startupScripts);
 	}
 
 	/**
-	 * Create the Single Factory Bean that will flatten all Set<Set<KeyspaceActionSpecificationFactoryBean>>
-	 * 
-	 * @param element The Element being parsed
-	 * @param context The Parser Context
-	 * @param keyspaceActionSpecificationBeanDefinitions The List of Definitions to flatten
-	 * @return A single level List of KeyspaceActionSpecifications
+	 * Returns a {@link BeanDefinition} for a {@link KeyspaceActionSpecification} object.
+	 *
+	 * @param element Element being parsed.
+	 * @param parserContext XML parser context and state.
+	 * @return the {@link BeanDefinition} or {@literal null} if action is not given.
 	 */
-	private Object getKeyspaceSetFlattenerBeanDefinition(Element element, ParserContext context,
-			ManagedSet<BeanDefinition> keyspaceActionSpecificationBeanDefinitions) {
+	BeanDefinition newKeyspaceActionSpecificationBeanDefinition(Element element, ParserContext parserContext) {
 
-		BeanDefinitionBuilder flat = BeanDefinitionBuilder.genericBeanDefinition(MultiLevelSetFlattenerFactoryBean.class);
-		flat.addPropertyValue("multiLevelSet", keyspaceActionSpecificationBeanDefinitions);
-		return getSourceBeanDefinition(flat, context, element);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
+			KeyspaceActionSpecificationFactoryBean.class);
 
+		// add required replication defaults
+		addRequiredPropertyValue(builder, "replicationStrategy",
+			KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY.name());
+
+		addRequiredPropertyValue(builder, "replicationFactor",
+			String.valueOf(KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR));
+
+		addRequiredPropertyValue(builder, "name", element, "name");
+		addOptionalPropertyValue(builder, "durableWrites", element, "durable-writes", "false");
+		addRequiredPropertyValue(builder, "action", element, "action");
+
+		parseReplication(DomUtils.getChildElementByTagName(element, "replication"), builder);
+
+		return getSourceBeanDefinition(builder, parserContext, element);
 	}
 
 	/**
 	 * Parses the keyspace replication options and adds them to the supplied {@link BeanDefinitionBuilder}.
-	 * 
-	 * @param element The Element being parsed
+	 *
+	 * @param element {@link Element} to parse.
 	 * @param builder The {@link BeanDefinitionBuilder} to add the replication to
 	 */
-	protected void parseReplication(Element element, BeanDefinitionBuilder builder) {
+	void parseReplication(Element element, BeanDefinitionBuilder builder) {
 
 		ManagedList<String> networkTopologyDataCenters = new ManagedList<String>();
 		ManagedList<String> networkTopologyReplicationFactors = new ManagedList<String>();
 
 		if (element != null) {
-
 			addOptionalPropertyValue(builder, "replicationStrategy", element, "class",
-					KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY.name());
-			addOptionalPropertyValue(builder, "replicationFactor", element, "replication-factor", ""
-					+ KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR);
+				KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY.name());
 
-			/*
-			 * DataCenters only apply to NetworkTolopogyStrategy
-			 */
-			List<Element> dcElements = DomUtils.getChildElementsByTagName(element, "data-center");
-			for (Element dataCenter : dcElements) {
+			addOptionalPropertyValue(builder, "replicationFactor", element, "replication-factor",
+				String.valueOf(KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR));
+
+			// DataCenters only apply to NetworkTopologyStrategy
+			for (Element dataCenter : DomUtils.getChildElementsByTagName(element, "data-center")) {
 				networkTopologyDataCenters.add(dataCenter.getAttribute("name"));
 				networkTopologyReplicationFactors.add(dataCenter.getAttribute("replication-factor"));
 			}
@@ -223,94 +222,82 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 	}
 
 	/**
-	 * Parse CQL Script Elements
-	 * 
-	 * @param element The Element being parsed
-	 * @return
+	 * Create the Single Factory Bean that will flatten all Set<Set<KeyspaceActionSpecificationFactoryBean>>
+	 *
+	 * @param element {@link Element} to parse.
+	 * @param parserContext XML parser context and state.
+	 * @param keyspaceActionSpecificationBeanDefinitions The List of Definitions to flatten
+	 * @return A single level List of KeyspaceActionSpecifications
 	 */
-	protected String parseScript(Element element) {
+	Object newKeyspaceSetFlattenerBeanDefinition(Element element, ParserContext parserContext,
+			ManagedSet<BeanDefinition> keyspaceActionSpecificationBeanDefinitions) {
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
+			MultiLevelSetFlattenerFactoryBean.class);
+
+		builder.addPropertyValue("multiLevelSet", keyspaceActionSpecificationBeanDefinitions);
+
+		return getSourceBeanDefinition(builder, parserContext, element);
+	}
+
+	/**
+	 * Parses local pooling options.
+	 *
+	 * @param element {@link Element} to parse.
+	 * @param builder {@link BeanDefinitionBuilder} used to build a {@link PoolingOptions} {@link BeanDefinition}.
+	 */
+	void parseLocalPoolingOptions(Element element, BeanDefinitionBuilder builder) {
+
+		addOptionalPropertyValue(builder, "localCoreConnections", element, "core-connections", null);
+		addOptionalPropertyValue(builder, "localMaxConnections", element, "max-connections", null);
+		addOptionalPropertyValue(builder, "localMaxSimultaneousRequests", element, "max-simultaneous-requests", null);
+		addOptionalPropertyValue(builder, "localMinSimultaneousRequests", element, "min-simultaneous-requests", null);
+	}
+
+	/**
+	 * Parses remote pooling options.
+	 *
+	 * @param element {@link Element} to parse.
+	 * @param builder {@link BeanDefinitionBuilder} used to build a {@link PoolingOptions} {@link BeanDefinition}.
+	 */
+	void parseRemotePoolingOptions(Element element, BeanDefinitionBuilder builder) {
+
+		addOptionalPropertyValue(builder, "remoteCoreConnections", element, "core-connections", null);
+		addOptionalPropertyValue(builder, "remoteMaxConnections", element, "max-connections", null);
+		addOptionalPropertyValue(builder, "remoteMaxSimultaneousRequests", element, "max-simultaneous-requests", null);
+		addOptionalPropertyValue(builder, "remoteMinSimultaneousRequests", element, "min-simultaneous-requests", null);
+	}
+
+	/**
+	 * Parse CQL script {@link Element}s.
+	 *
+	 * @param element {@link Element} to parse.
+	 * @return return the contents of the {@link Element}, which should contain the CQL script.
+	 */
+	String parseScript(Element element) {
 		return element.getTextContent();
 	}
 
 	/**
-	 * Returns a {@link BeanDefinition} for a {@link PoolingOptions} object.
-	 * 
-	 * @param element The Element being parsed
-	 * @param builder The {@link BeanDefinition} to use for building if one already exists
-	 * @param hostDistance The scope of the PoolingOptions to apply
-	 * @return The {@link BeanDefinitionBuilder}
-	 */
-	protected BeanDefinitionBuilder parsePoolingOptions(Element element, BeanDefinitionBuilder builder,
-			HostDistance hostDistance) {
-
-		if (builder == null) {
-			builder = BeanDefinitionBuilder.genericBeanDefinition(PoolingOptionsFactoryBean.class);
-		}
-
-		if (hostDistance.equals(HostDistance.LOCAL)) {
-			addOptionalPropertyValue(builder, "localMinSimultaneousRequests", element, "min-simultaneous-requests", null);
-			addOptionalPropertyValue(builder, "localMaxSimultaneousRequests", element, "max-simultaneous-requests", null);
-			addOptionalPropertyValue(builder, "localCoreConnections", element, "core-connections", null);
-			addOptionalPropertyValue(builder, "localMaxConnections", element, "max-connections", null);
-		}
-		if (hostDistance.equals(HostDistance.REMOTE)) {
-			addOptionalPropertyValue(builder, "remoteMinSimultaneousRequests", element, "min-simultaneous-requests", null);
-			addOptionalPropertyValue(builder, "remoteMaxSimultaneousRequests", element, "max-simultaneous-requests", null);
-			addOptionalPropertyValue(builder, "remoteCoreConnections", element, "core-connections", null);
-			addOptionalPropertyValue(builder, "remoteMaxConnections", element, "max-connections", null);
-		}
-
-		return builder;
-	}
-
-	/**
 	 * Returns a {@link BeanDefinition} for a {@link SocketOptions} object.
-	 * 
-	 * @param element The Element being parsed
-	 * @param context The ParserContext
-	 * @return The {@link BeanDefinition}
+	 *
+	 * @param element {@link Element} to parse.
+	 * @param parserContext XML parser context and state.
+	 * @return {@link BeanDefinition} for {@link SocketOptionsFactoryBean}.
 	 */
-	protected BeanDefinition getSocketOptionsBeanDefinition(Element element, ParserContext context) {
+	BeanDefinition newSocketOptionsBeanDefinition(Element element, ParserContext parserContext) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SocketOptionsFactoryBean.class);
 
-		addOptionalPropertyValue(builder, "connectTimeoutMillis", element, "connect-timeout-mls", null);
-		addOptionalPropertyValue(builder, "keepAlive", element, "keep-alive", null);
-		addOptionalPropertyValue(builder, "readTimeoutMillis", element, "read-timeout-mls", null);
-		addOptionalPropertyValue(builder, "reuseAddress", element, "reuse-address", null);
-		addOptionalPropertyValue(builder, "soLinger", element, "so-linger", null);
-		addOptionalPropertyValue(builder, "tcpNoDelay", element, "tcp-no-delay", null);
-		addOptionalPropertyValue(builder, "receiveBufferSize", element, "receive-buffer-size", null);
-		addOptionalPropertyValue(builder, "sendBufferSize", element, "send-buffer-size", null);
+		addOptionalPropertyValue(builder, "connectTimeoutMillis", element, "connect-timeout-mls");
+		addOptionalPropertyValue(builder, "keepAlive", element, "keep-alive");
+		addOptionalPropertyValue(builder, "readTimeoutMillis", element, "read-timeout-mls");
+		addOptionalPropertyValue(builder, "receiveBufferSize", element, "receive-buffer-size");
+		addOptionalPropertyValue(builder, "reuseAddress", element, "reuse-address");
+		addOptionalPropertyValue(builder, "sendBufferSize", element, "send-buffer-size");
+		addOptionalPropertyValue(builder, "soLinger", element, "so-linger");
+		addOptionalPropertyValue(builder, "tcpNoDelay", element, "tcp-no-delay");
 
-		return getSourceBeanDefinition(builder, context, element);
-	}
-
-	/**
-	 * Returns a {@link BeanDefinition} for a {@link KeyspaceActionSpecification} object.
-	 * 
-	 * @param element The Element being parsed
-	 * @param context The Parser Context
-	 * @return The {@link BeanDefinition} or {@literal null} if action is not given.
-	 */
-	private BeanDefinition getKeyspaceSpecificationBeanDefinition(Element element, ParserContext context) {
-
-		BeanDefinitionBuilder keyspaceBuilder = BeanDefinitionBuilder
-				.genericBeanDefinition(KeyspaceActionSpecificationFactoryBean.class);
-
-		// add required replication defaults
-		addRequiredPropertyValue(keyspaceBuilder, "replicationStrategy",
-				KeyspaceAttributes.DEFAULT_REPLICATION_STRATEGY.name());
-		addRequiredPropertyValue(keyspaceBuilder, "replicationFactor", "" + KeyspaceAttributes.DEFAULT_REPLICATION_FACTOR);
-
-		// now start parsing
-		addRequiredPropertyValue(keyspaceBuilder, "name", element, "name");
-		addRequiredPropertyValue(keyspaceBuilder, "action", element, "action");
-		addOptionalPropertyValue(keyspaceBuilder, "durableWrites", element, "durable-writes", "false");
-
-		Element replicationElement = DomUtils.getChildElementByTagName(element, "replication");
-		parseReplication(replicationElement, keyspaceBuilder);
-
-		return getSourceBeanDefinition(keyspaceBuilder, context, element);
+		return getSourceBeanDefinition(builder, parserContext, element);
 	}
 }

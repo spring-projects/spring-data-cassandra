@@ -15,7 +15,8 @@
  */
 package org.springframework.cassandra.config;
 
-import org.springframework.beans.factory.DisposableBean;
+import java.util.concurrent.Executor;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -23,218 +24,446 @@ import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
 
 /**
- * Pooling Options Factory Bean.
+ * Spring {@link FactoryBean} for the Cassandra Java driver {@link PoolingOptions}.
  *
  * @author Matthew T. Adams
  * @author David Webb
  * @author Mark Paluch
+ * @author John Blum
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see com.datastax.driver.core.PoolingOptions
  */
-public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, InitializingBean, DisposableBean {
+@SuppressWarnings("unused")
+public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, InitializingBean {
 
-	private Integer localMinSimultaneousRequests;
-	private Integer localMaxSimultaneousRequests;
+	private Executor initializationExecutor;
+
+	private Integer heartbeatIntervalSeconds;
+	private Integer idleTimeoutSeconds;
 	private Integer localCoreConnections;
 	private Integer localMaxConnections;
-	private Integer remoteMinSimultaneousRequests;
-	private Integer remoteMaxSimultaneousRequests;
+	private Integer localMaxSimultaneousRequests;
+	private Integer localMinSimultaneousRequests;
+	private Integer poolTimeoutMilliseconds;
 	private Integer remoteCoreConnections;
 	private Integer remoteMaxConnections;
+	private Integer remoteMaxSimultaneousRequests;
+	private Integer remoteMinSimultaneousRequests;
 
 	PoolingOptions poolingOptions;
 
-	@Override
-	public void destroy() throws Exception {
-		localMinSimultaneousRequests = null;
-		localMaxSimultaneousRequests = null;
-		localCoreConnections = null;
-		localMaxConnections = null;
-		remoteMinSimultaneousRequests = null;
-		remoteMaxSimultaneousRequests = null;
-		remoteCoreConnections = null;
-		remoteMaxConnections = null;
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		poolingOptions = new PoolingOptions();
+		poolingOptions = newPoolingOptions();
 
-		if (localMaxConnections != null) {
-			poolingOptions.setMaxConnectionsPerHost(HostDistance.LOCAL, localMaxConnections);
+		if (heartbeatIntervalSeconds != null) {
+			poolingOptions.setHeartbeatIntervalSeconds(heartbeatIntervalSeconds);
 		}
 
-		if (localCoreConnections != null) {
-			poolingOptions.setCoreConnectionsPerHost(HostDistance.LOCAL, localCoreConnections);
+		if (idleTimeoutSeconds != null) {
+			poolingOptions.setIdleTimeoutSeconds(idleTimeoutSeconds);
 		}
 
-		if (localMinSimultaneousRequests != null) {
-			/*
-			 * If the new min is greater than the current Max, set the current max to the new min first.
-			 * This is enforced by the DSE Driver so you cannot set a new min/max together if either one falls outside of the default 25-100 range.
-			 */
-			int currentMax = poolingOptions.getNewConnectionThreshold(HostDistance.LOCAL);
-			if (currentMax < localMinSimultaneousRequests) {
-				poolingOptions.setNewConnectionThreshold(HostDistance.LOCAL,
-						localMinSimultaneousRequests);
-			}
+		if (initializationExecutor != null) {
+			poolingOptions.setInitializationExecutor(initializationExecutor);
 		}
 
-		if (localMaxSimultaneousRequests != null) {
-			poolingOptions.setMaxRequestsPerConnection(HostDistance.LOCAL, localMaxSimultaneousRequests);
+		if (poolTimeoutMilliseconds != null) {
+			poolingOptions.setPoolTimeoutMillis(poolTimeoutMilliseconds);
 		}
 
-		if (remoteMaxConnections != null) {
-			poolingOptions.setMaxConnectionsPerHost(HostDistance.REMOTE, remoteMaxConnections);
-		}
+		HostDistancePoolingOptions local = LocalHostDistancePoolingOptions.create(localCoreConnections,
+			localMaxConnections, localMaxSimultaneousRequests, localMinSimultaneousRequests);
 
-		if (remoteCoreConnections != null) {
-			poolingOptions.setCoreConnectionsPerHost(HostDistance.REMOTE, remoteCoreConnections);
-		}
+		local.setMaxConnectionsPerHost(poolingOptions);
+		local.setCoreConnectionsPerHost(poolingOptions);
+		local.setMaxRequestsPerConnection(poolingOptions);
+		local.setNewConnectionThreshold(poolingOptions);
 
-		if (remoteMinSimultaneousRequests != null) {
-			/*
-			 * If the new min is greater than the current Max, set the current max to the new min first.
-			 * This is enforced by the DSE Driver so you cannot set a new min/max together if either one falls outside of the default 25-100 range.
-			 */
-			int currentMax = poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE);
-			if (currentMax < remoteMinSimultaneousRequests) {
-				poolingOptions.setNewConnectionThreshold(HostDistance.REMOTE,
-						remoteMinSimultaneousRequests);
-			}
-		}
+		HostDistancePoolingOptions remote = RemoteHostDistancePoolingOptions.create(remoteCoreConnections,
+			remoteMaxConnections, remoteMaxSimultaneousRequests, remoteMinSimultaneousRequests);
 
-		if (remoteMaxSimultaneousRequests != null) {
-			poolingOptions.setMaxRequestsPerConnection(HostDistance.REMOTE,
-					remoteMaxSimultaneousRequests);
-		}
-
+		remote.setMaxConnectionsPerHost(poolingOptions);
+		remote.setCoreConnectionsPerHost(poolingOptions);
+		remote.setMaxRequestsPerConnection(poolingOptions);
+		remote.setNewConnectionThreshold(poolingOptions);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.datastax.driver.core.PoolingOptions
+	 */
+	PoolingOptions newPoolingOptions() {
+		return new PoolingOptions();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
 	@Override
 	public PoolingOptions getObject() throws Exception {
 		return poolingOptions;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
 	@Override
 	public Class<?> getObjectType() {
-		return PoolingOptions.class;
+		return (poolingOptions != null ? poolingOptions.getClass() : PoolingOptions.class);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+	 */
 	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
 	/**
-	 * @return Returns the localMinSimultaneousRequests.
+	 * Sets the heart beat interval, after which a message is sent on an idle connection to make sure it's still alive.
+	 *
+	 * @param heartbeatIntervalSeconds interval in seconds between heartbeat messages to keep idle connections alive.
 	 */
-	public Integer getLocalMinSimultaneousRequests() {
-		return localMinSimultaneousRequests;
+	public void setHeartbeatIntervalSeconds(Integer heartbeatIntervalSeconds) {
+		this.heartbeatIntervalSeconds = heartbeatIntervalSeconds;
 	}
 
 	/**
-	 * @param localMinSimultaneousRequests The localMinSimultaneousRequests to set.
+	 * Gets the heart beat interval, after which a message is sent on an idle connection to make sure it's still alive.
+	 *
+	 * @return the {@code heartbeatIntervalSeconds}.
 	 */
-	public void setLocalMinSimultaneousRequests(Integer localMinSimultaneousRequests) {
-		this.localMinSimultaneousRequests = localMinSimultaneousRequests;
+	public Integer getHeartbeatIntervalSeconds() {
+		return heartbeatIntervalSeconds;
 	}
 
 	/**
-	 * @return Returns the localMaxSimultaneousRequests.
+	 * Sets the timeout before an idle connection is removed.
+	 *
+	 * @param idleTimeoutSeconds idle timeout in seconds before a connection is removed.
 	 */
-	public Integer getLocalMaxSimultaneousRequests() {
-		return localMaxSimultaneousRequests;
+	public void setIdleTimeoutSeconds(Integer idleTimeoutSeconds) {
+		this.idleTimeoutSeconds = idleTimeoutSeconds;
 	}
 
 	/**
-	 * @param localMaxSimultaneousRequests The localMaxSimultaneousRequests to set.
+	 * Get the timeout before an idle connection is removed.
+	 *
+	 * @return the {@code idleTimeoutSeconds}.
 	 */
-	public void setLocalMaxSimultaneousRequests(Integer localMaxSimultaneousRequests) {
-		this.localMaxSimultaneousRequests = localMaxSimultaneousRequests;
+	public Integer getIdleTimeoutSeconds() {
+		return idleTimeoutSeconds;
 	}
 
 	/**
-	 * @return Returns the localCoreConnections.
+	 * Sets the {@link Executor} to use for connection initialization.
+	 *
+	 * @param initializationExecutor {@link Executor} used to initialize the connection.
 	 */
-	public Integer getLocalCoreConnections() {
-		return localCoreConnections;
+	public void setInitializationExecutor(Executor initializationExecutor) {
+		this.initializationExecutor = initializationExecutor;
 	}
 
 	/**
-	 * @param localCoreConnections The localCoreConnections to set.
+	 * Gets the {@link Executor} to use for connection initialization.
+	 *
+	 * @return the {@code initializationExecutor}.
+	 */
+	public Executor getInitializationExecutor() {
+		return initializationExecutor;
+	}
+
+	/**
+	 * Sets the timeout when trying to acquire a connection from a host's pool.
+	 *
+	 * @param poolTimeoutMilliseconds timeout in milliseconds used to acquire a connection from the host's pool.
+	 */
+	public void setPoolTimeoutMilliseconds(Integer poolTimeoutMilliseconds) {
+		this.poolTimeoutMilliseconds = poolTimeoutMilliseconds;
+	}
+
+	/**
+	 * Gets the timeout when trying to acquire a connection from a host's pool.
+	 *
+	 * @return the {@code poolTimeoutMilliseconds}.
+	 */
+	public Integer getPoolTimeoutMilliseconds() {
+		return poolTimeoutMilliseconds;
+	}
+
+	/**
+	 * Sets the core number of connections per host for the {@link HostDistance#LOCAL} scope.
+	 *
+	 * @param localCoreConnections core number of local connections per host.
 	 */
 	public void setLocalCoreConnections(Integer localCoreConnections) {
 		this.localCoreConnections = localCoreConnections;
 	}
 
 	/**
-	 * @return Returns the localMaxConnections.
+	 * Gets the core number of connections per host for the {@link HostDistance#LOCAL} scope.
+	 *
+	 * @return the {@code localCoreConnections).
 	 */
-	public Integer getLocalMaxConnections() {
-		return localMaxConnections;
+	public Integer getLocalCoreConnections() {
+		return localCoreConnections;
 	}
 
 	/**
-	 * @param localMaxConnections The localMaxConnections to set.
+	 * Sets the maximum number of connections per host for the {@link HostDistance#LOCAL} scope.
+	 *
+	 * @param localMaxConnections max number of local connections per host.
 	 */
 	public void setLocalMaxConnections(Integer localMaxConnections) {
 		this.localMaxConnections = localMaxConnections;
 	}
 
 	/**
-	 * @return Returns the remoteMinSimultaneousRequests.
+	 * Gets the maximum number of connections per host for the {@link HostDistance#LOCAL} scope.
+	 *
+	 * @return the {@code localMaxConnections}.
 	 */
-	public Integer getRemoteMinSimultaneousRequests() {
-		return remoteMinSimultaneousRequests;
+	public Integer getLocalMaxConnections() {
+		return localMaxConnections;
 	}
 
 	/**
-	 * @param remoteMinSimultaneousRequests The remoteMinSimultaneousRequests to set.
+	 * Sets the maximum number of requests per connection for the {@link HostDistance#LOCAL} scope.
+	 *
+	 * @param localMaxSimultaneousRequests max number of requests for local connections.
 	 */
-	public void setRemoteMinSimultaneousRequests(Integer remoteMinSimultaneousRequests) {
-		this.remoteMinSimultaneousRequests = remoteMinSimultaneousRequests;
+	public void setLocalMaxSimultaneousRequests(Integer localMaxSimultaneousRequests) {
+		this.localMaxSimultaneousRequests = localMaxSimultaneousRequests;
 	}
 
 	/**
-	 * @return Returns the remoteMaxSimultaneousRequests.
+	 * Gets the maximum number of requests per connection for the {@link HostDistance#LOCAL} scope.
+	 *
+	 * @return the {@code localMaxSimultaneousRequests}.
 	 */
-	public Integer getRemoteMaxSimultaneousRequests() {
-		return remoteMaxSimultaneousRequests;
+	public Integer getLocalMaxSimultaneousRequests() {
+		return localMaxSimultaneousRequests;
 	}
 
 	/**
-	 * @param remoteMaxSimultaneousRequests The remoteMaxSimultaneousRequests to set.
+	 * Sets the threshold that triggers the creation of a new connection to a host
+	 * for the {@link HostDistance#LOCAL} scope.
+	 *
+	 * @param localMinSimultaneousRequests threshold triggering the creation of local connections to a host.
 	 */
-	public void setRemoteMaxSimultaneousRequests(Integer remoteMaxSimultaneousRequests) {
-		this.remoteMaxSimultaneousRequests = remoteMaxSimultaneousRequests;
+	public void setLocalMinSimultaneousRequests(Integer localMinSimultaneousRequests) {
+		this.localMinSimultaneousRequests = localMinSimultaneousRequests;
 	}
 
 	/**
-	 * @return Returns the remoteCoreConnections.
+	 * Gets the threshold that triggers the creation of a new connection to a host
+	 * for the {@link HostDistance#LOCAL} scope.
+	 *
+	 * @return the {@code localMinSimultaneousRequests}.
 	 */
-	public Integer getRemoteCoreConnections() {
-		return remoteCoreConnections;
+	public Integer getLocalMinSimultaneousRequests() {
+		return localMinSimultaneousRequests;
 	}
 
 	/**
-	 * @param remoteCoreConnections The remoteCoreConnections to set.
+	 * Sets the core number of connections per host for the {@link HostDistance#REMOTE} scope.
+	 *
+	 * @param remoteCoreConnections core number of remote connections per host.
 	 */
 	public void setRemoteCoreConnections(Integer remoteCoreConnections) {
 		this.remoteCoreConnections = remoteCoreConnections;
 	}
 
 	/**
-	 * @return Returns the remoteMaxConnections.
+	 * Gets the core number of connections per host for the {@link HostDistance#REMOTE} scope.
+	 *
+	 * @return the {@code remoteCoreConnections).
+	 */
+	public Integer getRemoteCoreConnections() {
+		return remoteCoreConnections;
+	}
+
+	/**
+	 * Sets the maximum number of connections per host for the {@link HostDistance#REMOTE} scope.
+	 *
+	 * @param remoteMaxConnections max number of remote connections per host.
+	 */
+	public void setRemoteMaxConnections(Integer remoteMaxConnections) {
+		this.remoteMaxConnections = remoteMaxConnections;
+	}
+
+	/**
+	 * Gets the maximum number of connections per host for the {@link HostDistance#REMOTE} scope.
+	 *
+	 * @return the {@code remoteMaxConnections}.
 	 */
 	public Integer getRemoteMaxConnections() {
 		return remoteMaxConnections;
 	}
 
 	/**
-	 * @param remoteMaxConnections The remoteMaxConnections to set.
+	 * Sets the maximum number of requests per connection for the {@link HostDistance#REMOTE} scope.
+	 *
+	 * @param remoteMaxSimultaneousRequests max number of requests for local connections.
 	 */
-	public void setRemoteMaxConnections(Integer remoteMaxConnections) {
-		this.remoteMaxConnections = remoteMaxConnections;
+	public void setRemoteMaxSimultaneousRequests(Integer remoteMaxSimultaneousRequests) {
+		this.remoteMaxSimultaneousRequests = remoteMaxSimultaneousRequests;
 	}
 
+	/**
+	 * Gets the maximum number of requests per connection for the {@link HostDistance#REMOTE} scope.
+	 *
+	 * @return the {@code remoteMaxSimultaneousRequests}.
+	 */
+	public Integer getRemoteMaxSimultaneousRequests() {
+		return remoteMaxSimultaneousRequests;
+	}
+
+	/**
+	 * Sets the threshold that triggers the creation of a new connection to a host
+	 * for the {@link HostDistance#REMOTE} scope.
+	 *
+	 * @param remoteMinSimultaneousRequests threshold triggering the creation of remote connections to a host.
+	 */
+	public void setRemoteMinSimultaneousRequests(Integer remoteMinSimultaneousRequests) {
+		this.remoteMinSimultaneousRequests = remoteMinSimultaneousRequests;
+	}
+
+	/**
+	 * Gets the threshold that triggers the creation of a new connection to a host
+	 * for the {@link HostDistance#REMOTE} scope.
+	 *
+	 * @return the {@code remoteMinSimultaneousRequests}.
+	 */
+	public Integer getRemoteMinSimultaneousRequests() {
+		return remoteMinSimultaneousRequests;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.datastax.driver.core.HostDistance
+	 * @see com.datastax.driver.core.PoolingOptions
+	 */
+	static abstract class HostDistancePoolingOptions {
+
+		Integer coreConnectionsPerHost;
+		Integer maxConnectionsPerHost;
+		Integer maxRequestsPerConnection;
+		Integer newConnectionThreshold;
+
+		HostDistancePoolingOptions(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
+			Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
+
+			this.coreConnectionsPerHost = coreConnectionsPerHost;
+			this.maxConnectionsPerHost = maxConnectionsPerHost;
+			this.maxRequestsPerConnection = maxRequestsPerConnection;
+			this.newConnectionThreshold = newConnectionThreshold;
+		}
+
+		abstract HostDistance getHostDistance();
+
+		PoolingOptions setCoreConnectionsPerHost(PoolingOptions poolingOptions) {
+			if (coreConnectionsPerHost != null) {
+				poolingOptions.setCoreConnectionsPerHost(getHostDistance(), coreConnectionsPerHost);
+			}
+
+			return poolingOptions;
+		}
+
+		PoolingOptions setMaxConnectionsPerHost(PoolingOptions poolingOptions) {
+			if (maxConnectionsPerHost != null) {
+				poolingOptions.setMaxConnectionsPerHost(getHostDistance(), maxConnectionsPerHost);
+			}
+
+			return poolingOptions;
+		}
+
+		PoolingOptions setMaxRequestsPerConnection(PoolingOptions poolingOptions) {
+			if (maxRequestsPerConnection != null) {
+				poolingOptions.setMaxRequestsPerConnection(getHostDistance(), maxRequestsPerConnection);
+			}
+
+			return poolingOptions;
+		}
+
+		/*
+		 * If the new min is greater than the current max, set the current max to the new min first.
+		 * This is enforced by the DSE Driver so you cannot set a new min/max together if either one falls outside
+		 * of the default 25-100 range.
+		 */
+		PoolingOptions setNewConnectionThreshold(PoolingOptions poolingOptions) {
+			if (newConnectionThreshold != null) {
+				int currentNewConnectionThreshold = poolingOptions.getNewConnectionThreshold(getHostDistance());
+
+				if (currentNewConnectionThreshold < newConnectionThreshold) {
+					poolingOptions.setNewConnectionThreshold(getHostDistance(), newConnectionThreshold);
+				}
+			}
+
+			return poolingOptions;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.datastax.driver.core.PoolingOptions
+	 * @see com.datastax.driver.core.HostDistance#LOCAL
+	 */
+	static class LocalHostDistancePoolingOptions extends HostDistancePoolingOptions {
+
+		static LocalHostDistancePoolingOptions create(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
+				Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
+
+			return new LocalHostDistancePoolingOptions(coreConnectionsPerHost, maxConnectionsPerHost,
+				maxRequestsPerConnection, newConnectionThreshold);
+		}
+
+		LocalHostDistancePoolingOptions(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
+				Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
+
+			super(coreConnectionsPerHost, maxConnectionsPerHost, maxRequestsPerConnection, newConnectionThreshold);
+		}
+
+		@Override
+		HostDistance getHostDistance() {
+			return HostDistance.LOCAL;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.datastax.driver.core.PoolingOptions
+	 * @see com.datastax.driver.core.HostDistance#REMOTE
+	 */
+	static class RemoteHostDistancePoolingOptions extends HostDistancePoolingOptions {
+
+		static RemoteHostDistancePoolingOptions create(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
+			Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
+
+			return new RemoteHostDistancePoolingOptions(coreConnectionsPerHost, maxConnectionsPerHost,
+				maxRequestsPerConnection, newConnectionThreshold);
+		}
+
+		RemoteHostDistancePoolingOptions(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
+			Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
+
+			super(coreConnectionsPerHost, maxConnectionsPerHost, maxRequestsPerConnection, newConnectionThreshold);
+		}
+
+		@Override
+		public HostDistance getHostDistance() {
+			return HostDistance.REMOTE;
+		}
+	}
 }
