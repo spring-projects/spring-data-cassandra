@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.springframework.data.cassandra.domain.Person;
 
 /**
  * Unit tests for {@link ConverterRegistration}.
@@ -71,9 +72,5 @@ public class ConverterRegistrationUnitTests {
 		ConverterRegistration context = new ConverterRegistration(String.class, Class.class, true, true);
 		assertThat(context.isWriting(), is(true));
 		assertThat(context.isReading(), is(true));
-	}
-
-	public static class Person {
-
 	}
 }

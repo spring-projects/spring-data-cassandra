@@ -56,6 +56,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  * @author Mark Paluch
  * @soundtrack DJ THT meets Scarlet - Live 2 Dance (Extended Mix) (Zgin Remix)
  */
+@SuppressWarnings("Since15")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
@@ -519,6 +520,201 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 		TimeEntity loaded = cassandraOperations.selectOneById(TimeEntity.class, id);
 
 		assertThat(loaded.getTime(), is(equalTo(time)));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteLocalDate() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setLocalDate(java.time.LocalDate.of(2010, 7, 4));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getLocalDate(), is(equalTo(entity.getLocalDate())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteLocalDateTime() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setLocalDateTime(java.time.LocalDateTime.of(2010, 7, 4, 1, 2, 3));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getLocalDateTime(), is(equalTo(entity.getLocalDateTime())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteLocalTime() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setLocalTime(java.time.LocalTime.of(1, 2, 3));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getLocalTime(), is(equalTo(entity.getLocalTime())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteInstant() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setInstant(java.time.Instant.now());
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getInstant(), is(equalTo(entity.getInstant())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteZoneId() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setZoneId(java.time.ZoneId.of("Europe/Paris"));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getZoneId(), is(equalTo(entity.getZoneId())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteJodaLocalDate() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setJodaLocalDate(new org.joda.time.LocalDate(2010, 7, 4));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getJodaLocalDate(), is(equalTo(entity.getJodaLocalDate())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteJodaDateMidnight() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setJodaDateMidnight(new org.joda.time.DateMidnight(2010, 7, 4));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getJodaDateMidnight(), is(equalTo(entity.getJodaDateMidnight())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteJodaDateTime() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setJodaDateTime(new org.joda.time.DateTime(2010, 7, 4, 1, 2, 3));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getJodaDateTime(), is(equalTo(entity.getJodaDateTime())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteBpLocalDate() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setBpLocalDate(org.threeten.bp.LocalDate.of(2010, 7, 4));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getBpLocalDate(), is(equalTo(entity.getBpLocalDate())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteBpLocalDateTime() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setBpLocalDateTime(org.threeten.bp.LocalDateTime.of(2010, 7, 4, 1, 2, 3));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getBpLocalDateTime(), is(equalTo(entity.getBpLocalDateTime())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteBpLocalTime() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setBpLocalTime(org.threeten.bp.LocalTime.of(1, 2, 3));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getBpLocalTime(), is(equalTo(entity.getBpLocalTime())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteBpInstant() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setBpInstant(org.threeten.bp.Instant.now());
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getBpZoneId(), is(equalTo(entity.getBpZoneId())));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReadAndWriteBpZoneId() throws Exception {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setBpZoneId(org.threeten.bp.ZoneId.of("Europe/Paris"));
+
+		cassandraOperations.insert(entity);
+		AllPossibleTypes loaded = cassandraOperations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getBpZoneId(), is(equalTo(entity.getBpZoneId())));
 	}
 
 	/**

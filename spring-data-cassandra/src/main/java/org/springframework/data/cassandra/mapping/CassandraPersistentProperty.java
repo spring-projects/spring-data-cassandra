@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 
@@ -32,9 +33,10 @@ import com.datastax.driver.core.DataType;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author David T. Webb
+ * @author Mark Paluch
  */
-public interface CassandraPersistentProperty extends PersistentProperty<CassandraPersistentProperty>,
-		ApplicationContextAware {
+public interface CassandraPersistentProperty
+		extends PersistentProperty<CassandraPersistentProperty>, ApplicationContextAware {
 
 	/**
 	 * Whether the property is a composite primary key.
@@ -78,7 +80,11 @@ public interface CassandraPersistentProperty extends PersistentProperty<Cassandr
 	Ordering getPrimaryKeyOrdering();
 
 	/**
-	 * The column's data type. Not valid for a composite primary key, in which case this method returns null.
+	 * The column's data type. Not valid for a composite primary key.
+	 * 
+	 * @return the Cassandra {@link DataType}
+	 * @throws InvalidDataAccessApiUsageException if the {@link DataType} cannot be resolved
+	 * @see CassandraType
 	 */
 	DataType getDataType();
 

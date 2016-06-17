@@ -29,6 +29,7 @@ import org.springframework.data.util.TypeInformation;
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.Row;
 
 /**
  * Simple constant holder for a {@link SimpleTypeHolder} enriched with Cassandra specific simple types.
@@ -61,6 +62,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		Set<Class<?>> simpleTypes = getCassandraPrimitiveTypes(codecRegistry);
 		simpleTypes.add(Number.class);
+		simpleTypes.add(Row.class);
 
 		classToDataType = Collections.unmodifiableMap(classToDataType(primitiveWrappers, codecRegistry));
 		nameToDataType = Collections.unmodifiableMap(nameToDataType());

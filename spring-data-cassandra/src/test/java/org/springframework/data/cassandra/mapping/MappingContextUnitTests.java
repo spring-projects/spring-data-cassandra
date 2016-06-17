@@ -19,12 +19,17 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link BasicCassandraMappingContext}.
@@ -34,106 +39,14 @@ import org.springframework.data.mapping.model.MappingException;
  */
 public class MappingContextUnitTests {
 
-	public static class Transient {}
-
-	@Table
-	public static class X {
-		@PrimaryKey String key;
-	}
-
-	@Table
-	public static class Y {
-		@PrimaryKey String key;
-	}
-
-	@Table
-	public static class PrimaryKeyOnProperty {
-
-		String key;
-
-		@PrimaryKey(value = "foo")
-		public String getKey() {
-			return key;
-		}
-
-		public void setKey(String key) {
-			this.key = key;
-		}
-	}
-
-	@Table
-	public static class PrimaryKeyColumnsOnProperty {
-
-		String firstname;
-		String lastname;
-
-		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
-		public String getFirstname() {
-			return firstname;
-		}
-
-		public void setFirstname(String firstname) {
-			this.firstname = firstname;
-		}
-
-		@PrimaryKeyColumn(name = "mylastname", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
-		public String getLastname() {
-			return lastname;
-		}
-
-		public void setLastname(String lastname) {
-			this.lastname = lastname;
-		}
-	}
-	
-	@Table
-	public static class PrimaryKeyOnPropertyWithPrimaryKeyClass {
-
-		CompositePrimaryKeyClassWithProperties key;
-
-		@PrimaryKey
-		public CompositePrimaryKeyClassWithProperties getKey() {
-			return key;
-		}
-
-		public void setKey(CompositePrimaryKeyClassWithProperties key) {
-			this.key = key;
-		}
-	}
-
-	@PrimaryKeyClass
-	public static class CompositePrimaryKeyClassWithProperties implements Serializable{
-
-		String firstname;
-		String lastname;
-
-		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
-		public String getFirstname() {
-			return firstname;
-		}
-
-		public void setFirstname(String firstname) {
-			this.firstname = firstname;
-		}
-
-		@PrimaryKeyColumn(name = "mylastname", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
-		public String getLastname() {
-			return lastname;
-		}
-
-		public void setLastname(String lastname) {
-			this.lastname = lastname;
-		}
-	}
-
 	BasicCassandraMappingContext ctx = new BasicCassandraMappingContext();
 
 	@Test(expected = MappingException.class)
 	public void testGetPersistentEntityOfTransientType() {
-
-		CassandraPersistentEntity<?> entity = ctx.getPersistentEntity(Transient.class);
-
+		ctx.getPersistentEntity(Transient.class);
 	}
+
+	private static class Transient {}
 
 	@Test
 	public void testGetExistingPersistentEntityHappyPath() {
@@ -143,6 +56,16 @@ public class MappingContextUnitTests {
 		assertTrue(ctx.contains(X.class));
 		assertNotNull(ctx.getExistingPersistentEntity(X.class));
 		assertFalse(ctx.contains(Y.class));
+	}
+
+	@Table
+	private static class X {
+		@PrimaryKey String key;
+	}
+
+	@Table
+	private static class Y {
+		@PrimaryKey String key;
 	}
 
 	/**
@@ -159,6 +82,21 @@ public class MappingContextUnitTests {
 		List<CqlIdentifier> columnNames = idProperty.getColumnNames();
 		assertThat(columnNames, hasSize(1));
 		assertThat(columnNames.get(0).toCql(), is(equalTo("foo")));
+	}
+
+	@Table
+	private static class PrimaryKeyOnProperty {
+
+		String key;
+
+		@PrimaryKey(value = "foo")
+		public String getKey() {
+			return key;
+		}
+
+		public void setKey(String key) {
+			this.key = key;
+		}
 	}
 
 	/**
@@ -182,32 +120,133 @@ public class MappingContextUnitTests {
 		assertThat(lastname.isClusterKeyColumn(), is(true));
 		assertThat(lastname.getColumnName().toCql(), is(equalTo("mylastname")));
 	}
-	
+
+	@Table
+	private static class PrimaryKeyColumnsOnProperty {
+
+		String firstname;
+		String lastname;
+
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+		public String getFirstname() {
+			return firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		@PrimaryKeyColumn(name = "mylastname", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+		public String getLastname() {
+			return lastname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
+	}
+
 	/**
 	 * @see DATACASS-248
 	 */
 	@Test
 	public void primaryKeyClassWithprimaryKeyColumnsOnPropertyShouldWork() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getPersistentEntity(PrimaryKeyOnPropertyWithPrimaryKeyClass.class);
-		CassandraPersistentEntity<?> primaryKeyClass = ctx.getPersistentEntity(CompositePrimaryKeyClassWithProperties.class);
+		CassandraPersistentEntity<?> persistentEntity = ctx
+				.getPersistentEntity(PrimaryKeyOnPropertyWithPrimaryKeyClass.class);
+		CassandraPersistentEntity<?> primaryKeyClass = ctx
+				.getPersistentEntity(CompositePrimaryKeyClassWithProperties.class);
 
 		assertThat(persistentEntity.isCompositePrimaryKey(), is(false));
 		assertThat(persistentEntity.getPersistentProperty("key").isCompositePrimaryKey(), is(true));
-		
+
 		assertThat(primaryKeyClass.isCompositePrimaryKey(), is(true));
 		assertThat(primaryKeyClass.getCompositePrimaryKeyProperties(), hasSize(2));
-		
+
 		CassandraPersistentProperty firstname = primaryKeyClass.getPersistentProperty("firstname");
 		assertThat(firstname.isPrimaryKeyColumn(), is(true));
 		assertThat(firstname.isPartitionKeyColumn(), is(true));
 		assertThat(firstname.isClusterKeyColumn(), is(false));
 		assertThat(firstname.getColumnName().toCql(), is(equalTo("firstname")));
-		
+
 		CassandraPersistentProperty lastname = primaryKeyClass.getPersistentProperty("lastname");
 		assertThat(lastname.isPrimaryKeyColumn(), is(true));
 		assertThat(lastname.isPartitionKeyColumn(), is(false));
 		assertThat(lastname.isClusterKeyColumn(), is(true));
 		assertThat(lastname.getColumnName().toCql(), is(equalTo("mylastname")));
+	}
+
+	@Table
+	private static class PrimaryKeyOnPropertyWithPrimaryKeyClass {
+
+		CompositePrimaryKeyClassWithProperties key;
+
+		@PrimaryKey
+		public CompositePrimaryKeyClassWithProperties getKey() {
+			return key;
+		}
+
+		public void setKey(CompositePrimaryKeyClassWithProperties key) {
+			this.key = key;
+		}
+	}
+
+	@PrimaryKeyClass
+	private static class CompositePrimaryKeyClassWithProperties implements Serializable {
+
+		String firstname;
+		String lastname;
+
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+		public String getFirstname() {
+			return firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		@PrimaryKeyColumn(name = "mylastname", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+		public String getLastname() {
+			return lastname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldCreatePersistentEntityIfNoConversionRegistered() {
+
+		ctx.setCustomConversions(new CustomConversions(Collections.EMPTY_LIST));
+		assertThat(ctx.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(true));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldNotCreateEntitiesForCustomConvertedTypes() {
+
+		List<?> converters = Arrays.asList(new HumanToStringConverter());
+		ctx.setCustomConversions(new CustomConversions(converters));
+
+		assertThat(ctx.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(false));
+	}
+
+	private static class Human {
+
+	}
+
+	private static class HumanToStringConverter implements Converter<Human, String> {
+
+		@Override
+		public String convert(Human source) {
+			return "hello";
+		}
 	}
 }

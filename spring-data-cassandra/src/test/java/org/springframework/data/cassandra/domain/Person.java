@@ -13,35 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.repository.querymethods.declared;
+package org.springframework.data.cassandra.domain;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
-
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.Indexed;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.Table;
 
 import lombok.Data;
 
 /**
- * Sample domain class.
+ * @author Mark Paluch
  */
 @Table
 @Data
 public class Person {
 
-	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) private String lastname;
-
-	@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1) private String firstname;
-
-	private String nickname;
-	private Date birthDate;
-	private int numberOfChildren;
-	private boolean cool;
-
-	private LocalDate createdDate;
-	private ZoneId zoneId;
+	@Id String id;
+	String firstname;
 }

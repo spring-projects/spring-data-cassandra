@@ -59,6 +59,18 @@
 			<optional>true</optional>
 		</dependency>
 
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.threeten</groupId>
+			<artifactId>threetenbp</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- CDI -->
 		<dependency>
 			<groupId>javax.enterprise</groupId>
@@ -107,12 +119,6 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
 			<scope>test</scope>
 		</dependency>
 
