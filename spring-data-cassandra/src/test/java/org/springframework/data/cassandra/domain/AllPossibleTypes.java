@@ -29,8 +29,10 @@ import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.test.integration.mapping.types.CassandraTypeMappingIntegrationTest.Condition;
+import org.threeten.bp.LocalDateTime;
 
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.LocalDate;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -88,4 +90,23 @@ public class AllPossibleTypes {
 	private Map<String, String> mapOfString;
 
 	private Condition anEnum;
+
+	// supported by conversion
+	java.time.LocalDate localDate;
+	java.time.LocalDateTime localDateTime;
+	java.time.LocalTime localTime;
+	java.time.Instant instant;
+	java.time.ZoneId zoneId;
+
+	org.joda.time.LocalDate jodaLocalDate;
+	org.joda.time.LocalDateTime jodaLocalDateTime;
+	org.joda.time.DateTime jodaDateTime;
+	org.joda.time.DateMidnight jodaDateMidnight;
+
+	org.threeten.bp.LocalDate bpLocalDate;
+	org.threeten.bp.LocalDateTime bpLocalDateTime;
+	org.threeten.bp.LocalTime bpLocalTime;
+	org.threeten.bp.Instant bpInstant;
+	org.threeten.bp.ZoneId bpZoneId;
+
 }

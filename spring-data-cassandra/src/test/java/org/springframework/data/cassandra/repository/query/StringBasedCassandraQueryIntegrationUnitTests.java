@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.repository.querymethods.declared;
+package org.springframework.data.cassandra.repository.query;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +32,7 @@ import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.repository.Query;
-import org.springframework.data.cassandra.repository.query.CassandraParametersParameterAccessor;
-import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
-import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
+import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
@@ -49,14 +48,15 @@ import com.datastax.driver.core.querybuilder.Select;
  *
  * @author Matthew T. Adams
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
-public class StringBasedCassandraQueryIntegrationTests {
+public class StringBasedCassandraQueryIntegrationUnitTests {
 
 	@Mock CassandraOperations operations;
 
 	RepositoryMetadata metadata;
-	CassandraConverter converter;
+	MappingCassandraConverter converter;
 	ProjectionFactory factory;
 
 	@Before
@@ -67,6 +67,8 @@ public class StringBasedCassandraQueryIntegrationTests {
 		this.metadata = AbstractRepositoryMetadata.getMetadata(SampleRepository.class);
 		this.converter = new MappingCassandraConverter(new BasicCassandraMappingContext());
 		this.factory = new SpelAwareProxyProjectionFactory();
+
+		this.converter.afterPropertiesSet();
 	}
 
 	@Test
@@ -96,16 +98,40 @@ public class StringBasedCassandraQueryIntegrationTests {
 		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
 				converter.getMappingContext());
 		StringBasedCassandraQuery cassandraQuery = new StringBasedCassandraQuery(queryMethod, operations);
-		CassandraParametersParameterAccessor accesor = new CassandraParametersParameterAccessor(queryMethod, "Matthews",
+		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(queryMethod, "Matthews",
 				"John");
 
-		String stringQuery = cassandraQuery.createQuery(accesor);
+		String stringQuery = cassandraQuery.createQuery(accessor);
 		SimpleStatement actual = new SimpleStatement(stringQuery);
 
 		String table = Person.class.getSimpleName().toLowerCase();
 		Select expected = QueryBuilder.select().all().from(table);
 		expected.setForceNoValues(true);
 		expected.where(QueryBuilder.eq("lastname", "Matthews")).and(QueryBuilder.eq("firstname", "John"));
+
+		assertThat(actual.getQueryString(), is(expected.getQueryString()));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void bindsConvertedPropertyCorrectly() throws Exception {
+
+		Method method = SampleRepository.class.getMethod("findByCreatedDate", LocalDate.class);
+		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
+				converter.getMappingContext());
+		StringBasedCassandraQuery cassandraQuery = new StringBasedCassandraQuery(queryMethod, operations);
+		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter, new CassandraParametersParameterAccessor(queryMethod,
+				LocalDate.of(2010, 7, 4)));
+
+		String stringQuery = cassandraQuery.createQuery(accessor);
+		SimpleStatement actual = new SimpleStatement(stringQuery);
+
+		String table = Person.class.getSimpleName().toLowerCase();
+		Select expected = QueryBuilder.select().all().from(table);
+		expected.setForceNoValues(true);
+		expected.where(QueryBuilder.eq("createdDate", com.datastax.driver.core.LocalDate.fromYearMonthDay(2010, 7, 4)));
 
 		assertThat(actual.getQueryString(), is(expected.getQueryString()));
 	}
@@ -117,5 +143,8 @@ public class StringBasedCassandraQueryIntegrationTests {
 
 		@Query("SELECT * FROM person WHERE lastname=?0 AND firstname=?1;")
 		Person findByLastnameAndFirstname(String lastname, String firstname);
+
+		@Query("SELECT * FROM person WHERE createdDate=?0;")
+		Person findByCreatedDate(LocalDate createdDate);
 	}
 }

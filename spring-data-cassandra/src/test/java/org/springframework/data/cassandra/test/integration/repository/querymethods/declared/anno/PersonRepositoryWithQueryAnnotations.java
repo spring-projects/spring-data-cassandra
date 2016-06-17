@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.declared.anno;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -78,4 +80,5 @@ public interface PersonRepositoryWithQueryAnnotations extends PersonRepository {
 	@Override
 	@Query("select * from person")
 	Stream<Person> findAllPeople();
+
 }

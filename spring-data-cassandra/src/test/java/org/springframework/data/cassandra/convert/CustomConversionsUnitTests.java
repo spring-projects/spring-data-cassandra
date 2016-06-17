@@ -37,6 +37,9 @@ import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.WritingConverter;
+import org.threeten.bp.LocalDateTime;
+
+import com.datastax.driver.core.Row;
 
 /**
  * Unit tests for {@link CustomConversions}.
@@ -144,6 +147,16 @@ public class CustomConversionsUnitTests {
 	 * @see DATACASS-280
 	 */
 	@Test
+	public void considersRowASimpleType() {
+
+		CustomConversions conversions = new CustomConversions();
+		assertThat(conversions.isSimpleType(Row.class), is(true));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
 	@SuppressWarnings("rawtypes")
 	public void favorsCustomConverterForIndeterminedTargetType() {
 
@@ -195,6 +208,39 @@ public class CustomConversionsUnitTests {
 				Collections.singletonList(new FormatConverterFactory()));
 
 		assertThat(customConversions.getCustomWriteTarget(String.class, SimpleDateFormat.class), notNullValue());
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void registersConvertersForJsr310() {
+
+		CustomConversions customConversions = new CustomConversions();
+
+		assertThat(customConversions.hasCustomWriteTarget(java.time.LocalDateTime.class), is(true));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void registersConvertersForThreeTenBackPort() {
+
+		CustomConversions customConversions = new CustomConversions();
+
+		assertThat(customConversions.hasCustomWriteTarget(org.threeten.bp.LocalDateTime.class), is(true));
+	}
+
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void registersConvertersForJoda() {
+
+		CustomConversions customConversions = new CustomConversions();
+
+		assertThat(customConversions.hasCustomWriteTarget(org.joda.time.LocalDate.class), is(true));
 	}
 
 	private static Class<?> createProxyTypeFor(Class<?> type) {

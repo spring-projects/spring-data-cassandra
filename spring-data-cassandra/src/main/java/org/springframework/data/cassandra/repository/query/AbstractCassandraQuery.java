@@ -80,7 +80,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 
-		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(method, parameters);
+		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(template.getConverter(), new CassandraParametersParameterAccessor(method, parameters));
 		String query = createQuery(accessor);
 
 		ResultProcessor processor = method.getResultProcessor().withDynamicProjection(accessor);

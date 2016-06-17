@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,18 @@
  */
 package org.springframework.data.cassandra.config.java;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
@@ -37,6 +41,7 @@ import org.springframework.data.mapping.context.MappingContext;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author John Blum
+ * @author Mark Paluch
  */
 @Configuration
 public abstract class AbstractCassandraConfiguration extends AbstractClusterConfiguration
@@ -72,15 +77,44 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 		mappingContext.setBeanClassLoader(beanClassLoader);
 		mappingContext.setInitialEntitySet(CassandraEntityClassScanner.scan(getEntityBasePackages()));
 
+		CustomConversions customConversions = customConversions();
+
+		mappingContext.setCustomConversions(customConversions);
+		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+
 		return mappingContext;
 	}
 
 	/**
-	 * Return the {@link CassandraConverter} instance to convert Rows to Objects, Objects to BuiltStatements
+	 * Register custom {@link Converter}s in a {@link CustomConversions} object if required. These
+	 * {@link CustomConversions} will be registered with the {@link #cassandraConverter()} and {@link #cassandraMapping()}
+	 * . Returns an empty {@link CustomConversions} instance by default.
+	 *
+	 * @return must not be {@literal null}.
+	 * @since 1.5
+	 */
+	@Bean
+	public CustomConversions customConversions() {
+		return new CustomConversions(Collections.emptyList());
+	}
+
+	/**
+	 * Creates a {@link CassandraConverter} using the configured {@link #cassandraMapping()}. Will get
+	 * {@link #customConversions()} applied.
+	 *
+	 * @see #customConversions()
+	 * @see #cassandraMapping()
+	 * @return
+	 * @throws Exception
 	 */
 	@Bean
 	public CassandraConverter cassandraConverter() throws Exception {
-		return new MappingCassandraConverter(cassandraMapping());
+
+		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter(cassandraMapping());
+
+		mappingCassandraConverter.setCustomConversions(customConversions());
+
+		return mappingCassandraConverter;
 	}
 
 	/**
@@ -99,19 +133,22 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	}
 
 	/**
-	 * Base packages to scan for entities annotated with {@link Table} annotations. By default, returns the package
-	 * name of {@literal this} (<code>this.getClass().getPackage().getName()</code>).
-	 *
-	 * This method must never return null.
+	 * Base packages to scan for entities annotated with {@link Table} annotations. By default, returns the package name
+	 * of {@literal this} (<code>this.getClass().getPackage().getName()</code>). This method must never return null.
 	 */
 	public String[] getEntityBasePackages() {
 		return new String[] { getClass().getPackage().getName() };
 	}
 
+	/**
+	 * Return the name of the keyspace to connect to.
+	 *
+	 * @return must not be {@literal null}.
+	 */
 	protected abstract String getKeyspaceName();
 
 	/**
-	 * The {@link SchemaAction} to perform at startup.  Defaults to {@link SchemaAction#NONE}.
+	 * The {@link SchemaAction} to perform at startup. Defaults to {@link SchemaAction#NONE}.
 	 */
 	public SchemaAction getSchemaAction() {
 		return SchemaAction.NONE;

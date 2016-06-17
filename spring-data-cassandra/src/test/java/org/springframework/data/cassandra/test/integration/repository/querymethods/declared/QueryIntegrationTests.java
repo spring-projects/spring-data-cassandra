@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.test.integration.repository.querymeth
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -36,9 +38,14 @@ import org.springframework.data.cassandra.test.integration.support.AbstractSprin
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.datastax.driver.core.Session;
+
 /**
+ * Integration tests for use with {@link PersonRepository}.
+ *
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @soundtrack Mary Jane Kelly - Volbeat
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
@@ -57,6 +64,7 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 	}
 
 	@Autowired PersonRepository personRepository;
+	@Autowired Session session;
 
 	@Before
 	public void before() {
@@ -286,8 +294,8 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		personToSave = personRepository.save(personToSave);
 
-		Optional<Person> savedPerson = personRepository.findOptionalWithLastnameAndFirstname(
-			personToSave.getLastname(), personToSave.getFirstname());
+		Optional<Person> savedPerson = personRepository.findOptionalWithLastnameAndFirstname(personToSave.getLastname(),
+				personToSave.getFirstname());
 
 		assertThat(savedPerson, is(notNullValue(Optional.class)));
 		assertThat(savedPerson.isPresent(), is(true));

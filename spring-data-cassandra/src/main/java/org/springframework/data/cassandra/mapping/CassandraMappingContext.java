@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,20 @@ package org.springframework.data.cassandra.mapping;
 import java.util.Collection;
 
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.mapping.context.MappingContext;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
 
 /**
  * A {@link MappingContext} for Cassandra.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-public interface CassandraMappingContext extends
-		MappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty> {
+public interface CassandraMappingContext
+		extends MappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty> {
 
 	/**
 	 * Returns only those entities that don't represent primary key types.
@@ -36,7 +39,7 @@ public interface CassandraMappingContext extends
 	 * @see #getPersistentEntities(boolean)
 	 */
 	@Override
-	public Collection<CassandraPersistentEntity<?>> getPersistentEntities();
+	Collection<CassandraPersistentEntity<?>> getPersistentEntities();
 
 	/**
 	 * Returns all persistent entities or only non-primary-key entities.
@@ -44,7 +47,7 @@ public interface CassandraMappingContext extends
 	 * @param includePrimaryKeyTypes If <code>true</code>, returns all entities, including entities that represent primary
 	 *          key types. If <code>false</code>, returns only entities that don't represent primary key types.
 	 */
-	public Collection<CassandraPersistentEntity<?>> getPersistentEntities(boolean includePrimaryKeyTypes);
+	Collection<CassandraPersistentEntity<?>> getPersistentEntities(boolean includePrimaryKeyTypes);
 
 	/**
 	 * Returns only those entities representing primary key types.
@@ -91,4 +94,28 @@ public interface CassandraMappingContext extends
 	 * Sets a verifier other than the {@link BasicCassandraPersistentEntityMetadataVerifier}
 	 */
 	void setVerifier(CassandraPersistentEntityMetadataVerifier verifier);
+
+	/**
+	 * Retrieve the data type of the property. Cassandra {@link DataType types} are determined using simple types and
+	 * configured {@link CustomConversions}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return the Cassandra {@link DataType type}.
+	 * @see CustomConversions
+	 * @see CassandraSimpleTypeHolder
+	 * @since 1.5
+	 */
+	DataType getDataType(CassandraPersistentProperty property);
+
+	/**
+	 * Retrieve the data type based on the given {@code type}. Cassandra {@link DataType types} are determined using simple types and
+	 * configured {@link CustomConversions}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return the Cassandra {@link DataType type}.
+	 * @see CustomConversions
+	 * @see CassandraSimpleTypeHolder
+	 * @since 1.5
+	 */
+	DataType getDataType(Class<?> type);
 }
