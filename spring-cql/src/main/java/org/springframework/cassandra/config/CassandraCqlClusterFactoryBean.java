@@ -269,12 +269,10 @@ public class CassandraCqlClusterFactoryBean
 
 	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
 
-		Session system = null;
+		if (!CollectionUtils.isEmpty(specs) || !CollectionUtils.isEmpty(scripts)) {
+			Session system = cluster.connect();
 
-		try {
-			if (!CollectionUtils.isEmpty(specs)) {
-				system = cluster.connect();
-
+			try {
 				CqlTemplate template = new CqlTemplate(system);
 
 				for (Object spec : specs) {
@@ -286,22 +284,16 @@ public class CassandraCqlClusterFactoryBean
 
 					template.execute(cql);
 				}
-			}
-
-			if (!CollectionUtils.isEmpty(scripts)) {
-				system = (system != null ? system : cluster.connect());
-
-				CqlTemplate template = new CqlTemplate(system);
 
 				for (String script : scripts) {
 					log.debug("executing raw CQL [{}]", script);
 
 					template.execute(script);
 				}
-			}
-		} finally {
-			if (system != null) {
-				system.close();
+			} finally {
+				if (system != null) {
+					system.close();
+				}
 			}
 		}
 	}
