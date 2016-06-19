@@ -269,43 +269,27 @@ public class CassandraCqlClusterFactoryBean
 
 	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
 
-		Session system = null;
+		if (!CollectionUtils.isEmpty(specs) || !CollectionUtils.isEmpty(scripts)) {
+			Session session = cluster.connect();
 
-		try {
-			if (!CollectionUtils.isEmpty(specs)) {
-				system = cluster.connect();
-
-				CqlTemplate template = new CqlTemplate(system);
+			try {
+				CqlTemplate template = new CqlTemplate(session);
 
 				for (Object spec : specs) {
 					String cql = (spec instanceof CreateKeyspaceSpecification)
 							? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql()
 							: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
 
-					if (log.isDebugEnabled()) {
-						log.debug("executing raw CQL [{}]", cql);
-					}
-
 					template.execute(cql);
 				}
-			}
-
-			if (!CollectionUtils.isEmpty(scripts)) {
-				system = (system != null ? system : cluster.connect());
-
-				CqlTemplate template = new CqlTemplate(system);
 
 				for (String script : scripts) {
-					if (log.isDebugEnabled()) {
-						log.debug("executing raw CQL [{}]", script);
-					}
-
 					template.execute(script);
 				}
-			}
-		} finally {
-			if (system != null) {
-				system.close();
+			} finally {
+				if (session != null) {
+					session.close();
+				}
 			}
 		}
 	}
