@@ -270,10 +270,10 @@ public class CassandraCqlClusterFactoryBean
 	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
 
 		if (!CollectionUtils.isEmpty(specs) || !CollectionUtils.isEmpty(scripts)) {
-			Session system = cluster.connect();
+			Session session = cluster.connect();
 
 			try {
-				CqlTemplate template = new CqlTemplate(system);
+				CqlTemplate template = new CqlTemplate(session);
 
 				for (Object spec : specs) {
 					String cql = (spec instanceof CreateKeyspaceSpecification)
@@ -291,8 +291,8 @@ public class CassandraCqlClusterFactoryBean
 					template.execute(script);
 				}
 			} finally {
-				if (system != null) {
-					system.close();
+				if (session != null) {
+					session.close();
 				}
 			}
 		}
