@@ -282,9 +282,7 @@ public class CassandraCqlClusterFactoryBean
 							? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql()
 							: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
 
-					if (log.isDebugEnabled()) {
-						log.debug("executing raw CQL [{}]", cql);
-					}
+					log.debug("executing raw CQL [{}]", cql);
 
 					template.execute(cql);
 				}
@@ -296,9 +294,7 @@ public class CassandraCqlClusterFactoryBean
 				CqlTemplate template = new CqlTemplate(system);
 
 				for (String script : scripts) {
-					if (log.isDebugEnabled()) {
-						log.debug("executing raw CQL [{}]", script);
-					}
+					log.debug("executing raw CQL [{}]", script);
 
 					template.execute(script);
 				}
