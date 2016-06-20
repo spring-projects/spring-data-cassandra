@@ -43,7 +43,7 @@ import com.datastax.driver.core.PoolingOptions;
  * @author Sumit Kumar
  * @author David Webb
  * @author John Blum
- * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-176</a>
+ * @see <a href="https://jira.spring.io/browse/DATACASS-176">DATACASS-176</a>
  * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
  */
 @RunWith(MockitoJUnitRunner.class)
