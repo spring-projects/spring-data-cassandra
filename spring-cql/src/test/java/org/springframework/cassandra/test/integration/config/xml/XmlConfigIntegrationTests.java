@@ -49,15 +49,11 @@ public class XmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrat
 
 	public static final String KEYSPACE = "xmlconfigtest";
 
-	@Rule
-	public KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment, KEYSPACE);
+	@Rule public KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment, KEYSPACE);
 
 	private ConfigurableApplicationContext applicationContext;
-
 	private Cluster cluster;
-
 	private Executor executor;
-
 	private Session session;
 
 	@Before
@@ -82,6 +78,9 @@ public class XmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrat
 		IntegrationTestUtils.assertKeyspaceExists(KEYSPACE, session);
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void localAndRemotePoolingOptionsWereConfiguredProperly() {
 
@@ -102,6 +101,9 @@ public class XmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrat
 		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE), is(equalTo(25)));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void socketOptionsWereConfiguredProperly() {
 

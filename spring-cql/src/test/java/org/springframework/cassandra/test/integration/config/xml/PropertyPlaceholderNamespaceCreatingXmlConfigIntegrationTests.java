@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SocketOptions;
 
 /**
+ * Integration tests for XML-based configuration using property placeholders.
+ *
  * @author Mark Paluch
  * @author John Blum
  */
@@ -43,14 +45,9 @@ import com.datastax.driver.core.SocketOptions;
 public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		extends AbstractEmbeddedCassandraIntegrationTest {
 
-	@Autowired
-	private Cluster cassandraCluster;
-
-	@Autowired
-	private CqlOperations ops;
-
-	@Autowired
-	private Session session;
+	@Autowired private Cluster cassandraCluster;
+	@Autowired private CqlOperations ops;
+	@Autowired private Session session;
 
 	@Test
 	public void keyspaceExists() {
@@ -61,6 +58,9 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		assertNotNull(ops);
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void localAndRemotePoolingOptionsWereConfiguredProperly() {
 
@@ -80,6 +80,9 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE), is(equalTo(5)));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void socketOptionsWereConfiguredProperly() {
 

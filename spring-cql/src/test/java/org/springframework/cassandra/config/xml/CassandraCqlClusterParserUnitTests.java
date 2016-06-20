@@ -18,14 +18,13 @@ package org.springframework.cassandra.config.xml;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.cassandra.support.BeanDefinitionTestUtils.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.parsing.PassThroughSourceExtractor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -42,77 +41,45 @@ import org.w3c.dom.NodeList;
  * Test suite of Unit tests testing the contract and functionality of the {@link CassandraCqlClusterParser}.
  *
  * @author John Blum
- * @see org.springframework.cassandra.config.xml.CassandraCqlClusterParser
- * @since 1.5.0
  */
 // TODO add more tests!
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraCqlClusterParserUnitTests {
 
-	@Mock
-	private Element mockElement;
+	@Mock Element mockElement;
 
 	private CassandraCqlClusterParser parser = new CassandraCqlClusterParser();
 
-	@SuppressWarnings("unchecked")
-	protected <T> T getPropertyValue(BeanDefinition beanDefinition, String propertyName) {
-		PropertyValue propertyValue = beanDefinition.getPropertyValues().getPropertyValue(propertyName);
-
-		return (T) (propertyValue != null ? propertyValue.getValue() : null);
-	}
-
-	protected String getPropertyValueAsString(BeanDefinition beanDefinition, String propertyName) {
-		Object value = getPropertyValue(beanDefinition, propertyName);
-
-		return (value instanceof RuntimeBeanReference ? ((RuntimeBeanReference) value).getBeanName()
-			: (value != null ? String.valueOf(value) : null));
-	}
-
-	protected BeanDefinitionParserDelegate mockBeanDefinitionParserDelegate(XmlReaderContext xmlReaderContext) {
-		return new BeanDefinitionParserDelegate(xmlReaderContext);
-	}
-
-	protected NodeList mockNodeList(Element... childElements) {
-		NodeList mockNodeList = mock(NodeList.class);
-
-		when(mockNodeList.getLength()).thenReturn(childElements.length);
-
-		for (int index = 0; index < childElements.length; index++) {
-			when(mockNodeList.item(eq(index))).thenReturn(childElements[index]);
-		}
-
-		return mockNodeList;
-	}
-
-	protected ParserContext mockParserContext() {
-		return mockParserContext(null);
-	}
-
-	protected ParserContext mockParserContext(BeanDefinition beanDefinition) {
-		XmlReaderContext readerContext = mockXmlReaderContext();
-		return new ParserContext(readerContext, mockBeanDefinitionParserDelegate(readerContext), beanDefinition);
-	}
-
-	protected XmlReaderContext mockXmlReaderContext() {
-		return new XmlReaderContext(null, null, null, new PassThroughSourceExtractor(), null, null);
-	}
-
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void resolveIdFromElement() {
+
 		when(mockElement.getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE))).thenReturn("test");
+
 		assertThat(parser.resolveId(mockElement, null, null), is(equalTo("test")));
-		verify(mockElement, times(1)).getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE));
+		verify(mockElement).getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void resolveIdUsingDefault() {
+
 		when(mockElement.getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE))).thenReturn("");
+
 		assertThat(parser.resolveId(mockElement, null, null), is(equalTo(DefaultCqlBeanNames.CLUSTER)));
-		verify(mockElement, times(1)).getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE));
+		verify(mockElement).getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void parseInternalCallsDoParseAndConstructsBeanDefinition() {
+
 		BeanDefinition mockContainingBeanDefinition = mock(BeanDefinition.class);
 
 		when(mockContainingBeanDefinition.getScope()).thenReturn("Singleton");
@@ -163,26 +130,30 @@ public class CassandraCqlClusterParserUnitTests {
 		assertThat(getPropertyValueAsString(beanDefinition, "sslEnabled"), is(equalTo("true")));
 		assertThat(getPropertyValueAsString(beanDefinition, "username"), is(equalTo("jonDoe")));
 
-		verify(mockContainingBeanDefinition, times(1)).getScope();
-		verify(mockElement, times(1)).getAttribute(eq("auth-info-provider-ref"));
-		verify(mockElement, times(1)).getAttribute(eq("host-state-listener-ref"));
-		verify(mockElement, times(1)).getAttribute(eq("latency-tracker-ref"));
-		verify(mockElement, times(1)).getAttribute(eq("load-balancing-policy-ref"));
-		verify(mockElement, times(1)).getAttribute(eq("reconnection-policy-ref"));
-		verify(mockElement, times(1)).getAttribute(eq("retry-policy-ref"));
-		verify(mockElement, times(1)).getAttribute(eq("ssl-options-ref"));
-		verify(mockElement, times(1)).getAttribute(eq("contact-points"));
-		verify(mockElement, times(1)).getAttribute(eq("compression"));
-		verify(mockElement, times(1)).getAttribute(eq("jmx-reporting-enabled"));
-		verify(mockElement, times(1)).getAttribute(eq("metrics-enabled"));
-		verify(mockElement, times(1)).getAttribute(eq("password"));
-		verify(mockElement, times(1)).getAttribute(eq("port"));
-		verify(mockElement, times(1)).getAttribute(eq("ssl-enabled"));
-		verify(mockElement, times(1)).getAttribute(eq("username"));
+		verify(mockContainingBeanDefinition).getScope();
+		verify(mockElement).getAttribute(eq("auth-info-provider-ref"));
+		verify(mockElement).getAttribute(eq("host-state-listener-ref"));
+		verify(mockElement).getAttribute(eq("latency-tracker-ref"));
+		verify(mockElement).getAttribute(eq("load-balancing-policy-ref"));
+		verify(mockElement).getAttribute(eq("reconnection-policy-ref"));
+		verify(mockElement).getAttribute(eq("retry-policy-ref"));
+		verify(mockElement).getAttribute(eq("ssl-options-ref"));
+		verify(mockElement).getAttribute(eq("contact-points"));
+		verify(mockElement).getAttribute(eq("compression"));
+		verify(mockElement).getAttribute(eq("jmx-reporting-enabled"));
+		verify(mockElement).getAttribute(eq("metrics-enabled"));
+		verify(mockElement).getAttribute(eq("password"));
+		verify(mockElement).getAttribute(eq("port"));
+		verify(mockElement).getAttribute(eq("ssl-enabled"));
+		verify(mockElement).getAttribute(eq("username"));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void parseChildElementsWithLocalPoolingOptions() {
+
 		Element localPoolingOptionsElement = mock(Element.class);
 
 		NodeList mockNodeList = mockNodeList(localPoolingOptionsElement);
@@ -200,7 +171,7 @@ public class CassandraCqlClusterParserUnitTests {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
 
-		parser.parseChildElements(mockElement, mockParserContext(), builder);
+		parser.parseChildElements(mockElement, mockParserContext(null), builder);
 
 		BeanDefinition beanDefinition = builder.getBeanDefinition();
 
@@ -221,20 +192,24 @@ public class CassandraCqlClusterParserUnitTests {
 		assertThat(getPropertyValueAsString(poolingOptionsBeanDefinition, "remoteMaxSimultaneousRequests"), is(nullValue()));
 		assertThat(getPropertyValueAsString(poolingOptionsBeanDefinition, "remoteMinSimultaneousRequests"), is(nullValue()));
 
-		verify(mockElement, times(1)).getChildNodes();
-		verify(mockElement, times(1)).getAttribute(eq("heartbeat-interval-seconds"));
-		verify(mockElement, times(1)).getAttribute(eq("idle-timeout-seconds"));
-		verify(mockElement, times(1)).getAttribute(eq("initialization-executor-ref"));
-		verify(mockElement, times(1)).getAttribute(eq("pool-timeout-milliseconds"));
-		verify(localPoolingOptionsElement, times(1)).getLocalName();
-		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("core-connections"));
-		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("max-connections"));
-		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("max-simultaneous-requests"));
-		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("min-simultaneous-requests"));
+		verify(mockElement).getChildNodes();
+		verify(mockElement).getAttribute(eq("heartbeat-interval-seconds"));
+		verify(mockElement).getAttribute(eq("idle-timeout-seconds"));
+		verify(mockElement).getAttribute(eq("initialization-executor-ref"));
+		verify(mockElement).getAttribute(eq("pool-timeout-milliseconds"));
+		verify(localPoolingOptionsElement).getLocalName();
+		verify(localPoolingOptionsElement).getAttribute(eq("core-connections"));
+		verify(localPoolingOptionsElement).getAttribute(eq("max-connections"));
+		verify(localPoolingOptionsElement).getAttribute(eq("max-simultaneous-requests"));
+		verify(localPoolingOptionsElement).getAttribute(eq("min-simultaneous-requests"));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void parseChildElementsWithRemotePoolingOptions() {
+
 		Element localPoolingOptionsElement = mock(Element.class);
 
 		NodeList mockNodeList = mockNodeList(localPoolingOptionsElement);
@@ -252,7 +227,7 @@ public class CassandraCqlClusterParserUnitTests {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
 
-		parser.parseChildElements(mockElement, mockParserContext(), builder);
+		parser.parseChildElements(mockElement, mockParserContext(null), builder);
 
 		BeanDefinition beanDefinition = builder.getBeanDefinition();
 
@@ -275,20 +250,24 @@ public class CassandraCqlClusterParserUnitTests {
 		assertThat(getPropertyValueAsString(poolingOptionsBeanDefinition, "remoteMinSimultaneousRequests"), is(equalTo(
 			"5")));
 
-		verify(mockElement, times(1)).getChildNodes();
-		verify(mockElement, times(1)).getAttribute(eq("heartbeat-interval-seconds"));
-		verify(mockElement, times(1)).getAttribute(eq("idle-timeout-seconds"));
-		verify(mockElement, times(1)).getAttribute(eq("initialization-executor-ref"));
-		verify(mockElement, times(1)).getAttribute(eq("pool-timeout-milliseconds"));
-		verify(localPoolingOptionsElement, times(1)).getLocalName();
-		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("core-connections"));
-		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("max-connections"));
-		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("max-simultaneous-requests"));
-		verify(localPoolingOptionsElement, times(1)).getAttribute(eq("min-simultaneous-requests"));
+		verify(mockElement).getChildNodes();
+		verify(mockElement).getAttribute(eq("heartbeat-interval-seconds"));
+		verify(mockElement).getAttribute(eq("idle-timeout-seconds"));
+		verify(mockElement).getAttribute(eq("initialization-executor-ref"));
+		verify(mockElement).getAttribute(eq("pool-timeout-milliseconds"));
+		verify(localPoolingOptionsElement).getLocalName();
+		verify(localPoolingOptionsElement).getAttribute(eq("core-connections"));
+		verify(localPoolingOptionsElement).getAttribute(eq("max-connections"));
+		verify(localPoolingOptionsElement).getAttribute(eq("max-simultaneous-requests"));
+		verify(localPoolingOptionsElement).getAttribute(eq("min-simultaneous-requests"));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void parseLocalPoolingOptionsProperlyConfiguresBeanDefinition() {
+
 		when(mockElement.getAttribute(eq("core-connections"))).thenReturn("50");
 		when(mockElement.getAttribute(eq("max-connections"))).thenReturn("200");
 		when(mockElement.getAttribute(eq("max-simultaneous-requests"))).thenReturn("50");
@@ -317,14 +296,18 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockElement, never()).getAttribute(eq("idle-timeout-seconds"));
 		verify(mockElement, never()).getAttribute(eq("initialization-executor-ref"));
 		verify(mockElement, never()).getAttribute(eq("pool-timeout-milliseconds"));
-		verify(mockElement, times(1)).getAttribute(eq("core-connections"));
-		verify(mockElement, times(1)).getAttribute(eq("max-connections"));
-		verify(mockElement, times(1)).getAttribute(eq("max-simultaneous-requests"));
-		verify(mockElement, times(1)).getAttribute(eq("min-simultaneous-requests"));
+		verify(mockElement).getAttribute(eq("core-connections"));
+		verify(mockElement).getAttribute(eq("max-connections"));
+		verify(mockElement).getAttribute(eq("max-simultaneous-requests"));
+		verify(mockElement).getAttribute(eq("min-simultaneous-requests"));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void parseRemotePoolingOptionsProperlyConfiguresBeanDefinition() {
+
 		when(mockElement.getAttribute(eq("core-connections"))).thenReturn("50");
 		when(mockElement.getAttribute(eq("max-connections"))).thenReturn("200");
 		when(mockElement.getAttribute(eq("max-simultaneous-requests"))).thenReturn("50");
@@ -353,21 +336,29 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockElement, never()).getAttribute(eq("idle-timeout-seconds"));
 		verify(mockElement, never()).getAttribute(eq("initialization-executor-ref"));
 		verify(mockElement, never()).getAttribute(eq("pool-timeout-milliseconds"));
-		verify(mockElement, times(1)).getAttribute(eq("core-connections"));
-		verify(mockElement, times(1)).getAttribute(eq("max-connections"));
-		verify(mockElement, times(1)).getAttribute(eq("max-simultaneous-requests"));
-		verify(mockElement, times(1)).getAttribute(eq("min-simultaneous-requests"));
+		verify(mockElement).getAttribute(eq("core-connections"));
+		verify(mockElement).getAttribute(eq("max-connections"));
+		verify(mockElement).getAttribute(eq("max-simultaneous-requests"));
+		verify(mockElement).getAttribute(eq("min-simultaneous-requests"));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void parseScript() {
+
 		when(mockElement.getTextContent()).thenReturn("CREATE TABLE schema.table;");
 		assertThat(parser.parseScript(mockElement), is(equalTo("CREATE TABLE schema.table;")));
-		verify(mockElement, times(1)).getTextContent();
+		verify(mockElement).getTextContent();
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 */
 	@Test
 	public void newSocketOptionsBeanDefinitionIsProperlyInitialized() {
+
 		when(mockElement.getAttribute(eq("connect-timeout-millis"))).thenReturn("15000");
 		when(mockElement.getAttribute(eq("keep-alive"))).thenReturn("true");
 		when(mockElement.getAttribute(eq("read-timeout-millis"))).thenReturn("20000");
@@ -377,7 +368,7 @@ public class CassandraCqlClusterParserUnitTests {
 		when(mockElement.getAttribute(eq("so-linger"))).thenReturn("false");
 		when(mockElement.getAttribute(eq("tcp-no-delay"))).thenReturn("true");
 
-		BeanDefinition beanDefinition = parser.newSocketOptionsBeanDefinition(mockElement, mockParserContext());
+		BeanDefinition beanDefinition = parser.newSocketOptionsBeanDefinition(mockElement, mockParserContext(null));
 
 		assertThat(beanDefinition, is(notNullValue(BeanDefinition.class)));
 		assertThat(beanDefinition.getBeanClassName(), is(equalTo(SocketOptionsFactoryBean.class.getName())));
@@ -391,13 +382,32 @@ public class CassandraCqlClusterParserUnitTests {
 		assertThat(getPropertyValueAsString(beanDefinition, "soLinger"), is(equalTo("false")));
 		assertThat(getPropertyValueAsString(beanDefinition, "tcpNoDelay"), is(equalTo("true")));
 
-		verify(mockElement, times(1)).getAttribute(eq("connect-timeout-millis"));
-		verify(mockElement, times(1)).getAttribute(eq("keep-alive"));
-		verify(mockElement, times(1)).getAttribute(eq("read-timeout-millis"));
-		verify(mockElement, times(1)).getAttribute(eq("receive-buffer-size"));
-		verify(mockElement, times(1)).getAttribute(eq("reuse-address"));
-		verify(mockElement, times(1)).getAttribute(eq("send-buffer-size"));
-		verify(mockElement, times(1)).getAttribute(eq("so-linger"));
-		verify(mockElement, times(1)).getAttribute(eq("tcp-no-delay"));
+		verify(mockElement).getAttribute(eq("connect-timeout-millis"));
+		verify(mockElement).getAttribute(eq("keep-alive"));
+		verify(mockElement).getAttribute(eq("read-timeout-millis"));
+		verify(mockElement).getAttribute(eq("receive-buffer-size"));
+		verify(mockElement).getAttribute(eq("reuse-address"));
+		verify(mockElement).getAttribute(eq("send-buffer-size"));
+		verify(mockElement).getAttribute(eq("so-linger"));
+		verify(mockElement).getAttribute(eq("tcp-no-delay"));
+	}
+
+	private NodeList mockNodeList(Element... childElements) {
+
+		NodeList mockNodeList = mock(NodeList.class);
+
+		when(mockNodeList.getLength()).thenReturn(childElements.length);
+
+		for (int index = 0; index < childElements.length; index++) {
+			when(mockNodeList.item(eq(index))).thenReturn(childElements[index]);
+		}
+
+		return mockNodeList;
+	}
+
+	private ParserContext mockParserContext(BeanDefinition beanDefinition) {
+
+		XmlReaderContext readerContext = new XmlReaderContext(null, null, null, new PassThroughSourceExtractor(), null, null);
+		return new ParserContext(readerContext, new BeanDefinitionParserDelegate(readerContext), beanDefinition);
 	}
 }

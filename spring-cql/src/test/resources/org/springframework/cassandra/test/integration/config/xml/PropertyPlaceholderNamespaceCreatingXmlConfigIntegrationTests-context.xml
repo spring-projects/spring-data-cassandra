@@ -17,13 +17,6 @@
 		<constructor-arg index="1" value="bar" />
 	</bean>
 
-	<!--
-	<bean id="loadBalancingPolicy" class="com.datastax.driver.core.policies.DCAwareRoundRobinPolicy">
-		<constructor-arg name="localDc" value="${lb.policy.dcAware.localDc}"/>
-		<constructor-arg name="usedHostsPerRemoteDc" value="${lb.policy.dcAware.remoteHosts}"/>
-	</bean>
-	 -->
-
 	<bean id="reconnectionPolicy"
 		class="com.datastax.driver.core.policies.ConstantReconnectionPolicy">
 		<constructor-arg name="constantDelayMs"

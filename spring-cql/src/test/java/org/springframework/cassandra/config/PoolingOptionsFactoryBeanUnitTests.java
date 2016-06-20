@@ -18,9 +18,9 @@ package org.springframework.cassandra.config;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.same;
 
 import java.util.concurrent.Executor;
@@ -28,7 +28,6 @@ import java.util.concurrent.Executor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
@@ -44,18 +43,14 @@ import com.datastax.driver.core.PoolingOptions;
  * @author Sumit Kumar
  * @author David Webb
  * @author John Blum
- * @see org.springframework.cassandra.config.PoolingOptionsFactoryBean
  * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-176</a>
  * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PoolingOptionsFactoryBeanUnitTests {
 
-	@Mock
-	private Executor mockExecutor;
-
-	@Spy
-	private PoolingOptions poolingOptionsSpy;
+	@Mock Executor mockExecutor;
+	@Spy PoolingOptions poolingOptionsSpy;
 
 	private PoolingOptionsFactoryBean poolingOptionsFactoryBean;
 
@@ -85,6 +80,7 @@ public class PoolingOptionsFactoryBeanUnitTests {
 	 */
 	@Test
 	public void setAndGetFactoryBeanProperties() {
+
 		poolingOptionsFactoryBean.setHeartbeatIntervalSeconds(15);
 		poolingOptionsFactoryBean.setIdleTimeoutSeconds(120);
 		poolingOptionsFactoryBean.setInitializationExecutor(mockExecutor);
@@ -117,8 +113,10 @@ public class PoolingOptionsFactoryBeanUnitTests {
 	 */
 	@Test
 	public void afterPropertiesSetInitializesLocalPoolingOptions() throws Exception {
+
 		PoolingOptionsFactoryBean poolingOptionsFactoryBean = new PoolingOptionsFactoryBean() {
-			@Override PoolingOptions newPoolingOptions() {
+			@Override
+			PoolingOptions newPoolingOptions() {
 				poolingOptionsSpy.setNewConnectionThreshold(HostDistance.LOCAL, 1);
 				return poolingOptionsSpy;
 			}
@@ -140,14 +138,14 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		assertThat(poolingOptionsFactoryBean.getObject(), is(sameInstance(poolingOptionsSpy)));
 		assertThat(poolingOptionsFactoryBean.getObjectType(), is(equalTo((Class) poolingOptionsSpy.getClass())));
 
-		verify(poolingOptionsSpy, times(1)).setHeartbeatIntervalSeconds(eq(60));
-		verify(poolingOptionsSpy, times(1)).setIdleTimeoutSeconds(eq(300));
-		verify(poolingOptionsSpy, times(1)).setInitializationExecutor(eq(mockExecutor));
-		verify(poolingOptionsSpy, times(1)).setPoolTimeoutMillis(eq(180));
-		verify(poolingOptionsSpy, times(1)).setCoreConnectionsPerHost(eq(HostDistance.LOCAL), eq(10));
-		verify(poolingOptionsSpy, times(1)).setMaxConnectionsPerHost(eq(HostDistance.LOCAL), eq(100));
-		verify(poolingOptionsSpy, times(1)).setMaxRequestsPerConnection(eq(HostDistance.LOCAL), eq(50));
-		verify(poolingOptionsSpy, times(1)).setNewConnectionThreshold(eq(HostDistance.LOCAL), eq(5));
+		verify(poolingOptionsSpy).setHeartbeatIntervalSeconds(eq(60));
+		verify(poolingOptionsSpy).setIdleTimeoutSeconds(eq(300));
+		verify(poolingOptionsSpy).setInitializationExecutor(eq(mockExecutor));
+		verify(poolingOptionsSpy).setPoolTimeoutMillis(eq(180));
+		verify(poolingOptionsSpy).setCoreConnectionsPerHost(eq(HostDistance.LOCAL), eq(10));
+		verify(poolingOptionsSpy).setMaxConnectionsPerHost(eq(HostDistance.LOCAL), eq(100));
+		verify(poolingOptionsSpy).setMaxRequestsPerConnection(eq(HostDistance.LOCAL), eq(50));
+		verify(poolingOptionsSpy).setNewConnectionThreshold(eq(HostDistance.LOCAL), eq(5));
 		verify(poolingOptionsSpy, never()).setCoreConnectionsPerHost(eq(HostDistance.REMOTE), anyInt());
 		verify(poolingOptionsSpy, never()).setMaxConnectionsPerHost(eq(HostDistance.REMOTE), anyInt());
 		verify(poolingOptionsSpy, never()).setMaxRequestsPerConnection(eq(HostDistance.REMOTE), anyInt());
@@ -159,8 +157,10 @@ public class PoolingOptionsFactoryBeanUnitTests {
 	 */
 	@Test
 	public void afterPropertiesSetInitializesRemotePoolingOptions() throws Exception {
+
 		PoolingOptionsFactoryBean poolingOptionsFactoryBean = new PoolingOptionsFactoryBean() {
-			@Override PoolingOptions newPoolingOptions() {
+			@Override
+			PoolingOptions newPoolingOptions() {
 				poolingOptionsSpy.setNewConnectionThreshold(HostDistance.REMOTE, 10);
 				return poolingOptionsSpy;
 			}
@@ -182,13 +182,13 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		assertThat(poolingOptionsFactoryBean.getObject(), is(sameInstance(poolingOptionsSpy)));
 		assertThat(poolingOptionsFactoryBean.getObjectType(), is(equalTo((Class) poolingOptionsSpy.getClass())));
 
-		verify(poolingOptionsSpy, times(1)).setHeartbeatIntervalSeconds(eq(30));
-		verify(poolingOptionsSpy, times(1)).setIdleTimeoutSeconds(eq(120));
-		verify(poolingOptionsSpy, times(1)).setInitializationExecutor(eq(mockExecutor));
-		verify(poolingOptionsSpy, times(1)).setPoolTimeoutMillis(eq(120));
-		verify(poolingOptionsSpy, times(1)).setCoreConnectionsPerHost(eq(HostDistance.REMOTE), eq(5));
-		verify(poolingOptionsSpy, times(1)).setMaxConnectionsPerHost(eq(HostDistance.REMOTE), eq(50));
-		verify(poolingOptionsSpy, times(1)).setMaxRequestsPerConnection(eq(HostDistance.REMOTE), eq(20));
+		verify(poolingOptionsSpy).setHeartbeatIntervalSeconds(eq(30));
+		verify(poolingOptionsSpy).setIdleTimeoutSeconds(eq(120));
+		verify(poolingOptionsSpy).setInitializationExecutor(eq(mockExecutor));
+		verify(poolingOptionsSpy).setPoolTimeoutMillis(eq(120));
+		verify(poolingOptionsSpy).setCoreConnectionsPerHost(eq(HostDistance.REMOTE), eq(5));
+		verify(poolingOptionsSpy).setMaxConnectionsPerHost(eq(HostDistance.REMOTE), eq(50));
+		verify(poolingOptionsSpy).setMaxRequestsPerConnection(eq(HostDistance.REMOTE), eq(20));
 		verify(poolingOptionsSpy, never()).setCoreConnectionsPerHost(eq(HostDistance.LOCAL), anyInt());
 		verify(poolingOptionsSpy, never()).setMaxConnectionsPerHost(eq(HostDistance.LOCAL), anyInt());
 		verify(poolingOptionsSpy, never()).setMaxRequestsPerConnection(eq(HostDistance.LOCAL), anyInt());
@@ -197,19 +197,20 @@ public class PoolingOptionsFactoryBeanUnitTests {
 	}
 
 	/**
-	 * This particular test case is technically an integration test since it uses an actual instance of
-	 * a DataStax Java driver class type... {@link PoolingOptions}!
-	 *
-	 * The max values should be set before setting core values. Otherwise the core values will be compared with the
-	 * default max values which is 8. Same for other min-max properties pairs. This test checks the same.
+	 * This particular test case is technically an integration test since it uses an actual instance of a DataStax Java
+	 * driver class type... {@link PoolingOptions}! The max values should be set before setting core values. Otherwise the
+	 * core values will be compared with the default max values which is 8. Same for other min-max properties pairs. This
+	 * test checks the same.
 	 *
 	 * @throws Exception Any unhandled scenarios will result in a test failure.
 	 * @see <a href="https://jira.spring.io/browse/DATACASS-176">DATACASS-176</a>
 	 */
 	@Test
 	public void afterPropertiesSetProperlySetsPoolingOptionsMaxBeforeMinProperties() throws Exception {
+
 		poolingOptionsFactoryBean = new PoolingOptionsFactoryBean() {
-			@Override PoolingOptions newPoolingOptions() {
+			@Override
+			PoolingOptions newPoolingOptions() {
 				return spy(super.newPoolingOptions());
 			}
 		};
@@ -239,20 +240,22 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.REMOTE), is(equalTo(127)));
 		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE), is(equalTo(111)));
 
-		InOrder inOrder = inOrder(poolingOptions);
-
-		inOrder.verify(poolingOptions, times(1)).setMaxConnectionsPerHost(eq(HostDistance.LOCAL), eq(200));
-		inOrder.verify(poolingOptions, times(1)).setCoreConnectionsPerHost(eq(HostDistance.LOCAL), eq(100));
-		inOrder.verify(poolingOptions, times(1)).setMaxRequestsPerConnection(eq(HostDistance.LOCAL), eq(99));
-		inOrder.verify(poolingOptions, times(1)).setNewConnectionThreshold(eq(HostDistance.LOCAL), eq(97));
-		inOrder.verify(poolingOptions, times(1)).setMaxConnectionsPerHost(eq(HostDistance.REMOTE), eq(210));
-		inOrder.verify(poolingOptions, times(1)).setCoreConnectionsPerHost(eq(HostDistance.REMOTE), eq(110));
-		inOrder.verify(poolingOptions, times(1)).setMaxRequestsPerConnection(eq(HostDistance.REMOTE), eq(127));
-		inOrder.verify(poolingOptions, times(1)).setNewConnectionThreshold(eq(HostDistance.REMOTE), eq(111));
+		verify(poolingOptions).setMaxConnectionsPerHost(eq(HostDistance.LOCAL), eq(200));
+		verify(poolingOptions).setCoreConnectionsPerHost(eq(HostDistance.LOCAL), eq(100));
+		verify(poolingOptions).setMaxRequestsPerConnection(eq(HostDistance.LOCAL), eq(99));
+		verify(poolingOptions).setNewConnectionThreshold(eq(HostDistance.LOCAL), eq(97));
+		verify(poolingOptions).setMaxConnectionsPerHost(eq(HostDistance.REMOTE), eq(210));
+		verify(poolingOptions).setCoreConnectionsPerHost(eq(HostDistance.REMOTE), eq(110));
+		verify(poolingOptions).setMaxRequestsPerConnection(eq(HostDistance.REMOTE), eq(127));
+		verify(poolingOptions).setNewConnectionThreshold(eq(HostDistance.REMOTE), eq(111));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-176">DATACASS-176</a>
+	 */
 	@Test
 	public void newLocalHostDistancePoolingOptionsReturnsLocalHostDistancePoolingOptionsFactoryBeanSettings() {
+
 		poolingOptionsFactoryBean.setLocalCoreConnections(50);
 		poolingOptionsFactoryBean.setLocalMaxConnections(500);
 		poolingOptionsFactoryBean.setLocalMaxSimultaneousRequests(1000);
@@ -262,8 +265,8 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		poolingOptionsFactoryBean.setRemoteMaxSimultaneousRequests(400);
 		poolingOptionsFactoryBean.setRemoteMinSimultaneousRequests(40);
 
-		PoolingOptionsFactoryBean.HostDistancePoolingOptions poolingOptions =
-			poolingOptionsFactoryBean.newLocalHostDistancePoolingOptions();
+		PoolingOptionsFactoryBean.HostDistancePoolingOptions poolingOptions = poolingOptionsFactoryBean
+				.newLocalHostDistancePoolingOptions();
 
 		assertThat(poolingOptions.getHostDistance(), is(equalTo(HostDistance.LOCAL)));
 		assertThat(poolingOptions.getCoreConnectionsPerHost(), is(equalTo(50)));
@@ -272,8 +275,12 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		assertThat(poolingOptions.getNewConnectionThreshold(), is(equalTo(100)));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-176">DATACASS-176</a>
+	 */
 	@Test
 	public void newLocalHostDistancePoolingOptionsReturnsRemoteHostDistancePoolingOptionsFactoryBeanSettings() {
+
 		poolingOptionsFactoryBean.setLocalCoreConnections(50);
 		poolingOptionsFactoryBean.setLocalMaxConnections(500);
 		poolingOptionsFactoryBean.setLocalMaxSimultaneousRequests(1000);
@@ -283,8 +290,8 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		poolingOptionsFactoryBean.setRemoteMaxSimultaneousRequests(400);
 		poolingOptionsFactoryBean.setRemoteMinSimultaneousRequests(40);
 
-		PoolingOptionsFactoryBean.HostDistancePoolingOptions poolingOptions =
-			poolingOptionsFactoryBean.newRemoteHostDistancePoolingOptions();
+		PoolingOptionsFactoryBean.HostDistancePoolingOptions poolingOptions = poolingOptionsFactoryBean
+				.newRemoteHostDistancePoolingOptions();
 
 		assertThat(poolingOptions.getHostDistance(), is(equalTo(HostDistance.REMOTE)));
 		assertThat(poolingOptions.getCoreConnectionsPerHost(), is(equalTo(20)));
@@ -293,55 +300,61 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		assertThat(poolingOptions.getNewConnectionThreshold(), is(equalTo(40)));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-176">DATACASS-176</a>
+	 */
 	@Test
 	public void configureLocalHostDistancePoolingOptionsCallsConfigureWithExpectedInstance() {
-		final PoolingOptionsFactoryBean.HostDistancePoolingOptions mockHostDistancePoolingOptions = mock(
-			PoolingOptionsFactoryBean.HostDistancePoolingOptions.class);
 
-		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(
-			new Answer<PoolingOptions>() {
-				@Override
-				public PoolingOptions answer(InvocationOnMock invocationOnMock) throws Throwable {
-					return invocationOnMock.getArgumentAt(0, PoolingOptions.class);
-				}
+		final PoolingOptionsFactoryBean.HostDistancePoolingOptions mockHostDistancePoolingOptions = mock(
+				PoolingOptionsFactoryBean.HostDistancePoolingOptions.class);
+
+		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(new Answer<PoolingOptions>() {
+			@Override
+			public PoolingOptions answer(InvocationOnMock invocationOnMock) throws Throwable {
+				return invocationOnMock.getArgumentAt(0, PoolingOptions.class);
 			}
-		);
+		});
 
 		poolingOptionsFactoryBean = new PoolingOptionsFactoryBean() {
-			@Override protected HostDistancePoolingOptions newLocalHostDistancePoolingOptions() {
+			@Override
+			protected HostDistancePoolingOptions newLocalHostDistancePoolingOptions() {
 				return mockHostDistancePoolingOptions;
 			}
 		};
 
 		assertThat(poolingOptionsFactoryBean.configureLocalHostDistancePoolingOptions(poolingOptionsSpy),
-			is(sameInstance(poolingOptionsSpy)));
+				is(sameInstance(poolingOptionsSpy)));
 
-		verify(mockHostDistancePoolingOptions, times(1)).configure(same(poolingOptionsSpy));
+		verify(mockHostDistancePoolingOptions).configure(same(poolingOptionsSpy));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-176">DATACASS-176</a>
+	 */
 	@Test
 	public void configureRemoteHostDistancePoolingOptionsCallsConfigureWithExpectedInstance() {
-		final PoolingOptionsFactoryBean.HostDistancePoolingOptions mockHostDistancePoolingOptions = mock(
-			PoolingOptionsFactoryBean.HostDistancePoolingOptions.class);
 
-		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(
-			new Answer<PoolingOptions>() {
-				@Override
-				public PoolingOptions answer(InvocationOnMock invocationOnMock) throws Throwable {
-					return invocationOnMock.getArgumentAt(0, PoolingOptions.class);
-				}
+		final PoolingOptionsFactoryBean.HostDistancePoolingOptions mockHostDistancePoolingOptions = mock(
+				PoolingOptionsFactoryBean.HostDistancePoolingOptions.class);
+
+		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(new Answer<PoolingOptions>() {
+			@Override
+			public PoolingOptions answer(InvocationOnMock invocationOnMock) throws Throwable {
+				return invocationOnMock.getArgumentAt(0, PoolingOptions.class);
 			}
-		);
+		});
 
 		poolingOptionsFactoryBean = new PoolingOptionsFactoryBean() {
-			@Override protected HostDistancePoolingOptions newRemoteHostDistancePoolingOptions() {
+			@Override
+			protected HostDistancePoolingOptions newRemoteHostDistancePoolingOptions() {
 				return mockHostDistancePoolingOptions;
 			}
 		};
 
 		assertThat(poolingOptionsFactoryBean.configureRemoteHostDistancePoolingOptions(poolingOptionsSpy),
-			is(sameInstance(poolingOptionsSpy)));
+				is(sameInstance(poolingOptionsSpy)));
 
-		verify(mockHostDistancePoolingOptions, times(1)).configure(same(poolingOptionsSpy));
+		verify(mockHostDistancePoolingOptions).configure(same(poolingOptionsSpy));
 	}
 }
