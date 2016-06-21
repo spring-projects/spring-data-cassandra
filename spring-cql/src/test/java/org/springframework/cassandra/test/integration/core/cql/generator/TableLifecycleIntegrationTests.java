@@ -67,36 +67,6 @@ public class TableLifecycleIntegrationTests extends AbstractKeyspaceCreatingInte
 		assertNoTable(dropTest.specification, keyspace, session);
 	}
 
-	@Test
-	public void testAlter() {
-
-		createTableTest.prepare();
-
-		log.info(createTableTest.cql);
-
-		session.execute(createTableTest.cql);
-
-		assertTable(createTableTest.specification, keyspace, session);
-
-		AlterTableCqlGeneratorUnitTests.MultipleOptionsTest alterTest = new AlterTableCqlGeneratorUnitTests.MultipleOptionsTest();
-		alterTest.prepare();
-
-		log.info(alterTest.cql);
-
-		session.execute(alterTest.cql);
-
-		// assertTable(alterTest.specification, keyspace, session);
-
-		DropTableTest dropTest = new DropTableTest();
-		dropTest.prepare();
-
-		log.info(dropTest.cql);
-
-		session.execute(dropTest.cql);
-
-		assertNoTable(dropTest.specification, keyspace, session);
-
-	}
 
 	public class DropTableTest extends DropTableCqlGeneratorUnitTests.DropTableTest {
 

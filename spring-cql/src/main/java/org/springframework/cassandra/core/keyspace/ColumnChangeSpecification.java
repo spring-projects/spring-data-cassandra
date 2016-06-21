@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,53 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
 /**
- * Base class for column change specifications.
+ * Base value object class for column change specifications.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public abstract class ColumnChangeSpecification {
 
 	protected CqlIdentifier name;
 
+	/**
+	 * Creates a new {@link ColumnChangeSpecification}.
+	 * 
+	 * @param name must not be empty or {@literal null}.
+	 */
 	protected ColumnChangeSpecification(String name) {
 		this(cqlId(name));
 	}
 
+	/**
+	 * Creates a new {@link ColumnChangeSpecification}.
+	 * 
+	 * @param name must not be {@literal null}.
+	 */
 	protected ColumnChangeSpecification(CqlIdentifier name) {
 		setName(name);
 	}
 
+	/**
+	 * Sets the column name.
+	 * 
+	 * @param name must not be {@literal null}.
+	 */
 	protected void setName(CqlIdentifier name) {
-		Assert.notNull(name);
+
+		Assert.notNull(name, "Name must not be null");
 		this.name = name;
 	}
 
+	/**
+	 * @return the column name.
+	 */
 	public CqlIdentifier getName() {
 		return name;
 	}

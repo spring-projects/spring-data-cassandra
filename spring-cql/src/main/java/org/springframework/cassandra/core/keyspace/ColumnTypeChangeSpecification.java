@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
@@ -23,28 +23,41 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.DataType;
 
 /**
- * Base class for column changes that include {@link DataType} information.
+ * Base value object class for column changes that include {@link DataType} information.
  * 
  * @author Matthew T. Adams
  */
 public abstract class ColumnTypeChangeSpecification extends ColumnChangeSpecification {
 
-	private DataType type;
+	private final DataType type;
 
+	/**
+	 * Creates a new {@link ColumnTypeChangeSpecification} for the given {@code name} and {@link type}
+	 *
+	 * @param name must not be empty or {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
 	public ColumnTypeChangeSpecification(String name, DataType type) {
 		this(cqlId(name), type);
 	}
 
+	/**
+	 * Creates a new {@link ColumnTypeChangeSpecification} for the given {@code name} and {@link type}
+	 *
+	 * @param name must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
 	public ColumnTypeChangeSpecification(CqlIdentifier name, DataType type) {
 		super(name);
-		setType(type);
-	}
 
-	private void setType(DataType type) {
-		Assert.notNull(type);
+		Assert.notNull(type, "DataType must not be null");
+
 		this.type = type;
 	}
 
+	/**
+	 * @return the {@literal DataType}.
+	 */
 	public DataType getType() {
 		return type;
 	}
