@@ -23,6 +23,7 @@ import org.springframework.cassandra.core.keyspace.AddColumnSpecification;
  * CQL generator for generating an <code>ADD</code> clause of an <code>ALTER TABLE</code> statement.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class AddColumnCqlGenerator extends ColumnChangeCqlGenerator<AddColumnSpecification> {
 
@@ -32,6 +33,6 @@ public class AddColumnCqlGenerator extends ColumnChangeCqlGenerator<AddColumnSpe
 
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("ADD ").append(spec().getName()).append(" TYPE ").append(spec().getType().getName());
+		return noNull(cql).append("ADD ").append(spec().getName()).append(' ').append(spec().getType().asFunctionParameterString());
 	}
 }
