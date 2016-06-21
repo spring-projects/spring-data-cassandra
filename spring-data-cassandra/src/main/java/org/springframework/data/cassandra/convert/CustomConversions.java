@@ -35,7 +35,10 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
+import org.springframework.data.convert.JodaTimeConverters;
+import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.convert.ReadingConverter;
+import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.CacheValue;
@@ -59,7 +62,7 @@ public class CustomConversions {
 	private final Set<ConvertiblePair> readingPairs;
 	private final Set<ConvertiblePair> writingPairs;
 	private final Set<Class<?>> customSimpleTypes;
-	private final SimpleTypeHolder simpleTypeHolder;
+	private final CassandraSimpleTypeHolder simpleTypeHolder;
 
 	private final List<Object> converters;
 
@@ -96,6 +99,14 @@ public class CustomConversions {
 		toRegister.addAll(converters);
 		toRegister.addAll(CassandraConverters.getConvertersToRegister());
 
+		toRegister.addAll(CassandraJodaTimeConverters.getConvertersToRegister());
+		toRegister.addAll(CassandraJsr310Converters.getConvertersToRegister());
+		toRegister.addAll(CassandraThreeTenBackPortConverters.getConvertersToRegister());
+
+		toRegister.addAll(JodaTimeConverters.getConvertersToRegister());
+		toRegister.addAll(Jsr310Converters.getConvertersToRegister());
+		toRegister.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
+
 		for (Object c : toRegister) {
 			registerConversion(c);
 		}
@@ -104,6 +115,15 @@ public class CustomConversions {
 
 		this.converters = Collections.unmodifiableList(toRegister);
 		this.simpleTypeHolder = new CassandraSimpleTypeHolder();
+	}
+
+	/**
+	 * Returns the underlying {@link SimpleTypeHolder}.
+	 *
+	 * @return
+	 */
+	public SimpleTypeHolder getSimpleTypeHolder() {
+		return simpleTypeHolder;
 	}
 
 	/**

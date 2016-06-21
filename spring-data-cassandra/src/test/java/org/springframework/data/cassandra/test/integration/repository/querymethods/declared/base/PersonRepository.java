@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.declared.base;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -55,5 +57,4 @@ public interface PersonRepository extends CassandraRepository<Person> {
 	Optional<Person> findOptionalWithLastnameAndFirstname(String last, String first);
 
 	Stream<Person> findAllPeople();
-
 }

@@ -46,38 +46,25 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
 /**
- * The SchemaActionIntegrationTests class is a test suite of test cases testing the contract and behavior
- * of various {@link SchemaAction}s on startup of a Spring configured, Cassandra application client.
+ * The SchemaActionIntegrationTests class is a test suite of test cases testing the contract and behavior of various
+ * {@link SchemaAction}s on startup of a Spring configured, Cassandra application client.
  *
  * @author John Blum
- * @see org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest
- * @see org.springframework.cassandra.test.integration.KeyspaceRule
- * @see org.springframework.data.cassandra.config.CassandraSessionFactoryBean
- * @see org.springframework.data.cassandra.config.SchemaAction
  * @see <a href="https://jira.spring.io/browse/DATACASS-219>DATACASS-219</a>
- * @since 1.5.0
  */
 public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
 
 	protected static final String KEYSPACE_NAME = SchemaActionIntegrationTests.class.getSimpleName().toLowerCase();
 
-	protected static final String PERSON_TABLE_DEFINITION_CQL =
-		String.format("CREATE TABLE %s.person (id int, firstName text, lastName text, PRIMARY KEY(id));",
-			KEYSPACE_NAME);
+	protected static final String PERSON_TABLE_DEFINITION_CQL = String
+			.format("CREATE TABLE %s.person (id int, firstName text, lastName text, PRIMARY KEY(id));", KEYSPACE_NAME);
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	@Rule public ExpectedException exception = ExpectedException.none();
 
-	@Rule
-	public KeyspaceRule KEYSPACE_RULE = new KeyspaceRule(cassandraEnvironment, KEYSPACE_NAME);
-
-	static <T> T[] asArray(T... array) {
-		return array;
-	}
+	@Rule public KeyspaceRule KEYSPACE_RULE = new KeyspaceRule(cassandraEnvironment, KEYSPACE_NAME);
 
 	protected ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
-		AnnotationConfigApplicationContext applicationContext =
-			new AnnotationConfigApplicationContext(annotatedClasses);
+		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(annotatedClasses);
 
 		applicationContext.registerShutdownHook();
 
@@ -91,13 +78,9 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 			applicationContext = newApplicationContext(annotatedClass);
 			return sessionCallback.doInSession(applicationContext.getBean(Session.class));
 		} finally {
-			close(applicationContext);
-		}
-	}
-
-	protected void close(ConfigurableApplicationContext applicationContext) {
-		if (applicationContext != null) {
-			applicationContext.close();
+			if (applicationContext != null) {
+				applicationContext.close();
+			}
 		}
 	}
 
@@ -114,22 +97,21 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 		assertThat(tableMetadata.getColumns().size(), is(equalTo(columns.length)));
 
 		for (String columnName : columns) {
-			assertThat(String.format("Column [%s] dos not exist!", columnName),
-				tableMetadata.getColumn(columnName), is(notNullValue()));
+			assertThat(String.format("Column [%s] dos not exist!", columnName), tableMetadata.getColumn(columnName),
+					is(notNullValue()));
 		}
 	}
 
 	@Test
 	public void createWithNoExistingTableCreatesTableFromEntity() {
-		doInSessionWithConfiguration(CreateWithNoExistingTableConfiguration.class,
-			new SessionCallback<Void>() {
-				@Override public Void doInSession(Session session) throws DataAccessException {
-					assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname",
-						"birthDate", "numberOfChildren", "cool");
-					return null;
-				}
+		doInSessionWithConfiguration(CreateWithNoExistingTableConfiguration.class, new SessionCallback<Void>() {
+			@Override
+			public Void doInSession(Session session) throws DataAccessException {
+				assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
+						"numberOfChildren", "cool", "createdDate", "zoneId");
+				return null;
 			}
-		);
+		});
 	}
 
 	@Test
@@ -137,53 +119,48 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 		exception.expect(BeanCreationException.class);
 		exception.expectMessage(containsString(String.format("Table %s.person already exists", KEYSPACE_NAME)));
 
-		doInSessionWithConfiguration(CreateWithExistingTableConfiguration.class,
-			new SessionCallback<Object>() {
-				@Override public Object doInSession(Session s) throws DataAccessException {
-					fail(String.format("%s should have failed!",
-						CreateWithExistingTableConfiguration.class.getSimpleName()));
-					return null;
-				}
+		doInSessionWithConfiguration(CreateWithExistingTableConfiguration.class, new SessionCallback<Object>() {
+			@Override
+			public Object doInSession(Session s) throws DataAccessException {
+				fail(String.format("%s should have failed!", CreateWithExistingTableConfiguration.class.getSimpleName()));
+				return null;
 			}
-		);
+		});
 	}
 
 	@Test
 	public void createIfNotExistsWithNoExistingTableCreatesTableFromEntity() {
-		doInSessionWithConfiguration(CreateIfNotExistsWithNoExistingTableConfiguration.class,
-			new SessionCallback<Void>() {
-				@Override public Void doInSession(Session session) throws DataAccessException {
-					assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname",
-						"birthDate", "numberOfChildren", "cool");
-					return null;
-				}
+		doInSessionWithConfiguration(CreateIfNotExistsWithNoExistingTableConfiguration.class, new SessionCallback<Void>() {
+			@Override
+			public Void doInSession(Session session) throws DataAccessException {
+				assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
+						"numberOfChildren", "cool", "createdDate", "zoneId");
+				return null;
 			}
-		);
+		});
 	}
 
 	@Test
 	public void createIfNotExistsWithExistingTableUsesExistingTable() {
-		doInSessionWithConfiguration(CreateIfNotExistsWithExistingTableConfiguration.class,
-			new SessionCallback<Void>() {
-				@Override public Void doInSession(Session session) throws DataAccessException {
-					assertHasTableWithColumns(session, "person", "id", "firstName", "lastName");
-					return null;
-				}
+		doInSessionWithConfiguration(CreateIfNotExistsWithExistingTableConfiguration.class, new SessionCallback<Void>() {
+			@Override
+			public Void doInSession(Session session) throws DataAccessException {
+				assertHasTableWithColumns(session, "person", "id", "firstName", "lastName");
+				return null;
 			}
-		);
+		});
 	}
 
 	@Test
 	public void recreateTableFromEntityDropsExistingTable() {
-		doInSessionWithConfiguration(RecreateSchemaActionWithExistingTableConfiguration.class,
-			new SessionCallback<Void>() {
-				@Override public Void doInSession(Session session) throws DataAccessException {
-					assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname",
-						"birthDate", "numberOfChildren", "cool");
-					return null;
-				}
+		doInSessionWithConfiguration(RecreateSchemaActionWithExistingTableConfiguration.class, new SessionCallback<Void>() {
+			@Override
+			public Void doInSession(Session session) throws DataAccessException {
+				assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
+						"numberOfChildren", "cool", "createdDate", "zoneId");
+				return null;
 			}
-		);
+		});
 	}
 
 	@Configuration
@@ -253,11 +230,13 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 		@Override
 		public CassandraCqlClusterFactoryBean cluster() {
 			return new CassandraCqlClusterFactoryBean() {
-				@Override public void afterPropertiesSet() throws Exception {
+				@Override
+				public void afterPropertiesSet() throws Exception {
 					// avoid Cassandra Cluster creation; use embedded
 				}
 
-				@Override public Cluster getObject() {
+				@Override
+				public Cluster getObject() {
 					return cassandraEnvironment.getCluster();
 				}
 			};
@@ -265,7 +244,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 
 		@Override
 		public String[] getEntityBasePackages() {
-			return asArray(Person.class.getPackage().getName());
+			return new String[] { Person.class.getPackage().getName() };
 		}
 
 		@Override

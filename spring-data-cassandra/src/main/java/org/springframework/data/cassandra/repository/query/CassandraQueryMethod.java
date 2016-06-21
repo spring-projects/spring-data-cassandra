@@ -1,18 +1,23 @@
+/*
+ * Copyright 2016 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.cassandra.repository.query;
 
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -23,54 +28,43 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.ResultSet;
 
+/**
+ * Cassandra specific implementation of {@link QueryMethod}.
+ *
+ * @author Matthew Adams
+ * @author Oliver Gierke
+ * @author Mark Paluch
+ */
 public class CassandraQueryMethod extends QueryMethod {
 
-	// TODO: double-check this list
-	public static final List<Class<?>> ALLOWED_PARAMETER_TYPES = Collections.unmodifiableList(Arrays
-			.asList(new Class<?>[] { String.class, CharSequence.class, char.class, Character.class, char[].class, long.class,
-					Long.class, boolean.class, Boolean.class, BigDecimal.class, BigInteger.class, double.class, Double.class,
-					float.class, Float.class, InetAddress.class, Date.class, UUID.class, int.class, Integer.class }));
+	private final Method method;
+	private final CassandraMappingContext mappingContext;
+	private Query query;
+	private String queryString;
+	private boolean queryCached = false;
 
-	public static final List<Class<?>> STRING_LIKE_PARAMETER_TYPES = Collections.unmodifiableList(Arrays
-			.asList(new Class<?>[] { CharSequence.class, char.class, Character.class, char[].class }));
-
-	public static final List<Class<?>> DATE_PARAMETER_TYPES = Collections.unmodifiableList(Arrays
-			.asList(new Class<?>[] { Date.class }));
-
-	public static boolean isMapOfCharSequenceToObject(TypeInformation<?> type) {
-
-		if (!type.isMap()) {
-			return false;
-		}
-
-		TypeInformation<?> keyType = type.getComponentType();
-		TypeInformation<?> valueType = type.getMapValueType();
-
-		return ClassUtils.isAssignable(CharSequence.class, keyType.getType()) && Object.class.equals(valueType.getType());
-	}
-
-	protected Method method;
-	protected CassandraMappingContext mappingContext;
-	protected Query query;
-	protected String queryString;
-	protected boolean queryCached = false;
-	protected Set<Integer> stringLikeParameterIndexes = new HashSet<Integer>();
-	protected Set<Integer> dateParameterIndexes = new HashSet<Integer>();
-
-	public CassandraQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory, CassandraMappingContext mappingContext) {
+	/**
+	 * Creates a new {@link CassandraQueryMethod} from the given {@link Method}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
+	 * @param projectionFactory must not be {@literal null}.
+	 * @param mappingContext must not be {@literal null}.
+	 */
+	public CassandraQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
+			CassandraMappingContext mappingContext) {
 
 		super(method, metadata, factory);
+
+		Assert.notNull(mappingContext, "MappingContext must not be null!");
 
 		verify(method, metadata);
 
 		this.method = method;
-
-		Assert.notNull(mappingContext, "MappingContext must not be null!");
 		this.mappingContext = mappingContext;
 	}
 
@@ -78,36 +72,13 @@ public class CassandraQueryMethod extends QueryMethod {
 
 		// TODO: support Page & Slice queries
 		if (isSliceQuery() || isPageQuery()) {
-			throw new InvalidDataAccessApiUsageException("neither slice nor page queries are supported yet");
-		}
-
-		Set<Class<?>> offendingTypes = new HashSet<Class<?>>();
-
-		int i = 0;
-		for (Class<?> type : method.getParameterTypes()) {
-			if (!ALLOWED_PARAMETER_TYPES.contains(type)) {
-				offendingTypes.add(type);
-			}
-			for (Class<?> quotedType : STRING_LIKE_PARAMETER_TYPES) {
-				if (quotedType.isAssignableFrom(type)) {
-					stringLikeParameterIndexes.add(i);
-				}
-			}
-			for (Class<?> quotedType : DATE_PARAMETER_TYPES) {
-				if (quotedType.isAssignableFrom(type)) {
-					dateParameterIndexes.add(i);
-				}
-			}
-			i++;
-		}
-
-		if (offendingTypes.size() > 0) {
-			throw new IllegalArgumentException(String.format(
-					"encountered unsupported query parameter type%s [%s] in method %s", offendingTypes.size() == 1 ? "" : "s",
-					StringUtils.arrayToCommaDelimitedString(new ArrayList<Class<?>>(offendingTypes).toArray()), method));
+			throw new InvalidDataAccessApiUsageException("Slice and Page queries are not supported.");
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.query.QueryMethod#createParameters(java.lang.reflect.Method)
+	 */
 	@Override
 	protected CassandraParameters createParameters(Method method) {
 		return new CassandraParameters(method);
@@ -118,7 +89,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 */
 	Query getQueryAnnotation() {
 		if (query == null) {
-			query = method.getAnnotation(Query.class);
+			query = AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
 			queryCached = true;
 		}
 		return query;
@@ -145,42 +116,17 @@ public class CassandraQueryMethod extends QueryMethod {
 		return queryString;
 	}
 
+	/**
+	 * @return the return type for this {@link QueryMethod}.
+	 */
 	public TypeInformation<?> getReturnType() {
 		return ClassTypeInformation.fromReturnTypeOf(method);
 	}
 
+	/**
+	 * @return true is the method returns a {@link ResultSet}.
+	 */
 	public boolean isResultSetQuery() {
-		return ResultSet.class.isAssignableFrom(method.getReturnType());
-	}
-
-	public boolean isSingleEntityQuery() {
-		return ClassUtils.isAssignable(getDomainClass(), method.getReturnType());
-	}
-
-	public boolean isCollectionOfEntityQuery() {
-		return isQueryForEntity() && isCollectionQuery();
-	}
-
-	public boolean isMapOfCharSequenceToObjectQuery() {
-
-		return isMapOfCharSequenceToObject(getReturnType());
-	}
-
-	public boolean isListOfMapOfCharSequenceToObject() {
-
-		TypeInformation<?> type = getReturnType();
-		if (!ClassUtils.isAssignable(List.class, type.getType())) {
-			return false;
-		}
-
-		return isMapOfCharSequenceToObject(type.getComponentType());
-	}
-
-	public boolean isStringLikeParameter(int parameterIndex) {
-		return stringLikeParameterIndexes.contains(parameterIndex);
-	}
-
-	public boolean isDateParameter(int parameterIndex) {
-		return dateParameterIndexes.contains(parameterIndex);
+		return ResultSet.class.isAssignableFrom(getReturnType().getActualType().getType());
 	}
 }

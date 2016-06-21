@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.mapping;
 
 import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.*;
+import static org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -25,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +35,7 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.context.MappingContext;
@@ -43,6 +46,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
 
 /**
@@ -51,8 +55,10 @@ import com.datastax.driver.core.TableMetadata;
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-public class BasicCassandraMappingContext extends AbstractMappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty>
+public class BasicCassandraMappingContext
+		extends AbstractMappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty>
 		implements CassandraMappingContext, ApplicationContextAware {
 
 	protected ApplicationContext context;
@@ -70,11 +76,28 @@ public class BasicCassandraMappingContext extends AbstractMappingContext<Cassand
 	protected Set<CassandraPersistentEntity<?>> nonPrimaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 
+	private CustomConversions customConversions;
+
 	/**
 	 * Creates a new {@link BasicCassandraMappingContext}.
 	 */
 	public BasicCassandraMappingContext() {
+
+		setCustomConversions(new CustomConversions(Collections.EMPTY_LIST));
 		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
+	}
+
+	/**
+	 * Sets the {@link CustomConversions}.
+	 * 
+	 * @param customConversions must not be {@literal null}.
+	 * @since 1.5
+	 */
+	public void setCustomConversions(CustomConversions customConversions) {
+
+		Assert.notNull(customConversions, "CustomConversions must not be null");
+
+		this.customConversions = customConversions;
 	}
 
 	@Override
@@ -182,21 +205,20 @@ public class BasicCassandraMappingContext extends AbstractMappingContext<Cassand
 						public void doWithPersistentProperty(CassandraPersistentProperty pkProp) {
 
 							if (pkProp.isPartitionKeyColumn()) {
-								spec.partitionKeyColumn(pkProp.getColumnName(), pkProp.getDataType());
+								spec.partitionKeyColumn(pkProp.getColumnName(), getDataType(pkProp));
 							} else { // it's a cluster column
-								spec.clusteredKeyColumn(pkProp.getColumnName(), pkProp.getDataType(),
-									pkProp.getPrimaryKeyOrdering());
+								spec.clusteredKeyColumn(pkProp.getColumnName(), getDataType(pkProp), pkProp.getPrimaryKeyOrdering());
 							}
 						}
 					});
 
 				} else {
 					if (prop.isIdProperty() || prop.isPartitionKeyColumn()) {
-						spec.partitionKeyColumn(prop.getColumnName(), prop.getDataType());
+						spec.partitionKeyColumn(prop.getColumnName(), getDataType(prop));
 					} else if (prop.isClusterKeyColumn()) {
-						spec.clusteredKeyColumn(prop.getColumnName(), prop.getDataType());
+						spec.clusteredKeyColumn(prop.getColumnName(), getDataType(prop));
 					} else {
-						spec.column(prop.getColumnName(), prop.getDataType());
+						spec.column(prop.getColumnName(), getDataType(prop));
 					}
 				}
 			}
@@ -208,6 +230,82 @@ public class BasicCassandraMappingContext extends AbstractMappingContext<Cassand
 		}
 
 		return spec;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.AbstractMappingContext#shouldCreatePersistentEntityFor(org.springframework.data.util.TypeInformation)
+	 */
+	@Override
+	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> type) {
+
+		if (customConversions.hasCustomWriteTarget(type.getType())) {
+			return false;
+		}
+
+		return super.shouldCreatePersistentEntityFor(type);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.AbstractMappingContext#addPersistentEntity(org.springframework.data.util.TypeInformation)
+	 */
+	@Override
+	protected CassandraPersistentEntity<?> addPersistentEntity(TypeInformation<?> typeInformation) {
+
+		// Prevent conversion types created as CassandraPersistentEntity
+		if (shouldCreatePersistentEntityFor(typeInformation)) {
+			return super.addPersistentEntity(typeInformation);
+		}
+
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext#getDataType(org.springframework.data.cassandra.mapping.CassandraPersistentProperty)
+	 */
+	@Override
+	public DataType getDataType(CassandraPersistentProperty property) {
+
+		if (property.isCompositePrimaryKey()) {
+			return property.getDataType();
+		}
+
+		if (property.findAnnotation(CassandraType.class) != null) {
+			return property.getDataType();
+		}
+
+		if (customConversions.hasCustomWriteTarget(property.getActualType())) {
+
+			Class<?> targetType = customConversions.getCustomWriteTarget(property.getActualType());
+
+			if (property.isCollectionLike()) {
+
+				if (Set.class.isAssignableFrom(property.getType())) {
+					return DataType.set(getDataTypeFor(targetType));
+				}
+
+				if (List.class.isAssignableFrom(property.getType())) {
+					return DataType.list(getDataTypeFor(targetType));
+				}
+			}
+
+			return getDataTypeFor(targetType);
+
+		}
+
+		return property.getDataType();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext#getDataType(java.lang.Class)
+	 */
+	@Override
+	public DataType getDataType(Class<?> type) {
+
+		if (customConversions.hasCustomWriteTarget(type)) {
+			return getDataTypeFor(customConversions.getCustomWriteTarget(type));
+		}
+
+		return getDataTypeFor(type);
 	}
 
 	public void setMapping(Mapping mapping) {
@@ -236,15 +334,13 @@ public class BasicCassandraMappingContext extends AbstractMappingContext<Cassand
 			try {
 				entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
 			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException(String.format("unknown persistent entity name [%s]",
-					entityClassName), e);
+				throw new IllegalStateException(String.format("unknown persistent entity name [%s]", entityClassName), e);
 			}
 
 			CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
 
 			if (entity == null) {
-				throw new IllegalStateException(String.format("unknown persistent entity class name [%s]",
-					entityClassName));
+				throw new IllegalStateException(String.format("unknown persistent entity class name [%s]", entityClassName));
 			}
 
 			String tableName = entityMapping.getTableName();
@@ -270,7 +366,7 @@ public class BasicCassandraMappingContext extends AbstractMappingContext<Cassand
 
 		if (property == null) {
 			throw new IllegalArgumentException(String.format("entity class [%s] has no persistent property named [%s]",
-				entity.getType().getName(), mapping.getPropertyName()));
+					entity.getType().getName(), mapping.getPropertyName()));
 		}
 
 		boolean forceQuote = false;
