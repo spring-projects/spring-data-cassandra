@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
 
 import java.util.Map;
 
@@ -25,19 +25,33 @@ import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
 import org.springframework.cassandra.core.keyspace.ColumnChangeSpecification;
 import org.springframework.cassandra.core.keyspace.DropColumnSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
+import org.springframework.cassandra.core.keyspace.RenameColumnSpecification;
 import org.springframework.cassandra.core.keyspace.TableOption;
 
 /**
- * CQL generator for generating <code>ALTER TABLE</code> statements.
+ * CQL generator for generating {@code ALTER TABLE} statements.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
+ * @see AlterTableSpecification
  */
 public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableSpecification> {
 
+	/**
+	 * Generates a CQL statement from the given {@code specification}.
+	 * 
+	 * @param specification must not be {@literal null}.
+	 * @return the generated CQL statement.
+	 */
 	public static String toCql(AlterTableSpecification specification) {
 		return new AlterTableCqlGenerator(specification).toCql();
 	}
 
+	/**
+	 * Creates a new {@literal {@link AlterTableCqlGenerator}.
+	 * 
+	 * @param specification must not be {@literal null}.
+	 */
 	public AlterTableCqlGenerator(AlterTableSpecification specification) {
 		super(specification);
 	}
@@ -47,8 +61,16 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 		cql = noNull(cql);
 
 		preambleCql(cql);
-		changesCql(cql);
-		optionsCql(cql);
+
+		if (!spec().getChanges().isEmpty()) {
+			cql.append(' ');
+			changesCql(cql);
+		}
+
+		if (!spec().getOptions().isEmpty()) {
+			cql.append(' ');
+			optionsCql(cql);
+		}
 
 		cql.append(";");
 
@@ -56,7 +78,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 	}
 
 	protected StringBuilder preambleCql(StringBuilder cql) {
-		return noNull(cql).append("ALTER TABLE ").append(spec().getName()).append(" ");
+		return noNull(cql).append("ALTER TABLE ").append(spec().getName());
 	}
 
 	protected StringBuilder changesCql(StringBuilder cql) {
@@ -76,20 +98,29 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 	}
 
 	protected ColumnChangeCqlGenerator<?> getCqlGeneratorFor(ColumnChangeSpecification change) {
+
 		if (change instanceof AddColumnSpecification) {
 			return new AddColumnCqlGenerator((AddColumnSpecification) change);
 		}
+
 		if (change instanceof DropColumnSpecification) {
 			return new DropColumnCqlGenerator((DropColumnSpecification) change);
 		}
+
 		if (change instanceof AlterColumnSpecification) {
 			return new AlterColumnCqlGenerator((AlterColumnSpecification) change);
 		}
+
+		if (change instanceof RenameColumnSpecification) {
+			return new RenameColumnCqlGenerator((RenameColumnSpecification) change);
+		}
+
 		throw new IllegalArgumentException("unknown ColumnChangeSpecification type: " + change.getClass().getName());
 	}
 
 	@SuppressWarnings("unchecked")
 	protected StringBuilder optionsCql(StringBuilder cql) {
+
 		cql = noNull(cql);
 
 		Map<String, Object> options = spec().getOptions();
@@ -97,7 +128,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 			return cql;
 		}
 
-		cql.append(" WITH ");
+		cql.append("WITH ");
 		boolean first = true;
 		for (String key : options.keySet()) {
 
