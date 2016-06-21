@@ -18,8 +18,14 @@ package org.springframework.cassandra.core.cql.generator;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.junit.Test;
 import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
+import org.springframework.cassandra.core.keyspace.TableOption;
+import org.springframework.cassandra.core.keyspace.TableOption.CachingOption;
+import org.springframework.cassandra.core.keyspace.TableOption.KeyCachingOption;
 
 import com.datastax.driver.core.DataType;
 
@@ -78,6 +84,71 @@ public class AlterTableCqlGeneratorUnitTests {
 				DataType.list(DataType.ascii()));
 
 		assertThat(toCql(spec), is(equalTo("ALTER TABLE users ADD top_places list<ascii>;")));
+	}
+
+	/**
+	 * @see DATACASS-192
+	 */
+	@Test
+	public void alterTableDropColumn() {
+
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").drop("gender");
+
+		assertThat(toCql(spec), is(equalTo("ALTER TABLE addamsfamily DROP gender;")));
+	}
+
+	/**
+	 * @see DATACASS-192
+	 */
+	@Test
+	public void alterTableRenameColumn() {
+
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").rename("firstname", "lastname");
+
+		assertThat(toCql(spec), is(equalTo("ALTER TABLE addamsfamily RENAME firstname TO lastname;")));
+	}
+
+	/**
+	 * @see DATACASS-192
+	 */
+	@Test
+	public void alterTableAddCommentAndTableOption() {
+
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
+				.with(TableOption.READ_REPAIR_CHANCE, 0.2f).with(TableOption.COMMENT, "A most excellent and useful table");
+
+		assertThat(toCql(spec), is(equalTo(
+				"ALTER TABLE addamsfamily WITH read_repair_chance = 0.2 AND comment = 'A most excellent and useful table';")));
+	}
+
+	/**
+	 * @see DATACASS-192
+	 */
+	@Test
+	public void alterTableAddColumnAndComment() {
+
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
+				.add("top_places", DataType.list(DataType.ascii())).add("other", DataType.list(DataType.ascii()))
+				.with(TableOption.COMMENT, "A most excellent and useful table");
+
+		assertThat(toCql(spec), is(equalTo(
+				"ALTER TABLE addamsfamily ADD top_places list<ascii> ADD other list<ascii> WITH comment = 'A most excellent and useful table';")));
+	}
+
+	/**
+	 * @see DATACASS-192
+	 */
+	@Test
+	public void alterTableAddCaching() {
+
+		Map<Object, Object> cachingMap = new LinkedHashMap<Object, Object>();
+		cachingMap.put(CachingOption.KEYS, KeyCachingOption.NONE);
+		cachingMap.put(CachingOption.ROWS_PER_PARTITION, "15");
+
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("users").with(TableOption.CACHING, cachingMap);
+
+		assertThat(toCql(spec),
+				is(equalTo("ALTER TABLE users WITH caching = { 'keys' : 'none', 'rows_per_partition' : '15' };")));
 	}
 
 	private String toCql(AlterTableSpecification spec) {
