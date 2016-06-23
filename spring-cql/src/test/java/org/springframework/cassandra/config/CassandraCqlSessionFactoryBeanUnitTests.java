@@ -18,8 +18,6 @@ package org.springframework.cassandra.config;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -85,7 +83,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 	@Test
 	public void objectTypeWhenSessionHasNotBeenInitializedIsSessionClass() {
 		assertThat(factoryBean.getObject(), is(nullValue()));
-		assertEquals(Session.class, factoryBean.<Session>getObjectType());
+		assertEquals(Session.class, factoryBean.getObjectType());
 	}
 
 	@Test

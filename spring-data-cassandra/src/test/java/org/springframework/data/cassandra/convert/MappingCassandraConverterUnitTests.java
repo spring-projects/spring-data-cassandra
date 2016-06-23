@@ -18,8 +18,6 @@ package org.springframework.data.cassandra.convert;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
@@ -112,7 +110,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test
 	public void insertEnumDoesNotMapToOrdinalBeforeSpring43() {
 
-		assumeThat(SpringVersion.getVersion(), not(startsWith("4.3")));
+		assumeThat(SpringVersion.getVersion(), not(org.hamcrest.Matchers.startsWith("4.3")));
 
 		expectedException.expect(ConverterNotFoundException.class);
 		expectedException.expectMessage(allOf(containsString("No converter found"), containsString("java.lang.Integer")));
@@ -131,7 +129,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test
 	public void insertEnumMapsToOrdinalWithSpring43() {
 
-		assumeThat(SpringVersion.getVersion(), startsWith("4.3"));
+		assumeThat(SpringVersion.getVersion(), org.hamcrest.Matchers.startsWith("4.3"));
 
 		UnsupportedEnumToOrdinalMapping unsupportedEnumToOrdinalMapping = new UnsupportedEnumToOrdinalMapping();
 		unsupportedEnumToOrdinalMapping.setAsOrdinal(Condition.USED);
