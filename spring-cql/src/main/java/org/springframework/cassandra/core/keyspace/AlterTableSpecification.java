@@ -24,9 +24,17 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import com.datastax.driver.core.DataType;
 
 /**
- * Builder class to construct an <code>ALTER TABLE</code> specification.
+ * Builder class to construct an {@code ALTER TABLE} specification.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
+ * @see AddColumnSpecification
+ * @see AlterColumnSpecification
+ * @see DropColumnSpecification
+ * @see RenameColumnSpecification
+ * @see CreateTableSpecification
+ * @see DropTableSpecification
+ * @see org.springframework.cassandra.core.cql.generator.AlterTableCqlGenerator
  */
 public class AlterTableSpecification extends TableOptionsSpecification<AlterTableSpecification> {
 
@@ -60,17 +68,22 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	private List<ColumnChangeSpecification> changes = new ArrayList<ColumnChangeSpecification>();
 
 	/*
-	 * Adds a <code>DROP</code> to the list of column changes.
+	 * Adds a {@code DROP} to the list of column changes.
 	 * 
-	 * DW Removed as this only works in C* 2.0
+	 * @param column must not be empty or {@literal null}
+	 * @return {@literal this} {@link AlterTableSpecification}
 	 */
-	// public AlterTableSpecification drop(String column) {
-	// changes.add(new DropColumnSpecification(column));
-	// return this;
-	// }
+	public AlterTableSpecification drop(String column) {
+		changes.add(new DropColumnSpecification(column));
+		return this;
+	}
 
 	/**
-	 * Adds an <code>ADD</code> to the list of column changes.
+	 * Adds an {@code ADD} to the list of column changes.
+	 * 
+	 * @param column must not be empty or {@literal null}
+	 * @param type must not be {@literal null}
+	 * @return {@literal this} {@link AlterTableSpecification}
 	 */
 	public AlterTableSpecification add(String column, DataType type) {
 		changes.add(new AddColumnSpecification(column, type));
@@ -78,7 +91,23 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	}
 
 	/**
-	 * Adds an <code>ALTER</code> to the list of column changes.
+	 * Adds a {@code RENAME} to the list of column changes.
+	 *
+	 * @param from must not be empty or {@literal null}
+	 * @param to must not be empty or {@literal null}
+	 * @return {@literal this} {@link AlterTableSpecification}
+	 */
+	public AlterTableSpecification rename(String from, String to) {
+		changes.add(new RenameColumnSpecification(from, to));
+		return this;
+	}
+
+	/**
+	 * Adds an {@literal ALTER} to the list of column changes.
+	 * 
+	 * @param column must not be empty or {@literal null}
+	 * @param type must not be {@literal null}
+	 * @return {@literal this} {@link AlterTableSpecification}
 	 */
 	public AlterTableSpecification alter(String column, DataType type) {
 		changes.add(new AlterColumnSpecification(column, type));
@@ -91,4 +120,5 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	public List<ColumnChangeSpecification> getChanges() {
 		return Collections.unmodifiableList(changes);
 	}
+
 }

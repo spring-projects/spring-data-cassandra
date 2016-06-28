@@ -20,9 +20,11 @@ import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 import org.springframework.cassandra.core.keyspace.DropColumnSpecification;
 
 /**
- * CQL generator for generating a <code>DROP</code> column clause of an <code>ALTER TABLE</code> statement.
+ * CQL generator for generating a {@code DROP} column clause of an {@code ALTER TABLE} statement.
  * 
  * @author Matthew T. Adams
+ * @see DropColumnSpecification
+ * @see org.springframework.cassandra.core.keyspace.AlterTableSpecification
  */
 public class DropColumnCqlGenerator extends ColumnChangeCqlGenerator<DropColumnSpecification> {
 

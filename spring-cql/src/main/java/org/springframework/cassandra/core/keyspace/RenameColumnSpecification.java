@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 the original author or authors.
- * 
+ * Copyright 2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,48 +21,43 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
 /**
- * Base value object class for column change specifications.
+ * {@link ColumnChangeSpecification} to rename a column.
  * 
- * @author Matthew T. Adams
  * @author Mark Paluch
+ * @since 1.5
+ * @see ColumnChangeSpecification
  */
-public abstract class ColumnChangeSpecification {
+public class RenameColumnSpecification extends ColumnChangeSpecification {
 
-	protected CqlIdentifier name;
+	private final CqlIdentifier targetName;
 
 	/**
 	 * Creates a new {@link ColumnChangeSpecification}.
-	 * 
-	 * @param name must not be empty or {@literal null}.
+	 *
+	 * @param from must not be empty or {@literal null}.
+	 * @param to must not be empty or {@literal null}.
 	 */
-	protected ColumnChangeSpecification(String name) {
-		this(cqlId(name));
+	RenameColumnSpecification(String from, String to) {
+		this(cqlId(from), cqlId(to));
 	}
 
 	/**
 	 * Creates a new {@link ColumnChangeSpecification}.
-	 * 
-	 * @param name must not be {@literal null}.
+	 *
+	 * @param from must not be {@literal null}.
+	 * @param to must not be {@literal null}.
 	 */
-	protected ColumnChangeSpecification(CqlIdentifier name) {
-		setName(name);
-	}
+	RenameColumnSpecification(CqlIdentifier from, CqlIdentifier to) {
+		super(from);
 
-	/**
-	 * Sets the column name.
-	 * 
-	 * @param name must not be {@literal null}.
-	 */
-	protected void setName(CqlIdentifier name) {
-
-		Assert.notNull(name, "Name must not be null");
-		this.name = name;
+		Assert.notNull(to, "Target name must not be null");
+		this.targetName = to;
 	}
 
 	/**
 	 * @return the column name.
 	 */
-	public CqlIdentifier getName() {
-		return name;
+	public CqlIdentifier getTargetName() {
+		return targetName;
 	}
 }

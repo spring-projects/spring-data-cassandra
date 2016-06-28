@@ -19,12 +19,30 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.DataType;
 
+/**
+ * Specification to add a column.
+ * 
+ * @author Matthew Adams
+ * @author Mark Paluch
+ */
 public class AddColumnSpecification extends ColumnTypeChangeSpecification {
 
+	/**
+	 * Creates a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
+	 * 
+	 * @param name must not be empty or {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
 	public AddColumnSpecification(String name, DataType type) {
 		super(name, type);
 	}
 
+	/**
+	 * Creates a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
+	 * 
+	 * @param name must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
 	public AddColumnSpecification(CqlIdentifier name, DataType type) {
 		super(name, type);
 	}
