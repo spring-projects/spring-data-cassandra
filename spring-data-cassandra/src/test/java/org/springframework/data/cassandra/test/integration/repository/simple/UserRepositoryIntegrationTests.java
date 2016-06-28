@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -32,6 +33,7 @@ import com.google.common.collect.Lists;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public class UserRepositoryIntegrationTests {
 
@@ -150,6 +152,22 @@ public class UserRepositoryIntegrationTests {
 
 	}
 
+	/**
+	 * @see DATACASS-182
+	 */
+	public void save() {
+
+		tom.setPassword(null);
+		tom.setFriends(Collections.<String>emptySet());
+
+		repository.save(tom);
+
+		User loadedTom = repository.findOne(tom.getUsername());
+
+		assertThat(loadedTom.getPassword(), is(nullValue()));
+		assertThat(loadedTom.getFriends(), is(nullValue()));
+	}
+
 	private static void assertEquals(User user1, User user2) {
 		Assert.assertEquals(user1.getUsername(), user2.getUsername());
 		Assert.assertEquals(user1.getFirstName(), user2.getFirstName());
@@ -157,5 +175,4 @@ public class UserRepositoryIntegrationTests {
 		Assert.assertEquals(user1.getPlace(), user2.getPlace());
 		Assert.assertEquals(user1.getPassword(), user2.getPassword());
 	}
-
 }

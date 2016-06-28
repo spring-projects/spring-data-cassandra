@@ -26,6 +26,7 @@ import org.springframework.data.cassandra.test.integration.support.AbstractSprin
  *
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public abstract class UserRepositoryIntegrationTestsDelegator
 		extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
@@ -74,5 +75,13 @@ public abstract class UserRepositoryIntegrationTestsDelegator
 	@Test
 	public void exists() {
 		tests.exists();
+	}
+
+	/**
+	 * @see DATACASS-182
+	 */
+	@Test
+	public void save() {
+		tests.save();
 	}
 }
