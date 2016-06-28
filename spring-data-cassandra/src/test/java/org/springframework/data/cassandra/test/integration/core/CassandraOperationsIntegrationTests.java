@@ -36,7 +36,6 @@ import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.data.cassandra.test.integration.simpletons.BookCondition;
 import org.springframework.data.cassandra.test.integration.simpletons.BookReference;
@@ -45,7 +44,6 @@ import org.springframework.data.cassandra.test.integration.support.IntegrationTe
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -54,6 +52,7 @@ import com.datastax.driver.core.querybuilder.Select;
  *
  * @author David Webb
  * @author Mark Paluch
+ * @author John Blum
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -68,7 +67,8 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		}
 	}
 
-	@Autowired CassandraOperations template;
+	@Autowired
+	CassandraOperations template;
 
 	@Before
 	public void before() {
@@ -105,10 +105,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b3.setPages(265);
 		b3.setCondition(BookCondition.USED);
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
 		template.insert(b3, options);
 
@@ -120,10 +117,10 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b5.setCondition(BookCondition.USED);
 
 		template.insert(b5, options);
-
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void insertAsynchronouslyTest() {
 
 		Book b1 = new Book();
@@ -154,10 +151,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b3.setPages(265);
 		b3.setCondition(BookCondition.USED);
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
 		template.insertAsynchronously(b3, options);
 
@@ -182,7 +176,6 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b5.setCondition(BookCondition.USED);
 
 		template.insertAsynchronously(b5, options);
-
 	}
 
 	@Test
@@ -203,14 +196,9 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 	@Test
 	public void insertBatchTest() {
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
-		List<Book> books = null;
-
-		books = getBookList(20);
+		List<Book> books = getBookList(20);
 
 		template.insert(books);
 
@@ -226,19 +214,16 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		template.insert(books, options);
 
+		assertThat(template.count(Book.class), is(equalTo(80l)));
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void insertBatchAsynchronouslyTest() {
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
-		List<Book> books = null;
-
-		books = getBookList(20);
+		List<Book> books = getBookList(20);
 
 		template.insertAsynchronously(books);
 
@@ -253,12 +238,8 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		books = getBookList(20);
 
 		template.insertAsynchronously(books, options);
-
 	}
 
-	/**
-	 * @return
-	 */
 	private List<Book> getBookList(long numBooks) {
 
 		List<Book> books = new ArrayList<Book>();
@@ -284,10 +265,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		insertTest();
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
 		/*
 		 * Test Single Insert with entity
@@ -329,18 +307,15 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b5.setPages(265);
 
 		template.update(b5, options);
-
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void updateAsynchronouslyTest() {
 
 		insertTest();
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
 		/*
 		 * Test Single Insert with entity
@@ -382,20 +357,14 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b5.setPages(265);
 
 		template.updateAsynchronously(b5, options);
-
 	}
 
 	@Test
 	public void updateBatchTest() {
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
-		List<Book> books = null;
-
-		books = getBookList(20);
+		List<Book> books = getBookList(20);
 
 		template.insert(books);
 
@@ -426,20 +395,15 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		alterBooks(books);
 
 		template.update(books, options);
-
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void updateBatchAsynchronouslyTest() {
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
-		List<Book> books = null;
-
-		books = getBookList(20);
+		List<Book> books = getBookList(20);
 
 		template.insert(books);
 
@@ -470,18 +434,14 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		alterBooks(books);
 
 		template.updateAsynchronously(books, options);
-
 	}
 
-	/**
-	 * @param books
-	 */
 	private void alterBooks(List<Book> books) {
 
-		for (Book b : books) {
-			b.setAuthor("Ernest Hemmingway");
-			b.setTitle("The Old Man and the Sea");
-			b.setPages(115);
+		for (Book book : books) {
+			book.setAuthor("Ernest Hemmingway");
+			book.setTitle("The Old Man and the Sea");
+			book.setPages(115);
 		}
 	}
 
@@ -494,9 +454,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		options.setConsistencyLevel(ConsistencyLevel.ONE);
 		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
-		/*
-		 * Test Single Insert with entity
-		 */
+		// Test Single Insert with entity
 		Book b1 = new Book();
 		b1.setIsbn("123456-1");
 
@@ -507,22 +465,17 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		template.delete(b2);
 
-		/*
-		 * Test Single Insert with entity
-		 */
+		// Test Single Insert with entity
 		Book b3 = new Book();
 		b3.setIsbn("123456-3");
 
 		template.delete(b3, options);
 
-		/*
-		 * Test Single Insert with entity
-		 */
+		// Test Single Insert with entity
 		Book b5 = new Book();
 		b5.setIsbn("123456-5");
 
 		template.delete(b5, options);
-
 	}
 
 	@Test
@@ -562,79 +515,58 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		b5.setIsbn("123456-5");
 
 		template.deleteAsynchronously(b5, options);
-
 	}
 
 	@Test
 	public void deleteBatchTest() {
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
-		List<Book> books = null;
-
-		books = getBookList(20);
+		List<Book> books = getBookList(20);
 
 		template.insert(books);
-
 		template.delete(books);
 
 		books = getBookList(20);
 
 		template.insert(books);
-
 		template.delete(books);
 
 		books = getBookList(20);
 
 		template.insert(books, options);
-
 		template.delete(books, options);
 
 		books = getBookList(20);
 
 		template.insert(books, options);
-
 		template.delete(books, options);
-
 	}
 
 	@Test
 	public void deleteBatchAsynchronouslyTest() {
 
-		WriteOptions options = new WriteOptions();
-		options.setTtl(60);
-		options.setConsistencyLevel(ConsistencyLevel.ONE);
-		options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		WriteOptions options = newWriteOptions(ConsistencyLevel.ONE, RetryPolicy.DOWNGRADING_CONSISTENCY, 60);
 
-		List<Book> books = null;
-
-		books = getBookList(20);
+		List<Book> books = getBookList(20);
 
 		template.insert(books);
-
 		template.deleteAsynchronously(books);
 
 		books = getBookList(20);
 
 		template.insert(books);
-
 		template.deleteAsynchronously(books);
 
 		books = getBookList(20);
 
 		template.insert(books, options);
-
 		template.deleteAsynchronously(books, options);
 
 		books = getBookList(20);
 
 		template.insert(books, options);
-
 		template.deleteAsynchronously(books, options);
-
 	}
 
 	@Test
@@ -708,7 +640,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * @see DATACASS-182
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
 	 */
 	@Test
 	public void updateShouldRemoveFields() {
@@ -730,7 +662,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * @see DATACASS-182
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
 	 */
 	@Test
 	public void insertShouldRemoveFields() {
@@ -743,6 +675,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		template.insert(book);
 
 		book.setTitle(null);
+
 		template.insert(book);
 
 		Book loaded = template.selectOneById(Book.class, book.getIsbn());
@@ -752,7 +685,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * @see DATACASS-182
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
 	 */
 	@Test
 	public void updateShouldInsertEntity() {
@@ -767,10 +700,12 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		Book loaded = template.selectOneById(Book.class, book.getIsbn());
 
 		assertThat(loaded, is(notNullValue()));
+		assertThat(loaded.getAuthor(), is(equalTo("author")));
+		assertThat(loaded.getTitle(), is(equalTo("title")));
 	}
 
 	/**
-	 * @see DATACASS-182
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
 	 */
 	@Test
 	public void insertAndUpdateToEmptyCollection() {
@@ -783,6 +718,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		template.insert(bookReference);
 
 		bookReference.setBookmarks(Collections.<Integer> emptyList());
+
 		template.update(bookReference);
 
 		BookReference loaded = template.selectOneById(BookReference.class, bookReference.getIsbn());
@@ -792,7 +728,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * @see DATACASS-297
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
 	 */
 	@Test
 	public void stream() {
@@ -811,6 +747,10 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		assertThat(selectedBooks.size(), is(equalTo(20)));
 		assertThat(selectedBooks.get(0), is(instanceOf(Book.class)));
+	}
+
+	WriteOptions newWriteOptions(ConsistencyLevel consistencyLevel, RetryPolicy retryPolicy, int timeToLive) {
+		return new WriteOptions(consistencyLevel, retryPolicy, timeToLive);
 	}
 
 	<T> Iterable<T> toIterable(final Iterator<T> iterator) {

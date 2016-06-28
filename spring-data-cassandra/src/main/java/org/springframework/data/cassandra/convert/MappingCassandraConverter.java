@@ -62,6 +62,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Antoine Toulme
+ * @author John Blum
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.context.ApplicationContextAware
  * @see org.springframework.beans.factory.BeanClassLoaderAware
@@ -102,13 +103,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	@SuppressWarnings("unchecked")
-	public <R> R readRow(Class<R> clazz, Row row) {
+	public <R> R readRow(Class<R> type, Row row) {
 
-		Class<R> beanClassLoaderClass = transformClassToBeanClassLoaderClass(clazz);
-
-		TypeInformation<? extends R> type = ClassTypeInformation.from(beanClassLoaderClass);
-		TypeInformation<? extends R> typeToUse = type;
-		Class<? extends R> rawType = typeToUse.getType();
+		Class<R> beanClassLoaderClass = transformClassToBeanClassLoaderClass(type);
+		TypeInformation<? extends R> typeInfo = ClassTypeInformation.from(beanClassLoaderClass);
+		Class<? extends R> rawType = typeInfo.getType();
 
 		if (Row.class.isAssignableFrom(rawType)) {
 			return (R) row;
@@ -118,12 +117,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return conversionService.convert(row, rawType);
 		}
 
-		if (type.isCollectionLike() || type.isMap()) {
-			return conversionService.convert(row, clazz);
+		if (typeInfo.isCollectionLike() || typeInfo.isMap()) {
+			return conversionService.convert(row, type);
 		}
 
-		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>) mappingContext
-				.getPersistentEntity(typeToUse);
+		CassandraPersistentEntity<R> persistentEntity =
+			(CassandraPersistentEntity<R>) mappingContext.getPersistentEntity(typeInfo);
+
 		if (persistentEntity == null) {
 			throw new MappingException("No mapping metadata found for " + rawType.getName());
 		}
@@ -139,11 +139,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	protected <S> S readEntityFromRow(final CassandraPersistentEntity<S> entity, final Row row) {
 
-		DefaultSpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
-		BasicCassandraRowValueProvider rowValueProvider = new BasicCassandraRowValueProvider(row, evaluator);
+		DefaultSpELExpressionEvaluator expressionEvaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
+		BasicCassandraRowValueProvider rowValueProvider = new BasicCassandraRowValueProvider(row, expressionEvaluator);
 
-		CassandraPersistentEntityParameterValueProvider parameterProvider = new CassandraPersistentEntityParameterValueProvider(
-				entity, rowValueProvider, null);
+		CassandraPersistentEntityParameterValueProvider parameterProvider =
+			new CassandraPersistentEntityParameterValueProvider(entity, rowValueProvider, null);
 
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 		S instance = instantiator.createInstance(entity, parameterProvider);
@@ -160,22 +160,22 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
-
 				MappingCassandraConverter.this.readPropertyFromRow(entity, prop, row, accessor);
 			}
 		});
 	}
 
-	protected void readPropertyFromRow(final CassandraPersistentEntity<?> entity, final CassandraPersistentProperty prop,
+	// TODO argh! too many return statements!
+	protected void readPropertyFromRow(final CassandraPersistentEntity<?> entity, final CassandraPersistentProperty property,
 			final BasicCassandraRowValueProvider row, final PersistentPropertyAccessor accessor) {
 
-		if (entity.isConstructorArgument(prop)) { // skip 'cause prop was set in ctor
+		// if true then skip; property was set in constructor
+		if (entity.isConstructorArgument(property)) {
 			return;
 		}
 
-		if (prop.isCompositePrimaryKey()) {
+		if (property.isCompositePrimaryKey()) {
 
-			// get the key
 			CassandraPersistentProperty keyProperty = entity.getIdProperty();
 			CassandraPersistentEntity<?> keyEntity = keyProperty.getCompositePrimaryKeyEntity();
 
@@ -186,60 +186,60 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			// now recurse on using the key this time
-			readPropertiesFromRow(prop.getCompositePrimaryKeyEntity(), row, getConvertingAccessor(key, keyEntity));
+			readPropertiesFromRow(property.getCompositePrimaryKeyEntity(), row, getConvertingAccessor(key, keyEntity));
 
 			// now that the key's properties have been populated, set the key property on the entity
 			accessor.setProperty(keyProperty, key);
+
 			return;
 		}
 
-		if (!row.getRow().getColumnDefinitions().contains(prop.getColumnName().toCql())) {
+		if (!row.getRow().getColumnDefinitions().contains(property.getColumnName().toCql())) {
 			return;
 		}
 
-		Object obj = row.getPropertyValue(prop);
-		accessor.setProperty(prop, obj);
+		accessor.setProperty(property, row.getPropertyValue(property));
 	}
 
+	@SuppressWarnings("unused")
 	protected Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
 			BasicCassandraRowValueProvider propertyProvider) {
 
-		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
-
-		return instantiator.createInstance(entity,
-				new CassandraPersistentEntityParameterValueProvider(entity, propertyProvider, null));
+		return instantiators.getInstantiatorFor(entity).createInstance(entity,
+			new CassandraPersistentEntityParameterValueProvider(entity, propertyProvider, null));
 	}
 
 	@Override
 	public <R> R read(Class<R> type, Object row) {
+
 		if (row instanceof Row) {
 			return readRow(type, (Row) row);
 		}
+
 		throw new MappingException("Unknown row object " + row.getClass().getName());
 	}
 
 	@Override
 	public void write(Object source, Object sink) {
 
-		if (source == null) {
-			return;
-		}
+		if (source != null) {
+			Class<?> beanClassLoaderClass = transformClassToBeanClassLoaderClass(source.getClass());
 
-		Class<?> beanClassLoaderClass = transformClassToBeanClassLoaderClass(source.getClass());
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(beanClassLoaderClass);
+			CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(beanClassLoaderClass);
 
-		if (entity == null) {
-			throw new MappingException("No mapping metadata found for " + source.getClass());
-		}
+			if (entity == null) {
+				throw new MappingException("No mapping metadata found for " + source.getClass());
+			}
 
-		if (sink instanceof Insert) {
-			writeInsertFromObject(source, (Insert) sink, entity);
-		} else if (sink instanceof Update) {
-			writeUpdateFromObject(source, (Update) sink, entity);
-		} else if (sink instanceof Where) {
-			writeDeleteWhereFromObject(source, (Where) sink, entity);
-		} else {
-			throw new MappingException("Unknown write target " + sink.getClass().getName());
+			if (sink instanceof Insert) {
+				writeInsertFromObject(source, (Insert) sink, entity);
+			} else if (sink instanceof Update) {
+				writeUpdateFromObject(source, (Update) sink, entity);
+			} else if (sink instanceof Where) {
+				writeDeleteWhereFromObject(source, (Where) sink, entity);
+			} else {
+				throw new MappingException("Unknown write target " + sink.getClass().getName());
+			}
 		}
 	}
 
@@ -253,29 +253,31 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+			public void doWithPersistentProperty(CassandraPersistentProperty property) {
 
-				Object value = accessor.getProperty(prop,
-						prop.isCompositePrimaryKey() ? prop.getType() : CodecRegistry.DEFAULT_INSTANCE.codecFor(prop.getDataType()).getJavaType().getRawType());
+				Object value = accessor.getProperty(property, property.isCompositePrimaryKey() ? property.getType()
+					: CodecRegistry.DEFAULT_INSTANCE.codecFor(property.getDataType()).getJavaType().getRawType());
 
 				if (log.isDebugEnabled()) {
-					log.debug("doWithProperties Property.type {}, Property.value {}", prop.getType().getName(), value);
+					log.debug("doWithProperties Property.type {}, Property.value {}", property.getType().getName(), value);
 				}
 
-				if (prop.isCompositePrimaryKey()) {
+				if (property.isCompositePrimaryKey()) {
 					if (log.isDebugEnabled()) {
 						log.debug("Property is a compositeKey");
 					}
 
-					writeInsertFromWrapper(getConvertingAccessor(value, prop.getCompositePrimaryKeyEntity()), insert,
-							prop.getCompositePrimaryKeyEntity());
+					writeInsertFromWrapper(getConvertingAccessor(value, property.getCompositePrimaryKeyEntity()), insert,
+							property.getCompositePrimaryKeyEntity());
+
 					return;
 				}
 
 				if (log.isDebugEnabled()) {
-					log.debug("Adding insert.value [{}] - [{}]", prop.getColumnName().toCql(), value);
+					log.debug("Adding insert.value [{}] - [{}]", property.getColumnName().toCql(), value);
 				}
-				insert.value(prop.getColumnName().toCql(), value);
+
+				insert.value(property.getColumnName().toCql(), value);
 			}
 		});
 	}
@@ -290,21 +292,21 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty prop) {
+			public void doWithPersistentProperty(CassandraPersistentProperty property) {
 
-				Object value = accessor.getProperty(prop,
-						prop.isCompositePrimaryKey() ? prop.getType() : CodecRegistry.DEFAULT_INSTANCE.codecFor(prop.getDataType()).getJavaType().getRawType());
+				Object value = accessor.getProperty(property, property.isCompositePrimaryKey() ? property.getType()
+					: CodecRegistry.DEFAULT_INSTANCE.codecFor(property.getDataType()).getJavaType().getRawType());
 
-				if (prop.isCompositePrimaryKey()) {
-					CassandraPersistentEntity<?> keyEntity = prop.getCompositePrimaryKeyEntity();
+				if (property.isCompositePrimaryKey()) {
+					CassandraPersistentEntity<?> keyEntity = property.getCompositePrimaryKeyEntity();
 					writeUpdateFromWrapper(getConvertingAccessor(value, keyEntity), update, keyEntity);
 					return;
 				}
 
-				if (isPrimaryKeyPart(prop)) {
-					update.where(QueryBuilder.eq(prop.getColumnName().toCql(), value));
+				if (isPrimaryKeyPart(property)) {
+					update.where(QueryBuilder.eq(property.getColumnName().toCql(), value));
 				} else {
-					update.with(QueryBuilder.set(prop.getColumnName().toCql(), value));
+					update.with(QueryBuilder.set(property.getColumnName().toCql(), value));
 				}
 			}
 		});
@@ -361,7 +363,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			where.and(QueryBuilder.eq(idProperty.getColumnName().toCql(), id));
-			return;
 		}
 	}
 
@@ -431,12 +432,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
-	 * @return
+	 * @return a new {@link ConvertingPropertyAccessor} for the given source and entity.
 	 */
 	private ConvertingPropertyAccessor getConvertingAccessor(Object source, CassandraPersistentEntity<?> entity) {
 
-		PersistentPropertyAccessor accessor = source instanceof PersistentPropertyAccessor
-				? (PersistentPropertyAccessor) source : entity.getPropertyAccessor(source);
+		PersistentPropertyAccessor accessor = (source instanceof PersistentPropertyAccessor
+				? (PersistentPropertyAccessor) source : entity.getPropertyAccessor(source));
 
 		return new ConvertingPropertyAccessor(accessor, conversionService);
 	}
@@ -444,10 +445,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	/**
 	 * Returns whether the property is part of the primary key.
 	 *
-	 * @param property
-	 * @return
+	 * @param property {@link CassandraPersistentProperty} to evaluate.
+	 * @return a boolean value indicating whether the given property is party of a primary key.
 	 */
 	private boolean isPrimaryKeyPart(CassandraPersistentProperty property) {
-		return property.isCompositePrimaryKey() || property.isPrimaryKeyColumn() || property.isIdProperty();
+		return (property.isCompositePrimaryKey() || property.isPrimaryKeyColumn() || property.isIdProperty());
 	}
 }

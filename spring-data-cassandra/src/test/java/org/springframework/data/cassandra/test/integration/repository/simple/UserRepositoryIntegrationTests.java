@@ -45,8 +45,6 @@ public class UserRepositoryIntegrationTests {
 
 	List<User> all;
 
-	public UserRepositoryIntegrationTests() {}
-
 	public UserRepositoryIntegrationTests(UserRepository repository, CassandraOperations template) {
 		this.repository = repository;
 		this.template = template;
@@ -132,7 +130,7 @@ public class UserRepositoryIntegrationTests {
 
 	public void deletesUserByIdCorrectly() {
 
-		repository.delete(tom.getUsername().toString());
+		repository.delete(tom.getUsername());
 
 		List<User> result = Lists.newArrayList(repository.findAll());
 
@@ -153,7 +151,7 @@ public class UserRepositoryIntegrationTests {
 	}
 
 	/**
-	 * @see DATACASS-182
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
 	 */
 	public void save() {
 

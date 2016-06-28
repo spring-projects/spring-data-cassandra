@@ -31,8 +31,11 @@ import org.springframework.data.cassandra.test.integration.support.AbstractSprin
 public abstract class UserRepositoryIntegrationTestsDelegator
 		extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-	@Autowired UserRepository repository;
-	@Autowired CassandraOperations template;
+	@Autowired
+	CassandraOperations template;
+
+	@Autowired
+	UserRepository repository;
 
 	UserRepositoryIntegrationTests tests;
 
@@ -78,7 +81,7 @@ public abstract class UserRepositoryIntegrationTestsDelegator
 	}
 
 	/**
-	 * @see DATACASS-182
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
 	 */
 	@Test
 	public void save() {
