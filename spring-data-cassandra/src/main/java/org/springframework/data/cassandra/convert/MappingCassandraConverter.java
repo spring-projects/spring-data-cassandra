@@ -272,12 +272,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 					return;
 				}
 
-				if (value != null) {
-					if (log.isDebugEnabled()) {
-						log.debug("Adding insert.value [{}] - [{}]", prop.getColumnName().toCql(), value);
-					}
-					insert.value(prop.getColumnName().toCql(), value);
+				if (log.isDebugEnabled()) {
+					log.debug("Adding insert.value [{}] - [{}]", prop.getColumnName().toCql(), value);
 				}
+				insert.value(prop.getColumnName().toCql(), value);
 			}
 		});
 	}
@@ -303,12 +301,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 					return;
 				}
 
-				if (value != null) {
-					if (prop.isIdProperty() || entity.isCompositePrimaryKey() || prop.isPrimaryKeyColumn()) {
-						update.where(QueryBuilder.eq(prop.getColumnName().toCql(), value));
-					} else {
-						update.with(QueryBuilder.set(prop.getColumnName().toCql(), value));
-					}
+				if (isPrimaryKeyPart(prop)) {
+					update.where(QueryBuilder.eq(prop.getColumnName().toCql(), value));
+				} else {
+					update.with(QueryBuilder.set(prop.getColumnName().toCql(), value));
 				}
 			}
 		});
@@ -443,5 +439,15 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				? (PersistentPropertyAccessor) source : entity.getPropertyAccessor(source);
 
 		return new ConvertingPropertyAccessor(accessor, conversionService);
+	}
+
+	/**
+	 * Returns whether the property is part of the primary key.
+	 *
+	 * @param property
+	 * @return
+	 */
+	private boolean isPrimaryKeyPart(CassandraPersistentProperty property) {
+		return property.isCompositePrimaryKey() || property.isPrimaryKeyColumn() || property.isIdProperty();
 	}
 }

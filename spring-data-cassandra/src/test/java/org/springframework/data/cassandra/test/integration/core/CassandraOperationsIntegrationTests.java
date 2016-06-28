@@ -19,6 +19,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -34,13 +36,16 @@ import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.data.cassandra.test.integration.simpletons.BookCondition;
+import org.springframework.data.cassandra.test.integration.simpletons.BookReference;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -691,7 +696,6 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		assertThat(template.count(Book.class), is(equalTo(count)));
 	}
 
-
 	@Test
 	public void insertAndSelect() {
 
@@ -701,6 +705,90 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		template.insert(books);
 
 		assertThat(template.count(Book.class), is(equalTo(count)));
+	}
+
+	/**
+	 * @see DATACASS-182
+	 */
+	@Test
+	public void updateShouldRemoveFields() {
+
+		Book book = new Book();
+		book.setIsbn("isbn");
+		book.setTitle("title");
+		book.setAuthor("author");
+
+		template.insert(book);
+
+		book.setTitle(null);
+		template.update(book);
+
+		Book loaded = template.selectOneById(Book.class, book.getIsbn());
+
+		assertThat(loaded.getTitle(), is(nullValue()));
+		assertThat(loaded.getAuthor(), is(equalTo("author")));
+	}
+
+	/**
+	 * @see DATACASS-182
+	 */
+	@Test
+	public void insertShouldRemoveFields() {
+
+		Book book = new Book();
+		book.setIsbn("isbn");
+		book.setTitle("title");
+		book.setAuthor("author");
+
+		template.insert(book);
+
+		book.setTitle(null);
+		template.insert(book);
+
+		Book loaded = template.selectOneById(Book.class, book.getIsbn());
+
+		assertThat(loaded.getTitle(), is(nullValue()));
+		assertThat(loaded.getAuthor(), is(equalTo("author")));
+	}
+
+	/**
+	 * @see DATACASS-182
+	 */
+	@Test
+	public void updateShouldInsertEntity() {
+
+		Book book = new Book();
+		book.setIsbn("isbn");
+		book.setTitle("title");
+		book.setAuthor("author");
+
+		template.update(book);
+
+		Book loaded = template.selectOneById(Book.class, book.getIsbn());
+
+		assertThat(loaded, is(notNullValue()));
+	}
+
+	/**
+	 * @see DATACASS-182
+	 */
+	@Test
+	public void insertAndUpdateToEmptyCollection() {
+
+		BookReference bookReference = new BookReference();
+
+		bookReference.setIsbn("isbn");
+		bookReference.setBookmarks(Arrays.asList(1, 2, 3, 4));
+
+		template.insert(bookReference);
+
+		bookReference.setBookmarks(Collections.<Integer> emptyList());
+		template.update(bookReference);
+
+		BookReference loaded = template.selectOneById(BookReference.class, bookReference.getIsbn());
+
+		assertThat(loaded.getTitle(), is(nullValue()));
+		assertThat(loaded.getBookmarks(), is(nullValue()));
 	}
 
 	/**
