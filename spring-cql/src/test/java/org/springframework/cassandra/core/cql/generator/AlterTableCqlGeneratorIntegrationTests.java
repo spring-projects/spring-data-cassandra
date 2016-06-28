@@ -58,12 +58,13 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation bigint);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
-				DataType.varint());
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
+				.alter("lastKnownLocation", DataType.varint());
 
 		execute(spec);
 
 		ColumnMetadata column = getTableMetadata("addamsFamily").getColumn("lastKnownLocation");
+
 		assertThat(column.getType(), is(equalTo(DataType.varint())));
 	}
 
@@ -76,12 +77,13 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation list<ascii>);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
-				DataType.list(DataType.varchar()));
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
+				.alter("lastKnownLocation", DataType.list(DataType.varchar()));
 
 		execute(spec);
 
 		ColumnMetadata column = getTableMetadata("addamsFamily").getColumn("lastKnownLocation");
+
 		assertThat(column.getType(), is(equalTo((DataType) DataType.list(DataType.varchar()))));
 	}
 
@@ -94,12 +96,13 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation varchar);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").add("gravesite",
-				DataType.varchar());
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
+				.add("gravesite", DataType.varchar());
 
 		execute(spec);
 
 		ColumnMetadata column = getTableMetadata("addamsFamily").getColumn("gravesite");
+
 		assertThat(column.getType(), is(equalTo(DataType.varchar())));
 	}
 
@@ -111,12 +114,13 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		session.execute("CREATE TABLE users (user_name varchar PRIMARY KEY);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("users").add("top_places",
-				DataType.list(DataType.ascii()));
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("users")
+				.add("top_places", DataType.list(DataType.ascii()));
 
 		execute(spec);
 
 		ColumnMetadata column = getTableMetadata("users").getColumn("top_places");
+
 		assertThat(column.getType(), is(equalTo((DataType) DataType.list(DataType.ascii()))));
 	}
 

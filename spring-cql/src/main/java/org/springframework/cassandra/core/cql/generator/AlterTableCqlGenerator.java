@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,16 +30,17 @@ import org.springframework.cassandra.core.keyspace.TableOption;
 
 /**
  * CQL generator for generating {@code ALTER TABLE} statements.
- * 
+ *
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @see AlterTableSpecification
+ * @see TableOptionsCqlGenerator
  */
 public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableSpecification> {
 
 	/**
 	 * Generates a CQL statement from the given {@code specification}.
-	 * 
+	 *
 	 * @param specification must not be {@literal null}.
 	 * @return the generated CQL statement.
 	 */
@@ -49,7 +50,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 
 	/**
 	 * Creates a new {@literal {@link AlterTableCqlGenerator}.
-	 * 
+	 *
 	 * @param specification must not be {@literal null}.
 	 */
 	public AlterTableCqlGenerator(AlterTableSpecification specification) {
@@ -85,6 +86,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 		cql = noNull(cql);
 
 		boolean first = true;
+
 		for (ColumnChangeSpecification change : spec().getChanges()) {
 			if (first) {
 				first = false;
@@ -124,17 +126,19 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 		cql = noNull(cql);
 
 		Map<String, Object> options = spec().getOptions();
+
 		if (options == null || options.isEmpty()) {
 			return cql;
 		}
 
 		cql.append("WITH ");
+
 		boolean first = true;
+
 		for (String key : options.keySet()) {
 
 			/*
 			 * Compact storage is illegal on alter table.
-			 * 
 			 * TODO - Is there a way to handle this in the specification?
 			 */
 			if (key.equals(TableOption.COMPACT_STORAGE.getName())) {
@@ -150,9 +154,11 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 			cql.append(key);
 
 			Object value = options.get(key);
+
 			if (value == null) {
 				continue;
 			}
+
 			cql.append(" = ");
 
 			if (value instanceof Map) {
@@ -163,6 +169,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 			// else just use value as string
 			cql.append(value.toString());
 		}
+
 		return cql;
 	}
 }

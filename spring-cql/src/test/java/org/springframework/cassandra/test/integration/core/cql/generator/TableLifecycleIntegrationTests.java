@@ -21,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.core.cql.generator.AlterTableCqlGeneratorUnitTests;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGeneratorUnitTests;
 import org.springframework.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.DropTableCqlGeneratorUnitTests;
@@ -39,7 +38,8 @@ public class TableLifecycleIntegrationTests extends AbstractKeyspaceCreatingInte
 
 	private final static Logger log = LoggerFactory.getLogger(TableLifecycleIntegrationTests.class);
 
-	CreateTableCqlGeneratorUnitTests.MultipleOptionsTest createTableTest = new CreateTableCqlGeneratorUnitTests.MultipleOptionsTest();
+	CreateTableCqlGeneratorUnitTests.MultipleOptionsTest createTableTest =
+			new CreateTableCqlGeneratorUnitTests.MultipleOptionsTest();
 
 	@Before
 	public void setUp() throws Exception {
@@ -47,7 +47,7 @@ public class TableLifecycleIntegrationTests extends AbstractKeyspaceCreatingInte
 	}
 
 	@Test
-	public void testDrop() {
+	public void dropIsSuccessful() {
 
 		createTableTest.prepare();
 
@@ -79,7 +79,5 @@ public class TableLifecycleIntegrationTests extends AbstractKeyspaceCreatingInte
 		public DropTableCqlGenerator generator() {
 			return new DropTableCqlGenerator(specification);
 		}
-
 	}
-
 }

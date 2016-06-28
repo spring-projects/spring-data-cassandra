@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,10 @@ import org.springframework.cassandra.core.keyspace.AlterColumnSpecification;
 
 /**
  * CQL generator for generating an <code>ALTER</code> column clause of an <code>ALTER TABLE</code> statement.
- * 
+ *
  * @author Matthew T. Adams
+ * @see AlterColumnSpecification
+ * @see ColumnChangeCqlGenerator
  */
 public class AlterColumnCqlGenerator extends ColumnChangeCqlGenerator<AlterColumnSpecification> {
 
@@ -31,6 +33,7 @@ public class AlterColumnCqlGenerator extends ColumnChangeCqlGenerator<AlterColum
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("ALTER ").append(spec().getName()).append(" TYPE ").append(spec().getType().asFunctionParameterString());
+		return noNull(cql).append("ALTER ").append(spec().getName()).append(" TYPE ")
+				.append(spec().getType().asFunctionParameterString());
 	}
 }

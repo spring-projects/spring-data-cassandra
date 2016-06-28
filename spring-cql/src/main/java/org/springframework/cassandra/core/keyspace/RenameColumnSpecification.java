@@ -22,10 +22,10 @@ import org.springframework.util.Assert;
 
 /**
  * {@link ColumnChangeSpecification} to rename a column.
- * 
+ *
  * @author Mark Paluch
- * @since 1.5
  * @see ColumnChangeSpecification
+ * @since 1.5
  */
 public class RenameColumnSpecification extends ColumnChangeSpecification {
 
@@ -51,6 +51,7 @@ public class RenameColumnSpecification extends ColumnChangeSpecification {
 		super(from);
 
 		Assert.notNull(to, "Target name must not be null");
+
 		this.targetName = to;
 	}
 

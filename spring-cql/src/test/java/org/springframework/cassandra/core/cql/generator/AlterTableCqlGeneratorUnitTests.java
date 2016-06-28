@@ -44,8 +44,8 @@ public class AlterTableCqlGeneratorUnitTests {
 	@Test
 	public void alterTableAlterColumnType() {
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
-				DataType.uuid());
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
+				.alter("lastKnownLocation", DataType.uuid());
 
 		assertThat(toCql(spec), is(equalTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE uuid;")));
 	}
@@ -56,8 +56,8 @@ public class AlterTableCqlGeneratorUnitTests {
 	@Test
 	public void alterTableAlterListColumnType() {
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
-				DataType.list(DataType.ascii()));
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
+				.alter("lastKnownLocation", DataType.list(DataType.ascii()));
 
 		assertThat(toCql(spec), is(equalTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE list<ascii>;")));
 	}
@@ -68,8 +68,8 @@ public class AlterTableCqlGeneratorUnitTests {
 	@Test
 	public void alterTableAddColumn() {
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").add("gravesite",
-				DataType.varchar());
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
+				.add("gravesite", DataType.varchar());
 
 		assertThat(toCql(spec), is(equalTo("ALTER TABLE addamsfamily ADD gravesite varchar;")));
 	}
@@ -80,8 +80,8 @@ public class AlterTableCqlGeneratorUnitTests {
 	@Test
 	public void alterTableAddListColumn() {
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("users").add("top_places",
-				DataType.list(DataType.ascii()));
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("users")
+				.add("top_places", DataType.list(DataType.ascii()));
 
 		assertThat(toCql(spec), is(equalTo("ALTER TABLE users ADD top_places list<ascii>;")));
 	}
@@ -103,7 +103,8 @@ public class AlterTableCqlGeneratorUnitTests {
 	@Test
 	public void alterTableRenameColumn() {
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").rename("firstname", "lastname");
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
+				.rename("firstname", "lastname");
 
 		assertThat(toCql(spec), is(equalTo("ALTER TABLE addamsfamily RENAME firstname TO lastname;")));
 	}

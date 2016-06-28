@@ -26,19 +26,18 @@ import com.datastax.driver.core.TableMetadata;
 
 /**
  * This encapsulates the logic for CQL quoted and unquoted identifiers.
- * <p/>
- * CQL identifiers, when unquoted, are converted to lower case. When quoted, they are returned as-is with no lower
+ *
+ * <p>CQL identifiers, when unquoted, are converted to lower case. When quoted, they are returned as-is with no lower
  * casing and encased in double quotes. To render, use any of the methods {@link #toCql()},
  * {@link #toCql(StringBuilder)}, or {@link #toString()}.
- * 
- * @see #CqlIdentifier(String)
- * @see #CqlIdentifier(String, boolean)
- * @see #toCql()
- * @see #toCql(StringBuilder)
- * @see #toString()
+ *
  * @author John McPeek
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author John Blum
+ * @see #toCql()
+ * @see #toCql(StringBuilder)
+ * @see #toString()
  */
 public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializable {
 
@@ -52,8 +51,8 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 	/**
 	 * Factory method for {@link CqlIdentifier}. Convenient if imported statically.
-	 * 
-	 * @see #CqlIdentifier(String)
+	 *
+	 * @see #CqlIdentifier(CharSequence)
 	 */
 	public static CqlIdentifier cqlId(CharSequence identifier) {
 		return new CqlIdentifier(identifier);
@@ -61,8 +60,8 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 	/**
 	 * Factory method for {@link CqlIdentifier}. Convenient if imported statically.
-	 * 
-	 * @see #CqlIdentifier(String)
+	 *
+	 * @see #CqlIdentifier(CharSequence, boolean)
 	 */
 	public static CqlIdentifier cqlId(CharSequence identifier, boolean forceQuote) {
 		return new CqlIdentifier(identifier, forceQuote);
@@ -70,8 +69,8 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 	/**
 	 * Factory method for a force-quoted {@link CqlIdentifier}. Convenient if imported statically.
-	 * 
-	 * @see #CqlIdentifier(String, boolean)
+	 *
+	 * @see #CqlIdentifier(CharSequence, boolean)
 	 */
 	public static CqlIdentifier quotedCqlId(CharSequence identifier) {
 		return new CqlIdentifier(identifier, true);
@@ -97,8 +96,8 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 	/**
 	 * Creates a new {@link CqlIdentifier} without force-quoting it. It may end up quoted, depending on its value.
-	 * 
-	 * @see #cqlId(String)
+	 *
+	 * @see #cqlId(CharSequence)
 	 */
 	public CqlIdentifier(CharSequence identifier) {
 		this(identifier, false);
@@ -113,9 +112,9 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * plus the name will be converted to lower case and rendered as such.</li>
 	 * <li>If the given identifier is illegal, an {@link IllegalArgumentException} is thrown.</li>
 	 * </ul>
-	 * 
-	 * @see #cqlId(String)
-	 * @see #quotedCqlId(String)
+	 *
+	 * @see #cqlId(CharSequence, boolean)
+	 * @see #quotedCqlId(CharSequence)
 	 */
 	public CqlIdentifier(CharSequence identifier, boolean forceQuote) {
 		setIdentifier(identifier, forceQuote);
@@ -129,6 +128,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 		Assert.notNull(identifier, "Identifier must not be null");
 
 		String string = identifier.toString();
+
 		Assert.hasText(string, "Identifier must not be empty");
 
 		if (forceQuoting || isQuotedIdentifier(string)) {
@@ -167,17 +167,8 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * {@link StringBuilder}. If <code>null</code> is given, a new {@link StringBuilder} is created, appended to, and
 	 * returned.
 	 */
-	public StringBuilder toCql(StringBuilder sb) {
-		sb = sb == null ? new StringBuilder() : sb;
-		return sb.append(toCql());
-	}
-
-	/**
-	 * Alias for {@link #toCql()}.
-	 */
-	@Override
-	public String toString() {
-		return toCql();
+	public StringBuilder toCql(StringBuilder builder) {
+		return (builder != null ? builder : new StringBuilder()).append(toCql());
 	}
 
 	/**
@@ -187,9 +178,16 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 		return quoted;
 	}
 
+	/**
+	 * Unquoted identifiers sort before quoted ones. Otherwise, they compare according to their identifiers.
+	 */
 	@Override
-	public int hashCode() {
-		return ((Boolean) quoted).hashCode() ^ identifier.hashCode();
+	@SuppressWarnings("all")
+	public int compareTo(CqlIdentifier identifier) {
+
+		int comparison = ((Boolean) this.quoted).compareTo(identifier.quoted);
+
+		return (comparison != 0 ? comparison : this.identifier.compareTo(identifier.identifier));
 	}
 
 	/**
@@ -198,32 +196,32 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * a {@link CqlIdentifier}.
 	 */
 	@Override
-	public boolean equals(Object that) {
-		if (this == that) {
+	public boolean equals(Object obj) {
+
+		if (this == obj) {
 			return true;
 		}
-		if (that == null) {
-			return false;
-		}
-		if (!(that instanceof CqlIdentifier) && !(that instanceof CharSequence)) {
+
+		if (!(obj instanceof CqlIdentifier || obj instanceof CharSequence)) {
 			return false;
 		}
 
-		CqlIdentifier other = (that instanceof CqlIdentifier) ? (CqlIdentifier) that : cqlId((CharSequence) that);
+		CqlIdentifier that = (obj instanceof CqlIdentifier) ? (CqlIdentifier) obj : cqlId((CharSequence) obj);
 
-		return this.quoted == other.quoted && this.identifier.equals(other.identifier);
+		return (this.quoted == that.quoted && this.identifier.equals(that.identifier));
+	}
+
+	@Override
+	// TODO hmmm, re-evaluate this since it is not a proper hash code matching equals!
+	public int hashCode() {
+		return ((Boolean) quoted).hashCode() ^ identifier.hashCode();
 	}
 
 	/**
-	 * Unquoted identifiers sort before quoted ones. Otherwise, they compare according to their identifiers.
+	 * Alias for {@link #toCql()}.
 	 */
 	@Override
-	public int compareTo(CqlIdentifier that) {
-
-		int comparison = ((Boolean) this.quoted).compareTo(that.quoted);
-		if (comparison != 0) {
-			return comparison;
-		}
-		return this.identifier.compareTo(that.identifier);
+	public String toString() {
+		return toCql();
 	}
 }

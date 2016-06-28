@@ -21,9 +21,10 @@ import org.springframework.cassandra.core.keyspace.RenameColumnSpecification;
 
 /**
  * CQL generator for generating an {@code RENAME} column clause of an {@code ALTER TABLE} statement.
- * 
+ *
  * @author Mark Paluch
  * @since 1.5
+ * @see ColumnChangeCqlGenerator
  * @see RenameColumnSpecification
  * @see org.springframework.cassandra.core.keyspace.AlterTableSpecification
  */
