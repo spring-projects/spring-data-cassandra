@@ -103,7 +103,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(withEnumColumns, insert);
 
-		assertThat(getValues(insert), contains((Object) "MINT"));
+		assertThat(getValues(insert), hasItem((Object) "MINT"));
 	}
 
 	/**
