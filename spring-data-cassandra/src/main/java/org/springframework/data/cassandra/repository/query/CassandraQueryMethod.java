@@ -41,11 +41,16 @@ import com.datastax.driver.core.ResultSet;
  */
 public class CassandraQueryMethod extends QueryMethod {
 
-	private final Method method;
-	private final CassandraMappingContext mappingContext;
-	private Query query;
-	private String queryString;
 	private boolean queryCached = false;
+
+	@SuppressWarnings("all")
+	private final CassandraMappingContext mappingContext;
+
+	private final Method method;
+
+	private Query query;
+
+	private String queryString;
 
 	/**
 	 * Creates a new {@link CassandraQueryMethod} from the given {@link Method}.
@@ -60,7 +65,7 @@ public class CassandraQueryMethod extends QueryMethod {
 
 		super(method, metadata, factory);
 
-		Assert.notNull(mappingContext, "MappingContext must not be null!");
+		Assert.notNull(mappingContext, "MappingContext must not be null");
 
 		verify(method, metadata);
 
@@ -68,11 +73,15 @@ public class CassandraQueryMethod extends QueryMethod {
 		this.mappingContext = mappingContext;
 	}
 
+	/**
+	 * Validates that this query is not a page or slice query.
+	 */
+	@SuppressWarnings("unused")
 	public void verify(Method method, RepositoryMetadata metadata) {
 
 		// TODO: support Page & Slice queries
 		if (isSliceQuery() || isPageQuery()) {
-			throw new InvalidDataAccessApiUsageException("Slice and Page queries are not supported.");
+			throw new InvalidDataAccessApiUsageException("Slice and Page queries are not supported");
 		}
 	}
 
@@ -92,6 +101,7 @@ public class CassandraQueryMethod extends QueryMethod {
 			query = AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
 			queryCached = true;
 		}
+
 		return query;
 	}
 
@@ -99,7 +109,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * Returns whether the method has an annotated query.
 	 */
 	public boolean hasAnnotatedQuery() {
-		return getAnnotatedQuery() != null;
+		return (getAnnotatedQuery() != null);
 	}
 
 	/**
@@ -110,7 +120,7 @@ public class CassandraQueryMethod extends QueryMethod {
 
 		if (!queryCached) {
 			queryString = (String) AnnotationUtils.getValue(getQueryAnnotation());
-			queryString = StringUtils.hasText(queryString) ? queryString : null;
+			queryString = (StringUtils.hasText(queryString) ? queryString : null);
 		}
 
 		return queryString;

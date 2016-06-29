@@ -51,9 +51,9 @@ public abstract class CassandraJodaTimeConverters {
 		}
 
 		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+
 		converters.add(CassandraLocalDateToLocalDateConverter.INSTANCE);
 		converters.add(LocalDateToCassandraLocalDateConverter.INSTANCE);
-
 		converters.add(CassandraLocalDateToDateMidnightConverter.INSTANCE);
 		converters.add(DateMidnightToCassandraLocalDateConverter.INSTANCE);
 
@@ -65,7 +65,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
-	public static enum CassandraLocalDateToLocalDateConverter
+	public enum CassandraLocalDateToLocalDateConverter
 			implements Converter<com.datastax.driver.core.LocalDate, LocalDate> {
 
 		INSTANCE;
@@ -81,7 +81,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
-	public static enum LocalDateToCassandraLocalDateConverter
+	public enum LocalDateToCassandraLocalDateConverter
 			implements Converter<LocalDate, com.datastax.driver.core.LocalDate> {
 
 		INSTANCE;
@@ -99,7 +99,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
-	public static enum CassandraLocalDateToDateMidnightConverter
+	public enum CassandraLocalDateToDateMidnightConverter
 			implements Converter<com.datastax.driver.core.LocalDate, DateMidnight> {
 
 		INSTANCE;
@@ -116,7 +116,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
-	public static enum DateMidnightToCassandraLocalDateConverter
+	public enum DateMidnightToCassandraLocalDateConverter
 			implements Converter<DateMidnight, com.datastax.driver.core.LocalDate> {
 
 		INSTANCE;

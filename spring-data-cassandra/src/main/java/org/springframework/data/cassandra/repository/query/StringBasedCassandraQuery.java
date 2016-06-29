@@ -36,7 +36,8 @@ import com.datastax.driver.core.LocalDate;
  */
 public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 
-	@SuppressWarnings("unchecked") private static final Set<Class<?>> STRING_LIKE_PARAMETER_TYPES = new HashSet<Class<?>>(
+	@SuppressWarnings("unchecked")
+	private static final Set<Class<?>> STRING_LIKE_PARAMETER_TYPES = new HashSet<Class<?>>(
 			Arrays.asList(CharSequence.class, char.class, Character.class, char[].class));
 
 	private static final Pattern PLACEHOLDER = Pattern.compile("\\?(\\d+)");
@@ -99,14 +100,12 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 
 	private boolean isStringLike(Object value) {
 
-		if (value == null) {
-			return false;
-		}
+		if (value != null) {
+			for (Class<?> type : STRING_LIKE_PARAMETER_TYPES) {
 
-		for (Class<?> type : STRING_LIKE_PARAMETER_TYPES) {
-
-			if (ClassUtils.isAssignableValue(type, value)) {
-				return true;
+				if (ClassUtils.isAssignableValue(type, value)) {
+					return true;
+				}
 			}
 		}
 

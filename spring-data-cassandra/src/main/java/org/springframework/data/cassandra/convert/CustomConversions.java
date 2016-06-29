@@ -180,16 +180,17 @@ public class CustomConversions {
 	private void registerConversion(Object converter) {
 
 		Class<?> type = converter.getClass();
-		boolean isWriting = type.isAnnotationPresent(WritingConverter.class);
+
 		boolean isReading = type.isAnnotationPresent(ReadingConverter.class);
+		boolean isWriting = type.isAnnotationPresent(WritingConverter.class);
 
 		if (converter instanceof GenericConverter) {
 			GenericConverter genericConverter = (GenericConverter) converter;
+
 			for (ConvertiblePair pair : genericConverter.getConvertibleTypes()) {
 				register(new ConverterRegistration(pair, isReading, isWriting));
 			}
 		} else if (converter instanceof ConverterFactory) {
-
 			Class<?>[] arguments = GenericTypeResolver.resolveTypeArguments(converter.getClass(), ConverterFactory.class);
 			register(new ConverterRegistration(arguments[0], arguments[1], isReading, isWriting));
 		} else if (converter instanceof Converter) {
@@ -354,6 +355,7 @@ public class CustomConversions {
 		for (ConvertiblePair typePair : pairs) {
 			if (typePair.getSourceType().isAssignableFrom(sourceType)) {
 				Class<?> targetType = typePair.getTargetType();
+
 				if (requestedTargetType == null || targetType.isAssignableFrom(requestedTargetType)) {
 					return targetType;
 				}
@@ -381,7 +383,8 @@ public class CustomConversions {
 		}
 
 		Class<?> type = producer.get();
-		cache.put(key, CacheValue.<Class<?>> ofNullable(type));
+
+		cache.put(key, CacheValue.<Class<?>>ofNullable(type));
 
 		return type;
 	}

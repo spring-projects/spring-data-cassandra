@@ -18,17 +18,12 @@ package org.springframework.data.cassandra.convert;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.util.ClassUtils;
-import org.threeten.bp.Instant;
 import org.threeten.bp.LocalDate;
-import org.threeten.bp.LocalDateTime;
-import org.threeten.bp.ZoneId;
 
 /**
  * Helper class to register {@link Converter} implementations for the ThreeTen Backport project in case it's present on
@@ -58,6 +53,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 		}
 
 		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+
 		converters.add(CassandraLocalDateToLocalDateConverter.INSTANCE);
 		converters.add(LocalDateToCassandraLocalDateConverter.INSTANCE);
 
@@ -69,7 +65,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @author Mark Paluch
 	 */
-	public static enum CassandraLocalDateToLocalDateConverter
+	public enum CassandraLocalDateToLocalDateConverter
 			implements Converter<com.datastax.driver.core.LocalDate, LocalDate> {
 
 		INSTANCE;
@@ -85,7 +81,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @author Mark Paluch
 	 */
-	public static enum LocalDateToCassandraLocalDateConverter
+	public enum LocalDateToCassandraLocalDateConverter
 			implements Converter<LocalDate, com.datastax.driver.core.LocalDate> {
 
 		INSTANCE;

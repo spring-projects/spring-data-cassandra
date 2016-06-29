@@ -417,6 +417,7 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldReadDateCorrectly() {
 
 		LocalDate date = LocalDate.fromDaysSinceEpoch(1234);
+
 		when(rowMock.getDate(0)).thenReturn(date);
 
 		LocalDate result = mappingCassandraConverter.readRow(LocalDate.class, rowMock);
@@ -468,10 +469,11 @@ public class MappingCassandraConverterUnitTests {
 		typeWithLocalDate.localDate = now;
 
 		Insert insert = QueryBuilder.insertInto("table");
+
 		mappingCassandraConverter.write(typeWithLocalDate, insert);
 
-		assertThat(getValues(insert),
-				contains((Object) LocalDate.fromYearMonthDay(now.getYear(), now.getMonthValue(), now.getDayOfMonth())));
+		assertThat(getValues(insert).contains(LocalDate.fromYearMonthDay(now.getYear(), now.getMonthValue(), now.getDayOfMonth())),
+			is(true));
 	}
 
 	/**
@@ -486,10 +488,11 @@ public class MappingCassandraConverterUnitTests {
 		typeWithLocalDate.localDate = now;
 
 		Update update = QueryBuilder.update("table");
+
 		mappingCassandraConverter.write(typeWithLocalDate, update);
 
-		assertThat(getAssignmentValues(update),
-				contains((Object) LocalDate.fromYearMonthDay(now.getYear(), now.getMonthValue(), now.getDayOfMonth())));
+		assertThat(getAssignmentValues(update).contains(LocalDate.fromYearMonthDay(now.getYear(), now.getMonthValue(), now.getDayOfMonth())),
+			is(true));
 	}
 
 	/**
@@ -499,19 +502,18 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldCreateInsertWithLocalDateListUsingCassandraDate() {
 
 		java.time.LocalDate now = java.time.LocalDate.now();
+		java.time.LocalDate localDate = java.time.LocalDate.of(2010, 7, 4);
 
 		TypeWithLocalDate typeWithLocalDate = new TypeWithLocalDate();
-		java.time.LocalDate localDate = java.time.LocalDate.of(2010, 7, 4);
 		typeWithLocalDate.list = Arrays.asList(now, localDate);
 
 		Insert insert = QueryBuilder.insertInto("table");
+
 		mappingCassandraConverter.write(typeWithLocalDate, insert);
 
-		List<Object> values = getValues(insert);
+		List<LocalDate> dates = getListValue(insert);
 
-		assertThat(values.get(0), is(instanceOf(List.class)));
-		List<LocalDate> dates = (List) values.get(0);
-
+		assertThat(dates, is(notNullValue(List.class)));
 		assertThat(dates, hasItem(LocalDate.fromYearMonthDay(now.getYear(), now.getMonthValue(), now.getDayOfMonth())));
 		assertThat(dates, hasItem(LocalDate.fromYearMonthDay(2010, 7, 4)));
 	}
@@ -523,19 +525,18 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldCreateInsertWithLocalDateSetUsingCassandraDate() {
 
 		java.time.LocalDate now = java.time.LocalDate.now();
+		java.time.LocalDate localDate = java.time.LocalDate.of(2010, 7, 4);
 
 		TypeWithLocalDate typeWithLocalDate = new TypeWithLocalDate();
-		java.time.LocalDate localDate = java.time.LocalDate.of(2010, 7, 4);
 		typeWithLocalDate.set = new HashSet<java.time.LocalDate>(Arrays.asList(now, localDate));
 
 		Insert insert = QueryBuilder.insertInto("table");
+
 		mappingCassandraConverter.write(typeWithLocalDate, insert);
 
-		List<Object> values = getValues(insert);
+		Set<LocalDate> dates = getSetValue(insert);
 
-		assertThat(values.get(0), is(instanceOf(Set.class)));
-		Set<LocalDate> dates = (Set) values.get(0);
-
+		assertThat(dates, is(notNullValue(Set.class)));
 		assertThat(dates, hasItem(LocalDate.fromYearMonthDay(now.getYear(), now.getMonthValue(), now.getDayOfMonth())));
 		assertThat(dates, hasItem(LocalDate.fromYearMonthDay(2010, 7, 4)));
 	}
@@ -571,7 +572,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(typeWithLocalDate, insert);
 
-		assertThat(getValues(insert), contains((Object) LocalDate.fromYearMonthDay(2010, 7, 4)));
+		assertThat(getValues(insert).contains(LocalDate.fromYearMonthDay(2010, 7, 4)), is(true));
 	}
 
 	/**
@@ -584,6 +585,7 @@ public class MappingCassandraConverterUnitTests {
 		typeWithLocalDate.localDate = java.time.LocalDate.of(2010, 7, 4);
 
 		Update update = QueryBuilder.update("table");
+
 		mappingCassandraConverter.write(typeWithLocalDate, update);
 
 		assertThat(getAssignmentValues(update), contains((Object) LocalDate.fromYearMonthDay(2010, 7, 4)));
@@ -650,8 +652,8 @@ public class MappingCassandraConverterUnitTests {
 		Row rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
 				column("localDate", LocalDate.fromYearMonthDay(2010, 7, 4), DataType.date()));
 
-		TypeWithJodaLocalDateMappedToDate result = mappingCassandraConverter
-				.readRow(TypeWithJodaLocalDateMappedToDate.class, rowMock);
+		TypeWithJodaLocalDateMappedToDate result =
+			mappingCassandraConverter.readRow(TypeWithJodaLocalDateMappedToDate.class, rowMock);
 
 		assertThat(result.localDate, is(notNullValue()));
 		assertThat(result.localDate.getYear(), is(2010));
@@ -669,9 +671,10 @@ public class MappingCassandraConverterUnitTests {
 		typeWithLocalDate.localDate = new org.joda.time.LocalDate(2010, 7, 4);
 
 		Insert insert = QueryBuilder.insertInto("table");
+
 		mappingCassandraConverter.write(typeWithLocalDate, insert);
 
-		assertThat(getValues(insert), contains((Object) LocalDate.fromYearMonthDay(2010, 7, 4)));
+		assertThat(getValues(insert).contains(LocalDate.fromYearMonthDay(2010, 7, 4)), is(true));
 	}
 
 	/**
@@ -684,6 +687,7 @@ public class MappingCassandraConverterUnitTests {
 		typeWithLocalDate.localDate = new org.joda.time.LocalDate(2010, 7, 4);
 
 		Update update = QueryBuilder.update("table");
+
 		mappingCassandraConverter.write(typeWithLocalDate, update);
 
 		assertThat(getAssignmentValues(update), contains((Object) LocalDate.fromYearMonthDay(2010, 7, 4)));
@@ -698,8 +702,8 @@ public class MappingCassandraConverterUnitTests {
 		Row rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
 				column("localDate", LocalDate.fromYearMonthDay(2010, 7, 4), DataType.date()));
 
-		TypeWithThreeTenBpLocalDateMappedToDate result = mappingCassandraConverter
-				.readRow(TypeWithThreeTenBpLocalDateMappedToDate.class, rowMock);
+		TypeWithThreeTenBpLocalDateMappedToDate result =
+				mappingCassandraConverter.readRow(TypeWithThreeTenBpLocalDateMappedToDate.class, rowMock);
 
 		assertThat(result.localDate, is(notNullValue()));
 		assertThat(result.localDate.getYear(), is(2010));
@@ -717,9 +721,10 @@ public class MappingCassandraConverterUnitTests {
 		typeWithLocalDate.localDate = org.threeten.bp.LocalDate.of(2010, 7, 4);
 
 		Insert insert = QueryBuilder.insertInto("table");
+
 		mappingCassandraConverter.write(typeWithLocalDate, insert);
 
-		assertThat(getValues(insert), contains((Object) LocalDate.fromYearMonthDay(2010, 7, 4)));
+		assertThat(getValues(insert).contains(LocalDate.fromYearMonthDay(2010, 7, 4)), is(true));
 	}
 
 	/**
@@ -737,6 +742,31 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(getAssignmentValues(update), contains((Object) LocalDate.fromYearMonthDay(2010, 7, 4)));
 	}
 
+	@SuppressWarnings("unchecked")
+	private <T> List<T> getListValue(Insert statement) {
+		List<Object> values = getValues(statement);
+
+		for (Object value : values) {
+			if (value instanceof List) {
+				return (List<T>) value;
+			}
+		}
+
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> Set<T> getSetValue(Insert statement) {
+		List<Object> values = getValues(statement);
+
+		for (Object value : values) {
+			if (value instanceof Set) {
+				return (Set<T>) value;
+			}
+		}
+
+		return null;
+	}
 
 	@SuppressWarnings("unchecked")
 	private List<Object> getValues(Insert statement) {
@@ -875,7 +905,7 @@ public class MappingCassandraConverterUnitTests {
 		}
 	}
 
-	public static enum Condition {
+	public enum Condition {
 		MINT, USED;
 	}
 

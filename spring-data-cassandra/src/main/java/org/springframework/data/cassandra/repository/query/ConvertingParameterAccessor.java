@@ -118,6 +118,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		}
 
 		DataType parameterType = getDataType(index);
+
 		if (parameterType == null) {
 			parameterType = cassandraConverter.getMappingContext().getDataType(getParameterType(index));
 		}
@@ -174,5 +175,4 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			delegate.remove();
 		}
 	}
-
 }

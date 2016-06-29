@@ -39,11 +39,11 @@ import org.springframework.data.util.ClassTypeInformation;
  */
 public class MappingContextUnitTests {
 
-	BasicCassandraMappingContext ctx = new BasicCassandraMappingContext();
+	BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
 
 	@Test(expected = MappingException.class)
 	public void testGetPersistentEntityOfTransientType() {
-		ctx.getPersistentEntity(Transient.class);
+		mappingContext.getPersistentEntity(Transient.class);
 	}
 
 	private static class Transient {}
@@ -51,11 +51,11 @@ public class MappingContextUnitTests {
 	@Test
 	public void testGetExistingPersistentEntityHappyPath() {
 
-		ctx.getPersistentEntity(X.class);
+		mappingContext.getPersistentEntity(X.class);
 
-		assertTrue(ctx.contains(X.class));
-		assertNotNull(ctx.getExistingPersistentEntity(X.class));
-		assertFalse(ctx.contains(Y.class));
+		assertTrue(mappingContext.contains(X.class));
+		assertNotNull(mappingContext.getExistingPersistentEntity(X.class));
+		assertFalse(mappingContext.contains(Y.class));
 	}
 
 	@Table
@@ -74,12 +74,14 @@ public class MappingContextUnitTests {
 	@Test
 	public void primaryKeyOnPropertyShouldWork() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getPersistentEntity(PrimaryKeyOnProperty.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(PrimaryKeyOnProperty.class);
 
 		CassandraPersistentProperty idProperty = persistentEntity.getIdProperty();
+
 		assertThat(idProperty.getColumnName().toCql(), is(equalTo("foo")));
 
 		List<CqlIdentifier> columnNames = idProperty.getColumnNames();
+
 		assertThat(columnNames, hasSize(1));
 		assertThat(columnNames.get(0).toCql(), is(equalTo("foo")));
 	}
@@ -105,17 +107,19 @@ public class MappingContextUnitTests {
 	@Test
 	public void primaryKeyColumnsOnPropertyShouldWork() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getPersistentEntity(PrimaryKeyColumnsOnProperty.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(PrimaryKeyColumnsOnProperty.class);
 
 		assertThat(persistentEntity.isCompositePrimaryKey(), is(false));
 
 		CassandraPersistentProperty firstname = persistentEntity.getPersistentProperty("firstname");
+
 		assertThat(firstname.isCompositePrimaryKey(), is(false));
 		assertThat(firstname.isPrimaryKeyColumn(), is(true));
 		assertThat(firstname.isPartitionKeyColumn(), is(true));
 		assertThat(firstname.getColumnName().toCql(), is(equalTo("firstname")));
 
 		CassandraPersistentProperty lastname = persistentEntity.getPersistentProperty("lastname");
+
 		assertThat(lastname.isPrimaryKeyColumn(), is(true));
 		assertThat(lastname.isClusterKeyColumn(), is(true));
 		assertThat(lastname.getColumnName().toCql(), is(equalTo("mylastname")));
@@ -152,10 +156,11 @@ public class MappingContextUnitTests {
 	@Test
 	public void primaryKeyClassWithprimaryKeyColumnsOnPropertyShouldWork() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx
-				.getPersistentEntity(PrimaryKeyOnPropertyWithPrimaryKeyClass.class);
-		CassandraPersistentEntity<?> primaryKeyClass = ctx
-				.getPersistentEntity(CompositePrimaryKeyClassWithProperties.class);
+		CassandraPersistentEntity<?> persistentEntity =
+				mappingContext.getPersistentEntity(PrimaryKeyOnPropertyWithPrimaryKeyClass.class);
+
+		CassandraPersistentEntity<?> primaryKeyClass =
+				mappingContext.getPersistentEntity(CompositePrimaryKeyClassWithProperties.class);
 
 		assertThat(persistentEntity.isCompositePrimaryKey(), is(false));
 		assertThat(persistentEntity.getPersistentProperty("key").isCompositePrimaryKey(), is(true));
@@ -164,12 +169,14 @@ public class MappingContextUnitTests {
 		assertThat(primaryKeyClass.getCompositePrimaryKeyProperties(), hasSize(2));
 
 		CassandraPersistentProperty firstname = primaryKeyClass.getPersistentProperty("firstname");
+
 		assertThat(firstname.isPrimaryKeyColumn(), is(true));
 		assertThat(firstname.isPartitionKeyColumn(), is(true));
 		assertThat(firstname.isClusterKeyColumn(), is(false));
 		assertThat(firstname.getColumnName().toCql(), is(equalTo("firstname")));
 
 		CassandraPersistentProperty lastname = primaryKeyClass.getPersistentProperty("lastname");
+
 		assertThat(lastname.isPrimaryKeyColumn(), is(true));
 		assertThat(lastname.isPartitionKeyColumn(), is(false));
 		assertThat(lastname.isClusterKeyColumn(), is(true));
@@ -222,8 +229,8 @@ public class MappingContextUnitTests {
 	@Test
 	public void shouldCreatePersistentEntityIfNoConversionRegistered() {
 
-		ctx.setCustomConversions(new CustomConversions(Collections.EMPTY_LIST));
-		assertThat(ctx.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(true));
+		mappingContext.setCustomConversions(new CustomConversions(Collections.EMPTY_LIST));
+		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(true));
 	}
 
 	/**
@@ -233,13 +240,12 @@ public class MappingContextUnitTests {
 	public void shouldNotCreateEntitiesForCustomConvertedTypes() {
 
 		List<?> converters = Arrays.asList(new HumanToStringConverter());
-		ctx.setCustomConversions(new CustomConversions(converters));
+		mappingContext.setCustomConversions(new CustomConversions(converters));
 
-		assertThat(ctx.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(false));
+		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(false));
 	}
 
 	private static class Human {
-
 	}
 
 	private static class HumanToStringConverter implements Converter<Human, String> {

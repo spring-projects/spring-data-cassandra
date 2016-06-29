@@ -56,15 +56,18 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 
 	protected static final String KEYSPACE_NAME = SchemaActionIntegrationTests.class.getSimpleName().toLowerCase();
 
-	protected static final String PERSON_TABLE_DEFINITION_CQL = String
-			.format("CREATE TABLE %s.person (id int, firstName text, lastName text, PRIMARY KEY(id));", KEYSPACE_NAME);
+	protected static final String PERSON_TABLE_DEFINITION_CQL = String.format(
+		"CREATE TABLE %s.person (id int, firstName text, lastName text, PRIMARY KEY(id));", KEYSPACE_NAME);
 
-	@Rule public ExpectedException exception = ExpectedException.none();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
-	@Rule public KeyspaceRule KEYSPACE_RULE = new KeyspaceRule(cassandraEnvironment, KEYSPACE_NAME);
+	@Rule
+	public KeyspaceRule KEYSPACE_RULE = new KeyspaceRule(cassandraEnvironment, KEYSPACE_NAME);
 
 	protected ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
-		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(annotatedClasses);
+		AnnotationConfigApplicationContext applicationContext =
+			new AnnotationConfigApplicationContext(annotatedClasses);
 
 		applicationContext.registerShutdownHook();
 

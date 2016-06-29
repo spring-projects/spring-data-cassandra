@@ -49,22 +49,20 @@ abstract class CassandraConverters {
 
 	/**
 	 * Returns the converters to be registered.
-	 *
-	 * @return
 	 */
 	public static Collection<Object> getConvertersToRegister() {
 
 		List<Object> converters = new ArrayList<Object>();
 
 		converters.add(RowToCassandraLocalDateConverter.INSTANCE);
-		converters.add(RowToNumberConverterFactory.INSTANCE);
 		converters.add(RowToBooleanConverter.INSTANCE);
 		converters.add(RowToDateConverter.INSTANCE);
 		converters.add(RowToInetAddressConverter.INSTANCE);
-		converters.add(RowToStringConverter.INSTANCE);
-		converters.add(RowToUuidConverter.INSTANCE);
 		converters.add(RowToListConverter.INSTANCE);
 		converters.add(RowToMapConverter.INSTANCE);
+		converters.add(RowToNumberConverterFactory.INSTANCE);
+		converters.add(RowToStringConverter.INSTANCE);
+		converters.add(RowToUuidConverter.INSTANCE);
 
 		return converters;
 	}
@@ -90,7 +88,6 @@ abstract class CassandraConverters {
 
 		@Override
 		public Date convert(Row row) {
-
 			return row.getTimestamp(0);
 		}
 	}
@@ -148,11 +145,9 @@ abstract class CassandraConverters {
 			public T convert(Row source) {
 
 				Object object = source.getObject(0);
-				if (object == null) {
-					return null;
-				}
 
-				return NumberUtils.convertNumberToTargetClass((Number) object, this.targetType);
+				return (object != null ? NumberUtils.convertNumberToTargetClass((Number) object, this.targetType)
+					: null);
 			}
 		}
 	}

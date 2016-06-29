@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,7 +37,7 @@ import org.springframework.data.mapping.context.MappingContext;
 
 /**
  * Base class for Spring Data Cassandra configuration using JavaConfig.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author John Blum
@@ -65,24 +65,22 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	}
 
 	/**
-	 * Return the {@link MappingContext} instance to map Entities to properties.
+	 * Creates a {@link CassandraConverter} using the configured {@link #cassandraMapping()}.
+	 * Will apply all specified {@link #customConversions()}.
 	 *
-	 * @throws ClassNotFoundException
+	 * @return {@link CassandraConverter} used to convert Java and Cassandra value types during the mapping process.
+	 * @throws Exception if an error occurs initializing or registering the converter.
+	 * @see #cassandraMapping()
+	 * @see #customConversions()
 	 */
 	@Bean
-	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
+	public CassandraConverter cassandraConverter() throws Exception {
 
-		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter(cassandraMapping());
 
-		mappingContext.setBeanClassLoader(beanClassLoader);
-		mappingContext.setInitialEntitySet(CassandraEntityClassScanner.scan(getEntityBasePackages()));
+		mappingCassandraConverter.setCustomConversions(customConversions());
 
-		CustomConversions customConversions = customConversions();
-
-		mappingContext.setCustomConversions(customConversions);
-		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
-
-		return mappingContext;
+		return mappingCassandraConverter;
 	}
 
 	/**
@@ -99,22 +97,26 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	}
 
 	/**
-	 * Creates a {@link CassandraConverter} using the configured {@link #cassandraMapping()}. Will get
-	 * {@link #customConversions()} applied.
+	 * Return the {@link MappingContext} instance to map Entities to properties.
 	 *
-	 * @see #customConversions()
-	 * @see #cassandraMapping()
-	 * @return
-	 * @throws Exception
+	 * @throws ClassNotFoundException if the Cassandra Entity class type identified by name
+	 * cannot be found during the scan.
+	 * @see CassandraMappingContext
 	 */
 	@Bean
-	public CassandraConverter cassandraConverter() throws Exception {
+	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
 
-		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter(cassandraMapping());
+		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
 
-		mappingCassandraConverter.setCustomConversions(customConversions());
+		mappingContext.setBeanClassLoader(beanClassLoader);
+		mappingContext.setInitialEntitySet(CassandraEntityClassScanner.scan(getEntityBasePackages()));
 
-		return mappingCassandraConverter;
+		CustomConversions customConversions = customConversions();
+
+		mappingContext.setCustomConversions(customConversions);
+		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+
+		return mappingContext;
 	}
 
 	/**

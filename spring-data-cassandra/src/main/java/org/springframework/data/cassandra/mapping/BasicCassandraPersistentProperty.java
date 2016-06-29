@@ -56,7 +56,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		implements CassandraPersistentProperty, ApplicationContextAware {
 
 	protected ApplicationContext context;
-	protected StandardEvaluationContext spelContext;
+
+	/**
+	 * Whether this property has been explicitly instructed to force quote column names.
+	 */
+	protected Boolean forceQuote;
 
 	/**
 	 * An unmodifiable list of this property's column names.
@@ -68,10 +72,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	protected List<CqlIdentifier> explicitColumnNames;
 
-	/**
-	 * Whether this property has been explicitly instructed to force quote column names.
-	 */
-	protected Boolean forceQuote;
+	protected StandardEvaluationContext spelContext;
 
 	/**
 	 * Creates a new {@link BasicCassandraPersistentProperty}.
@@ -178,6 +179,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		if (isCollectionLike()) {
 
 			List<TypeInformation<?>> args = getTypeInformation().getTypeArguments();
+
 			ensureTypeArguments(args.size(), 1);
 
 			if (Set.class.isAssignableFrom(getType())) {
@@ -273,9 +275,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public List<CqlIdentifier> getColumnNames() {
 
-		if (columnNames == null) {
-			columnNames = Collections.unmodifiableList(determineColumnNames());
-		}
+		columnNames = (columnNames != null ? columnNames : Collections.unmodifiableList(determineColumnNames()));
 
 		return columnNames;
 	}
@@ -319,7 +319,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		String name = defaultName;
 
 		if (StringUtils.hasText(overriddenName)) {
-			name = spelContext == null ? overriddenName : SpelUtils.evaluate(overriddenName, spelContext);
+			name = (spelContext == null ? overriddenName : SpelUtils.evaluate(overriddenName, spelContext));
 		}
 
 		return cqlId(name, forceQuote);
@@ -362,8 +362,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 					columnNames.size()));
 		}
 
-		this.columnNames = this.explicitColumnNames = Collections
-				.unmodifiableList(new ArrayList<CqlIdentifier>(columnNames));
+		this.columnNames = this.explicitColumnNames =
+			Collections.unmodifiableList(new ArrayList<CqlIdentifier>(columnNames));
 	}
 
 	@Override
@@ -399,9 +399,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
 		CassandraMappingContext mappingContext = getOwner().getMappingContext();
+
 		if (mappingContext == null) {
-			throw new IllegalStateException("need CassandraMappingContext");
+			throw new IllegalStateException("CassandraMappingContext needed");
 		}
+
 		return mappingContext.getPersistentEntity(getCompositePrimaryKeyTypeInformation());
 	}
 

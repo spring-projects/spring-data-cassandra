@@ -52,6 +52,7 @@ public abstract class CassandraJsr310Converters {
 		}
 
 		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+
 		converters.add(CassandraLocalDateToLocalDateConverter.INSTANCE);
 		converters.add(LocalDateToCassandraLocalDateConverter.INSTANCE);
 
@@ -60,10 +61,10 @@ public abstract class CassandraJsr310Converters {
 
 	/**
 	 * Simple singleton to convert {@link com.datastax.driver.core.LocalDate}s to their {@link LocalDate} representation.
-	 * 
+	 *
 	 * @author Mark Paluch
 	 */
-	public static enum CassandraLocalDateToLocalDateConverter
+	public enum CassandraLocalDateToLocalDateConverter
 			implements Converter<com.datastax.driver.core.LocalDate, LocalDate> {
 
 		INSTANCE;
@@ -79,7 +80,7 @@ public abstract class CassandraJsr310Converters {
 	 *
 	 * @author Mark Paluch
 	 */
-	public static enum LocalDateToCassandraLocalDateConverter
+	public enum LocalDateToCassandraLocalDateConverter
 			implements Converter<LocalDate, com.datastax.driver.core.LocalDate> {
 
 		INSTANCE;

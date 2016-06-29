@@ -29,10 +29,8 @@ import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.test.integration.mapping.types.CassandraTypeMappingIntegrationTest.Condition;
-import org.threeten.bp.LocalDateTime;
 
 import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.LocalDate;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.isolated;
 
-import static java.time.Instant.*;
-import static java.time.ZoneId.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -25,7 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -119,7 +117,8 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 	@Test
 	public void shouldFindByAnnotatedDateParameter() {
 
-		CustomConversions customConversions = new CustomConversions(Arrays.asList(new DateToLocalDateConverter()));
+		CustomConversions customConversions = new CustomConversions(
+			Collections.singletonList(new DateToLocalDateConverter()));
 
 		mappingContext.setCustomConversions(customConversions);
 		converter.setCustomConversions(customConversions);
@@ -223,10 +222,10 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 		@Override
 		public com.datastax.driver.core.LocalDate convert(Date source) {
 
-			LocalDate localDate = LocalDateTime.ofInstant(ofEpochMilli(source.getTime()), systemDefault()).toLocalDate();
+			LocalDate localDate = LocalDateTime.ofInstant(source.toInstant(), ZoneOffset.UTC.normalized()).toLocalDate();
+
 			return com.datastax.driver.core.LocalDate.fromYearMonthDay(localDate.getYear(), localDate.getMonthValue(),
 					localDate.getDayOfMonth());
 		}
 	}
-
 }

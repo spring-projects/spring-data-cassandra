@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,12 +40,13 @@ import org.springframework.util.StringUtils;
 
 /**
  * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific metadata.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author John Blum
  */
-public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty> implements
-		CassandraPersistentEntity<T>, ApplicationContextAware {
+public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty>
+		implements CassandraPersistentEntity<T>, ApplicationContextAware {
 
 	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new BasicCassandraPersistentEntityMetadataVerifier();
 
@@ -63,7 +64,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	/**
 	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
 	 * name to the entity's simple type name.
-	 * 
+	 *
 	 * @param typeInformation
 	 */
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext) {
@@ -74,7 +75,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	/**
 	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
 	 * name to the entity's simple type name.
-	 * 
+	 *
 	 * @param typeInformation
 	 */
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext,
@@ -89,13 +90,14 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	protected CqlIdentifier determineTableName() {
 
-		Table anno = getType().getAnnotation(Table.class);
+		Table tableAnnotation = getType().getAnnotation(Table.class);
 
-		if (anno == null || !StringUtils.hasText(anno.value())) {
-			return cqlId(getType().getSimpleName(), anno == null ? false : anno.forceQuote());
+		if (tableAnnotation == null || !StringUtils.hasText(tableAnnotation.value())) {
+			return cqlId(getType().getSimpleName(), tableAnnotation != null && tableAnnotation.forceQuote());
 		}
 
-		return cqlId(spelContext == null ? anno.value() : SpelUtils.evaluate(anno.value(), spelContext), anno.forceQuote());
+		return cqlId(spelContext == null ? tableAnnotation.value()
+			: SpelUtils.evaluate(tableAnnotation.value(), spelContext), tableAnnotation.forceQuote());
 	}
 
 	@Override
@@ -111,7 +113,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 
-		Assert.notNull(context);
+		Assert.notNull(context, "ApplicationContext must not be null");
 
 		this.context = context;
 		spelContext = new StandardEvaluationContext();
@@ -123,11 +125,9 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public CqlIdentifier getTableName() {
 
-		if (tableName != null) {
-			return tableName;
-		}
+		tableName = (tableName != null ? tableName : determineTableName());
 
-		return tableName = determineTableName();
+		return tableName;
 	}
 
 	@Override
@@ -162,11 +162,11 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
 
-		final List<CassandraPersistentProperty> properties = new ArrayList<CassandraPersistentProperty>();
+		List<CassandraPersistentProperty> properties = new ArrayList<CassandraPersistentProperty>();
 
 		if (!isCompositePrimaryKey()) {
-			throw new IllegalStateException(String.format("[%s] does not represent a composite primary key class", this
-					.getType().getName()));
+			throw new IllegalStateException(String.format("[%s] does not represent a composite primary key class",
+					this.getType().getName()));
 		}
 
 		addCompositePrimaryKeyProperties(this, properties);
