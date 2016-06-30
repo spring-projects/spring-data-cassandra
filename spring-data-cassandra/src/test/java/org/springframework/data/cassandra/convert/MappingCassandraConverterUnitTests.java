@@ -33,11 +33,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -52,6 +54,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.RowMockUtil;
+import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraType;
@@ -69,6 +72,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Assignment;
 import com.datastax.driver.core.querybuilder.BuiltStatement;
 import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -742,6 +746,45 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(getAssignmentValues(update), contains((Object) LocalDate.fromYearMonthDay(2010, 7, 4)));
 	}
 
+	/**
+	 * @see DATACASS-206
+	 */
+	@Test
+	public void updateShouldUseSpecifiedColumnNames() {
+
+		UserToken userToken = new UserToken();
+		userToken.setUserId(UUID.randomUUID());
+		userToken.setToken(UUID.randomUUID());
+		userToken.setAdminComment("admin comment");
+		userToken.setUserComment("user comment");
+
+		Update update = QueryBuilder.update("table");
+		mappingCassandraConverter.write(userToken, update);
+
+		assertThat(getAssignments(update), hasEntry("admincomment", (Object) "admin comment"));
+		assertThat(getAssignments(update), hasEntry("user_comment", (Object) "user comment"));
+
+		assertThat(getWherePredicates(update), hasEntry("user_id", (Object) userToken.getUserId()));
+	}
+
+	/**
+	 * @see DATACASS-206
+	 */
+	@Test
+	public void deleteShouldUseSpecifiedColumnNames() {
+
+		UserToken userToken = new UserToken();
+		userToken.setUserId(UUID.randomUUID());
+		userToken.setToken(UUID.randomUUID());
+		userToken.setAdminComment("admin comment");
+		userToken.setUserComment("user comment");
+
+		Delete delete = QueryBuilder.delete().from("table");
+		mappingCassandraConverter.write(userToken, delete.where());
+
+		assertThat(getWherePredicates(delete), hasEntry("user_id", (Object) userToken.getUserId()));
+	}
+
 	@SuppressWarnings("unchecked")
 	private <T> List<T> getListValue(Insert statement) {
 		List<Object> values = getValues(statement);
@@ -774,30 +817,47 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<Object> getAssignmentValues(Update statement) {
+	private Collection<Object> getAssignmentValues(Update statement) {
+		return getAssignments(statement).values();
+	}
 
-		List<Object> result = new ArrayList<Object>();
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> getAssignments(Update statement) {
+
+		Map<String, Object> result = new LinkedHashMap<String, Object>();
 
 		Assignments assignments = (Assignments) ReflectionTestUtils.getField(statement, "assignments");
 		List<Assignment> listOfAssignments = (List<Assignment>) ReflectionTestUtils.getField(assignments, "assignments");
 		for (Assignment assignment : listOfAssignments) {
-			result.add(ReflectionTestUtils.getField(assignment, "value"));
+			result.put(assignment.getColumnName(), ReflectionTestUtils.getField(assignment, "value"));
 		}
 
 		return result;
 	}
 
-	private List<Object> getWhereValues(Update statement) {
-		return getWhereValues(statement.where());
+	private Collection<Object> getWhereValues(Update update) {
+		return getWherePredicates(update.where()).values();
 	}
 
-	private List<Object> getWhereValues(BuiltStatement where) {
+	private Collection<Object> getWhereValues(BuiltStatement where) {
+		return getWherePredicates(where).values();
+	}
 
-		List<Object> result = new ArrayList<Object>();
+	private Map<String, Object> getWherePredicates(Update statement) {
+		return getWherePredicates(statement.where());
+	}
+
+	private Map<String, Object> getWherePredicates(Delete statement) {
+		return getWherePredicates(statement.where());
+	}
+
+	private Map<String, Object> getWherePredicates(BuiltStatement where) {
+
+		Map<String, Object> result = new LinkedHashMap<String, Object>();
 
 		List<Clause> clauses = (List<Clause>) ReflectionTestUtils.getField(where, "clauses");
 		for (Clause clause : clauses) {
-			result.add(ReflectionTestUtils.getField(clause, "value"));
+			result.put((String) ReflectionTestUtils.invokeMethod(clause, "name"), ReflectionTestUtils.getField(clause, "value"));
 		}
 
 		return result;
