@@ -358,7 +358,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (id instanceof MapId) {
 
 			for (Map.Entry<String, Serializable> entry : ((MapId) id).entrySet()) {
-				where.and(QueryBuilder.eq(entry.getKey(), entry.getValue()));
+
+				CassandraPersistentProperty persistentProperty = entity.getPersistentProperty(entry.getKey());
+				if (persistentProperty != null) {
+					where.and(QueryBuilder.eq(persistentProperty.getColumnName().toCql(), entry.getValue()));
+				} else {
+					where.and(QueryBuilder.eq(entry.getKey(), entry.getValue()));
+				}
 			}
 			return;
 		}

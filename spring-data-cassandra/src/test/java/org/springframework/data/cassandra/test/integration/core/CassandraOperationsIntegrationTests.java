@@ -36,6 +36,8 @@ import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.domain.UserToken;
+import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.data.cassandra.test.integration.simpletons.BookCondition;
 import org.springframework.data.cassandra.test.integration.simpletons.BookReference;
@@ -46,6 +48,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.utils.UUIDs;
 
 /**
  * Integration tests for {@link CassandraOperations}.
@@ -63,12 +66,11 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		@Override
 		public String[] getEntityBasePackages() {
-			return new String[] { Book.class.getPackage().getName() };
+			return new String[] { Book.class.getPackage().getName(), UserToken.class.getPackage().getName() };
 		}
 	}
 
-	@Autowired
-	CassandraOperations template;
+	@Autowired CassandraOperations template;
 
 	@Before
 	public void before() {
@@ -749,13 +751,72 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		assertThat(selectedBooks.get(0), is(instanceOf(Book.class)));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-206">DATACASS-206</a>
+	 */
+	@Test
+	public void shouldUseSpecifiedColumnNamesForSingleEntityModifyingOperations() {
+
+		UserToken userToken = new UserToken();
+		userToken.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		userToken.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+
+		template.insert(userToken);
+
+		userToken.setUserComment("comment");
+		template.update(userToken);
+
+		UserToken loaded = template.selectOneById(UserToken.class,
+				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));
+
+		assertThat(loaded, is(notNullValue()));
+		assertThat(loaded.getUserComment(), is(equalTo("comment")));
+
+		template.delete(userToken);
+
+		UserToken loadAfterDelete = template.selectOneById(UserToken.class,
+				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));
+
+		assertThat(loadAfterDelete, is(nullValue()));
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-206">DATACASS-206</a>
+	 */
+	@Test
+	public void shouldUseSpecifiedColumnNamesForMultiEntityModifyingOperations() {
+
+		UserToken userToken = new UserToken();
+		userToken.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		userToken.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+
+		template.insert(Arrays.asList(userToken));
+
+		userToken.setUserComment("comment");
+		template.update(Arrays.asList(userToken));
+
+		UserToken loaded = template.selectOneById(UserToken.class,
+				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));
+
+		assertThat(loaded, is(notNullValue()));
+		assertThat(loaded.getUserComment(), is(equalTo("comment")));
+
+		template.delete(Arrays.asList(userToken));
+
+		UserToken loadAfterDelete = template.selectOneById(UserToken.class,
+				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));
+
+		assertThat(loadAfterDelete, is(nullValue()));
+	}
+
 	WriteOptions newWriteOptions(ConsistencyLevel consistencyLevel, RetryPolicy retryPolicy, int timeToLive) {
 		return new WriteOptions(consistencyLevel, retryPolicy, timeToLive);
 	}
 
 	<T> Iterable<T> toIterable(final Iterator<T> iterator) {
 		return new Iterable<T>() {
-			@Override public Iterator<T> iterator() {
+			@Override
+			public Iterator<T> iterator() {
 				return iterator;
 			}
 		};
