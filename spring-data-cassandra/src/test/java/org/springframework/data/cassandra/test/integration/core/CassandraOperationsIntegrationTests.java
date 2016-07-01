@@ -70,7 +70,8 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		}
 	}
 
-	@Autowired CassandraOperations template;
+	@Autowired
+	CassandraOperations template;
 
 	@Before
 	public void before() {
@@ -790,10 +791,10 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		userToken.setToken(UUIDs.startOf(System.currentTimeMillis()));
 		userToken.setUserId(UUIDs.endOf(System.currentTimeMillis()));
 
-		template.insert(Arrays.asList(userToken));
+		template.insert(Collections.singletonList(userToken));
 
 		userToken.setUserComment("comment");
-		template.update(Arrays.asList(userToken));
+		template.update(Collections.singletonList(userToken));
 
 		UserToken loaded = template.selectOneById(UserToken.class,
 				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));
@@ -801,7 +802,7 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		assertThat(loaded, is(notNullValue()));
 		assertThat(loaded.getUserComment(), is(equalTo("comment")));
 
-		template.delete(Arrays.asList(userToken));
+		template.delete(Collections.singletonList(userToken));
 
 		UserToken loadAfterDelete = template.selectOneById(UserToken.class,
 				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));

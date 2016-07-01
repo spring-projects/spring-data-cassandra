@@ -47,7 +47,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * The table name used for the specified class by this template.
 	 *
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return the {@link CqlIdentifier}
 	 */
 	CqlIdentifier getTableName(Class<?> entityClass);
@@ -70,7 +70,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * Execute query and convert ResultSet to the list of entities.
 	 *
 	 * @param cql must not be {@literal null}.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return the converted results
 	 */
 	<T> List<T> select(String cql, Class<T> entityClass);
@@ -79,7 +79,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * Execute the Select Query and convert to the list of entities.
 	 *
 	 * @param select must not be {@literal null}.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return the converted results
 	 */
 	<T> List<T> select(Select select, Class<T> entityClass);
@@ -87,7 +87,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Select objects for the given {@code entityClass} and {@code ids}.
 	 *
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @param ids must not be {@literal null}.
 	 * @return the converted results
 	 */
@@ -95,7 +95,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * @deprecated Calling this method could result in {@link OutOfMemoryError}, as this is a brute force selection.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return A list of all entities of type <code>T</code>.
 	 */
 	@Deprecated
@@ -104,7 +104,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Execute the Select by {@code id} for the given {@code entityClass}.
 	 *
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @param id must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 */
@@ -114,7 +114,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * Execute CQL and convert ResultSet to the entity
 	 *
 	 * @param cql must not be {@literal null}.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 */
 	<T> T selectOne(String cql, Class<T> entityClass);
@@ -123,7 +123,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * Execute Select query and convert ResultSet to the entity
 	 *
 	 * @param select must not be {@literal null}.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 */
 	<T> T selectOne(Select select, Class<T> entityClass);
@@ -132,7 +132,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * Executes the {@link Select} query asynchronously.
 	 *
 	 * @param select The {@link Select} query to execute.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
 	<T> Cancellable selectOneAsynchronously(Select select, Class<T> entityClass, QueryForObjectListener<T> listener);
@@ -141,7 +141,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * Executes the string CQL query asynchronously.
 	 *
 	 * @param cql The string query CQL to execute.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
 	<T> Cancellable selectOneAsynchronously(String cql, Class<T> entityClass, QueryForObjectListener<T> listener);
@@ -150,7 +150,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * Executes the {@link Select} query asynchronously.
 	 *
 	 * @param select The {@link Select} query to execute.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @param options The {@link QueryOptions} to use.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
@@ -161,7 +161,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * Executes the string CQL query asynchronously.
 	 *
 	 * @param cql The string query CQL to execute.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @param options The {@link QueryOptions} to use.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
@@ -171,7 +171,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Determine whether the row {@code entityClass} with the given {@code id} exists.
 	 *
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @param id must not be {@literal null}.
 	 * @return true, if the object exists
 	 */
@@ -180,7 +180,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Returns the number of rows for the given {@code entityClass} by querying the table of the given entity class.
 	 *
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return number of rows
 	 */
 	long count(Class<?> entityClass);
@@ -428,7 +428,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Remove the given object from the table by id.
 	 *
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 * @param id must not be {@literal null}.
 	 */
 	void deleteById(Class<?> entityClass, Object id);
@@ -465,7 +465,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Deletes all entities of a given class.
-	 * @param entityClass The entity type, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
 	 */
 	<T> void deleteAll(Class<T> entityClass);
 
@@ -539,4 +539,5 @@ public interface CassandraOperations extends CqlOperations {
 	 * @return the underlying {@link CassandraConverter}.
 	 */
 	CassandraConverter getConverter();
+
 }

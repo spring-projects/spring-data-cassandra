@@ -131,7 +131,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @param queryOptions query options (e.g. consistency level) to add to the CQL statement.
 	 * @return the given {@link Statement}.
 	 */
-	public static Statement addQueryOptions(Statement statement, QueryOptions queryOptions) {
+	public static <T extends Statement> T addQueryOptions(T statement, QueryOptions queryOptions) {
 
 		if (queryOptions != null) {
 
@@ -390,7 +390,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			@Override
 			public Cancellable doInSession(Session session) {
 
-				Statement statement = addQueryOptions(new SimpleStatement(logCql("async execute CQL [{}]", cql)), queryOptions);
+				Statement statement = addQueryOptions(new SimpleStatement(logCql("async execute CQL [{}]", cql)),
+					queryOptions);
 
 				final ResultSetFuture resultSetFuture = session.executeAsync(statement);
 

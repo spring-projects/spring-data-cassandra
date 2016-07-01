@@ -55,8 +55,8 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.RowMockUtil;
-import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.domain.CompositeKey;
+import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.domain.TypeWithCompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithKeyClass;
 import org.springframework.data.cassandra.domain.TypeWithMapId;
@@ -95,9 +95,14 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
 @RunWith(MockitoJUnitRunner.class)
 public class MappingCassandraConverterUnitTests {
 
-	@Rule public final ExpectedException expectedException = ExpectedException.none();
-	@Mock private Row rowMock;
-	@Mock private ColumnDefinitions columnDefinitionsMock;
+	@Rule
+	public final ExpectedException expectedException = ExpectedException.none();
+
+	@Mock
+	private ColumnDefinitions columnDefinitionsMock;
+
+	@Mock
+	private Row rowMock;
 
 	private CassandraMappingContext mappingContext;
 	private MappingCassandraConverter mappingCassandraConverter;
@@ -106,8 +111,8 @@ public class MappingCassandraConverterUnitTests {
 	public void setUp() throws Exception {
 
 		mappingContext = new BasicCassandraMappingContext();
-		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
 
+		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
 		mappingCassandraConverter.afterPropertiesSet();
 	}
 
@@ -118,6 +123,7 @@ public class MappingCassandraConverterUnitTests {
 	public void insertEnumShouldMapToString() {
 
 		WithEnumColumns withEnumColumns = new WithEnumColumns();
+
 		withEnumColumns.setCondition(Condition.MINT);
 
 		Insert insert = QueryBuilder.insertInto("table");
@@ -383,6 +389,7 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldReadUUIDCorrectly() {
 
 		UUID uuid = UUID.randomUUID();
+
 		when(rowMock.getUUID(0)).thenReturn(uuid);
 
 		UUID result = mappingCassandraConverter.readRow(UUID.class, rowMock);
@@ -397,6 +404,7 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldReadInetAddressCorrectly() throws UnknownHostException {
 
 		InetAddress localHost = InetAddress.getLocalHost();
+
 		when(rowMock.getInet(0)).thenReturn(localHost);
 
 		InetAddress result = mappingCassandraConverter.readRow(InetAddress.class, rowMock);
@@ -412,6 +420,7 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldReadTimestampCorrectly() {
 
 		Date date = new Date(1);
+
 		when(rowMock.getTimestamp(0)).thenReturn(date);
 
 		Date result = mappingCassandraConverter.readRow(Date.class, rowMock);
@@ -746,6 +755,7 @@ public class MappingCassandraConverterUnitTests {
 		typeWithLocalDate.localDate = org.threeten.bp.LocalDate.of(2010, 7, 4);
 
 		Update update = QueryBuilder.update("table");
+
 		mappingCassandraConverter.write(typeWithLocalDate, update);
 
 		assertThat(getAssignmentValues(update), contains((Object) LocalDate.fromYearMonthDay(2010, 7, 4)));
@@ -764,11 +774,11 @@ public class MappingCassandraConverterUnitTests {
 		userToken.setUserComment("user comment");
 
 		Update update = QueryBuilder.update("table");
+
 		mappingCassandraConverter.write(userToken, update);
 
 		assertThat(getAssignments(update), hasEntry("admincomment", (Object) "admin comment"));
 		assertThat(getAssignments(update), hasEntry("user_comment", (Object) "user comment"));
-
 		assertThat(getWherePredicates(update), hasEntry("user_id", (Object) userToken.getUserId()));
 	}
 
@@ -785,6 +795,7 @@ public class MappingCassandraConverterUnitTests {
 		userToken.setUserComment("user comment");
 
 		Delete delete = QueryBuilder.delete().from("table");
+
 		mappingCassandraConverter.write(userToken, delete.where());
 
 		assertThat(getWherePredicates(delete), hasEntry("user_id", (Object) userToken.getUserId()));
@@ -797,6 +808,7 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldWriteWhereConditionUsingPlainId() {
 
 		Delete delete = QueryBuilder.delete().from("table");
+
 		mappingCassandraConverter.write("42", delete.where(), mappingContext.getPersistentEntity(Person.class));
 
 		assertThat(getWherePredicates(delete), hasEntry("id", (Object) "42"));
@@ -809,6 +821,7 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldWriteWhereConditionUsingEntity() {
 
 		Delete delete = QueryBuilder.delete().from("table");
+
 		Person person = new Person();
 		person.setId("42");
 
@@ -835,6 +848,7 @@ public class MappingCassandraConverterUnitTests {
 	public void shouldWriteWhereConditionUsingMapId() {
 
 		Delete delete = QueryBuilder.delete().from("table");
+
 		mappingCassandraConverter.write(id("id", "42"), delete.where(), mappingContext.getPersistentEntity(Person.class));
 
 		assertThat(getWherePredicates(delete), hasEntry("id", (Object) "42"));
@@ -1040,7 +1054,9 @@ public class MappingCassandraConverterUnitTests {
 		Map<String, Object> result = new LinkedHashMap<String, Object>();
 
 		Assignments assignments = (Assignments) ReflectionTestUtils.getField(statement, "assignments");
+
 		List<Assignment> listOfAssignments = (List<Assignment>) ReflectionTestUtils.getField(assignments, "assignments");
+
 		for (Assignment assignment : listOfAssignments) {
 			result.put(assignment.getColumnName(), ReflectionTestUtils.getField(assignment, "value"));
 		}
@@ -1064,11 +1080,13 @@ public class MappingCassandraConverterUnitTests {
 		return getWherePredicates(statement.where());
 	}
 
+	@SuppressWarnings("unchecked")
 	private Map<String, Object> getWherePredicates(BuiltStatement where) {
 
 		Map<String, Object> result = new LinkedHashMap<String, Object>();
 
 		List<Clause> clauses = (List<Clause>) ReflectionTestUtils.getField(where, "clauses");
+
 		for (Clause clause : clauses) {
 			result.put((String) ReflectionTestUtils.invokeMethod(clause, "name"),
 					ReflectionTestUtils.getField(clause, "value"));
@@ -1080,9 +1098,11 @@ public class MappingCassandraConverterUnitTests {
 	@Table
 	public static class UnsupportedEnumToOrdinalMapping {
 
-		@PrimaryKey private String id;
+		@PrimaryKey
+		private String id;
 
-		@CassandraType(type = Name.INT) private Condition asOrdinal;
+		@CassandraType(type = Name.INT)
+		private Condition asOrdinal;
 
 		public String getId() {
 			return id;
@@ -1104,7 +1124,8 @@ public class MappingCassandraConverterUnitTests {
 	@Table
 	public static class WithEnumColumns {
 
-		@PrimaryKey private String id;
+		@PrimaryKey
+		private String id;
 
 		private Condition condition;
 
@@ -1128,7 +1149,8 @@ public class MappingCassandraConverterUnitTests {
 	@PrimaryKeyClass
 	public static class EnumCompositePrimaryKey implements Serializable {
 
-		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) private Condition condition;
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+		private Condition condition;
 
 		public EnumCompositePrimaryKey() {}
 
@@ -1148,7 +1170,8 @@ public class MappingCassandraConverterUnitTests {
 	@Table
 	public static class EnumPrimaryKey {
 
-		@PrimaryKey private Condition condition;
+		@PrimaryKey
+		private Condition condition;
 
 		public Condition getCondition() {
 			return condition;
@@ -1162,7 +1185,8 @@ public class MappingCassandraConverterUnitTests {
 	@Table
 	public static class CompositeKeyThing {
 
-		@PrimaryKey private EnumCompositePrimaryKey key;
+		@PrimaryKey
+		private EnumCompositePrimaryKey key;
 
 		public CompositeKeyThing() {}
 
@@ -1186,7 +1210,8 @@ public class MappingCassandraConverterUnitTests {
 	@Table
 	public static class TypeWithLocalDate {
 
-		@PrimaryKey private String id;
+		@PrimaryKey
+		private String id;
 
 		java.time.LocalDate localDate;
 		java.time.LocalDateTime localDateTime;
@@ -1201,9 +1226,11 @@ public class MappingCassandraConverterUnitTests {
 	@Table
 	public static class TypeWithLocalDateMappedToDate {
 
-		@PrimaryKey private String id;
+		@PrimaryKey
+		private String id;
 
-		@CassandraType(type = Name.DATE) java.time.LocalDate localDate;
+		@CassandraType(type = Name.DATE)
+		java.time.LocalDate localDate;
 	}
 
 	/**
@@ -1212,9 +1239,11 @@ public class MappingCassandraConverterUnitTests {
 	@Table
 	public static class TypeWithJodaLocalDateMappedToDate {
 
-		@PrimaryKey private String id;
+		@PrimaryKey
+		private String id;
 
-		@CassandraType(type = Name.DATE) org.joda.time.LocalDate localDate;
+		@CassandraType(type = Name.DATE)
+		org.joda.time.LocalDate localDate;
 	}
 
 	/**
@@ -1223,15 +1252,18 @@ public class MappingCassandraConverterUnitTests {
 	@Table
 	public static class TypeWithThreeTenBpLocalDateMappedToDate {
 
-		@PrimaryKey private String id;
+		@PrimaryKey
+		private String id;
 
-		@CassandraType(type = Name.DATE) org.threeten.bp.LocalDate localDate;
+		@CassandraType(type = Name.DATE)
+		org.threeten.bp.LocalDate localDate;
 	}
 
 	@Table
 	public static class TypeWithInstant {
 
-		@PrimaryKey private String id;
+		@PrimaryKey
+		private String id;
 
 		Instant instant;
 	}
@@ -1239,7 +1271,8 @@ public class MappingCassandraConverterUnitTests {
 	@Table
 	public static class TypeWithZoneId {
 
-		@PrimaryKey private String id;
+		@PrimaryKey
+		private String id;
 
 		ZoneId zoneId;
 	}

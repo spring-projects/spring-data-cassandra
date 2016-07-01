@@ -52,7 +52,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.querybuilder.Clause;
@@ -425,7 +424,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 				TypeCodec<Object> codec = getCodec(property);
 				Object value = accessor.getProperty(property,
-						codec.getJavaType().getRawType());
+					codec.getJavaType().getRawType());
 				clauses.add(QueryBuilder.eq(property.getColumnName().toCql(), value));
 			}
 		});
@@ -566,23 +565,22 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@SuppressWarnings("unchecked")
 	private Object getWriteValue(CassandraPersistentProperty property, Object value) {
 
-		if (value == null) {
-			return value;
-		}
+		if (value != null) {
 
-		if (conversions.hasCustomWriteTarget(property.getActualType()) && property.isCollectionLike()) {
+			if (conversions.hasCustomWriteTarget(property.getActualType()) && property.isCollectionLike()) {
+				Class<?> customWriteTarget = conversions.getCustomWriteTarget(property.getActualType());
 
-			Class<?> customWriteTarget = conversions.getCustomWriteTarget(property.getActualType());
-			if (Collection.class.isAssignableFrom(property.getType()) && value instanceof Collection) {
+				if (Collection.class.isAssignableFrom(property.getType()) && value instanceof Collection) {
 
-				Collection<Object> original = (Collection<Object>) value;
-				Collection<Object> converted = CollectionFactory.createCollection(property.getType(), original.size());
+					Collection<Object> original = (Collection<Object>) value;
+					Collection<Object> converted = CollectionFactory.createCollection(property.getType(), original.size());
 
-				for (Object o : original) {
-					converted.add(getConversionService().convert(o, customWriteTarget));
+					for (Object o : original) {
+						converted.add(getConversionService().convert(o, customWriteTarget));
+					}
+
+					value = converted;
 				}
-
-				value = converted;
 			}
 		}
 
@@ -602,22 +600,23 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		Object obj = row.getPropertyValue(property);
 
-		if (obj == null) {
-			return null;
-		}
+		if (obj != null) {
 
-		if (conversions.hasCustomWriteTarget(property.getActualType()) && property.isCollectionLike()) {
+			if (conversions.hasCustomWriteTarget(property.getActualType()) && property.isCollectionLike()) {
 
-			if (Collection.class.isAssignableFrom(property.getType()) && obj instanceof Collection) {
+				if (Collection.class.isAssignableFrom(property.getType()) && obj instanceof Collection) {
 
-				Collection<Object> original = (Collection<Object>) obj;
-				Collection<Object> converted = CollectionFactory.createCollection(property.getType(), original.size());
+					Collection<Object> original = (Collection<Object>) obj;
 
-				for (Object o : original) {
-					converted.add(getConversionService().convert(o, property.getActualType()));
+					Collection<Object> converted = CollectionFactory.createCollection(
+						property.getType(), original.size());
+
+					for (Object element : original) {
+						converted.add(getConversionService().convert(element, property.getActualType()));
+					}
+
+					return converted;
 				}
-
-				return converted;
 			}
 		}
 
@@ -625,8 +624,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	private TypeCodec<Object> getCodec(CassandraPersistentProperty property) {
-
-		DataType dataType = mappingContext.getDataType(property);
-		return CodecRegistry.DEFAULT_INSTANCE.codecFor(dataType);
+		return CodecRegistry.DEFAULT_INSTANCE.codecFor(mappingContext.getDataType(property));
 	}
 }
