@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 the original author or authors.
+ * Copyright 2010-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,31 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentPropertyPath;
+import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 import org.springframework.data.repository.query.parser.Part;
-import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -40,174 +47,172 @@ import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * Custom query creator to create Cassandra criteria.
+ *
+ * @author Matthew Adams
+ * @author Mark Paluch
  */
 class CassandraQueryCreator extends AbstractQueryCreator<Select, Clause> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(CassandraQueryCreator.class);
-	private final CassandraParameterAccessor accessor;
+	private static final Pattern PUNCTATION_PATTERN = Pattern.compile("\\p{Punct}");
 
+	private static final Logger LOG = LoggerFactory.getLogger(CassandraQueryCreator.class);
 	private final CassandraMappingContext context;
+	private final WhereBuilder whereBuilder = new WhereBuilder();
+	private final CassandraPersistentEntity<?> entity;
 
 	/**
 	 * Creates a new {@link CassandraQueryCreator} from the given {@link PartTree}, {@link ConvertingParameterAccessor}
 	 * and {@link MappingContext}.
 	 * 
-	 * @param tree
-	 * @param accessor
-	 * @param context
+	 * @param tree must not be {@literal null}.
+	 * @param accessor must not be {@literal null}.
+	 * @param context must not be {@literal null}.
+	 * @param entityMetadata must not be {@literal null}.
 	 */
-	public CassandraQueryCreator(PartTree tree, CassandraParameterAccessor accessor, CassandraMappingContext context) {
+	public CassandraQueryCreator(PartTree tree, CassandraParameterAccessor accessor, CassandraMappingContext context,
+			EntityMetadata<?> entityMetadata) {
 
 		super(tree, accessor);
 
-		Assert.notNull(context);
+		Assert.notNull(context, "CassandraMappingContext must not be null");
+		Assert.notNull(entityMetadata, "EntityInformation must not be null");
 
-		this.accessor = accessor;
 		this.context = context;
+		this.entity = context.getPersistentEntity(entityMetadata.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#create(org.springframework.data.repository.query.parser.Part, java.util.Iterator)
+	 */
 	@Override
 	protected Clause create(Part part, Iterator<Object> iterator) {
 
 		PersistentPropertyPath<CassandraPersistentProperty> path = context.getPersistentPropertyPath(part.getProperty());
 		CassandraPersistentProperty property = path.getLeafProperty();
-		Clause criteria = from(part, property,
-				null /* TODO where(path.toDotPath(CassandraPersistentProperty.PropertyToFieldNameConverter.INSTANCE))*/,
-				iterator);
-
-		return criteria;
+		return from(part, property, (PotentiallyConvertingIterator) iterator);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#and(org.springframework.data.repository.query.parser.Part, java.lang.Object, java.util.Iterator)
+	 */
 	@Override
 	protected Clause and(Part part, Clause base, Iterator<Object> iterator) {
 
 		if (base == null) {
-			return create(part, iterator);
+			return whereBuilder.and(create(part, iterator));
 		}
 
-		PersistentPropertyPath<CassandraPersistentProperty> path = context.getPersistentPropertyPath(part.getProperty());
-		CassandraPersistentProperty property = path.getLeafProperty();
-
-		return from(part, property,
-				null /* TODO base.and(path.toDotPath(CassandraPersistentProperty.PropertyToFieldNameConverter.INSTANCE))*/,
-				iterator);
+		whereBuilder.and(base);
+		return create(part, iterator);
 	}
 
+	/*
+	 * Cassandra does not support OR queries.
+	 * 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#or(java.lang.Object, java.lang.Object)
+	 */
 	@Override
 	protected Clause or(Clause base, Clause criteria) {
 		throw new InvalidDataAccessApiUsageException(String.format("Cassandra does not support an OR operator!"));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#complete(java.lang.Object, org.springframework.data.domain.Sort)
+	 */
 	@Override
 	protected Select complete(Clause criteria, Sort sort) {
 
-		if (criteria == null) {
-			return null;
+		if (criteria != null) {
+			whereBuilder.and(criteria);
 		}
 
-		Select select = QueryBuilder.select().all().from("TODO");
-		select.where(criteria);
+		Select select = StatementBuilder.select(entity, whereBuilder, sort);
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Created query " + select.getQueryString());
+			LOG.debug("Created query {}", select);
 		}
 
 		return select;
 	}
 
-	private Clause from(Part part, CassandraPersistentProperty property, Clause criteria, Iterator<Object> parameters) {
+	private Clause from(Part part, CassandraPersistentProperty property, PotentiallyConvertingIterator parameters) {
 
 		Type type = part.getType();
 
 		switch (type) {
-		// TODO
-		// case AFTER:
-		// case GREATER_THAN:
-		// return criteria.gt(parameters.nextConverted(property));
-		// case GREATER_THAN_EQUAL:
-		// return criteria.gte(parameters.nextConverted(property));
-		// case BEFORE:
-		// case LESS_THAN:
-		// return criteria.lt(parameters.nextConverted(property));
-		// case LESS_THAN_EQUAL:
-		// return criteria.lte(parameters.nextConverted(property));
-		// case BETWEEN:
-		// return criteria.gt(parameters.nextConverted(property)).lt(parameters.nextConverted(property));
-		// case IS_NOT_NULL:
-		// return criteria.ne(null);
-		// case IS_NULL:
-		// return criteria.is(null);
-		// case NOT_IN:
-		// return criteria.nin(nextAsArray(parameters, property));
-		// case IN:
-		// return criteria.in(nextAsArray(parameters, property));
-		// case LIKE:
-		// case STARTING_WITH:
-		// case ENDING_WITH:
-		// case CONTAINING:
-		// return addAppropriateLikeRegexTo(criteria, part, parameters.next().toString());
-		// case REGEX:
-		// return criteria.regex(parameters.next().toString());
-		// case EXISTS:
-		// return criteria.exists((Boolean) parameters.next());
-		// case TRUE:
-		// return criteria.is(true);
-		// case FALSE:
-		// return criteria.is(false);
-		// case WITHIN:
-		//
-		// Object parameter = parameters.next();
-		// return criteria.within((Shape) parameter);
-		// case SIMPLE_PROPERTY:
-		//
-		// return isSimpleComparisionPossible(part) ? criteria.is(parameters.nextConverted(property))
-		// : createLikeRegexCriteriaOrThrow(part, property, criteria, parameters, false);
-		//
-		// case NEGATING_SIMPLE_PROPERTY:
-		//
-		// return isSimpleComparisionPossible(part) ? criteria.ne(parameters.nextConverted(property))
-		// : createLikeRegexCriteriaOrThrow(part, property, criteria, parameters, true);
+			case AFTER:
+			case GREATER_THAN:
+				return QueryBuilder.gt(columnName(property), parameters.nextConverted(property));
+			case GREATER_THAN_EQUAL:
+				return QueryBuilder.gte(columnName(property), parameters.nextConverted(property));
+			case BEFORE:
+			case LESS_THAN:
+				return QueryBuilder.lt(columnName(property), parameters.nextConverted(property));
+			case LESS_THAN_EQUAL:
+				return QueryBuilder.lte(columnName(property), parameters.nextConverted(property));
+			case IN:
+				return QueryBuilder.in(columnName(property), nextAsArray(property, parameters));
+			case LIKE:
+			case STARTING_WITH:
+			case ENDING_WITH:
+				return QueryBuilder.like(columnName(property), like(type, parameters.nextConverted(property)));
+			case CONTAINING:
+				return containing(property, parameters.nextConverted(property));
+			case TRUE:
+				return QueryBuilder.eq(columnName(property), true);
+			case FALSE:
+				return QueryBuilder.eq(columnName(property), false);
+			case SIMPLE_PROPERTY:
+				return QueryBuilder.eq(columnName(property), parameters.nextConverted(property));
 			default:
-				throw new UnsupportedCassandraQueryOperatorException(String.format(""));
+				throw new InvalidDataAccessApiUsageException(
+						String.format("Unsupported Keyword: [%s] in part [%s]", type, part));
 		}
 	}
 
-	private boolean isSimpleComparisionPossible(Part part) {
+	private Clause containing(CassandraPersistentProperty property, Object bindableValue) {
 
-		switch (part.shouldIgnoreCase()) {
-			case NEVER:
-				return true;
-			case WHEN_POSSIBLE:
-				return part.getProperty().getType() != String.class;
-			case ALWAYS:
-				return false;
-			default:
-				return true;
-		}
-	}
-
-	/**
-	 * Returns the next element from the given {@link Iterator} expecting it to be of a certain type.
-	 * 
-	 * @param <T>
-	 * @param iterator
-	 * @param type
-	 * @throws IllegalArgumentException in case the next element in the iterator is not of the given type.
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	private <T> T nextAs(Iterator<Object> iterator, Class<T> type) {
-		Object parameter = iterator.next();
-		if (parameter.getClass().isAssignableFrom(type)) {
-			return (T) parameter;
+		if (property.isCollectionLike() || ClassUtils.isAssignable(Map.class, property.getType())) {
+			return QueryBuilder.contains(columnName(property), bindableValue);
 		}
 
-		throw new IllegalArgumentException(String.format("Expected parameter type of %s but got %s!", type,
-				parameter.getClass()));
+		return QueryBuilder.like(columnName(property), like(Type.CONTAINING, bindableValue));
 	}
 
-	private Object[] nextAsArray(Iterator<Object> iterator, CassandraPersistentProperty property) {
-		Object next = iterator.next(); // TODO nextConverted(property);
+	private Object like(Type type, Object value) {
+
+		if (value == null) {
+			return null;
+		}
+
+		if (type == Type.LIKE) {
+			return value;
+		}
+
+		if (type == Type.CONTAINING) {
+			return "%" + value + "%";
+		}
+
+		if (type == Type.STARTING_WITH) {
+			return value + "%";
+		}
+
+		if (type == Type.ENDING_WITH) {
+			return "%" + value;
+		}
+
+		throw new IllegalArgumentException(String.format("Part Type [%s] not supported with like queries", type));
+
+	}
+
+	private static String columnName(CassandraPersistentProperty property) {
+		return property.getColumnName().toCql();
+	}
+
+	private Object[] nextAsArray(CassandraPersistentProperty property, PotentiallyConvertingIterator iterator) {
+
+		Object next = iterator.nextConverted(property);
 
 		if (next instanceof Collection) {
 			return ((Collection<?>) next).toArray();
@@ -216,5 +221,92 @@ class CassandraQueryCreator extends AbstractQueryCreator<Select, Clause> {
 		}
 
 		return new Object[] { next };
+	}
+
+	/**
+	 * Where clause builder. Collects {@link Clause clauses} and builds the where-clause depending on the WHERE type.
+	 * 
+	 * @author Mark Paluch
+	 */
+	static class WhereBuilder {
+
+		private List<Clause> clauses = new ArrayList<Clause>();
+
+		Clause and(Clause clause) {
+
+			clauses.add(clause);
+			return clause;
+		}
+
+		Select.Where build(Select.Where where) {
+
+			for (Clause clause : clauses) {
+				where = where.and(clause);
+			}
+			return where;
+		}
+	}
+
+	/**
+	 * @author Mark Paluch
+	 */
+	static class StatementBuilder {
+
+		/**
+		 * Build a {@link Select} statement from the given {@link WhereBuilder} and {@link Sort}. Resolves property names
+		 * for {@link Sort} using the {@link CassandraPersistentEntity}.
+		 * 
+		 * @param whereBuilder
+		 * @param entity
+		 * @param sort
+		 * @return
+		 */
+		static Select select(CassandraPersistentEntity<?> entity, WhereBuilder whereBuilder, Sort sort) {
+
+			Select select = QueryBuilder.select().from(entity.getTableName().toCql());
+			whereBuilder.build(select.where());
+
+			if (sort != null) {
+
+				for (Order order : sort) {
+
+					String dotPath = order.getProperty();
+					CassandraPersistentProperty property = getPersistentProperty(entity, dotPath);
+
+					if (order.isAscending()) {
+						select.orderBy(QueryBuilder.asc(columnName(property)));
+					} else {
+						select.orderBy(QueryBuilder.desc(columnName(property)));
+					}
+				}
+			}
+
+			return select;
+		}
+
+		private static CassandraPersistentProperty getPersistentProperty(CassandraPersistentEntity<?> entity,
+				String dotPath) {
+
+			String[] segments = PUNCTATION_PATTERN.split(dotPath);
+
+			CassandraPersistentProperty property = null;
+			CassandraPersistentEntity<?> currentEntity = entity;
+
+			for (String segment : segments) {
+				property = currentEntity.getPersistentProperty(segment);
+
+				if (property != null && property.isCompositePrimaryKey()) {
+					currentEntity = property.getCompositePrimaryKeyEntity();
+				}
+			}
+
+			if (property != null) {
+
+				return property;
+			}
+
+			throw new IllegalArgumentException(
+					String.format("Cannot resolve path [%s] to a property of [%s]", dotPath, entity.getName()));
+		}
 	}
 }

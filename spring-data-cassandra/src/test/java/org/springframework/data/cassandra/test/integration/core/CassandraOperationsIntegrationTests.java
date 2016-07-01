@@ -734,7 +734,11 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
 	 */
 	@Test
-	public void stream() {
+	public void stream() throws InterruptedException {
+
+		while(template.select("SELECT * FROM book", Book.class).size() != 0){
+			Thread.sleep(10);
+		}
 
 		template.insert(getBookList(20));
 

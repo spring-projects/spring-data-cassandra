@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@ package org.springframework.data.cassandra.repository.support;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
+import org.springframework.data.cassandra.repository.query.PartTreeCassandraQuery;
 import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.projection.ProjectionFactory;
@@ -43,8 +43,8 @@ import org.springframework.util.Assert;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Thomas Darimont
+ * @author Mark Paluch
  */
-
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	private final CassandraOperations cassandraOperations;
@@ -61,16 +61,19 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 		this.cassandraOperations = cassandraOperations;
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
-
-		// TODO: remove when supporting declarative query methods
-		setQueryLookupStrategyKey(QueryLookupStrategy.Key.USE_DECLARED_QUERY);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
+	 */
 	@Override
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 		return SimpleCassandraRepository.class;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryInformation)
+	 */
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 
@@ -78,6 +81,9 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		return getTargetRepositoryViaReflection(information, entityInformation, cassandraOperations);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, ID extends Serializable> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
@@ -85,14 +91,17 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(domainClass);
 
 		if (entity == null) {
-			throw new MappingException(String.format("Could not lookup mapping metadata for domain class %s!",
-					domainClass.getName()));
+			throw new MappingException(
+					String.format("Could not lookup mapping metadata for domain class %s!", domainClass.getName()));
 		}
 
 		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
 				cassandraOperations.getConverter());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key)
+	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
 		return new CassandraQueryLookupStrategy();
@@ -117,7 +126,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 			} else if (queryMethod.hasAnnotatedQuery()) {
 				return new StringBasedCassandraQuery(queryMethod, cassandraOperations);
 			} else {
-				throw new InvalidDataAccessApiUsageException("declarative query methods are a todo");
+				return new PartTreeCassandraQuery(queryMethod, cassandraOperations);
 			}
 		}
 	}

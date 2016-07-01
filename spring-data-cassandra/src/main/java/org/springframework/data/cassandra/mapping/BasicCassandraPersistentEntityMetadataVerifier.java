@@ -42,6 +42,10 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 
+		if(entity.getType().isInterface()){
+			return;
+		}
+
 		VerifierMappingExceptions exceptions = new VerifierMappingExceptions(entity,
 				String.format("Mapping Exceptions from BasicCassandraPersistentEntityMetadataVerifier for %s", entity.getName()));
 

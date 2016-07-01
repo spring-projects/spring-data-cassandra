@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
+import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 
@@ -39,17 +41,26 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 		super(method.getParameters(), values);
 	}
 
-	/**
-	 * Returns the Cassandra {@link DataType} for the declared parameter if the type is a
-	 * {@link org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder simple type}. Parameter types may be
-	 * specified using {@link org.springframework.data.cassandra.mapping.CassandraType}.
-	 *
-	 * @param index parameter index
-	 * @return the Cassandra {@link DataType} or {@literal null} if the parameter type cannot be determined from
-	 *         {@link org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder}
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#findCassandraType(int)
 	 */
-	public DataType getDataType(int index) {
+	public CassandraType findCassandraType(int index) {
 		return getParameters().getParameter(index).getCassandraType();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getDataType(int)
+	 */
+	@Override
+	public DataType getDataType(int index) {
+
+		CassandraType cassandraType = findCassandraType(index);
+
+		if (cassandraType != null) {
+			return CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type());
+		}
+
+		return CassandraSimpleTypeHolder.getDataTypeFor(getParameterType(index));
 	}
 
 	/* (non-Javadoc)

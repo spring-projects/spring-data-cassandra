@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingConverter;
@@ -38,6 +40,7 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryExecuti
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
+import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -65,22 +68,29 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 */
 	public AbstractCassandraQuery(CassandraQueryMethod method, CassandraOperations operations) {
 
-		Assert.notNull(operations);
-		Assert.notNull(method);
+		Assert.notNull(method, "CassandraQueryMethod must not be null");
+		Assert.notNull(operations, "CassandraOperations must not be null");
 
 		this.method = method;
 		this.template = operations;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
+	 */
 	@Override
 	public CassandraQueryMethod getQueryMethod() {
 		return method;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
+	 */
 	@Override
 	public Object execute(Object[] parameters) {
 
-		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(template.getConverter(), new CassandraParametersParameterAccessor(method, parameters));
+		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(template.getConverter(),
+				new CassandraParametersParameterAccessor(method, parameters));
 		String query = createQuery(accessor);
 
 		ResultProcessor processor = method.getResultProcessor().withDynamicProjection(accessor);
@@ -88,7 +98,13 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		CassandraQueryExecution cassandraQueryExecution = getExecution(query, accessor,
 				new ResultProcessingConverter(processor));
 
-		return cassandraQueryExecution.execute(query, processor.getReturnedType().getReturnedType());
+		CassandraReturnedType returnedType = new CassandraReturnedType(processor.getReturnedType(), template.getConverter().getCustomConversions());
+
+		if (returnedType.isProjecting()) {
+			return cassandraQueryExecution.execute(query, returnedType.getDomainType());
+		}
+
+		return cassandraQueryExecution.execute(query, returnedType.getReturnedType());
 	}
 
 	/**
@@ -167,6 +183,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		return object;
 	}
 
+	@Deprecated
 	protected void warnIfMoreResults(Iterator<Row> iterator) {
 		if (log.isWarnEnabled() && iterator.hasNext()) {
 
@@ -180,6 +197,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		}
 	}
 
+	@Deprecated
 	public ConversionService getConversionService() {
 		return template.getConverter().getConversionService();
 	}
@@ -200,4 +218,48 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 * @param accessor must not be {@literal null}.
 	 */
 	protected abstract String createQuery(CassandraParameterAccessor accessor);
+
+	private class CassandraReturnedType {
+
+		private final ReturnedType returnedType;
+		private final CustomConversions customConversions;
+
+		CassandraReturnedType(ReturnedType returnedType, CustomConversions customConversions) {
+			this.returnedType = returnedType;
+			this.customConversions = customConversions;
+		}
+
+		boolean isProjecting(){
+
+			if(!returnedType.isProjecting()){
+				return false;
+			}
+
+			// Spring Data Cassandra allows List<Map<String, Object> and Map<String, Object> declarations on query methods
+			// so we don't want to let projection kick in
+			if(ClassUtils.isAssignable(Map.class, returnedType.getReturnedType())){
+				return false;
+			}
+
+			// Type conversion using registered conversions is handled on template level
+			if(customConversions.hasCustomWriteTarget(returnedType.getReturnedType())){
+				return false;
+			}
+
+			// Don't apply projection on Cassandra simple types
+			if(customConversions.isSimpleType(returnedType.getReturnedType())){
+				return false;
+			}
+
+			return true;
+		}
+
+		Class<?> getReturnedType() {
+			return returnedType.getReturnedType();
+		}
+
+		Class<?> getDomainType() {
+			return returnedType.getDomainType();
+		}
+	}
 }

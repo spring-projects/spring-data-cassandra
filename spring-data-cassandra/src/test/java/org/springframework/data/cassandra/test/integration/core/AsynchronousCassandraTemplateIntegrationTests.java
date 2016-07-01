@@ -246,7 +246,7 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@SuppressWarnings("unused")
-	public static class Person {
+	static class Person {
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String id;
 		@Column String firstname;
