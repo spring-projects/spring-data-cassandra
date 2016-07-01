@@ -152,7 +152,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(unsupportedEnumToOrdinalMapping, insert);
 
-		assertThat(getValues(insert), contains((Object) Integer.valueOf(Condition.USED.ordinal())));
+		assertThat(getValues(insert), hasItem((Object) Integer.valueOf(Condition.USED.ordinal())));
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(key, insert);
 
-		assertThat(getValues(insert), contains((Object) "MINT"));
+		assertThat(getValues(insert), hasItem((Object) "MINT"));
 	}
 
 	/**
@@ -187,7 +187,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(composite, insert);
 
-		assertThat(getValues(insert), contains((Object) "MINT"));
+		assertThat(getValues(insert), hasItem((Object) "MINT"));
 	}
 
 	/**
@@ -203,7 +203,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(withEnumColumns, update);
 
-		assertThat(getAssignmentValues(update), contains((Object) "MINT"));
+		assertThat(getAssignmentValues(update), hasItem((Object) "MINT"));
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(key, update);
 
-		assertThat(getWhereValues(update), contains((Object) "MINT"));
+		assertThat(getWhereValues(update), hasItem((Object) "MINT"));
 	}
 
 	/**
@@ -238,7 +238,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(composite, update);
 
-		assertThat(getWhereValues(update), contains((Object) "MINT"));
+		assertThat(getWhereValues(update), hasItem((Object) "MINT"));
 	}
 
 	/**
@@ -254,7 +254,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(key, where);
 
-		assertThat(getWhereValues(where), contains((Object) "MINT"));
+		assertThat(getWhereValues(where), hasItem((Object) "MINT"));
 	}
 
 	/**
@@ -273,7 +273,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(composite, where);
 
-		assertThat(getWhereValues(where), contains((Object) "MINT"));
+		assertThat(getWhereValues(where), hasItem((Object) "MINT"));
 	}
 
 	/**
