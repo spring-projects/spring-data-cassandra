@@ -355,7 +355,7 @@ public class BasicCassandraMappingContext
 		CassandraPersistentProperty property = entity.getPersistentProperty(mapping.getPropertyName());
 
 		if (property == null) {
-			throw new IllegalArgumentException(String.format("entity class [%s] has no persistent property named [%s]",
+			throw new IllegalArgumentException(String.format("Entity class [%s] has no persistent property named [%s]",
 					entity.getType().getName(), mapping.getPropertyName()));
 		}
 
