@@ -160,13 +160,13 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	@Override
 	public boolean exists(Class<?> type, Object id) {
 
-		Assert.notNull(type);
-		Assert.notNull(id);
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(id, "Id must not be null");
 
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
+		CassandraPersistentEntity<?> entity = getPersistentEntity(type);
 
 		Select select = QueryBuilder.select().countAll().from(entity.getTableName().toCql());
-		appendIdCriteria(select.where(), entity, id);
+		cassandraConverter.write(id, select.where(), entity);
 
 		Long count = queryForObject(select, Long.class);
 
@@ -194,10 +194,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Assert.notNull(type);
 		Assert.notNull(id);
 
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
+		CassandraPersistentEntity<?> entity = getPersistentEntity(type);
 
 		Delete delete = QueryBuilder.delete().from(entity.getTableName().toCql());
-		appendIdCriteria(delete.where(), entity, id);
+		cassandraConverter.write(id, delete.where(), entity);
 
 		execute(delete);
 	}
@@ -398,16 +398,13 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	@Override
 	public <T> T selectOneById(Class<T> type, Object id) {
 
-		Assert.notNull(type);
-		Assert.notNull(id);
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(id, "Id must not be null");
 
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
-		if (entity == null) {
-			throw new IllegalArgumentException(String.format("unknown entity class [%s]", type.getName()));
-		}
+		CassandraPersistentEntity<?> entity = getPersistentEntity(type);
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
-		appendIdCriteria(select.where(), entity, id);
+		cassandraConverter.write(id, select.where(), entity);
 
 		return selectOne(select, type);
 	}
@@ -416,16 +413,24 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		void doWithClause(Clause clause);
 	}
 
+	@Deprecated
 	protected void appendIdCriteria(final ClauseCallback clauseCallback, CassandraPersistentEntity<?> entity,
 			final Map<?, ?> id) {
 
 		for (Map.Entry<?, ?> entry : id.entrySet()) {
 
 			CassandraPersistentProperty property = entity.getPersistentProperty(entry.getKey().toString());
+
+			if (property == null) {
+				throw new IllegalArgumentException(String.format("Entity class [%s] has no persistent property named [%s]",
+						entity.getType().getName(), entry.getKey()));
+			}
+
 			clauseCallback.doWithClause(QueryBuilder.eq(property.getColumnName().toCql(), entry.getValue()));
 		}
 	}
 
+	@Deprecated
 	protected void appendIdCriteria(final ClauseCallback clauseCallback, CassandraPersistentEntity<?> entity, Object id) {
 
 		if (id instanceof Map<?, ?>) {
@@ -460,6 +465,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		clauseCallback.doWithClause(QueryBuilder.eq(idProperty.getColumnName().toCql(), id));
 	}
 
+	@Deprecated
 	protected void appendIdCriteria(final com.datastax.driver.core.querybuilder.Select.Where where,
 			CassandraPersistentEntity<?> entity, Object id) {
 
@@ -472,6 +478,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		}, entity, id);
 	}
 
+	@Deprecated
 	protected void appendIdCriteria(final Where where, CassandraPersistentEntity<?> entity, Object id) {
 
 		appendIdCriteria(new ClauseCallback() {
@@ -1080,6 +1087,23 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	public <T> Cancellable selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener,
 			QueryOptions options) {
 		return doSelectOneAsync(cql, type, listener, options);
+	}
+
+	private <T> CassandraPersistentEntity<?> getPersistentEntity(Class<T> entityClass) {
+
+		if (entityClass == null) {
+			throw new InvalidDataAccessApiUsageException(
+					"No class parameter provided, entity collection can't be determined!");
+		}
+
+		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+
+		if (entity == null) {
+			throw new InvalidDataAccessApiUsageException(
+					String.format("No Persistent Entity information found for the class [%s]", entityClass.getName()));
+		}
+
+		return entity;
 	}
 
 	protected <T> Cancellable doSelectOneAsync(final Object query, final Class<T> type,
