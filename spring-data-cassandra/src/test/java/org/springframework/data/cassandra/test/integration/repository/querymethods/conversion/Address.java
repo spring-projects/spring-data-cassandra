@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.domain;
+package org.springframework.data.cassandra.test.integration.repository.querymethods.conversion;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.mapping.Table;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author Mark Paluch
  */
-@Table
 @Data
-public class Person {
+@AllArgsConstructor
+@NoArgsConstructor
+class Address {
 
-	@Id String id;
-	String firstname;
-	String lastname;
+	String city;
+	String country;
 }

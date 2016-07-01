@@ -20,17 +20,18 @@ import java.time.ZoneId;
 import java.util.Date;
 
 import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.Indexed;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Sample domain class.
  */
 @Table
 @Data
+@NoArgsConstructor
 public class Person {
 
 	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) private String lastname;
@@ -44,4 +45,10 @@ public class Person {
 
 	private LocalDate createdDate;
 	private ZoneId zoneId;
+
+	public Person(String firstname, String lastname) {
+
+		this.firstname = firstname;
+		this.lastname = lastname;
+	}
 }

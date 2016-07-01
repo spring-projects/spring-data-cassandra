@@ -71,7 +71,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	 */
 	class CassandraParameter extends Parameter {
 
-		private final DataType dataType;
+		private final CassandraType cassandraType;
 
 		protected CassandraParameter(MethodParameter parameter) {
 
@@ -87,22 +87,19 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 									CassandraType.class.getSimpleName()));
 				}
 
-				this.dataType = CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type());
+				this.cassandraType = cassandraType;
 			} else {
-				this.dataType = CassandraSimpleTypeHolder.getDataTypeFor(getType());
+				this.cassandraType = null;
 			}
 		}
 
 		/**
-		 * Returns the Cassandra {@link DataType} for the declared parameter if the type is a
-		 * {@link org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder simple type}. Parameter types may be
-		 * specified using {@link org.springframework.data.cassandra.mapping.CassandraType}.
+		 * Returns the {@link CassandraType} for the declared parameter if specified using {@link org.springframework.data.cassandra.mapping.CassandraType}.
 		 * 
-		 * @return the Cassandra {@link DataType} or {@literal null} if the parameter type cannot be determined from
-		 *         {@link org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder}
+		 * @return the {@link CassandraType} or {@literal null}.
 		 */
-		public DataType getCassandraType() {
-			return dataType;
+		public CassandraType getCassandraType() {
+			return cassandraType;
 		}
 	}
 }

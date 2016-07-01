@@ -21,6 +21,7 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -28,6 +29,7 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.ResultSet;
@@ -41,16 +43,9 @@ import com.datastax.driver.core.ResultSet;
  */
 public class CassandraQueryMethod extends QueryMethod {
 
-	private boolean queryCached = false;
-
-	@SuppressWarnings("all")
-	private final CassandraMappingContext mappingContext;
-
 	private final Method method;
-
-	private Query query;
-
-	private String queryString;
+	private final CassandraMappingContext mappingContext;
+	private CassandraEntityMetadata<?> metadata;
 
 	/**
 	 * Creates a new {@link CassandraQueryMethod} from the given {@link Method}.
@@ -85,24 +80,42 @@ public class CassandraQueryMethod extends QueryMethod {
 		}
 	}
 
+	@Override
+	public CassandraEntityMetadata<?> getEntityInformation() {
+
+		if (metadata == null) {
+
+			Class<?> returnedObjectType = getReturnedObjectType();
+			Class<?> domainClass = getDomainClass();
+
+			if (ClassUtils.isPrimitiveOrWrapper(returnedObjectType)) {
+
+				this.metadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) domainClass,
+						mappingContext.getPersistentEntity(domainClass));
+
+			} else {
+
+				CassandraPersistentEntity<?> returnedEntity = mappingContext.getPersistentEntity(returnedObjectType);
+				CassandraPersistentEntity<?> managedEntity = mappingContext.getPersistentEntity(domainClass);
+				returnedEntity = returnedEntity == null || returnedEntity.getType().isInterface() ? managedEntity
+						: returnedEntity;
+				CassandraPersistentEntity<?> collectionEntity = domainClass.isAssignableFrom(returnedObjectType)
+						? returnedEntity : managedEntity;
+
+				this.metadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) returnedEntity.getType(),
+						collectionEntity);
+			}
+		}
+
+		return this.metadata;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.query.QueryMethod#createParameters(java.lang.reflect.Method)
 	 */
 	@Override
 	protected CassandraParameters createParameters(Method method) {
 		return new CassandraParameters(method);
-	}
-
-	/**
-	 * Returns the {@link Query} annotation that is applied to the method or {@code null} if none available.
-	 */
-	Query getQueryAnnotation() {
-		if (query == null) {
-			query = AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
-			queryCached = true;
-		}
-
-		return query;
 	}
 
 	/**
@@ -115,15 +128,22 @@ public class CassandraQueryMethod extends QueryMethod {
 	/**
 	 * Returns the query string declared in a {@link Query} annotation or {@literal null} if neither the annotation found
 	 * nor the attribute was specified.
+	 *
+	 * @return
 	 */
 	public String getAnnotatedQuery() {
 
-		if (!queryCached) {
-			queryString = (String) AnnotationUtils.getValue(getQueryAnnotation());
-			queryString = (StringUtils.hasText(queryString) ? queryString : null);
-		}
+		String query = (String) AnnotationUtils.getValue(getQueryAnnotation());
+		return StringUtils.hasText(query) ? query : null;
+	}
 
-		return queryString;
+	/**
+	 * Returns the {@link Query} annotation that is applied to the method or {@code null} if none available.
+	 *
+	 * @return
+	 */
+	Query getQueryAnnotation() {
+		return AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
 	}
 
 	/**

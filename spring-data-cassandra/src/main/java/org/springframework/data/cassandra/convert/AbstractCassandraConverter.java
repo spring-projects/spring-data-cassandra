@@ -63,6 +63,14 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.convert.CassandraConverter#getCustomConversions()
+	 */
+	@Override
+	public CustomConversions getCustomConversions() {
+		return conversions;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	@Override

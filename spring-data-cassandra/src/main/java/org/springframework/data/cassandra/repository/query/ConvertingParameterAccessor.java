@@ -15,14 +15,26 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 
+import org.springframework.core.CollectionFactory;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
+import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.DataType.CollectionType;
 import com.datastax.driver.core.TypeCodec;
 
 /**
@@ -34,10 +46,12 @@ import com.datastax.driver.core.TypeCodec;
  */
 class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
+	private final static TypeInformation<Set> SET = ClassTypeInformation.from(Set.class);
+
 	private final CassandraConverter cassandraConverter;
 	private final CassandraParameterAccessor delegate;
 
-	public ConvertingParameterAccessor(CassandraConverter cassandraConverter, CassandraParameterAccessor delegate) {
+	ConvertingParameterAccessor(CassandraConverter cassandraConverter, CassandraParameterAccessor delegate) {
 
 		this.cassandraConverter = cassandraConverter;
 		this.delegate = delegate;
@@ -72,7 +86,12 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public Object getBindableValue(int index) {
-		return potentiallyConvert(index, delegate.getBindableValue(index));
+		return potentiallyConvert(index, delegate.getBindableValue(index), null);
+	}
+
+	@Override
+	public CassandraType findCassandraType(int index) {
+		return delegate.findCassandraType(index);
 	}
 
 	/* (non-Javadoc)
@@ -80,7 +99,14 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public DataType getDataType(int index) {
-		return delegate.getDataType(index);
+
+		DataType dataType = delegate.getDataType(index);
+
+		if (dataType != null) {
+			return dataType;
+		}
+
+		return cassandraConverter.getMappingContext().getDataType(getParameterType(index));
 	}
 
 	/* (non-Javadoc)
@@ -99,11 +125,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		return delegate.hasBindableNullValue();
 	}
 
-	/*
-	  * (non-Javadoc)
-	  *
-	  * @see java.lang.Iterable#iterator()
-	  */
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ParameterAccessor#iterator()
 	 */
@@ -111,19 +132,36 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		return new ConvertingIterator(delegate.iterator());
 	}
 
-	private Object potentiallyConvert(int index, Object bindableValue) {
+	@SuppressWarnings("unchecked")
+	private Object potentiallyConvert(int index, Object bindableValue, CassandraPersistentProperty property) {
 
 		if (bindableValue == null) {
 			return null;
 		}
 
-		DataType parameterType = getDataType(index);
-
-		if (parameterType == null) {
-			parameterType = cassandraConverter.getMappingContext().getDataType(getParameterType(index));
+		if (bindableValue.getClass().isArray()) {
+			return bindableValue;
 		}
 
+		DataType parameterType = getDataType(index, property);
 		TypeCodec<?> cassandraType = CodecRegistry.DEFAULT_INSTANCE.codecFor(parameterType);
+
+		if (property != null && getCustomConversions().hasCustomWriteTarget(property.getActualType())
+				&& property.isCollectionLike()) {
+
+			Class<?> customWriteTarget = getCustomConversions().getCustomWriteTarget(property.getActualType());
+			if (Collection.class.isAssignableFrom(property.getType()) && bindableValue instanceof Collection) {
+
+				Collection<Object> original = (Collection<Object>) bindableValue;
+				Collection<Object> converted = CollectionFactory.createCollection(property.getType(), original.size());
+
+				for (Object o : original) {
+					converted.add(getConversionService().convert(o, customWriteTarget));
+				}
+
+				return converted;
+			}
+		}
 
 		if (cassandraType.getJavaType().getRawType().isAssignableFrom(bindableValue.getClass())) {
 			return bindableValue;
@@ -132,12 +170,79 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		return cassandraConverter.getConversionService().convert(bindableValue, cassandraType.getJavaType().getRawType());
 	}
 
+	private CustomConversions getCustomConversions() {
+		return cassandraConverter.getCustomConversions();
+	}
+
+	private ConversionService getConversionService() {
+		return cassandraConverter.getConversionService();
+	}
+
+	/**
+	 * Return the {@link DataType} based on annotated parameters with {@link CassandraType}, the
+	 * {@link CassandraPersistentProperty} type or the declared parameter type.
+	 * 
+	 * @param index
+	 * @param cassandraPersistentProperty
+	 * @return the {@link DataType}
+	 */
+	DataType getDataType(int index, CassandraPersistentProperty cassandraPersistentProperty) {
+
+		CassandraType cassandraType = delegate.findCassandraType(index);
+
+		if (cassandraType != null) {
+			return CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type());
+		}
+
+		CassandraMappingContext mappingContext = cassandraConverter.getMappingContext();
+		TypeInformation<?> typeInformation = ClassTypeInformation.from(getParameterType(index));
+
+		if (cassandraPersistentProperty == null) {
+			return mappingContext.getDataType(typeInformation.getType());
+		}
+
+		DataType dataType = mappingContext.getDataType(cassandraPersistentProperty);
+
+		if (cassandraPersistentProperty.isCollectionLike() && !typeInformation.isCollectionLike()) {
+
+			if (dataType instanceof CollectionType) {
+
+				CollectionType collectionType = (CollectionType) dataType;
+				if (collectionType.getTypeArguments().size() == 1) {
+					return collectionType.getTypeArguments().get(0);
+				}
+			}
+		}
+
+		if (!cassandraPersistentProperty.isCollectionLike() && typeInformation.isCollectionLike()) {
+
+			if (typeInformation.isAssignableFrom(SET)) {
+				return DataType.set(dataType);
+			}
+
+			return DataType.list(dataType);
+		}
+
+		if (cassandraPersistentProperty.isMap()) {
+
+			if (dataType instanceof CollectionType) {
+
+				CollectionType collectionType = (CollectionType) dataType;
+				if (collectionType.getTypeArguments().size() == 2) {
+					return collectionType.getTypeArguments().get(0);
+				}
+			}
+		}
+
+		return mappingContext.getDataType(cassandraPersistentProperty);
+	}
+
 	/**
 	 * Custom {@link Iterator} to convert items before returning them.
 	 *
 	 * @author Mark Paluch
 	 */
-	private class ConvertingIterator implements Iterator<Object> {
+	private class ConvertingIterator implements PotentiallyConvertingIterator {
 
 		private final Iterator<Object> delegate;
 		private int index = 0;
@@ -145,9 +250,9 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		/**
 		 * Creates a new {@link ConvertingIterator} for the given delegate.
 		 *
-		 * @param delegate
+		 * @param delegate must not be {@literal null}.
 		 */
-		public ConvertingIterator(Iterator<Object> delegate) {
+		ConvertingIterator(Iterator<Object> delegate) {
 			this.delegate = delegate;
 		}
 
@@ -164,7 +269,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 * @see java.util.Iterator#next()
 		 */
 		public Object next() {
-			return potentiallyConvert(index++, next());
+			return potentiallyConvert(index++, delegate.next(), null);
 		}
 
 		/*
@@ -174,5 +279,25 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		public void remove() {
 			delegate.remove();
 		}
+
+		@Override
+		public Object nextConverted(CassandraPersistentProperty property) {
+			return potentiallyConvert(index++, delegate.next(), property);
+		}
+	}
+
+	/**
+	 * Custom {@link Iterator} that adds a method to access elements in a converted manner.
+	 *
+	 * @author Mark Paluch
+	 */
+	interface PotentiallyConvertingIterator extends Iterator<Object> {
+
+		/**
+		 * Returns the next element and pass in type information for potential conversion.
+		 *
+		 * @return the converted object, may be {@literal null}.
+		 */
+		Object nextConverted(CassandraPersistentProperty property);
 	}
 }
