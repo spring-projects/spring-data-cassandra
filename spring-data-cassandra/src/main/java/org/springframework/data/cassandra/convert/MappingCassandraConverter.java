@@ -82,15 +82,12 @@ import com.datastax.driver.core.querybuilder.Update;
 public class MappingCassandraConverter extends AbstractCassandraConverter
 	implements CassandraConverter, ApplicationContextAware, BeanClassLoaderAware {
 
-	protected ApplicationContext applicationContext;
-
 	protected final CassandraMappingContext mappingContext;
-
+	protected ApplicationContext applicationContext;
 	protected ClassLoader beanClassLoader;
-
-	protected final Logger log = LoggerFactory.getLogger(getClass());
-
 	protected SpELContext spELContext;
+
+	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * Creates a new {@link MappingCassandraConverter} with a {@link BasicCassandraMappingContext}.
@@ -509,7 +506,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
-
 	}
 
 	@Override
@@ -543,9 +539,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	private Class<?> getTargetType(CassandraPersistentProperty property) {
-
-		return (property.isCompositePrimaryKey() ? property.getType() : CodecRegistry.DEFAULT_INSTANCE.codecFor(
-			mappingContext.getDataType(property)).getJavaType().getRawType());
+		return (property.isCompositePrimaryKey() ? property.getType() : getCodec(property).getJavaType().getRawType());
 	}
 
 	/**
