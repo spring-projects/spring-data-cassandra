@@ -47,7 +47,7 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * The table name used for the specified class by this template.
 	 *
-	 * @param entityClass must not be {@literal null}.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @return the {@link CqlIdentifier}
 	 */
 	CqlIdentifier getTableName(Class<?> entityClass);
@@ -60,130 +60,130 @@ public interface CassandraOperations extends CqlOperations {
 	 *
 	 * @param <T> element return type.
 	 * @param query query to execute.  Must not be empty or {@literal null}.
-	 * @param type Class type of the elements in the {@link Iterator} stream. Must not be {@literal null}.
+	 * @param entityClass Class type of the elements in the {@link Iterator} stream. Must not be {@literal null}.
 	 * @return an {@link Iterator} (stream) over the elements in the query result set.
 	 * @since 1.5
 	 */
-	<T> Iterator<T> stream(String query, Class<T> type);
+	<T> Iterator<T> stream(String query, Class<T> entityClass);
 
 	/**
 	 * Execute query and convert ResultSet to the list of entities.
 	 *
 	 * @param cql must not be {@literal null}.
-	 * @param type must not be {@literal null}, mapped entity type.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @return the converted results
 	 */
-	<T> List<T> select(String cql, Class<T> type);
+	<T> List<T> select(String cql, Class<T> entityClass);
 
 	/**
 	 * Execute the Select Query and convert to the list of entities.
 	 *
 	 * @param select must not be {@literal null}.
-	 * @param type must not be {@literal null}, mapped entity type.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @return the converted results
 	 */
-	<T> List<T> select(Select select, Class<T> type);
+	<T> List<T> select(Select select, Class<T> entityClass);
 
 	/**
-	 * Select objects for the given {@code type} and {@code ids}.
+	 * Select objects for the given {@code entityClass} and {@code ids}.
 	 *
-	 * @param type must not be {@literal null}, mapped entity type.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @param ids must not be {@literal null}.
 	 * @return the converted results
 	 */
-	<T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids);
+	<T> List<T> selectBySimpleIds(Class<T> entityClass, Iterable<?> ids);
 
 	/**
 	 * @deprecated Calling this method could result in {@link OutOfMemoryError}, as this is a brute force selection.
-	 * @param type The type of entity to select.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @return A list of all entities of type <code>T</code>.
 	 */
 	@Deprecated
-	<T> List<T> selectAll(Class<T> type);
+	<T> List<T> selectAll(Class<T> entityClass);
 
 	/**
-	 * Execute the Select by {@code id} for the given {@code type}.
+	 * Execute the Select by {@code id} for the given {@code entityClass}.
 	 *
-	 * @param type must not be {@literal null}.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @param id must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 */
-	<T> T selectOneById(Class<T> type, Object id);
+	<T> T selectOneById(Class<T> entityClass, Object id);
 
 	/**
 	 * Execute CQL and convert ResultSet to the entity
 	 *
 	 * @param cql must not be {@literal null}.
-	 * @param type must not be {@literal null}, mapped entity type.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 */
-	<T> T selectOne(String cql, Class<T> type);
+	<T> T selectOne(String cql, Class<T> entityClass);
 
 	/**
 	 * Execute Select query and convert ResultSet to the entity
 	 *
 	 * @param select must not be {@literal null}.
-	 * @param type must not be {@literal null}, mapped entity type.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 */
-	<T> T selectOne(Select select, Class<T> type);
+	<T> T selectOne(Select select, Class<T> entityClass);
 
 	/**
 	 * Executes the {@link Select} query asynchronously.
 	 *
 	 * @param select The {@link Select} query to execute.
-	 * @param type The type of entity to retrieve.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	<T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener);
+	<T> Cancellable selectOneAsynchronously(Select select, Class<T> entityClass, QueryForObjectListener<T> listener);
 
 	/**
 	 * Executes the string CQL query asynchronously.
 	 *
 	 * @param cql The string query CQL to execute.
-	 * @param type The type of entity to retrieve.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	<T> Cancellable selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener);
+	<T> Cancellable selectOneAsynchronously(String cql, Class<T> entityClass, QueryForObjectListener<T> listener);
 
 	/**
 	 * Executes the {@link Select} query asynchronously.
 	 *
 	 * @param select The {@link Select} query to execute.
-	 * @param type The type of entity to retrieve.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @param options The {@link QueryOptions} to use.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	<T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener,
+	<T> Cancellable selectOneAsynchronously(Select select, Class<T> entityClass, QueryForObjectListener<T> listener,
 			QueryOptions options);
 
 	/**
 	 * Executes the string CQL query asynchronously.
 	 *
 	 * @param cql The string query CQL to execute.
-	 * @param type The type of entity to retrieve.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @param options The {@link QueryOptions} to use.
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
-	<T> Cancellable selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener,
+	<T> Cancellable selectOneAsynchronously(String cql, Class<T> entityClass, QueryForObjectListener<T> listener,
 			QueryOptions options);
 
 	/**
-	 * Determine whether the row {@code type} with the given {@code id} exists.
+	 * Determine whether the row {@code entityClass} with the given {@code id} exists.
 	 *
-	 * @param type must not be {@literal null}.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @param id must not be {@literal null}.
 	 * @return true, if the object exists
 	 */
-	boolean exists(Class<?> type, Object id);
+	boolean exists(Class<?> entityClass, Object id);
 
 	/**
-	 * Returns the number of rows for the given {@code type} by querying the table of the given entity class.
+	 * Returns the number of rows for the given {@code entityClass} by querying the table of the given entity class.
 	 *
-	 * @param type must not be {@literal null}.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @return number of rows
 	 */
-	long count(Class<?> type);
+	long count(Class<?> entityClass);
 
 	/**
 	 * Insert the given entity.
@@ -428,10 +428,10 @@ public interface CassandraOperations extends CqlOperations {
 	/**
 	 * Remove the given object from the table by id.
 	 *
-	 * @param type must not be {@literal null}.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 * @param id must not be {@literal null}.
 	 */
-	void deleteById(Class<?> type, Object id);
+	void deleteById(Class<?> entityClass, Object id);
 
 	/**
 	 * Remove the given object from the table by id.
@@ -465,8 +465,9 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Deletes all entities of a given class.
+	 * @param entityClass The entity type, must not be {@literal null}.
 	 */
-	<T> void deleteAll(Class<T> clazz);
+	<T> void deleteAll(Class<T> entityClass);
 
 	/**
 	 * Remove the given object from the table by id.

@@ -158,12 +158,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public boolean exists(Class<?> type, Object id) {
+	public boolean exists(Class<?> entityClass, Object id) {
 
-		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(entityClass, "EntityClass must not be null");
 		Assert.notNull(id, "Id must not be null");
 
-		CassandraPersistentEntity<?> entity = getPersistentEntity(type);
+		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
 
 		Select select = QueryBuilder.select().countAll().from(entity.getTableName().toCql());
 		cassandraConverter.write(id, select.where(), entity);
@@ -189,12 +189,12 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public void deleteById(Class<?> type, Object id) {
+	public void deleteById(Class<?> entityClass, Object id) {
 
-		Assert.notNull(type);
-		Assert.notNull(id);
+		Assert.notNull(entityClass, "EntityClass must not be null");
+		Assert.notNull(id, "Id must not be null");
 
-		CassandraPersistentEntity<?> entity = getPersistentEntity(type);
+		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
 
 		Delete delete = QueryBuilder.delete().from(entity.getTableName().toCql());
 		cassandraConverter.write(id, delete.where(), entity);
@@ -254,17 +254,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	@Override
 	public CqlIdentifier getTableName(Class<?> entityClass) {
-
-		if (entityClass == null) {
-			throw new InvalidDataAccessApiUsageException("No class parameter provided, entity table can't be determined!");
-		}
-
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
-		if (entity == null) {
-			throw new InvalidDataAccessApiUsageException(
-					"No Persistent Entity information found for the class " + entityClass.getName());
-		}
-		return entity.getTableName();
+		return getPersistentEntity(entityClass).getTableName();
 	}
 
 	@Override
@@ -357,56 +347,63 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> List<T> selectAll(Class<T> type) {
-		return select(QueryBuilder.select().all().from(getTableName(type).toCql()), type);
+	public <T> List<T> selectAll(Class<T> entityClass) {
+
+		Assert.notNull(entityClass, "EntityClass must not be null");
+
+		return select(QueryBuilder.select().all().from(getTableName(entityClass).toCql()), entityClass);
 	}
 
 	@Override
-	public <T> List<T> select(String cql, Class<T> type) {
+	public <T> List<T> select(String cql, Class<T> entityClass) {
 
-		Assert.hasText(cql);
-		Assert.notNull(type);
+		Assert.hasText(cql, "CQL must not be empty");
+		Assert.notNull(entityClass, "EntityClass must not be null");
 
-		return select(cql, new CassandraConverterRowCallback<T>(cassandraConverter, type));
+		return select(cql, new CassandraConverterRowCallback<T>(cassandraConverter, entityClass));
 	}
 
 	@Override
-	public <T> List<T> select(Select select, Class<T> type) {
+	public <T> List<T> select(Select select, Class<T> entityClass) {
 
-		Assert.notNull(select);
+		Assert.notNull(select, "Select must not be null");
+		Assert.notNull(entityClass, "EntityClass must not be null");
 
-		return select(select, new CassandraConverterRowCallback<T>(cassandraConverter, type));
+		return select(select, new CassandraConverterRowCallback<T>(cassandraConverter, entityClass));
 	}
 
 	@Override
-	public <T> List<T> selectBySimpleIds(Class<T> type, Iterable<?> ids) {
+	public <T> List<T> selectBySimpleIds(Class<T> entityClass, Iterable<?> ids) {
 
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(type);
+		Assert.notNull(entityClass, "EntityClass must not be null");
+		Assert.notNull(ids, "Ids must not be null");
 
-		if (entity.getIdProperty().isCompositePrimaryKey()) {
+		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+
+		if (entity.getIdProperty() == null || entity.getIdProperty().isCompositePrimaryKey()) {
 			throw new IllegalArgumentException(
-					String.format("entity class [%s] uses a composite primary key class [%s] which this method can't support",
-							type.getName(), entity.getIdProperty().getCompositePrimaryKeyEntity().getType().getName()));
+					String.format("Entity class [%s] uses a composite primary key class [%s] which this method can't support",
+							entityClass.getName(), entity.getIdProperty().getCompositePrimaryKeyEntity().getType().getName()));
 		}
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 		select.where(QueryBuilder.in(entity.getIdProperty().getColumnName().toCql(), CollectionUtils.toArray(ids)));
 
-		return select(select, type);
+		return select(select, entityClass);
 	}
 
 	@Override
-	public <T> T selectOneById(Class<T> type, Object id) {
+	public <T> T selectOneById(Class<T> entityClass, Object id) {
 
-		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(entityClass, "EntityClass must not be null");
 		Assert.notNull(id, "Id must not be null");
 
-		CassandraPersistentEntity<?> entity = getPersistentEntity(type);
+		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 		cassandraConverter.write(id, select.where(), entity);
 
-		return selectOne(select, type);
+		return selectOne(select, entityClass);
 	}
 
 	protected interface ClauseCallback {
@@ -491,13 +488,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> T selectOne(String cql, Class<T> type) {
-		return selectOne(cql, new CassandraConverterRowCallback<T>(cassandraConverter, type));
+	public <T> T selectOne(String cql, Class<T> entityClass) {
+
+		Assert.notNull(entityClass, "EntityClass must not be null");
+
+		return selectOne(cql, new CassandraConverterRowCallback<T>(cassandraConverter, entityClass));
 	}
 
 	@Override
-	public <T> T selectOne(Select select, Class<T> type) {
-		return selectOne(select, new CassandraConverterRowCallback<T>(cassandraConverter, type));
+	public <T> T selectOne(Select select, Class<T> entityClass) {
+
+		Assert.notNull(entityClass, "EntityClass must not be null");
+
+		return selectOne(select, new CassandraConverterRowCallback<T>(cassandraConverter, entityClass));
 	}
 
 	@Override
@@ -600,10 +603,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#stream(java.lang.String, java.lang.Class)
 	 */
-	public <T> Iterator<T> stream(final String query, Class<T> type) {
+	public <T> Iterator<T> stream(final String query, Class<T> entityClass) {
 
 		Assert.hasText(query, "Query must not be empty");
-		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(entityClass, "EntityClass must not be null");
 
 		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
 
@@ -613,7 +616,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			}
 		});
 
-		return (resultSet != null ? toIterator(resultSet, type) : Collections.<T>emptyIterator());
+		return (resultSet != null ? toIterator(resultSet, entityClass) : Collections.<T>emptyIterator());
 	}
 
 	/*
@@ -621,10 +624,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	 * @see org.springframework.data.cassandra.core.CassandraTemplate.ResultSetIteratorAdapter
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> Iterator<T> toIterator(ResultSet resultSet, Class<T> type) {
+	private <T> Iterator<T> toIterator(ResultSet resultSet, Class<T> entityClass) {
 
 		return new ResultSetIteratorAdapter(resultSet.iterator(), getExceptionTranslator(),
-			new CassandraConverterRowCallback<T>(cassandraConverter, type));
+			new CassandraConverterRowCallback<T>(cassandraConverter, entityClass));
 	}
 
 	protected <T> List<T> select(final Select query, CassandraConverterRowCallback<T> readRowCallback) {
@@ -910,99 +913,47 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * Generates a Query Object for an insert
+	 * Generates a Query Object for an insert.
 	 *
-	 * @param tableName
-	 * @param objectToSave
-	 * @param entity
-	 * @param optionsByName
+	 * @param tableName the table name, must not be empty and not {@literal null}.
+	 * @param objectToUpdate the object to save, must not be {@literal null}.
+	 * @param options optional {@link WriteOptions} to apply to the {@link Insert} statement, may be {@literal null}.
+	 * @param entityWriter the {@link EntityWriter} to write insert values.
 	 * @return The Query object to run with session.execute();
 	 */
-	public static Insert createInsertQuery(String tableName, Object objectToSave, WriteOptions options,
+	public static Insert createInsertQuery(String tableName, Object objectToUpdate, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
+		Assert.hasText(tableName, "TableName is empty");
+		Assert.notNull(objectToUpdate, "The object to insert is null");
+		Assert.notNull(entityWriter, "EntityWriter is null");
+
 		Insert insert = QueryBuilder.insertInto(tableName);
-		entityWriter.write(objectToSave, insert);
+		entityWriter.write(objectToUpdate, insert);
 		CqlTemplate.addWriteOptions(insert, options);
 		return insert;
 	}
 
 	/**
-	 * @deprecated Method renamed. Use {@link #createUpdateQuery(String, Object, WriteOptions, EntityWriter)}
-	 * @see #createUpdateQuery(String, Object, WriteOptions, EntityWriter)
-	 */
-	@Deprecated
-	public static Update toUpdateQueryX(String tableName, Object objectToSave, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
-		return createUpdateQuery(tableName, objectToSave, options, entityWriter);
-	}
-
-	/**
-	 * Generates a Query Object for an Update
+	 * Generates a Batch Object for multiple inserts.
 	 *
-	 * @param tableName
-	 * @param objectToSave
-	 * @param entity
-	 * @param optionsByName
+	 * @param tableName the table name, must not be empty and not {@literal null}.
+	 * @param objectsToInsert the object to save, must not be empty and not {@literal null}.
+	 * @param options optional {@link WriteOptions} to apply to the {@link Insert} statement, may be {@literal null}.
+	 * @param entityWriter the {@link EntityWriter} to write insert values.
 	 * @return The Query object to run with session.execute();
 	 */
-	public static Update createUpdateQuery(String tableName, Object objectToSave, WriteOptions options,
+	public static <T> Batch createInsertBatchQuery(String tableName, List<T> objectsToInsert, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
-		Update update = QueryBuilder.update(tableName);
-		entityWriter.write(objectToSave, update);
-		CqlTemplate.addWriteOptions(update, options);
-		return update;
-	}
-
-	/**
-	 * @deprecated Method renamed. Use {@link #createUpdateBatchQuery(String, List, WriteOptions, EntityWriter)}
-	 * @see #createUpdateBatchQuery(String, List, WriteOptions, EntityWriter)
-	 */
-	@Deprecated
-	public static <T> Batch toUpdateBatchQuery(String tableName, List<T> objectsToSave, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
-		return createUpdateBatchQuery(tableName, objectsToSave, options, entityWriter);
-	}
-
-	/**
-	 * Generates a Batch Object for multiple Updates
-	 *
-	 * @param tableName
-	 * @param objectsToSave
-	 * @param entity
-	 * @param optionsByName
-	 * @return The Query object to run with session.execute();
-	 */
-	public static <T> Batch createUpdateBatchQuery(String tableName, List<T> objectsToSave, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
-
-		Batch b = QueryBuilder.batch();
-
-		for (T objectToSave : objectsToSave) {
-			b.add(createUpdateQuery(tableName, objectToSave, options, entityWriter));
-		}
-
-		CqlTemplate.addQueryOptions(b, options);
-
-		return b;
-	}
-
-	/**
-	 * Generates a Batch Object for multiple inserts
-	 *
-	 * @param tableName
-	 * @param entities
-	 * @param entity
-	 * @param optionsByName
-	 * @return The Query object to run with session.execute();
-	 */
-	public static <T> Batch createInsertBatchQuery(String tableName, List<T> entities, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
+		Assert.hasText(tableName, "TableName is empty");
+		Assert.notNull(objectsToInsert, "The objects to insert are null");
+		Assert.notEmpty(objectsToInsert, "The objects to insert are empty");
+		Assert.notNull(entityWriter, "EntityWriter is null");
 
 		Batch batch = QueryBuilder.batch();
 
-		for (T entity : entities) {
+		for (T entity : objectsToInsert) {
 			batch.add(createInsertQuery(tableName, entity, options, entityWriter));
 		}
 
@@ -1012,21 +963,98 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * Create a Delete Query Object from an annotated POJO
+	 * Generates a Query Object for an Update. The {@link Update} uses the identity and values from the given
+	 * {@code objectsToUpdate}.
 	 *
-	 * @param tableName
-	 * @param object
-	 * @param entity
-	 * @param optionsByName
-	 * @return
+	 * @param tableName the table name, must not be empty and not {@literal null}.
+	 * @param objectToUpdate the object to update, must not be {@literal null}.
+	 * @param options optional {@link WriteOptions} to apply to the {@link Update} statement, may be {@literal null}.
+	 * @param entityWriter the {@link EntityWriter} to write update assignments and where clauses.
+	 * @return The Query object to run with session.execute();
 	 */
-	public static Delete createDeleteQuery(String tableName, Object object, QueryOptions options,
+	public static Update createUpdateQuery(String tableName, Object objectToUpdate, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
+
+		Assert.hasText(tableName, "TableName is empty");
+		Assert.notNull(objectToUpdate, "The object to update is null");
+		Assert.notNull(entityWriter, "EntityWriter is null");
+
+		Update update = QueryBuilder.update(tableName);
+		entityWriter.write(objectToUpdate, update);
+		CqlTemplate.addWriteOptions(update, options);
+		return update;
+	}
+
+	/**
+	 * Generates a Batch Object for multiple Updates. The {@link Update} uses the identity and values from the given
+	 * {@code objectsToUpdate}.
+	 *
+	 * @param tableName the table name, must not be empty and not {@literal null}.
+	 * @param objectsToUpdate the object to update, must not be empty and not {@literal null}.
+	 * @param options optional {@link WriteOptions} to apply to the {@link Update} statement, may be {@literal null}.
+	 * @param entityWriter the {@link EntityWriter} to write update assignments and where clauses.
+	 * @return The Query object to run with session.execute();
+	 */
+	public static <T> Batch createUpdateBatchQuery(String tableName, List<T> objectsToUpdate, WriteOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+
+		Assert.hasText(tableName, "TableName is empty");
+		Assert.notNull(objectsToUpdate, "The objects to update are null");
+		Assert.notEmpty(objectsToUpdate, "The objects to update are empty");
+		Assert.notNull(entityWriter, "EntityWriter is null");
+
+		Batch b = QueryBuilder.batch();
+
+		for (T objectToSave : objectsToUpdate) {
+			b.add(createUpdateQuery(tableName, objectToSave, options, entityWriter));
+		}
+
+		CqlTemplate.addQueryOptions(b, options);
+
+		return b;
+	}
+
+	/**
+	 * @deprecated Method renamed. Use {@link #createUpdateBatchQuery(String, List, WriteOptions, EntityWriter)}
+	 * @see #createUpdateBatchQuery(String, List, WriteOptions, EntityWriter)
+	 */
+	@Deprecated
+	public static <T> Batch toUpdateBatchQuery(String tableName, List<T> objectsToUpdate, WriteOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+		return createUpdateBatchQuery(tableName, objectsToUpdate, options, entityWriter);
+	}
+
+	/**
+	 * @deprecated Method renamed. Use {@link #createUpdateQuery(String, Object, WriteOptions, EntityWriter)}
+	 * @see #createUpdateQuery(String, Object, WriteOptions, EntityWriter)
+	 */
+	@Deprecated
+	public static Update toUpdateQueryX(String tableName, Object objectToUpdate, WriteOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+		return createUpdateQuery(tableName, objectToUpdate, options, entityWriter);
+	}
+
+	/**
+	 * Create a Delete Query Object from an annotated POJO. The {@link Delete} uses the identity from the given
+	 * {@code objectToDelete}.
+	 *
+	 * @param tableName the table name, must not be empty and not {@literal null}.
+	 * @param objectToDelete the object to delete, must not be {@literal null}.
+	 * @param options optional {@link QueryOptions} to apply to the {@link Delete} statement, may be {@literal null}.
+	 * @param entityWriter the {@link EntityWriter} to write delete where clauses.
+	 * @return The Query object to run with session.execute();
+	 */
+	public static Delete createDeleteQuery(String tableName, Object objectToDelete, QueryOptions options,
+			EntityWriter<Object, Object> entityWriter) {
+
+		Assert.hasText(tableName, "TableName is empty");
+		Assert.notNull(objectToDelete, "The object to delete is null");
+		Assert.notNull(entityWriter, "EntityWriter is null");
 
 		Delete.Selection ds = QueryBuilder.delete();
 		Delete delete = ds.from(tableName);
 		Where w = delete.where();
-		entityWriter.write(object, w);
+		entityWriter.write(objectToDelete, w);
 		CqlTemplate.addQueryOptions(delete, options);
 		return delete;
 	}
@@ -1034,21 +1062,23 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	/**
 	 * Create a Batch Query object for multiple deletes.
 	 *
-	 * @param tableName
-	 * @param entities
-	 * @param entity
-	 * @param optionsByName
-	 * @return
+	 * @param tableName the table name, must not be empty and not {@literal null}.
+	 * @param objectsToDelete the object to delete, must not be empty and not {@literal null}.
+	 * @param options optional {@link QueryOptions} to apply to the {@link Delete} statement, may be {@literal null}.
+	 * @param entityWriter the {@link EntityWriter} to write delete where clauses.
+	 * @return The Query object to run with session.execute();
 	 */
-	public static <T> Batch createDeleteBatchQuery(String tableName, List<T> entities, QueryOptions options,
+	public static <T> Batch createDeleteBatchQuery(String tableName, List<T> objectsToDelete, QueryOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
-		Assert.notEmpty(entities);
-		Assert.hasText(tableName);
+		Assert.hasText(tableName, "TableName is empty");
+		Assert.notEmpty(objectsToDelete, "The objects to delete are empty");
+		Assert.notEmpty(objectsToDelete, "The objects to delete are empty");
+		Assert.notNull(entityWriter, "EntityWriter is null");
 
 		Batch batch = QueryBuilder.batch();
 
-		for (T entity : entities) {
+		for (T entity : objectsToDelete) {
 			batch.add(createDeleteQuery(tableName, entity, options, entityWriter));
 		}
 
@@ -1058,13 +1088,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> void deleteAll(Class<T> clazz) {
-
-		if (!mappingContext.contains(clazz)) {
-			throw new IllegalArgumentException(String.format("unknown persistent entity class [%s]", clazz.getName()));
-		}
-
-		truncate(mappingContext.getPersistentEntity(clazz).getTableName());
+	public <T> void deleteAll(Class<T> entityClass) {
+		truncate(getPersistentEntity(entityClass).getTableName());
 	}
 
 	@Override
@@ -1073,28 +1098,25 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	@Override
-	public <T> Cancellable selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener) {
-		return selectOneAsynchronously(cql, type, listener, null);
+	public <T> Cancellable selectOneAsynchronously(String cql, Class<T> entityClass, QueryForObjectListener<T> listener) {
+		return selectOneAsynchronously(cql, entityClass, listener, null);
 	}
 
 	@Override
-	public <T> Cancellable selectOneAsynchronously(Select select, Class<T> type, QueryForObjectListener<T> listener,
+	public <T> Cancellable selectOneAsynchronously(Select select, Class<T> entityClass, QueryForObjectListener<T> listener,
 			QueryOptions options) {
-		return doSelectOneAsync(select, type, listener, options);
+		return doSelectOneAsync(select, entityClass, listener, options);
 	}
 
 	@Override
-	public <T> Cancellable selectOneAsynchronously(String cql, Class<T> type, QueryForObjectListener<T> listener,
+	public <T> Cancellable selectOneAsynchronously(String cql, Class<T> entityClass, QueryForObjectListener<T> listener,
 			QueryOptions options) {
-		return doSelectOneAsync(cql, type, listener, options);
+		return doSelectOneAsync(cql, entityClass, listener, options);
 	}
 
 	private <T> CassandraPersistentEntity<?> getPersistentEntity(Class<T> entityClass) {
 
-		if (entityClass == null) {
-			throw new InvalidDataAccessApiUsageException(
-					"No class parameter provided, entity collection can't be determined!");
-		}
+		Assert.notNull(entityClass, "EntityClass must not be null");
 
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
 
@@ -1106,8 +1128,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return entity;
 	}
 
-	protected <T> Cancellable doSelectOneAsync(final Object query, final Class<T> type,
+	protected <T> Cancellable doSelectOneAsync(final Object query, final Class<T> entityClass,
 			final QueryForObjectListener<T> listener, QueryOptions options) {
+
+		Assert.notNull(entityClass, "EntityClass must not be null");
 
 		AsynchronousQueryListener aql = new AsynchronousQueryListener() {
 
@@ -1118,7 +1142,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 					Iterator<Row> iterator = rs.iterator();
 					if (iterator.hasNext()) {
 						Row row = iterator.next();
-						T result = new CassandraConverterRowCallback<T>(cassandraConverter, type).doWith(row);
+						T result = new CassandraConverterRowCallback<T>(cassandraConverter, entityClass).doWith(row);
 						if (iterator.hasNext()) {
 							throw new DuplicateKeyException("found two or more results in query " + query);
 						}
