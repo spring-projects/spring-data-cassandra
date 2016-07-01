@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.RowMockUtil.*;
+import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -54,6 +55,11 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.RowMockUtil;
+import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.domain.CompositeKey;
+import org.springframework.data.cassandra.domain.TypeWithCompositeKey;
+import org.springframework.data.cassandra.domain.TypeWithKeyClass;
+import org.springframework.data.cassandra.domain.TypeWithMapId;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -103,7 +109,6 @@ public class MappingCassandraConverterUnitTests {
 		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
 
 		mappingCassandraConverter.afterPropertiesSet();
-
 	}
 
 	/**
@@ -389,7 +394,7 @@ public class MappingCassandraConverterUnitTests {
 	 * @see DATACASS-280
 	 */
 	@Test
-	public void shouldReadInetAddressCorrectly() throws UnknownHostException{
+	public void shouldReadInetAddressCorrectly() throws UnknownHostException {
 
 		InetAddress localHost = InetAddress.getLocalHost();
 		when(rowMock.getInet(0)).thenReturn(localHost);
@@ -785,6 +790,214 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(getWherePredicates(delete), hasEntry("user_id", (Object) userToken.getUserId()));
 	}
 
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionUsingPlainId() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+		mappingCassandraConverter.write("42", delete.where(), mappingContext.getPersistentEntity(Person.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("id", (Object) "42"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionUsingEntity() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+		Person person = new Person();
+		person.setId("42");
+
+		mappingCassandraConverter.write(person, delete.where(), mappingContext.getPersistentEntity(Person.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("id", (Object) "42"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldFailWriteWhereConditionUsingEntityWithNullId() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		mappingCassandraConverter.write(new Person(), delete.where(), mappingContext.getPersistentEntity(Person.class));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionUsingMapId() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+		mappingCassandraConverter.write(id("id", "42"), delete.where(), mappingContext.getPersistentEntity(Person.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("id", (Object) "42"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionForCompositeKeyUsingEntity() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		TypeWithCompositeKey entity = new TypeWithCompositeKey();
+		entity.setFirstname("Walter");
+		entity.setLastname("White");
+
+		mappingCassandraConverter.write(entity, delete.where(),
+				mappingContext.getPersistentEntity(TypeWithCompositeKey.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("firstname", (Object) "Walter"));
+		assertThat(getWherePredicates(delete), hasEntry("lastname", (Object) "White"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionForCompositeKeyUsingMapId() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), delete.where(),
+				mappingContext.getPersistentEntity(TypeWithCompositeKey.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("firstname", (Object) "Walter"));
+		assertThat(getWherePredicates(delete), hasEntry("lastname", (Object) "White"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionForMapIdKeyUsingEntity() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		TypeWithMapId entity = new TypeWithMapId();
+		entity.setFirstname("Walter");
+		entity.setLastname("White");
+
+		mappingCassandraConverter.write(entity, delete.where(), mappingContext.getPersistentEntity(TypeWithMapId.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("firstname", (Object) "Walter"));
+		assertThat(getWherePredicates(delete), hasEntry("lastname", (Object) "White"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteEnumWhereCondition() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		mappingCassandraConverter.write(Condition.MINT, delete.where(), mappingContext.getPersistentEntity(EnumPrimaryKey.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("condition", (Object) "MINT"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionForMapIdKeyUsingMapId() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), delete.where(),
+				mappingContext.getPersistentEntity(TypeWithMapId.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("firstname", (Object) "Walter"));
+		assertThat(getWherePredicates(delete), hasEntry("lastname", (Object) "White"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionForTypeWithPkClassKeyUsingEntity() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		CompositeKey key = new CompositeKey();
+		key.setFirstname("Walter");
+		key.setLastname("White");
+
+		TypeWithKeyClass entity = new TypeWithKeyClass();
+		entity.setKey(key);
+
+		mappingCassandraConverter.write(entity, delete.where(), mappingContext.getPersistentEntity(TypeWithKeyClass.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("firstname", (Object) "Walter"));
+		assertThat(getWherePredicates(delete), hasEntry("lastname", (Object) "White"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldFailWritingWhereConditionForTypeWithPkClassKeyUsingEntityWithNullId() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		mappingCassandraConverter.write(new TypeWithKeyClass(), delete.where(),
+				mappingContext.getPersistentEntity(TypeWithKeyClass.class));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionForTypeWithPkClassKeyUsingKey() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		CompositeKey key = new CompositeKey();
+		key.setFirstname("Walter");
+		key.setLastname("White");
+
+		mappingCassandraConverter.write(key, delete.where(), mappingContext.getPersistentEntity(TypeWithKeyClass.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("firstname", (Object) "Walter"));
+		assertThat(getWherePredicates(delete), hasEntry("lastname", (Object) "White"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test
+	public void shouldWriteWhereConditionForTypeWithPkClassKeyUsingMapId() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), delete.where(),
+				mappingContext.getPersistentEntity(TypeWithKeyClass.class));
+
+		assertThat(getWherePredicates(delete), hasEntry("firstname", (Object) "Walter"));
+		assertThat(getWherePredicates(delete), hasEntry("lastname", (Object) "White"));
+	}
+
+	/**
+	 * @see DATACASS-308
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldFailWhereConditionForTypeWithPkClassKeyUsingMapIdHavingUnknownProperty() {
+
+		Delete delete = QueryBuilder.delete().from("table");
+
+		mappingCassandraConverter.write(id("unknown", "Walter"), delete.where(),
+				mappingContext.getPersistentEntity(TypeWithMapId.class));
+	}
+
 	@SuppressWarnings("unchecked")
 	private <T> List<T> getListValue(Insert statement) {
 		List<Object> values = getValues(statement);
@@ -857,7 +1070,8 @@ public class MappingCassandraConverterUnitTests {
 
 		List<Clause> clauses = (List<Clause>) ReflectionTestUtils.getField(where, "clauses");
 		for (Clause clause : clauses) {
-			result.put((String) ReflectionTestUtils.invokeMethod(clause, "name"), ReflectionTestUtils.getField(clause, "value"));
+			result.put((String) ReflectionTestUtils.invokeMethod(clause, "name"),
+					ReflectionTestUtils.getField(clause, "value"));
 		}
 
 		return result;
