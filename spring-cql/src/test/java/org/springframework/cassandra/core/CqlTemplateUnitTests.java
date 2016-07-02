@@ -28,12 +28,18 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.cassandra.support.CassandraExceptionTranslator;
+import org.springframework.cassandra.support.exception.CassandraReadTimeoutException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.ReadTimeoutException;
+import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * The CqlTemplateUnitTests class is a test suite of test cases testing the contract and functionality of the
@@ -46,19 +52,86 @@ import com.datastax.driver.core.Session;
 @SuppressWarnings("unchecked")
 public class CqlTemplateUnitTests {
 
-	@Rule public ExpectedException exception = ExpectedException.none();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	private CqlTemplate template;
 
-	@Mock private Session mockSession;
+	@Mock
+	private Session mockSession;
 
 	@Before
 	public void setup() {
 		template = new CqlTemplate(mockSession);
+		template.setExceptionTranslator(new CassandraExceptionTranslator());
+	}
+
+	@Test
+	public void doExecuteInSessionCallbackIsCalled() {
+		String result = template.doExecute(new SessionCallback<String>() {
+			@Override public String doInSession(Session session) throws DataAccessException {
+				session.execute("test");
+				return "test";
+			}
+		});
+
+		assertThat(result, is(equalTo("test")));
+
+		verify(mockSession, times(1)).execute(eq("test"));
+	}
+
+	@Test
+	public void doExecuteInSessionCallbackTranslatesException() {
+		exception.expect(CassandraReadTimeoutException.class);
+		exception.expectCause(org.hamcrest.Matchers.isA(ReadTimeoutException.class));
+
+		template.doExecute(new SessionCallback<String>() {
+			@Override public String doInSession(Session session) throws DataAccessException {
+				throw new ReadTimeoutException(ConsistencyLevel.ALL, 0, 1, true);
+			}
+		});
+	}
+
+	@Test
+	public void doExecuteWithNullSessionCallbackThrowsIllegalArgumentException() {
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("SessionCallback must not be null");
+
+		template.doExecute((SessionCallback) null);
+	}
+
+	@Test
+	public void doExecuteQueryReturnsResultSetForOqlQueryString() {
+		ResultSet mockResultSet = mock(ResultSet.class);
+
+		when(mockSession.execute(eq("SELECT * FROM Customers"))).thenReturn(mockResultSet);
+
+		ResultSet resultSet = template.doExecuteQueryReturnResultSet("SELECT * FROM Customers");
+
+		assertThat(resultSet, is(equalTo(mockResultSet)));
+
+		verify(mockSession, times(1)).execute(eq("SELECT * FROM Customers"));
+		verifyZeroInteractions(mockResultSet);
+	}
+
+	@Test
+	public void doExecuteSelectReturnsResultSetForOqlQueryString() {
+		Select mockSelect = mock(Select.class);
+		ResultSet mockResultSet = mock(ResultSet.class);
+
+		when(mockSession.execute(eq(mockSelect))).thenReturn(mockResultSet);
+
+		ResultSet resultSet = template.doExecuteQueryReturnResultSet(mockSelect);
+
+		assertThat(resultSet, is(equalTo(mockResultSet)));
+
+		verify(mockSession, times(1)).execute(eq(mockSelect));
+		verifyZeroInteractions(mockResultSet);
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void firstColumnToObjectReturnsColumnValue() {
@@ -74,12 +147,11 @@ public class CqlTemplateUnitTests {
 		when(mockIterator.next()).thenReturn(mockColumnDefinition);
 
 		template = new CqlTemplate() {
-
 			@Override
 			<T> T columnToObject(Row row, ColumnDefinitions.Definition columnDefinition) {
-
 				assertThat(row, is(sameInstance(mockRow)));
 				assertThat(columnDefinition, is(sameInstance(mockColumnDefinition)));
+
 				return (T) "test";
 			}
 		};
@@ -94,7 +166,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void firstColumnToObjectReturnsNull() {
@@ -116,7 +188,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void processOneIsSuccessful() {
@@ -138,7 +210,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void processOneThrowsIncorrectResultSetSizeDataAccessExceptionWhenNoRowsFound() {
@@ -149,7 +221,6 @@ public class CqlTemplateUnitTests {
 		when(mockResultSet.one()).thenReturn(null);
 
 		try {
-
 			exception.expect(IncorrectResultSizeDataAccessException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage(containsString("expected 1, actual 0"));
@@ -164,7 +235,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void processOneThrowsIncorrectResultSetSizeDataAccessExceptionWhenTooManyRowsFound() {
@@ -177,7 +248,6 @@ public class CqlTemplateUnitTests {
 		when(mockResultSet.isExhausted()).thenReturn(false);
 
 		try {
-
 			exception.expect(IncorrectResultSizeDataAccessException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage("ResultSet size exceeds 1");
@@ -193,7 +263,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void processOnePassingNullResultSetThrowsIllegalArgumentException() {
@@ -201,7 +271,6 @@ public class CqlTemplateUnitTests {
 		RowMapper mockRowMapper = mock(RowMapper.class);
 
 		try {
-
 			exception.expect(IllegalArgumentException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 
@@ -212,7 +281,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void processOneWithRequiredTypeIsSuccessful() {
@@ -242,7 +311,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void processOneWithRequiredTypeThrowsIncorrectResultSetSizeDataAccessExceptionWhenNoRowsFound() {
@@ -252,7 +321,6 @@ public class CqlTemplateUnitTests {
 		when(mockResultSet.one()).thenReturn(null);
 
 		try {
-
 			exception.expect(IncorrectResultSizeDataAccessException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage(containsString("expected 1, actual 0"));
@@ -266,7 +334,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void processOneWithRequiredTypeThrowsIncorrectResultSetSizeDataAccessExceptionWhenTooManyRowsFound() {
@@ -278,7 +346,6 @@ public class CqlTemplateUnitTests {
 		when(mockResultSet.isExhausted()).thenReturn(false);
 
 		try {
-
 			exception.expect(IncorrectResultSizeDataAccessException.class);
 			exception.expectCause(is(nullValue(Throwable.class)));
 			exception.expectMessage(containsString("ResultSet size exceeds 1"));
@@ -293,11 +360,10 @@ public class CqlTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-286
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
 	 */
 	@Test
 	public void processOneWithRequiredTypePassingNullResultSetThrowsIllegalArgumentException() {
-
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 

@@ -26,11 +26,11 @@ import org.springframework.cassandra.core.Cancellable;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.QueryForObjectListener;
 import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.RowCallback;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.cassandra.core.support.EmptyResultSet;
 import org.springframework.cassandra.core.util.CollectionUtils;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -77,24 +77,30 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	protected CassandraMappingContext mappingContext;
 
 	/**
-	 * Default Constructor for wiring in the required components later
+	 * Default constructor used to wire in the required components later.
 	 */
 	public CassandraTemplate() {}
 
 	/**
-	 * Creates a new {@link} for the given {@link Session}.
+	 * Creates a new {@link CassandraTemplate} for the given {@link Session}.
 	 *
-	 * @param session must not be {@literal null}.
+	 * @param session Cassandra {@link Session} connected to the Cassandra cluster instance;
+	 * must not be {@literal null}.
+	 * @see com.datastax.driver.core.Session
 	 */
 	public CassandraTemplate(Session session) {
 		this(session, null);
 	}
 
 	/**
-	 * Constructor if only session and converter are known at time of Template Creation
+	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link Session}
+	 * and {@link CassandraConverter}.
 	 *
-	 * @param session must not be {@literal null}.
-	 * @param converter must not be {@literal null}.
+	 * @param session {@link Session} used to interact with Cassandra; must not be {@literal null}.
+	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types;
+	 * must not be {@literal null}.
+	 * @see org.springframework.data.cassandra.convert.CassandraConverter
+	 * @see com.datastax.driver.core.Session
 	 */
 	public CassandraTemplate(Session session, CassandraConverter converter) {
 		setSession(session);
@@ -136,11 +142,19 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * Returns the {@link CassandraMappingContext}
-	 *
-	 * @return the {@link CassandraMappingContext}
+	 * @deprecated see {@link #getMappingContext()}.
 	 */
+	@Deprecated
 	public CassandraMappingContext getCassandraMappingContext() {
+		return mappingContext;
+	}
+
+	/**
+	 * Returns the {@link CassandraMappingContext}.
+	 *
+	 * @return the {@link CassandraMappingContext}.
+	 */
+	public CassandraMappingContext getMappingContext() {
 		return mappingContext;
 	}
 
@@ -409,10 +423,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return selectOne(select, entityClass);
 	}
 
-	protected interface ClauseCallback {
-		void doWithClause(Clause clause);
-	}
-
 	@Deprecated
 	protected void appendIdCriteria(ClauseCallback clauseCallback, CassandraPersistentEntity<?> entity, Map<?, ?> id) {
 
@@ -580,44 +590,34 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return doUpdateAsync(entity, listener, options);
 	}
 
-	protected <T> List<T> select(final String query, CassandraConverterRowCallback<T> readRowCallback) {
-
-		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
-
-			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
-				return session.execute(query);
-			}
-		});
-
-		if (resultSet != null) {
-			List<T> result = new ArrayList<T>();
-
-			for (Row row : resultSet) {
-				result.add(readRowCallback.doWith(row));
-			}
-
-			return result;
-		}
-
-		return null;
+	protected <T> List<T> select(String query, CassandraConverterRowCallback<T> rowCallback) {
+		return processResultSet(doExecuteQueryReturnResultSet(query), rowCallback);
 	}
 
-	/* (non-Javadoc)
+	protected <T> List<T> select(Select query, CassandraConverterRowCallback<T> rowCallback) {
+		return processResultSet(doExecuteQueryReturnResultSet(query), rowCallback);
+	}
+
+	private <T> List<T> processResultSet(ResultSet resultSet, RowCallback<T> rowCallback) {
+		List<T> result = new ArrayList<T>();
+
+		for (Row row : EmptyResultSet.nullSafeResultSet(resultSet)) {
+			result.add(rowCallback.doWith(row));
+		}
+
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#stream(java.lang.String, java.lang.Class)
 	 */
-	public <T> Iterator<T> stream(final String query, Class<T> entityClass) {
+	public <T> Iterator<T> stream(String query, Class<T> entityClass) {
 
 		Assert.hasText(query, "Query must not be empty");
 		Assert.notNull(entityClass, "EntityClass must not be null");
 
-		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
-
-			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
-				return session.execute(logCql(query));
-			}
-		});
+		ResultSet resultSet = doExecuteQueryReturnResultSet(query);
 
 		return (resultSet != null ? toIterator(resultSet, entityClass) : Collections.<T>emptyIterator());
 	}
@@ -631,29 +631,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		return new ResultSetIteratorAdapter(resultSet.iterator(), getExceptionTranslator(),
 			new CassandraConverterRowCallback<T>(cassandraConverter, entityClass));
-	}
-
-	protected <T> List<T> select(final Select query, CassandraConverterRowCallback<T> readRowCallback) {
-
-		ResultSet resultSet = doExecute(new SessionCallback<ResultSet>() {
-
-			@Override
-			public ResultSet doInSession(Session session) throws DataAccessException {
-				return session.execute(query);
-			}
-		});
-
-		if (resultSet != null) {
-			List<T> result = new ArrayList<T>();
-
-			for (Row row : resultSet) {
-				result.add(readRowCallback.doWith(row));
-			}
-
-			return result;
-		}
-
-		return null;
 	}
 
 	protected <T> T selectOne(String query, CassandraConverterRowCallback<T> rowCallback) {
@@ -699,7 +676,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	// TODO: handle possible IndexOutOfBoundsException if the List of entities is empty
 	protected <T> void doBatchDelete(List<T> entities, QueryOptions options) {
 		execute(createDeleteBatchQuery(getTableName(entities.get(0).getClass()).toCql(), entities, options,
-				cassandraConverter));
+			cassandraConverter));
 	}
 
 	// TODO: handle possible IndexOutOfBoundsException if the List of entities is empty
@@ -765,9 +742,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 	protected <T> List<T> doBatchWrite(List<T> entities, WriteOptions options, boolean insert) {
 
-		if (entities == null || entities.isEmpty()) {
+		if (CollectionUtils.isEmpty(entities)) {
 			if (logger.isWarnEnabled()) {
-				logger.warn("no-op due to given null or empty list");
+				logger.warn("no-op due to given null or empty List");
 			}
 
 			return entities;
@@ -826,7 +803,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	protected <T> Cancellable doBatchWriteAsync(final List<T> entities, final WriteListener<T> listener,
 			WriteOptions options, boolean insert) {
 
-		if (entities == null || entities.size() == 0) {
+		if (CollectionUtils.isEmpty(entities)) {
 			if (logger.isWarnEnabled()) {
 				logger.warn("no-op due to given null or empty list");
 			}
@@ -866,9 +843,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	protected <T> void doDelete(T entity, QueryOptions options) {
 		Assert.notNull(entity, "Entity must not be null");
 
-		Delete delete = createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
-
-		execute(delete);
+		execute(createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter));
 	}
 
 	protected <T> Cancellable doDeleteAsync(final T entity, final DeletionListener<T> listener, QueryOptions options) {
@@ -895,9 +870,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	protected <T> T doUpdate(T entity, WriteOptions options) {
 		Assert.notNull(entity, "Entity must not be null");
 
-		Update update = createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
-
-		execute(update);
+		execute(createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter));
 
 		return entity;
 	}
@@ -906,15 +879,13 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Update update = createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
-
 		AsynchronousQueryListener queryListener = (listener == null ? null : new AsynchronousQueryListener() {
 
 			@Override
 			@SuppressWarnings("unchecked")
-			public void onQueryComplete(ResultSetFuture rsf) {
+			public void onQueryComplete(ResultSetFuture resultSetFuture) {
 				try {
-					rsf.getUninterruptibly();
+					resultSetFuture.getUninterruptibly();
 					listener.onWriteComplete(Collections.singletonList(entity));
 				} catch (Exception x) {
 					listener.onException(translateExceptionIfPossible(x));
@@ -922,7 +893,8 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			}
 		});
 
-		return executeAsynchronously(update, queryListener);
+		return executeAsynchronously(createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options,
+			cassandraConverter), queryListener);
 	}
 
 	/**
@@ -941,10 +913,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Assert.notNull(objectToUpdate, "Object to insert must not be null");
 		Assert.notNull(entityWriter, "EntityWriter must not be null");
 
-		Insert insert = QueryBuilder.insertInto(tableName);
+		Insert insert = addWriteOptions(QueryBuilder.insertInto(tableName), options);
 
 		entityWriter.write(objectToUpdate, insert);
-		CqlTemplate.addWriteOptions(insert, options);
 
 		return insert;
 	}
@@ -992,10 +963,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Assert.notNull(objectToUpdate, "Object to update must not be null");
 		Assert.notNull(entityWriter, "EntityWriter must not be null");
 
-		Update update = QueryBuilder.update(tableName);
+		Update update = addWriteOptions(QueryBuilder.update(tableName), options);
 
 		entityWriter.write(objectToUpdate, update);
-		CqlTemplate.addWriteOptions(update, options);
 
 		return update;
 	}
@@ -1071,7 +1041,6 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		Where where = addQueryOptions(delete.where(), options);
 
 		entityWriter.write(objectToDelete, where);
-
 
 		return delete;
 	}
@@ -1165,6 +1134,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 						T result = new CassandraConverterRowCallback<T>(cassandraConverter, entityClass).doWith(row);
 
 						if (iterator.hasNext()) {
+							// TODO: throw IncorrectResultSetSizeDataAccessException instead
 							throw new DuplicateKeyException(String.format(
 								"found two or more results in query [%s]", query));
 						}
@@ -1189,6 +1159,10 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 
 		throw new IllegalArgumentException(String.format(
 			"Expected type String or Select; got type [%1$s] with value [%2$s]", query.getClass(), query));
+	}
+
+	protected interface ClauseCallback {
+		void doWithClause(Clause clause);
 	}
 
 	private static class ResultSetIteratorAdapter<T> implements Iterator<T>{

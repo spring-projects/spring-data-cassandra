@@ -124,6 +124,34 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return cql;
 	}
 
+	protected <T extends Statement> T logStatement(T statement) {
+		logDebug("executing statement [{}]", statement);
+		return statement;
+	}
+
+	/**
+	 * Add common {@link QueryOptions} to Cassandra {@link PreparedStatement}s.
+	 *
+	 * @param preparedStatement the Cassandra {@link PreparedStatement} to execute.
+	 * @param queryOptions query options (e.g. consistency level) to add to the Cassandra {@link PreparedStatement}.
+	 */
+	public static PreparedStatement addPreparedStatementOptions(PreparedStatement preparedStatement,
+		QueryOptions queryOptions) {
+
+		if (queryOptions != null) {
+
+			if (queryOptions.getConsistencyLevel() != null) {
+				preparedStatement.setConsistencyLevel(ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
+			}
+
+			if (queryOptions.getRetryPolicy() != null) {
+				preparedStatement.setRetryPolicy(RetryPolicyResolver.resolve(queryOptions.getRetryPolicy()));
+			}
+		}
+
+		return preparedStatement;
+	}
+
 	/**
 	 * Add common {@link QueryOptions} to all types of queries.
 	 *
@@ -190,29 +218,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/**
-	 * Add common {@link QueryOptions} to Cassandra {@link PreparedStatement}s.
-	 *
-	 * @param preparedStatement the Cassandra {@link PreparedStatement} to execute.
-	 * @param queryOptions query options (e.g. consistency level) to add to the Cassandra {@link PreparedStatement}.
-	 */
-	public static PreparedStatement addPreparedStatementOptions(PreparedStatement preparedStatement,
-			QueryOptions queryOptions) {
-
-		if (queryOptions != null) {
-
-			if (queryOptions.getConsistencyLevel() != null) {
-				preparedStatement.setConsistencyLevel(ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
-			}
-
-			if (queryOptions.getRetryPolicy() != null) {
-				preparedStatement.setRetryPolicy(RetryPolicyResolver.resolve(queryOptions.getRetryPolicy()));
-			}
-		}
-
-		return preparedStatement;
-	}
-
-	/**
 	 * Constructs an uninitialized instance of {@link CqlTemplate}. A Cassandra {@link Session} is required before use.
 	 *
 	 * @see #CqlTemplate(Session)
@@ -227,7 +232,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see com.datastax.driver.core.Session
 	 * @see #setSession(Session)
 	 */
-	// TODO should probably not call setSession(..) in constructor for initialization safety;
+	// TODO: should not call setSession(..) in constructor for initialization safety;
 	// only really matters if CqlTemplate makes Thread-safety guarantees, which currently it does not.
 	public CqlTemplate(Session session) {
 		setSession(session);
@@ -242,13 +247,30 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	protected <T> T doExecute(SessionCallback<T> callback) {
 
-		Assert.notNull(callback);
+		Assert.notNull(callback, "SessionCallback must not be null");
 
 		try {
 			return callback.doInSession(getSession());
-		} catch (DataAccessException e) {
+		} catch (Exception e) {
 			throw translateExceptionIfPossible(e);
 		}
+	}
+
+	protected ResultSet doExecuteQueryReturnResultSet(final String query) {
+		return doExecute(new SessionCallback<ResultSet>() {
+			@Override
+			public ResultSet doInSession(Session session) throws DataAccessException {
+				return session.execute(logCql(query));
+			}
+		});
+	}
+
+	protected ResultSet doExecuteQueryReturnResultSet(final Select select) {
+		return doExecute(new SessionCallback<ResultSet>() {
+			@Override public ResultSet doInSession(Session session) throws DataAccessException {
+				return session.execute(logStatement(select));
+			}
+		});
 	}
 
 	@Override
@@ -960,6 +982,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> T query(String cql, PreparedStatementBinder preparedStatementBinder,
 			ResultSetExtractor<T> resultSetExtractor) {
+
 		return query(cql, preparedStatementBinder, resultSetExtractor, null);
 	}
 
@@ -974,6 +997,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public void query(String cql, PreparedStatementBinder preparedStatementBinder,
 			RowCallbackHandler rowCallbackHandler) {
+
 		query(cql, preparedStatementBinder, rowCallbackHandler, null);
 	}
 
@@ -992,13 +1016,15 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> List<T> query(String cql, PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper,
 			QueryOptions queryOptions) {
+
 		return query(new CachedPreparedStatementCreator(logCql(cql)), preparedStatementBinder, rowMapper, queryOptions);
 	}
 
 	@Override
 	public void ingest(String cql, RowIterator rowIterator, WriteOptions options) {
 
-		CachedPreparedStatementCreator cachedPreparedStatementCreator = new CachedPreparedStatementCreator(logCql(cql));
+		CachedPreparedStatementCreator cachedPreparedStatementCreator =
+				new CachedPreparedStatementCreator(logCql(cql));
 
 		PreparedStatement preparedStatement = addPreparedStatementOptions(
 				cachedPreparedStatementCreator.createPreparedStatement(getSession()), options);
@@ -1023,8 +1049,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public void ingest(String cql, final List<List<?>> rows, WriteOptions writeOptions) {
 
-		Assert.notNull(rows);
-		Assert.notEmpty(rows);
+		Assert.notNull(rows, "Rows must not be null");
+		Assert.notEmpty(rows, "Rows must not be empty");
 
 		ingest(cql, new RowIterator() {
 
@@ -1056,17 +1082,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			int index = 0;
 
 			@Override
-			public Object[] next() {
-
-				if (!hasNext()) {
-					throw new NoSuchElementException("No more elements");
-				}
-				return rows[index++];
+			public boolean hasNext() {
+				return (index < rows.length);
 			}
 
 			@Override
-			public boolean hasNext() {
-				return (index < rows.length);
+			public Object[] next() {
+				if (!hasNext()) {
+					throw new NoSuchElementException("No more elements");
+				}
+
+				return rows[index++];
 			}
 		}, writeOptions);
 	}
@@ -1160,6 +1186,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator,
 			PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper) {
+
 		return query(preparedStatementCreator, preparedStatementBinder, rowMapper, null);
 	}
 
@@ -1350,19 +1377,16 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public Cancellable executeAsynchronously(Insert insert, AsynchronousQueryListener listener) {
-
 		return doExecuteAsync(insert, listener);
 	}
 
 	@Override
 	public Cancellable executeAsynchronously(Truncate truncate, AsynchronousQueryListener listener) {
-
 		return doExecuteAsync(truncate, listener);
 	}
 
 	@Override
 	public Cancellable executeAsynchronously(Update update, AsynchronousQueryListener listener) {
-
 		return doExecuteAsync(update, listener);
 	}
 
@@ -1572,7 +1596,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public Cancellable queryForMapAsynchronously(String cql, QueryForMapListener listener) {
-
 		return queryForMapAsynchronously(cql, listener, null);
 	}
 
@@ -1709,7 +1732,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public ResultSet getResultSetUninterruptibly(ResultSetFuture resultSetFuture, long timeout, TimeUnit timeUnit) {
-
 		try {
 			timeUnit = (timeUnit != null ? timeUnit : TimeUnit.MILLISECONDS);
 
