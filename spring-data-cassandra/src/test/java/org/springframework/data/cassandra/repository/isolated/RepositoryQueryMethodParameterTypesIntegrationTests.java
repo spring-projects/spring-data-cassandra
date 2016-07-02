@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cassandra.support.exception.CassandraInvalidQueryException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.config.SchemaAction;
@@ -144,13 +145,11 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 	}
 
 	/**
-	 * @see DATACASS-296
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-304">DATACASS-304</a>
 	 */
-	@Test(expected = InvalidQueryException.class)
+	@Test(expected = CassandraInvalidQueryException.class)
 	public void shouldThrowExceptionUsingWrongMethodParameter() {
-
-		// NOTE: InvalidQueryException is a driver exception. This should get fixed with DATACASS-304
-
 		session.execute("CREATE INDEX IF NOT EXISTS allpossibletypes_date ON allpossibletypes ( date )");
 		allPossibleTypesRepository.findWithDateParameter(Date.from(Instant.ofEpochSecond(44234123421L)));
 	}

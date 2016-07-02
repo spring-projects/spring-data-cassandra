@@ -30,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.cassandra.support.exception.CassandraReadTimeoutException;
+import org.springframework.cassandra.support.exception.CassandraUncategorizedException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
@@ -38,6 +39,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.exceptions.ReadTimeoutException;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -80,14 +82,49 @@ public class CqlTemplateUnitTests {
 		verify(mockSession, times(1)).execute(eq("test"));
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-304">DATACASS-304</a>
+	 */
 	@Test
-	public void doExecuteInSessionCallbackTranslatesException() {
+	public void doExecuteInSessionCallbackTranslatesToCassandraException() {
 		exception.expect(CassandraReadTimeoutException.class);
 		exception.expectCause(org.hamcrest.Matchers.isA(ReadTimeoutException.class));
 
 		template.doExecute(new SessionCallback<String>() {
 			@Override public String doInSession(Session session) throws DataAccessException {
 				throw new ReadTimeoutException(ConsistencyLevel.ALL, 0, 1, true);
+			}
+		});
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-304">DATACASS-304</a>
+	 */
+	@Test
+	public void doExecuteInSessionCallbackTranslatesToCassandraUncategorizedException() {
+		exception.expect(CassandraUncategorizedException.class);
+		exception.expectCause(org.hamcrest.Matchers.isA(DriverException.class));
+		exception.expectMessage(containsString("test"));
+
+		template.doExecute(new SessionCallback<String>() {
+			@Override public String doInSession(Session session) throws DataAccessException {
+				throw new DriverException("test");
+			}
+		});
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-304">DATACASS-304</a>
+	 */
+	@Test
+	public void doExecuteInSessionCallbackTranslatesToCassandraUncategorizedDataAccessException() {
+		exception.expect(CassandraUncategorizedDataAccessException.class);
+		exception.expectCause(org.hamcrest.Matchers.isA(Error.class));
+		exception.expectMessage(containsString("test"));
+
+		template.doExecute(new SessionCallback<String>() {
+			@Override public String doInSession(Session session) throws DataAccessException {
+				throw new Error("test");
 			}
 		});
 	}

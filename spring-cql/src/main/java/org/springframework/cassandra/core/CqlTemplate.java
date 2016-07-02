@@ -251,8 +251,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			return callback.doInSession(getSession());
-		} catch (Exception e) {
-			throw translateExceptionIfPossible(e);
+		} catch (Throwable t) {
+			throw translateExceptionIfPossible(t);
 		}
 	}
 
@@ -335,7 +335,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				} catch (ExecutionException e) {
 
 					if (e.getCause() instanceof Exception) {
-						throw translateExceptionIfPossible((Exception) e.getCause());
+						throw translateExceptionIfPossible(e.getCause());
 					}
 					throw new CassandraUncategorizedDataAccessException("Unknown Throwable", e.getCause());
 				}
@@ -886,8 +886,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions">Consistent exception hierarchy</a>
 	 */
 	@SuppressWarnings("all")
-	protected RuntimeException translateExceptionIfPossible(Exception e) {
-		return translateExceptionIfPossible(e, getExceptionTranslator());
+	protected RuntimeException translateExceptionIfPossible(Throwable t) {
+		return translateExceptionIfPossible(t, getExceptionTranslator());
 	}
 
 	/**
@@ -899,14 +899,14 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @return
 	 */
 	@SuppressWarnings("all")
-	protected static RuntimeException translateExceptionIfPossible(Exception e,
+	protected static RuntimeException translateExceptionIfPossible(Throwable t,
 			PersistenceExceptionTranslator exceptionTranslator) {
 
-		Assert.notNull(e, "Exception must not be null");
+		Assert.notNull(t, "Throwble must not be null");
 		Assert.notNull(exceptionTranslator, "PersistenceExceptionTranslator must not be null");
 
-		return (e instanceof RuntimeException) ? potentiallyConvertRuntimeException((RuntimeException) e, exceptionTranslator)
-			:  new CassandraUncategorizedDataAccessException("Caught Uncategorized Exception", e);
+		return (t instanceof RuntimeException) ? potentiallyConvertRuntimeException((RuntimeException) t, exceptionTranslator)
+			:  new CassandraUncategorizedDataAccessException("Caught Uncategorized Exception", t);
 	}
 
 	/**
