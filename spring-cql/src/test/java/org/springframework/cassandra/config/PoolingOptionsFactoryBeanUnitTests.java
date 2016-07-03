@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package org.springframework.cassandra.config;
-
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
@@ -309,7 +308,7 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		final PoolingOptionsFactoryBean.HostDistancePoolingOptions mockHostDistancePoolingOptions = mock(
 				PoolingOptionsFactoryBean.HostDistancePoolingOptions.class);
 
-		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(new Answer<PoolingOptions>() {
+		when(mockHostDistancePoolingOptions.configure(org.mockito.Mockito.any(PoolingOptions.class))).thenAnswer(new Answer<PoolingOptions>() {
 			@Override
 			public PoolingOptions answer(InvocationOnMock invocationOnMock) throws Throwable {
 				return invocationOnMock.getArgumentAt(0, PoolingOptions.class);
@@ -338,7 +337,7 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		final PoolingOptionsFactoryBean.HostDistancePoolingOptions mockHostDistancePoolingOptions = mock(
 				PoolingOptionsFactoryBean.HostDistancePoolingOptions.class);
 
-		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(new Answer<PoolingOptions>() {
+		when(mockHostDistancePoolingOptions.configure(org.mockito.Mockito.any(PoolingOptions.class))).thenAnswer(new Answer<PoolingOptions>() {
 			@Override
 			public PoolingOptions answer(InvocationOnMock invocationOnMock) throws Throwable {
 				return invocationOnMock.getArgumentAt(0, PoolingOptions.class);

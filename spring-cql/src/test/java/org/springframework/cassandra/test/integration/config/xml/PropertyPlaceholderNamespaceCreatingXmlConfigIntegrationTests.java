@@ -18,6 +18,7 @@ package org.springframework.cassandra.test.integration.config.xml;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ import com.datastax.driver.core.SocketOptions;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
+@Ignore
 public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		extends AbstractEmbeddedCassandraIntegrationTest {
 
