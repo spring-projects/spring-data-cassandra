@@ -825,22 +825,96 @@ NOTE: For more information on the Spring type conversion service see the referen
 [[cassandra.custom-converters.writer]]
 === Saving using a registered Spring Converter
 
-Coming Soon!
+An example implementation of the `Converter` that converts a `Person` object to a `java.lang.String` using Jackson 2 is shown below:
+
+[source,java]
+----
+import org.springframework.core.convert.converter.Converter;
+
+import org.springframework.util.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
+
+static class PersonWriteConverter implements Converter<Person, String> {
+
+  public String convert(Person source) {
+
+    try {
+      return new ObjectMapper().writeValueAsString(source);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+}
+----
 
 [[cassandra.custom-converters.reader]]
 === Reading using a Spring Converter
 
-Coming Soon!
+An example implementation of the `Converter` that converts a `java.lang.String` into a `Person` object using Jackson 2 is shown below:
 
-[[cassandra.custom-converters.xml]]
+[source,java]
+----
+import org.springframework.core.convert.converter.Converter;
+
+import org.springframework.util.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
+
+static class PersonReadConverter implements Converter<String, Person> {
+
+  public Person convert(String source) {
+
+   if (StringUtils.hasText(source)) {
+     try {
+       return new ObjectMapper().readValue(source, Person.class);
+     } catch (IOException e) {
+       throw new IllegalStateException(e);
+     }
+    }
+
+    return null;
+  }
+}
+----
+
+[[cassandra.custom-converters.java]]
 === Registering Spring Converters with the CassandraConverter
 
-Coming Soon!
+The Spring Data Cassandra Java Config provides a convenient way to register Spring `Converter` s with the `MappingCassandraConverter`. The configuration snippet below shows how to manually register converters as well as configuring the `CustomConversions`.
+
+[source,java]
+----
+@Configuration
+public static class Config extends AbstractCassandraConfiguration {
+
+  @Override
+  public CustomConversions customConversions() {
+
+    List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+    converters.add(new PersonReadConverter());
+    converters.add(new PersonWriteConverter());
+
+    return new CustomConversions(converters);
+  }
+
+  // other methods omitted...
+}
+----
 
 [[cassandra.converter-disambiguation]]
 === Converter disambiguation
 
-Coming Soon!
+Generally we inspect the `Converter` implementations for the source and target types they convert from and to. Depending on whether one of those is a type Cassandra can handle natively we will register the converter instance as reading or writing one. Have a look at the following samples:
+
+[source,java]
+----
+// Write converter as only the target type is one cassandra can handle natively
+class MyConverter implements Converter<Person, String> { … }
+
+// Read converter as only the source type is one cassandra can handle natively
+class MyConverter implements Converter<String, Person> { … }
+----
+
+In case you write a `Converter` whose source and target type are native cassandra types there's no way for us to determine whether we should consider it as reading or writing converter. Registering the converter instance as both might lead to unwanted results then. E.g. a `Converter<String, Long>` is ambiguous although it probably does not make sense to try to convert all `String` instances into `Long` instances when writing. To be generally able to force the infrastructure to register a converter for one way only we provide `@ReadingConverter` as well as `@WritingConverter` to be used at the converter implementation.
 
 [[cassandra-template.commands]]
 == Executing Commands

@@ -10,7 +10,7 @@ In this section we will describe the features of the CassandraMappingConverter. 
 
 `CassandraMappingConverter` has a few conventions for mapping objects to CQL Tables when no additional mapping metadata is provided. The conventions are:
 
-* The short Java class name is mapped to the table name in the following manner. The class `com.bigbank.SavingsAccount` maps to `savings_account` table name.
+* The short Java class name is mapped to the table name in the following manner. The class `com.bigbank.SavingsAccount` maps to `savingsaccount` table name.
 * The converter will use any Spring Converters registered with it to override the default mapping of object properties to document field/values.
 * The properties of an object are used to convert to and from properties in the document.
 
@@ -88,6 +88,20 @@ In addition to these types, Spring Data Cassandra provides a set of built-in con
 | `Enum`
 | `text` (default), `bigint`, `varint`, `int`, `smallint`, `tinyint`
 
+| `LocalDate` +
+(Joda, Java 8, JSR310-BackPort)
+| `date`
+
+| `LocalDateTime`, `LocalTime`, `Instant` +
+(Joda, Java 8, JSR310-BackPort)
+| `timestamp`
+
+| `DateMidnight` (Joda)
+| `date`
+
+| `ZoneId` (Java 8, JSR310-BackPort)
+| `text`
+
 |===
 
 Each supported type maps to a default
@@ -120,17 +134,152 @@ NOTE: `Enum` mapping using ordinal values requires at least Spring 4.3.0. Using 
 
 Unless explicitly configured, an instance of `CassandraMappingConverter` is created by default when creating a `CassandraTemplate` . You can create your own instance of the `MappingCassandraConverter` so as to tell it where to scan the classpath at startup your domain classes in order to extract metadata and construct indexes. Also, by creating your own instance you can register Spring converters to use for mapping specific classes to and from the database.
 
-You can configure the `CassandraMappingConverter` and CassandraTemplate either using Java or XML based metadata. Here is an example using Spring's Java based configuration
 
 .@Configuration class to configure Cassandra mapping support
 ====
-TODO
+[source,java]
+----
+@Configuration
+public static class Config extends AbstractCassandraConfiguration {
+
+  @Override
+  protected String getKeyspaceName() {
+    return "bigbank";
+  }
+
+  // the following are optional
+
+  @Override
+  public CustomConversions customConversions() {
+
+    List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+    converters.add(new PersonReadConverter());
+    converters.add(new PersonWriteConverter());
+
+    return new CustomConversions(converters);
+  }
+
+  @Override
+  public SchemaAction getSchemaAction() {
+    return SchemaAction.RECREATE;
+  }
+
+  // other methods omitted...
+}
+----
 ====
 
-.XML schema to configure Cassandra mapping support
+`AbstractCassandraConfiguration` requires you to implement methods that define a keyspace. `AbstractCassandraConfiguration` also has a method you can override named  `getEntityBasePackages(…)` which tells the converter where to scan for classes annotated with the `@Table` annotation.
+
+You can add additional converters to the converter by overriding the method `customConversions`.
+
+NOTE: `AbstractCassandraConfiguration` will create a `CassandraTemplate` instance and registered with the container under the name `cassandraTemplate`.
+
+
+[[mapping-usage]]
+== Metadata based Mapping
+
+To take full advantage of the object mapping functionality inside the Spring Data/Cassandra support, you should annotate your mapped objects with the `@Table` annotation. It allows the classpath scanner to find and pre-process your domain objects to extract the necessary metadata. If you don't use this annotation your entities will be not found or rejected, if used in repository definitions or during runtime. Only annotated entities will be used to perform schema actions. In the worst case a `SchemaAction.RECREATE_DROP_UNUSED` will drop your tables and you'll experience data loss.
+
+.Example domain object
 ====
-TODO
+[source,java]
+----
+package com.mycompany.domain;
+
+@Table
+public class Person {
+
+  @Id
+  private ObjectId id;
+
+  @CassandraType(type = Name.VARINT)
+  private Integer ssn;
+
+  private String firstName;
+
+  private String lastName;
+}
+----
 ====
+
+IMPORTANT: The `@Id` annotation tells the mapper which property you want to use for the Cassandra primary key. Composite primary keys can require a slightly different data model.
+
+
+[[mapping-usage-annotations]]
+=== Mapping annotation overview
+
+The `MappingCassandraConverter` can use metadata to drive the mapping of objects to rows. An overview of the annotations is provided below
+
+* `@Id` - applied at the field or property level to mark the property used for identity purpose.
+* `@Table` - applied at the class level to indicate this class is a candidate for mapping to the database. You can specify the name of the table where the database will be stored.
+* `@PrimaryKey` - Similar to `@Id` but allows to specify the column name
+* `@PrimaryKeyColumn` - Cassandra-specific annotation for primary key columns that allows to specify primary key column attributes such as for clustered/partitioned. Can be used on single and multiple attributes to indicate either a single or a compound primary key.
+* `@PrimaryKeyClass` - applied at the class level to indicate this class is a compound primary key class. Requires to be references with `@PrimaryKey`
+* `@Transient` - by default all private fields are mapped to the row, this annotation excludes the field where it is applied from being stored in the database
+* `@Column` - applied at the field level. Describes the name of the column as it will be represented in the Cassandra table thus allowing the name to be different than the fieldname of the class.
+* `@CassandraType` - applied at the field level to specify a Cassandra data type. Types are derived from the declaration by default.
+
+The mapping metadata infrastructure is defined in a separate spring-data-commons project that is technology agnostic.
+
+Here is an example of a more complex mapping.
+
+[source,java]
+----
+@Table("my_person")
+public class Person {
+
+  @PrimaryKeyClass
+  public static class Key implements Serializable {
+
+    @PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+    private String type;
+
+    @PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+    private String value;
+
+    @PrimaryKeyColumn(name = "correlated_type", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+    private String correlatedType;
+
+    // other getters/setters ommitted
+  }
+
+  @PrimaryKey
+  private Person.Key key;
+
+  @CassandraType(type = Name.VARINT)
+  private Integer ssn;
+
+  @Column("f_name")
+  private String firstName;
+
+  @Column(forceQuote = true)
+  private String lastName;
+
+  @Transient
+  private Integer accountTotal;
+
+  @CassandraType(type = Name.SET, typeArguments = Name.BIGINT)
+  private Set<Long> timestamps;
+
+  private Map<String, InetAddress> sessions;
+
+  public Person(Integer ssn) {
+    this.ssn = ssn;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  // no setter for Id.  (getter is only exposed for some unit testing)
+
+  public Integer getSsn() {
+    return ssn;
+  }
+
+// other getters/setters ommitted
+----
 
 [[mapping-explicit-converters]]
 === Overriding Mapping with explicit Converters
