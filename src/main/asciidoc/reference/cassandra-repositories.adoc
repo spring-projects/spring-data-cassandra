@@ -101,17 +101,123 @@ class ApplicationConfig extends AbstractCassandraConfiguration {
 As our domain repository extends `CrudRepository` it provides you with CRUD operations.
 Working with the repository instance is just a matter of dependency injecting it into a client.
 
+.Paging access to Person entities
+====
+[source,java]
+----
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
+public class PersonRepositoryTests {
 
-[[cassandradb.repositories.queries]]
+    @Autowired PersonRepository repository;
+
+    @Test
+    public void readsPersonTableCorrectly() {
+
+      List<Person> persons = repository.findAll();
+      assertThat(persons.isEmpty(), is(false));
+    }
+}
+----
+====
+
+The sample creates an application context with Spring's unit test support which will perform annotation based dependency injection into test cases. Inside the test method we simply use the repository to query the datastore. We invoke the repository query method that requests the all `Person` instances.
+
+[[cassandra.repositories.queries]]
 == Query methods
 
-[[cassandradb.repositories.queries.delete]]
-=== Repository delete queries
+Most of the data access operations you usually trigger on a repository result a query being executed against the Cassandra database. Defining such a query is just a matter of declaring a method on the repository interface.
 
-[[cassandradb.repositories.misc]]
+.PersonRepository with query methods
+====
+[source,java]
+----
+public interface PersonRepository extends CrudRepository<Person, String> {
+
+    List<Person> findByLastname(String lastname);                      <1>
+
+    List<Person> findByFirstname(String firstname, Sort sort);         <2>
+
+    Person findByShippingAddresses(Address address);                   <3>
+
+    Stream<Person> findAllBy();                                        <4>
+}
+----
+<1> The method shows a query for all people with the given lastname. The query will be derived parsing the method name for constraints which can be concatenated with `And`. Thus the method name will result in a query expression of `SELECT * from person WHERE lastname = 'lastname'`.
+<2> Applies dynamic sorting to a query. Just equip your method signature with a `Sort` parameter and we will automatically apply sortin  to the query accordingly.
+<3> Shows that you can query based on properties which are not a primitive type using registered `Converter` 's in `CustomConversions`.
+<4> Uses a Java 8 `Stream` which reads and converts individual elements while iterating the stream.
+====
+
+NOTE: Note that querying non-primary key properties requires secondary indexes.
+
+[cols="1,2,3", options="header"]
+.Supported keywords for query methods
+|===
+| Keyword
+| Sample
+| Logical result
+
+| `After`
+| `findByBirthdateAfter(Date date)`
+| `birthdate > date`
+
+| `GreaterThan`
+| `findByAgeGreaterThan(int age)`
+| `age > age`
+
+| `GreaterThanEqual`
+| `findByAgeGreaterThanEqual(int age)`
+| `age >= age`
+
+| `Before`
+| `findByBirthdateBefore(Date date)`
+| `birthdate < date`
+
+| `LessThan`
+| `findByAgeLessThan(int age)`
+| `age < age`
+
+| `LessThanEqual`
+| `findByAgeLessThanEqual(int age)`
+| `age <= age`
+
+| `In`
+| `findByAgeIn(Collection ages)`
+| `age IN (ages...)`
+
+| `Like`, `StartingWith`, `EndingWith`
+| `findByFirstnameLike(String name)`
+| `firstname LIKE (name as like expression)`
+
+| `Containing` on String
+| `findByFirstnameContaining(String name)`
+| `firstname LIKE (name as like expression)`
+
+| `Containing` on Collection
+| `findByAddressesContaining(Address address)`
+| `addresses CONTAINING address`
+
+| `(No keyword)`
+| `findByFirstname(String name)`
+| `firstname = name`
+
+| `IsTrue`, `True`
+| `findByActiveIsTrue()`
+| `active = true`
+
+| `IsFalse`,  `False`
+| `findByActiveIsFalse()`
+| `active = false`
+
+|===
+
+include::../{spring-data-commons-docs}/repository-projections.adoc[leveloffset=+2]
+
+[[cassandra.repositories.misc]]
 == Miscellaneous
 
-[[cassandradb.repositories.misc.cdi-integration]]
+[[cassandra.repositories.misc.cdi-integration]]
 === CDI Integration
 
 Instances of the repository interfaces are usually created by a container, which Spring is the most natural choice when working with Spring Data. Spring Data Cassandra ships with a custom CDI extension that allows using the repository abstraction in CDI environments. The extension is part of the JAR so all you need to do to activate it is dropping the Spring Data Cassandra JAR into your classpath. You can now set up the infrastructure by implementing a CDI Producer for the `CassandraTemplate`:
