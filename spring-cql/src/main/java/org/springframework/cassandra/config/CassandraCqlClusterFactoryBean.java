@@ -63,6 +63,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author Jorge Davison
  * @author John Blum
  * @author Mark Paluch
+ * @author Stefan Birkner
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
@@ -267,20 +268,18 @@ public class CassandraCqlClusterFactoryBean
 		}
 	}
 
-	protected void executeSpecsAndScripts(@SuppressWarnings("rawtypes") List specs, List<String> scripts) {
+	protected void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification<?>> specifications, List<String> scripts) {
 
-		if (!CollectionUtils.isEmpty(specs) || !CollectionUtils.isEmpty(scripts)) {
+		if (!CollectionUtils.isEmpty(specifications) || !CollectionUtils.isEmpty(scripts)) {
+
 			Session session = cluster.connect();
 
 			try {
+
 				CqlTemplate template = new CqlTemplate(session);
 
-				for (Object spec : specs) {
-					String cql = (spec instanceof CreateKeyspaceSpecification)
-							? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql()
-							: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
-
-					template.execute(cql);
+				for (KeyspaceActionSpecification<?> spec : specifications) {
+					template.execute(toCql(spec));
 				}
 
 				for (String script : scripts) {
@@ -292,6 +291,15 @@ public class CassandraCqlClusterFactoryBean
 				}
 			}
 		}
+	}
+
+	private String toCql(KeyspaceActionSpecification<?> spec) {
+
+		if(spec instanceof CreateKeyspaceSpecification) {
+			return new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql();
+		}
+
+		return new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
 	}
 
 	/**
