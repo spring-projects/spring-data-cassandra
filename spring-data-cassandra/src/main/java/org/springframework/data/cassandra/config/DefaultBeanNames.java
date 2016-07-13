@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@ package org.springframework.data.cassandra.config;
 
 import org.springframework.cassandra.config.xml.DefaultCqlBeanNames;
 
+/**
+ * @author Matthew T. Adams
+ * @author Mark Paluch
+ */
 public interface DefaultBeanNames extends DefaultCqlBeanNames {
 
-	public static final String DATA_TEMPLATE = "cassandraTemplate";
-	public static final String CONVERTER = "cassandraConverter";
-	public static final String CONTEXT = "cassandraMapping";
-	public static final String USER_TYPE_RESOLVER = "userTypeResolver";
+	String DATA_TEMPLATE = "cassandraTemplate";
+	String CONVERTER = "cassandraConverter";
+	String CONTEXT = "cassandraMapping";
 }

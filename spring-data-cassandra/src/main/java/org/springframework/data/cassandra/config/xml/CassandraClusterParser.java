@@ -21,12 +21,16 @@ import org.springframework.cassandra.config.xml.CassandraCqlClusterParser;
 import org.w3c.dom.Element;
 
 /**
- * Spring Data Cassandra XML namespace parser for the &lt;cluster&gt; element.
+ * Spring Data Cassandra XML namespace parser for the {@code cassandra:cluster} element.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraClusterParser extends CassandraCqlClusterParser {
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.config.xml.CassandraCqlClusterParser#parseInternal(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)
+	 */
 	@Override
 	protected AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {
 
