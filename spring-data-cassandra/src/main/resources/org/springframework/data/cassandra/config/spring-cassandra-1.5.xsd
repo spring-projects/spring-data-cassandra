@@ -775,6 +775,13 @@ Defines a CassandraMappingContext for holding rich entity mapping information.
 				<xsd:element name="entity" type="entityType" minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element name="user-type-resolver" type="userTypeResolverType" minOccurs="0" maxOccurs="1" />
 			</xsd:sequence>
+			<xsd:attribute name="id" type="xsd:ID" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+	The name of the mapping context; default is "cassandraMapping".
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 			<xsd:attribute name="entity-base-packages" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
