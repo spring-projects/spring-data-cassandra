@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:cass="http://www.springframework.org/schema/data/cassandra"
+	   xsi:schemaLocation="http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<cass:cluster/>
+
+	<bean id="keyspace-1"
+		  class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorTests.MockSessionFactory"/>
+	<bean id="keyspace-2"
+		  class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorTests.MockSessionFactory"/>
+
+	<cass:mapping id="mapping-1"/>
+	<cass:mapping id="mapping-2"/>
+
+	<cass:converter id="converter-1" mapping-ref="mapping-1"/>
+	<cass:converter id="converter-2" mapping-ref="mapping-2"/>
+
+	<cass:template id="c-1" cassandra-converter-ref="converter-1" session-ref="keyspace-1"/>
+	<cass:template id="c-2" cassandra-converter-ref="converter-2" session-ref="keyspace-2"/>
+
+</beans>
