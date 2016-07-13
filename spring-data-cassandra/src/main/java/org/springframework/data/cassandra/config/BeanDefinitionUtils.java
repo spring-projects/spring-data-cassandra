@@ -152,7 +152,7 @@ public class BeanDefinitionUtils {
 				try {
 					beanDefinition = registry.getBeanDefinition(name);
 				} catch (NoSuchBeanDefinitionException x) {
-					if (FactoryBean.class.isAssignableFrom(type)) { // try unmangled BeanFactory-prefixed name
+					if (FactoryBean.class.isAssignableFrom(type)) { // try unmanged BeanFactory-prefixed name
 						name = name.substring(BeanFactory.FACTORY_BEAN_PREFIX.length());
 					} else {
 						throw x;

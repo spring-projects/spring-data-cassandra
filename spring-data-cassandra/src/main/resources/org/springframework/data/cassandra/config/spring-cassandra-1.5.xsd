@@ -818,7 +818,7 @@ The reference to a UserTypeResolver. UserTypeResolver is required when working w
 		<xsd:attribute name="cassandra-template-ref" type="cassandraTemplateRef">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-The reference to a CassandraTemplate. Will default to 'cassandraTemplate'.
+The reference to a CassandraTemplate. Will default to 'cqlTemplate'.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>

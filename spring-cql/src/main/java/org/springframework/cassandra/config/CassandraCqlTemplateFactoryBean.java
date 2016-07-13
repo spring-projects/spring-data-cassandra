@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.springframework.cassandra.config;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.CqlTemplate;
+import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
 
@@ -26,38 +26,63 @@ import com.datastax.driver.core.Session;
  * Factory for configuring a {@link CqlTemplate}.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlOperations>, InitializingBean {
+public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>, InitializingBean {
 
 	private CqlTemplate template;
 	private Session session;
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
 	@Override
-	public CqlOperations getObject() {
+	public CqlTemplate getObject() {
 		return template;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
 	@Override
-	public Class<? extends CqlOperations> getObjectType() {
-		return CqlOperations.class;
+	public Class<CqlTemplate> getObjectType() {
+		return CqlTemplate.class;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+	 */
 	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		if (session == null) {
-			throw new IllegalStateException("session is required");
-		}
+		Assert.notNull(session, "Session must not be null");
 
 		this.template = new CqlTemplate(session);
 	}
 
+	/**
+	 * Sets the Cassandra {@link Session} to use. The {@link CqlTemplate} will use the logged keyspace of the underlying
+	 * {@link Session}. Don't change the keyspace using CQL but use multiple {@link Session} and
+	 * {@link CqlTemplate} beans.
+	 * 
+	 * @param session must not be {@literal null}.
+	 */
 	public void setSession(Session session) {
+
+		Assert.notNull(session, "Session must not be null");
+
 		this.session = session;
 	}
 }

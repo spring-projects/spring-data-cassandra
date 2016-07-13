@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,17 +41,24 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
- * Spring Data Cassandra XML namespace parser for the &lt;mapping&gt; element.
+ * Spring Data Cassandra XML namespace parser for the {@code cassandra:mapping} element.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)
+	 */
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return BasicCassandraMappingContext.class;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
+	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
@@ -61,6 +68,9 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 		return (StringUtils.hasText(id) ? id : DefaultBeanNames.CONTEXT);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#doParse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext, org.springframework.beans.factory.support.BeanDefinitionBuilder)
+	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
@@ -75,14 +85,13 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 
 		if (StringUtils.hasText(packages)) {
 			try {
-				Set<Class<?>> entityClasses = CassandraEntityClassScanner.scan(
-					StringUtils.commaDelimitedListToStringArray(packages));
+				Set<Class<?>> entityClasses = CassandraEntityClassScanner
+						.scan(StringUtils.commaDelimitedListToStringArray(packages));
 
 				builder.addPropertyValue("initialEntitySet", entityClasses);
 			} catch (Exception x) {
 				throw new IllegalArgumentException(
-						String.format("encountered exception while scanning for entity classes in package(s) [%s]",
-							packages), x);
+						String.format("encountered exception while scanning for entity classes in package(s) [%s]", packages), x);
 			}
 		}
 
@@ -105,7 +114,7 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 			builder.addPropertyReference("userTypeResolver", userTypeResolverRef);
 		}
 
-		if (!userTypeResolvers.isEmpty()){
+		if (!userTypeResolvers.isEmpty()) {
 			BeanDefinition userTypeResolver = parseUserTypeResolver(userTypeResolvers.get(0));
 			builder.addPropertyValue("userTypeResolver", userTypeResolver);
 		}
