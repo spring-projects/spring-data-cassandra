@@ -26,17 +26,24 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Spring Data Cassandra XML namespace parser for the &lt;converter&gt; element.
+ * Spring Data Cassandra XML namespace parser for the {@code cassandra:converter} element.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitionParser {
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)
+	 */
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return MappingCassandraConverter.class;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
+	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
@@ -45,6 +52,9 @@ public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitio
 		return StringUtils.hasText(id) ? id : DefaultBeanNames.CONVERTER;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#doParse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext, org.springframework.beans.factory.support.BeanDefinitionBuilder)
+	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 

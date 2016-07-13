@@ -15,9 +15,7 @@
  */
 package org.springframework.cassandra.config.xml;
 
-import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
-import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyReference;
-import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyValue;
+import static org.springframework.cassandra.config.xml.ParsingUtils.*;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -39,11 +37,17 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParser {
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)
+	 */
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return CassandraCqlSessionFactoryBean.class;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
+	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
@@ -67,10 +71,13 @@ public class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParse
 	 */
 	protected void parseUnhandledSessionElementAttribute(Attr attribute, ParserContext parserContext,
 			BeanDefinitionBuilder builder) {
-		throw new IllegalStateException(String.format("encountered unhandled session element attribute [%s]",
-				attribute.getName()));
+		throw new IllegalStateException(
+				String.format("encountered unhandled session element attribute [%s]", attribute.getName()));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#doParse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext, org.springframework.beans.factory.support.BeanDefinitionBuilder)
+	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
@@ -108,7 +115,8 @@ public class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParse
 		}
 	}
 
-	protected void parseSessionChildElements(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void parseSessionChildElements(Element element, ParserContext parserContext,
+			BeanDefinitionBuilder builder) {
 
 		for (Element child : DomUtils.getChildElements(element)) {
 

@@ -42,7 +42,9 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	protected static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
 
 	private CassandraAdminOperations admin;
+
 	private CassandraConverter converter;
+
 	private SchemaAction schemaAction = SchemaAction.NONE;
 
 	/**

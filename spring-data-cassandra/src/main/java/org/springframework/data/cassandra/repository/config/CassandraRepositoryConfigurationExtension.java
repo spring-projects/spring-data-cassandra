@@ -20,9 +20,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.cassandra.config.xml.DefaultCqlBeanNames;
 import org.springframework.cassandra.config.xml.ParsingUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
@@ -44,25 +44,38 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 
 	private static final String CASSANDRA_TEMPLATE_REF = "cassandra-template-ref";
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModulePrefix()
+	 */
 	@Override
 	protected String getModulePrefix() {
 		return "cassandra";
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryFactoryClassName()
+	 */
 	@Override
 	public String getRepositoryFactoryClassName() {
 		return CassandraRepositoryFactoryBean.class.getName();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.XmlRepositoryConfigurationSource)
+	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {
 
 		Element element = config.getElement();
 
+		// TODO: XML-based configuration uses a different bean name than Java config
 		ParsingUtils.addOptionalPropertyReference(builder, "cassandraTemplate", element, CASSANDRA_TEMPLATE_REF,
-				DefaultBeanNames.TEMPLATE);
+				DefaultCqlBeanNames.TEMPLATE);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource)
+	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,31 +20,44 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.cassandra.config.xml.CassandraCqlTemplateParser;
-import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.config.CassandraTemplateFactoryBean;
+import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Spring Data Cassandra XML namespace parser for the &lt;template&gt; element.
+ * Spring Data Cassandra XML namespace parser for the {@code cassandra:template} element.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraTemplateParser extends CassandraCqlTemplateParser {
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.config.xml.CassandraCqlTemplateParser#getBeanClass(org.w3c.dom.Element)
+	 */
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return CassandraTemplateFactoryBean.class;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.config.xml.CassandraCqlTemplateParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
+	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
 
+		// TODO: super.resolveId resolves always to a non-empty id because its fallback is DefaultCqlBeanNames.TEMPLATE.
+		// This also means that CassandraTemplate is exposed as bean named cqlTemplate. This should change with 2.0
+		// because 2.0 breaks up inheritance.
 		String id = super.resolveId(element, definition, parserContext);
 		return StringUtils.hasText(id) ? id : DefaultBeanNames.DATA_TEMPLATE;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.config.xml.CassandraCqlTemplateParser#doParse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext, org.springframework.beans.factory.support.BeanDefinitionBuilder)
+	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 

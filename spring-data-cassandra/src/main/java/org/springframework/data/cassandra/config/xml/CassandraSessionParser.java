@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
  */
 package org.springframework.data.cassandra.config.xml;
 
-import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
-import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyValue;
-import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyReference;
-import static org.springframework.cassandra.config.xml.ParsingUtils.addRequiredPropertyValue;
+import static org.springframework.cassandra.config.xml.ParsingUtils.*;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -30,17 +27,24 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
 /**
- * Spring Data Cassandra XML namespace parser for the &lt;session&gt; element.
+ * Spring Data Cassandra XML namespace parser for the {@code cassandra:session} element.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraSessionParser extends CassandraCqlSessionParser {
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.config.xml.CassandraCqlSessionParser#getBeanClass(org.w3c.dom.Element)
+	 */
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return CassandraSessionFactoryBean.class;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.config.xml.CassandraCqlSessionParser#doParse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext, org.springframework.beans.factory.support.BeanDefinitionBuilder)
+	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
@@ -49,6 +53,9 @@ public class CassandraSessionParser extends CassandraCqlSessionParser {
 		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.config.xml.CassandraCqlSessionParser#parseUnhandledSessionElementAttribute(org.w3c.dom.Attr, org.springframework.beans.factory.xml.ParserContext, org.springframework.beans.factory.support.BeanDefinitionBuilder)
+	 */
 	@Override
 	protected void parseUnhandledSessionElementAttribute(Attr attribute, ParserContext parserContext,
 			BeanDefinitionBuilder builder) {
@@ -64,6 +71,9 @@ public class CassandraSessionParser extends CassandraCqlSessionParser {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.config.xml.CassandraCqlSessionParser#setDefaultProperties(org.springframework.beans.factory.support.BeanDefinitionBuilder)
+	 */
 	@Override
 	protected void setDefaultProperties(BeanDefinitionBuilder builder) {
 

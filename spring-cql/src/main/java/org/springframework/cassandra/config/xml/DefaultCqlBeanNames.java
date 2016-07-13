@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ package org.springframework.cassandra.config.xml;
  */
 public interface DefaultCqlBeanNames {
 
-	public static final String CLUSTER = "cassandraCluster";
-	public static final String SESSION = "cassandraSession";
-	public static final String TEMPLATE = "cqlTemplate";
+	String CLUSTER = "cassandraCluster";
+	String SESSION = "cassandraSession";
+	String TEMPLATE = "cqlTemplate";
 }
