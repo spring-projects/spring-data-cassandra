@@ -1,3 +1,6 @@
+[![Spring Data Cassandra](https://spring.io/badges/spring-data-cassandra/ga.svg)](http://projects.spring.io/spring-data-cassandra/#quick-start)
+[![Spring Data Cassandra](https://spring.io/badges/spring-data-cassandra/snapshot.svg)](http://projects.spring.io/spring-data-cassandra/#quick-start)
+
 # Spring Data Cassandra Project Info
 
 ## Quick Start
@@ -25,7 +28,7 @@ Generally available releases are available in Maven Central.
 	<dependency>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-cql</artifactId>
-		<version>1.0.0.RELEASE (or whatever your preferred version is)</version>
+		<version>${version}.RELEASE</version>
 	</dependency>
 
 *Minimal Spring XML Configuration*
@@ -67,7 +70,7 @@ Generally available releases are available in Maven Central.
 	<dependency>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-cassandra</artifactId>
-		<version>1.0.0.RELEASE (or whatever your preferred version is)</version>
+		<version>${version}.RELEASE</version>
 	</dependency>
 
 *Minimal Spring XML Configuration*
