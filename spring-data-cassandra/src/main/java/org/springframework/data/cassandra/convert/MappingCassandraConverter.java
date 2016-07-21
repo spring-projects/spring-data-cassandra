@@ -434,7 +434,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private Collection<Clause> getWhereClauses(MapId id, CassandraPersistentEntity<?> entity) {
 
-		Assert.notNull("MapId must not be null");
+		Assert.notNull(id, "MapId must not be null");
 
 		Collection<Clause> clauses = new ArrayList<Clause>();
 
