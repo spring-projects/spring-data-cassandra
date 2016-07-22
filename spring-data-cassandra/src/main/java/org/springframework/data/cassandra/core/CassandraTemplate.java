@@ -704,16 +704,23 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	protected <T> T doInsert(T entity, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
-		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		Insert insert = createInsertQuery(entity, options);
 		execute(insert);
 		return entity;
+	}
+
+	<T> Insert createInsertQuery(T entity, WriteOptions options) {
+
+		Assert.notNull(entity, "Entity must not be null");
+
+		return createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
 	}
 
 	protected <T> Cancellable doInsertAsync(final T entity, final WriteListener<T> listener, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Insert insert = createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		Insert insert = createInsertQuery(entity, options);
 
 		AsynchronousQueryListener queryListener = (listener == null ? null : new AsynchronousQueryListener() {
 
@@ -840,17 +847,24 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return executeAsynchronously(batch, queryListener);
 	}
 
+	<T> Delete createDeleteQuery(T entity, QueryOptions options) {
+
+		Assert.notNull(entity, "Entity must not be null");
+
+		return createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+	}
+
 	protected <T> void doDelete(T entity, QueryOptions options) {
 		Assert.notNull(entity, "Entity must not be null");
 
-		execute(createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter));
+		execute(createDeleteQuery(entity, options));
 	}
 
 	protected <T> Cancellable doDeleteAsync(final T entity, final DeletionListener<T> listener, QueryOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Delete delete = createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+		Delete delete = createDeleteQuery(entity, options);
 
 		AsynchronousQueryListener queryListener = (listener == null ? null : new AsynchronousQueryListener() {
 			@Override
@@ -867,10 +881,17 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return executeAsynchronously(delete, queryListener);
 	}
 
+	<T> Update createUpdateQuery(T entity, WriteOptions options) {
+
+		Assert.notNull(entity, "Entity must not be null");
+
+		return createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter);
+	}
+
 	protected <T> T doUpdate(T entity, WriteOptions options) {
 		Assert.notNull(entity, "Entity must not be null");
 
-		execute(createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, cassandraConverter));
+		execute(createUpdateQuery(entity, options));
 
 		return entity;
 	}
@@ -893,8 +914,16 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 			}
 		});
 
-		return executeAsynchronously(createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options,
-			cassandraConverter), queryListener);
+		return executeAsynchronously(createUpdateQuery(entity, options), queryListener);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#batchOps(java.lang.Class)
+	 */
+	@Override
+	public CassandraBatchOperations batchOps() {
+		return new CassandraBatchTemplate(this);
 	}
 
 	/**

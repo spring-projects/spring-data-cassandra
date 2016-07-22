@@ -29,12 +29,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.test.integration.simpletons.Book;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Select;
 
 /**
@@ -166,5 +169,16 @@ public class CassandraTemplateUnitTests {
 
 		verify(mockSession, times(1)).execute(eq("SELECT * FROM Test"));
 		verifyZeroInteractions(mockCassandraConverter);
+	}
+
+	/**
+	 * @see DATACASS-288
+	 */
+	@Test
+	public void batchOperationsShouldCallSession() {
+
+		template.batchOps().insert(new Book()).execute();
+
+		verify(mockSession).execute(Mockito.any(Batch.class));
 	}
 }
