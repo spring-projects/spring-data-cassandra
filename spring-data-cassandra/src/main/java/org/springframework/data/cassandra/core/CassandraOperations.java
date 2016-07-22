@@ -59,7 +59,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * Returns a {@link java.util.Iterator} that wraps the Cassandra {@link com.datastax.driver.core.ResultSet}.
 	 *
 	 * @param <T> element return type.
-	 * @param query query to execute.  Must not be empty or {@literal null}.
+	 * @param query query to execute. Must not be empty or {@literal null}.
 	 * @param entityClass Class type of the elements in the {@link Iterator} stream. Must not be {@literal null}.
 	 * @return an {@link Iterator} (stream) over the elements in the query result set.
 	 * @since 1.5
@@ -465,6 +465,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Deletes all entities of a given class.
+	 * 
 	 * @param entityClass The entity type must not be {@literal null}.
 	 */
 	<T> void deleteAll(Class<T> entityClass);
@@ -532,6 +533,14 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param options The {@link QueryOptions} to use
 	 */
 	<T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener<T> listener, QueryOptions options);
+
+	/**
+	 * Returns a new {@link CassandraBatchOperations}. Each {@link CassandraBatchOperations} instance can be executed only
+	 * once so you might want to obtain new {@link CassandraBatchOperations} instances for each batch.
+	 *
+	 * @return a new {@link CassandraBatchOperations} associated with the given entity class.
+	 */
+	CassandraBatchOperations batchOps();
 
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
