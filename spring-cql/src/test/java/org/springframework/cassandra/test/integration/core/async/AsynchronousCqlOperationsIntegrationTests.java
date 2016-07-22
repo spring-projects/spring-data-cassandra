@@ -269,7 +269,7 @@ public class AsynchronousCqlOperationsIntegrationTests extends AbstractKeyspaceC
 		new AsynchronousQueryListenerTestTemplate() {
 			@Override
 			void doAsyncQuery(Book b, QueryListener listener) {
-				cqlOperations.queryAsynchronously(cql(b), listener, new QueryOptions(cl, RetryPolicy.LOGGING));
+				cqlOperations.queryAsynchronously(cql(b), listener, new QueryOptions(cl, RetryPolicy.DEFAULT));
 			}
 		}.test();
 	}

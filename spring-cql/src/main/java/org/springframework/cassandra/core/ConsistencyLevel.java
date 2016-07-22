@@ -20,7 +20,9 @@ package org.springframework.cassandra.core;
  * 
  * @author David Webb
  * @author Antoine Toulme
+ * @deprecated Use the driver's {@link com.datastax.driver.core.ConsistencyLevel}.
  */
+@Deprecated
 public enum ConsistencyLevel {
 
 	ANY, ONE, TWO, THREE,
