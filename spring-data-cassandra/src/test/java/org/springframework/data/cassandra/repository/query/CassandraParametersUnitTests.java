@@ -44,12 +44,12 @@ public class CassandraParametersUnitTests {
 	 * @see DATACASS-296
 	 */
 	@Test
-	public void shouldReturnDataTypeForSimpleType() throws Exception {
+	public void shouldUnknownDataTypeForSimpleType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
 
-		assertThat(cassandraParameters.getParameter(0).getCassandraType(), is(DataType.varchar()));
+		assertThat(cassandraParameters.getParameter(0).getCassandraType(), is(nullValue()));
 	}
 
 	/**
@@ -61,7 +61,8 @@ public class CassandraParametersUnitTests {
 		Method method = PersonRepository.class.getMethod("findByFirstTime", String.class);
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
 
-		assertThat(cassandraParameters.getParameter(0).getCassandraType(), is(DataType.time()));
+		assertThat(cassandraParameters.getParameter(0).getCassandraType(), is(notNullValue()));
+		assertThat(cassandraParameters.getParameter(0).getCassandraType().type(), is(Name.TIME));
 	}
 
 	/**
@@ -85,7 +86,8 @@ public class CassandraParametersUnitTests {
 		Method method = PersonRepository.class.getMethod("findByAnnotatedObject", Object.class);
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
 
-		assertThat(cassandraParameters.getParameter(0).getCassandraType(), is(DataType.time()));
+		assertThat(cassandraParameters.getParameter(0).getCassandraType(), is(notNullValue()));
+		assertThat(cassandraParameters.getParameter(0).getCassandraType().type(), is(Name.TIME));
 	}
 
 	interface PersonRepository {

@@ -46,7 +46,7 @@ public interface CassandraConverter
 	 * <li>A the composite primary key for {@link org.springframework.data.cassandra.mapping.PrimaryKey} using a
 	 * {@link org.springframework.data.cassandra.mapping.PrimaryKeyClass}</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param object must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 * @return
@@ -55,10 +55,17 @@ public interface CassandraConverter
 
 	/**
 	 * Converts and writes a {@code source} object into a {@code sink} using the given {@link CassandraPersistentEntity}.
-	 * 
+	 *
 	 * @param source the source, may be {@literal null}.
 	 * @param sink must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 */
 	void write(Object source, Object sink, CassandraPersistentEntity<?> entity);
+
+	/**
+	 * Returns the {@link CustomConversions} registered in the {@link CassandraConverter}.
+	 * 
+	 * @return the {@link CustomConversions}.
+	 */
+	CustomConversions getCustomConversions();
 }

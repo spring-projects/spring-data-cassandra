@@ -51,6 +51,7 @@ import com.datastax.driver.core.DataType;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Antoine Toulme
+ * @author Mark Paluch
  */
 public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentProperty<CassandraPersistentProperty>
 		implements CassandraPersistentProperty, ApplicationContextAware {
@@ -129,7 +130,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		List<CqlIdentifier> columnNames = getColumnNames();
 
 		if (columnNames.size() != 1) {
-			throw new IllegalStateException("property does not have a single column mapping");
+			throw new IllegalStateException(String.format("Property [%s] has no single column mapping", getName()));
 		}
 
 		return columnNames.get(0);

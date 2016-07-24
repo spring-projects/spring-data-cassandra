@@ -39,6 +39,11 @@ public abstract class AbstractSpringDataEmbeddedCassandraIntegrationTest
 	 */
 	public void deleteAllEntities() {
 		for (CassandraPersistentEntity<?> entity : template.getConverter().getMappingContext().getPersistentEntities()) {
+
+			if(entity.getType().isInterface()){
+				continue;
+			}
+
 			template.truncate(entity.getTableName());
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * {@link RepositoryQuery} implementation for Cassandra.
+ * 
+ * @author Matthew Adams
+ * @author Mark Paluch
  */
 public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 
@@ -34,13 +37,14 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	 * Creates a new {@link PartTreeCassandraQuery} from the given {@link QueryMethod} and {@link CassandraTemplate}.
 	 * 
 	 * @param method must not be {@literal null}.
-	 * @param template must not be {@literal null}.
+	 * @param operations must not be {@literal null}.
 	 */
-	public PartTreeCassandraQuery(CassandraQueryMethod method, CassandraOperations cassandraOperations) {
+	public PartTreeCassandraQuery(CassandraQueryMethod method, CassandraOperations operations) {
 
-		super(method, cassandraOperations);
+		super(method, operations);
+
 		this.tree = new PartTree(method.getName(), method.getEntityInformation().getJavaType());
-		this.context = cassandraOperations.getConverter().getMappingContext();
+		this.context = operations.getConverter().getMappingContext();
 	}
 
 	/**
@@ -52,10 +56,15 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 		return tree;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor, boolean)
+	 */
 	@Override
 	protected String createQuery(CassandraParameterAccessor accessor) {
 
-		CassandraQueryCreator creator = new CassandraQueryCreator(tree, accessor, context);
-		return creator.createQuery().getQueryString();
+		CassandraQueryCreator creator = new CassandraQueryCreator(tree, accessor, context,
+				getQueryMethod().getEntityInformation());
+		return creator.createQuery().toString();
 	}
 }
