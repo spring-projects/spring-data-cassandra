@@ -23,7 +23,7 @@ import org.springframework.util.Assert;
 /**
  * {@code BeanDefinitionTestUtils} is a collection of {@link org.springframework.beans.factory.config.BeanDefinition}
  * -based utility methods for use in unit and integration testing scenarios.
- * 
+ *
  * @author Mark Paluch
  */
 public abstract class BeanDefinitionTestUtils {
@@ -35,7 +35,7 @@ public abstract class BeanDefinitionTestUtils {
 
 	/**
 	 * Retrieve the {@code propertyValue} from a {@link BeanDefinition} by its {@code propertyName}.
-	 * 
+	 *
 	 * @param beanDefinition must not be {@literal null}.
 	 * @param propertyName must not be {@literal null} or empty.
 	 * @return the property value, may be {@literal null}.
@@ -47,12 +47,13 @@ public abstract class BeanDefinitionTestUtils {
 		Assert.notNull(propertyName, "Property name must not be empty");
 
 		PropertyValue propertyValue = beanDefinition.getPropertyValues().getPropertyValue(propertyName);
+
 		return (T) (propertyValue != null ? propertyValue.getValue() : null);
 	}
 
 	/**
 	 * Retrieve the {@code propertyValue} as {@literal String} from a {@link BeanDefinition} by its {@code propertyName}.
-	 * 
+	 *
 	 * @param beanDefinition must not be {@literal null}.
 	 * @param propertyName must not be {@literal null} or empty.
 	 * @return the property value, may be {@literal null}.
@@ -63,8 +64,8 @@ public abstract class BeanDefinitionTestUtils {
 		Assert.notNull(propertyName, "Property name must not be empty");
 
 		Object value = getPropertyValue(beanDefinition, propertyName);
-		return (value instanceof RuntimeBeanReference ? ((RuntimeBeanReference) value).getBeanName()
-				: (value != null ? String.valueOf(value) : null));
-	}
 
+		return (value instanceof RuntimeBeanReference ? ((RuntimeBeanReference) value).getBeanName()
+			: (value != null ? String.valueOf(value) : null));
+	}
 }

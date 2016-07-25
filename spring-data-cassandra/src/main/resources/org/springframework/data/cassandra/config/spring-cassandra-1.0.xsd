@@ -114,6 +114,23 @@ The name of the Cassandra Cluster definition; default is "cassandra-cluster".
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="address-translator-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Configures the address translator to use for the new cluster.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to type="com.datastax.driver.core.policies.AddressTranslator"/>
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string"/>
+			</xsd:simpleType>
+		</xsd:attribute>
 		<xsd:attribute name="auth-info-provider-ref" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -130,6 +147,13 @@ AuthInfoProvider implementation.
 				</xsd:annotation>
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="cluster-name" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+An optional name for the create cluster.
+				]]></xsd:documentation>
+			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="compression" type="xsd:string" default="NONE" use="optional">
 			<xsd:annotation>
@@ -230,6 +254,13 @@ LoadBalancingPolicy implementation.
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
+		<xsd:attribute name="max-schema-agreement-wait-seconds" type="xsd:string" default="10" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the maximum time to wait for schema agreement before returning from a DDL query. Defaults to 10 seconds.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="metrics-enabled" type="xsd:string"
 			default="true">
 			<xsd:annotation>
@@ -298,6 +329,23 @@ RetryPolicy implementation.
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
+		<xsd:attribute name="speculative-execution-policy-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Configures the speculative execution policy to use for the new cluster.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to type="com.datastax.driver.core.policies.SpeculativeExecutionPolicy"/>
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string"/>
+			</xsd:simpleType>
+		</xsd:attribute>
 		<xsd:attribute name="ssl-enabled" type="xsd:string" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -320,6 +368,23 @@ Custom SSL Options. sslEnabled must be true for sslOptions to be used.
 					</xsd:appinfo>
 				</xsd:annotation>
 				<xsd:union memberTypes="xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="timestamp-generator-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Configures the generator that will produce the client-side timestamp sent with each query.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to type="com.datastax.driver.core.TimestampGenerator"/>
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string"/>
 			</xsd:simpleType>
 		</xsd:attribute>
 		<xsd:attribute name="username" type="xsd:string" use="optional">
