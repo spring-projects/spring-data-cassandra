@@ -15,12 +15,25 @@
 
 	<task:executor id="testExecutor" pool-size="10"/>
 
-	<cassandra:cluster contact-points="localhost" port="${build.cassandra.native_transport_port}"
-			heartbeat-interval-seconds="60"
-			initialization-executor-ref="testExecutor"
-			idle-timeout-seconds="300"
-			pool-timeout-milliseconds="15000">
-		<cassandra:local-pooling-options core-connections="2"
+	<bean name="testAddressTranslator" class="com.datastax.driver.core.policies.IdentityTranslator"/>
+
+	<bean name="testSpeculativeExecutionPolicy" class="com.datastax.driver.core.policies.NoSpeculativeExecutionPolicy"/>
+
+	<bean name="testTimestampGenerator" class="com.datastax.driver.core.AtomicMonotonicTimestampGenerator"/>
+
+	<cassandra:cluster
+		cluster-name="skynet" contact-points="localhost" port="${build.cassandra.native_transport_port}"
+		address-translator-ref="testAddressTranslator"
+		heartbeat-interval-seconds="60"
+		initialization-executor-ref="testExecutor"
+		idle-timeout-seconds="300"
+		max-schema-agreement-wait-seconds="30"
+		pool-timeout-milliseconds="15000"
+		speculative-execution-policy-ref="testSpeculativeExecutionPolicy"
+		timestamp-generator-ref="testTimestampGenerator">
+
+		<cassandra:local-pooling-options
+			core-connections="2"
 			max-connections="8"
 			max-simultaneous-requests="100"
 			min-simultaneous-requests="25"/>
@@ -38,6 +51,7 @@
 			send-buffer-size="65536"
 			so-linger="60"
 			tcp-no-delay="true"/>
+
 	</cassandra:cluster>
 
 	<cassandra:session keyspace-name="xmlconfigtest"/>

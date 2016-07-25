@@ -31,9 +31,12 @@ import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.TimestampGenerator;
+import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
+import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
 
 /**
  * Base class for Spring Cassandra configuration that can handle creating namespaces, execute arbitrary CQL on startup &
@@ -51,22 +54,24 @@ public abstract class AbstractClusterConfiguration {
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
 
-		bean.setContactPoints(getContactPoints());
-		bean.setPort(getPort());
-
+		bean.setAddressTranslator(getAddressTranslator());
 		bean.setAuthProvider(getAuthProvider());
+		bean.setClusterName(getClusterName());
 		bean.setCompressionType(getCompressionType());
-		bean.setProtocolVersion(getProtocolVersion());
-
+		bean.setContactPoints(getContactPoints());
 		bean.setLoadBalancingPolicy(getLoadBalancingPolicy());
-		bean.setReconnectionPolicy(getReconnectionPolicy());
-		bean.setRetryPolicy(getRetryPolicy());
+		bean.setMaxSchemaAgreementWaitSeconds(getMaxSchemaAgreementWaitSeconds());
 		bean.setMetricsEnabled(getMetricsEnabled());
 		bean.setNettyOptions(getNettyOptions());
-
 		bean.setPoolingOptions(getPoolingOptions());
+		bean.setPort(getPort());
+		bean.setProtocolVersion(getProtocolVersion());
 		bean.setQueryOptions(getQueryOptions());
+		bean.setReconnectionPolicy(getReconnectionPolicy());
+		bean.setRetryPolicy(getRetryPolicy());
+		bean.setSpeculativeExecutionPolicy(getSpeculativeExecutionPolicy());
 		bean.setSocketOptions(getSocketOptions());
+		bean.setTimestampGenerator(getTimestampGenerator());
 
 		bean.setKeyspaceCreations(getKeyspaceCreations());
 		bean.setKeyspaceDrops(getKeyspaceDrops());
@@ -77,23 +82,13 @@ public abstract class AbstractClusterConfiguration {
 	}
 
 	/**
-	 * Returns the Cassandra port. Defaults to {@code 9042}
+	 * Returns the {@link AddressTranslator}.
 	 *
-	 * @return the Cassandra port
-	 * @see CassandraCqlClusterFactoryBean#DEFAULT_PORT
+	 * @return the {@link AddressTranslator}; may be {@literal null}.
+	 * @since 1.5
 	 */
-	protected int getPort() {
-		return CassandraCqlClusterFactoryBean.DEFAULT_PORT;
-	}
-
-	/**
-	 * Returns the Cassandra contact points. Defaults to {@code localhost}
-	 *
-	 * @return the Cassandra contact points
-	 * @see CassandraCqlClusterFactoryBean#DEFAULT_CONTACT_POINTS
-	 */
-	protected String getContactPoints() {
-		return CassandraCqlClusterFactoryBean.DEFAULT_CONTACT_POINTS;
+	protected AddressTranslator getAddressTranslator() {
+		return null;
 	}
 
 	/**
@@ -102,6 +97,16 @@ public abstract class AbstractClusterConfiguration {
 	 * @return the {@link AuthProvider}, may be {@literal null}.
 	 */
 	protected AuthProvider getAuthProvider() {
+		return null;
+	}
+
+	/**
+	 * Returns the cluster name.
+	 *
+	 * @return the cluster name; may be {@literal null}.
+	 * @since 1.5
+	 */
+	protected String getClusterName() {
 		return null;
 	}
 
@@ -115,12 +120,13 @@ public abstract class AbstractClusterConfiguration {
 	}
 
 	/**
-	 * Returns the {@link ProtocolVersion}.
+	 * Returns the Cassandra contact points. Defaults to {@code localhost}
 	 *
-	 * @return the {@link ProtocolVersion}, may be {@literal null}.
+	 * @return the Cassandra contact points
+	 * @see CassandraCqlClusterFactoryBean#DEFAULT_CONTACT_POINTS
 	 */
-	protected ProtocolVersion getProtocolVersion() {
-		return null;
+	protected String getContactPoints() {
+		return CassandraCqlClusterFactoryBean.DEFAULT_CONTACT_POINTS;
 	}
 
 	/**
@@ -133,21 +139,12 @@ public abstract class AbstractClusterConfiguration {
 	}
 
 	/**
-	 * Returns the {@link ReconnectionPolicy}.
+	 * Returns the maximum schema agreement wait in seconds.
 	 *
-	 * @return the {@link ReconnectionPolicy}, may be {@literal null}.
+	 * @return the maximum schema agreement wait in seconds; default to {@literal 10} seconds.
 	 */
-	protected ReconnectionPolicy getReconnectionPolicy() {
-		return null;
-	}
-
-	/**
-	 * Returns the {@link RetryPolicy}.
-	 *
-	 * @return the {@link RetryPolicy}, may be {@literal null}.
-	 */
-	protected RetryPolicy getRetryPolicy() {
-		return null;
+	protected int getMaxSchemaAgreementWaitSeconds() {
+		return CassandraCqlClusterFactoryBean.DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS;
 	}
 
 	/**
@@ -180,6 +177,25 @@ public abstract class AbstractClusterConfiguration {
 	}
 
 	/**
+	 * Returns the Cassandra port. Defaults to {@code 9042}
+	 *
+	 * @return the Cassandra port
+	 * @see CassandraCqlClusterFactoryBean#DEFAULT_PORT
+	 */
+	protected int getPort() {
+		return CassandraCqlClusterFactoryBean.DEFAULT_PORT;
+	}
+
+	/**
+	 * Returns the {@link ProtocolVersion}.
+	 *
+	 * @return the {@link ProtocolVersion}, may be {@literal null}.
+	 */
+	protected ProtocolVersion getProtocolVersion() {
+		return null;
+	}
+
+	/**
 	 * Returns the {@link QueryOptions}.
 	 *
 	 * @return the {@link QueryOptions}, may be {@literal null}.
@@ -190,11 +206,49 @@ public abstract class AbstractClusterConfiguration {
 	}
 
 	/**
+	 * Returns the {@link ReconnectionPolicy}.
+	 *
+	 * @return the {@link ReconnectionPolicy}, may be {@literal null}.
+	 */
+	protected ReconnectionPolicy getReconnectionPolicy() {
+		return null;
+	}
+
+	/**
+	 * Returns the {@link RetryPolicy}.
+	 *
+	 * @return the {@link RetryPolicy}, may be {@literal null}.
+	 */
+	protected RetryPolicy getRetryPolicy() {
+		return null;
+	}
+
+	/**
+	 * Returns the {@link SpeculativeExecutionPolicy}.
+	 *
+	 * @return the {@link SpeculativeExecutionPolicy}; may be {@literal null}.
+	 * @since 1.5
+	 */
+	protected SpeculativeExecutionPolicy getSpeculativeExecutionPolicy() {
+		return null;
+	}
+
+	/**
 	 * Returns the {@link SocketOptions}.
 	 *
 	 * @return the {@link SocketOptions}, may be {@literal null}.
 	 */
 	protected SocketOptions getSocketOptions() {
+		return null;
+	}
+
+	/**
+	 * Returns the {@link TimestampGenerator}.
+	 *
+	 * @return the {@link TimestampGenerator}; may be {@literal null}.
+	 * @since 1.5
+	 */
+	protected TimestampGenerator getTimestampGenerator() {
 		return null;
 	}
 

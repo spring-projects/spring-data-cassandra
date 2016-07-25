@@ -35,6 +35,9 @@ import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.TimestampGenerator;
+import com.datastax.driver.core.policies.AddressTranslator;
+import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
 
 /**
  * Test XML namespace configuration using the spring-cql-1.0.xsd.
@@ -49,21 +52,29 @@ public class XmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrat
 
 	public static final String KEYSPACE = "xmlconfigtest";
 
-	@Rule public KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment, KEYSPACE);
+	@Rule
+	public KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment, KEYSPACE);
 
 	private ConfigurableApplicationContext applicationContext;
+
+	private AddressTranslator addressTranslator;
 	private Cluster cluster;
 	private Executor executor;
 	private Session session;
+	private SpeculativeExecutionPolicy speculativeExecutionPolicy;
+	private TimestampGenerator timestampGenerator;
 
 	@Before
 	public void setUp() {
 		this.applicationContext = new ClassPathXmlApplicationContext(
 			"XmlConfigIntegrationTests-context.xml", getClass());
 
+		this.addressTranslator = applicationContext.getBean(AddressTranslator.class);
 		this.cluster = applicationContext.getBean(Cluster.class);
 		this.executor = applicationContext.getBean(Executor.class);
 		this.session = applicationContext.getBean(Session.class);
+		this.speculativeExecutionPolicy = applicationContext.getBean(SpeculativeExecutionPolicy.class);
+		this.timestampGenerator = applicationContext.getBean(TimestampGenerator.class);
 	}
 
 	@After
@@ -76,6 +87,18 @@ public class XmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrat
 	@Test
 	public void keyspaceExists() {
 		IntegrationTestUtils.assertKeyspaceExists(KEYSPACE, session);
+	}
+
+	@Test
+	public void clusterConfigurationIsCorrect() {
+		assertThat(cluster.getConfiguration().getPolicies().getAddressTranslator(), is(equalTo(addressTranslator)));
+		assertThat(cluster.getClusterName(), is(equalTo("skynet")));
+		assertThat(cluster.getConfiguration().getProtocolOptions().getMaxSchemaAgreementWaitSeconds(), is(equalTo(30)));
+
+		assertThat(cluster.getConfiguration().getPolicies().getSpeculativeExecutionPolicy(),
+			is(equalTo(speculativeExecutionPolicy)));
+
+		assertThat(cluster.getConfiguration().getPolicies().getTimestampGenerator(), is(equalTo(timestampGenerator)));
 	}
 
 	/**

@@ -34,14 +34,19 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Configuration;
 import com.datastax.driver.core.PlainTextAuthProvider;
 import com.datastax.driver.core.PoolingOptions;
+import com.datastax.driver.core.ProtocolOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.TimestampGenerator;
+import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.ExponentialReconnectionPolicy;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
+import com.datastax.driver.core.policies.Policies;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RoundRobinPolicy;
+import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
 
 /**
  * Unit tests for {@link AbstractClusterConfiguration}.
@@ -53,7 +58,7 @@ import com.datastax.driver.core.policies.RoundRobinPolicy;
 public class AbstractClusterConfigurationUnitTests {
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -72,7 +77,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -92,7 +97,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -112,7 +117,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -132,7 +137,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -152,7 +157,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -172,7 +177,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -192,7 +197,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -212,7 +217,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -231,7 +236,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -249,7 +254,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -268,7 +273,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -287,7 +292,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -305,7 +310,7 @@ public class AbstractClusterConfigurationUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-226
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
 	 * @throws Exception
 	 */
 	@Test
@@ -322,12 +327,100 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(clusterConfiguration.cluster().getShutdownScripts(), is(equalTo(scripts)));
 	}
 
+	/**
+	 * <a href="https://jira.spring.io/browse/DATACASS-316">DATACASS-316</a>
+	 */
+	@Test
+	public void shouldSetAddressTranslator() throws Exception {
+		final AddressTranslator mockAddressTranslator = mock(AddressTranslator.class);
+
+		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
+			@Override protected AddressTranslator getAddressTranslator() {
+				return mockAddressTranslator;
+			}
+		};
+
+		assertThat(getPolicies(getCluster(clusterConfiguration)).getAddressTranslator(),
+			is(equalTo(mockAddressTranslator)));
+	}
+
+	/**
+	 * <a href="https://jira.spring.io/browse/DATACASS-120">DATACASS-120</a>
+	 * <a href="https://jira.spring.io/browse/DATACASS-317">DATACASS-317</a>
+	 */
+	@Test
+	public void shouldSetClusterName() throws Exception {
+		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
+			@Override protected String getClusterName() {
+				return "testCluster";
+			}
+		};
+
+		assertThat(getCluster(clusterConfiguration).getClusterName(), is(equalTo("testCluster")));
+	}
+
+	/**
+	 * <a href="https://jira.spring.io/browse/DATACASS-319">DATACASS-319</a>
+	 */
+	@Test
+	public void shouldSetMaxSchemaAgreementWaitInSeconds() throws Exception {
+		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
+			@Override protected int getMaxSchemaAgreementWaitSeconds() {
+				return 30;
+			}
+		};
+
+		assertThat(getProtocolOptions(getCluster(clusterConfiguration)).getMaxSchemaAgreementWaitSeconds(),
+			is(equalTo(30)));
+	}
+
+	/**
+	 * <a href="https://jira.spring.io/browse/DATACASS-320">DATACASS-320</a>
+	 */
+	@Test
+	public void shouldSetSpeculativeExecutionPolicy() throws Exception {
+		final SpeculativeExecutionPolicy mockSpeculativeExecutionPolicy = mock(SpeculativeExecutionPolicy.class);
+
+		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
+			@Override protected SpeculativeExecutionPolicy getSpeculativeExecutionPolicy() {
+				return mockSpeculativeExecutionPolicy;
+			}
+		};
+
+		assertThat(getPolicies(getCluster(clusterConfiguration)).getSpeculativeExecutionPolicy(),
+			is(equalTo(mockSpeculativeExecutionPolicy)));
+	}
+
+	/**
+	 * <a href="https://jira.spring.io/browse/DATACASS-238">DATACASS-238</a>
+	 */
+	@Test
+	public void shouldSetTimestampGenerator() throws Exception {
+		final TimestampGenerator mockTimestampGenerator = mock(TimestampGenerator.class);
+
+		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
+			@Override protected TimestampGenerator getTimestampGenerator() {
+				return mockTimestampGenerator;
+			}
+		};
+
+		assertThat(getPolicies(getCluster(clusterConfiguration)).getTimestampGenerator(),
+			is(equalTo(mockTimestampGenerator)));
+	}
+
+	private Policies getPolicies(Cluster cluster) throws Exception {
+		return getConfiguration(cluster).getPolicies();
+	}
+
+	private ProtocolOptions getProtocolOptions(Cluster cluster) throws Exception {
+		return getConfiguration(cluster).getProtocolOptions();
+	}
+
 	private Configuration getConfiguration(Cluster cluster) throws Exception {
 		return cluster.getConfiguration();
 	}
 
 	private Cluster getCluster(AbstractClusterConfiguration clusterConfiguration) throws Exception {
-
 		CassandraCqlClusterFactoryBean cluster = clusterConfiguration.cluster();
 		cluster.afterPropertiesSet();
 		return cluster.getObject();
