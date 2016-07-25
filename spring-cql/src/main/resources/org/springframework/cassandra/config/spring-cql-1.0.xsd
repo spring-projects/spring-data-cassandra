@@ -139,6 +139,24 @@ AuthInfoProvider implementation.
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
+		<xsd:attribute name="cluster-builder-configurer-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the ClusterBuilderConfigurer used to apply additional configuration logic
+to the com.datastax.driver.core.Cluster.Builder.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to type="org.springframework.cassandra.config.ClusterBuilderConfigurer"/>
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string"/>
+			</xsd:simpleType>
+		</xsd:attribute>
 		<xsd:attribute name="cluster-name" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[

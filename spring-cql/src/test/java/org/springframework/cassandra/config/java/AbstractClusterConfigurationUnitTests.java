@@ -18,12 +18,15 @@ package org.springframework.cassandra.config.java;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
 import org.springframework.cassandra.config.CassandraCqlClusterFactoryBean;
+import org.springframework.cassandra.config.ClusterBuilderConfigurer;
 import org.springframework.cassandra.config.CompressionType;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
@@ -52,8 +55,9 @@ import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
  * Unit tests for {@link AbstractClusterConfiguration}.
  *
  * @author Mark Paluch
+ * @author John Blum
  * @soundtrack Max Graham Feat Neev Kennedy - So Caught Up (Dns Project Remix)
- * @see DATACASS-226
+ * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
  */
 public class AbstractClusterConfigurationUnitTests {
 
@@ -342,6 +346,24 @@ public class AbstractClusterConfigurationUnitTests {
 
 		assertThat(getPolicies(getCluster(clusterConfiguration)).getAddressTranslator(),
 			is(equalTo(mockAddressTranslator)));
+	}
+
+	/**
+	 * <a href="https://jira.spring.io/browse/DATACASS-325">DATACASS-325</a>
+	 */
+	@Test
+	public void shouldSetAndApplyClusterBuilderConfigurer() throws Exception {
+		final ClusterBuilderConfigurer mockClusterBuilderConfigurer = mock(ClusterBuilderConfigurer.class);
+
+		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
+			@Override protected ClusterBuilderConfigurer getClusterBuilderConfigurer() {
+				return mockClusterBuilderConfigurer;
+			}
+		};
+
+		assertThat(getCluster(clusterConfiguration), is(notNullValue(Cluster.class)));
+
+		verify(mockClusterBuilderConfigurer, times(1)).configure(isA(Cluster.Builder.class));
 	}
 
 	/**

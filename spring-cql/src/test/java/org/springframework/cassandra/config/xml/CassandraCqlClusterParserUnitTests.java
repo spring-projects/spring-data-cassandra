@@ -88,6 +88,7 @@ public class CassandraCqlClusterParserUnitTests {
 		when(mockContainingBeanDefinition.getScope()).thenReturn("Singleton");
 		when(mockElement.getAttribute("address-translator-ref")).thenReturn("testAddressTranslator");
 		when(mockElement.getAttribute("auth-info-provider-ref")).thenReturn("testAuthInfoProvider");
+		when(mockElement.getAttribute("cluster-builder-configurer-ref")).thenReturn("testClusterBuilderConfigurer");
 		when(mockElement.getAttribute("host-state-listener-ref")).thenReturn("testHostStateListener");
 		when(mockElement.getAttribute("latency-tracker-ref")).thenReturn("testLatencyTracker");
 		when(mockElement.getAttribute("load-balancing-policy-ref")).thenReturn("testLoadBalancingPolicy");
@@ -124,6 +125,7 @@ public class CassandraCqlClusterParserUnitTests {
 		assertThat(beanDefinition.isLazyInit(), is(false));
 		assertThat(getPropertyValueAsString(beanDefinition, "addressTranslator"), is(equalTo("testAddressTranslator")));
 		assertThat(getPropertyValueAsString(beanDefinition, "authProvider"), is(equalTo("testAuthInfoProvider")));
+		assertThat(getPropertyValueAsString(beanDefinition, "clusterBuilderConfigurer"), is(equalTo("testClusterBuilderConfigurer")));
 		assertThat(getPropertyValueAsString(beanDefinition, "hostStateListener"), is(equalTo("testHostStateListener")));
 		assertThat(getPropertyValueAsString(beanDefinition, "latencyTracker"), is(equalTo("testLatencyTracker")));
 		assertThat(getPropertyValueAsString(beanDefinition, "loadBalancingPolicy"), is(equalTo("testLoadBalancingPolicy")));
@@ -146,6 +148,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockContainingBeanDefinition).getScope();
 		verify(mockElement).getAttribute(eq("address-translator-ref"));
 		verify(mockElement).getAttribute(eq("auth-info-provider-ref"));
+		verify(mockElement).getAttribute(eq("cluster-builder-configurer-ref"));
 		verify(mockElement).getAttribute(eq("host-state-listener-ref"));
 		verify(mockElement).getAttribute(eq("latency-tracker-ref"));
 		verify(mockElement).getAttribute(eq("load-balancing-policy-ref"));

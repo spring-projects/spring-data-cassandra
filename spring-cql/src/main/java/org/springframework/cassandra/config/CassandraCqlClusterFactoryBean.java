@@ -101,6 +101,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	private Cluster cluster;
 
+	private ClusterBuilderConfigurer clusterBuilderConfigurer;
+
 	private CompressionType compressionType;
 
 	private Host.StateListener hostStateListener;
@@ -235,6 +237,10 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 		if (timestampGenerator != null) {
 			clusterBuilder.withTimestampGenerator(timestampGenerator);
+		}
+
+		if (clusterBuilderConfigurer != null) {
+			clusterBuilderConfigurer.configure(clusterBuilder);
 		}
 
 		cluster = clusterBuilder.build();
@@ -605,6 +611,18 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 */
 	public void setAddressTranslator(AddressTranslator addressTranslator) {
 		this.addressTranslator = addressTranslator;
+	}
+
+	/**
+	 * Sets the {@link ClusterBuilderConfigurer} used to apply additional configuration logic
+	 * to the {@link com.datastax.driver.core.Cluster.Builder}.
+	 *
+	 * @param clusterBuilderConfigurer {@link ClusterBuilderConfigurer} used to configure the
+	 * {@link com.datastax.driver.core.Cluster.Builder}.
+	 * @see org.springframework.cassandra.config.ClusterBuilderConfigurer
+	 */
+	public void setClusterBuilderConfigurer(ClusterBuilderConfigurer clusterBuilderConfigurer) {
+		this.clusterBuilderConfigurer = clusterBuilderConfigurer;
 	}
 
 	/**

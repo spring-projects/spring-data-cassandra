@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.cassandra.config.CassandraCqlClusterFactoryBean;
+import org.springframework.cassandra.config.ClusterBuilderConfigurer;
 import org.springframework.cassandra.config.CompressionType;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
@@ -45,6 +46,7 @@ import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
  * @author Matthew T. Adams
  * @author Jorge Davison
  * @author Mark Paluch
+ * @author John Blum
  */
 @Configuration
 public abstract class AbstractClusterConfiguration {
@@ -56,6 +58,7 @@ public abstract class AbstractClusterConfiguration {
 
 		bean.setAddressTranslator(getAddressTranslator());
 		bean.setAuthProvider(getAuthProvider());
+		bean.setClusterBuilderConfigurer(getClusterBuilderConfigurer());
 		bean.setClusterName(getClusterName());
 		bean.setCompressionType(getCompressionType());
 		bean.setContactPoints(getContactPoints());
@@ -97,6 +100,16 @@ public abstract class AbstractClusterConfiguration {
 	 * @return the {@link AuthProvider}, may be {@literal null}.
 	 */
 	protected AuthProvider getAuthProvider() {
+		return null;
+	}
+
+	/**
+	 * Returns the {@link ClusterBuilderConfigurer}.
+	 *
+	 * @return the {@link ClusterBuilderConfigurer}; may be {@literal null}.
+	 * @since 1.5
+	 */
+	protected ClusterBuilderConfigurer getClusterBuilderConfigurer() {
 		return null;
 	}
 

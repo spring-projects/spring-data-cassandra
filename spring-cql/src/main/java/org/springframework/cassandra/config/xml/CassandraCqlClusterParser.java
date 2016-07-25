@@ -91,6 +91,7 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 
 		addOptionalPropertyReference(builder, "addressTranslator", element, "address-translator-ref");
 		addOptionalPropertyReference(builder, "authProvider", element, "auth-info-provider-ref");
+		addOptionalPropertyReference(builder, "clusterBuilderConfigurer", element, "cluster-builder-configurer-ref");
 		addOptionalPropertyReference(builder, "hostStateListener", element, "host-state-listener-ref");
 		addOptionalPropertyReference(builder, "latencyTracker", element, "latency-tracker-ref");
 		addOptionalPropertyReference(builder, "loadBalancingPolicy", element, "load-balancing-policy-ref");
