@@ -17,6 +17,8 @@
 
 	<bean name="testAddressTranslator" class="com.datastax.driver.core.policies.IdentityTranslator"/>
 
+	<bean name="testClusterBuilderConfigurer" class="org.springframework.cassandra.test.integration.config.xml.XmlConfigIntegrationTests.TestClusterBuilderConfigurer"/>
+
 	<bean name="testSpeculativeExecutionPolicy" class="com.datastax.driver.core.policies.NoSpeculativeExecutionPolicy"/>
 
 	<bean name="testTimestampGenerator" class="com.datastax.driver.core.AtomicMonotonicTimestampGenerator"/>
@@ -24,6 +26,7 @@
 	<cassandra:cluster
 		cluster-name="skynet" contact-points="localhost" port="${build.cassandra.native_transport_port}"
 		address-translator-ref="testAddressTranslator"
+		cluster-builder-configurer-ref="testClusterBuilderConfigurer"
 		heartbeat-interval-seconds="60"
 		initialization-executor-ref="testExecutor"
 		idle-timeout-seconds="300"

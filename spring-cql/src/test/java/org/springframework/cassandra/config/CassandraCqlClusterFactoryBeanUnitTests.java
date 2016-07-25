@@ -19,6 +19,7 @@ package org.springframework.cassandra.config;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.isA;
 
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -307,6 +308,18 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		bean.afterPropertiesSet();
 
 		assertThat(getConfiguration(bean).getMetricsOptions().isJMXReportingEnabled(), is(false));
+	}
+
+	@Test
+	public void shouldCallClusterBuilderConfigurer() throws Exception {
+
+		ClusterBuilderConfigurer mockClusterBuilderConfigurer = mock(ClusterBuilderConfigurer.class);
+		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
+
+		bean.setClusterBuilderConfigurer(mockClusterBuilderConfigurer);
+		bean.afterPropertiesSet();
+
+		verify(mockClusterBuilderConfigurer, times(1)).configure(isA(Cluster.Builder.class));
 	}
 
 	/**
