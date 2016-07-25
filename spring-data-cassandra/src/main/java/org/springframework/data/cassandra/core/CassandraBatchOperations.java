@@ -36,8 +36,8 @@ public interface CassandraBatchOperations {
 
 	/**
 	 * Execute the batch. The batch can be executed only once.
-	 * 
-	 * @throws IllegalStateException if the batch is executed after it was executed once
+	 *
+	 * @throws IllegalStateException if the batch is executed after it was executed already.
 	 */
 	void execute();
 
@@ -45,62 +45,63 @@ public interface CassandraBatchOperations {
 	 * Apply a given {@code timestamp} to the whole batch.
 	 *
 	 * @param timestamp the timestamp to apply.
-	 * @return {@code this} {@link CassandraBatchOperations}
-	 * @throws IllegalStateException if the batch was already executed
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
 	 */
 	CassandraBatchOperations withTimestamp(long timestamp);
 
 	/**
-	 * Add a single insert to the batch.
+	 * Add an array of inserts to the batch.
 	 *
-	 * @param entity the entity to insert, must not be {@literal null}.
-	 * @return {@code this} {@link CassandraBatchOperations}
-	 * @throws IllegalStateException if the batch was already executed
+	 * @param entities the entities to insert; must not be {@literal null}.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
 	 */
-	CassandraBatchOperations insert(Object entity);
+	CassandraBatchOperations insert(Object... entities);
 
 	/**
 	 * Add a collection of inserts to the batch.
-	 * 
-	 * @param entities the entities to insert, must not be {@literal null}.
-	 * @return {@code this} {@link CassandraBatchOperations}
-	 * @throws IllegalStateException if the batch was already executed
+	 *
+	 * @param entities the entities to insert; must not be {@literal null}.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
 	 */
-	CassandraBatchOperations insert(Iterable<? extends Object> entities);
+	CassandraBatchOperations insert(Iterable<?> entities);
 
 	/**
-	 * Add a single update to the batch.
-	 * 
-	 * @param entity the entity to update, must not be {@literal null}.
-	 * @return {@code this} {@link CassandraBatchOperations}
-	 * @throws IllegalStateException if the batch was already executed
+	 * Add an array of updates to the batch.
+	 *
+	 * @param entities the entities to update; must not be {@literal null}.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
 	 */
-	CassandraBatchOperations update(Object entity);
+	CassandraBatchOperations update(Object... entities);
 
 	/**
 	 * Add a collection of updates to the batch.
-	 * 
-	 * @param entities the entities to insert, must not be {@literal null}.
-	 * @return {@code this} {@link CassandraBatchOperations}
-	 * @throws IllegalStateException if the batch was already executed
+	 *
+	 * @param entities the entities to update; must not be {@literal null}.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
 	 */
-	CassandraBatchOperations update(Iterable<? extends Object> entities);
+	CassandraBatchOperations update(Iterable<?> entities);
 
 	/**
-	 * Add a single delete to the batch.
-	 * 
-	 * @param entity the entity to delete, must not be {@literal null}.
-	 * @return {@code this} {@link CassandraBatchOperations}
-	 * @throws IllegalStateException if the batch was already executed
+	 * Add an array of deletes to the batch.
+	 *
+	 * @param entities the entities to delete; must not be {@literal null}.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
 	 */
-	CassandraBatchOperations delete(Object entity);
+	CassandraBatchOperations delete(Object... entities);
 
 	/**
 	 * Add a collection of deletes to the batch.
-	 * 
-	 * @param entities the entities to delete, must not be {@literal null}.
-	 * @return {@code this} {@link CassandraBatchOperations}
-	 * @throws IllegalStateException if the batch was already executed
+	 *
+	 * @param entities the entities to delete; must not be {@literal null}.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
 	 */
-	CassandraBatchOperations delete(Iterable<? extends Object> entities);
+	CassandraBatchOperations delete(Iterable<?> entities);
+
 }

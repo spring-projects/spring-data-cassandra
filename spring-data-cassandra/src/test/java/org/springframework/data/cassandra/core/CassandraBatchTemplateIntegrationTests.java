@@ -39,7 +39,7 @@ import com.datastax.driver.core.Row;
 
 /**
  * Integration tests for {@link CassandraBatchTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -63,7 +63,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test
 	public void shouldInsertEntities() {
@@ -75,11 +75,12 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		batchOperations.insert(walter).insert(mike).execute();
 
 		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+
 		assertThat(loaded.getId().getUsername(), is(equalTo(walter.getId().getUsername())));
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test
 	public void shouldInsertCollectionOfEntities() {
@@ -91,11 +92,12 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		batchOperations.insert(Arrays.asList(walter, mike)).execute();
 
 		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+
 		assertThat(loaded.getId().getUsername(), is(equalTo(walter.getId().getUsername())));
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test
 	public void shouldUpdateEntities() {
@@ -110,11 +112,12 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		batchOperations.update(walter).update(mike).execute();
 
 		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+
 		assertThat(loaded.getEmail(), is(equalTo(walter.getEmail())));
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test
 	public void shouldUpdateCollectionOfEntities() {
@@ -129,11 +132,12 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		batchOperations.update(Arrays.asList(walter, mike)).execute();
 
 		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+
 		assertThat(loaded.getEmail(), is(equalTo(walter.getEmail())));
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test
 	public void shouldUpdatesCollectionOfEntities() {
@@ -148,11 +152,12 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		batchOperations.update(Arrays.asList(walter, mike)).execute();
 
 		FlatGroup loaded = cassandraTemplate.selectOneById(FlatGroup.class, walter);
+
 		assertThat(loaded.getEmail(), is(equalTo(walter.getEmail())));
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test
 	public void shouldDeleteEntities() {
@@ -165,11 +170,12 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		batchOperations.delete(walter).delete(mike).execute();
 
 		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+
 		assertThat(loaded, is(nullValue()));
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test
 	public void shouldDeleteCollectionOfEntities() {
@@ -182,11 +188,12 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		batchOperations.delete(Arrays.asList(walter, mike)).execute();
 
 		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+
 		assertThat(loaded, is(nullValue()));
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test
 	public void shouldApplyTimestampToAllEntities() {
@@ -205,13 +212,14 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		ResultSet resultSet = cassandraTemplate.query("SELECT writetime(email) FROM group;");
 
 		assertThat(resultSet.getAvailableWithoutFetching(), is(2));
+
 		for (Row row : resultSet) {
 			assertThat(row.getLong(0), is(timestamp));
 		}
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test(expected = IllegalStateException.class)
 	public void shouldNotExecuteTwice() {
@@ -220,11 +228,12 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		batchOperations.insert(new Group(new GroupKey("users", "0x1", "walter"))).execute();
 
 		batchOperations.execute();
+
 		fail("Missing IllegalStateException");
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test(expected = IllegalStateException.class)
 	public void shouldNotAllowModificationAfterExecution() {
@@ -233,6 +242,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		batchOperations.insert(new Group(new GroupKey("users", "0x1", "walter"))).execute();
 
 		batchOperations.update(new Group());
+
 		fail("Missing IllegalStateException");
 	}
 }

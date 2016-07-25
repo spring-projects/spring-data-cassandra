@@ -704,8 +704,9 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	protected <T> T doInsert(T entity, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
-		Insert insert = createInsertQuery(entity, options);
-		execute(insert);
+
+		execute(createInsertQuery(entity, options));
+
 		return entity;
 	}
 
@@ -917,7 +918,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 		return executeAsynchronously(createUpdateQuery(entity, options), queryListener);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#batchOps(java.lang.Class)
 	 */

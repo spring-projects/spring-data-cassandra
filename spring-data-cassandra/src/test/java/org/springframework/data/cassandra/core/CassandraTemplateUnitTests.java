@@ -172,11 +172,10 @@ public class CassandraTemplateUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-288
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
 	 */
 	@Test
 	public void batchOperationsShouldCallSession() {
-
 		template.batchOps().insert(new Book()).execute();
 
 		verify(mockSession).execute(Mockito.any(Batch.class));
