@@ -83,7 +83,6 @@ public class BasicCassandraMappingContext
 	 * Creates a new {@link BasicCassandraMappingContext}.
 	 */
 	public BasicCassandraMappingContext() {
-
 		setCustomConversions(new CustomConversions(Collections.EMPTY_LIST));
 		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
 	}
@@ -95,7 +94,6 @@ public class BasicCassandraMappingContext
 	 * @since 1.5
 	 */
 	public void setCustomConversions(CustomConversions customConversions) {
-
 		Assert.notNull(customConversions, "CustomConversions must not be null");
 
 		this.customConversions = customConversions;
@@ -127,6 +125,7 @@ public class BasicCassandraMappingContext
 		if (includePrimaryKeyTypes) {
 			return super.getPersistentEntities();
 		}
+
 		return Collections.unmodifiableSet(nonPrimaryKeyEntities);
 	}
 
@@ -296,55 +295,50 @@ public class BasicCassandraMappingContext
 	public DataType getDataType(Class<?> type) {
 
 		return (customConversions.hasCustomWriteTarget(type)
-				? getDataTypeFor(customConversions.getCustomWriteTarget(type))
-				: getDataTypeFor(type));
+			? getDataTypeFor(customConversions.getCustomWriteTarget(type)) : getDataTypeFor(type));
 	}
 
 	public void setMapping(Mapping mapping) {
-
 		Assert.notNull(mapping, "Mapping must not be null");
 
 		this.mapping = mapping;
 	}
 
 	protected void processMappingOverrides() {
-
 		if (mapping != null) {
 			for (EntityMapping entityMapping : mapping.getEntityMappings()) {
 
-				if (entityMapping == null) {
-					continue;
-				}
+				if (entityMapping != null) {
+					String entityClassName = entityMapping.getEntityClassName();
 
-				String entityClassName = entityMapping.getEntityClassName();
+					try {
+						Class<?> entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
 
-				try {
-					Class<?> entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
+						CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
 
-					CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+						if (entity == null) {
+							throw new IllegalStateException(String.format(
+								"Unknown persistent entity class name [%s]", entityClassName));
+						}
 
-					if (entity == null) {
-						throw new IllegalStateException(String.format("unknown persistent entity class name [%s]", entityClassName));
+						String tableName = entityMapping.getTableName();
+
+						if (StringUtils.hasText(tableName)) {
+							entity.setTableName(cqlId(tableName, Boolean.valueOf(entityMapping.getForceQuote())));
+						}
+
+						processMappingOverrides(entity, entityMapping);
+
+					} catch (ClassNotFoundException e) {
+						throw new IllegalStateException(String.format(
+							"unknown persistent entity name [%s]", entityClassName), e);
 					}
-
-					String tableName = entityMapping.getTableName();
-
-					if (StringUtils.hasText(tableName)) {
-						entity.setTableName(cqlId(tableName, Boolean.valueOf(entityMapping.getForceQuote())));
-					}
-
-					processMappingOverrides(entity, entityMapping);
-
-				} catch (ClassNotFoundException e) {
-					throw new IllegalStateException(String.format(
-						"unknown persistent entity name [%s]", entityClassName), e);
 				}
 			}
 		}
 	}
 
 	protected void processMappingOverrides(CassandraPersistentEntity<?> entity, EntityMapping entityMapping) {
-
 		for (PropertyMapping mapping : entityMapping.getPropertyMappings().values()) {
 			processMappingOverride(entity, mapping);
 		}
@@ -356,7 +350,7 @@ public class BasicCassandraMappingContext
 
 		if (property == null) {
 			throw new IllegalArgumentException(String.format("Entity class [%s] has no persistent property named [%s]",
-					entity.getType().getName(), mapping.getPropertyName()));
+				entity.getType().getName(), mapping.getPropertyName()));
 		}
 
 		boolean forceQuote = false;

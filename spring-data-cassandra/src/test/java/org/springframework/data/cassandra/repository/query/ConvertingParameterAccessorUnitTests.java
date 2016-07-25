@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -40,127 +39,127 @@ import com.datastax.driver.core.DataType;
 
 /**
  * Unit tests for {@link ConvertingParameterAccessor}.
- * 
+ *
  * @author Mark Paluch
  */
 @SuppressWarnings("Since15")
 @RunWith(MockitoJUnitRunner.class)
 public class ConvertingParameterAccessorUnitTests {
 
-	@Mock CassandraParameterAccessor delegateMock;
-	@Mock CassandraPersistentProperty propertyMock;
+	@Mock
+	private CassandraParameterAccessor mockParameterAccessor;
+
+	@Mock
+	private CassandraPersistentProperty mockProperty;
+
+	ConvertingParameterAccessor convertingParameterAccessor;
+
 	MappingCassandraConverter converter;
-	ConvertingParameterAccessor accessor;
 
 	@Before
 	public void setUp() {
-
 		this.converter = new MappingCassandraConverter(new BasicCassandraMappingContext());
 		this.converter.afterPropertiesSet();
-		this.accessor = new ConvertingParameterAccessor(converter, delegateMock);
+		this.convertingParameterAccessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
 	}
 
 	/**
-	 * @see DATACASS-296
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
 	 */
 	@Test
 	public void shouldReturnNullBindableValue() {
-		assertThat(accessor.getBindableValue(0), is(nullValue()));
+		assertThat(convertingParameterAccessor.getBindableValue(0), is(nullValue()));
 	}
 
 	/**
-	 * @see DATACASS-296
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
 	 */
 	@Test
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public void shouldReturnNativeBindableValue() {
+		when(mockParameterAccessor.getBindableValue(0)).thenReturn("hello");
+		when(mockParameterAccessor.getDataType(0)).thenReturn(DataType.varchar());
+		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) String.class);
 
-		when(delegateMock.getBindableValue(0)).thenReturn("hello");
-		when(delegateMock.getDataType(0)).thenReturn(DataType.varchar());
-		when(delegateMock.getParameterType(0)).thenReturn((Class) String.class);
-
-		assertThat(accessor.getBindableValue(0), is(equalTo((Object) "hello")));
+		assertThat(convertingParameterAccessor.getBindableValue(0), is(equalTo((Object) "hello")));
 	}
 
 	/**
-	 * @see DATACASS-296
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
 	 */
 	@Test
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public void shouldReturnConvertedBindableValue() {
-
 		LocalDate localDate = LocalDate.of(2010, 7, 4);
 
-		when(delegateMock.getBindableValue(0)).thenReturn(localDate);
-		when(delegateMock.getParameterType(0)).thenReturn((Class) LocalDate.class);
+		when(mockParameterAccessor.getBindableValue(0)).thenReturn(localDate);
+		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) LocalDate.class);
 
-		assertThat(accessor.getBindableValue(0),
-				is(equalTo((Object) com.datastax.driver.core.LocalDate.fromYearMonthDay(2010, 7, 4))));
+		assertThat(convertingParameterAccessor.getBindableValue(0),
+			is(equalTo((Object) com.datastax.driver.core.LocalDate.fromYearMonthDay(2010, 7, 4))));
 	}
 
 	/**
-	 * @see DATACASS-296
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldReturnDataTypeProvidedByDelegate() {
+		when(mockParameterAccessor.getDataType(0)).thenReturn(DataType.varchar());
 
-		when(delegateMock.getDataType(0)).thenReturn(DataType.varchar());
-
-		assertThat(accessor.getDataType(0), is(equalTo(DataType.varchar())));
+		assertThat(convertingParameterAccessor.getDataType(0), is(equalTo(DataType.varchar())));
 	}
 
 	/**
-	 * @see DATACASS-296
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public void shouldConvertCollections() {
-
 		LocalDate localDate = LocalDate.of(2010, 7, 4);
 
-		when(delegateMock.iterator()).thenReturn((Iterator) Arrays.asList(Collections.singletonList(localDate)).iterator());
-		when(delegateMock.getDataType(0)).thenReturn(DataType.list(DataType.date()));
-		when(delegateMock.getParameterType(0)).thenReturn((Class) List.class);
-		when(propertyMock.getType()).thenReturn((Class) List.class);
-		when(propertyMock.getActualType()).thenReturn((Class) LocalDate.class);
-		when(propertyMock.isCollectionLike()).thenReturn(true);
+		when(mockParameterAccessor.iterator()).thenReturn((Iterator)
+			Collections.singletonList(Collections.singletonList(localDate)).iterator());
+		when(mockParameterAccessor.getDataType(0)).thenReturn(DataType.list(DataType.date()));
+		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) List.class);
+		when(mockProperty.getType()).thenReturn((Class) List.class);
+		when(mockProperty.getActualType()).thenReturn((Class) LocalDate.class);
+		when(mockProperty.isCollectionLike()).thenReturn(true);
 
-		PotentiallyConvertingIterator iterator = (PotentiallyConvertingIterator) accessor.iterator();
-		Object converted = iterator.nextConverted(propertyMock);
+		PotentiallyConvertingIterator iterator = (PotentiallyConvertingIterator) convertingParameterAccessor.iterator();
+		Object converted = iterator.nextConverted(mockProperty);
 
 		assertThat(converted, is(instanceOf(List.class)));
 
 		List<?> list = (List<?>) converted;
+
 		assertThat(list.get(0), is(instanceOf(com.datastax.driver.core.LocalDate.class)));
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public void shouldProvideTypeBasedOnValue() {
+		when(mockParameterAccessor.getDataType(0)).thenReturn(null);
+		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) LocalDate.class);
 
-		when(delegateMock.getDataType(0)).thenReturn(null);
-		when(delegateMock.getParameterType(0)).thenReturn((Class) LocalDate.class);
-
-		assertThat(accessor.getDataType(0), is(equalTo(DataType.date())));
+		assertThat(convertingParameterAccessor.getDataType(0), is(equalTo(DataType.date())));
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldProvideTypeBasedOnPropertyType() {
+		when(mockProperty.getDataType()).thenReturn(DataType.varchar());
+		when(mockProperty.findAnnotation(CassandraType.class)).thenReturn(mock(CassandraType.class));
+		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) String.class);
+		when(mockParameterAccessor.getDataType(0)).thenReturn(null);
 
-		when(propertyMock.getDataType()).thenReturn(DataType.varchar());
-		when(propertyMock.findAnnotation(CassandraType.class)).thenReturn(mock(CassandraType.class));
-		when(delegateMock.getParameterType(0)).thenReturn((Class) String.class);
-		when(delegateMock.getDataType(0)).thenReturn(null);
-
-		assertThat(accessor.getDataType(0, propertyMock), is(equalTo(DataType.varchar())));
+		assertThat(convertingParameterAccessor.getDataType(0, mockProperty), is(equalTo(DataType.varchar())));
 	}
 }

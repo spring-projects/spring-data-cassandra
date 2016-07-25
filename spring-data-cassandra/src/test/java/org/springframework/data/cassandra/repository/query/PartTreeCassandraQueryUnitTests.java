@@ -16,8 +16,8 @@
 package org.springframework.data.cassandra.repository.query;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 
@@ -42,66 +42,64 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 
 /**
  * Unit tests for {@link PartTreeCassandraQuery}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PartTreeCassandraQueryUnitTests {
 
-	public @Rule ExpectedException exception = ExpectedException.none();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
-	@Mock CassandraOperations cassandraOperationsMock;
+	@Mock
+	private CassandraOperations mockCassandraOperations;
 
-	CassandraMappingContext mappingContext;
-	CassandraConverter converter;
+	private CassandraMappingContext mappingContext;
+	private CassandraConverter converter;
 
 	@Before
 	public void setUp() {
-
 		mappingContext = new BasicCassandraMappingContext();
 		converter = new MappingCassandraConverter(mappingContext);
-		when(cassandraOperationsMock.getConverter()).thenReturn(converter);
+
+		when(mockCassandraOperations.getConverter()).thenReturn(converter);
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldDeriveSimpleQuery() {
-
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
 		assertThat(query, is(equalTo("SELECT * FROM person WHERE lastname='foo';")));
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldDeriveSimpleQueryWithoutNames() {
-
 		String query = deriveQueryFromMethod("findPersonBy");
 
 		assertThat(query, is(equalTo("SELECT * FROM person;")));
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldDeriveAndQuery() {
-
 		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar" );
 
 		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';")));
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void usesDynamicProjection() {
-
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
 		assertThat(query, is(equalTo("SELECT * FROM person;")));
@@ -109,7 +107,6 @@ public class PartTreeCassandraQueryUnitTests {
 
 
 	private String deriveQueryFromMethod(String method, Object... args) {
-
 		Class<?>[] types = new Class<?>[args.length];
 
 		for (int i = 0; i < args.length; i++) {
@@ -119,19 +116,18 @@ public class PartTreeCassandraQueryUnitTests {
 		PartTreeCassandraQuery partTreeQuery = createQueryForMethod(method, types);
 
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(), args);
-		return partTreeQuery.createQuery(new ConvertingParameterAccessor(cassandraOperationsMock.getConverter(), accessor));
+
+		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
 	}
 
 	private PartTreeCassandraQuery createQueryForMethod(String methodName, Class<?>... paramTypes) {
-
 		try {
-
 			Method method = Repo.class.getMethod(methodName, paramTypes);
 			ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, new DefaultRepositoryMetadata(Repo.class), factory,
-					mappingContext);
+			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method,
+				new DefaultRepositoryMetadata(Repo.class), factory, mappingContext);
 
-			return new PartTreeCassandraQuery(queryMethod, cassandraOperationsMock);
+			return new PartTreeCassandraQuery(queryMethod, mockCassandraOperations);
 		} catch (NoSuchMethodException e) {
 			throw new IllegalArgumentException(e.getMessage(), e);
 		} catch (SecurityException e) {

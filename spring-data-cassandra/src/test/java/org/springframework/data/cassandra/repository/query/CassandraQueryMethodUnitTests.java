@@ -33,7 +33,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 
 /**
  * Unit tests for {@link CassandraQueryMethod}.
- * 
+ *
  * @author Mark Paluch
  */
 public class CassandraQueryMethodUnitTests {
@@ -46,7 +46,7 @@ public class CassandraQueryMethodUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void detectsCollectionFromRepoTypeIfReturnTypeNotAssignable() throws Exception {
@@ -59,7 +59,7 @@ public class CassandraQueryMethodUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullMappingContext() throws Exception {
@@ -71,7 +71,7 @@ public class CassandraQueryMethodUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void considersMethodAsCollectionQuery() throws Exception {
@@ -88,8 +88,10 @@ public class CassandraQueryMethodUnitTests {
 		return new CassandraQueryMethod(method, new DefaultRepositoryMetadata(repository), factory, context);
 	}
 
+	@SuppressWarnings("unused")
 	interface SampleRepository extends Repository<Person, Long> {
 
 		List<Person> method();
+
 	}
 }

@@ -47,26 +47,25 @@ import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * Unit tests for {@link CassandraQueryCreator}.
- * 
+ *
  * @author Mark Paluch
- * @soundtrack Odyssey - Everybody Move 9Club Mix
  */
 public class CassandraQueryCreatorUnitTests {
 
 	CassandraMappingContext context;
 	CassandraConverter converter;
 
-	@Rule public ExpectedException expection = ExpectedException.none();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() throws SecurityException, NoSuchMethodException {
-
 		context = new BasicCassandraMappingContext();
 		converter = new MappingCassandraConverter(context);
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsQueryCorrectly() {
@@ -77,7 +76,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsQueryWithSortCorrectly() {
@@ -88,7 +87,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsAndQueryCorrectly() {
@@ -99,15 +98,15 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test(expected = InvalidDataAccessApiUsageException.class)
-	public void rejectsNegatingQueryQuery() {
+	public void rejectsNegatingQuery() {
 		createQuery("findByFirstnameNot", Person.class, "Walter");
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void rejectsOrQuery() {
@@ -115,7 +114,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsGreaterThanQueryCorrectly() {
@@ -126,7 +125,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsGreaterThanEqualQueryCorrectly() {
@@ -137,7 +136,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsLessThanQueryCorrectly() {
@@ -148,7 +147,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsLessThanEqualQueryCorrectly() {
@@ -159,7 +158,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsInQueryCorrectly() {
@@ -170,7 +169,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsInQueryWithListCorrectly() {
@@ -181,30 +180,32 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsInQueryWithArrayCorrectly() {
 
-		String query = createQuery("findByFirstnameInAndLastname", Person.class, new String[] { "Walter", "Gus" }, "Fring");
+		String query = createQuery("findByFirstnameInAndLastname", Person.class,
+			new String[] { "Walter", "Gus" }, "Fring");
 
 		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname IN ('Walter','Gus') AND lastname='Fring';")));
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsLikeQueryCorrectly() {
 
 		assertThat(createQuery("findByFirstnameLike", Person.class, "Wal%ter"),
 				is(equalTo("SELECT * FROM person WHERE firstname LIKE 'Wal%ter';")));
+
 		assertThat(createQuery("findByFirstnameLike", Person.class, "Walter"),
 				is(equalTo("SELECT * FROM person WHERE firstname LIKE 'Walter';")));
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsStartsWithQueryCorrectly() {
@@ -215,7 +216,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsEndsWithQueryCorrectly() {
@@ -226,7 +227,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsContainsQueryOnSimplePropertyCorrectly() {
@@ -237,7 +238,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsContainsQueryOnSetPropertyCorrectly() {
@@ -248,7 +249,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsContainsQueryOnListPropertyCorrectly() {
@@ -259,7 +260,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsContainsQueryOnMapPropertyCorrectly() {
@@ -270,7 +271,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsIsTrueQueryCorrectly() {
@@ -281,7 +282,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsIsFalseQueryCorrectly() {
@@ -292,7 +293,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsQueryUsingQuotingCorrectly() {
@@ -303,7 +304,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsFindByPrimaryKeyPartCorrectly() {
@@ -314,7 +315,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsFindByPrimaryKeyPartWithSortCorrectly() {
@@ -325,7 +326,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void createsFindByPrimaryKeyPartOfPrimaryKeyClassCorrectly() {
@@ -337,7 +338,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test(expected = IllegalStateException.class)
 	public void createsFindByPrimaryKey2PartCorrectly() {

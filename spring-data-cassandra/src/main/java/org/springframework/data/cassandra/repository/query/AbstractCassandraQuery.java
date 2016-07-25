@@ -51,27 +51,28 @@ import com.datastax.driver.core.Row;
  * Base class for {@link RepositoryQuery} implementations for Cassandra.
  *
  * @author Mark Paluch
+ * @author John Blum
  */
 public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 	protected static Logger log = LoggerFactory.getLogger(AbstractCassandraQuery.class);
 
-	private final CassandraQueryMethod method;
+	private final CassandraQueryMethod queryMethod;
 	private final CassandraOperations template;
 
 	/**
 	 * Creates a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
 	 *
-	 * @param method must not be {@literal null}.
+	 * @param queryMethod must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
 	 */
-	public AbstractCassandraQuery(CassandraQueryMethod method, CassandraOperations operations) {
+	public AbstractCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations) {
 
-		Assert.notNull(method, "CassandraQueryMethod must not be null");
+		Assert.notNull(queryMethod, "CassandraQueryMethod must not be null");
 		Assert.notNull(operations, "CassandraOperations must not be null");
 
-		this.method = method;
+		this.queryMethod = queryMethod;
 		this.template = operations;
 	}
 
@@ -80,7 +81,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 */
 	@Override
 	public CassandraQueryMethod getQueryMethod() {
-		return method;
+		return queryMethod;
 	}
 
 	/* (non-Javadoc)
@@ -89,22 +90,23 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 
-		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(template.getConverter(),
-				new CassandraParametersParameterAccessor(method, parameters));
-		String query = createQuery(accessor);
+		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(template.getConverter(),
+				new CassandraParametersParameterAccessor(queryMethod, parameters));
 
-		ResultProcessor processor = method.getResultProcessor().withDynamicProjection(accessor);
+		String query = createQuery(parameterAccessor);
 
-		CassandraQueryExecution cassandraQueryExecution = getExecution(query, accessor,
-				new ResultProcessingConverter(processor));
+		ResultProcessor resultProcessor = queryMethod.getResultProcessor().withDynamicProjection(parameterAccessor);
 
-		CassandraReturnedType returnedType = new CassandraReturnedType(processor.getReturnedType(), template.getConverter().getCustomConversions());
+		CassandraQueryExecution queryExecution = getExecution(query, parameterAccessor,
+			new ResultProcessingConverter(resultProcessor));
 
-		if (returnedType.isProjecting()) {
-			return cassandraQueryExecution.execute(query, returnedType.getDomainType());
-		}
+		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
+			template.getConverter().getCustomConversions());
 
-		return cassandraQueryExecution.execute(query, returnedType.getReturnedType());
+		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType()
+			: returnedType.getReturnedType());
+
+		return queryExecution.execute(query, resultType);
 	}
 
 	/**
@@ -123,11 +125,11 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	private CassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor accessor,
 			Converter<Object, Object> resultProcessing) {
 
-		if (method.isCollectionQuery()) {
+		if (queryMethod.isCollectionQuery()) {
 			return new CollectionExecution(template);
-		} else if (method.isResultSetQuery()) {
+		} else if (queryMethod.isResultSetQuery()) {
 			return new ResultSetQuery(template);
-		} else if (method.isStreamQuery()) {
+		} else if (queryMethod.isStreamQuery()) {
 			return new StreamExecution(template, resultProcessing);
 		} else {
 			return new SingleEntityExecution(template);
@@ -145,7 +147,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	public Object getCollectionOfEntity(ResultSet resultSet, Class<?> declaredReturnType,
 			Class<?> returnedUnwrappedObjectType) {
 
-		Collection<Object> results = null;
+		Collection<Object> results;
 
 		if (ClassUtils.isAssignable(SortedSet.class, declaredReturnType)) {
 			results = new TreeSet<Object>();
@@ -156,6 +158,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		}
 
 		CassandraConverter converter = template.getConverter();
+
 		for (Row row : resultSet) {
 			results.add(converter.read(returnedUnwrappedObjectType, row));
 		}
@@ -171,45 +174,51 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 */
 	@Deprecated
 	public Object getSingleEntity(ResultSet resultSet, Class<?> type) {
-		if (resultSet.isExhausted()) {
-			return null;
+
+		Object result = (resultSet.isExhausted() ? null : template.getConverter().read(type, resultSet.one()));
+
+		warnIfMoreResults(resultSet);
+
+		return result;
+	}
+
+	private void warnIfMoreResults(ResultSet resultSet) {
+		if (log.isWarnEnabled() && !resultSet.isExhausted()) {
+			int count = 0;
+
+			while (resultSet.one() != null) {
+				count++;
+			}
+
+			log.warn("ignoring extra {} row{}", count, count == 1 ? "" : "s");
 		}
-
-		Iterator<Row> iterator = resultSet.iterator();
-		Object object = template.getConverter().read(type, iterator.next());
-
-		warnIfMoreResults(iterator);
-
-		return object;
 	}
 
 	@Deprecated
 	protected void warnIfMoreResults(Iterator<Row> iterator) {
 		if (log.isWarnEnabled() && iterator.hasNext()) {
+			int count = 0;
 
-			int i = 0;
-			while (iterator.hasNext()) {
-				iterator.next();
-				i++;
+			for ( ; iterator.hasNext(); iterator.next()) {
+				count++;
 			}
 
-			log.warn("ignoring extra {} row{}", i, i == 1 ? "" : "s");
+			log.warn("ignoring extra {} row{}", count, count == 1 ? "" : "s");
 		}
 	}
 
-	@Deprecated
-	public ConversionService getConversionService() {
-		return template.getConverter().getConversionService();
-	}
-
 	/**
-	 * @param conversionService
 	 * @deprecated {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type conversion.
 	 */
 	@Deprecated
 	public void setConversionService(ConversionService conversionService) {
 		throw new UnsupportedOperationException("setConversionService(ConversionService) is not supported anymore. "
-				+ "Please use CassandraMappingContext instead");
+			+ "Please use CassandraMappingContext instead");
+	}
+
+	@Deprecated
+	public ConversionService getConversionService() {
+		return template.getConverter().getConversionService();
 	}
 
 	/**
@@ -229,37 +238,33 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 			this.customConversions = customConversions;
 		}
 
-		boolean isProjecting(){
+		boolean isProjecting() {
 
-			if(!returnedType.isProjecting()){
+			if (!returnedType.isProjecting()) {
 				return false;
 			}
 
-			// Spring Data Cassandra allows List<Map<String, Object> and Map<String, Object> declarations on query methods
-			// so we don't want to let projection kick in
-			if(ClassUtils.isAssignable(Map.class, returnedType.getReturnedType())){
+			// Spring Data Cassandra allows List<Map<String, Object> and Map<String, Object> declarations
+			// on query methods so we don't want to let projection kick in
+			if (ClassUtils.isAssignable(Map.class, returnedType.getReturnedType())) {
 				return false;
 			}
 
 			// Type conversion using registered conversions is handled on template level
-			if(customConversions.hasCustomWriteTarget(returnedType.getReturnedType())){
+			if (customConversions.hasCustomWriteTarget(returnedType.getReturnedType())) {
 				return false;
 			}
 
 			// Don't apply projection on Cassandra simple types
-			if(customConversions.isSimpleType(returnedType.getReturnedType())){
-				return false;
-			}
-
-			return true;
-		}
-
-		Class<?> getReturnedType() {
-			return returnedType.getReturnedType();
+			return !customConversions.isSimpleType(returnedType.getReturnedType());
 		}
 
 		Class<?> getDomainType() {
 			return returnedType.getDomainType();
+		}
+
+		Class<?> getReturnedType() {
+			return returnedType.getReturnedType();
 		}
 	}
 }

@@ -36,21 +36,27 @@ import org.springframework.data.repository.Repository;
 
 /**
  * Unit tests for {@link CassandraRepositoryFactory}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CassandraRepositoryFactoryUnitTests {
 
-	@Mock CassandraTemplate template;
-	@Mock CassandraConverter converter;
-	@Mock CassandraMappingContext mappingContext;
-	@Mock CassandraPersistentEntity entity;
+	@Mock
+	private CassandraConverter converter;
+
+	@Mock
+	private CassandraMappingContext mappingContext;
+
+	@Mock
+	private CassandraPersistentEntity entity;
+
+	@Mock
+	private CassandraTemplate template;
 
 	@Before
 	public void setUp() {
-
 		when(template.getConverter()).thenReturn(converter);
 		when(converter.getMappingContext()).thenReturn(mappingContext);
 	}
@@ -60,12 +66,14 @@ public class CassandraRepositoryFactoryUnitTests {
 	 */
 	@Test
 	public void usesMappingCassandraEntityInformationIfMappingContextSet() {
-
 		when(mappingContext.getPersistentEntity(Person.class)).thenReturn(entity);
 		when(entity.getType()).thenReturn(Person.class);
 
-		CassandraRepositoryFactory factory = new CassandraRepositoryFactory(template);
-		CassandraEntityInformation<Person, Serializable> entityInformation = factory.getEntityInformation(Person.class);
+		CassandraRepositoryFactory repositoryFactory = new CassandraRepositoryFactory(template);
+
+		CassandraEntityInformation<Person, Serializable> entityInformation =
+			repositoryFactory.getEntityInformation(Person.class);
+
 		assertTrue(entityInformation instanceof MappingCassandraEntityInformation);
 	}
 
@@ -74,16 +82,15 @@ public class CassandraRepositoryFactoryUnitTests {
 	 */
 	@Test
 	public void createsRepositoryWithIdTypeLong() {
-
 		when(mappingContext.getPersistentEntity(Person.class)).thenReturn(entity);
 		when(entity.getType()).thenReturn(Person.class);
 
-		CassandraRepositoryFactory factory = new CassandraRepositoryFactory(template);
-		MyPersonRepository repository = factory.getRepository(MyPersonRepository.class);
+		CassandraRepositoryFactory repositoryFactory = new CassandraRepositoryFactory(template);
+		MyPersonRepository repository = repositoryFactory.getRepository(MyPersonRepository.class);
+
 		assertThat(repository, is(notNullValue()));
 	}
 
 	interface MyPersonRepository extends Repository<Person, Long> {
-
 	}
 }

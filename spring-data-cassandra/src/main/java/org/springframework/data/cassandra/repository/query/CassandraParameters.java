@@ -19,13 +19,11 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
-
-import com.datastax.driver.core.DataType;
+import org.springframework.util.Assert;
 
 /**
  * Custom extension of {@link Parameters} discovering additional properties of query method parameters.
@@ -78,14 +76,11 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 			super(parameter);
 
 			if (parameter.hasParameterAnnotation(CassandraType.class)) {
-
 				CassandraType cassandraType = parameter.getParameterAnnotation(CassandraType.class);
 
-				if (cassandraType.type() == null) {
-					throw new IllegalArgumentException(
-							String.format("You must specify the type() when annotating method parameters with @%s",
-									CassandraType.class.getSimpleName()));
-				}
+				Assert.notNull(cassandraType.type(), String.format(
+					"You must specify the type() when annotating method parameters with @%s",
+						CassandraType.class.getSimpleName()));
 
 				this.cassandraType = cassandraType;
 			} else {
@@ -95,7 +90,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 
 		/**
 		 * Returns the {@link CassandraType} for the declared parameter if specified using {@link org.springframework.data.cassandra.mapping.CassandraType}.
-		 * 
+		 *
 		 * @return the {@link CassandraType} or {@literal null}.
 		 */
 		public CassandraType getCassandraType() {

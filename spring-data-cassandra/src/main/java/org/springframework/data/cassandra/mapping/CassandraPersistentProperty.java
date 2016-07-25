@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,11 +29,12 @@ import com.datastax.driver.core.DataType;
 
 /**
  * Cassandra specific {@link org.springframework.data.mapping.PersistentProperty} extension.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author David T. Webb
  * @author Mark Paluch
+ * @author John Blum
  */
 public interface CassandraPersistentProperty
 		extends PersistentProperty<CassandraPersistentProperty>, ApplicationContextAware {
@@ -81,7 +82,7 @@ public interface CassandraPersistentProperty
 
 	/**
 	 * The column's data type. Not valid for a composite primary key.
-	 * 
+	 *
 	 * @return the Cassandra {@link DataType}
 	 * @throws InvalidDataAccessApiUsageException if the {@link DataType} cannot be resolved
 	 * @see CassandraType
@@ -105,7 +106,7 @@ public interface CassandraPersistentProperty
 
 	/**
 	 * Whether the property is a partition key column or a cluster key column
-	 * 
+	 *
 	 * @see #isPartitionKeyColumn()
 	 * @see #isClusterKeyColumn()
 	 */
@@ -116,7 +117,7 @@ public interface CassandraPersistentProperty
 
 	/**
 	 * Whether to force-quote the column names of this property.
-	 * 
+	 *
 	 * @param forceQuote
 	 * @see CassandraPersistentProperty#getColumnNames()
 	 */
@@ -126,7 +127,7 @@ public interface CassandraPersistentProperty
 	 * If this property is mapped with a single column, set the column name to the given {@link CqlIdentifier}. If this
 	 * property is not mapped by a single column, throws {@link IllegalStateException}. If the given column name is null,
 	 * {@link IllegalArgumentException} is thrown.
-	 * 
+	 *
 	 * @param columnName
 	 */
 	void setColumnName(CqlIdentifier columnName);
@@ -134,18 +135,25 @@ public interface CassandraPersistentProperty
 	/**
 	 * Sets this property's column names to the collection given. The given collection must have the same size as this
 	 * property's current list of column names, and must contain no <code>null</code> elements.
-	 * 
+	 *
 	 * @param columnName
 	 */
 	void setColumnNames(List<CqlIdentifier> columnNames);
 
-	public enum PropertyToFieldNameConverter implements Converter<CassandraPersistentProperty, String> {
+	/**
+	 * Returns whether the property is a {@link java.util.Map}.
+	 *
+	 * @return a boolean indicating whether this property type is a {@link java.util.Map}.
+	 */
+	boolean isMapLike();
+
+	enum PropertyToFieldNameConverter implements Converter<CassandraPersistentProperty, String> {
 
 		INSTANCE;
 
 		@Override
-		public String convert(CassandraPersistentProperty source) {
-			return source.getColumnName().toCql();
+		public String convert(CassandraPersistentProperty property) {
+			return property.getColumnName().toCql();
 		}
 	}
 }

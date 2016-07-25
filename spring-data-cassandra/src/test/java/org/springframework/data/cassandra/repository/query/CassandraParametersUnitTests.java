@@ -27,7 +27,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.mapping.CassandraType;
 
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 
 /**
@@ -44,7 +43,7 @@ public class CassandraParametersUnitTests {
 	 * @see DATACASS-296
 	 */
 	@Test
-	public void shouldUnknownDataTypeForSimpleType() throws Exception {
+	public void shouldReturnUnknownDataTypeForSimpleType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
 		CassandraParameters cassandraParameters = new CassandraParameters(method);

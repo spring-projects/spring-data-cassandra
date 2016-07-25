@@ -40,29 +40,32 @@ import com.datastax.driver.core.ResultSet;
  * @author Matthew Adams
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author John Blum
  */
 public class CassandraQueryMethod extends QueryMethod {
 
-	private final Method method;
+	private CassandraEntityMetadata<?> entityMetadata;
+
 	private final CassandraMappingContext mappingContext;
-	private CassandraEntityMetadata<?> metadata;
+
+	private final Method method;
 
 	/**
 	 * Creates a new {@link CassandraQueryMethod} from the given {@link Method}.
 	 *
 	 * @param method must not be {@literal null}.
-	 * @param metadata must not be {@literal null}.
+	 * @param repositoryMetadata must not be {@literal null}.
 	 * @param projectionFactory must not be {@literal null}.
 	 * @param mappingContext must not be {@literal null}.
 	 */
-	public CassandraQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
-			CassandraMappingContext mappingContext) {
+	public CassandraQueryMethod(Method method, RepositoryMetadata repositoryMetadata,
+			ProjectionFactory projectionFactory, CassandraMappingContext mappingContext) {
 
-		super(method, metadata, factory);
+		super(method, repositoryMetadata, projectionFactory);
 
 		Assert.notNull(mappingContext, "MappingContext must not be null");
 
-		verify(method, metadata);
+		verify(method, repositoryMetadata);
 
 		this.method = method;
 		this.mappingContext = mappingContext;
@@ -81,33 +84,34 @@ public class CassandraQueryMethod extends QueryMethod {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public CassandraEntityMetadata<?> getEntityInformation() {
 
-		if (metadata == null) {
-
+		if (entityMetadata == null) {
 			Class<?> returnedObjectType = getReturnedObjectType();
 			Class<?> domainClass = getDomainClass();
 
 			if (ClassUtils.isPrimitiveOrWrapper(returnedObjectType)) {
-
-				this.metadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) domainClass,
-						mappingContext.getPersistentEntity(domainClass));
+				this.entityMetadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) domainClass,
+					mappingContext.getPersistentEntity(domainClass));
 
 			} else {
-
 				CassandraPersistentEntity<?> returnedEntity = mappingContext.getPersistentEntity(returnedObjectType);
 				CassandraPersistentEntity<?> managedEntity = mappingContext.getPersistentEntity(domainClass);
-				returnedEntity = returnedEntity == null || returnedEntity.getType().isInterface() ? managedEntity
-						: returnedEntity;
-				CassandraPersistentEntity<?> collectionEntity = domainClass.isAssignableFrom(returnedObjectType)
-						? returnedEntity : managedEntity;
 
-				this.metadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) returnedEntity.getType(),
-						collectionEntity);
+				returnedEntity = (returnedEntity == null || returnedEntity.getType().isInterface()
+					? managedEntity : returnedEntity);
+
+				// TODO collectionEntity?
+				CassandraPersistentEntity<?> collectionEntity = domainClass.isAssignableFrom(returnedObjectType)
+					? returnedEntity : managedEntity;
+
+				this.entityMetadata = new SimpleCassandraEntityMetadata<Object>(
+					(Class<Object>) returnedEntity.getType(), collectionEntity);
 			}
 		}
 
-		return this.metadata;
+		return this.entityMetadata;
 	}
 
 	/* (non-Javadoc)
@@ -132,9 +136,8 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @return
 	 */
 	public String getAnnotatedQuery() {
-
 		String query = (String) AnnotationUtils.getValue(getQueryAnnotation());
-		return StringUtils.hasText(query) ? query : null;
+		return (StringUtils.hasText(query) ? query : null);
 	}
 
 	/**

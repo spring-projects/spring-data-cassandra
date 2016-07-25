@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,7 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -39,11 +40,12 @@ import org.springframework.util.Assert;
 
 /**
  * Factory to create {@link TypedIdCassandraRepository} instances.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author John Blum
  */
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
@@ -52,7 +54,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	/**
 	 * Creates a new {@link CassandraRepositoryFactory} with the given {@link CassandraOperations}.
-	 * 
+	 *
 	 * @param cassandraOperations must not be {@literal null}
 	 */
 	public CassandraRepositoryFactory(CassandraOperations cassandraOperations) {
@@ -63,7 +65,8 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
 	 */
 	@Override
@@ -71,7 +74,8 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		return SimpleCassandraRepository.class;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryInformation)
 	 */
 	@Override
@@ -81,7 +85,8 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		return getTargetRepositoryViaReflection(information, entityInformation, cassandraOperations);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
 	 */
 	@Override
@@ -99,17 +104,27 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 				cassandraOperations.getConverter());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key)
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(Key)
 	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
+		return getQueryLookupStrategy(key, null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(Key, EvaluationContextProvider)
+	 */
+	@Override
+	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
 		return new CassandraQueryLookupStrategy();
 	}
 
 	private class CassandraQueryLookupStrategy implements QueryLookupStrategy {
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.query.QueryLookupStrategy#resolveQuery(java.lang.reflect.Method, org.springframework.data.repository.core.RepositoryMetadata, org.springframework.data.projection.ProjectionFactory, org.springframework.data.repository.core.NamedQueries)
 		 */

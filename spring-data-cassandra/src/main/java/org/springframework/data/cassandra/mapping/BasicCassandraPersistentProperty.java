@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.cassandra.core.Ordering;
@@ -41,6 +42,7 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.DataType;
@@ -52,6 +54,7 @@ import com.datastax.driver.core.DataType;
  * @author Matthew T. Adams
  * @author Antoine Toulme
  * @author Mark Paluch
+ * @author John Blum
  */
 public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentProperty<CassandraPersistentProperty>
 		implements CassandraPersistentProperty, ApplicationContextAware {
@@ -154,8 +157,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
-					"unknown type for property [%s], type [%s] in entity [%s]; only primitive types and collections or maps of primitive types are allowed",
-					getName(), getType(), getOwner().getName()));
+				"Unknown type [%s] for property [%s] in entity [%s]; only primitive types and Collections or Maps of primitive types are allowed",
+					getType(), getName(), getOwner().getName()));
 		}
 
 		return dataType;
@@ -178,7 +181,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		if (isCollectionLike()) {
-
 			List<TypeInformation<?>> args = getTypeInformation().getTypeArguments();
 
 			ensureTypeArguments(args.size(), 1);
@@ -221,19 +223,19 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Override
-	public boolean isPartitionKeyColumn() {
-
-		PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
-
-		return (primaryKeyColumn != null && primaryKeyColumn.type() == PrimaryKeyType.PARTITIONED);
-	}
-
-	@Override
 	public boolean isClusterKeyColumn() {
 
 		PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
 
-		return (primaryKeyColumn != null && primaryKeyColumn.type() == PrimaryKeyType.CLUSTERED);
+		return (primaryKeyColumn != null && PrimaryKeyType.CLUSTERED.equals(primaryKeyColumn.type()));
+	}
+
+	@Override
+	public boolean isPartitionKeyColumn() {
+
+		PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
+
+		return (primaryKeyColumn != null && PrimaryKeyType.PARTITIONED.equals(primaryKeyColumn.type()));
 	}
 
 	@Override
@@ -241,12 +243,13 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return isAnnotationPresent(PrimaryKeyColumn.class);
 	}
 
-	protected DataType getDataTypeFor(DataType.Name typeName) {
-		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(typeName);
+	protected DataType getDataTypeFor(DataType.Name dataTypeName) {
+
+		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(dataTypeName);
 
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
-					"only primitive types are allowed inside collections for the property  '%1$s' type is '%2$s' in the entity %3$s",
+				"Only primitive types are allowed inside Collections for property [%1$s] of type [%2$s] in entity [%3$s]",
 					getName(), getType(), getOwner().getName()));
 		}
 
@@ -254,11 +257,12 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	protected DataType getDataTypeFor(Class<?> javaType) {
+
 		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(javaType);
 
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
-					"only primitive types are allowed inside collections for the property '%1$s' type is '%2$s' in the entity %3$s",
+				"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
 					getName(), getType(), getOwner().getName()));
 		}
 
@@ -268,8 +272,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	protected void ensureTypeArguments(int args, int expected) {
 		if (args != expected) {
 			throw new InvalidDataAccessApiUsageException(
-					String.format("expected %1$s of typed arguments for the property '%2$s' type is '%3$s' in the entity %4$s",
-							expected, getName(), getType(), getOwner().getName()));
+				String.format("Expected [%1$s] typed arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]",
+					expected, getName(), getType(), getOwner().getName()));
 		}
 	}
 
@@ -320,7 +324,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		String name = defaultName;
 
 		if (StringUtils.hasText(overriddenName)) {
-			name = (spelContext == null ? overriddenName : SpelUtils.evaluate(overriddenName, spelContext));
+			name = (spelContext != null ? SpelUtils.evaluate(overriddenName, spelContext) : overriddenName);
 		}
 
 		return cqlId(name, forceQuote);
@@ -331,11 +335,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		compositePrimaryKeyEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty p) {
-				if (p.isCompositePrimaryKey()) {
-					addCompositePrimaryKeyColumnNames(p.getCompositePrimaryKeyEntity(), columnNames);
+			public void doWithPersistentProperty(CassandraPersistentProperty property) {
+				if (property.isCompositePrimaryKey()) {
+					addCompositePrimaryKeyColumnNames(property.getCompositePrimaryKeyEntity(), columnNames);
 				} else {
-					columnNames.add(p.getColumnName());
+					columnNames.add(property.getColumnName());
 				}
 			}
 		});
@@ -353,14 +357,14 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		Assert.notNull(columnNames);
 
-		// force calculation of columnNames if not yet known
+		// force calculation of columnNames if not known yet
 		getColumnNames();
 
 		if (this.columnNames.size() != columnNames.size()) {
 			throw new IllegalStateException(String.format(
-					"property [%s] on entity [%s] is mapped to [%s] column%s, but given column name list has size [%s]",
-					getName(), getOwner().getType().getName(), this.columnNames.size(), this.columnNames.size() == 1 ? "" : "s",
-					columnNames.size()));
+				"Property [%s] of entity [%s] is mapped to [%s] column%s, but given column name list has size [%s]",
+					getName(), getOwner().getType().getName(), this.columnNames.size(),
+						this.columnNames.size() == 1 ? "" : "s", columnNames.size()));
 		}
 
 		this.columnNames = this.explicitColumnNames =
@@ -390,8 +394,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
 
 		if (!isCompositePrimaryKey()) {
-			throw new IllegalStateException(
-					String.format("[%s] does not represent a composite primary key property", getName()));
+			throw new IllegalStateException(String.format(
+				"[%s] does not represent a composite primary key property", getName()));
 		}
 
 		return getCompositePrimaryKeyEntity().getCompositePrimaryKeyProperties();
@@ -399,6 +403,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	@Override
 	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
+
 		CassandraMappingContext mappingContext = getOwner().getMappingContext();
 
 		if (mappingContext == null) {
@@ -416,5 +421,10 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	protected Association<CassandraPersistentProperty> createAssociation() {
 		return new Association<CassandraPersistentProperty>(this, null);
+	}
+
+	@Override
+	public boolean isMapLike() {
+		return ClassUtils.isAssignable(Map.class, getType());
 	}
 }

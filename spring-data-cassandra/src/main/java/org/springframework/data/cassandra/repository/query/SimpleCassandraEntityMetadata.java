@@ -21,29 +21,30 @@ import org.springframework.util.Assert;
 
 /**
  * Implementation of {@link CassandraEntityMetadata} based on the type and {@link CassandraPersistentEntity}.
- * 
+ *
  * @author Mark Paluch
  * @since 1.5
  */
 class SimpleCassandraEntityMetadata<T> implements CassandraEntityMetadata<T> {
 
+	private final CassandraPersistentEntity<?> entity;
+
 	private final Class<T> type;
-	private final CassandraPersistentEntity<?> tableEntity;
 
 	/**
 	 * Creates a new {@link SimpleCassandraEntityMetadata} using the given type and {@link CassandraPersistentEntity} to
 	 * use for table lookups.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @param tableEntity must not be {@literal null} or empty.
+	 * @param entity must not be {@literal null} or empty.
 	 */
-	public SimpleCassandraEntityMetadata(Class<T> type, CassandraPersistentEntity<?> tableEntity) {
+	public SimpleCassandraEntityMetadata(Class<T> type, CassandraPersistentEntity<?> entity) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(tableEntity, "Collection entity must not be null or empty!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(entity, "Collection entity must not be null or empty");
 
 		this.type = type;
-		this.tableEntity = tableEntity;
+		this.entity = entity;
 	}
 
 	/* (non-Javadoc)
@@ -51,7 +52,7 @@ class SimpleCassandraEntityMetadata<T> implements CassandraEntityMetadata<T> {
 	 */
 	@Override
 	public CqlIdentifier getTableName() {
-		return tableEntity.getTableName();
+		return entity.getTableName();
 	}
 
 	/* (non-Javadoc)

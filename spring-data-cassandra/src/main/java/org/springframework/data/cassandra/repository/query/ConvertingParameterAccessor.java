@@ -52,7 +52,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	private final CassandraParameterAccessor delegate;
 
 	ConvertingParameterAccessor(CassandraConverter cassandraConverter, CassandraParameterAccessor delegate) {
-
 		this.cassandraConverter = cassandraConverter;
 		this.delegate = delegate;
 	}
@@ -102,11 +101,8 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 		DataType dataType = delegate.getDataType(index);
 
-		if (dataType != null) {
-			return dataType;
-		}
-
-		return cassandraConverter.getMappingContext().getDataType(getParameterType(index));
+		return (dataType != null ? dataType
+			: cassandraConverter.getMappingContext().getDataType(getParameterType(index)));
 	}
 
 	/* (non-Javadoc)
@@ -150,13 +146,14 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 				&& property.isCollectionLike()) {
 
 			Class<?> customWriteTarget = getCustomConversions().getCustomWriteTarget(property.getActualType());
+
 			if (Collection.class.isAssignableFrom(property.getType()) && bindableValue instanceof Collection) {
 
 				Collection<Object> original = (Collection<Object>) bindableValue;
 				Collection<Object> converted = CollectionFactory.createCollection(property.getType(), original.size());
 
-				for (Object o : original) {
-					converted.add(getConversionService().convert(o, customWriteTarget));
+				for (Object element : original) {
+					converted.add(getConversionService().convert(element, customWriteTarget));
 				}
 
 				return converted;
@@ -181,12 +178,12 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	/**
 	 * Return the {@link DataType} based on annotated parameters with {@link CassandraType}, the
 	 * {@link CassandraPersistentProperty} type or the declared parameter type.
-	 * 
-	 * @param index
-	 * @param cassandraPersistentProperty
+	 *
+	 * @param index index of parameter.
+	 * @param property {@link CassandraPersistentProperty}.
 	 * @return the {@link DataType}
 	 */
-	DataType getDataType(int index, CassandraPersistentProperty cassandraPersistentProperty) {
+	DataType getDataType(int index, CassandraPersistentProperty property) {
 
 		CassandraType cassandraType = delegate.findCassandraType(index);
 
@@ -197,24 +194,24 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		CassandraMappingContext mappingContext = cassandraConverter.getMappingContext();
 		TypeInformation<?> typeInformation = ClassTypeInformation.from(getParameterType(index));
 
-		if (cassandraPersistentProperty == null) {
+		if (property == null) {
 			return mappingContext.getDataType(typeInformation.getType());
 		}
 
-		DataType dataType = mappingContext.getDataType(cassandraPersistentProperty);
+		DataType dataType = mappingContext.getDataType(property);
 
-		if (cassandraPersistentProperty.isCollectionLike() && !typeInformation.isCollectionLike()) {
+		if (property.isCollectionLike() && !typeInformation.isCollectionLike()) {
 
 			if (dataType instanceof CollectionType) {
-
 				CollectionType collectionType = (CollectionType) dataType;
+
 				if (collectionType.getTypeArguments().size() == 1) {
 					return collectionType.getTypeArguments().get(0);
 				}
 			}
 		}
 
-		if (!cassandraPersistentProperty.isCollectionLike() && typeInformation.isCollectionLike()) {
+		if (!property.isCollectionLike() && typeInformation.isCollectionLike()) {
 
 			if (typeInformation.isAssignableFrom(SET)) {
 				return DataType.set(dataType);
@@ -223,18 +220,18 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			return DataType.list(dataType);
 		}
 
-		if (cassandraPersistentProperty.isMap()) {
+		if (property.isMap()) {
 
 			if (dataType instanceof CollectionType) {
-
 				CollectionType collectionType = (CollectionType) dataType;
+
 				if (collectionType.getTypeArguments().size() == 2) {
 					return collectionType.getTypeArguments().get(0);
 				}
 			}
 		}
 
-		return mappingContext.getDataType(cassandraPersistentProperty);
+		return mappingContext.getDataType(property);
 	}
 
 	/**
@@ -299,5 +296,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 * @return the converted object, may be {@literal null}.
 		 */
 		Object nextConverted(CassandraPersistentProperty property);
+
 	}
 }

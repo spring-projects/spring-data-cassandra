@@ -24,32 +24,33 @@ import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * {@link RepositoryQuery} implementation for Cassandra.
- * 
+ *
  * @author Matthew Adams
  * @author Mark Paluch
  */
 public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 
+	private final CassandraMappingContext mappingContext;
+
 	private final PartTree tree;
-	private final CassandraMappingContext context;
 
 	/**
 	 * Creates a new {@link PartTreeCassandraQuery} from the given {@link QueryMethod} and {@link CassandraTemplate}.
-	 * 
-	 * @param method must not be {@literal null}.
+	 *
+	 * @param queryMethod must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
 	 */
-	public PartTreeCassandraQuery(CassandraQueryMethod method, CassandraOperations operations) {
+	public PartTreeCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations) {
 
-		super(method, operations);
+		super(queryMethod, operations);
 
-		this.tree = new PartTree(method.getName(), method.getEntityInformation().getJavaType());
-		this.context = operations.getConverter().getMappingContext();
+		this.tree = new PartTree(queryMethod.getName(), queryMethod.getEntityInformation().getJavaType());
+		this.mappingContext = operations.getConverter().getMappingContext();
 	}
 
 	/**
 	 * Return the {@link PartTree} backing the query.
-	 * 
+	 *
 	 * @return the tree
 	 */
 	public PartTree getTree() {
@@ -61,10 +62,11 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor, boolean)
 	 */
 	@Override
-	protected String createQuery(CassandraParameterAccessor accessor) {
+	protected String createQuery(CassandraParameterAccessor parameterAccessor) {
 
-		CassandraQueryCreator creator = new CassandraQueryCreator(tree, accessor, context,
+		CassandraQueryCreator queryCreator = new CassandraQueryCreator(tree, parameterAccessor, mappingContext,
 				getQueryMethod().getEntityInformation());
-		return creator.createQuery().toString();
+
+		return queryCreator.createQuery().toString();
 	}
 }

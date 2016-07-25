@@ -33,7 +33,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 
 	/**
 	 * Creates a new {@link CassandraParametersParameterAccessor}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param values must not be {@literal null}.
 	 */
@@ -41,14 +41,16 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 		super(method.getParameters(), values);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#findCassandraType(int)
 	 */
 	public CassandraType findCassandraType(int index) {
 		return getParameters().getParameter(index).getCassandraType();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getDataType(int)
 	 */
 	@Override
@@ -56,22 +58,12 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 
 		CassandraType cassandraType = findCassandraType(index);
 
-		if (cassandraType != null) {
-			return CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type());
-		}
-
-		return CassandraSimpleTypeHolder.getDataTypeFor(getParameterType(index));
+		return (cassandraType != null ?  CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type())
+			: CassandraSimpleTypeHolder.getDataTypeFor(getParameterType(index)));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getParameterType(int)
-	 */
-	@Override
-	public Class<?> getParameterType(int index) {
-		return getParameters().getParameter(index).getType();
-	}
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ParametersParameterAccessor#getParameters()
 	 */
 	@Override
@@ -79,4 +71,12 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 		return (CassandraParameters) super.getParameters();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getParameterType(int)
+	 */
+	@Override
+	public Class<?> getParameterType(int index) {
+		return getParameters().getParameter(index).getType();
+	}
 }

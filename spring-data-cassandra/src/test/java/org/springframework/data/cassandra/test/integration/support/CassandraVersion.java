@@ -26,7 +26,7 @@ import com.datastax.driver.core.Session;
 
 /**
  * Utility to retrieve the Cassandra release version.
- * 
+ *
  * @author Mark Paluch
  */
 @UtilityClass
@@ -34,7 +34,7 @@ public class CassandraVersion {
 
 	/**
 	 * Retrieve the Cassandra release version.
-	 * 
+	 *
 	 * @param session must not be {@literal null}.
 	 * @return the release {@link Version}.
 	 */
@@ -44,6 +44,7 @@ public class CassandraVersion {
 
 		ResultSet resultSet = session.execute("SELECT release_version FROM system.local;");
 		Row row = resultSet.one();
+
 		return Version.parse(row.getString(0));
 	}
 }

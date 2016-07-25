@@ -45,11 +45,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Integration tests for query derivation through {@link PersonRepository}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
+@SuppressWarnings("all")
 public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
@@ -68,14 +69,18 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 	}
 
-	@Autowired CassandraOperations template;
-	@Autowired PersonRepository personRepository;
+	@Autowired
+	private CassandraOperations template;
 
-	Person walter, skyler, flynn;
+	@Autowired
+	private PersonRepository personRepository;
+
+	private Person walter;
+	private Person skyler;
+	private Person flynn;
 
 	@Before
 	public void before() {
-
 		deleteAllEntities();
 
 		Person person = new Person("Walter", "White");
@@ -87,7 +92,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldFindByLastname() {
@@ -98,7 +103,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldFindByLastnameAndDynamicSort() {
@@ -109,7 +114,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldFindByLastnameWithOrdering() {
@@ -120,7 +125,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldFindByFirstnameAndLastname() {
@@ -131,7 +136,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void executesCollectionQueryWithProjectionCorrectly() {
@@ -146,7 +151,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldFindByNumberOfChildren() throws Exception {
@@ -154,6 +159,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		assumeThat(SpringVersion.getVersion(), startsWith("4.3"));
 
 		template.execute("CREATE INDEX IF NOT EXISTS person_number_of_children ON person (numberofchildren);");
+
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
 
@@ -163,12 +169,13 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldFindByLocalDate() throws InterruptedException {
 
 		template.execute("CREATE INDEX IF NOT EXISTS person_created_date ON person (createddate);");
+
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
 
@@ -181,12 +188,13 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldUseQueryOverride() {
 
 		Person otherWalter = new Person("Walter", "Black");
+
 		personRepository.save(otherWalter);
 
 		List<Person> result = personRepository.findByFirstname("Walter");
@@ -195,16 +203,16 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldUseStartsWithQuery() throws InterruptedException {
 
-		Version version = CassandraVersion.get(template.getSession());
-		assumeTrue(version.isGreaterThanOrEqualTo(Version.parse("3.4")));
+		assumeTrue(CassandraVersion.get(template.getSession()).isGreaterThanOrEqualTo(Version.parse("3.4")));
 
 		template.execute(
 				"CREATE CUSTOM INDEX IF NOT EXISTS fn_starts_with ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex';");
+
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
 
@@ -215,17 +223,17 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	/**
-	 * @see DATACASS-7
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
 	public void shouldUseContainsQuery() throws InterruptedException {
 
-		Version version = CassandraVersion.get(template.getSession());
-		assumeTrue(version.isGreaterThanOrEqualTo(Version.parse("3.4")));
+		assumeTrue(CassandraVersion.get(template.getSession()).isGreaterThanOrEqualTo(Version.parse("3.4")));
 
 		template.execute(
 				"CREATE CUSTOM INDEX IF NOT EXISTS fn_contains ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex'\n"
 						+ "WITH OPTIONS = { 'mode': 'CONTAINS' };");
+
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
 
