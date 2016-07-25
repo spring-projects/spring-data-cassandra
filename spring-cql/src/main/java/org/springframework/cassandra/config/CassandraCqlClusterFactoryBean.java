@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -49,12 +50,15 @@ import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.TimestampGenerator;
+import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
+import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
 
 /**
- * Convenient {@link org.springframework.beans.factory.FactoryBean} for configuring a Cassandra {@link Cluster}.
+ * {@link org.springframework.beans.factory.FactoryBean} for configuring a Cassandra {@link Cluster}.
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
@@ -69,164 +73,177 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @see org.springframework.beans.factory.FactoryBean
  * @see com.datastax.driver.core.Cluster
  */
-public class CassandraCqlClusterFactoryBean
-		implements FactoryBean<Cluster>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
+@SuppressWarnings("unused")
+public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, InitializingBean, DisposableBean,
+		BeanNameAware, PersistenceExceptionTranslator {
+
+	public static final boolean DEFAULT_JMX_REPORTING_ENABLED = true;
+	public static final boolean DEFAULT_METRICS_ENABLED = true;
+	public static final boolean DEFAULT_SSL_ENABLED = false;
+
+	public static final int DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS = 10;
+	public static final int DEFAULT_PORT = 9042;
 
 	public static final String DEFAULT_CONTACT_POINTS = "localhost";
-	public static final boolean DEFAULT_METRICS_ENABLED = true;
-	public static final boolean DEFAULT_JMX_REPORTING_ENABLED = true;
-	public static final boolean DEFAULT_SSL_ENABLED = false;
-	public static final int DEFAULT_PORT = 9042;
 
 	protected static final Logger log = LoggerFactory.getLogger(CassandraCqlClusterFactoryBean.class);
 
+	private boolean jmxReportingEnabled = DEFAULT_JMX_REPORTING_ENABLED;
+	private boolean metricsEnabled = DEFAULT_METRICS_ENABLED;
+	private boolean sslEnabled = DEFAULT_SSL_ENABLED;
+
+	private int maxSchemaAgreementWaitSeconds = DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS;
+	private int port = DEFAULT_PORT;
+
+	private AddressTranslator addressTranslator;
+
+	private AuthProvider authProvider;
+
 	private Cluster cluster;
 
-	/*
-	 * Attributes needed for cluster builder
-	 */
-	private String contactPoints = DEFAULT_CONTACT_POINTS;
-	private int port = CassandraCqlClusterFactoryBean.DEFAULT_PORT;
+	private ClusterBuilderConfigurer clusterBuilderConfigurer;
 
-	// Protocol options
 	private CompressionType compressionType;
-	private SSLOptions sslOptions;
-	private boolean sslEnabled = DEFAULT_SSL_ENABLED;
-	private AuthProvider authProvider;
-	private String username;
-	private String password;
-	private NettyOptions nettyOptions;
-	private ProtocolVersion protocolVersion;
-
-	// Policies
-	private LoadBalancingPolicy loadBalancingPolicy;
-	private ReconnectionPolicy reconnectionPolicy;
-	private RetryPolicy retryPolicy;
-
-	private PoolingOptions poolingOptions;
-	private QueryOptions queryOptions;
-	private SocketOptions socketOptions;
-
-	private boolean metricsEnabled = DEFAULT_METRICS_ENABLED;
-	private boolean jmxReportingEnabled = DEFAULT_JMX_REPORTING_ENABLED;
 
 	private Host.StateListener hostStateListener;
+
 	private LatencyTracker latencyTracker;
 
-	// Startup and shutdown actions
-	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<KeyspaceActionSpecification<?>>();
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
 	private List<String> startupScripts = new ArrayList<String>();
 	private List<String> shutdownScripts = new ArrayList<String>();
 
+	private LoadBalancingPolicy loadBalancingPolicy;
+
+	private NettyOptions nettyOptions;
+
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
-	@Override
-	public Cluster getObject() {
-		return cluster;
-	}
+	private PoolingOptions poolingOptions;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
-	@Override
-	public Class<? extends Cluster> getObjectType() {
-		return Cluster.class;
-	}
+	private ProtocolVersion protocolVersion;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
+	private QueryOptions queryOptions;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
-	 */
-	@Override
-	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
-		return exceptionTranslator.translateExceptionIfPossible(ex);
-	}
+	private ReconnectionPolicy reconnectionPolicy;
 
-	/* (non-Javadoc)
+	private RetryPolicy retryPolicy;
+
+	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<KeyspaceActionSpecification<?>>();
+
+	private SpeculativeExecutionPolicy speculativeExecutionPolicy;
+
+	private SocketOptions socketOptions;
+
+	private SSLOptions sslOptions;
+
+	private String beanName;
+	private String clusterName;
+	private String contactPoints = DEFAULT_CONTACT_POINTS;
+	private String password;
+	private String username;
+
+	private TimestampGenerator timestampGenerator;
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
 		if (!StringUtils.hasText(contactPoints)) {
-			throw new IllegalArgumentException("at least one server is required");
+			throw new IllegalArgumentException("At least one server is required");
 		}
 
-		Cluster.Builder builder = Cluster.builder();
+		Cluster.Builder clusterBuilder = newClusterBuilder();
 
-		builder.addContactPoints(StringUtils.commaDelimitedListToStringArray(contactPoints)).withPort(port);
+		clusterBuilder.addContactPoints(StringUtils.commaDelimitedListToStringArray(contactPoints)).withPort(port);
 
 		if (compressionType != null) {
-			builder.withCompression(convertCompressionType(compressionType));
+			clusterBuilder.withCompression(convertCompressionType(compressionType));
 		}
 
 		if (poolingOptions != null) {
-			builder.withPoolingOptions(poolingOptions);
+			clusterBuilder.withPoolingOptions(poolingOptions);
 		}
 
 		if (socketOptions != null) {
-			builder.withSocketOptions(socketOptions);
+			clusterBuilder.withSocketOptions(socketOptions);
 		}
 
 		if (queryOptions != null) {
-			builder.withQueryOptions(queryOptions);
+			clusterBuilder.withQueryOptions(queryOptions);
 		}
 
 		if (authProvider != null) {
-			builder.withAuthProvider(authProvider);
+			clusterBuilder.withAuthProvider(authProvider);
 		} else if (username != null) {
-			builder.withCredentials(username, password);
+			clusterBuilder.withCredentials(username, password);
 		}
 
 		if (nettyOptions != null) {
-			builder.withNettyOptions(nettyOptions);
+			clusterBuilder.withNettyOptions(nettyOptions);
 		}
 
 		if (loadBalancingPolicy != null) {
-			builder.withLoadBalancingPolicy(loadBalancingPolicy);
+			clusterBuilder.withLoadBalancingPolicy(loadBalancingPolicy);
 		}
 
 		if (reconnectionPolicy != null) {
-			builder.withReconnectionPolicy(reconnectionPolicy);
+			clusterBuilder.withReconnectionPolicy(reconnectionPolicy);
 		}
 
 		if (retryPolicy != null) {
-			builder.withRetryPolicy(retryPolicy);
+			clusterBuilder.withRetryPolicy(retryPolicy);
 		}
 
 		if (!metricsEnabled) {
-			builder.withoutMetrics();
+			clusterBuilder.withoutMetrics();
 		}
 
 		if (!jmxReportingEnabled) {
-			builder.withoutJMXReporting();
+			clusterBuilder.withoutJMXReporting();
 		}
 
 		if (sslEnabled) {
 			if (sslOptions == null) {
-				builder.withSSL();
+				clusterBuilder.withSSL();
 			} else {
-				builder.withSSL(sslOptions);
+				clusterBuilder.withSSL(sslOptions);
 			}
 		}
 
 		if (protocolVersion != null) {
-			builder.withProtocolVersion(protocolVersion);
+			clusterBuilder.withProtocolVersion(protocolVersion);
 		}
 
-		cluster = builder.build();
+		if (addressTranslator != null) {
+			clusterBuilder.withAddressTranslator(addressTranslator);
+		}
+
+		String clusterName = resolveClusterName();
+
+		if (StringUtils.hasText(clusterName)) {
+			clusterBuilder.withClusterName(clusterName);
+		}
+
+		clusterBuilder.withMaxSchemaAgreementWaitSeconds(maxSchemaAgreementWaitSeconds);
+
+		if (speculativeExecutionPolicy != null) {
+			clusterBuilder.withSpeculativeExecutionPolicy(speculativeExecutionPolicy);
+		}
+
+		if (timestampGenerator != null) {
+			clusterBuilder.withTimestampGenerator(timestampGenerator);
+		}
+
+		if (clusterBuilderConfigurer != null) {
+			clusterBuilderConfigurer.configure(clusterBuilder);
+		}
+
+		cluster = clusterBuilder.build();
 
 		if (hostStateListener != null) {
 			cluster.register(hostStateListener);
@@ -241,14 +258,62 @@ public class CassandraCqlClusterFactoryBean
 		executeSpecsAndScripts(keyspaceCreations, startupScripts);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * @see com.datastax.driver.core.Cluster#builder()
+	 */
+	Cluster.Builder newClusterBuilder() {
+		return Cluster.builder();
+	}
+
+	String resolveClusterName() {
+		return (StringUtils.hasText(clusterName) ? clusterName : beanName);
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
 	 */
 	@Override
 	public void destroy() throws Exception {
-
 		executeSpecsAndScripts(keyspaceDrops, shutdownScripts);
 		cluster.close();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
+	@Override
+	public Cluster getObject() {
+		return cluster;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
+	@Override
+	public Class<? extends Cluster> getObjectType() {
+		return (cluster != null ? cluster.getClass() : Cluster.class);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+	 */
+	@Override
+	public boolean isSingleton() {
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
+	 */
+	@Override
+	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
+		return exceptionTranslator.translateExceptionIfPossible(ex);
 	}
 
 	/**
@@ -257,29 +322,30 @@ public class CassandraCqlClusterFactoryBean
 	 */
 	private void generateSpecificationsFromFactoryBeans() {
 
-		for (KeyspaceActionSpecification<?> spec : keyspaceSpecifications) {
+		for (KeyspaceActionSpecification<?> keyspaceSpecification : keyspaceSpecifications) {
 
-			if (spec instanceof CreateKeyspaceSpecification) {
-				keyspaceCreations.add((CreateKeyspaceSpecification) spec);
+			if (keyspaceSpecification instanceof CreateKeyspaceSpecification) {
+				keyspaceCreations.add((CreateKeyspaceSpecification) keyspaceSpecification);
 			}
-			if (spec instanceof DropKeyspaceSpecification) {
-				keyspaceDrops.add((DropKeyspaceSpecification) spec);
+
+			if (keyspaceSpecification instanceof DropKeyspaceSpecification) {
+				keyspaceDrops.add((DropKeyspaceSpecification) keyspaceSpecification);
 			}
 		}
 	}
 
-	protected void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification<?>> specifications, List<String> scripts) {
+	protected void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification<?>> kepspaceActionSpecifications,
+			List<String> scripts) {
 
-		if (!CollectionUtils.isEmpty(specifications) || !CollectionUtils.isEmpty(scripts)) {
+		if (!CollectionUtils.isEmpty(kepspaceActionSpecifications) || !CollectionUtils.isEmpty(scripts)) {
 
 			Session session = cluster.connect();
 
 			try {
-
 				CqlTemplate template = new CqlTemplate(session);
 
-				for (KeyspaceActionSpecification<?> spec : specifications) {
-					template.execute(toCql(spec));
+				for (KeyspaceActionSpecification<?> keyspaceActionSpecification : kepspaceActionSpecifications) {
+					template.execute(toCql(keyspaceActionSpecification));
 				}
 
 				for (String script : scripts) {
@@ -293,18 +359,25 @@ public class CassandraCqlClusterFactoryBean
 		}
 	}
 
-	private String toCql(KeyspaceActionSpecification<?> spec) {
+	private String toCql(KeyspaceActionSpecification<?> keyspaceActionSpecification) {
 
-		if(spec instanceof CreateKeyspaceSpecification) {
-			return new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) spec).toCql();
-		}
+		return (keyspaceActionSpecification instanceof CreateKeyspaceSpecification
+			? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) keyspaceActionSpecification).toCql()
+			: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) keyspaceActionSpecification).toCql());
+	}
 
-		return new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) spec).toCql();
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanNameAware#setBeanName(String)
+	 */
+	@Override
+	public void setBeanName(String beanName) {
+		this.beanName = beanName;
 	}
 
 	/**
-	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost}, see
-	 * {@link #DEFAULT_CONTACT_POINTS}.
+	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost};
+	 * see {@link #DEFAULT_CONTACT_POINTS}.
 	 */
 	public void setContactPoints(String contactPoints) {
 		this.contactPoints = contactPoints;
@@ -364,7 +437,6 @@ public class CassandraCqlClusterFactoryBean
 	/**
 	 * Set the {@link NettyOptions} used by a client to customize the driver's underlying Netty layer.
 	 *
-	 * @param nettyOptions
 	 * @since 1.5
 	 */
 	public void setNettyOptions(NettyOptions nettyOptions) {
@@ -459,17 +531,17 @@ public class CassandraCqlClusterFactoryBean
 	}
 
 	/**
-	 * @return Returns the keyspaceSpecifications.
-	 */
-	public Set<KeyspaceActionSpecification<?>> getKeyspaceSpecifications() {
-		return keyspaceSpecifications;
-	}
-
-	/**
 	 * @param keyspaceSpecifications The keyspaceSpecifications to set.
 	 */
 	public void setKeyspaceSpecifications(Set<KeyspaceActionSpecification<?>> keyspaceSpecifications) {
 		this.keyspaceSpecifications = keyspaceSpecifications;
+	}
+
+	/**
+	 * @return Returns the keyspaceSpecifications.
+	 */
+	public Set<KeyspaceActionSpecification<?>> getKeyspaceSpecifications() {
+		return keyspaceSpecifications;
 	}
 
 	/**
@@ -529,6 +601,74 @@ public class CassandraCqlClusterFactoryBean
 		this.latencyTracker = latencyTracker;
 	}
 
+	/**
+	 * Configures the address translator used by the new cluster to translate IP addresses received
+	 * from Cassandra nodes into locally query-able addresses.
+	 *
+	 * @param addressTranslator {@link AddressTranslator} used by the new cluster.
+	 * @see com.datastax.driver.core.Cluster.Builder#withAddressTranslator(AddressTranslator)
+	 * @see com.datastax.driver.core.policies.AddressTranslator
+	 */
+	public void setAddressTranslator(AddressTranslator addressTranslator) {
+		this.addressTranslator = addressTranslator;
+	}
+
+	/**
+	 * Sets the {@link ClusterBuilderConfigurer} used to apply additional configuration logic
+	 * to the {@link com.datastax.driver.core.Cluster.Builder}.
+	 *
+	 * @param clusterBuilderConfigurer {@link ClusterBuilderConfigurer} used to configure the
+	 * {@link com.datastax.driver.core.Cluster.Builder}.
+	 * @see org.springframework.cassandra.config.ClusterBuilderConfigurer
+	 */
+	public void setClusterBuilderConfigurer(ClusterBuilderConfigurer clusterBuilderConfigurer) {
+		this.clusterBuilderConfigurer = clusterBuilderConfigurer;
+	}
+
+	/**
+	 * An optional name for the create cluster.
+	 * \
+	 * @param clusterName optional name for the cluster.
+	 * @see com.datastax.driver.core.Cluster.Builder#withClusterName(String)
+	 */
+	public void setClusterName(String clusterName) {
+		this.clusterName = clusterName;
+	}
+
+	/**
+	 * Sets the maximum time to wait for schema agreement before returning from a DDL query.  The timeout is used
+	 * to wait for all currently up hosts in the cluster to agree on the schema.
+	 *
+	 * @param seconds max schema agreement wait in seconds.
+	 * @see com.datastax.driver.core.Cluster.Builder#withMaxSchemaAgreementWaitSeconds(int)
+	 */
+	public void setMaxSchemaAgreementWaitSeconds(int seconds) {
+		this.maxSchemaAgreementWaitSeconds = seconds;
+	}
+
+	/**
+	 * Configures the speculative execution policy to use for the new cluster.
+	 *
+	 * @param speculativeExecutionPolicy {@link SpeculativeExecutionPolicy} to use with the new cluster.
+	 * @see com.datastax.driver.core.Cluster.Builder#withSpeculativeExecutionPolicy(SpeculativeExecutionPolicy)
+	 * @see com.datastax.driver.core.policies.SpeculativeExecutionPolicy
+	 */
+	public void setSpeculativeExecutionPolicy(SpeculativeExecutionPolicy speculativeExecutionPolicy) {
+		this.speculativeExecutionPolicy = speculativeExecutionPolicy;
+	}
+
+	/**
+	 * Configures the generator that will produce the client-side timestamp sent with each query.
+	 *
+	 * @param timestampGenerator {@link TimestampGenerator} used to produce a client-side timestamp
+	 * sent with each query.
+	 * @see com.datastax.driver.core.Cluster.Builder#withTimestampGenerator(TimestampGenerator)
+	 * @see com.datastax.driver.core.TimestampGenerator
+	 */
+	public void setTimestampGenerator(TimestampGenerator timestampGenerator) {
+		this.timestampGenerator = timestampGenerator;
+	}
+
 	private static Compression convertCompressionType(CompressionType type) {
 		switch (type) {
 			case NONE:
@@ -537,6 +677,6 @@ public class CassandraCqlClusterFactoryBean
 				return Compression.SNAPPY;
 		}
 
-		throw new IllegalArgumentException("unknown compression type " + type);
+		throw new IllegalArgumentException(String.format("Unknown compression type [%s]", type));
 	}
 }

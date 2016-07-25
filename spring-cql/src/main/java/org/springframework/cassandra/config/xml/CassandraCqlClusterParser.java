@@ -89,17 +89,23 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 	 */
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
+		addOptionalPropertyReference(builder, "addressTranslator", element, "address-translator-ref");
 		addOptionalPropertyReference(builder, "authProvider", element, "auth-info-provider-ref");
+		addOptionalPropertyReference(builder, "clusterBuilderConfigurer", element, "cluster-builder-configurer-ref");
 		addOptionalPropertyReference(builder, "hostStateListener", element, "host-state-listener-ref");
 		addOptionalPropertyReference(builder, "latencyTracker", element, "latency-tracker-ref");
 		addOptionalPropertyReference(builder, "loadBalancingPolicy", element, "load-balancing-policy-ref");
 		addOptionalPropertyReference(builder, "reconnectionPolicy", element, "reconnection-policy-ref");
 		addOptionalPropertyReference(builder, "retryPolicy", element, "retry-policy-ref");
+		addOptionalPropertyReference(builder, "speculativeExecutionPolicy", element, "speculative-execution-policy-ref");
 		addOptionalPropertyReference(builder, "sslOptions", element, "ssl-options-ref");
+		addOptionalPropertyReference(builder, "timestampGenerator", element, "timestamp-generator-ref");
 
+		addOptionalPropertyValue(builder, "clusterName", element, "cluster-name");
 		addOptionalPropertyValue(builder, "contactPoints", element, "contact-points");
 		addOptionalPropertyValue(builder, "compressionType", element, "compression");
 		addOptionalPropertyValue(builder, "jmxReportingEnabled", element, "jmx-reporting-enabled");
+		addOptionalPropertyValue(builder, "maxSchemaAgreementWaitSeconds", element, "max-schema-agreement-wait-seconds");
 		addOptionalPropertyValue(builder, "metricsEnabled", element, "metrics-enabled");
 		addOptionalPropertyValue(builder, "password", element, "password");
 		addOptionalPropertyValue(builder, "port", element, "port");

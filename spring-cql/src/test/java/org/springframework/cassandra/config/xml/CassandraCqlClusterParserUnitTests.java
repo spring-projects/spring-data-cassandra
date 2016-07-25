@@ -15,6 +15,7 @@
  */
 package org.springframework.cassandra.config.xml;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -85,16 +86,22 @@ public class CassandraCqlClusterParserUnitTests {
 		BeanDefinition mockContainingBeanDefinition = mock(BeanDefinition.class);
 
 		when(mockContainingBeanDefinition.getScope()).thenReturn("Singleton");
+		when(mockElement.getAttribute("address-translator-ref")).thenReturn("testAddressTranslator");
 		when(mockElement.getAttribute("auth-info-provider-ref")).thenReturn("testAuthInfoProvider");
+		when(mockElement.getAttribute("cluster-builder-configurer-ref")).thenReturn("testClusterBuilderConfigurer");
 		when(mockElement.getAttribute("host-state-listener-ref")).thenReturn("testHostStateListener");
 		when(mockElement.getAttribute("latency-tracker-ref")).thenReturn("testLatencyTracker");
 		when(mockElement.getAttribute("load-balancing-policy-ref")).thenReturn("testLoadBalancingPolicy");
 		when(mockElement.getAttribute("reconnection-policy-ref")).thenReturn("testReconnectionPolicy");
 		when(mockElement.getAttribute("retry-policy-ref")).thenReturn("testRetryPolicy");
+		when(mockElement.getAttribute("speculative-execution-policy-ref")).thenReturn("testSpeculativeExecutionPolicy");
 		when(mockElement.getAttribute("ssl-options-ref")).thenReturn("testSslOptions");
+		when(mockElement.getAttribute("timestamp-generator-ref")).thenReturn("testTimestampGenerator");
+		when(mockElement.getAttribute("cluster-name")).thenReturn("testCluster");
 		when(mockElement.getAttribute("contact-points")).thenReturn("skullbox");
 		when(mockElement.getAttribute("compression")).thenReturn("SNAPPY");
 		when(mockElement.getAttribute("jmx-reporting-enabled")).thenReturn("true");
+		when(mockElement.getAttribute("max-schema-agreement-wait-seconds")).thenReturn("30");
 		when(mockElement.getAttribute("metrics-enabled")).thenReturn("true");
 		when(mockElement.getAttribute("password")).thenReturn("p@55w0rd");
 		when(mockElement.getAttribute("port")).thenReturn("12345");
@@ -116,16 +123,22 @@ public class CassandraCqlClusterParserUnitTests {
 		assertThat(beanDefinition.getDestroyMethodName(), is(equalTo("destroy")));
 		assertThat((Element) beanDefinition.getSource(), is(equalTo(mockElement)));
 		assertThat(beanDefinition.isLazyInit(), is(false));
+		assertThat(getPropertyValueAsString(beanDefinition, "addressTranslator"), is(equalTo("testAddressTranslator")));
 		assertThat(getPropertyValueAsString(beanDefinition, "authProvider"), is(equalTo("testAuthInfoProvider")));
+		assertThat(getPropertyValueAsString(beanDefinition, "clusterBuilderConfigurer"), is(equalTo("testClusterBuilderConfigurer")));
 		assertThat(getPropertyValueAsString(beanDefinition, "hostStateListener"), is(equalTo("testHostStateListener")));
 		assertThat(getPropertyValueAsString(beanDefinition, "latencyTracker"), is(equalTo("testLatencyTracker")));
 		assertThat(getPropertyValueAsString(beanDefinition, "loadBalancingPolicy"), is(equalTo("testLoadBalancingPolicy")));
 		assertThat(getPropertyValueAsString(beanDefinition, "reconnectionPolicy"), is(equalTo("testReconnectionPolicy")));
 		assertThat(getPropertyValueAsString(beanDefinition, "retryPolicy"), is(equalTo("testRetryPolicy")));
+		assertThat(getPropertyValueAsString(beanDefinition, "speculativeExecutionPolicy"), is(equalTo("testSpeculativeExecutionPolicy")));
 		assertThat(getPropertyValueAsString(beanDefinition, "sslOptions"), is(equalTo("testSslOptions")));
+		assertThat(getPropertyValueAsString(beanDefinition, "timestampGenerator"), is(equalTo("testTimestampGenerator")));
+		assertThat(getPropertyValueAsString(beanDefinition, "clusterName"), is(equalTo("testCluster")));
 		assertThat(getPropertyValueAsString(beanDefinition, "contactPoints"), is(equalTo("skullbox")));
 		assertThat(getPropertyValueAsString(beanDefinition, "compressionType"), is(equalTo("SNAPPY")));
 		assertThat(getPropertyValueAsString(beanDefinition, "jmxReportingEnabled"), is(equalTo("true")));
+		assertThat(getPropertyValueAsString(beanDefinition, "maxSchemaAgreementWaitSeconds"), is(equalTo("30")));
 		assertThat(getPropertyValueAsString(beanDefinition, "metricsEnabled"), is(equalTo("true")));
 		assertThat(getPropertyValueAsString(beanDefinition, "password"), is(equalTo("p@55w0rd")));
 		assertThat(getPropertyValueAsString(beanDefinition, "port"), is(equalTo("12345")));
@@ -133,16 +146,22 @@ public class CassandraCqlClusterParserUnitTests {
 		assertThat(getPropertyValueAsString(beanDefinition, "username"), is(equalTo("jonDoe")));
 
 		verify(mockContainingBeanDefinition).getScope();
+		verify(mockElement).getAttribute(eq("address-translator-ref"));
 		verify(mockElement).getAttribute(eq("auth-info-provider-ref"));
+		verify(mockElement).getAttribute(eq("cluster-builder-configurer-ref"));
 		verify(mockElement).getAttribute(eq("host-state-listener-ref"));
 		verify(mockElement).getAttribute(eq("latency-tracker-ref"));
 		verify(mockElement).getAttribute(eq("load-balancing-policy-ref"));
 		verify(mockElement).getAttribute(eq("reconnection-policy-ref"));
 		verify(mockElement).getAttribute(eq("retry-policy-ref"));
+		verify(mockElement).getAttribute(eq("speculative-execution-policy-ref"));
+		verify(mockElement).getAttribute(eq("timestamp-generator-ref"));
 		verify(mockElement).getAttribute(eq("ssl-options-ref"));
+		verify(mockElement).getAttribute(eq("cluster-name"));
 		verify(mockElement).getAttribute(eq("contact-points"));
 		verify(mockElement).getAttribute(eq("compression"));
 		verify(mockElement).getAttribute(eq("jmx-reporting-enabled"));
+		verify(mockElement).getAttribute(eq("max-schema-agreement-wait-seconds"));
 		verify(mockElement).getAttribute(eq("metrics-enabled"));
 		verify(mockElement).getAttribute(eq("password"));
 		verify(mockElement).getAttribute(eq("port"));
