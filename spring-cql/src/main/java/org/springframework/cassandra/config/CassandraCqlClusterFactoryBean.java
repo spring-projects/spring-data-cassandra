@@ -36,6 +36,7 @@ import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.AuthProvider;
@@ -44,13 +45,14 @@ import com.datastax.driver.core.Host;
 import com.datastax.driver.core.LatencyTracker;
 import com.datastax.driver.core.NettyOptions;
 import com.datastax.driver.core.PoolingOptions;
-import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SocketOptions;
 import com.datastax.driver.core.TimestampGenerator;
+import com.datastax.driver.core.Cluster.Builder;
+import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
@@ -95,56 +97,41 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	private int maxSchemaAgreementWaitSeconds = DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS;
 	private int port = DEFAULT_PORT;
 
-	private AddressTranslator addressTranslator;
-
-	private AuthProvider authProvider;
+	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	private Cluster cluster;
-
 	private ClusterBuilderConfigurer clusterBuilderConfigurer;
 
+	private AddressTranslator addressTranslator;
+	private AuthProvider authProvider;
 	private CompressionType compressionType;
-
 	private Host.StateListener hostStateListener;
-
 	private LatencyTracker latencyTracker;
 
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
+	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<KeyspaceActionSpecification<?>>();
+
 	private List<String> startupScripts = new ArrayList<String>();
 	private List<String> shutdownScripts = new ArrayList<String>();
 
 	private LoadBalancingPolicy loadBalancingPolicy;
-
 	private NettyOptions nettyOptions;
-
-	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
-
 	private PoolingOptions poolingOptions;
-
 	private ProtocolVersion protocolVersion;
-
 	private QueryOptions queryOptions;
-
 	private ReconnectionPolicy reconnectionPolicy;
-
 	private RetryPolicy retryPolicy;
-
-	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<KeyspaceActionSpecification<?>>();
-
 	private SpeculativeExecutionPolicy speculativeExecutionPolicy;
-
 	private SocketOptions socketOptions;
-
 	private SSLOptions sslOptions;
+	private TimestampGenerator timestampGenerator;
 
 	private String beanName;
 	private String clusterName;
 	private String contactPoints = DEFAULT_CONTACT_POINTS;
 	private String password;
 	private String username;
-
-	private TimestampGenerator timestampGenerator;
 
 	/*
 	 * (non-Javadoc)
@@ -153,9 +140,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		if (!StringUtils.hasText(contactPoints)) {
-			throw new IllegalArgumentException("At least one server is required");
-		}
+		Assert.isTrue(StringUtils.hasText(contactPoints), "At least one server is required");
 
 		Cluster.Builder clusterBuilder = newClusterBuilder();
 
@@ -266,7 +251,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 		return Cluster.builder();
 	}
 
-	String resolveClusterName() {
+	private String resolveClusterName() {
 		return (StringUtils.hasText(clusterName) ? clusterName : beanName);
 	}
 
@@ -369,6 +354,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanNameAware#setBeanName(String)
+	 * @since 1.5
 	 */
 	@Override
 	public void setBeanName(String beanName) {
@@ -378,6 +364,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	/**
 	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost};
 	 * see {@link #DEFAULT_CONTACT_POINTS}.
+	 *
+	 * @param contactPoints the contact points used by the new cluster.
 	 */
 	public void setContactPoints(String contactPoints) {
 		this.contactPoints = contactPoints;
@@ -385,6 +373,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * Set the port for the contact points. Default is {@code 9042}, see {@link #DEFAULT_PORT}.
+	 *
+	 * @param port the port used by the new cluster.
 	 */
 	public void setPort(int port) {
 		this.port = port;
@@ -392,6 +382,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * Set the {@link CompressionType}. Default is uncompressed.
+	 *
+	 * @param compressionType the {@link CompressionType} used by the new cluster.
 	 */
 	public void setCompressionType(CompressionType compressionType) {
 		this.compressionType = compressionType;
@@ -399,6 +391,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * Set the {@link PoolingOptions} to configure the connection pooling behavior.
+	 *
+	 * @param poolingOptions the {@link PoolingOptions} used by the new cluster.
 	 */
 	public void setPoolingOptions(PoolingOptions poolingOptions) {
 		this.poolingOptions = poolingOptions;
@@ -407,6 +401,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	/**
 	 * Set the {@link ProtocolVersion}.
 	 *
+	 * @param protocolVersion the {@link ProtocolVersion} used by the new cluster.
 	 * @since 1.4
 	 */
 	public void setProtocolVersion(ProtocolVersion protocolVersion) {
@@ -415,6 +410,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * Set the {@link SocketOptions} containing low-level socket options.
+	 *
+	 * @param socketOptions the {@link SocketOptions} used by the new cluster.
 	 */
 	public void setSocketOptions(SocketOptions socketOptions) {
 		this.socketOptions = socketOptions;
@@ -422,6 +419,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * Set the {@link QueryOptions} to tune to defaults for individual queries.
+	 *
+	 * @param queryOptions the {@link QueryOptions} used by the new cluster.
 	 */
 	public void setQueryOptions(QueryOptions queryOptions) {
 		this.queryOptions = queryOptions;
@@ -429,6 +428,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * Set the {@link AuthProvider}. Default is unauthenticated.
+	 *
+	 * @param authProvider the {@link AuthProvider} used by the new cluster.
 	 */
 	public void setAuthProvider(AuthProvider authProvider) {
 		this.authProvider = authProvider;
@@ -437,6 +438,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	/**
 	 * Set the {@link NettyOptions} used by a client to customize the driver's underlying Netty layer.
 	 *
+	 * @param nettyOptions the {@link NettyOptions} used by the new cluster.
 	 * @since 1.5
 	 */
 	public void setNettyOptions(NettyOptions nettyOptions) {
@@ -445,6 +447,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * Set the {@link LoadBalancingPolicy} that decides which Cassandra hosts to contact for each new query.
+	 *
+	 * @param loadBalancingPolicy the {@link LoadBalancingPolicy} used by the new cluster.
 	 */
 	public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
 		this.loadBalancingPolicy = loadBalancingPolicy;
@@ -452,6 +456,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * Set the {@link ReconnectionPolicy} that decides how often the reconnection to a dead node is attempted.
+	 *
+	 * @param reconnectionPolicy the {@link ReconnectionPolicy} used by the new cluster.
 	 */
 	public void setReconnectionPolicy(ReconnectionPolicy reconnectionPolicy) {
 		this.reconnectionPolicy = reconnectionPolicy;
@@ -459,6 +465,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 
 	/**
 	 * Set the {@link RetryPolicy} that defines a default behavior to adopt when a request fails.
+	 *
+	 * @param retryPolicy the {@link RetryPolicy} used by the new cluster.
 	 */
 	public void setRetryPolicy(RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
@@ -476,13 +484,15 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 * this factory is {@link #afterPropertiesSet() initialized}. {@link CreateKeyspaceSpecification Create keyspace
 	 * specifications} are executed on a system session with no keyspace set, before executing
 	 * {@link #setStartupScripts(List)}.
+	 *
+	 * @param specifications the {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
 	 */
 	public void setKeyspaceCreations(List<CreateKeyspaceSpecification> specifications) {
 		this.keyspaceCreations = specifications;
 	}
 
 	/**
-	 * Return a {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
+	 * @return {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
 	 */
 	public List<CreateKeyspaceSpecification> getKeyspaceCreations() {
 		return keyspaceCreations;
@@ -492,13 +502,15 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 * Set a {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications} that are executed when this
 	 * factory is {@link #destroy() destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are
 	 * executed on a system session with no keyspace set, before executing {@link #setShutdownScripts(List)}.
+	 *
+	 * @param specifications the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
 	 */
 	public void setKeyspaceDrops(List<DropKeyspaceSpecification> specifications) {
 		this.keyspaceDrops = specifications;
 	}
 
 	/**
-	 * Reurn the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
+	 * @return the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
 	 */
 	public List<DropKeyspaceSpecification> getKeyspaceDrops() {
 		return keyspaceDrops;
@@ -508,11 +520,17 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 * Set a {@link List} of raw {@link String CQL statements} that are executed when this factory is
 	 * {@link #afterPropertiesSet() initialized}. Scripts are executed on a system session with no keyspace set, after
 	 * executing {@link #setKeyspaceCreations(List)}.
+	 *
+	 * @param scripts the scripts to execute on startup
 	 */
 	public void setStartupScripts(List<String> scripts) {
 		this.startupScripts = scripts;
 	}
 
+	/**
+	 *
+	 * @return the startup scripts
+	 */
 	public List<String> getStartupScripts() {
 		return startupScripts;
 	}
@@ -521,24 +539,30 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 * Set a {@link List} of raw {@link String CQL statements} that are executed when this factory is {@link #destroy()
 	 * destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are executed on a system session with no
 	 * keyspace set, after executing {@link #setKeyspaceDrops(List)}.
+	 *
+	 * @param scripts the scripts to execute on shutdown
 	 */
 	public void setShutdownScripts(List<String> scripts) {
 		this.shutdownScripts = scripts;
 	}
 
+	/**
+	 *
+	 * @return the shutdown scripts
+	 */
 	public List<String> getShutdownScripts() {
 		return shutdownScripts;
 	}
 
 	/**
-	 * @param keyspaceSpecifications The keyspaceSpecifications to set.
+	 * @param keyspaceSpecifications The {@link KeyspaceActionSpecification} to set.
 	 */
 	public void setKeyspaceSpecifications(Set<KeyspaceActionSpecification<?>> keyspaceSpecifications) {
 		this.keyspaceSpecifications = keyspaceSpecifications;
 	}
 
 	/**
-	 * @return Returns the keyspaceSpecifications.
+	 * @return the {@link KeyspaceActionSpecification} associated with this factory.
 	 */
 	public Set<KeyspaceActionSpecification<?>> getKeyspaceSpecifications() {
 		return keyspaceSpecifications;
@@ -608,17 +632,20 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 * @param addressTranslator {@link AddressTranslator} used by the new cluster.
 	 * @see com.datastax.driver.core.Cluster.Builder#withAddressTranslator(AddressTranslator)
 	 * @see com.datastax.driver.core.policies.AddressTranslator
+	 * @since 1.5
 	 */
 	public void setAddressTranslator(AddressTranslator addressTranslator) {
 		this.addressTranslator = addressTranslator;
 	}
 
 	/**
-	 * Sets the {@link ClusterBuilderConfigurer} used to apply additional configuration logic
-	 * to the {@link com.datastax.driver.core.Cluster.Builder}.
+	 * Sets the {@link ClusterBuilderConfigurer} used to apply additional configuration logic to the
+	 * {@link com.datastax.driver.core.Cluster.Builder}. {@link ClusterBuilderConfigurer} is invoked after all provided
+	 * options are configured. The factory will {@link Builder#build()} the {@link Cluster} after applying
+	 * {@link ClusterBuilderConfigurer}.
 	 *
 	 * @param clusterBuilderConfigurer {@link ClusterBuilderConfigurer} used to configure the
-	 * {@link com.datastax.driver.core.Cluster.Builder}.
+	 *          {@link com.datastax.driver.core.Cluster.Builder}.
 	 * @see org.springframework.cassandra.config.ClusterBuilderConfigurer
 	 */
 	public void setClusterBuilderConfigurer(ClusterBuilderConfigurer clusterBuilderConfigurer) {
@@ -626,10 +653,11 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
-	 * An optional name for the create cluster.
-	 * \
+	 * An optional name for the cluster instance. This name appears in JMX metrics. Defaults to the bean name.
+	 *
 	 * @param clusterName optional name for the cluster.
 	 * @see com.datastax.driver.core.Cluster.Builder#withClusterName(String)
+	 * @since 1.5
 	 */
 	public void setClusterName(String clusterName) {
 		this.clusterName = clusterName;
@@ -641,6 +669,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 *
 	 * @param seconds max schema agreement wait in seconds.
 	 * @see com.datastax.driver.core.Cluster.Builder#withMaxSchemaAgreementWaitSeconds(int)
+	 * @since 1.5
 	 */
 	public void setMaxSchemaAgreementWaitSeconds(int seconds) {
 		this.maxSchemaAgreementWaitSeconds = seconds;
@@ -652,6 +681,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 * @param speculativeExecutionPolicy {@link SpeculativeExecutionPolicy} to use with the new cluster.
 	 * @see com.datastax.driver.core.Cluster.Builder#withSpeculativeExecutionPolicy(SpeculativeExecutionPolicy)
 	 * @see com.datastax.driver.core.policies.SpeculativeExecutionPolicy
+	 * @since 1.5
 	 */
 	public void setSpeculativeExecutionPolicy(SpeculativeExecutionPolicy speculativeExecutionPolicy) {
 		this.speculativeExecutionPolicy = speculativeExecutionPolicy;
@@ -664,6 +694,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 * sent with each query.
 	 * @see com.datastax.driver.core.Cluster.Builder#withTimestampGenerator(TimestampGenerator)
 	 * @see com.datastax.driver.core.TimestampGenerator
+	 * @since 1.5
 	 */
 	public void setTimestampGenerator(TimestampGenerator timestampGenerator) {
 		this.timestampGenerator = timestampGenerator;
