@@ -14,7 +14,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-cassandra-parent</artifactId>
-	<version>1.5.0.DATACASS-238-316-320-SNAPSHOT</version>
+	<version>1.5.0.DATACASS-120-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data Cassandra</name>
