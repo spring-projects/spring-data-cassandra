@@ -1,6 +1,57 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.5.0.M1 (2016-07-27)
+----------------------------------------
+* DATACASS-325 - Implement a ClusterBuilderConfigurer callback interface to handle extended configuration when the DataStax API changes.
+* DATACASS-321 - Integrate version badge from spring.io.
+* DATACASS-320 - Update CassandraCqlClusterFactoryBean with support for setting speculativeExecutionPolicy.
+* DATACASS-319 - Update CassandraCqlClusterFactoryBean with support for setting maxSchemaAgreementWaitSeconds.
+* DATACASS-317 - Update CassandraCqlClusterFactoryBean with support for setting Cluster name.
+* DATACASS-316 - Update CassandraCqlClusterFactoryBean with support for setting AddressTranslator.
+* DATACASS-315 - Upgrade Cassandra Java driver to 3.0.3.
+* DATACASS-310 - Fix CqlTemplate and CassandraTemplate returning null for data access operations returning a Collection.
+* DATACASS-308 - CassandraTemplate.appendIdCriteria throws NullPointerException when using MapId containing unknown property names.
+* DATACASS-307 - Run TravisCI build against various Cassandra versions.
+* DATACASS-305 - Improve readability of CassandraCqlClusterFactoryBean.executeSpecsAndScripts.
+* DATACASS-304 - CqlTemplate.doExecute does not translate Cassandra Exceptions.
+* DATACASS-301 - CassandraCqlClusterParser incorrectly parses SocketOptions read-timeout-millis.
+* DATACASS-300 - CassandraCqlClusterParser incorrectly parses SocketOptions connection-timeout-millis.
+* DATACASS-298 - Add missing PoolingOptions to the XML namespace as well as the PoolingOptionsFactoryBean.
+* DATACASS-297 - Add support for streaming queries to select entities.
+* DATACASS-296 - Use CustomConversions for JSR-310, Joda and ThreeTen Backport types.
+* DATACASS-288 - Add support for Cassandra batch operations.
+* DATACASS-287 - QueryForObjectListener will not be called, if result set is empty.
+* DATACASS-286 - Log all CQL queries executed with CqlTemplate.
+* DATACASS-280 - Refactor Cassandra query execution and mapping to consolidate mapping.
+* DATACASS-277 - Enum mapping using ordinal value.
+* DATACASS-275 - Remove usage of deprecated methods.
+* DATACASS-271 - Upgrade to Cassandra 3.0.0.
+* DATACASS-269 - Release 1.5 M1 (Ingalls).
+* DATACASS-263 - AuthProvider required when using with username/password.
+* DATACASS-262 - Add missing throws to catch blocks in CqlTemplate.
+* DATACASS-260 - Enum properties cannot be written.
+* DATACASS-255 - Initial test-cleanup.
+* DATACASS-253 - CachedPreparedStatementCreator class is not threadsafe.
+* DATACASS-249 - CDI support can fail due to Set.toString() used as Map key.
+* DATACASS-248 - @PrimaryKeyColumn does not work when applied to methods.
+* DATACASS-247 - Optional return type for Repositories returns Optional of resultset instead of Optional of Objectype.
+* DATACASS-242 - Shutdown Script issue with XML Configuration.
+* DATACASS-241 - The SchemaAction.RECREATE doesn't drop tables.
+* DATACASS-238 - Update CassandraCqlClusterFactoryBean to support setting TimestampGenerator.
+* DATACASS-233 - CassandraCqlClusterFactoryBean won't allow configuration of username/password unless authProvider also given.
+* DATACASS-231 - Update CassandraCqlClusterFactoryBean so the ProtocolVersion can be set.
+* DATACASS-226 - Enable CassandraCqlClusterFactoryBean to set QueryOptions at cluster level.
+* DATACASS-219 - On startup CREATE TABLE from entities should only add 'if not exists'.
+* DATACASS-206 - CassandraTemplate @PrimaryKeyColumn annotation, name property, not working on delete.
+* DATACASS-192 - AlterTableSpecification add column produces syntax error.
+* DATACASS-184 - Cassandra-All has test scope in pom.xml.
+* DATACASS-182 - Ability to null out column values.
+* DATACASS-174 - StackOverflowError in CassandraAdminTemplate#dropTable(Class<?>).
+* DATACASS-141 - Support for enumeration mapping.
+* DATACASS-7 - Support for query derivation on repository query methods.
+
+
 Changes in version 1.4.2.RELEASE (2016-06-15)
 ---------------------------------------------
 * DATACASS-287 - QueryForObjectListener will not be called, if result set is empty.
