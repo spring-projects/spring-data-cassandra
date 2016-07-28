@@ -58,7 +58,6 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ProtocolVersion;
@@ -69,6 +68,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TypeCodec;
+import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Delete;
@@ -93,6 +93,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Ryan Scheidter
  * @author Antoine Toulme
  * @author John Blum
+ * @author Mark Paluch
  * @see org.springframework.cassandra.core.CqlOperations
  * @see org.springframework.cassandra.support.CassandraAccessor
  */
@@ -140,11 +141,15 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		if (queryOptions != null) {
 
-			if (queryOptions.getConsistencyLevel() != null) {
+			if (queryOptions.getDriverConsistencyLevel() != null) {
+				preparedStatement.setConsistencyLevel(queryOptions.getDriverConsistencyLevel());
+			} else if (queryOptions.getConsistencyLevel() != null) {
 				preparedStatement.setConsistencyLevel(ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
 			}
 
-			if (queryOptions.getRetryPolicy() != null) {
+			if (queryOptions.getDriverRetryPolicy() != null) {
+				preparedStatement.setRetryPolicy(queryOptions.getDriverRetryPolicy());
+			} else if (queryOptions.getRetryPolicy() != null) {
 				preparedStatement.setRetryPolicy(RetryPolicyResolver.resolve(queryOptions.getRetryPolicy()));
 			}
 		}
@@ -163,12 +168,32 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		if (queryOptions != null) {
 
-			if (queryOptions.getConsistencyLevel() != null) {
+			if (queryOptions.getDriverConsistencyLevel() != null) {
+				statement.setConsistencyLevel(queryOptions.getDriverConsistencyLevel());
+			} else if (queryOptions.getConsistencyLevel() != null) {
 				statement.setConsistencyLevel(ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
 			}
 
-			if (queryOptions.getRetryPolicy() != null) {
+			if (queryOptions.getDriverRetryPolicy() != null) {
+				statement.setRetryPolicy(queryOptions.getDriverRetryPolicy());
+			} else if (queryOptions.getRetryPolicy() != null) {
 				statement.setRetryPolicy(RetryPolicyResolver.resolve(queryOptions.getRetryPolicy()));
+			}
+
+			if (queryOptions.getReadTimeout() != null) {
+				statement.setReadTimeoutMillis(queryOptions.getReadTimeout().intValue());
+			}
+
+			if (queryOptions.getFetchSize() != null) {
+				statement.setFetchSize(queryOptions.getFetchSize());
+			}
+
+			if (queryOptions.getTracing() != null) {
+				if (queryOptions.getTracing()) {
+					statement.enableTracing();
+				} else {
+					statement.disableTracing();
+				}
 			}
 		}
 

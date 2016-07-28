@@ -15,6 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.core;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Collection;
@@ -1087,7 +1088,27 @@ public class CqlOperationsIntegrationTests extends AbstractKeyspaceCreatingInteg
 
 		Truncate truncate = QueryBuilder.truncate(tableName);
 		cqlTemplate.execute(truncate);
+	}
 
+	/**
+	 * @see DATACASS-202
+	 */
+	@Test
+	public void queryShouldApplyFetchSize() {
+
+		insertTestObjectArray();
+
+		final String cql = "select * from book";
+
+		ResultSet oneByOneResultSet = cqlTemplate.query(cql, QueryOptions.builder().fetchSize(1).build());
+
+		assertThat(oneByOneResultSet.isFullyFetched(), is(false));
+		assertThat(oneByOneResultSet.getAvailableWithoutFetching(), is(1));
+
+		ResultSet fullResultSet = cqlTemplate.query(cql, QueryOptions.builder().fetchSize(10).build());
+
+		assertThat(fullResultSet.isFullyFetched(), is(true));
+		assertThat(fullResultSet.getAvailableWithoutFetching(), is(4));
 	}
 
 	/**

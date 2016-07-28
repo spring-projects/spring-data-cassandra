@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,6 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.cassandra.support.exception.CassandraReadTimeoutException;
@@ -36,31 +38,44 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.exceptions.ReadTimeoutException;
+import com.datastax.driver.core.policies.FallthroughRetryPolicy;
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.core.querybuilder.Using;
 
 /**
  * The CqlTemplateUnitTests class is a test suite of test cases testing the contract and functionality of the
  * {@link CqlTemplate} class.
  *
  * @author John Blum
+ * @author Mark Paluch
  */
 // TODO: add many more unit tests until SUT test coverage is 100%!
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
 public class CqlTemplateUnitTests {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	@Rule public ExpectedException exception = ExpectedException.none();
 
 	private CqlTemplate template;
 
-	@Mock
-	private Session mockSession;
+	@Mock private Session mockSession;
+
+	@Mock private PreparedStatement mockPreparedStatement;
+
+	@Mock private Statement mockStatement;
+
+	@Mock private Insert mockInsert;
+
+	@Mock private Update mockUpdate;
 
 	@Before
 	public void setup() {
@@ -71,7 +86,8 @@ public class CqlTemplateUnitTests {
 	@Test
 	public void doExecuteInSessionCallbackIsCalled() {
 		String result = template.doExecute(new SessionCallback<String>() {
-			@Override public String doInSession(Session session) throws DataAccessException {
+			@Override
+			public String doInSession(Session session) throws DataAccessException {
 				session.execute("test");
 				return "test";
 			}
@@ -91,7 +107,8 @@ public class CqlTemplateUnitTests {
 		exception.expectCause(org.hamcrest.Matchers.isA(ReadTimeoutException.class));
 
 		template.doExecute(new SessionCallback<String>() {
-			@Override public String doInSession(Session session) throws DataAccessException {
+			@Override
+			public String doInSession(Session session) throws DataAccessException {
 				throw new ReadTimeoutException(ConsistencyLevel.ALL, 0, 1, true);
 			}
 		});
@@ -107,7 +124,8 @@ public class CqlTemplateUnitTests {
 		exception.expectMessage(containsString("test"));
 
 		template.doExecute(new SessionCallback<String>() {
-			@Override public String doInSession(Session session) throws DataAccessException {
+			@Override
+			public String doInSession(Session session) throws DataAccessException {
 				throw new DriverException("test");
 			}
 		});
@@ -123,7 +141,8 @@ public class CqlTemplateUnitTests {
 		exception.expectMessage(containsString("test"));
 
 		template.doExecute(new SessionCallback<String>() {
-			@Override public String doInSession(Session session) throws DataAccessException {
+			@Override
+			public String doInSession(Session session) throws DataAccessException {
 				throw new Error("test");
 			}
 		});
@@ -405,5 +424,145 @@ public class CqlTemplateUnitTests {
 		exception.expectCause(is(nullValue(Throwable.class)));
 
 		template.processOne(null, String.class);
+	}
+
+	/**
+	 * @see DATACASS-202
+	 */
+	@Test
+	public void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.consistencyLevel(ConsistencyLevel.EACH_QUORUM) //
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
+				.build();
+
+		template.addPreparedStatementOptions(mockPreparedStatement, queryOptions);
+
+		verify(mockPreparedStatement).setConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
+		verify(mockPreparedStatement).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+	}
+
+	/**
+	 * @see DATACASS-202
+	 */
+	@Test
+	public void addPreparedStatementOptionsShouldAddOurQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.retryPolicy(RetryPolicy.FALLTHROUGH).build();
+		queryOptions.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.LOCAL_QUOROM);
+
+		template.addPreparedStatementOptions(mockPreparedStatement, queryOptions);
+
+		verify(mockPreparedStatement).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+		verify(mockPreparedStatement).setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
+	}
+
+	/**
+	 * @see DATACASS-202
+	 */
+	@Test
+	public void addStatementQueryOptionsShouldAddDriverQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(ConsistencyLevel.EACH_QUORUM) //
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
+				.build();
+
+		template.addQueryOptions(mockStatement, queryOptions);
+
+		verify(mockStatement).setConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
+		verify(mockStatement).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+	}
+
+	/**
+	 * @see DATACASS-202
+	 */
+	@Test
+	public void addStatementQueryOptionsShouldAddOurQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.retryPolicy(RetryPolicy.FALLTHROUGH) //
+				.build();
+		queryOptions.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.LOCAL_QUOROM);
+
+		template.addQueryOptions(mockStatement, queryOptions);
+
+		verify(mockStatement).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+		verify(mockStatement).setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
+	}
+
+	/**
+	 * @see DATACASS-202
+	 */
+	@Test
+	public void addStatementQueryOptionsShouldNotAddOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder().build();
+
+		template.addQueryOptions(mockStatement, queryOptions);
+
+		verifyZeroInteractions(mockStatement);
+	}
+
+	/**
+	 * @see DATACASS-202
+	 */
+	@Test
+	public void addStatementQueryOptionsShouldAddGenericQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.readTimeout(1, TimeUnit.MINUTES) //
+				.fetchSize(10) //
+				.withTracing() //
+				.build();
+
+		template.addQueryOptions(mockStatement, queryOptions);
+
+		verify(mockStatement).setReadTimeoutMillis(60 * 1000);
+		verify(mockStatement).setFetchSize(10);
+		verify(mockStatement).enableTracing();
+	}
+
+	/**
+	 * @see DATACASS-202
+	 */
+	@Test
+	public void addInsertWriteOptionsShouldAddDriverQueryOptions() {
+
+		WriteOptions writeOptions = WriteOptions.builder() //
+				.consistencyLevel(ConsistencyLevel.EACH_QUORUM) //
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
+				.readTimeout(10) //
+				.ttl(10) //
+				.build();
+
+		template.addWriteOptions(mockInsert, writeOptions);
+
+		verify(mockInsert).setConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
+		verify(mockInsert).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+		verify(mockInsert).setReadTimeoutMillis(10);
+		verify(mockInsert).using(Mockito.any(Using.class));
+	}
+
+	/**
+	 * @see DATACASS-202
+	 */
+	@Test
+	public void addUpdateWriteOptionsShouldAddDriverQueryOptions() {
+
+		WriteOptions writeOptions = WriteOptions.builder() //
+				.consistencyLevel(ConsistencyLevel.EACH_QUORUM) //
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
+				.ttl(10) //
+				.tracing(false)
+				.build();
+
+		template.addWriteOptions(mockUpdate, writeOptions);
+
+		verify(mockUpdate).setConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
+		verify(mockUpdate).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+		verify(mockUpdate).using(Mockito.any(Using.class));
+		verify(mockUpdate).disableTracing();
 	}
 }
