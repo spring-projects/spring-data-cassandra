@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.concurrent.TimeUnit;
 
@@ -48,13 +47,13 @@ public class QueryOptionsUnitTests {
 				.tracing(true)//
 				.build(); //
 
-		assertThat((Class) queryOptions.getClass(), is(equalTo((Class) QueryOptions.class)));
-		assertThat(queryOptions.getRetryPolicy(), is(RetryPolicy.DEFAULT));
-		assertThat(queryOptions.getConsistencyLevel(), is(nullValue()));
-		assertThat(queryOptions.getDriverConsistencyLevel(), is(ConsistencyLevel.ANY));
-		assertThat(queryOptions.getReadTimeout(), is(1000L));
-		assertThat(queryOptions.getFetchSize(), is(10));
-		assertThat(queryOptions.getTracing(), is(true));
+		assertThat(queryOptions.getClass()).isEqualTo(QueryOptions.class);
+		assertThat(queryOptions.getRetryPolicy()).isEqualTo(RetryPolicy.DEFAULT);
+		assertThat(queryOptions.getConsistencyLevel()).isNull();
+		assertThat(queryOptions.getDriverConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
+		assertThat(queryOptions.getReadTimeout()).isEqualTo(1000);
+		assertThat(queryOptions.getFetchSize()).isEqualTo(10);
+		assertThat(queryOptions.getTracing()).isTrue();
 	}
 
 	/**
@@ -67,8 +66,8 @@ public class QueryOptionsUnitTests {
 				.retryPolicy(new LoggingRetryPolicy(DefaultRetryPolicy.INSTANCE)) //
 				.build(); //
 
-		assertThat(writeOptions.getRetryPolicy(), is(nullValue()));
-		assertThat(writeOptions.getDriverRetryPolicy(), is(instanceOf(LoggingRetryPolicy.class)));
+		assertThat(writeOptions.getRetryPolicy()).isNull();
+		assertThat(writeOptions.getDriverRetryPolicy()).isInstanceOf(LoggingRetryPolicy.class);
 	}
 
 	/**
@@ -81,8 +80,8 @@ public class QueryOptionsUnitTests {
 				.retryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY) //
 				.build(); //
 
-		assertThat(writeOptions.getRetryPolicy(), is(RetryPolicy.DOWNGRADING_CONSISTENCY));
-		assertThat(writeOptions.getDriverRetryPolicy(), is(nullValue()));
+		assertThat(writeOptions.getRetryPolicy()).isEqualTo(RetryPolicy.DOWNGRADING_CONSISTENCY);
+		assertThat(writeOptions.getDriverRetryPolicy()).isNull();
 	}
 
 	/**

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -54,20 +53,20 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	public void usesAnnotatedColumnName() {
 
 		Field field = ReflectionUtils.findField(Timeline.class, "text");
-		assertThat(getPropertyFor(field).getColumnName().toCql(), is("message"));
+		assertThat(getPropertyFor(field).getColumnName().toCql()).isEqualTo("message");
 	}
 
 	@Test
 	public void checksIdProperty() {
 		Field field = ReflectionUtils.findField(Timeline.class, "id");
 		CassandraPersistentProperty property = getPropertyFor(field);
-		assertTrue(property.isIdProperty());
+		assertThat(property.isIdProperty()).isTrue();
 	}
 
 	@Test
 	public void returnsPropertyNameForUnannotatedProperty() {
 		Field field = ReflectionUtils.findField(Timeline.class, "time");
-		assertThat(getPropertyFor(field).getColumnName().toCql(), is("time"));
+		assertThat(getPropertyFor(field).getColumnName().toCql()).isEqualTo("time");
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Field field) {

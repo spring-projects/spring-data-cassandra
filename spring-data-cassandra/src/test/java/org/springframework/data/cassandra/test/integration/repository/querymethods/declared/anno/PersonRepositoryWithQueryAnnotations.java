@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.declared.anno;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +25,9 @@ import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.base.PersonRepository;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.named.PersonRepositoryWithNamedQueries;
+import org.springframework.data.repository.query.Param;
 
 import com.datastax.driver.core.ResultSet;
-import org.springframework.data.repository.query.Param;
 
 /**
  * we extend {@link PersonRepositoryWithNamedQueries} here just to keep the test codebase in sync.

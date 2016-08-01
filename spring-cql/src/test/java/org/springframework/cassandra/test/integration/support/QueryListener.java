@@ -33,8 +33,7 @@ public class QueryListener extends CallbackSynchronizationSupport implements Asy
 	/**
 	 * Allow instances only using {@link #create()}
 	 */
-	private QueryListener() {
-	}
+	private QueryListener() {}
 
 	/**
 	 * @return a new {@link QueryListener}.

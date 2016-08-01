@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.core;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 
@@ -65,27 +64,27 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCrea
 	@Test
 	public void testCreateTables() throws Exception {
 
-		assertThat(getKeyspaceMetadata().getTables().size(), is(0));
+		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 
 		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
-		assertThat(getKeyspaceMetadata().getTables().size(), is(1));
+		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 
 		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
-		assertThat(getKeyspaceMetadata().getTables().size(), is(1));
+		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 	}
 
 	@Test
 	public void testDropTable() throws Exception {
 
 		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
-		assertThat(getKeyspaceMetadata().getTables().size(), is(1));
+		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 
 		cassandraAdminTemplate.dropTable(Book.class);
-		assertThat(getKeyspaceMetadata().getTables().size(), is(0));
+		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 
 		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
 		cassandraAdminTemplate.dropTable(CqlIdentifier.cqlId("book"));
 
-		assertThat(getKeyspaceMetadata().getTables().size(), is(0));
+		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 	}
 }

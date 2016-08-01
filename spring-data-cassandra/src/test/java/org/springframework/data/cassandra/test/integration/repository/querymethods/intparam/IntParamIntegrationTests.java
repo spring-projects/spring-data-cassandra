@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.intparam;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,9 +58,9 @@ public class IntParamIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		repo.save(saved);
 
 		IntThing found = repo.findThingByIntPrimitive(number);
-		assertNotNull(found);
+		assertThat(found).isNotNull();
 
 		found = repo.findThingByIntReference(new Integer(number));
-		assertNotNull(found);
+		assertThat(found).isNotNull();
 	}
 }

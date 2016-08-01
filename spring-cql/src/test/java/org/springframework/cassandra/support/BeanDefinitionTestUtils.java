@@ -66,6 +66,6 @@ public abstract class BeanDefinitionTestUtils {
 		Object value = getPropertyValue(beanDefinition, propertyName);
 
 		return (value instanceof RuntimeBeanReference ? ((RuntimeBeanReference) value).getBeanName()
-			: (value != null ? String.valueOf(value) : null));
+				: (value != null ? String.valueOf(value) : null));
 	}
 }

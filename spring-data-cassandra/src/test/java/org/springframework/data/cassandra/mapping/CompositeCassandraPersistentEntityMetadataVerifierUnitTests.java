@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Fail.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -74,7 +74,8 @@ public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(getEntity(NonPersistentClass.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e.toString(), containsString("Cassandra entities must be annotated with either @Persistent, @Table, or @PrimaryKeyClass"));
+			assertThat(e).hasMessageContaining(
+					"Cassandra entities must be annotated with either @Persistent, @Table, or @PrimaryKeyClass");
 		}
 	}
 
@@ -88,7 +89,7 @@ public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(getEntity(TooManyAnnotations.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e.toString(), containsString("Entity cannot be of type @Table and @PrimaryKeyClass"));
+			assertThat(e).hasMessageContaining("Entity cannot be of type @Table and @PrimaryKeyClass");
 		}
 	}
 

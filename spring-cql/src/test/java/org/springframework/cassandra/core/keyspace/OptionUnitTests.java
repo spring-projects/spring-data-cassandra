@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.RetentionPolicy;
 
@@ -48,8 +48,8 @@ public class OptionUnitTests {
 	@Test
 	public void testOptionWithNullTypeIsCoerceable() {
 		Option op = new DefaultOption("opt", null, true, true, true);
-		assertTrue(op.isCoerceable(""));
-		assertTrue(op.isCoerceable(null));
+		assertThat(op.isCoerceable("")).isTrue();
+		assertThat(op.isCoerceable(null)).isTrue();
 	}
 
 	@Test
@@ -62,9 +62,9 @@ public class OptionUnitTests {
 
 		Option op = new DefaultOption(name, type, requires, escapes, quotes);
 
-		assertTrue(op.isCoerceable("opt"));
-		assertEquals("'opt'", op.toString("opt"));
-		assertEquals("'opt''n'", op.toString("opt'n"));
+		assertThat(op.isCoerceable("opt")).isTrue();
+		assertThat(op.toString("opt")).isEqualTo("'opt'");
+		assertThat(op.toString("opt'n")).isEqualTo("'opt''n'");
 
 		type = Long.class;
 		escapes = false;
@@ -73,11 +73,11 @@ public class OptionUnitTests {
 
 		String expected = "1";
 		for (Object value : new Object[] { 1, "1" }) {
-			assertTrue(op.isCoerceable(value));
-			assertEquals(expected, op.toString(value));
+			assertThat(op.isCoerceable(value)).isTrue();
+			assertThat(op.toString(value)).isEqualTo(expected);
 		}
-		assertFalse(op.isCoerceable("x"));
-		assertTrue(op.isCoerceable(null));
+		assertThat(op.isCoerceable("x")).isFalse();
+		assertThat(op.isCoerceable(null)).isTrue();
 
 		type = Long.class;
 		escapes = false;
@@ -86,11 +86,11 @@ public class OptionUnitTests {
 
 		expected = "'1'";
 		for (Object value : new Object[] { 1, "1" }) {
-			assertTrue(op.isCoerceable(value));
-			assertEquals(expected, op.toString(value));
+			assertThat(op.isCoerceable(value)).isTrue();
+			assertThat(op.toString(value)).isEqualTo(expected);
 		}
-		assertFalse(op.isCoerceable("x"));
-		assertTrue(op.isCoerceable(null));
+		assertThat(op.isCoerceable("x")).isFalse();
+		assertThat(op.isCoerceable(null)).isTrue();
 
 		type = Double.class;
 		escapes = false;
@@ -100,22 +100,22 @@ public class OptionUnitTests {
 		String[] expecteds = new String[] { "1", "1.0", "1.0", "1", "1.0", null };
 		Object[] values = new Object[] { 1, 1.0F, 1.0D, "1", "1.0", null };
 		for (int i = 0; i < values.length; i++) {
-			assertTrue(op.isCoerceable(values[i]));
-			assertEquals(expecteds[i], op.toString(values[i]));
+			assertThat(op.isCoerceable(values[i])).isTrue();
+			assertThat(op.toString(values[i])).isEqualTo(expecteds[i]);
 		}
-		assertFalse(op.isCoerceable("x"));
-		assertTrue(op.isCoerceable(null));
+		assertThat(op.isCoerceable("x")).isFalse();
+		assertThat(op.isCoerceable(null)).isTrue();
 
 		type = RetentionPolicy.class;
 		escapes = false;
 		quotes = false;
 		op = new DefaultOption(name, type, requires, escapes, quotes);
 
-		assertTrue(op.isCoerceable(null));
-		assertTrue(op.isCoerceable(RetentionPolicy.CLASS));
-		assertTrue(op.isCoerceable("CLASS"));
-		assertFalse(op.isCoerceable("x"));
-		assertEquals("CLASS", op.toString("CLASS"));
-		assertEquals("CLASS", op.toString(RetentionPolicy.CLASS));
+		assertThat(op.isCoerceable(null)).isTrue();
+		assertThat(op.isCoerceable(RetentionPolicy.CLASS)).isTrue();
+		assertThat(op.isCoerceable("CLASS")).isTrue();
+		assertThat(op.isCoerceable("x")).isFalse();
+		assertThat(op.toString("CLASS")).isEqualTo("CLASS");
+		assertThat(op.toString(RetentionPolicy.CLASS)).isEqualTo("CLASS");
 	}
 }

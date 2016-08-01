@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import org.junit.Test;
@@ -36,8 +36,8 @@ public class CqlIdentifierUnitTests {
 
 		for (String id : ids) {
 			CqlIdentifier cqlId = cqlId(id);
-			assertFalse(cqlId.isQuoted());
-			assertEquals(id.toLowerCase(), cqlId.toCql());
+			assertThat(cqlId.isQuoted()).isFalse();
+			assertThat(cqlId.toCql()).isEqualTo(id.toLowerCase());
 		}
 	}
 
@@ -48,8 +48,8 @@ public class CqlIdentifierUnitTests {
 
 		for (String id : ids) {
 			CqlIdentifier cqlId = quotedCqlId(id);
-			assertTrue(cqlId.isQuoted());
-			assertEquals("\"" + id + "\"", cqlId.toCql());
+			assertThat(cqlId.isQuoted()).isTrue();
+			assertThat(cqlId.toCql()).isEqualTo("\"" + id + "\"");
 		}
 	}
 
@@ -58,12 +58,12 @@ public class CqlIdentifierUnitTests {
 
 		for (ReservedKeyword id : ReservedKeyword.values()) {
 			CqlIdentifier cqlId = cqlId(id.name());
-			assertTrue(cqlId.isQuoted());
-			assertEquals("\"" + id.name() + "\"", cqlId.toCql());
+			assertThat(cqlId.isQuoted()).isTrue();
+			assertThat(cqlId.toCql()).isEqualTo("\"" + id.name() + "\"");
 
 			cqlId = cqlId(id.name().toLowerCase());
-			assertTrue(cqlId.isQuoted());
-			assertEquals("\"" + id.name().toLowerCase() + "\"", cqlId.toCql());
+			assertThat(cqlId.isQuoted()).isTrue();
+			assertThat(cqlId.toCql()).isEqualTo("\"" + id.name().toLowerCase() + "\"");
 		}
 	}
 

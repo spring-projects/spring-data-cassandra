@@ -16,9 +16,7 @@
 
 package org.springframework.cassandra.config.java;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.isA;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
@@ -30,19 +28,9 @@ import org.springframework.cassandra.config.ClusterBuilderConfigurer;
 import org.springframework.cassandra.config.CompressionType;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
-import org.springframework.test.util.ReflectionTestUtils;
 
-import com.datastax.driver.core.AuthProvider;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Configuration;
-import com.datastax.driver.core.PlainTextAuthProvider;
-import com.datastax.driver.core.PoolingOptions;
-import com.datastax.driver.core.ProtocolOptions;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.QueryOptions;
-import com.datastax.driver.core.SocketOptions;
-import com.datastax.driver.core.TimestampGenerator;
 import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.ExponentialReconnectionPolicy;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
@@ -74,10 +62,10 @@ public class AbstractClusterConfigurationUnitTests {
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(cluster, is(not(nullValue())));
-		assertThat(cluster.isClosed(), is(false));
-		assertThat(getConfiguration(cluster).getMetricsOptions(), is(not(nullValue())));
-		assertThat(getConfiguration(cluster).getMetricsOptions().isJMXReportingEnabled(), is(true));
+		assertThat(cluster).isNotNull();
+		assertThat(cluster.isClosed()).isFalse();
+		assertThat(getConfiguration(cluster).getMetricsOptions()).isNotNull();
+		assertThat(getConfiguration(cluster).getMetricsOptions().isJMXReportingEnabled()).isTrue();
 	}
 
 	/**
@@ -97,7 +85,7 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(getConfiguration(cluster).getProtocolOptions().getCompression(), is(Compression.SNAPPY));
+		assertThat(getConfiguration(cluster).getProtocolOptions().getCompression()).isEqualTo(Compression.SNAPPY);
 	}
 
 	/**
@@ -117,7 +105,7 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(getConfiguration(cluster).getPoolingOptions(), is(poolingOptions));
+		assertThat(getConfiguration(cluster).getPoolingOptions()).isEqualTo(poolingOptions);
 	}
 
 	/**
@@ -137,7 +125,7 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(getConfiguration(cluster).getSocketOptions(), is(socketOptions));
+		assertThat(getConfiguration(cluster).getSocketOptions()).isEqualTo(socketOptions);
 	}
 
 	/**
@@ -157,7 +145,7 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(getConfiguration(cluster).getQueryOptions(), is(queryOptions));
+		assertThat(getConfiguration(cluster).getQueryOptions()).isEqualTo(queryOptions);
 	}
 
 	/**
@@ -177,7 +165,7 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(getConfiguration(cluster).getProtocolOptions().getAuthProvider(), is(authProvider));
+		assertThat(getConfiguration(cluster).getProtocolOptions().getAuthProvider()).isEqualTo(authProvider);
 	}
 
 	/**
@@ -197,7 +185,7 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(getPolicies(cluster).getLoadBalancingPolicy(), is(loadBalancingPolicy));
+		assertThat(getConfiguration(cluster).getPolicies().getLoadBalancingPolicy()).isEqualTo(loadBalancingPolicy);
 	}
 
 	/**
@@ -217,7 +205,7 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(getPolicies(cluster).getReconnectionPolicy(), is(reconnectionPolicy));
+		assertThat(getConfiguration(cluster).getPolicies().getReconnectionPolicy()).isEqualTo(reconnectionPolicy);
 	}
 
 	/**
@@ -235,8 +223,8 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(ReflectionTestUtils.getField(getConfiguration(cluster).getProtocolOptions(), "initialProtocolVersion"),
-				is((Object) ProtocolVersion.V2));
+		assertThat(getConfiguration(cluster).getProtocolOptions()).extracting("initialProtocolVersion")
+				.contains(ProtocolVersion.V2);
 	}
 
 	/**
@@ -254,7 +242,7 @@ public class AbstractClusterConfigurationUnitTests {
 		};
 
 		Cluster cluster = getCluster(clusterConfiguration);
-		assertThat(getConfiguration(cluster).getMetricsOptions().isEnabled(), is(false));
+		assertThat(getConfiguration(cluster).getMetricsOptions().isEnabled()).isFalse();
 	}
 
 	/**
@@ -272,7 +260,7 @@ public class AbstractClusterConfigurationUnitTests {
 			}
 		};
 
-		assertThat(clusterConfiguration.cluster().getKeyspaceCreations(), is(equalTo(specification)));
+		assertThat(clusterConfiguration.cluster().getKeyspaceCreations()).isEqualTo(specification);
 	}
 
 	/**
@@ -290,7 +278,7 @@ public class AbstractClusterConfigurationUnitTests {
 			}
 		};
 
-		assertThat(clusterConfiguration.cluster().getKeyspaceDrops(), is(equalTo(specification)));
+		assertThat(clusterConfiguration.cluster().getKeyspaceDrops()).isEqualTo(specification);
 	}
 
 	/**
@@ -307,7 +295,7 @@ public class AbstractClusterConfigurationUnitTests {
 			}
 		};
 
-		assertThat(clusterConfiguration.cluster().getStartupScripts(), is(equalTo(scripts)));
+		assertThat(clusterConfiguration.cluster().getStartupScripts()).isEqualTo(scripts);
 	}
 
 	/**
@@ -324,7 +312,7 @@ public class AbstractClusterConfigurationUnitTests {
 			}
 		};
 
-		assertThat(clusterConfiguration.cluster().getShutdownScripts(), is(equalTo(scripts)));
+		assertThat(clusterConfiguration.cluster().getShutdownScripts()).isEqualTo(scripts);
 	}
 
 	/**
@@ -332,17 +320,17 @@ public class AbstractClusterConfigurationUnitTests {
 	 */
 	@Test
 	public void shouldSetAddressTranslator() throws Exception {
-		
+
 		final AddressTranslator mockAddressTranslator = mock(AddressTranslator.class);
 
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
-			@Override protected AddressTranslator getAddressTranslator() {
+			@Override
+			protected AddressTranslator getAddressTranslator() {
 				return mockAddressTranslator;
 			}
 		};
 
-		assertThat(getPolicies(getCluster(clusterConfiguration)).getAddressTranslator(),
-			is(equalTo(mockAddressTranslator)));
+		assertThat(getPolicies(getCluster(clusterConfiguration)).getAddressTranslator()).isEqualTo(mockAddressTranslator);
 	}
 
 	/**
@@ -350,17 +338,17 @@ public class AbstractClusterConfigurationUnitTests {
 	 */
 	@Test
 	public void shouldSetAndApplyClusterBuilderConfigurer() throws Exception {
-		
+
 		final ClusterBuilderConfigurer mockClusterBuilderConfigurer = mock(ClusterBuilderConfigurer.class);
 
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
-			@Override protected ClusterBuilderConfigurer getClusterBuilderConfigurer() {
+			@Override
+			protected ClusterBuilderConfigurer getClusterBuilderConfigurer() {
 				return mockClusterBuilderConfigurer;
 			}
 		};
 
-		assertThat(getCluster(clusterConfiguration), is(notNullValue(Cluster.class)));
-
+		assertThat(getCluster(clusterConfiguration)).isNotNull();
 		verify(mockClusterBuilderConfigurer, times(1)).configure(isA(Cluster.Builder.class));
 	}
 
@@ -370,14 +358,15 @@ public class AbstractClusterConfigurationUnitTests {
 	 */
 	@Test
 	public void shouldSetClusterName() throws Exception {
-		
+
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
-			@Override protected String getClusterName() {
+			@Override
+			protected String getClusterName() {
 				return "testCluster";
 			}
 		};
 
-		assertThat(getCluster(clusterConfiguration).getClusterName(), is(equalTo("testCluster")));
+		assertThat(getCluster(clusterConfiguration).getClusterName()).isEqualTo("testCluster");
 	}
 
 	/**
@@ -385,15 +374,15 @@ public class AbstractClusterConfigurationUnitTests {
 	 */
 	@Test
 	public void shouldSetMaxSchemaAgreementWaitInSeconds() throws Exception {
-		
+
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
-			@Override protected int getMaxSchemaAgreementWaitSeconds() {
+			@Override
+			protected int getMaxSchemaAgreementWaitSeconds() {
 				return 30;
 			}
 		};
 
-		assertThat(getProtocolOptions(getCluster(clusterConfiguration)).getMaxSchemaAgreementWaitSeconds(),
-			is(equalTo(30)));
+		assertThat(getProtocolOptions(getCluster(clusterConfiguration)).getMaxSchemaAgreementWaitSeconds()).isEqualTo(30);
 	}
 
 	/**
@@ -401,17 +390,18 @@ public class AbstractClusterConfigurationUnitTests {
 	 */
 	@Test
 	public void shouldSetSpeculativeExecutionPolicy() throws Exception {
-		
+
 		final SpeculativeExecutionPolicy mockSpeculativeExecutionPolicy = mock(SpeculativeExecutionPolicy.class);
 
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
-			@Override protected SpeculativeExecutionPolicy getSpeculativeExecutionPolicy() {
+			@Override
+			protected SpeculativeExecutionPolicy getSpeculativeExecutionPolicy() {
 				return mockSpeculativeExecutionPolicy;
 			}
 		};
 
-		assertThat(getPolicies(getCluster(clusterConfiguration)).getSpeculativeExecutionPolicy(),
-			is(equalTo(mockSpeculativeExecutionPolicy)));
+		assertThat(getPolicies(getCluster(clusterConfiguration)).getSpeculativeExecutionPolicy())
+				.isEqualTo(mockSpeculativeExecutionPolicy);
 	}
 
 	/**
@@ -419,17 +409,17 @@ public class AbstractClusterConfigurationUnitTests {
 	 */
 	@Test
 	public void shouldSetTimestampGenerator() throws Exception {
-		
+
 		final TimestampGenerator mockTimestampGenerator = mock(TimestampGenerator.class);
 
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
-			@Override protected TimestampGenerator getTimestampGenerator() {
+			@Override
+			protected TimestampGenerator getTimestampGenerator() {
 				return mockTimestampGenerator;
 			}
 		};
 
-		assertThat(getPolicies(getCluster(clusterConfiguration)).getTimestampGenerator(),
-			is(equalTo(mockTimestampGenerator)));
+		assertThat(getPolicies(getCluster(clusterConfiguration)).getTimestampGenerator()).isEqualTo(mockTimestampGenerator);
 	}
 
 	private Policies getPolicies(Cluster cluster) {

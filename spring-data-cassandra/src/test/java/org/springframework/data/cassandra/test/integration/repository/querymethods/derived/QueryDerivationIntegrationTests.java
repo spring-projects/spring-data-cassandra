@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.derived;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
 import java.time.LocalDate;
@@ -69,11 +69,9 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 	}
 
-	@Autowired
-	private CassandraOperations template;
+	@Autowired private CassandraOperations template;
 
-	@Autowired
-	private PersonRepository personRepository;
+	@Autowired private PersonRepository personRepository;
 
 	private Person walter;
 	private Person skyler;
@@ -99,7 +97,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		List<Person> result = personRepository.findByLastname("White");
 
-		assertThat(result, hasItems(walter, skyler, flynn));
+		assertThat(result).contains(walter, skyler, flynn);
 	}
 
 	/**
@@ -110,7 +108,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		List<Person> result = personRepository.findByLastname("White", new Sort("firstname"));
 
-		assertThat(result, contains(flynn, skyler, walter));
+		assertThat(result).contains(flynn, skyler, walter);
 	}
 
 	/**
@@ -121,7 +119,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		List<Person> result = personRepository.findByLastnameOrderByFirstnameAsc("White");
 
-		assertThat(result, contains(flynn, skyler, walter));
+		assertThat(result).contains(flynn, skyler, walter);
 	}
 
 	/**
@@ -132,7 +130,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Person result = personRepository.findByFirstnameAndLastname("Walter", "White");
 
-		assertThat(result, is(walter));
+		assertThat(result).isEqualTo(walter);
 	}
 
 	/**
@@ -143,11 +141,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Collection<PersonProjection> collection = personRepository.findPersonProjectedBy();
 
-		assertThat(collection, hasSize(3));
-
-		for (PersonProjection personProjection : collection) {
-			assertThat(personProjection.getLastname(), is(equalTo("White")));
-		}
+		assertThat(collection).hasSize(3).extracting("lastname").contains("White", "White", "White");
 	}
 
 	/**
@@ -165,7 +159,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Person result = personRepository.findByNumberOfChildren(NumberOfChildren.TWO);
 
-		assertThat(result, is(walter));
+		assertThat(result).isEqualTo(walter);
 	}
 
 	/**
@@ -184,7 +178,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Person result = personRepository.findByCreatedDate(walter.getCreatedDate());
 
-		assertThat(result, is(walter));
+		assertThat(result).isEqualTo(walter);
 	}
 
 	/**
@@ -199,7 +193,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		List<Person> result = personRepository.findByFirstname("Walter");
 
-		assertThat(result, hasSize(1));
+		assertThat(result).hasSize(1);
 	}
 
 	/**
@@ -219,7 +213,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		walter.setNickname("Heisenberg");
 		personRepository.save(walter);
 
-		assertThat(personRepository.findByNicknameStartsWith("Heis"), is(walter));
+		assertThat(personRepository.findByNicknameStartsWith("Heis")).isEqualTo(walter);
 	}
 
 	/**
@@ -240,6 +234,6 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		walter.setNickname("Heisenberg");
 		personRepository.save(walter);
 
-		assertThat(personRepository.findByNicknameContains("eisenber"), is(walter));
+		assertThat(personRepository.findByNicknameContains("eisenber")).isEqualTo(walter);
 	}
 }

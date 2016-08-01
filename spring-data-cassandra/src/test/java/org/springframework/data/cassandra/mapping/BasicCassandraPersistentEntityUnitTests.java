@@ -15,16 +15,8 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.isA;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,7 +43,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 
 		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<Notification>(
 				ClassTypeInformation.from(Notification.class));
-		assertThat(entity.getTableName().toCql(), is("messages"));
+		assertThat(entity.getTableName().toCql()).isEqualTo("messages");
 	}
 
 	@Test
@@ -60,7 +52,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<Area>(
 				ClassTypeInformation.from(Area.class));
 		entity.setApplicationContext(context);
-		assertThat(entity.getTableName().toCql(), is("a123"));
+		assertThat(entity.getTableName().toCql()).isEqualTo("a123");
 	}
 
 	@Test
@@ -76,34 +68,34 @@ public class BasicCassandraPersistentEntityUnitTests {
 				ClassTypeInformation.from(UserLine.class));
 		entity.setApplicationContext(context);
 
-		assertThat(entity.getTableName().toCql(), is(bean.tableName));
+		assertThat(entity.getTableName().toCql()).isEqualTo(bean.tableName);
 	}
 
 	@Test
 	public void setForceQuoteCallsSetTableName() {
-		BasicCassandraPersistentEntity<Message> entitySpy =
-			spy(new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
+		BasicCassandraPersistentEntity<Message> entitySpy = spy(
+				new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
 
 		entitySpy.tableName = CqlIdentifier.cqlId("Messages", false);
 
-		assertThat(entitySpy.forceQuote, is(nullValue(Boolean.class)));
+		assertThat(entitySpy.forceQuote).isNull();
 
 		entitySpy.setForceQuote(true);
 
-		assertThat(entitySpy.forceQuote, is(true));
+		assertThat(entitySpy.forceQuote).isTrue();
 
 		verify(entitySpy, times(1)).setTableName(isA(CqlIdentifier.class));
 	}
 
 	@Test
 	public void setForceQuoteDoesNothing() {
-		BasicCassandraPersistentEntity<Message> entitySpy =
-			spy(new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
+		BasicCassandraPersistentEntity<Message> entitySpy = spy(
+				new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
 
 		entitySpy.forceQuote = true;
 		entitySpy.setForceQuote(true);
 
-		assertThat(entitySpy.forceQuote, is(true));
+		assertThat(entitySpy.forceQuote).isTrue();
 
 		verify(entitySpy, never()).setTableName(isA(CqlIdentifier.class));
 	}

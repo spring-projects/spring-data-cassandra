@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,11 +55,12 @@ public class CassandraAccessorUnitTests {
 	@Test
 	public void afterPropertiesSetWithUnitializedSessionThrowsIllegalStateException() {
 
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Session must not be null");
-
-		cassandraAccessor.afterPropertiesSet();
+		try {
+			cassandraAccessor.afterPropertiesSet();
+			fail("Missing IllegalStateException");
+		} catch (IllegalStateException e) {
+			assertThat(e).hasMessageContaining("Session must not be null");
+		}
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class CassandraAccessorUnitTests {
 	public void setAndGetExceptionTranslator() {
 
 		cassandraAccessor.setExceptionTranslator(mockExceptionTranslator);
-		assertThat(cassandraAccessor.getExceptionTranslator(), is(sameInstance(mockExceptionTranslator)));
+		assertThat(cassandraAccessor.getExceptionTranslator()).isSameAs(mockExceptionTranslator);
 	}
 
 	/**
@@ -79,11 +79,12 @@ public class CassandraAccessorUnitTests {
 	@Test
 	public void setExceptionTranslatorToNullThrowsIllegalArgumentException() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage(is(equalTo("CassandraExceptionTranslator must not be null")));
-
-		cassandraAccessor.setExceptionTranslator(null);
+		try {
+			cassandraAccessor.setExceptionTranslator(null);
+			fail("Missing IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			assertThat(e).hasMessageContaining("CassandraExceptionTranslator must not be null");
+		}
 	}
 
 	/**
@@ -91,7 +92,7 @@ public class CassandraAccessorUnitTests {
 	 */
 	@Test
 	public void getUninitializedExceptionTranslatorReturnsDefault() {
-		assertThat(cassandraAccessor.getExceptionTranslator(), is(equalTo(cassandraAccessor.exceptionTranslator)));
+		assertThat(cassandraAccessor.getExceptionTranslator()).isEqualTo(cassandraAccessor.exceptionTranslator);
 	}
 
 	/**
@@ -101,7 +102,7 @@ public class CassandraAccessorUnitTests {
 	public void setAndGetSession() {
 
 		cassandraAccessor.setSession(mockSession);
-		assertThat(cassandraAccessor.getSession(), is(sameInstance(mockSession)));
+		assertThat(cassandraAccessor.getSession()).isSameAs(mockSession);
 	}
 
 	/**
@@ -110,11 +111,12 @@ public class CassandraAccessorUnitTests {
 	@Test
 	public void setSessionToNullThrowsIllegalArgumentException() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage(is(equalTo("Session must not be null")));
-
-		cassandraAccessor.setSession(null);
+		try {
+			cassandraAccessor.setSession(null);
+			fail("Missing IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			assertThat(e).hasMessageContaining("Session must not be null");
+		}
 	}
 
 	/**
@@ -123,10 +125,11 @@ public class CassandraAccessorUnitTests {
 	@Test
 	public void getUninitializedSessionThrowsIllegalStateException() {
 
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage(is(equalTo("Session was not properly initialized")));
-
-		cassandraAccessor.getSession();
+		try {
+			cassandraAccessor.getSession();
+			fail("Missing IllegalStateException");
+		} catch (IllegalStateException e) {
+			assertThat(e).hasMessageContaining("Session was not properly initialized");
+		}
 	}
 }

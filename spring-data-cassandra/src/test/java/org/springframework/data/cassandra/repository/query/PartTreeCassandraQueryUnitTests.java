@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
@@ -48,11 +47,9 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 @RunWith(MockitoJUnitRunner.class)
 public class PartTreeCassandraQueryUnitTests {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	@Rule public ExpectedException exception = ExpectedException.none();
 
-	@Mock
-	private CassandraOperations mockCassandraOperations;
+	@Mock private CassandraOperations mockCassandraOperations;
 
 	private CassandraMappingContext mappingContext;
 	private CassandraConverter converter;
@@ -72,7 +69,7 @@ public class PartTreeCassandraQueryUnitTests {
 	public void shouldDeriveSimpleQuery() {
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE lastname='foo';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo';");
 	}
 
 	/**
@@ -82,7 +79,7 @@ public class PartTreeCassandraQueryUnitTests {
 	public void shouldDeriveSimpleQueryWithoutNames() {
 		String query = deriveQueryFromMethod("findPersonBy");
 
-		assertThat(query, is(equalTo("SELECT * FROM person;")));
+		assertThat(query).isEqualTo("SELECT * FROM person;");
 	}
 
 	/**
@@ -90,9 +87,9 @@ public class PartTreeCassandraQueryUnitTests {
 	 */
 	@Test
 	public void shouldDeriveAndQuery() {
-		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar" );
+		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';");
 	}
 
 	/**
@@ -102,9 +99,8 @@ public class PartTreeCassandraQueryUnitTests {
 	public void usesDynamicProjection() {
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
-		assertThat(query, is(equalTo("SELECT * FROM person;")));
+		assertThat(query).isEqualTo("SELECT * FROM person;");
 	}
-
 
 	private String deriveQueryFromMethod(String method, Object... args) {
 		Class<?>[] types = new Class<?>[args.length];
@@ -115,7 +111,8 @@ public class PartTreeCassandraQueryUnitTests {
 
 		PartTreeCassandraQuery partTreeQuery = createQueryForMethod(method, types);
 
-		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(), args);
+		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
+				args);
 
 		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
 	}
@@ -124,8 +121,8 @@ public class PartTreeCassandraQueryUnitTests {
 		try {
 			Method method = Repo.class.getMethod(methodName, paramTypes);
 			ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method,
-				new DefaultRepositoryMetadata(Repo.class), factory, mappingContext);
+			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, new DefaultRepositoryMetadata(Repo.class),
+					factory, mappingContext);
 
 			return new PartTreeCassandraQuery(queryMethod, mockCassandraOperations);
 		} catch (NoSuchMethodException e) {

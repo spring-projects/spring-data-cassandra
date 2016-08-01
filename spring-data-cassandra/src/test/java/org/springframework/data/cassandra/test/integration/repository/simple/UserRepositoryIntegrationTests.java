@@ -15,14 +15,12 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.simple;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
 import org.springframework.data.cassandra.core.CassandraOperations;
 
 import com.google.common.collect.Lists;
@@ -92,30 +90,30 @@ public class UserRepositoryIntegrationTests {
 
 	public void findByNamedQuery() {
 		String name = repository.findByNamedQuery("bob");
-		Assert.assertNotNull(name);
-		Assert.assertEquals("Bob", name);
+		assertThat(name).isNotNull();
+		assertThat(name).isEqualTo("Bob");
 	}
 
 	public void findsUserById() throws Exception {
 
 		User user = repository.findOne(bob.getUsername());
-		Assert.assertNotNull(user);
+		assertThat(user).isNotNull();
 		assertEquals(bob, user);
 
 	}
 
 	public void findsAll() throws Exception {
 		List<User> result = Lists.newArrayList(repository.findAll());
-		assertThat(result.size(), is(all.size()));
-		assertThat(result.containsAll(all), is(true));
+		assertThat(result).hasSize(all.size());
+		assertThat(result.containsAll(all)).isTrue();
 
 	}
 
 	public void findsAllWithGivenIds() {
 
 		Iterable<User> result = repository.findAll(Arrays.asList(bob.getUsername(), tom.getUsername()));
-		assertThat(result, hasItems(bob, tom));
-		assertThat(result, not(hasItems(alice, scott)));
+		assertThat(result).contains(bob, tom);
+		assertThat(result).doesNotContain(alice, scott);
 	}
 
 	public void deletesUserCorrectly() throws Exception {
@@ -124,8 +122,8 @@ public class UserRepositoryIntegrationTests {
 
 		List<User> result = Lists.newArrayList(repository.findAll());
 
-		assertThat(result.size(), is(all.size() - 1));
-		assertThat(result, not(hasItem(tom)));
+		assertThat(result).hasSize(all.size() - 1);
+		assertThat(result).doesNotContain(tom);
 	}
 
 	public void deletesUserByIdCorrectly() {
@@ -134,19 +132,19 @@ public class UserRepositoryIntegrationTests {
 
 		List<User> result = Lists.newArrayList(repository.findAll());
 
-		assertThat(result.size(), is(all.size() - 1));
-		assertThat(result, not(hasItem(tom)));
+		assertThat(result).hasSize(all.size() - 1);
+		assertThat(result).doesNotContain(tom);
 	}
 
 	public void exists() {
 
 		String id = "tom";
 
-		assertTrue(repository.exists(id));
+		assertThat(repository.exists(id)).isTrue();
 
 		repository.delete(id);
 
-		assertTrue(!repository.exists(id));
+		assertThat(!repository.exists(id)).isTrue();
 
 	}
 
@@ -156,21 +154,21 @@ public class UserRepositoryIntegrationTests {
 	public void save() {
 
 		tom.setPassword(null);
-		tom.setFriends(Collections.<String>emptySet());
+		tom.setFriends(Collections.<String> emptySet());
 
 		repository.save(tom);
 
 		User loadedTom = repository.findOne(tom.getUsername());
 
-		assertThat(loadedTom.getPassword(), is(nullValue()));
-		assertThat(loadedTom.getFriends(), is(nullValue()));
+		assertThat(loadedTom.getPassword()).isNull();
+		assertThat(loadedTom.getFriends()).isNull();
 	}
 
 	private static void assertEquals(User user1, User user2) {
-		Assert.assertEquals(user1.getUsername(), user2.getUsername());
-		Assert.assertEquals(user1.getFirstName(), user2.getFirstName());
-		Assert.assertEquals(user1.getLastName(), user2.getLastName());
-		Assert.assertEquals(user1.getPlace(), user2.getPlace());
-		Assert.assertEquals(user1.getPassword(), user2.getPassword());
+		assertThat(user2.getUsername()).isEqualTo(user1.getUsername());
+		assertThat(user2.getFirstName()).isEqualTo(user1.getFirstName());
+		assertThat(user2.getLastName()).isEqualTo(user1.getLastName());
+		assertThat(user2.getPlace()).isEqualTo(user1.getPlace());
+		assertThat(user2.getPassword()).isEqualTo(user1.getPassword());
 	}
 }

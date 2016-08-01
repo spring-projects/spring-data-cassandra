@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -62,8 +62,8 @@ public class CompoundPrimaryKeyUnitTests {
 	public void checkIdProperty() {
 		Field id = ReflectionUtils.findField(Timeline.class, "id");
 		CassandraPersistentProperty property = getPropertyFor(id);
-		assertTrue(property.isIdProperty());
-		assertTrue(property.isCompositePrimaryKey());
+		assertThat(property.isIdProperty()).isTrue();
+		assertThat(property.isCompositePrimaryKey()).isTrue();
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Field field) {

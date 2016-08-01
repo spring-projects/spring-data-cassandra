@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
@@ -103,7 +102,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname = 'Matthews';")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
 	}
 
 	/**
@@ -118,7 +117,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname = 'Mat\th''ew\"s';")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Mat\th''ew\"s';");
 	}
 
 	/**
@@ -133,7 +132,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname = 0x01020304;")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 0x01020304;");
 	}
 
 	/**
@@ -148,7 +147,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname IN ('White','Heisenberg');")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname IN ('White','Heisenberg');");
 	}
 
 	/**
@@ -163,7 +162,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastnames = ['White','Heisenberg'] AND age = 42;")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastnames = ['White','Heisenberg'] AND age = 42;");
 	}
 
 	/**
@@ -204,7 +203,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname IN ('White','Heisenberg');")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname IN ('White','Heisenberg');");
 	}
 
 	/**
@@ -219,7 +218,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname = 'Matthews';")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
 	}
 
 	/**
@@ -234,7 +233,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname = 'Matthews';")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
 	}
 
 	/**
@@ -249,7 +248,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname = 'Matthews';")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
 	}
 
 	/**
@@ -264,13 +263,13 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname = 'Woohoo';")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Woohoo';");
 
 		accessor = new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), "Walter");
 
 		actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname = 'Walter';")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Walter';");
 	}
 
 	/**
@@ -285,7 +284,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE lastname='Matthews' or firstname = 'Matthews';")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname='Matthews' or firstname = 'Matthews';");
 	}
 
 	/**
@@ -305,7 +304,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 		expected.setForceNoValues(true);
 		expected.where(QueryBuilder.eq("lastname", "Matthews")).and(QueryBuilder.eq("firstname", "John"));
 
-		assertThat(actual, is(expected.toString()));
+		assertThat(actual).isEqualTo(expected.getQueryString());
 	}
 
 	/**
@@ -320,12 +319,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		String actual = cassandraQuery.createQuery(accessor);
 
-		String table = Person.class.getSimpleName().toLowerCase();
-		Select expected = QueryBuilder.select().all().from(table);
-		expected.setForceNoValues(true);
-		expected.where(QueryBuilder.eq("createdDate", com.datastax.driver.core.LocalDate.fromYearMonthDay(2010, 7, 4)));
-
-		assertThat(actual, is(equalTo("SELECT * FROM person WHERE createdDate='2010-07-04';")));
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE createdDate='2010-07-04';");
 	}
 
 	private StringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {

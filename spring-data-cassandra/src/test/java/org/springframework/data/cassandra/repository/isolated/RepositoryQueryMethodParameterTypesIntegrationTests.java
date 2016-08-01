@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.isolated;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,7 +50,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
 
 /**
  * Integration tests for various query method parameter types.
@@ -108,8 +106,8 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithCreatedDate(allPossibleTypes.getLocalDate());
 
-		assertThat(result, hasSize(1));
-		assertThat(result, contains(allPossibleTypes));
+		assertThat(result).hasSize(1);
+		assertThat(result).contains(allPossibleTypes);
 	}
 
 	/**
@@ -119,7 +117,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 	public void shouldFindByAnnotatedDateParameter() {
 
 		CustomConversions customConversions = new CustomConversions(
-			Collections.singletonList(new DateToLocalDateConverter()));
+				Collections.singletonList(new DateToLocalDateConverter()));
 
 		mappingContext.setCustomConversions(customConversions);
 		converter.setCustomConversions(customConversions);
@@ -140,8 +138,8 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithAnnotatedDateParameter(Date.from(instant));
 
-		assertThat(result, hasSize(1));
-		assertThat(result, contains(allPossibleTypes));
+		assertThat(result).hasSize(1);
+		assertThat(result).contains(allPossibleTypes);
 	}
 
 	/**
@@ -172,8 +170,8 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithZoneId(zoneId);
 
-		assertThat(result, hasSize(1));
-		assertThat(result, contains(allPossibleTypes));
+		assertThat(result).hasSize(1);
+		assertThat(result).contains(allPossibleTypes);
 	}
 
 	/**
@@ -194,8 +192,8 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithZoneId(Optional.of(zoneId));
 
-		assertThat(result, hasSize(1));
-		assertThat(result, contains(allPossibleTypes));
+		assertThat(result).hasSize(1);
+		assertThat(result).contains(allPossibleTypes);
 	}
 
 	private interface AllPossibleTypesRepository extends CrudRepository<AllPossibleTypes, String> {

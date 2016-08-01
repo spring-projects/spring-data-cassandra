@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -58,14 +57,14 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation bigint);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
-				.alter("lastKnownLocation", DataType.varint());
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
+				DataType.varint());
 
 		execute(spec);
 
 		ColumnMetadata column = getTableMetadata("addamsFamily").getColumn("lastKnownLocation");
 
-		assertThat(column.getType(), is(equalTo(DataType.varint())));
+		assertThat(column.getType()).isEqualTo(DataType.varint());
 	}
 
 	/**
@@ -77,14 +76,14 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation list<ascii>);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
-				.alter("lastKnownLocation", DataType.list(DataType.varchar()));
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
+				DataType.list(DataType.varchar()));
 
 		execute(spec);
 
 		ColumnMetadata column = getTableMetadata("addamsFamily").getColumn("lastKnownLocation");
 
-		assertThat(column.getType(), is(equalTo((DataType) DataType.list(DataType.varchar()))));
+		assertThat(column.getType()).isEqualTo((DataType) DataType.list(DataType.varchar()));
 	}
 
 	/**
@@ -96,14 +95,14 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation varchar);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
-				.add("gravesite", DataType.varchar());
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").add("gravesite",
+				DataType.varchar());
 
 		execute(spec);
 
 		ColumnMetadata column = getTableMetadata("addamsFamily").getColumn("gravesite");
 
-		assertThat(column.getType(), is(equalTo(DataType.varchar())));
+		assertThat(column.getType()).isEqualTo(DataType.varchar());
 	}
 
 	/**
@@ -114,14 +113,14 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		session.execute("CREATE TABLE users (user_name varchar PRIMARY KEY);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("users")
-				.add("top_places", DataType.list(DataType.ascii()));
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("users").add("top_places",
+				DataType.list(DataType.ascii()));
 
 		execute(spec);
 
 		ColumnMetadata column = getTableMetadata("users").getColumn("top_places");
 
-		assertThat(column.getType(), is(equalTo((DataType) DataType.list(DataType.ascii()))));
+		assertThat(column.getType()).isEqualTo((DataType) DataType.list(DataType.ascii()));
 	}
 
 	/**
@@ -136,7 +135,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		execute(spec);
 
-		assertThat(getTableMetadata("addamsfamily").getColumn("gender"), is(nullValue()));
+		assertThat(getTableMetadata("addamsfamily").getColumn("gender")).isNull();
 	}
 
 	/**
@@ -151,8 +150,8 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		execute(spec);
 
-		assertThat(getTableMetadata("addamsfamily").getColumn("name"), is(nullValue()));
-		assertThat(getTableMetadata("addamsfamily").getColumn("newname"), is(notNullValue()));
+		assertThat(getTableMetadata("addamsfamily").getColumn("name")).isNull();
+		assertThat(getTableMetadata("addamsfamily").getColumn("newname")).isNotNull();
 	}
 
 	/**
@@ -171,8 +170,8 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		execute(spec);
 
-		assertThat(getTableMetadata("users").getOptions().getCaching().get("keys"), is(equalTo("NONE")));
-		assertThat(getTableMetadata("users").getOptions().getCaching().get("rows_per_partition"), is(equalTo("15")));
+		assertThat(getTableMetadata("users").getOptions().getCaching().get("keys")).isEqualTo("NONE");
+		assertThat(getTableMetadata("users").getOptions().getCaching().get("rows_per_partition")).isEqualTo("15");
 
 	}
 

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -84,7 +83,7 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(getEntity(TooManyAnnotations.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e.toString(), containsString("Entity cannot be of type @Table and @PrimaryKeyClass"));
+			assertThat(e).hasMessageContaining("Entity cannot be of type @Table and @PrimaryKeyClass");
 		}
 	}
 
@@ -98,8 +97,8 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(getEntity(EntityWithComplexTypePrimaryKey.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e.toString(),
-					containsString("Property [species] annotated with @PrimaryKeyColumn must be a simple CassandraType"));
+			assertThat(e)
+					.hasMessageContaining("Property [species] annotated with @PrimaryKeyColumn must be a simple CassandraType");
 		}
 	}
 
@@ -113,7 +112,7 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(getEntity(EntityWithComplexTypeId.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e.toString(), containsString("Property [species] annotated with @Id must be a simple CassandraType"));
+			assertThat(e).hasMessageContaining("Property [species] annotated with @Id must be a simple CassandraType");
 		}
 	}
 
@@ -127,8 +126,8 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(getEntity(NoPartitionKey.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e.toString(),
-					containsString("At least one of the @PrimaryKeyColumn annotations must have a type of PARTITIONED"));
+			assertThat(e)
+					.hasMessageContaining("At least one of the @PrimaryKeyColumn annotations must have a type of PARTITIONED");
 		}
 	}
 
@@ -142,7 +141,7 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(getEntity(NoPrimaryKey.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e.toString(), containsString("@Table types must have only one primary attribute, if any; Found 0"));
+			assertThat(e).hasMessageContaining("@Table types must have only one primary attribute, if any; Found 0");
 		}
 	}
 
@@ -156,8 +155,7 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(getEntity(PrimaryKeyAndPrimaryKeyColumn.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e.toString(),
-					containsString("@Table types must not define both @Id and @PrimaryKeyColumn properties"));
+			assertThat(e).hasMessageContaining("@Table types must not define both @Id and @PrimaryKeyColumn properties");
 		}
 	}
 

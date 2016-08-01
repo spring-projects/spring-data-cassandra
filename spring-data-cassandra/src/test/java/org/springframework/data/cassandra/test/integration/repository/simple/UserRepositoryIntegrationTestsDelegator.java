@@ -31,11 +31,9 @@ import org.springframework.data.cassandra.test.integration.support.AbstractSprin
 public abstract class UserRepositoryIntegrationTestsDelegator
 		extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-	@Autowired
-	CassandraOperations template;
+	@Autowired CassandraOperations template;
 
-	@Autowired
-	UserRepository repository;
+	@Autowired UserRepository repository;
 
 	UserRepositoryIntegrationTests tests;
 

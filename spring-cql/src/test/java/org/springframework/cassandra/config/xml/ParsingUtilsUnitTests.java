@@ -16,8 +16,7 @@
 
 package org.springframework.cassandra.config.xml;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.cassandra.support.BeanDefinitionTestUtils.*;
 
 import org.junit.Rule;
@@ -48,8 +47,8 @@ public class ParsingUtilsUnitTests {
 
 		RuntimeBeanReference propertyValue = getPropertyValue(builder.getBeanDefinition(), "referenceProperty");
 
-		assertThat(propertyValue, is(notNullValue(RuntimeBeanReference.class)));
-		assertThat(propertyValue.getBeanName(), is(equalTo("defaultBeanReference")));
+		assertThat(propertyValue).isNotNull();
+		assertThat(propertyValue.getBeanName()).isEqualTo("defaultBeanReference");
 	}
 
 	/**
@@ -63,8 +62,8 @@ public class ParsingUtilsUnitTests {
 
 		BeanDefinition beanDefinition = builder.getRawBeanDefinition();
 
-		assertThat(beanDefinition.getPropertyValues().contains("referenceProperty"), is(false));
-		assertThat(beanDefinition.getPropertyValues().isEmpty(), is(true));
+		assertThat(beanDefinition.getPropertyValues().contains("referenceProperty")).isFalse();
+		assertThat(beanDefinition.getPropertyValues().isEmpty()).isTrue();
 	}
 
 	/**
@@ -78,7 +77,7 @@ public class ParsingUtilsUnitTests {
 
 		String propertyValue = getPropertyValue(builder.getBeanDefinition(), "valueProperty");
 
-		assertThat(propertyValue, is(equalTo("defaultValue")));
+		assertThat(propertyValue).isEqualTo("defaultValue");
 	}
 
 	/**
@@ -92,8 +91,8 @@ public class ParsingUtilsUnitTests {
 
 		BeanDefinition beanDefinition = builder.getRawBeanDefinition();
 
-		assertThat(beanDefinition.getPropertyValues().contains("valueProperty"), is(false));
-		assertThat(beanDefinition.getPropertyValues().isEmpty(), is(true));
+		assertThat(beanDefinition.getPropertyValues().contains("valueProperty")).isFalse();
+		assertThat(beanDefinition.getPropertyValues().isEmpty()).isTrue();
 	}
 
 	/**
@@ -107,8 +106,8 @@ public class ParsingUtilsUnitTests {
 
 		RuntimeBeanReference propertyValue = getPropertyValue(builder.getBeanDefinition(), "referenceProperty");
 
-		assertThat(propertyValue, is(notNullValue(RuntimeBeanReference.class)));
-		assertThat(propertyValue.getBeanName(), is(equalTo("reference")));
+		assertThat(propertyValue).isNotNull();
+		assertThat(propertyValue.getBeanName()).isEqualTo("reference");
 	}
 
 	/**
@@ -118,7 +117,6 @@ public class ParsingUtilsUnitTests {
 	public void addRequiredReferencePropertyWithNoReferenceFails() {
 
 		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("value required for property reference [referenceProperty] on class [null]");
 
 		ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), "referenceProperty", null,
@@ -136,7 +134,7 @@ public class ParsingUtilsUnitTests {
 
 		String propertyValue = getPropertyValue(builder.getBeanDefinition(), "valueProperty");
 
-		assertThat(propertyValue, is(equalTo("value")));
+		assertThat(propertyValue).isEqualTo("value");
 	}
 
 	/**
@@ -146,7 +144,6 @@ public class ParsingUtilsUnitTests {
 	public void addRequiredValuePropertyWithNoValueFails() {
 
 		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("value required for property [valueProperty] on class [null]");
 
 		ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), "valueProperty", null, "defaultValue", true,
@@ -160,7 +157,6 @@ public class ParsingUtilsUnitTests {
 	public void addPropertyThrowsIllegalArgumentExceptionForNullBuilder() {
 
 		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("BeanDefinitionBuilder must not be null");
 
 		ParsingUtils.addProperty(null, "propertyName", "value", "defaultValue", false, false);
@@ -173,7 +169,6 @@ public class ParsingUtilsUnitTests {
 	public void addPropertyThrowsIllegalArgumentExceptionForNullPropertyName() {
 
 		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("Property name must not be null");
 
 		ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), null, "value", "defaultValue", false, true);

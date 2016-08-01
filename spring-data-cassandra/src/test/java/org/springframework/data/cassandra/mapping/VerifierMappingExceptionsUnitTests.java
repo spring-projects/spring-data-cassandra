@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
@@ -53,6 +52,6 @@ public class VerifierMappingExceptionsUnitTests {
 		VerifierMappingExceptions exceptions = new VerifierMappingExceptions(entityMock, "err");
 		exceptions.add(new MappingException("my error"));
 
-		assertThat(exceptions.toString(), containsString("my error"));
+		assertThat(exceptions.toString()).contains("my error");
 	}
 }

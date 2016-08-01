@@ -16,16 +16,13 @@
 
 package org.springframework.cassandra.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Collections;
 import java.util.Iterator;
 
 import org.junit.Test;
 
-import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
@@ -43,30 +40,29 @@ public class EmptyResultSetUnitTests {
 		ResultSet mockResultSet = mock(ResultSet.class);
 		ResultSet theResultSet = EmptyResultSet.nullSafeResultSet(mockResultSet);
 
-		assertThat(theResultSet, is(sameInstance(mockResultSet)));
+		assertThat(theResultSet).isSameAs(mockResultSet);
 	}
 
 	@Test
 	public void nullSAfeResultSetReturnsEmptyResultSetForNull() {
 		ResultSet resultSet = EmptyResultSet.nullSafeResultSet(null);
 
-		assertThat(resultSet, is(instanceOf(EmptyResultSet.class)));
+		assertThat(resultSet).isInstanceOf(EmptyResultSet.class);
 	}
 
 	@Test
 	public void isExhaustedForEmptyResultIsTrue() {
-		assertThat(EmptyResultSet.nullSafeResultSet(null).isExhausted(), is(true));
+		assertThat(EmptyResultSet.nullSafeResultSet(null).isExhausted()).isTrue();
 	}
 
 	@Test
 	public void isFullyFetchedForEmptyResultSetIsTrue() {
-		assertThat(EmptyResultSet.nullSafeResultSet(null).isFullyFetched(), is(true));
+		assertThat(EmptyResultSet.nullSafeResultSet(null).isFullyFetched()).isTrue();
 	}
 
 	@Test
 	public void getAllExecutionInfoForEmptyResultSetIsEmptyList() {
-		assertThat(EmptyResultSet.nullSafeResultSet(null).getAllExecutionInfo(),
-			is(equalTo(Collections.<ExecutionInfo>emptyList())));
+		assertThat(EmptyResultSet.nullSafeResultSet(null).getAllExecutionInfo()).isEmpty();
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -76,12 +72,12 @@ public class EmptyResultSetUnitTests {
 
 	@Test
 	public void getExecutionInfoForEmptyResultSetIsNull() {
-		assertThat(EmptyResultSet.nullSafeResultSet(null).getExecutionInfo(), is(nullValue(ExecutionInfo.class)));
+		assertThat(EmptyResultSet.nullSafeResultSet(null).getExecutionInfo()).isNull();
 	}
 
 	@Test
 	public void allForEmptyResultSetIsEmptyList() {
-		assertThat(EmptyResultSet.nullSafeResultSet(null).all(), is(equalTo(Collections.<Row>emptyList())));
+		assertThat(EmptyResultSet.nullSafeResultSet(null).all()).isEmpty();
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -93,13 +89,13 @@ public class EmptyResultSetUnitTests {
 	public void iteratorForEmptyResultSetIsEmptyIterator() {
 		Iterator<Row> iterator = EmptyResultSet.nullSafeResultSet(null).iterator();
 
-		assertThat(iterator, is(notNullValue(Iterator.class)));
-		assertThat(iterator.hasNext(), is(false));
+		assertThat(iterator).isNotNull();
+		assertThat(iterator.hasNext()).isFalse();
 	}
 
 	@Test
 	public void oneForEmptyResultSetIsNull() {
-		assertThat(EmptyResultSet.nullSafeResultSet(null).one(), is(nullValue(Row.class)));
+		assertThat(EmptyResultSet.nullSafeResultSet(null).one()).isNull();
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

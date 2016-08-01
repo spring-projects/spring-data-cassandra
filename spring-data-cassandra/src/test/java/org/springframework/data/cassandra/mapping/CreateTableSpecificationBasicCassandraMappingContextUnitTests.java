@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.DataType;
@@ -76,23 +74,23 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = ctx.getCreateTableSpecificationFor(persistentEntity);
 
-		assertThat(getColumn("human", specification).getType(), is(DataType.varchar()));
+		assertThat(getColumn("human", specification).getType()).isEqualTo(DataType.varchar());
 
 		ColumnSpecification friends = getColumn("friends", specification);
-		assertThat(friends.getType().isCollection(), is(true));
+		assertThat(friends.getType().isCollection()).isTrue();
 
 		CollectionType friendsCollection = (CollectionType) friends.getType();
-		assertThat(friendsCollection.getName(), is(Name.LIST));
-		assertThat(friendsCollection.getTypeArguments().size(), is(1));
-		assertThat(friendsCollection.getTypeArguments().get(0), is(DataType.varchar()));
+		assertThat(friendsCollection.getName()).isEqualTo(Name.LIST);
+		assertThat(friendsCollection.getTypeArguments()).hasSize(1);
+		assertThat(friendsCollection.getTypeArguments().get(0)).isEqualTo(DataType.varchar());
 
 		ColumnSpecification people = getColumn("people", specification);
-		assertThat(people.getType().isCollection(), is(true));
+		assertThat(people.getType().isCollection()).isTrue();
 
 		CollectionType peopleCollection = (CollectionType) people.getType();
-		assertThat(peopleCollection.getName(), is(Name.SET));
-		assertThat(peopleCollection.getTypeArguments().size(), is(1));
-		assertThat(peopleCollection.getTypeArguments().get(0), is(DataType.varchar()));
+		assertThat(peopleCollection.getName()).isEqualTo(Name.SET);
+		assertThat(peopleCollection.getTypeArguments()).hasSize(1);
+		assertThat(peopleCollection.getTypeArguments().get(0)).isEqualTo(DataType.varchar());
 	}
 
 	/**
@@ -105,15 +103,15 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = ctx.getCreateTableSpecificationFor(persistentEntity);
 
-		assertThat(getColumn("floater", specification).getType(), is(DataType.cfloat()));
+		assertThat(getColumn("floater", specification).getType()).isEqualTo(DataType.cfloat());
 
 		ColumnSpecification enemies = getColumn("enemies", specification);
-		assertThat(enemies.getType().isCollection(), is(true));
+		assertThat(enemies.getType().isCollection()).isTrue();
 
 		CollectionType enemiesCollection = (CollectionType) enemies.getType();
-		assertThat(enemiesCollection.getName(), is(Name.SET));
-		assertThat(enemiesCollection.getTypeArguments().size(), is(1));
-		assertThat(enemiesCollection.getTypeArguments().get(0), is(DataType.bigint()));
+		assertThat(enemiesCollection.getName()).isEqualTo(Name.SET);
+		assertThat(enemiesCollection.getTypeArguments()).hasSize(1);
+		assertThat(enemiesCollection.getTypeArguments().get(0)).isEqualTo(DataType.bigint());
 	}
 
 	/**
@@ -124,10 +122,10 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("id", specification).getType(), is(DataType.varchar()));
-		assertThat(getColumn("zoneId", specification).getType(), is(DataType.varchar()));
-		assertThat(getColumn("bpZoneId", specification).getType(), is(DataType.varchar()));
-		assertThat(getColumn("anEnum", specification).getType(), is(DataType.varchar()));
+		assertThat(getColumn("id", specification).getType()).isEqualTo(DataType.varchar());
+		assertThat(getColumn("zoneId", specification).getType()).isEqualTo(DataType.varchar());
+		assertThat(getColumn("bpZoneId", specification).getType()).isEqualTo(DataType.varchar());
+		assertThat(getColumn("anEnum", specification).getType()).isEqualTo(DataType.varchar());
 	}
 
 	/**
@@ -138,8 +136,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("boxedByte", specification).getType(), is(DataType.tinyint()));
-		assertThat(getColumn("primitiveByte", specification).getType(), is(DataType.tinyint()));
+		assertThat(getColumn("boxedByte", specification).getType()).isEqualTo(DataType.tinyint());
+		assertThat(getColumn("primitiveByte", specification).getType()).isEqualTo(DataType.tinyint());
 	}
 
 	/**
@@ -150,8 +148,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("boxedShort", specification).getType(), is(DataType.smallint()));
-		assertThat(getColumn("primitiveShort", specification).getType(), is(DataType.smallint()));
+		assertThat(getColumn("boxedShort", specification).getType()).isEqualTo(DataType.smallint());
+		assertThat(getColumn("primitiveShort", specification).getType()).isEqualTo(DataType.smallint());
 	}
 
 	/**
@@ -162,8 +160,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("boxedLong", specification).getType(), is(DataType.bigint()));
-		assertThat(getColumn("primitiveLong", specification).getType(), is(DataType.bigint()));
+		assertThat(getColumn("boxedLong", specification).getType()).isEqualTo(DataType.bigint());
+		assertThat(getColumn("primitiveLong", specification).getType()).isEqualTo(DataType.bigint());
 	}
 
 	/**
@@ -174,7 +172,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("bigInteger", specification).getType(), is(DataType.varint()));
+		assertThat(getColumn("bigInteger", specification).getType()).isEqualTo(DataType.varint());
 	}
 
 	/**
@@ -185,7 +183,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("bigDecimal", specification).getType(), is(DataType.decimal()));
+		assertThat(getColumn("bigDecimal", specification).getType()).isEqualTo(DataType.decimal());
 	}
 
 	/**
@@ -196,8 +194,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("boxedInteger", specification).getType(), is(DataType.cint()));
-		assertThat(getColumn("primitiveInteger", specification).getType(), is(DataType.cint()));
+		assertThat(getColumn("boxedInteger", specification).getType()).isEqualTo(DataType.cint());
+		assertThat(getColumn("primitiveInteger", specification).getType()).isEqualTo(DataType.cint());
 	}
 
 	/**
@@ -208,8 +206,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("boxedFloat", specification).getType(), is(DataType.cfloat()));
-		assertThat(getColumn("primitiveFloat", specification).getType(), is(DataType.cfloat()));
+		assertThat(getColumn("boxedFloat", specification).getType()).isEqualTo(DataType.cfloat());
+		assertThat(getColumn("primitiveFloat", specification).getType()).isEqualTo(DataType.cfloat());
 	}
 
 	/**
@@ -220,8 +218,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("boxedDouble", specification).getType(), is(DataType.cdouble()));
-		assertThat(getColumn("primitiveDouble", specification).getType(), is(DataType.cdouble()));
+		assertThat(getColumn("boxedDouble", specification).getType()).isEqualTo(DataType.cdouble());
+		assertThat(getColumn("primitiveDouble", specification).getType()).isEqualTo(DataType.cdouble());
 	}
 
 	/**
@@ -232,8 +230,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("boxedBoolean", specification).getType(), is(DataType.cboolean()));
-		assertThat(getColumn("primitiveBoolean", specification).getType(), is(DataType.cboolean()));
+		assertThat(getColumn("boxedBoolean", specification).getType()).isEqualTo(DataType.cboolean());
+		assertThat(getColumn("primitiveBoolean", specification).getType()).isEqualTo(DataType.cboolean());
 	}
 
 	/**
@@ -244,11 +242,11 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("date", specification).getType(), is(DataType.date()));
-		assertThat(getColumn("localDate", specification).getType(), is(DataType.date()));
-		assertThat(getColumn("jodaLocalDate", specification).getType(), is(DataType.date()));
-		assertThat(getColumn("jodaDateMidnight", specification).getType(), is(DataType.date()));
-		assertThat(getColumn("bpLocalDate", specification).getType(), is(DataType.date()));
+		assertThat(getColumn("date", specification).getType()).isEqualTo(DataType.date());
+		assertThat(getColumn("localDate", specification).getType()).isEqualTo(DataType.date());
+		assertThat(getColumn("jodaLocalDate", specification).getType()).isEqualTo(DataType.date());
+		assertThat(getColumn("jodaDateMidnight", specification).getType()).isEqualTo(DataType.date());
+		assertThat(getColumn("bpLocalDate", specification).getType()).isEqualTo(DataType.date());
 	}
 
 	/**
@@ -259,13 +257,13 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("timestamp", specification).getType(), is(DataType.timestamp()));
-		assertThat(getColumn("localDateTime", specification).getType(), is(DataType.timestamp()));
-		assertThat(getColumn("instant", specification).getType(), is(DataType.timestamp()));
-		assertThat(getColumn("jodaLocalDateTime", specification).getType(), is(DataType.timestamp()));
-		assertThat(getColumn("jodaDateTime", specification).getType(), is(DataType.timestamp()));
-		assertThat(getColumn("bpLocalDateTime", specification).getType(), is(DataType.timestamp()));
-		assertThat(getColumn("bpInstant", specification).getType(), is(DataType.timestamp()));
+		assertThat(getColumn("timestamp", specification).getType()).isEqualTo(DataType.timestamp());
+		assertThat(getColumn("localDateTime", specification).getType()).isEqualTo(DataType.timestamp());
+		assertThat(getColumn("instant", specification).getType()).isEqualTo(DataType.timestamp());
+		assertThat(getColumn("jodaLocalDateTime", specification).getType()).isEqualTo(DataType.timestamp());
+		assertThat(getColumn("jodaDateTime", specification).getType()).isEqualTo(DataType.timestamp());
+		assertThat(getColumn("bpLocalDateTime", specification).getType()).isEqualTo(DataType.timestamp());
+		assertThat(getColumn("bpInstant", specification).getType()).isEqualTo(DataType.timestamp());
 	}
 
 	/**
@@ -276,8 +274,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(TypeWithOverrides.class);
 
-		assertThat(getColumn("localDate", specification).getType(), is(DataType.timestamp()));
-		assertThat(getColumn("jodaLocalDate", specification).getType(), is(DataType.timestamp()));
+		assertThat(getColumn("localDate", specification).getType()).isEqualTo(DataType.timestamp());
+		assertThat(getColumn("jodaLocalDate", specification).getType()).isEqualTo(DataType.timestamp());
 	}
 
 	/**
@@ -288,7 +286,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
-		assertThat(getColumn("blob", specification).getType(), is(DataType.blob()));
+		assertThat(getColumn("blob", specification).getType()).isEqualTo(DataType.blob());
 	}
 
 	public CreateTableSpecification getCreateTableSpecificationFor(Class<?> persistentEntityClass) {

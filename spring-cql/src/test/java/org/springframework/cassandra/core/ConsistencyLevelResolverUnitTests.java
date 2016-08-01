@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -86,6 +85,6 @@ public class ConsistencyLevelResolverUnitTests {
 	 */
 	@Test
 	public void shouldResolveCorrectly() {
-		assertThat(ConsistencyLevelResolver.resolve(from), is(equalTo(expected)));
+		assertThat(ConsistencyLevelResolver.resolve(from)).isEqualTo(expected);
 	}
 }

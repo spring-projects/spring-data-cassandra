@@ -15,9 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.config;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -55,7 +53,7 @@ public class CassandraCqlClusterFactoryBeanIntegrationTests {
 		cassandraCqlClusterFactoryBean.setProtocolVersion(ProtocolVersion.V2);
 		cassandraCqlClusterFactoryBean.afterPropertiesSet();
 
-		assertEquals(ProtocolVersion.V2, getProtocolVersionEnum(cassandraCqlClusterFactoryBean));
+		assertThat(getProtocolVersionEnum(cassandraCqlClusterFactoryBean)).isEqualTo(ProtocolVersion.V2);
 	}
 
 	@Test
@@ -63,7 +61,7 @@ public class CassandraCqlClusterFactoryBeanIntegrationTests {
 
 		cassandraCqlClusterFactoryBean.afterPropertiesSet();
 
-		assertThat(getProtocolVersionEnum(cassandraCqlClusterFactoryBean), is(nullValue()));
+		assertThat(getProtocolVersionEnum(cassandraCqlClusterFactoryBean)).isNull();
 	}
 
 	private ProtocolVersion getProtocolVersionEnum(CassandraCqlClusterFactoryBean cassandraCqlClusterFactoryBean)

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.util.LinkedList;
@@ -60,7 +60,7 @@ public class BasicCassandraPersistentEntityOrderPropertiesUnitTests {
 			}
 		});
 
-		assertEquals(expected, actual);
+		assertThat(actual).isEqualTo(expected);
 
 	}
 
@@ -84,7 +84,7 @@ public class BasicCassandraPersistentEntityOrderPropertiesUnitTests {
 			}
 		});
 
-		assertEquals(expected, actual);
+		assertThat(actual).isEqualTo(expected);
 
 	}
 

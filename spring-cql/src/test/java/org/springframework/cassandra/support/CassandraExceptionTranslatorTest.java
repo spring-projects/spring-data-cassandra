@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.support;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.cassandra.support.exception.CassandraInvalidConfigurationInQueryException;
@@ -44,14 +44,14 @@ public class CassandraExceptionTranslatorTest {
 		String table = "tbl";
 		AlreadyExistsException cx = new AlreadyExistsException(keyspace, table);
 		DataAccessException dax = tx.translateExceptionIfPossible(cx);
-		assertNotNull(dax);
-		assertTrue(dax instanceof CassandraTableExistsException);
+		assertThat(dax).isNotNull();
+		assertThat(dax instanceof CassandraTableExistsException).isTrue();
 
 		CassandraTableExistsException x = (CassandraTableExistsException) dax;
-		assertEquals(table, x.getTableName());
-		assertEquals(x.getTableName(), x.getElementName());
-		assertEquals(CassandraSchemaElementExistsException.ElementType.TABLE, x.getElementType());
-		assertEquals(cx, x.getCause());
+		assertThat(x.getTableName()).isEqualTo(table);
+		assertThat(x.getElementName()).isEqualTo(x.getTableName());
+		assertThat(x.getElementType()).isEqualTo(CassandraSchemaElementExistsException.ElementType.TABLE);
+		assertThat(x.getCause()).isEqualTo(cx);
 	}
 
 	@Test
@@ -60,14 +60,14 @@ public class CassandraExceptionTranslatorTest {
 		String table = "";
 		AlreadyExistsException cx = new AlreadyExistsException(keyspace, table);
 		DataAccessException dax = tx.translateExceptionIfPossible(cx);
-		assertNotNull(dax);
-		assertTrue(dax instanceof CassandraKeyspaceExistsException);
+		assertThat(dax).isNotNull();
+		assertThat(dax instanceof CassandraKeyspaceExistsException).isTrue();
 
 		CassandraKeyspaceExistsException x = (CassandraKeyspaceExistsException) dax;
-		assertEquals(keyspace, x.getKeyspaceName());
-		assertEquals(x.getKeyspaceName(), x.getElementName());
-		assertEquals(CassandraSchemaElementExistsException.ElementType.KEYSPACE, x.getElementType());
-		assertEquals(cx, x.getCause());
+		assertThat(x.getKeyspaceName()).isEqualTo(keyspace);
+		assertThat(x.getElementName()).isEqualTo(x.getKeyspaceName());
+		assertThat(x.getElementType()).isEqualTo(CassandraSchemaElementExistsException.ElementType.KEYSPACE);
+		assertThat(x.getCause()).isEqualTo(cx);
 	}
 
 	@Test
@@ -75,14 +75,14 @@ public class CassandraExceptionTranslatorTest {
 		String msg = "msg";
 		InvalidQueryException cx = new InvalidConfigurationInQueryException(null, msg);
 		DataAccessException dax = tx.translateExceptionIfPossible(cx);
-		assertNotNull(dax);
-		assertTrue(dax instanceof CassandraInvalidConfigurationInQueryException);
-		assertEquals(cx, dax.getCause());
+		assertThat(dax).isNotNull();
+		assertThat(dax instanceof CassandraInvalidConfigurationInQueryException).isTrue();
+		assertThat(dax.getCause()).isEqualTo(cx);
 
 		cx = new InvalidQueryException(msg);
 		dax = tx.translateExceptionIfPossible(cx);
-		assertNotNull(dax);
-		assertTrue(dax instanceof CassandraInvalidQueryException);
-		assertEquals(cx, dax.getCause());
+		assertThat(dax).isNotNull();
+		assertThat(dax instanceof CassandraInvalidQueryException).isTrue();
+		assertThat(dax.getCause()).isEqualTo(cx);
 	}
 }

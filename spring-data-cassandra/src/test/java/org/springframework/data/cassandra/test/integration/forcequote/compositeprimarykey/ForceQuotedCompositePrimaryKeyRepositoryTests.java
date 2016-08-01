@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.UUID;
 
@@ -48,26 +48,26 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 
 		// insert
 		Implicit s = implicitRepository.save(entity);
-		assertSame(s, entity);
+		assertThat(entity).isSameAs(s);
 
 		// select
 		Implicit f = implicitRepository.findOne(key);
-		assertNotSame(f, entity);
+		assertThat(entity).isNotSameAs(f);
 		String stringValue = query("stringvalue", "\"Implicit\"", "\"keyZero\"", f.getPrimaryKey().getKeyZero(),
 				"\"keyOne\"", f.getPrimaryKey().getKeyOne());
-		assertEquals(f.getStringValue(), stringValue);
+		assertThat(stringValue).isEqualTo(f.getStringValue());
 
 		// update
 		f.setStringValue(f.getStringValue() + "X");
 		Implicit u = implicitRepository.save(f);
-		assertSame(u, f);
+		assertThat(f).isSameAs(u);
 		f = implicitRepository.findOne(u.getPrimaryKey());
-		assertNotSame(f, u);
-		assertEquals(u.getStringValue(), f.getStringValue());
+		assertThat(u).isNotSameAs(f);
+		assertThat(f.getStringValue()).isEqualTo(u.getStringValue());
 
 		// delete
 		implicitRepository.delete(key);
-		assertNull(implicitRepository.findOne(key));
+		assertThat(implicitRepository.findOne(key)).isNull();
 	}
 
 	public void testExplicit(String tableName, String stringValueColumnName, String keyZeroColumnName,
@@ -77,25 +77,25 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 
 		// insert
 		Explicit s = explicitRepository.save(entity);
-		assertSame(s, entity);
+		assertThat(entity).isSameAs(s);
 
 		// select
 		Explicit f = explicitRepository.findOne(key);
-		assertNotSame(f, entity);
+		assertThat(entity).isNotSameAs(f);
 		String stringValue = query(stringValueColumnName, tableName, keyZeroColumnName, f.getPrimaryKey().getKeyZero(),
 				keyOneColumnName, f.getPrimaryKey().getKeyOne());
-		assertEquals(f.getStringValue(), stringValue);
+		assertThat(stringValue).isEqualTo(f.getStringValue());
 
 		// update
 		f.setStringValue(f.getStringValue() + "X");
 		Explicit u = explicitRepository.save(f);
-		assertSame(u, f);
+		assertThat(f).isSameAs(u);
 		f = explicitRepository.findOne(u.getPrimaryKey());
-		assertNotSame(f, u);
-		assertEquals(u.getStringValue(), f.getStringValue());
+		assertThat(u).isNotSameAs(f);
+		assertThat(f.getStringValue()).isEqualTo(u.getStringValue());
 
 		// delete
 		explicitRepository.delete(key);
-		assertNull(explicitRepository.findOne(key));
+		assertThat(explicitRepository.findOne(key)).isNull();
 	}
 }

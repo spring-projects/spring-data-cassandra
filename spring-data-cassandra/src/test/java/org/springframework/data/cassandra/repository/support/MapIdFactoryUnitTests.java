@@ -16,7 +16,7 @@
 
 package org.springframework.data.cassandra.repository.support;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.repository.support.IdInterfaceValidator.*;
 import static org.springframework.data.cassandra.repository.support.MapIdFactory.*;
 
@@ -61,60 +61,60 @@ public class MapIdFactoryUnitTests {
 
 		HappyExtendingMapIdAndSerializable id = id(HappyExtendingMapIdAndSerializable.class);
 
-		assertNull(id.string());
-		assertNull(id.number());
-		assertNull(id.getString());
-		assertNull(id.getNumber());
+		assertThat(id.string()).isNull();
+		assertThat(id.number()).isNull();
+		assertThat(id.getString()).isNull();
+		assertThat(id.getNumber()).isNull();
 
 		id.setNumber(i);
-		assertEquals(i, id.getNumber());
-		assertEquals(i, id.number());
-		assertEquals(i, id.get("number"));
+		assertThat(id.getNumber()).isEqualTo(i);
+		assertThat(id.number()).isEqualTo(i);
+		assertThat(id.get("number")).isEqualTo(i);
 
 		HappyExtendingMapIdAndSerializable returned = null;
 
 		returned = id.number(i = r.nextInt());
-		assertSame(returned, id);
-		assertEquals(i, id.getNumber());
-		assertEquals(i, id.number());
-		assertEquals(i, id.get("number"));
+		assertThat(id).isSameAs(returned);
+		assertThat(id.getNumber()).isEqualTo(i);
+		assertThat(id.number()).isEqualTo(i);
+		assertThat(id.get("number")).isEqualTo(i);
 
 		id.put("number", i = r.nextInt());
-		assertEquals(i, id.getNumber());
-		assertEquals(i, id.number());
-		assertEquals(i, id.get("number"));
+		assertThat(id.getNumber()).isEqualTo(i);
+		assertThat(id.number()).isEqualTo(i);
+		assertThat(id.get("number")).isEqualTo(i);
 
 		id.setString(s);
-		assertEquals(s, id.getString());
-		assertEquals(s, id.string());
-		assertEquals(s, id.get("string"));
+		assertThat(id.getString()).isEqualTo(s);
+		assertThat(id.string()).isEqualTo(s);
+		assertThat(id.get("string")).isEqualTo(s);
 
 		returned = id.string(s = "" + r.nextInt());
-		assertSame(returned, id);
-		assertEquals(s, id.getString());
-		assertEquals(s, id.string());
-		assertEquals(s, id.get("string"));
+		assertThat(id).isSameAs(returned);
+		assertThat(id.getString()).isEqualTo(s);
+		assertThat(id.string()).isEqualTo(s);
+		assertThat(id.get("string")).isEqualTo(s);
 
 		returned = id.withString(s = "" + r.nextInt());
-		assertSame(returned, id);
-		assertEquals(s, id.getString());
-		assertEquals(s, id.string());
-		assertEquals(s, id.get("string"));
+		assertThat(id).isSameAs(returned);
+		assertThat(id.getString()).isEqualTo(s);
+		assertThat(id.string()).isEqualTo(s);
+		assertThat(id.get("string")).isEqualTo(s);
 
 		id.put("string", s = "" + r.nextInt());
-		assertEquals(s, id.getString());
-		assertEquals(s, id.string());
-		assertEquals(s, id.get("string"));
+		assertThat(id.getString()).isEqualTo(s);
+		assertThat(id.string()).isEqualTo(s);
+		assertThat(id.get("string")).isEqualTo(s);
 
 		id.setString(null);
-		assertNull(id.getString());
-		assertNull(id.string());
-		assertNull(id.get("string"));
+		assertThat(id.getString()).isNull();
+		assertThat(id.string()).isNull();
+		assertThat(id.get("string")).isNull();
 
 		id.setNumber(null);
-		assertNull(id.getNumber());
-		assertNull(id.number());
-		assertNull(id.get("number"));
+		assertThat(id.getNumber()).isNull();
+		assertThat(id.number()).isNull();
+		assertThat(id.get("number")).isNull();
 	}
 
 	interface HappyExtendingNothing {
@@ -145,64 +145,64 @@ public class MapIdFactoryUnitTests {
 
 		HappyExtendingNothing id = id(HappyExtendingNothing.class);
 
-		assertTrue(id instanceof Serializable);
-		assertTrue(id instanceof MapId);
+		assertThat(id instanceof Serializable).isTrue();
+		assertThat(id instanceof MapId).isTrue();
 		MapId mapid = (MapId) id;
 
-		assertNull(id.string());
-		assertNull(id.number());
-		assertNull(id.getString());
-		assertNull(id.getNumber());
+		assertThat(id.string()).isNull();
+		assertThat(id.number()).isNull();
+		assertThat(id.getString()).isNull();
+		assertThat(id.getNumber()).isNull();
 
 		id.setNumber(i);
-		assertEquals(i, id.getNumber());
-		assertEquals(i, id.number());
-		assertEquals(i, mapid.get("number"));
+		assertThat(id.getNumber()).isEqualTo(i);
+		assertThat(id.number()).isEqualTo(i);
+		assertThat(mapid.get("number")).isEqualTo(i);
 
 		HappyExtendingNothing returned = null;
 
 		returned = id.number(i = r.nextInt());
-		assertSame(returned, id);
-		assertEquals(i, id.getNumber());
-		assertEquals(i, id.number());
-		assertEquals(i, mapid.get("number"));
+		assertThat(id).isSameAs(returned);
+		assertThat(id.getNumber()).isEqualTo(i);
+		assertThat(id.number()).isEqualTo(i);
+		assertThat(mapid.get("number")).isEqualTo(i);
 
 		mapid.put("number", i = r.nextInt());
-		assertEquals(i, id.getNumber());
-		assertEquals(i, id.number());
-		assertEquals(i, mapid.get("number"));
+		assertThat(id.getNumber()).isEqualTo(i);
+		assertThat(id.number()).isEqualTo(i);
+		assertThat(mapid.get("number")).isEqualTo(i);
 
 		id.setString(s);
-		assertEquals(s, id.getString());
-		assertEquals(s, id.string());
-		assertEquals(s, mapid.get("string"));
+		assertThat(id.getString()).isEqualTo(s);
+		assertThat(id.string()).isEqualTo(s);
+		assertThat(mapid.get("string")).isEqualTo(s);
 
 		returned = id.string(s = "" + r.nextInt());
-		assertSame(returned, id);
-		assertEquals(s, id.getString());
-		assertEquals(s, id.string());
-		assertEquals(s, mapid.get("string"));
+		assertThat(id).isSameAs(returned);
+		assertThat(id.getString()).isEqualTo(s);
+		assertThat(id.string()).isEqualTo(s);
+		assertThat(mapid.get("string")).isEqualTo(s);
 
 		returned = id.withString(s = "" + r.nextInt());
-		assertSame(returned, id);
-		assertEquals(s, id.getString());
-		assertEquals(s, id.string());
-		assertEquals(s, mapid.get("string"));
+		assertThat(id).isSameAs(returned);
+		assertThat(id.getString()).isEqualTo(s);
+		assertThat(id.string()).isEqualTo(s);
+		assertThat(mapid.get("string")).isEqualTo(s);
 
 		mapid.put("string", s = "" + r.nextInt());
-		assertEquals(s, id.getString());
-		assertEquals(s, id.string());
-		assertEquals(s, mapid.get("string"));
+		assertThat(id.getString()).isEqualTo(s);
+		assertThat(id.string()).isEqualTo(s);
+		assertThat(mapid.get("string")).isEqualTo(s);
 
 		id.setString(null);
-		assertNull(id.getString());
-		assertNull(id.string());
-		assertNull(mapid.get("string"));
+		assertThat(id.getString()).isNull();
+		assertThat(id.string()).isNull();
+		assertThat(mapid.get("string")).isNull();
 
 		id.setNumber(null);
-		assertNull(id.getNumber());
-		assertNull(id.number());
-		assertNull(mapid.get("number"));
+		assertThat(id.getNumber()).isNull();
+		assertThat(id.number()).isNull();
+		assertThat(mapid.get("number")).isNull();
 	}
 
 	class IdClass {}
@@ -276,7 +276,7 @@ public class MapIdFactoryUnitTests {
 				validate(i);
 				fail("should've caught IdInterfaceException validating interface " + i);
 			} catch (IdInterfaceExceptions e) {
-				assertEquals(1, e.getCount());
+				assertThat(e.getCount()).isEqualTo(1);
 			}
 		}
 	}

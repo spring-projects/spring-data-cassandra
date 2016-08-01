@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery.ParameterBindingParser.*;
 
 import java.util.ArrayList;
@@ -44,8 +43,8 @@ public class ParameterBindingParserUnitTests {
 
 		String transformed = INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query, bindings);
 
-		assertThat(transformed, is(equalTo(query)));
-		assertThat(bindings, is(empty()));
+		assertThat(transformed).isEqualTo(query);
+		assertThat(bindings).isEmpty();
 	}
 
 	/**
@@ -59,8 +58,8 @@ public class ParameterBindingParserUnitTests {
 
 		String transformed = INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query, bindings);
 
-		assertThat(transformed, is(equalTo(query)));
-		assertThat(bindings, is(empty()));
+		assertThat(transformed).isEqualTo(query);
+		assertThat(bindings).isEmpty();
 	}
 
 	/**
@@ -74,11 +73,11 @@ public class ParameterBindingParserUnitTests {
 
 		String transformed = INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query, bindings);
 
-		assertThat(transformed, is(equalTo("SELECT * FROM hello_world WHERE a = ?_param_? and b = ?_param_?")));
-		assertThat(bindings, hasSize(2));
+		assertThat(transformed).isEqualTo("SELECT * FROM hello_world WHERE a = ?_param_? and b = ?_param_?");
+		assertThat(bindings).hasSize(2);
 
-		assertThat(bindings.get(0).getParameterIndex(), is(equalTo(0)));
-		assertThat(bindings.get(1).getParameterIndex(), is(equalTo(13)));
+		assertThat(bindings.get(0).getParameterIndex()).isEqualTo(0);
+		assertThat(bindings.get(1).getParameterIndex()).isEqualTo(13);
 	}
 
 	/**
@@ -92,8 +91,8 @@ public class ParameterBindingParserUnitTests {
 
 		String transformed = INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query, bindings);
 
-		assertThat(transformed, is(equalTo("SELECT * FROM hello_world WHERE a = ?_param_? and b = ?_param_?")));
-		assertThat(bindings, hasSize(2));
+		assertThat(transformed).isEqualTo("SELECT * FROM hello_world WHERE a = ?_param_? and b = ?_param_?");
+		assertThat(bindings).hasSize(2);
 	}
 
 	/**
@@ -107,8 +106,8 @@ public class ParameterBindingParserUnitTests {
 
 		String transformed = INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query, bindings);
 
-		assertThat(transformed, is(equalTo("SELECT * FROM hello_world WHERE a = ?_param_? and b = ?_param_?")));
-		assertThat(bindings, hasSize(2));
+		assertThat(transformed).isEqualTo("SELECT * FROM hello_world WHERE a = ?_param_? and b = ?_param_?");
+		assertThat(bindings).hasSize(2);
 	}
 
 	/**
@@ -122,8 +121,8 @@ public class ParameterBindingParserUnitTests {
 
 		String transformed = INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query, bindings);
 
-		assertThat(transformed, is(equalTo("SELECT * FROM hello_world WHERE a = ?_param_? and b = ?_param_?")));
-		assertThat(bindings, hasSize(2));
+		assertThat(transformed).isEqualTo("SELECT * FROM hello_world WHERE a = ?_param_? and b = ?_param_?");
+		assertThat(bindings).hasSize(2);
 	}
 
 	/**
@@ -137,8 +136,8 @@ public class ParameterBindingParserUnitTests {
 
 		String transformed = INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query, bindings);
 
-		assertThat(transformed, is(equalTo(
-				"SELECT * FROM hello_world WHERE (a = ?_param_? and b = ?_param_?) and c = (?_param_?) and (d = ?_param_?)")));
-		assertThat(bindings, hasSize(4));
+		assertThat(transformed).isEqualTo(
+				"SELECT * FROM hello_world WHERE (a = ?_param_? and b = ?_param_?) and c = (?_param_?) and (d = ?_param_?)");
+		assertThat(bindings).hasSize(4);
 	}
 }

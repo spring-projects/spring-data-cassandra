@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.conversion;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -101,33 +100,33 @@ public class ParameterConversionIntegrationTests extends AbstractSpringDataEmbed
 	 * @see DATACASS-7
 	 */
 	@Test
-	public void shouldFindByConvertedParameter()  {
+	public void shouldFindByConvertedParameter() {
 
 		List<Contact> contacts = contactRepository.findByAddress(walter.getAddress());
 
-		assertThat(contacts, hasItems(walter, flynn));
+		assertThat(contacts).contains(walter, flynn);
 	}
 
 	/**
 	 * @see DATACASS-7
 	 */
 	@Test
-	public void shouldFindByStringParameter()  {
+	public void shouldFindByStringParameter() {
 
 		String parameter = AddressWriteConverter.INSTANCE.convert(walter.getAddress());
 		List<Contact> contacts = contactRepository.findByAddress(parameter);
 
-		assertThat(contacts, hasItems(walter, flynn));
+		assertThat(contacts).contains(walter, flynn);
 	}
 
 	/**
 	 * @see DATACASS-7
 	 */
 	@Test
-	public void findByAddressesIn()  {
+	public void findByAddressesIn() {
 
-		assertThat(contactRepository.findByAddressesContains(flynn.address), containsInAnyOrder(flynn, walter));
-		assertThat(contactRepository.findByAddressesContains(walter.addresses.get(1)), contains(walter));
+		assertThat(contactRepository.findByAddressesContains(flynn.address)).contains(flynn, walter);
+		assertThat(contactRepository.findByAddressesContains(walter.addresses.get(1))).contains(walter);
 	}
 
 	interface ContactRepository extends CassandraRepository<Contact> {

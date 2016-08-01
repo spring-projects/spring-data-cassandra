@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -43,17 +42,13 @@ import org.springframework.data.repository.Repository;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CassandraRepositoryFactoryUnitTests {
 
-	@Mock
-	private CassandraConverter converter;
+	@Mock private CassandraConverter converter;
 
-	@Mock
-	private CassandraMappingContext mappingContext;
+	@Mock private CassandraMappingContext mappingContext;
 
-	@Mock
-	private CassandraPersistentEntity entity;
+	@Mock private CassandraPersistentEntity entity;
 
-	@Mock
-	private CassandraTemplate template;
+	@Mock private CassandraTemplate template;
 
 	@Before
 	public void setUp() {
@@ -71,10 +66,10 @@ public class CassandraRepositoryFactoryUnitTests {
 
 		CassandraRepositoryFactory repositoryFactory = new CassandraRepositoryFactory(template);
 
-		CassandraEntityInformation<Person, Serializable> entityInformation =
-			repositoryFactory.getEntityInformation(Person.class);
+		CassandraEntityInformation<Person, Serializable> entityInformation = repositoryFactory
+				.getEntityInformation(Person.class);
 
-		assertTrue(entityInformation instanceof MappingCassandraEntityInformation);
+		assertThat(entityInformation).isInstanceOf(MappingCassandraEntityInformation.class);
 	}
 
 	/**
@@ -88,9 +83,8 @@ public class CassandraRepositoryFactoryUnitTests {
 		CassandraRepositoryFactory repositoryFactory = new CassandraRepositoryFactory(template);
 		MyPersonRepository repository = repositoryFactory.getRepository(MyPersonRepository.class);
 
-		assertThat(repository, is(notNullValue()));
+		assertThat(repository).isNotNull();
 	}
 
-	interface MyPersonRepository extends Repository<Person, Long> {
-	}
+	interface MyPersonRepository extends Repository<Person, Long> {}
 }

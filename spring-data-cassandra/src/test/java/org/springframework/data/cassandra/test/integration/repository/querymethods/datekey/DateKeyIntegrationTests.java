@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.datekey;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Date;
 
@@ -62,6 +62,6 @@ public class DateKeyIntegrationTests extends AbstractSpringDataEmbeddedCassandra
 		repo.save(saved);
 
 		DateThing found = repo.findThingByDate(date);
-		assertNotNull(found);
+		assertThat(found).isNotNull();
 	}
 }

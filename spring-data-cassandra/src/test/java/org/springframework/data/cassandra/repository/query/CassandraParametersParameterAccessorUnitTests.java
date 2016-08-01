@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -61,7 +60,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
 				new Object[] { "firstname" });
 
-		assertThat(accessor.getDataType(0), is(equalTo(DataType.varchar())));
+		assertThat(accessor.getDataType(0)).isEqualTo(DataType.varchar());
 	}
 
 	/**
@@ -74,7 +73,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
 				new Object[] { LocalDateTime.of(2000, 10, 11, 12, 13, 14) });
 
-		assertThat(accessor.getDataType(0), is(nullValue()));
+		assertThat(accessor.getDataType(0)).isNull();
 	}
 
 	/**
@@ -87,7 +86,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
 				new Object[] { LocalDateTime.of(2000, 10, 11, 12, 13, 14) });
 
-		assertThat(accessor.getDataType(0), is(DataType.date()));
+		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
 
 	/**
@@ -100,7 +99,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
 				new Object[] { "" });
 
-		assertThat(accessor.getDataType(0), is(DataType.date()));
+		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
 
 	/**
@@ -113,7 +112,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
 				new Object[] { "" });
 
-		assertThat(accessor.getDataType(0), is(DataType.date()));
+		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
 
 	private CassandraQueryMethod getCassandraQueryMethod(Method method) {

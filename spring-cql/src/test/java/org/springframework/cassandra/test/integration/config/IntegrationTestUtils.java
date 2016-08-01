@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.config;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.springframework.cassandra.core.CqlTemplate;
 
@@ -27,14 +27,14 @@ import com.datastax.driver.core.Session;
 public class IntegrationTestUtils {
 
 	public static void assertCqlTemplate(CqlTemplate cqlTemplate) {
-		assertNotNull(cqlTemplate);
+		assertThat(cqlTemplate).isNotNull();
 	}
 
 	public static void assertSession(Session session) {
-		assertNotNull(session);
+		assertThat(session).isNotNull();
 	}
 
 	public static void assertKeyspaceExists(String keyspace, Session session) {
-		assertNotNull(session.getCluster().getMetadata().getKeyspace(keyspace));
+		assertThat(session.getCluster().getMetadata().getKeyspace(keyspace)).isNotNull();
 	}
 }

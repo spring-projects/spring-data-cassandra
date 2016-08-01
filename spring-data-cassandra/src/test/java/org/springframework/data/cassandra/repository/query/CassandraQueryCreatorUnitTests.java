@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.repository.query.StubParameterAccessor.*;
 
 import java.io.Serializable;
@@ -55,8 +54,7 @@ public class CassandraQueryCreatorUnitTests {
 	CassandraMappingContext context;
 	CassandraConverter converter;
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() throws SecurityException, NoSuchMethodException {
@@ -72,7 +70,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstname", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname='Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='Walter';");
 	}
 
 	/**
@@ -83,7 +81,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameOrderByLastname", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname='Walter' ORDER BY lastname ASC;")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='Walter' ORDER BY lastname ASC;");
 	}
 
 	/**
@@ -94,7 +92,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameAndLastname", Person.class, "Walter", "White");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname='Walter' AND lastname='White';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='Walter' AND lastname='White';");
 	}
 
 	/**
@@ -121,7 +119,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameGreaterThan", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname>'Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname>'Walter';");
 	}
 
 	/**
@@ -132,7 +130,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameGreaterThanEqual", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname>='Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname>='Walter';");
 	}
 
 	/**
@@ -143,7 +141,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameLessThan", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname<'Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname<'Walter';");
 	}
 
 	/**
@@ -154,7 +152,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameLessThanEqual", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname<='Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname<='Walter';");
 	}
 
 	/**
@@ -165,7 +163,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameIn", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname IN ('Walter');")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Walter');");
 	}
 
 	/**
@@ -176,7 +174,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameIn", Person.class, Arrays.asList("Walter", "Gus"));
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname IN ('Walter','Gus');")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Walter','Gus');");
 	}
 
 	/**
@@ -185,10 +183,9 @@ public class CassandraQueryCreatorUnitTests {
 	@Test
 	public void createsInQueryWithArrayCorrectly() {
 
-		String query = createQuery("findByFirstnameInAndLastname", Person.class,
-			new String[] { "Walter", "Gus" }, "Fring");
+		String query = createQuery("findByFirstnameInAndLastname", Person.class, new String[] { "Walter", "Gus" }, "Fring");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname IN ('Walter','Gus') AND lastname='Fring';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Walter','Gus') AND lastname='Fring';");
 	}
 
 	/**
@@ -197,11 +194,11 @@ public class CassandraQueryCreatorUnitTests {
 	@Test
 	public void createsLikeQueryCorrectly() {
 
-		assertThat(createQuery("findByFirstnameLike", Person.class, "Wal%ter"),
-				is(equalTo("SELECT * FROM person WHERE firstname LIKE 'Wal%ter';")));
+		assertThat(createQuery("findByFirstnameLike", Person.class, "Wal%ter"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Wal%ter';");
 
-		assertThat(createQuery("findByFirstnameLike", Person.class, "Walter"),
-				is(equalTo("SELECT * FROM person WHERE firstname LIKE 'Walter';")));
+		assertThat(createQuery("findByFirstnameLike", Person.class, "Walter"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter';");
 	}
 
 	/**
@@ -212,7 +209,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameStartsWith", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname LIKE 'Walter%';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter%';");
 	}
 
 	/**
@@ -223,7 +220,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameEndsWith", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname LIKE '%Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter';");
 	}
 
 	/**
@@ -234,7 +231,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameContains", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname LIKE '%Walter%';")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter%';");
 	}
 
 	/**
@@ -245,7 +242,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByMysetContains", TypeWithSet.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM typewithset WHERE myset CONTAINS 'Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM typewithset WHERE myset CONTAINS 'Walter';");
 	}
 
 	/**
@@ -256,7 +253,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByMylistContains", TypeWithList.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM typewithlist WHERE mylist CONTAINS 'Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM typewithlist WHERE mylist CONTAINS 'Walter';");
 	}
 
 	/**
@@ -267,7 +264,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByMymapContains", TypeWithMap.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM typewithmap WHERE mymap CONTAINS 'Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM typewithmap WHERE mymap CONTAINS 'Walter';");
 	}
 
 	/**
@@ -278,7 +275,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameIsTrue", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname=true;")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname=true;");
 	}
 
 	/**
@@ -289,7 +286,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByFirstnameIsFalse", Person.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM person WHERE firstname=false;")));
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname=false;");
 	}
 
 	/**
@@ -300,7 +297,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByIdAndSet", QuotedType.class, "Walter", "White");
 
-		assertThat(query, is(equalTo("SELECT * FROM \"myTable\" WHERE \"my_id\"='Walter' AND \"set\"='White';")));
+		assertThat(query).isEqualTo("SELECT * FROM \"myTable\" WHERE \"my_id\"='Walter' AND \"set\"='White';");
 	}
 
 	/**
@@ -311,7 +308,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByKeyFirstname", TypeWithCompositeId.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM typewithcompositeid WHERE firstname='Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM typewithcompositeid WHERE firstname='Walter';");
 	}
 
 	/**
@@ -322,7 +319,7 @@ public class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByKeyFirstnameOrderByKeyLastnameAsc", TypeWithCompositeId.class, "Walter");
 
-		assertThat(query, is(equalTo("SELECT * FROM typewithcompositeid WHERE firstname='Walter' ORDER BY lastname ASC;")));
+		assertThat(query).isEqualTo("SELECT * FROM typewithcompositeid WHERE firstname='Walter' ORDER BY lastname ASC;");
 	}
 
 	/**
@@ -334,7 +331,7 @@ public class CassandraQueryCreatorUnitTests {
 		String query = createQuery("findByFirstname", Key.class, "Walter");
 
 		// ⊙_ʘ rly? ヾ( •́д•̀ ;)ﾉ
-		assertThat(query, is(equalTo("SELECT * FROM key WHERE firstname='Walter';")));
+		assertThat(query).isEqualTo("SELECT * FROM key WHERE firstname='Walter';");
 	}
 
 	/**

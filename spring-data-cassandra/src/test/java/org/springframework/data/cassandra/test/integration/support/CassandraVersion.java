@@ -15,14 +15,14 @@
  */
 package org.springframework.data.cassandra.test.integration.support;
 
-import lombok.experimental.UtilityClass;
-
 import org.springframework.data.util.Version;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+
+import lombok.experimental.UtilityClass;
 
 /**
  * Utility to retrieve the Cassandra release version.

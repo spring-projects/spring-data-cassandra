@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.config.java;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -79,6 +78,6 @@ public class CqlTemplateConfigIntegrationTests extends AbstractEmbeddedCassandra
 	public void test() {
 
 		CqlTemplate cqlTemplate = context.getBean(CqlTemplate.class);
-		assertThat(cqlTemplate.describeRing().size(), is(greaterThan(0)));
+		assertThat(cqlTemplate.describeRing()).isNotEmpty();
 	}
 }

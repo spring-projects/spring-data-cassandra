@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class CqlTableSpecificationAssertions {
 		TableMetadata tmd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
 				.getTable(expected.getName().getUnquoted()); // TODO: talk to Datastax about unquoting
 
-		assertEquals(expected.getName().getUnquoted(), tmd.getName()); // TODO: talk to Datastax
+		assertThat(expected.getName().getUnquoted()).isEqualTo(tmd.getName()); // TODO: talk to Datastax
 		assertPartitionKeyColumns(expected, tmd);
 		assertPrimaryKeyColumns(expected, tmd);
 		assertColumns(expected.getColumns(), tmd.getColumns());
@@ -60,7 +60,7 @@ public class CqlTableSpecificationAssertions {
 		TableMetadata tmd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
 				.getTable(expected.getName().toCql());
 
-		assertNull(tmd);
+		assertThat(tmd).isNull();
 	}
 
 	public static void assertPartitionKeyColumns(TableDescriptor expected, TableMetadata actual) {
@@ -101,7 +101,7 @@ public class CqlTableSpecificationAssertions {
 			case BLOOM_FILTER_FP_CHANCE:
 			case READ_REPAIR_CHANCE:
 			case DCLOCAL_READ_REPAIR_CHANCE:
-				assertEquals((Double) expected, (Double) actual, DELTA);
+				assertThat((Double) expected).isCloseTo((Double) actual, offset(DELTA));
 				return;
 
 			case CACHING:
@@ -119,8 +119,9 @@ public class CqlTableSpecificationAssertions {
 
 		log.info(actual.getClass().getName());
 
-		assertEquals(expected,
-				tableOption.quotesValue() && !(actual instanceof CharSequence) ? CqlStringUtils.singleQuote(actual) : actual);
+		assertThat(
+				tableOption.quotesValue() && !(actual instanceof CharSequence) ? CqlStringUtils.singleQuote(actual) : actual)
+						.isEqualTo(expected);
 	}
 
 	public static void assertCaching(Map<String, Object> expected, Map<String, String> actual) {
@@ -178,7 +179,7 @@ public class CqlTableSpecificationAssertions {
 	}
 
 	public static void assertColumn(ColumnSpecification expected, ColumnMetadata actual) {
-		assertEquals(expected.getName().toCql(), actual.getName()); // TODO: expected.getName().getUnquoted()?
-		assertEquals(expected.getType(), actual.getType());
+		assertThat(expected.getName().toCql()).isEqualTo(actual.getName()); // TODO: expected.getName().getUnquoted()?
+		assertThat(expected.getType()).isEqualTo(actual.getType());
 	}
 }

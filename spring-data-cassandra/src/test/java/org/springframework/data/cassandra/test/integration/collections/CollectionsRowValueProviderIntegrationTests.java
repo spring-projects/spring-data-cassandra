@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.collections;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.Date;
@@ -86,9 +86,9 @@ public class CollectionsRowValueProviderIntegrationTests extends AbstractKeyspac
 
 		BookHistory b = operations.selectOne(select, BookHistory.class);
 
-		assertNotNull(b.getCheckOuts());
-		assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
-		assertEquals(b.getAuthor(), "Cassandra Guru");
+		assertThat(b.getCheckOuts()).isNotNull();
+		assertThat("Spring Data Cassandra Guide").isEqualTo(b.getTitle());
+		assertThat("Cassandra Guru").isEqualTo(b.getAuthor());
 
 	}
 
@@ -122,9 +122,10 @@ public class CollectionsRowValueProviderIntegrationTests extends AbstractKeyspac
 
 		BookReference b = operations.selectOne(select, BookReference.class);
 
-		assertNotNull(b.getReferences());
-		assertNotNull(b.getBookmarks());
-		assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
-		assertEquals(b.getAuthor(), "Cassandra Guru");
+		assertThat(b.getReferences()).isNotNull();
+		assertThat(b.getBookmarks()).isNotNull();
+		assertThat("Spring Data Cassandra Guide").isEqualTo(b.getTitle());
+		assertThat("Cassandra Guru").isEqualTo(b.getAuthor());
+
 	}
 }

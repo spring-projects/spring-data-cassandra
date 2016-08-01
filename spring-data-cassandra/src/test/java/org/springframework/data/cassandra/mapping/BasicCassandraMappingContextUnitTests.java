@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -62,9 +61,9 @@ public class BasicCassandraMappingContextUnitTests {
 
 		mappingContext.getPersistentEntity(X.class);
 
-		assertTrue(mappingContext.contains(X.class));
-		assertNotNull(mappingContext.getExistingPersistentEntity(X.class));
-		assertFalse(mappingContext.contains(Y.class));
+		assertThat(mappingContext.contains(X.class)).isTrue();
+		assertThat(mappingContext.getExistingPersistentEntity(X.class)).isNotNull();
+		assertThat(mappingContext.contains(Y.class)).isFalse();
 	}
 
 	@Table
@@ -87,12 +86,12 @@ public class BasicCassandraMappingContextUnitTests {
 
 		CassandraPersistentProperty idProperty = persistentEntity.getIdProperty();
 
-		assertThat(idProperty.getColumnName().toCql(), is(equalTo("foo")));
+		assertThat(idProperty.getColumnName().toCql()).isEqualTo("foo");
 
 		List<CqlIdentifier> columnNames = idProperty.getColumnNames();
 
-		assertThat(columnNames, hasSize(1));
-		assertThat(columnNames.get(0).toCql(), is(equalTo("foo")));
+		assertThat(columnNames).hasSize(1);
+		assertThat(columnNames.get(0).toCql()).isEqualTo("foo");
 	}
 
 	@Table
@@ -119,20 +118,20 @@ public class BasicCassandraMappingContextUnitTests {
 		CassandraPersistentEntity<?> persistentEntity = mappingContext
 				.getPersistentEntity(PrimaryKeyColumnsOnProperty.class);
 
-		assertThat(persistentEntity.isCompositePrimaryKey(), is(false));
+		assertThat(persistentEntity.isCompositePrimaryKey()).isFalse();
 
 		CassandraPersistentProperty firstname = persistentEntity.getPersistentProperty("firstname");
 
-		assertThat(firstname.isCompositePrimaryKey(), is(false));
-		assertThat(firstname.isPrimaryKeyColumn(), is(true));
-		assertThat(firstname.isPartitionKeyColumn(), is(true));
-		assertThat(firstname.getColumnName().toCql(), is(equalTo("firstname")));
+		assertThat(firstname.isCompositePrimaryKey()).isFalse();
+		assertThat(firstname.isPrimaryKeyColumn()).isTrue();
+		assertThat(firstname.isPartitionKeyColumn()).isTrue();
+		assertThat(firstname.getColumnName().toCql()).isEqualTo("firstname");
 
 		CassandraPersistentProperty lastname = persistentEntity.getPersistentProperty("lastname");
 
-		assertThat(lastname.isPrimaryKeyColumn(), is(true));
-		assertThat(lastname.isClusterKeyColumn(), is(true));
-		assertThat(lastname.getColumnName().toCql(), is(equalTo("mylastname")));
+		assertThat(lastname.isPrimaryKeyColumn()).isTrue();
+		assertThat(lastname.isClusterKeyColumn()).isTrue();
+		assertThat(lastname.getColumnName().toCql()).isEqualTo("mylastname");
 	}
 
 	@Table
@@ -172,25 +171,25 @@ public class BasicCassandraMappingContextUnitTests {
 		CassandraPersistentEntity<?> primaryKeyClass = mappingContext
 				.getPersistentEntity(CompositePrimaryKeyClassWithProperties.class);
 
-		assertThat(persistentEntity.isCompositePrimaryKey(), is(false));
-		assertThat(persistentEntity.getPersistentProperty("key").isCompositePrimaryKey(), is(true));
+		assertThat(persistentEntity.isCompositePrimaryKey()).isFalse();
+		assertThat(persistentEntity.getPersistentProperty("key").isCompositePrimaryKey()).isTrue();
 
-		assertThat(primaryKeyClass.isCompositePrimaryKey(), is(true));
-		assertThat(primaryKeyClass.getCompositePrimaryKeyProperties(), hasSize(2));
+		assertThat(primaryKeyClass.isCompositePrimaryKey()).isTrue();
+		assertThat(primaryKeyClass.getCompositePrimaryKeyProperties()).hasSize(2);
 
 		CassandraPersistentProperty firstname = primaryKeyClass.getPersistentProperty("firstname");
 
-		assertThat(firstname.isPrimaryKeyColumn(), is(true));
-		assertThat(firstname.isPartitionKeyColumn(), is(true));
-		assertThat(firstname.isClusterKeyColumn(), is(false));
-		assertThat(firstname.getColumnName().toCql(), is(equalTo("firstname")));
+		assertThat(firstname.isPrimaryKeyColumn()).isTrue();
+		assertThat(firstname.isPartitionKeyColumn()).isTrue();
+		assertThat(firstname.isClusterKeyColumn()).isFalse();
+		assertThat(firstname.getColumnName().toCql()).isEqualTo("firstname");
 
 		CassandraPersistentProperty lastname = primaryKeyClass.getPersistentProperty("lastname");
 
-		assertThat(lastname.isPrimaryKeyColumn(), is(true));
-		assertThat(lastname.isPartitionKeyColumn(), is(false));
-		assertThat(lastname.isClusterKeyColumn(), is(true));
-		assertThat(lastname.getColumnName().toCql(), is(equalTo("mylastname")));
+		assertThat(lastname.isPrimaryKeyColumn()).isTrue();
+		assertThat(lastname.isPartitionKeyColumn()).isFalse();
+		assertThat(lastname.isClusterKeyColumn()).isTrue();
+		assertThat(lastname.getColumnName().toCql()).isEqualTo("mylastname");
 	}
 
 	/**
@@ -204,20 +203,20 @@ public class BasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
 
-		assertThat(tableSpecification.getPartitionKeyColumns(), hasSize(1));
-		assertThat(tableSpecification.getClusteredKeyColumns(), hasSize(3));
+		assertThat(tableSpecification.getPartitionKeyColumns()).hasSize(1);
+		assertThat(tableSpecification.getClusteredKeyColumns()).hasSize(3);
 
 		ColumnSpecification breed = tableSpecification.getClusteredKeyColumns().get(0);
-		assertThat(breed.getName().toCql(), is(equalTo("breed")));
-		assertThat(breed.getOrdering(), is(Ordering.ASCENDING));
+		assertThat(breed.getName().toCql()).isEqualTo("breed");
+		assertThat(breed.getOrdering()).isEqualTo(Ordering.ASCENDING);
 
 		ColumnSpecification color = tableSpecification.getClusteredKeyColumns().get(1);
-		assertThat(color.getName().toCql(), is(equalTo("color")));
-		assertThat(color.getOrdering(), is(Ordering.DESCENDING));
+		assertThat(color.getName().toCql()).isEqualTo("color");
+		assertThat(color.getOrdering()).isEqualTo(Ordering.DESCENDING);
 
 		ColumnSpecification kind = tableSpecification.getClusteredKeyColumns().get(2);
-		assertThat(kind.getName().toCql(), is(equalTo("kind")));
-		assertThat(kind.getOrdering(), is(Ordering.ASCENDING));
+		assertThat(kind.getName().toCql()).isEqualTo("kind");
+		assertThat(kind.getOrdering()).isEqualTo(Ordering.ASCENDING);
 	}
 
 	/**
@@ -231,20 +230,20 @@ public class BasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
 
-		assertThat(tableSpecification.getPartitionKeyColumns(), hasSize(1));
-		assertThat(tableSpecification.getClusteredKeyColumns(), hasSize(3));
+		assertThat(tableSpecification.getPartitionKeyColumns()).hasSize(1);
+		assertThat(tableSpecification.getClusteredKeyColumns()).hasSize(3);
 
 		ColumnSpecification breed = tableSpecification.getClusteredKeyColumns().get(0);
-		assertThat(breed.getName().toCql(), is(equalTo("breed")));
-		assertThat(breed.getOrdering(), is(Ordering.ASCENDING));
+		assertThat(breed.getName().toCql()).isEqualTo("breed");
+		assertThat(breed.getOrdering()).isEqualTo(Ordering.ASCENDING);
 
 		ColumnSpecification color = tableSpecification.getClusteredKeyColumns().get(1);
-		assertThat(color.getName().toCql(), is(equalTo("color")));
-		assertThat(color.getOrdering(), is(Ordering.DESCENDING));
+		assertThat(color.getName().toCql()).isEqualTo("color");
+		assertThat(color.getOrdering()).isEqualTo(Ordering.DESCENDING);
 
 		ColumnSpecification kind = tableSpecification.getClusteredKeyColumns().get(2);
-		assertThat(kind.getName().toCql(), is(equalTo("kind")));
-		assertThat(kind.getOrdering(), is(Ordering.ASCENDING));
+		assertThat(kind.getName().toCql()).isEqualTo("kind");
+		assertThat(kind.getOrdering()).isEqualTo(Ordering.ASCENDING);
 	}
 
 	@Table
@@ -318,7 +317,7 @@ public class BasicCassandraMappingContextUnitTests {
 	public void shouldCreatePersistentEntityIfNoConversionRegistered() {
 
 		mappingContext.setCustomConversions(new CustomConversions(Collections.EMPTY_LIST));
-		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(true));
+		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class))).isTrue();
 	}
 
 	/**
@@ -330,7 +329,7 @@ public class BasicCassandraMappingContextUnitTests {
 		mappingContext
 				.setCustomConversions(new CustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
-		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(false));
+		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class))).isFalse();
 	}
 
 	/**
@@ -345,11 +344,11 @@ public class BasicCassandraMappingContextUnitTests {
 		CassandraPersistentEntity<?> persistentEntity = mappingContext
 				.getPersistentEntity(TypeWithCustomConvertedMap.class);
 
-		assertThat(mappingContext.getDataType(persistentEntity.getPersistentProperty("stringMap")),
-				is(equalTo(DataType.varchar())));
+		assertThat(mappingContext.getDataType(persistentEntity.getPersistentProperty("stringMap")))
+				.isEqualTo(DataType.varchar());
 
-		assertThat(mappingContext.getDataType(persistentEntity.getPersistentProperty("blobMap")),
-				is(equalTo(DataType.ascii())));
+		assertThat(mappingContext.getDataType(persistentEntity.getPersistentProperty("blobMap")))
+				.isEqualTo(DataType.ascii());
 	}
 
 	/**
@@ -363,8 +362,8 @@ public class BasicCassandraMappingContextUnitTests {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(TypeWithListOfHumans.class);
 
-		assertThat(mappingContext.getDataType(persistentEntity.getPersistentProperty("humans")),
-				is(equalTo((DataType) DataType.list(DataType.varchar()))));
+		assertThat(mappingContext.getDataType(persistentEntity.getPersistentProperty("humans")))
+				.isEqualTo(DataType.list(DataType.varchar()));
 	}
 
 	private static class Human {}

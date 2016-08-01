@@ -38,8 +38,7 @@ public class TableLifecycleIntegrationTests extends AbstractKeyspaceCreatingInte
 
 	private final static Logger log = LoggerFactory.getLogger(TableLifecycleIntegrationTests.class);
 
-	CreateTableCqlGeneratorUnitTests.MultipleOptionsTest createTableTest =
-			new CreateTableCqlGeneratorUnitTests.MultipleOptionsTest();
+	CreateTableCqlGeneratorUnitTests.MultipleOptionsTest createTableTest = new CreateTableCqlGeneratorUnitTests.MultipleOptionsTest();
 
 	@Before
 	public void setUp() throws Exception {
@@ -66,7 +65,6 @@ public class TableLifecycleIntegrationTests extends AbstractKeyspaceCreatingInte
 
 		assertNoTable(dropTest.specification, keyspace, session);
 	}
-
 
 	public class DropTableTest extends DropTableCqlGeneratorUnitTests.DropTableTest {
 

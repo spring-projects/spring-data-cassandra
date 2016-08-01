@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,21 +40,21 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
 	public static void assertPreamble(String keyspaceName, String cql) {
-		assertTrue(cql.startsWith("CREATE KEYSPACE " + keyspaceName + " "));
+		assertThat(cql.startsWith("CREATE KEYSPACE " + keyspaceName + " ")).isTrue();
 	}
 
 	private static void assertReplicationMap(Map<Option, Object> replicationMap, String cql) {
-		assertTrue(cql.contains(" WITH replication = { "));
+		assertThat(cql.contains(" WITH replication = { ")).isTrue();
 
 		for (Map.Entry<Option, Object> entry : replicationMap.entrySet()) {
 			String keyValuePair = "'" + entry.getKey().getName() + "' : " + (entry.getKey().quotesValue() ? "'" : "")
 					+ entry.getValue().toString() + (entry.getKey().quotesValue() ? "'" : "");
-			assertTrue(cql.contains(keyValuePair));
+			assertThat(cql.contains(keyValuePair)).isTrue();
 		}
 	}
 
 	public static void assertDurableWrites(Boolean durableWrites, String cql) {
-		assertTrue(cql.contains(" AND durable_writes = " + durableWrites));
+		assertThat(cql.contains(" AND durable_writes = " + durableWrites)).isTrue();
 	}
 
 	/**

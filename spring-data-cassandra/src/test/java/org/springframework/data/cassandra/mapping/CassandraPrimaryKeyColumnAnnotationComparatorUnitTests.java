@@ -16,8 +16,7 @@
 
 package org.springframework.data.cassandra.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -54,54 +53,53 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 
 	@Test
 	public void compareTypes() {
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityTwo), is(equalTo(1)));
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityTwo, entityTwo), is(equalTo(0)));
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityTwo, entityOne), is(equalTo(-1)));
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityTwo)).isEqualTo(1);
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityTwo, entityTwo)).isEqualTo(0);
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityTwo, entityOne)).isEqualTo(-1);
 	}
 
 	@Test
 	public void compareOrdinals() {
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityThree), is(equalTo(-1)));
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityThree, entityThree), is(equalTo(0)));
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityThree, entityOne), is(equalTo(1)));
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityThree)).isEqualTo(-1);
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityThree, entityThree)).isEqualTo(0);
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityThree, entityOne)).isEqualTo(1);
 	}
 
 	@Test
 	public void compareName() {
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityFour), is(equalTo(-1)));
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFour, entityFour), is(equalTo(0)));
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFour, entityOne), is(equalTo(1)));
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityFour)).isEqualTo(-1);
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFour, entityFour)).isEqualTo(0);
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFour, entityOne)).isEqualTo(1);
 	}
 
 	@Test
 	public void compareOrdering() {
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityFive), is(equalTo(-1)));
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFive, entityFive), is(equalTo(0)));
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFive, entityOne), is(equalTo(1)));
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityFive)).isEqualTo(-1);
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFive, entityFive)).isEqualTo(0);
+		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFive, entityOne)).isEqualTo(1);
 	}
 
 	static class EntityOne {
-		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "A", ordering = Ordering.ASCENDING)
-		Integer id;
+		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "A",
+				ordering = Ordering.ASCENDING) Integer id;
 	}
 
 	static class EntityTwo {
-		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 1, name = "A", ordering = Ordering.ASCENDING)
-		Long id;
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 1, name = "A",
+				ordering = Ordering.ASCENDING) Long id;
 	}
 
 	static class EntityThree {
-		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 2, name = "A", ordering = Ordering.ASCENDING)
-		String id;
+		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 2, name = "A",
+				ordering = Ordering.ASCENDING) String id;
 	}
 
 	static class EntityFour {
-		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "B", ordering = Ordering.ASCENDING)
-		Timestamp id;
+		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "B",
+				ordering = Ordering.ASCENDING) Timestamp id;
 	}
 
 	static class EntityFive {
-		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "A", ordering = Ordering.DESCENDING)
-		UUID id;
+		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "A", ordering = Ordering.DESCENDING) UUID id;
 	}
 }

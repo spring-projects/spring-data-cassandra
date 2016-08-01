@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import java.io.Serializable;
@@ -113,33 +113,33 @@ public class CassandraCompositePrimaryKeyUnitTests {
 
 		Field field = ReflectionUtils.findField(Thing.class, "id");
 		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(field, null, thing, SIMPLE_TYPE_HOLDER);
-		assertTrue(property.isIdProperty());
-		assertTrue(property.isCompositePrimaryKey());
+		assertThat(property.isIdProperty()).isTrue();
+		assertThat(property.isCompositePrimaryKey()).isTrue();
 
 		List<CqlIdentifier> expectedColumnNames = Arrays.asList(new CqlIdentifier[] { cqlId("z"), cqlId("a") });
-		assertTrue(expectedColumnNames.equals(property.getColumnNames()));
+		assertThat(expectedColumnNames.equals(property.getColumnNames())).isTrue();
 
 		List<CqlIdentifier> actualColumnNames = new ArrayList<CqlIdentifier>();
 		List<CassandraPersistentProperty> properties = property.getCompositePrimaryKeyProperties();
 		for (CassandraPersistentProperty p : properties) {
 			actualColumnNames.addAll(p.getColumnNames());
 		}
-		assertTrue(expectedColumnNames.equals(actualColumnNames));
+		assertThat(expectedColumnNames.equals(actualColumnNames)).isTrue();
 
 		CreateTableSpecification spec = context.getCreateTableSpecificationFor(thing);
 
 		List<ColumnSpecification> partitionKeyColumns = spec.getPartitionKeyColumns();
-		assertEquals(1, partitionKeyColumns.size());
+		assertThat(partitionKeyColumns).hasSize(1);
 		ColumnSpecification partitionKeyColumn = partitionKeyColumns.get(0);
-		assertEquals("z", partitionKeyColumn.getName().toCql());
-		assertEquals(PrimaryKeyType.PARTITIONED, partitionKeyColumn.getKeyType());
-		assertEquals(DataType.text(), partitionKeyColumn.getType());
+		assertThat(partitionKeyColumn.getName().toCql()).isEqualTo("z");
+		assertThat(partitionKeyColumn.getKeyType()).isEqualTo(PrimaryKeyType.PARTITIONED);
+		assertThat(partitionKeyColumn.getType()).isEqualTo(DataType.text());
 
 		List<ColumnSpecification> clusteredKeyColumns = spec.getClusteredKeyColumns();
-		assertEquals(1, clusteredKeyColumns.size());
+		assertThat(clusteredKeyColumns).hasSize(1);
 		ColumnSpecification clusteredKeyColumn = clusteredKeyColumns.get(0);
-		assertEquals("a", clusteredKeyColumn.getName().toCql());
-		assertEquals(PrimaryKeyType.CLUSTERED, clusteredKeyColumn.getKeyType());
-		assertEquals(DataType.text(), partitionKeyColumn.getType());
+		assertThat(clusteredKeyColumn.getName().toCql()).isEqualTo("a");
+		assertThat(clusteredKeyColumn.getKeyType()).isEqualTo(PrimaryKeyType.CLUSTERED);
+		assertThat(partitionKeyColumn.getType()).isEqualTo(DataType.text());
 	}
 }

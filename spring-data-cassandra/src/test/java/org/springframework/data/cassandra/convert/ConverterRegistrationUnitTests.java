@@ -16,8 +16,7 @@
 
 package org.springframework.data.cassandra.convert;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.cassandra.domain.Person;
@@ -36,16 +35,16 @@ public class ConverterRegistrationUnitTests {
 	public void considersNotExplicitlyReadingDependingOnTypes() {
 
 		ConverterRegistration context = new ConverterRegistration(Person.class, String.class, false, false);
-		assertThat(context.isWriting(), is(true));
-		assertThat(context.isReading(), is(false));
+		assertThat(context.isWriting()).isTrue();
+		assertThat(context.isReading()).isFalse();
 
 		context = new ConverterRegistration(String.class, Person.class, false, false);
-		assertThat(context.isWriting(), is(false));
-		assertThat(context.isReading(), is(true));
+		assertThat(context.isWriting()).isFalse();
+		assertThat(context.isReading()).isTrue();
 
 		context = new ConverterRegistration(String.class, Class.class, false, false);
-		assertThat(context.isWriting(), is(true));
-		assertThat(context.isReading(), is(true));
+		assertThat(context.isWriting()).isTrue();
+		assertThat(context.isReading()).isTrue();
 	}
 
 	/**
@@ -55,12 +54,12 @@ public class ConverterRegistrationUnitTests {
 	public void forcesReadWriteOnlyIfAnnotated() {
 
 		ConverterRegistration context = new ConverterRegistration(String.class, Class.class, false, true);
-		assertThat(context.isWriting(), is(true));
-		assertThat(context.isReading(), is(false));
+		assertThat(context.isWriting()).isTrue();
+		assertThat(context.isReading()).isFalse();
 
 		context = new ConverterRegistration(String.class, Class.class, true, false);
-		assertThat(context.isWriting(), is(false));
-		assertThat(context.isReading(), is(true));
+		assertThat(context.isWriting()).isFalse();
+		assertThat(context.isReading()).isTrue();
 	}
 
 	/**
@@ -70,7 +69,7 @@ public class ConverterRegistrationUnitTests {
 	public void considersConverterForReadAndWriteIfBothAnnotated() {
 
 		ConverterRegistration context = new ConverterRegistration(String.class, Class.class, true, true);
-		assertThat(context.isWriting(), is(true));
-		assertThat(context.isReading(), is(true));
+		assertThat(context.isWriting()).isTrue();
+		assertThat(context.isReading()).isTrue();
 	}
 }

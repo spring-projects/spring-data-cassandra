@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.config.xml;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -63,6 +62,6 @@ public class MinimalXmlConfigIntegrationTests extends AbstractEmbeddedCassandraI
 		IntegrationTestUtils.assertKeyspaceExists(KEYSPACE, session);
 
 		CqlOperations cqlOperations = context.getBean(CqlOperations.class);
-		assertThat(cqlOperations.describeRing().size(), is(greaterThan(0)));
+		assertThat(cqlOperations.describeRing()).isNotEmpty();
 	}
 }

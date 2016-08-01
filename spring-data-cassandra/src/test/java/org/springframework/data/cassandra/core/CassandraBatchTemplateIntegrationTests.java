@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +67,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		Group loaded = template.selectOneById(Group.class, walter.getId());
 
-		assertThat(loaded.getId().getUsername(), is(equalTo(walter.getId().getUsername())));
+		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		Group loaded = template.selectOneById(Group.class, walter.getId());
 
-		assertThat(loaded.getId().getUsername(), is(equalTo(walter.getId().getUsername())));
+		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		Group loaded = template.selectOneById(Group.class, walter.getId());
 
-		assertThat(loaded.getEmail(), is(equalTo(walter.getEmail())));
+		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
 	}
 
 	/**
@@ -124,7 +124,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		Group loaded = template.selectOneById(Group.class, walter.getId());
 
-		assertThat(loaded.getEmail(), is(equalTo(walter.getEmail())));
+		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		FlatGroup loaded = template.selectOneById(FlatGroup.class, walter);
 
-		assertThat(loaded.getEmail(), is(equalTo(walter.getEmail())));
+		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
 	}
 
 	/**
@@ -162,7 +162,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		Group loaded = template.selectOneById(Group.class, walter.getId());
 
-		assertThat(loaded, is(nullValue()));
+		assertThat(loaded).isNull();
 	}
 
 	/**
@@ -180,7 +180,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		Group loaded = template.selectOneById(Group.class, walter.getId());
 
-		assertThat(loaded, is(nullValue()));
+		assertThat(loaded).isNull();
 	}
 
 	/**
@@ -202,10 +202,10 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		ResultSet resultSet = template.query("SELECT writetime(email) FROM group;");
 
-		assertThat(resultSet.getAvailableWithoutFetching(), is(2));
+		assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(2);
 
 		for (Row row : resultSet) {
-			assertThat(row.getLong(0), is(timestamp));
+			assertThat(row.getLong(0)).isEqualTo(timestamp);
 		}
 	}
 

@@ -16,7 +16,7 @@
 
 package org.springframework.data.cassandra.mapping;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.util.ClassTypeInformation;
@@ -33,8 +33,9 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 		BasicCassandraPersistentEntity<ImplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<ImplicitTableNameForceQuoted>(
 				ClassTypeInformation.from(ImplicitTableNameForceQuoted.class));
 
-		assertEquals("\"" + ImplicitTableNameForceQuoted.class.getSimpleName() + "\"", entity.getTableName().toCql());
-		assertEquals(ImplicitTableNameForceQuoted.class.getSimpleName(), entity.getTableName().getUnquoted());
+		assertThat(entity.getTableName().toCql())
+				.isEqualTo("\"" + ImplicitTableNameForceQuoted.class.getSimpleName() + "\"");
+		assertThat(entity.getTableName().getUnquoted()).isEqualTo(ImplicitTableNameForceQuoted.class.getSimpleName());
 	}
 
 	@Table(forceQuote = true)
@@ -47,8 +48,8 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 		BasicCassandraPersistentEntity<ExplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<ExplicitTableNameForceQuoted>(
 				ClassTypeInformation.from(ExplicitTableNameForceQuoted.class));
 
-		assertEquals("\"" + EXPLICIT_TABLE_NAME + "\"", entity.getTableName().toCql());
-		assertEquals(EXPLICIT_TABLE_NAME, entity.getTableName().getUnquoted());
+		assertThat(entity.getTableName().toCql()).isEqualTo("\"" + EXPLICIT_TABLE_NAME + "\"");
+		assertThat(entity.getTableName().getUnquoted()).isEqualTo(EXPLICIT_TABLE_NAME);
 	}
 
 	@Table(value = EXPLICIT_TABLE_NAME, forceQuote = true)
@@ -59,8 +60,10 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 		BasicCassandraPersistentEntity<DefaultTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<DefaultTableNameForceQuoted>(
 				ClassTypeInformation.from(DefaultTableNameForceQuoted.class));
 
-		assertEquals(DefaultTableNameForceQuoted.class.getSimpleName().toLowerCase(), entity.getTableName().toCql());
-		assertEquals(DefaultTableNameForceQuoted.class.getSimpleName().toLowerCase(), entity.getTableName().getUnquoted());
+		assertThat(entity.getTableName().toCql())
+				.isEqualTo(DefaultTableNameForceQuoted.class.getSimpleName().toLowerCase());
+		assertThat(entity.getTableName().getUnquoted())
+				.isEqualTo(DefaultTableNameForceQuoted.class.getSimpleName().toLowerCase());
 	}
 
 	@Table

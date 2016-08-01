@@ -16,7 +16,7 @@
 
 package org.springframework.data.cassandra.test.integration.repository.querymethods.bigintparam;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.math.BigInteger;
 
@@ -63,6 +63,6 @@ public class BigIntParamIntegrationTests extends AbstractSpringDataEmbeddedCassa
 		repo.save(saved);
 
 		BigThing found = repo.findThingByBigInteger(new BigInteger("42"));
-		assertNotNull(found);
+		assertThat(found).isNotNull();
 	}
 }

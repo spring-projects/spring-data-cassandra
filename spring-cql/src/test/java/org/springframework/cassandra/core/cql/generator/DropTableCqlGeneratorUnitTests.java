@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
@@ -32,7 +32,7 @@ public class DropTableCqlGeneratorUnitTests {
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
 	public static void assertStatement(String tableName, boolean ifExists, String cql) {
-		assertTrue(cql.equals("DROP TABLE " + (ifExists ? "IF EXISTS " : "") + tableName + ";"));
+		assertThat(cql.equals("DROP TABLE " + (ifExists ? "IF EXISTS " : "") + tableName + ";")).isTrue();
 	}
 
 	/**

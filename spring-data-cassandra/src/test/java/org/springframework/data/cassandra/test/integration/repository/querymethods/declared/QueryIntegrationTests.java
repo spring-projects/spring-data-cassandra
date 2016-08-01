@@ -15,11 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.declared;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -82,12 +79,12 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		List<Person> results = personRepository.findFolksWithLastnameAsList(saved.getLastname());
 
-		assertNotNull(results);
-		assertTrue(results.size() == 1);
+		assertThat(results).isNotNull();
+		assertThat(results.size() == 1).isTrue();
 		Person found = results.iterator().next();
-		assertNotNull(found);
-		assertEquals(found.getLastname(), saved.getLastname());
-		assertEquals(found.getFirstname(), saved.getFirstname());
+		assertThat(found).isNotNull();
+		assertThat(saved.getLastname()).isEqualTo(found.getLastname());
+		assertThat(saved.getFirstname()).isEqualTo(found.getFirstname());
 	}
 
 	@Test
@@ -107,13 +104,13 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		List<Person> results = personRepository.findFolksWithLastnameAsList(saved.getLastname());
 
-		assertNotNull(results);
-		assertTrue(results.size() == 2);
+		assertThat(results).isNotNull();
+		assertThat(results.size() == 2).isTrue();
 		boolean first = true;
 		for (Person person : results) {
-			assertNotNull(person);
-			assertEquals(saved.getLastname(), person.getLastname());
-			assertEquals(first ? saved.getFirstname() : saved2.getFirstname(), person.getFirstname());
+			assertThat(person).isNotNull();
+			assertThat(person.getLastname()).isEqualTo(saved.getLastname());
+			assertThat(person.getFirstname()).isEqualTo(first ? saved.getFirstname() : saved2.getFirstname());
 			first = false;
 		}
 	}
@@ -130,12 +127,12 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		List<Map<String, Object>> results = personRepository
 				.findFolksWithLastnameAsListOfMapOfStringToObject(saved.getLastname());
 
-		assertNotNull(results);
-		assertTrue(results.size() == 1);
+		assertThat(results).isNotNull();
+		assertThat(results.size() == 1).isTrue();
 		Map<String, Object> found = results.iterator().next();
-		assertNotNull(found);
-		assertEquals(found.get("lastname"), saved.getLastname());
-		assertEquals(found.get("firstname"), saved.getFirstname());
+		assertThat(found).isNotNull();
+		assertThat(saved.getLastname()).isEqualTo(found.get("lastname"));
+		assertThat(saved.getFirstname()).isEqualTo(found.get("firstname"));
 	}
 
 	@Test
@@ -149,9 +146,9 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		Person found = personRepository.findSingle(saved.getLastname(), saved.getFirstname());
 
-		assertNotNull(found);
-		assertEquals(found.getLastname(), saved.getLastname());
-		assertEquals(found.getFirstname(), saved.getFirstname());
+		assertThat(found).isNotNull();
+		assertThat(saved.getLastname()).isEqualTo(found.getLastname());
+		assertThat(saved.getFirstname()).isEqualTo(found.getFirstname());
 	}
 
 	@Test
@@ -171,13 +168,13 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		Collection<Person> results = personRepository.findFolksWithLastnameAsList(saved.getLastname());
 
-		assertNotNull(results);
-		assertTrue(results.size() == 2);
+		assertThat(results).isNotNull();
+		assertThat(results.size() == 2).isTrue();
 		boolean first = true;
 		for (Person person : results) {
-			assertNotNull(person);
-			assertEquals(saved.getLastname(), person.getLastname());
-			assertEquals(first ? saved.getFirstname() : saved2.getFirstname(), person.getFirstname());
+			assertThat(person).isNotNull();
+			assertThat(person.getLastname()).isEqualTo(saved.getLastname());
+			assertThat(person.getFirstname()).isEqualTo(first ? saved.getFirstname() : saved2.getFirstname());
 			first = false;
 		}
 	}
@@ -194,8 +191,8 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		String nickname = personRepository.findSingleNickname(saved.getLastname(), saved.getFirstname());
 
-		assertNotNull(nickname);
-		assertEquals(saved.getNickname(), nickname);
+		assertThat(nickname).isNotNull();
+		assertThat(nickname).isEqualTo(saved.getNickname());
 	}
 
 	@Test
@@ -210,7 +207,7 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		boolean value = personRepository.findSingleCool(saved.getLastname(), saved.getFirstname());
 
-		assertEquals(saved.isCool(), value);
+		assertThat(value).isEqualTo(saved.isCool());
 	}
 
 	@Test
@@ -225,7 +222,7 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		Date value = personRepository.findSingleBirthdate(saved.getLastname(), saved.getFirstname());
 
-		assertEquals(saved.getBirthDate(), value);
+		assertThat(value).isEqualTo(saved.getBirthDate());
 	}
 
 	@Test
@@ -240,7 +237,7 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		int value = personRepository.findSingleNumberOfChildren(saved.getLastname(), saved.getFirstname());
 
-		assertEquals(saved.getNumberOfChildren(), value);
+		assertThat(value).isEqualTo(saved.getNumberOfChildren());
 	}
 
 	@Test
@@ -254,12 +251,12 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		Person[] results = personRepository.findFolksWithLastnameAsArray(saved.getLastname());
 
-		assertNotNull(results);
-		assertTrue(results.length == 1);
+		assertThat(results).isNotNull();
+		assertThat(results.length == 1).isTrue();
 		Person found = results[0];
-		assertNotNull(found);
-		assertEquals(found.getLastname(), saved.getLastname());
-		assertEquals(found.getFirstname(), saved.getFirstname());
+		assertThat(found).isNotNull();
+		assertThat(saved.getLastname()).isEqualTo(found.getLastname());
+		assertThat(saved.getFirstname()).isEqualTo(found.getFirstname());
 	}
 
 	@Test
@@ -274,12 +271,12 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		List<Person> results = personRepository.findFolksWithLastnameAsList(lastname);
 
-		assertNotNull(results);
-		assertTrue(results.size() == 1);
+		assertThat(results).isNotNull();
+		assertThat(results.size() == 1).isTrue();
 		for (Person person : results) {
-			assertNotNull(person);
-			assertEquals(saved.getLastname(), person.getLastname());
-			assertEquals(saved.getFirstname(), person.getFirstname());
+			assertThat(person).isNotNull();
+			assertThat(person.getLastname()).isEqualTo(saved.getLastname());
+			assertThat(person.getFirstname()).isEqualTo(saved.getFirstname());
 		}
 	}
 
@@ -297,9 +294,7 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		Optional<Person> savedPerson = personRepository.findOptionalWithLastnameAndFirstname(personToSave.getLastname(),
 				personToSave.getFirstname());
 
-		assertThat(savedPerson, is(notNullValue(Optional.class)));
-		assertThat(savedPerson.isPresent(), is(true));
-		assertThat(savedPerson.get(), is(notNullValue(Person.class)));
+		assertThat(savedPerson.isPresent()).isTrue();
 	}
 
 	@Test
@@ -307,7 +302,7 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		Optional<Person> optional = personRepository.findOptionalWithLastnameAndFirstname("not", "existent");
 
-		assertThat(optional.isPresent(), is(false));
+		assertThat(optional.isPresent()).isFalse();
 	}
 
 	/**
@@ -331,10 +326,10 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		long count = allPeople.peek(new Consumer<Person>() {
 			@Override
 			public void accept(Person person) {
-				assertThat(person, is(instanceOf(Person.class)));
+				assertThat(person).isInstanceOf(Person.class);
 			}
 		}).count();
 
-		assertThat(count, is(equalTo(100L)));
+		assertThat(count).isEqualTo(100L);
 	}
 }

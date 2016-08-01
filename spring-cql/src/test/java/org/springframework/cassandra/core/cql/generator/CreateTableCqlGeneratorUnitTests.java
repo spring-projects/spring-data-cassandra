@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
 	public static void assertPreamble(CqlIdentifier tableName, String cql) {
-		assertTrue(cql.startsWith("CREATE TABLE " + tableName + " "));
+		assertThat(cql.startsWith("CREATE TABLE " + tableName + " ")).isTrue();
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	 * @param primaryKeyString IE, "foo", "foo, bar, baz", "(foo, bar), baz", etc
 	 */
 	public static void assertPrimaryKey(String primaryKeyString, String cql) {
-		assertTrue(cql.contains(", PRIMARY KEY (" + primaryKeyString + "))"));
+		assertThat(cql.contains(", PRIMARY KEY (" + primaryKeyString + "))")).isTrue();
 	}
 
 	/**
@@ -72,7 +72,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	 * @param columnSpec IE, "foo text, bar blob"
 	 */
 	public static void assertColumns(String columnSpec, String cql) {
-		assertTrue(cql.contains("(" + columnSpec + ","));
+		assertThat(cql.contains("(" + columnSpec + ",")).isTrue();
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	 */
 	public static void assertStringOption(String name, String value, String cql) {
 		log.info(name + " -> " + value);
-		assertTrue(cql.contains(name + " = '" + value + "'"));
+		assertThat(cql.contains(name + " = '" + value + "'")).isTrue();
 	}
 
 	/**
@@ -88,12 +88,12 @@ public class CreateTableCqlGeneratorUnitTests {
 	 */
 	public static void assertDoubleOption(String name, Double value, String cql) {
 		log.info(name + " -> " + value);
-		assertTrue(cql.contains(name + " = " + value));
+		assertThat(cql.contains(name + " = " + value)).isTrue();
 	}
 
 	public static void assertLongOption(String name, Long value, String cql) {
 		log.info(name + " -> " + value);
-		assertTrue(cql.contains(name + " = " + value));
+		assertThat(cql.contains(name + " = " + value)).isTrue();
 	}
 
 	/**
@@ -101,7 +101,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	 */
 	public static void assertNullOption(String name, String cql) {
 		log.info(name);
-		assertTrue(cql.contains(" " + name + " "));
+		assertThat(cql.contains(" " + name + " ")).isTrue();
 	}
 
 	/**

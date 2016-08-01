@@ -16,7 +16,7 @@
 
 package org.springframework.data.cassandra.repository.config;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 

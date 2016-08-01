@@ -24,8 +24,8 @@ import com.datastax.driver.core.LatencyTracker;
 import com.datastax.driver.core.Statement;
 
 /**
- * {@link LatencyTracker} that logs latency events and their payload. This class can be considered a test dummy and is suitable for
- * mocking.
+ * {@link LatencyTracker} that logs latency events and their payload. This class can be considered a test dummy and is
+ * suitable for mocking.
  *
  * @author David Webb
  * @author Oliver Gierke

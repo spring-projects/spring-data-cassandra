@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.composites;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 
@@ -54,9 +54,9 @@ public class CommentRepositoryIntegrationTests {
 
 		Comment retrieved = repository.findOne(key);
 
-		assertNotSame(c, retrieved);
-		assertEquals(c, retrieved);
-		assertEquals(c.getText(), retrieved.getText());
+		assertThat(retrieved).isNotSameAs(c);
+		assertThat(retrieved).isEqualTo(c);
+		assertThat(retrieved.getText()).isEqualTo(c.getText());
 	}
 
 	public void testUpdateNonKeyField() {
@@ -73,9 +73,9 @@ public class CommentRepositoryIntegrationTests {
 
 		Comment retrieved = repository.findOne(key);
 
-		assertNotSame(c, retrieved);
-		assertEquals(c, retrieved);
-		assertEquals(c.getText(), retrieved.getText());
+		assertThat(retrieved).isNotSameAs(c);
+		assertThat(retrieved).isEqualTo(c);
+		assertThat(retrieved.getText()).isEqualTo(c.getText());
 
 		String newText = "x" + retrieved.getText();
 		retrieved.setText(newText);
@@ -84,8 +84,8 @@ public class CommentRepositoryIntegrationTests {
 
 		Comment updated = repository.findOne(key);
 
-		assertNotSame(retrieved, updated);
-		assertEquals(newText, updated.getText());
+		assertThat(updated).isNotSameAs(retrieved);
+		assertThat(updated.getText()).isEqualTo(newText);
 	}
 
 	public void testDelete() {
@@ -102,12 +102,12 @@ public class CommentRepositoryIntegrationTests {
 
 		Comment retrieved = repository.findOne(key);
 
-		assertNotSame(c, retrieved);
-		assertEquals(c, retrieved);
-		assertEquals(c.getText(), retrieved.getText());
+		assertThat(retrieved).isNotSameAs(c);
+		assertThat(retrieved).isEqualTo(c);
+		assertThat(retrieved.getText()).isEqualTo(c.getText());
 
 		repository.delete(retrieved);
 
-		assertNull(repository.findOne(key));
+		assertThat(repository.findOne(key)).isNull();
 	}
 }

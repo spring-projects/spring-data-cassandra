@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.cassandra.core.keyspace.DropIndexSpecification;
@@ -32,7 +32,7 @@ public class DropIndexCqlGeneratorUnitTests {
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
 	public static void assertStatement(String indexName, boolean ifExists, String cql) {
-		assertTrue(cql.equals("DROP INDEX " + (ifExists ? "IF EXISTS " : "") + indexName + ";"));
+		assertThat(cql.equals("DROP INDEX " + (ifExists ? "IF EXISTS " : "") + indexName + ";")).isTrue();
 	}
 
 	/**

@@ -16,8 +16,7 @@
 
 package org.springframework.cassandra.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -41,8 +40,8 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 /**
- * The CassandraCqlSessionFactoryBeanUnitTests class is a test suite of test cases testing the contract
- * and functionality of the {@link CassandraCqlSessionFactoryBean} class.
+ * The CassandraCqlSessionFactoryBeanUnitTests class is a test suite of test cases testing the contract and
+ * functionality of the {@link CassandraCqlSessionFactoryBean} class.
  *
  * @author John Blum
  * @see org.springframework.cassandra.config.CassandraCqlSessionFactoryBean
@@ -52,14 +51,11 @@ import com.datastax.driver.core.Session;
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraCqlSessionFactoryBeanUnitTests {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+	@Rule public ExpectedException exception = ExpectedException.none();
 
-	@Mock
-	private Cluster mockCluster;
+	@Mock private Cluster mockCluster;
 
-	@Mock
-	private Session mockSession;
+	@Mock private Session mockSession;
 
 	private CassandraCqlSessionFactoryBean factoryBean;
 
@@ -68,8 +64,8 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 	}
 
 	protected void assertNonNullEmptyCollection(Collection<?> collection) {
-		assertThat(collection, is(notNullValue()));
-		assertThat(collection.isEmpty(), is(true));
+		assertThat(collection).isNotNull();
+		assertThat(collection.isEmpty()).isTrue();
 	}
 
 	@Before
@@ -79,13 +75,13 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 	@Test
 	public void cassandraCqlSessionFactoryBeanIsSingleton() {
-		assertThat(factoryBean.isSingleton(), is(true));
+		assertThat(factoryBean.isSingleton()).isTrue();
 	}
 
 	@Test
 	public void objectTypeWhenSessionHasNotBeenInitializedIsSessionClass() {
-		assertThat(factoryBean.getObject(), is(nullValue()));
-		assertEquals(Session.class, factoryBean.<Session>getObjectType());
+		assertThat(factoryBean.getObject()).isNull();
+		assertThat(factoryBean.<Session> getObjectType()).isEqualTo(Session.class);
 	}
 
 	@Test
@@ -101,14 +97,14 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		factoryBean.setKeyspaceName("TestKeyspace");
 		factoryBean.setStartupScripts(expectedStartupScripts);
 
-		assertThat(factoryBean.getKeyspaceName(), is(equalTo("TestKeyspace")));
-		assertThat(factoryBean.getStartupScripts(), is(equalTo(expectedStartupScripts)));
+		assertThat(factoryBean.getKeyspaceName()).isEqualTo("TestKeyspace");
+		assertThat(factoryBean.getStartupScripts()).isEqualTo(expectedStartupScripts);
 
 		factoryBean.afterPropertiesSet();
 
-		assertEquals(mockSession.getClass(), factoryBean.getObjectType());
-		assertThat(factoryBean.getObject(), is(equalTo(mockSession)));
-		assertThat(factoryBean.getSession(), is(equalTo(mockSession)));
+		assertThat(factoryBean.getObjectType()).isEqualTo(mockSession.getClass());
+		assertThat(factoryBean.getObject()).isEqualTo(mockSession);
+		assertThat(factoryBean.getSession()).isEqualTo(mockSession);
 
 		InOrder inOrder = inOrder(factoryBean);
 
@@ -125,7 +121,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 		factoryBean.setCluster(mockCluster);
 
-		assertThat(factoryBean.connect(null), is(equalTo(mockSession)));
+		assertThat(factoryBean.connect(null)).isEqualTo(mockSession);
 
 		verify(mockCluster, times(1)).connect();
 		verify(mockCluster, never()).connect(anyString());
@@ -137,7 +133,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 		factoryBean.setCluster(mockCluster);
 
-		assertThat(factoryBean.connect("TestKeyspace"), is(equalTo(mockSession)));
+		assertThat(factoryBean.connect("TestKeyspace")).isEqualTo(mockSession);
 
 		verify(mockCluster, never()).connect();
 		verify(mockCluster, times(1)).connect(eq("TestKeyspace"));
@@ -165,15 +161,15 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 	@Test
 	public void isConnectedWithNullSessionIsFalse() {
-		assertThat(factoryBean.getObject(), is(nullValue()));
-		assertThat(factoryBean.isConnected(), is(false));
+		assertThat(factoryBean.getObject()).isNull();
+		assertThat(factoryBean.isConnected()).isFalse();
 	}
 
 	@Test
 	public void isConnectedWithClosedSessionIsFalse() {
 		doReturn(mockSession).when(factoryBean).getObject();
 		when(mockSession.isClosed()).thenReturn(true);
-		assertThat(factoryBean.isConnected(), is(false));
+		assertThat(factoryBean.isConnected()).isFalse();
 		verify(mockSession, times(1)).isClosed();
 	}
 
@@ -181,56 +177,64 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 	public void isConnectedWithOpenSessionIsTrue() {
 		doReturn(mockSession).when(factoryBean).getObject();
 		when(mockSession.isClosed()).thenReturn(false);
-		assertThat(factoryBean.isConnected(), is(true));
+		assertThat(factoryBean.isConnected()).isTrue();
 		verify(mockSession, times(1)).isClosed();
 	}
 
 	@Test
 	public void setAndGetCluster() {
 		factoryBean.setCluster(mockCluster);
-		assertThat(factoryBean.getCluster(), is(equalTo(mockCluster)));
+		assertThat(factoryBean.getCluster()).isEqualTo(mockCluster);
 	}
 
 	@Test
 	public void setClusterToNullThrowsIllegalArgumentException() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Cluster must not be null");
 
-		factoryBean.setCluster(null);
+		try {
+			factoryBean.setCluster(null);
+			fail("Missing IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			assertThat(e).hasMessageContaining("Cluster must not be null");
+		}
+
 	}
 
 	@Test
 	public void getClusterWhenUninitializedThrowsIllegalStateException() {
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Cluster was not properly initialized");
 
-		factoryBean.getCluster();
+		try {
+			factoryBean.getCluster();
+			fail("Missing IllegalStateException");
+		} catch (IllegalStateException e) {
+			assertThat(e).hasMessageContaining("Cluster was not properly initialized");
+		}
 	}
 
 	@Test
 	public void setAndGetKeyspaceName() {
-		assertThat(factoryBean.getKeyspaceName(), is(nullValue()));
+		assertThat(factoryBean.getKeyspaceName()).isNull();
 
 		factoryBean.setKeyspaceName("TEST");
 
-		assertThat(factoryBean.getKeyspaceName(), is(equalTo("TEST")));
+		assertThat(factoryBean.getKeyspaceName()).isEqualTo("TEST");
 
 		factoryBean.setKeyspaceName(null);
 
-		assertThat(factoryBean.getKeyspaceName(), is(nullValue()));
+		assertThat(factoryBean.getKeyspaceName()).isNull();
 	}
 
 	@Test
 	public void getSessionWhenUninitializedThrowsIllegalStateException() {
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage(is(equalTo("Session was not properly initialized")));
 
-		assertThat(factoryBean.getObject(), is(nullValue()));
+		assertThat(factoryBean.getObject()).isNull();
 
-		factoryBean.getSession();
+		try {
+			factoryBean.getSession();
+			fail("Missing IllegalStateException");
+		} catch (IllegalStateException e) {
+			assertThat(e).hasMessageContaining("Session was not properly initialized");
+		}
+
 	}
 
 	@Test
@@ -243,8 +247,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 		List<String> actualStartupScripts = factoryBean.getStartupScripts();
 
-		assertThat(actualStartupScripts, is(not(sameInstance(expectedStartupScripts))));
-		assertThat(actualStartupScripts, is(equalTo(expectedStartupScripts)));
+		assertThat(actualStartupScripts).isNotSameAs(expectedStartupScripts).isEqualTo(expectedStartupScripts);
 
 		factoryBean.setStartupScripts(null);
 
@@ -259,23 +262,21 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 		List<String> actualStartupScripts = factoryBean.getStartupScripts();
 
-		assertThat(actualStartupScripts, is(notNullValue()));
-		assertThat(actualStartupScripts, is(not(sameInstance(startupScripts))));
-		assertThat(actualStartupScripts, is(equalTo(startupScripts)));
+		assertThat(actualStartupScripts).isEqualTo(startupScripts).isNotSameAs(startupScripts);
 
 		startupScripts.add("/path/to/another.cql");
 
 		actualStartupScripts = factoryBean.getStartupScripts();
 
-		assertThat(actualStartupScripts, is(not(equalTo(startupScripts))));
-		assertThat(actualStartupScripts.size(), is(equalTo(1)));
-		assertThat(actualStartupScripts.get(0), is(equalTo(startupScripts.get(0))));
+		assertThat(actualStartupScripts).isNotEqualTo(startupScripts);
+		assertThat(actualStartupScripts).hasSize(1);
+		assertThat(actualStartupScripts.get(0)).isEqualTo(startupScripts.get(0));
 
 		try {
 			exception.expect(UnsupportedOperationException.class);
 			actualStartupScripts.add("/path/to/yetAnother.cql");
 		} finally {
-			assertThat(actualStartupScripts.size(), is(equalTo(1)));
+			assertThat(actualStartupScripts).hasSize(1);
 		}
 	}
 
@@ -289,8 +290,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 		List<String> actualShutdownScripts = factoryBean.getShutdownScripts();
 
-		assertThat(actualShutdownScripts, is(not(sameInstance(expectedShutdownScripts))));
-		assertThat(actualShutdownScripts, is(equalTo(expectedShutdownScripts)));
+		assertThat(actualShutdownScripts).isEqualTo(expectedShutdownScripts).isNotSameAs(expectedShutdownScripts);
 
 		factoryBean.setShutdownScripts(null);
 
@@ -305,23 +305,20 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 		List<String> actualShutdownScripts = factoryBean.getShutdownScripts();
 
-		assertThat(actualShutdownScripts, is(notNullValue()));
-		assertThat(actualShutdownScripts, is(not(sameInstance(shutdownScripts))));
-		assertThat(actualShutdownScripts, is(equalTo(shutdownScripts)));
+		assertThat(actualShutdownScripts).isEqualTo(shutdownScripts).isNotSameAs(shutdownScripts);
 
 		shutdownScripts.add("/path/to/corruptSession.cql");
 
 		actualShutdownScripts = factoryBean.getShutdownScripts();
 
-		assertThat(actualShutdownScripts, is(not(sameInstance(shutdownScripts))));
-		assertThat(actualShutdownScripts, is(not(equalTo(shutdownScripts))));
-		assertThat(actualShutdownScripts.size(), is(equalTo(1)));
+		assertThat(actualShutdownScripts).isNotEqualTo(shutdownScripts);
+		assertThat(actualShutdownScripts).hasSize(1);
 
 		try {
 			exception.expect(UnsupportedOperationException.class);
 			actualShutdownScripts.add("/path/to/blowUpCluster.cql");
 		} finally {
-			assertThat(actualShutdownScripts.size(), is(equalTo(1)));
+			assertThat(actualShutdownScripts).hasSize(1);
 		}
 	}
 }

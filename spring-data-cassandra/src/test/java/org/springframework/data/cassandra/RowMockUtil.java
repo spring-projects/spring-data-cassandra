@@ -15,7 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 import org.mockito.invocation.InvocationOnMock;

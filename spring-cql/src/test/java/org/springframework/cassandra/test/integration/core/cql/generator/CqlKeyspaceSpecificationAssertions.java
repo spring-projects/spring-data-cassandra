@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
 
 import java.util.Map;
 
@@ -34,17 +34,17 @@ public class CqlKeyspaceSpecificationAssertions {
 	public static void assertKeyspace(KeyspaceDescriptor expected, String keyspace, Session session) {
 		KeyspaceMetadata kmd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase());
 
-		assertEquals(expected.getName(), kmd.getName());
+		assertThat(expected.getName()).isEqualTo(kmd.getName());
 
 		Map<String, String> options = kmd.getReplication();
 		Map<String, Object> expectedOptions = expected.getOptions();
 		Map<Option, Object> replicationMap = (Map<Option, Object>) expectedOptions.get("replication");
-		assertEquals(replicationMap.size(), options.size());
+		assertThat(replicationMap).hasSameSizeAs(options);
 
 		for (Map.Entry<Option, Object> optionEntry : replicationMap.entrySet()) {
 			String optionValue = options.get(optionEntry.getKey().getName());
 			String repMapValue = "" + optionEntry.getValue();
-			assertTrue(optionValue.endsWith(repMapValue));
+			assertThat(optionValue).endsWith(repMapValue);
 		}
 	}
 }

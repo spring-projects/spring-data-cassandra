@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.mapping.mapid.repo;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
 import org.junit.Before;
@@ -56,9 +56,9 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 
 	@Before
 	public void before() {
-		assertNotNull(template);
-		assertNotNull(singlePrimaryKecColumnRepository);
-		assertNotNull(multiPrimaryKeyColumnsRepository);
+		assertThat(template).isNotNull();
+		assertThat(singlePrimaryKecColumnRepository).isNotNull();
+		assertThat(multiPrimaryKeyColumnsRepository).isNotNull();
 	}
 
 	@Test
@@ -68,27 +68,27 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 		SinglePrimaryKeyColumn inserted = new SinglePrimaryKeyColumn(uuid());
 		inserted.setValue(uuid());
 		SinglePrimaryKeyColumn saved = singlePrimaryKecColumnRepository.save(inserted);
-		assertSame(saved, inserted);
+		assertThat(inserted).isSameAs(saved);
 
 		// select
 		MapId id = id("key", saved.getKey());
 		SinglePrimaryKeyColumn selected = singlePrimaryKecColumnRepository.findOne(id);
-		assertNotSame(selected, saved);
-		assertEquals(saved.getKey(), selected.getKey());
-		assertEquals(saved.getValue(), selected.getValue());
+		assertThat(saved).isNotSameAs(selected);
+		assertThat(selected.getKey()).isEqualTo(saved.getKey());
+		assertThat(selected.getValue()).isEqualTo(saved.getValue());
 
 		// update
 		selected.setValue(uuid());
 		SinglePrimaryKeyColumn updated = singlePrimaryKecColumnRepository.save(selected);
-		assertSame(updated, selected);
+		assertThat(selected).isSameAs(updated);
 
 		selected = singlePrimaryKecColumnRepository.findOne(id);
-		assertNotSame(selected, updated);
-		assertEquals(updated.getValue(), selected.getValue());
+		assertThat(updated).isNotSameAs(selected);
+		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
 		singlePrimaryKecColumnRepository.delete(selected);
-		assertNull(singlePrimaryKecColumnRepository.findOne(id));
+		assertThat(singlePrimaryKecColumnRepository.findOne(id)).isNull();
 	}
 
 	@Test
@@ -98,28 +98,28 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 		MultiPrimaryKeyColumns inserted = new MultiPrimaryKeyColumns(uuid(), uuid());
 		inserted.setValue(uuid());
 		MultiPrimaryKeyColumns saved = multiPrimaryKeyColumnsRepository.save(inserted);
-		assertSame(saved, inserted);
+		assertThat(inserted).isSameAs(saved);
 
 		// select
 		MapId id = id("key0", saved.getKey0()).with("key1", saved.getKey1());
 		MultiPrimaryKeyColumns selected = multiPrimaryKeyColumnsRepository.findOne(id);
-		assertNotSame(selected, saved);
-		assertEquals(saved.getKey0(), selected.getKey0());
-		assertEquals(saved.getKey1(), selected.getKey1());
-		assertEquals(saved.getValue(), selected.getValue());
+		assertThat(saved).isNotSameAs(selected);
+		assertThat(selected.getKey0()).isEqualTo(saved.getKey0());
+		assertThat(selected.getKey1()).isEqualTo(saved.getKey1());
+		assertThat(selected.getValue()).isEqualTo(saved.getValue());
 
 		// update
 		selected.setValue(uuid());
 		MultiPrimaryKeyColumns updated = multiPrimaryKeyColumnsRepository.save(selected);
-		assertSame(updated, selected);
+		assertThat(selected).isSameAs(updated);
 
 		selected = multiPrimaryKeyColumnsRepository.findOne(id);
-		assertNotSame(selected, updated);
-		assertEquals(updated.getValue(), selected.getValue());
+		assertThat(updated).isNotSameAs(selected);
+		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
 		template.delete(selected);
-		assertNull(multiPrimaryKeyColumnsRepository.findOne(id));
+		assertThat(multiPrimaryKeyColumnsRepository.findOne(id)).isNull();
 	}
 
 }

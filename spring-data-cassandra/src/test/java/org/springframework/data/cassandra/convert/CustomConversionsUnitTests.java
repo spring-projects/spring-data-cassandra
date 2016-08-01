@@ -16,8 +16,7 @@
 
 package org.springframework.data.cassandra.convert;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.net.InetAddress;
 import java.text.DateFormat;
@@ -37,7 +36,6 @@ import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.WritingConverter;
-import org.threeten.bp.LocalDateTime;
 
 import com.datastax.driver.core.Row;
 
@@ -58,11 +56,11 @@ public class CustomConversionsUnitTests {
 		CustomConversions conversions = new CustomConversions(
 				Arrays.asList(FormatToStringConverter.INSTANCE, StringToFormatConverter.INSTANCE));
 
-		assertThat(conversions.getCustomWriteTarget(Format.class, null), is(typeCompatibleWith(String.class)));
-		assertThat(conversions.getCustomWriteTarget(String.class, null), is(nullValue()));
+		assertThat(conversions.getCustomWriteTarget(Format.class, null)).isAssignableFrom(String.class);
+		assertThat(conversions.getCustomWriteTarget(String.class, null)).isNull();
 
-		assertThat(conversions.hasCustomReadTarget(String.class, Format.class), is(true));
-		assertThat(conversions.hasCustomReadTarget(String.class, Locale.class), is(false));
+		assertThat(conversions.hasCustomReadTarget(String.class, Format.class)).isTrue();
+		assertThat(conversions.hasCustomReadTarget(String.class, Locale.class)).isFalse();
 	}
 
 	/**
@@ -74,8 +72,8 @@ public class CustomConversionsUnitTests {
 		CustomConversions conversions = new CustomConversions(
 				Arrays.asList(NumberToStringConverter.INSTANCE, StringToNumberConverter.INSTANCE));
 
-		assertThat(conversions.getCustomWriteTarget(Long.class, null), is(typeCompatibleWith(String.class)));
-		assertThat(conversions.hasCustomReadTarget(String.class, Long.class), is(true));
+		assertThat(conversions.getCustomWriteTarget(Long.class, null)).isAssignableFrom(String.class);
+		assertThat(conversions.hasCustomReadTarget(String.class, Long.class)).isTrue();
 	}
 
 	/**
@@ -85,7 +83,7 @@ public class CustomConversionsUnitTests {
 	public void considersTypesWeRegisteredConvertersForAsSimple() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(FormatToStringConverter.INSTANCE));
-		assertThat(conversions.isSimpleType(UUID.class), is(true));
+		assertThat(conversions.isSimpleType(UUID.class)).isTrue();
 	}
 
 	/**
@@ -99,7 +97,7 @@ public class CustomConversionsUnitTests {
 		CustomConversions conversions = new CustomConversions(Arrays.asList(StringToFormatConverter.INSTANCE));
 		conversions.registerConvertersIn(conversionService);
 
-		assertThat(conversionService.canConvert(String.class, Format.class), is(true));
+		assertThat(conversionService.canConvert(String.class, Format.class)).isTrue();
 	}
 
 	/**
@@ -109,7 +107,7 @@ public class CustomConversionsUnitTests {
 	public void doesNotConsiderTypeSimpleIfOnlyReadConverterIsRegistered() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(StringToFormatConverter.INSTANCE));
-		assertThat(conversions.isSimpleType(Format.class), is(false));
+		assertThat(conversions.isSimpleType(Format.class)).isFalse();
 	}
 
 	/**
@@ -119,8 +117,8 @@ public class CustomConversionsUnitTests {
 	public void discoversConvertersForSubtypesOfCassandraTypes() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(StringToIntegerConverter.INSTANCE));
-		assertThat(conversions.hasCustomReadTarget(String.class, Integer.class), is(true));
-		assertThat(conversions.hasCustomWriteTarget(String.class, Integer.class), is(true));
+		assertThat(conversions.hasCustomReadTarget(String.class, Integer.class)).isTrue();
+		assertThat(conversions.hasCustomWriteTarget(String.class, Integer.class)).isTrue();
 	}
 
 	/**
@@ -130,7 +128,7 @@ public class CustomConversionsUnitTests {
 	public void considersUUIDASimpleType() {
 
 		CustomConversions conversions = new CustomConversions();
-		assertThat(conversions.isSimpleType(UUID.class), is(true));
+		assertThat(conversions.isSimpleType(UUID.class)).isTrue();
 	}
 
 	/**
@@ -140,7 +138,7 @@ public class CustomConversionsUnitTests {
 	public void considersInetAddressASimpleType() {
 
 		CustomConversions conversions = new CustomConversions();
-		assertThat(conversions.isSimpleType(InetAddress.class), is(true));
+		assertThat(conversions.isSimpleType(InetAddress.class)).isTrue();
 	}
 
 	/**
@@ -150,7 +148,7 @@ public class CustomConversionsUnitTests {
 	public void considersRowASimpleType() {
 
 		CustomConversions conversions = new CustomConversions();
-		assertThat(conversions.isSimpleType(Row.class), is(true));
+		assertThat(conversions.isSimpleType(Row.class)).isTrue();
 	}
 
 	/**
@@ -161,7 +159,7 @@ public class CustomConversionsUnitTests {
 	public void favorsCustomConverterForIndeterminedTargetType() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(DateTimeToStringConverter.INSTANCE));
-		assertThat(conversions.getCustomWriteTarget(DateTime.class, null), is(equalTo((Class) String.class)));
+		assertThat(conversions.getCustomWriteTarget(DateTime.class, null)).isEqualTo((Class) String.class);
 	}
 
 	/**
@@ -174,7 +172,7 @@ public class CustomConversionsUnitTests {
 		GenericConversionService conversionService = new DefaultConversionService();
 		conversions.registerConvertersIn(conversionService);
 
-		assertThat(conversionService.convert(new DateTime(), Date.class), is(new Date(0)));
+		assertThat(conversionService.convert(new DateTime(), Date.class)).isEqualTo(new Date(0));
 	}
 
 	/**
@@ -184,8 +182,7 @@ public class CustomConversionsUnitTests {
 	public void shouldSelectPropertCustomWriteTargetForCglibProxiedType() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(FormatToStringConverter.INSTANCE));
-		assertThat(conversions.getCustomWriteTarget(createProxyTypeFor(Format.class)),
-				is(typeCompatibleWith(String.class)));
+		assertThat(conversions.getCustomWriteTarget(createProxyTypeFor(Format.class))).isAssignableFrom(String.class);
 	}
 
 	/**
@@ -195,7 +192,7 @@ public class CustomConversionsUnitTests {
 	public void shouldSelectPropertyCustomReadTargetForCglibProxiedType() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(CustomObjectToStringConverter.INSTANCE));
-		assertThat(conversions.hasCustomReadTarget(createProxyTypeFor(Object.class), String.class), is(true));
+		assertThat(conversions.hasCustomReadTarget(createProxyTypeFor(Object.class), String.class)).isTrue();
 	}
 
 	/**
@@ -207,7 +204,7 @@ public class CustomConversionsUnitTests {
 		CustomConversions customConversions = new CustomConversions(
 				Collections.singletonList(new FormatConverterFactory()));
 
-		assertThat(customConversions.getCustomWriteTarget(String.class, SimpleDateFormat.class), notNullValue());
+		assertThat(customConversions.getCustomWriteTarget(String.class, SimpleDateFormat.class)).isNotNull();
 	}
 
 	/**
@@ -218,7 +215,7 @@ public class CustomConversionsUnitTests {
 
 		CustomConversions customConversions = new CustomConversions();
 
-		assertThat(customConversions.hasCustomWriteTarget(java.time.LocalDateTime.class), is(true));
+		assertThat(customConversions.hasCustomWriteTarget(java.time.LocalDateTime.class)).isTrue();
 	}
 
 	/**
@@ -229,7 +226,7 @@ public class CustomConversionsUnitTests {
 
 		CustomConversions customConversions = new CustomConversions();
 
-		assertThat(customConversions.hasCustomWriteTarget(org.threeten.bp.LocalDateTime.class), is(true));
+		assertThat(customConversions.hasCustomWriteTarget(org.threeten.bp.LocalDateTime.class)).isTrue();
 	}
 
 	/**
@@ -240,7 +237,7 @@ public class CustomConversionsUnitTests {
 
 		CustomConversions customConversions = new CustomConversions();
 
-		assertThat(customConversions.hasCustomWriteTarget(org.joda.time.LocalDate.class), is(true));
+		assertThat(customConversions.hasCustomWriteTarget(org.joda.time.LocalDate.class)).isTrue();
 	}
 
 	private static Class<?> createProxyTypeFor(Class<?> type) {

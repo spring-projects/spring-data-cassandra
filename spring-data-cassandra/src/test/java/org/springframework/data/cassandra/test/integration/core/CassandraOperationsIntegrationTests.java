@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.core;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -177,15 +176,14 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 	public void insertEmptyList() {
 		List<Book> list = template.insert(new ArrayList<Book>());
 
-		assertThat(list, is(notNullValue(List.class)));
-		assertThat(list.isEmpty(), is(true));
+		assertThat(list.isEmpty()).isTrue();
 	}
 
 	@Test
 	public void insertNullList() {
 		List<Book> list = template.insert((List<Book>) null);
 
-		assertThat(list, is(nullValue(List.class)));
+		assertThat(list).isNull();
 	}
 
 	@Test
@@ -209,7 +207,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		template.insert(books, options);
 
-		assertThat(template.count(Book.class), is(equalTo(80l)));
+		assertThat(template.count(Book.class)).isEqualTo(80l);
 	}
 
 	@Test
@@ -583,8 +581,8 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		Book book = template.selectOne(select, Book.class);
 
-		assertThat(book.getTitle(), is(equalTo("Spring Data Cassandra Guide")));
-		assertThat(book.getAuthor(), is(equalTo("Cassandra Guru")));
+		assertThat(book.getTitle()).isEqualTo("Spring Data Cassandra Guide");
+		assertThat(book.getAuthor()).isEqualTo("Cassandra Guru");
 
 	}
 
@@ -599,11 +597,11 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		List<Book> selectedBooks = template.select(select, Book.class);
 
-		assertThat(selectedBooks.size(), is(equalTo(20)));
+		assertThat(selectedBooks).hasSize(20);
 
 		for (Book book : selectedBooks) {
-			assertThat(book.isInStock(), is(true));
-			assertThat(book.getCondition(), is(equalTo(BookCondition.NEW)));
+			assertThat(book.isInStock()).isTrue();
+			assertThat(book.getCondition()).isEqualTo(BookCondition.NEW);
 		}
 	}
 
@@ -615,7 +613,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		template.insert(books);
 
-		assertThat(template.count(Book.class), is(equalTo(count)));
+		assertThat(template.count(Book.class)).isEqualTo(count);
 	}
 
 	@Test
@@ -626,7 +624,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		template.insert(books);
 
-		assertThat(template.count(Book.class), is(equalTo(count)));
+		assertThat(template.count(Book.class)).isEqualTo(count);
 	}
 
 	/**
@@ -647,8 +645,8 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		Book loaded = template.selectOneById(Book.class, book.getIsbn());
 
-		assertThat(loaded.getTitle(), is(nullValue()));
-		assertThat(loaded.getAuthor(), is(equalTo("author")));
+		assertThat(loaded.getTitle()).isNull();
+		assertThat(loaded.getAuthor()).isEqualTo("author");
 	}
 
 	/**
@@ -670,8 +668,8 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		Book loaded = template.selectOneById(Book.class, book.getIsbn());
 
-		assertThat(loaded.getTitle(), is(nullValue()));
-		assertThat(loaded.getAuthor(), is(equalTo("author")));
+		assertThat(loaded.getTitle()).isNull();
+		assertThat(loaded.getAuthor()).isEqualTo("author");
 	}
 
 	/**
@@ -689,9 +687,9 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		Book loaded = template.selectOneById(Book.class, book.getIsbn());
 
-		assertThat(loaded, is(notNullValue()));
-		assertThat(loaded.getAuthor(), is(equalTo("author")));
-		assertThat(loaded.getTitle(), is(equalTo("title")));
+		assertThat(loaded).isNotNull();
+		assertThat(loaded.getAuthor()).isEqualTo("author");
+		assertThat(loaded.getTitle()).isEqualTo("title");
 	}
 
 	/**
@@ -713,8 +711,8 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		BookReference loaded = template.selectOneById(BookReference.class, bookReference.getIsbn());
 
-		assertThat(loaded.getTitle(), is(nullValue()));
-		assertThat(loaded.getBookmarks(), is(nullValue()));
+		assertThat(loaded.getTitle()).isNull();
+		assertThat(loaded.getBookmarks()).isNull();
 	}
 
 	/**
@@ -723,7 +721,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 	@Test
 	public void stream() throws InterruptedException {
 
-		while(template.select("SELECT * FROM book", Book.class).size() != 0){
+		while (template.select("SELECT * FROM book", Book.class).size() != 0) {
 			template.truncate("book");
 			Thread.sleep(10);
 		}
@@ -732,7 +730,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		Iterator<Book> iterator = template.stream("SELECT * FROM book", Book.class);
 
-		assertThat(iterator, is(notNullValue(Iterator.class)));
+		assertThat(iterator).isNotNull();
 
 		List<Book> selectedBooks = new ArrayList<Book>();
 
@@ -740,8 +738,8 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 			selectedBooks.add(book);
 		}
 
-		assertThat(selectedBooks.size(), is(equalTo(20)));
-		assertThat(selectedBooks.get(0), is(instanceOf(Book.class)));
+		assertThat(selectedBooks).hasSize(20);
+		assertThat(selectedBooks.get(0)).isInstanceOf(Book.class);
 	}
 
 	/**
@@ -762,15 +760,15 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		UserToken loaded = template.selectOneById(UserToken.class,
 				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));
 
-		assertThat(loaded, is(notNullValue()));
-		assertThat(loaded.getUserComment(), is(equalTo("comment")));
+		assertThat(loaded).isNotNull();
+		assertThat(loaded.getUserComment()).isEqualTo("comment");
 
 		template.delete(userToken);
 
 		UserToken loadAfterDelete = template.selectOneById(UserToken.class,
 				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));
 
-		assertThat(loadAfterDelete, is(nullValue()));
+		assertThat(loadAfterDelete).isNull();
 	}
 
 	/**
@@ -791,15 +789,15 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		UserToken loaded = template.selectOneById(UserToken.class,
 				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));
 
-		assertThat(loaded, is(notNullValue()));
-		assertThat(loaded.getUserComment(), is(equalTo("comment")));
+		assertThat(loaded).isNotNull();
+		assertThat(loaded.getUserComment()).isEqualTo("comment");
 
 		template.delete(Collections.singletonList(userToken));
 
 		UserToken loadAfterDelete = template.selectOneById(UserToken.class,
 				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()));
 
-		assertThat(loadAfterDelete, is(nullValue()));
+		assertThat(loadAfterDelete).isNull();
 	}
 
 	WriteOptions newWriteOptions(ConsistencyLevel consistencyLevel, RetryPolicy retryPolicy, int timeToLive) {

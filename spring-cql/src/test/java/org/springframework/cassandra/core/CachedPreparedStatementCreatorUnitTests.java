@@ -16,8 +16,7 @@
 package org.springframework.cassandra.core;
 
 import static edu.umd.cs.mtc.TestFramework.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -82,7 +81,7 @@ public class CachedPreparedStatementCreatorUnitTests {
 
 		PreparedStatement result = cachedPreparedStatementCreator.createPreparedStatement(sessionMock);
 
-		assertThat(result, is(sameInstance(preparedStatement)));
+		assertThat(result).isSameAs(preparedStatement);
 		verify(sessionMock).prepare("my cql");
 	}
 
@@ -99,7 +98,7 @@ public class CachedPreparedStatementCreatorUnitTests {
 
 		PreparedStatement result = cachedPreparedStatementCreator.createPreparedStatement(sessionMock);
 
-		assertThat(result, is(sameInstance(preparedStatement)));
+		assertThat(result).isSameAs(preparedStatement);
 		verify(sessionMock, times(1)).prepare("my cql");
 	}
 
@@ -150,7 +149,7 @@ public class CachedPreparedStatementCreatorUnitTests {
 
 			preparedStatementCreator.createPreparedStatement(session);
 
-			assertThat(atomicInteger.get(), is(1));
+			assertThat(atomicInteger.get()).isEqualTo(1);
 		}
 
 		public void thread2() {
@@ -159,7 +158,7 @@ public class CachedPreparedStatementCreatorUnitTests {
 
 			preparedStatementCreator.createPreparedStatement(session);
 
-			assertThat(atomicInteger.get(), is(1));
+			assertThat(atomicInteger.get()).isEqualTo(1);
 		}
 	}
 

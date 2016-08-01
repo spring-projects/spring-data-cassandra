@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.forcequote.config;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 
@@ -46,17 +46,17 @@ public class ForceQuotedRepositoryTests {
 		String key = entity.getPrimaryKey();
 
 		Implicit s = implicitRepository.save(entity);
-		assertSame(s, entity);
+		assertThat(entity).isSameAs(s);
 
 		Implicit f = implicitRepository.findOne(key);
-		assertNotSame(f, entity);
+		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query("stringvalue", "\"Implicit\"", "primarykey", f.getPrimaryKey());
-		assertEquals(f.getStringValue(), stringValue);
+		assertThat(stringValue).isEqualTo(f.getStringValue());
 
 		implicitRepository.delete(key);
 
-		assertNull(implicitRepository.findOne(key));
+		assertThat(implicitRepository.findOne(key)).isNull();
 	}
 
 	public void testExplicit(String tableName) {
@@ -64,17 +64,17 @@ public class ForceQuotedRepositoryTests {
 		String key = entity.getPrimaryKey();
 
 		Explicit s = explicitRepository.save(entity);
-		assertSame(s, entity);
+		assertThat(entity).isSameAs(s);
 
 		Explicit f = explicitRepository.findOne(key);
-		assertNotSame(f, entity);
+		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query("stringvalue", String.format("\"%s\"", tableName), "primarykey", f.getPrimaryKey());
-		assertEquals(f.getStringValue(), stringValue);
+		assertThat(stringValue).isEqualTo(f.getStringValue());
 
 		explicitRepository.delete(key);
 
-		assertNull(explicitRepository.findOne(key));
+		assertThat(explicitRepository.findOne(key)).isNull();
 	}
 
 	public void testImplicitProperties() {
@@ -82,17 +82,17 @@ public class ForceQuotedRepositoryTests {
 		String key = entity.getPrimaryKey();
 
 		ImplicitProperties s = implicitPropertiesRepository.save(entity);
-		assertSame(s, entity);
+		assertThat(entity).isSameAs(s);
 
 		ImplicitProperties f = implicitPropertiesRepository.findOne(key);
-		assertNotSame(f, entity);
+		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query("\"stringValue\"", "implicitproperties", "\"primaryKey\"", f.getPrimaryKey());
-		assertEquals(f.getStringValue(), stringValue);
+		assertThat(stringValue).isEqualTo(f.getStringValue());
 
 		implicitPropertiesRepository.delete(key);
 
-		assertNull(implicitPropertiesRepository.findOne(key));
+		assertThat(implicitPropertiesRepository.findOne(key)).isNull();
 	}
 
 	public void testExplicitProperties(String stringValueColumnName, String primaryKeyColumnName) {
@@ -100,17 +100,17 @@ public class ForceQuotedRepositoryTests {
 		String key = entity.getPrimaryKey();
 
 		ExplicitProperties s = explicitPropertiesRepository.save(entity);
-		assertSame(s, entity);
+		assertThat(entity).isSameAs(s);
 
 		ExplicitProperties f = explicitPropertiesRepository.findOne(key);
-		assertNotSame(f, entity);
+		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query(String.format("\"%s\"", stringValueColumnName), "explicitproperties",
 				String.format("\"%s\"", primaryKeyColumnName), f.getPrimaryKey());
-		assertEquals(f.getStringValue(), stringValue);
+		assertThat(stringValue).isEqualTo(f.getStringValue());
 
 		implicitPropertiesRepository.delete(key);
 
-		assertNull(implicitPropertiesRepository.findOne(key));
+		assertThat(implicitPropertiesRepository.findOne(key)).isNull();
 	}
 }

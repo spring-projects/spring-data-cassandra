@@ -33,8 +33,7 @@ public class MapListener extends CallbackSynchronizationSupport implements Query
 	/**
 	 * Allow instances only using {@link #create()}
 	 */
-	private MapListener() {
-	}
+	private MapListener() {}
 
 	/**
 	 * @return a new {@link MapListener}.

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.simple;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 
@@ -58,7 +57,7 @@ public class UserRepositoryJavaConfigCustomRepositoryBaseClassIntegrationTests
 	 */
 	@Test
 	public void targetRepositoryClassShouldBeConfiguredCustomBaseRepositoryClass() throws Exception {
-		assertThat(((Advised) repository).getTargetSource().getTarget(), is(instanceOf(CustomCassandraRepository.class)));
+		assertThat(((Advised) repository).getTargetSource().getTarget()).isInstanceOf(CustomCassandraRepository.class);
 	}
 
 	public static class CustomCassandraRepository<T, ID extends Serializable> extends SimpleCassandraRepository<T, ID> {

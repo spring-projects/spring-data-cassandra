@@ -15,7 +15,8 @@
  */
 package org.springframework.cassandra.test.integration.config.java;
 
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.config.IntegrationTestUtils;
 import org.springframework.test.context.ContextConfiguration;
@@ -28,7 +29,7 @@ public class KeyspaceCreatingJavaConfigIntegrationTests extends AbstractIntegrat
 
 	@Test
 	public void test() {
-		Assert.assertNotNull(session);
+		assertThat(session).isNotNull();
 		IntegrationTestUtils.assertKeyspaceExists(KeyspaceCreatingJavaConfig.KEYSPACE_NAME, session);
 
 		session.execute("DROP KEYSPACE " + KeyspaceCreatingJavaConfig.KEYSPACE_NAME + ";");

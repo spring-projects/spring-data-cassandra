@@ -79,10 +79,10 @@ class CassandraOperationsProducer {
 	}
 
 	@OtherQualifier
- 	@UserDB
-    @Produces
+	@UserDB
+	@Produces
 	@ApplicationScoped
-	public CassandraOperations createQualifiedCassandraOperations(CassandraOperations cassandraOperations){
+	public CassandraOperations createQualifiedCassandraOperations(CassandraOperations cassandraOperations) {
 		return cassandraOperations;
 	}
 

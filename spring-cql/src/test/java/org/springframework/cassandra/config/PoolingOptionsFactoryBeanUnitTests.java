@@ -15,15 +15,14 @@
  */
 package org.springframework.cassandra.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeNotNull;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.same;
-import static org.springframework.util.ReflectionUtils.invokeMethod;
+import static org.springframework.util.ReflectionUtils.*;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
@@ -36,10 +35,10 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.springframework.util.ReflectionUtils;
 
 import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Unit tests for {@link PoolingOptionsFactoryBean}.
@@ -66,18 +65,18 @@ public class PoolingOptionsFactoryBeanUnitTests {
 
 	@Test
 	public void getObjectReturnsNullWhenNotInitialized() throws Exception {
-		assertThat(poolingOptionsFactoryBean.getObject(), is(nullValue(PoolingOptions.class)));
+		assertThat(poolingOptionsFactoryBean.getObject()).isNull();
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void getObjectTypeReturnsPoolingOptionsClassWhenNotInitialized() {
-		assertThat((Class<PoolingOptions>) poolingOptionsFactoryBean.getObjectType(), is(equalTo(PoolingOptions.class)));
+		assertThat((Class<PoolingOptions>) poolingOptionsFactoryBean.getObjectType()).isEqualTo(PoolingOptions.class);
 	}
 
 	@Test
 	public void isSingletonIsTrue() {
-		assertThat(poolingOptionsFactoryBean.isSingleton(), is(true));
+		assertThat(poolingOptionsFactoryBean.isSingleton()).isTrue();
 	}
 
 	/**
@@ -100,18 +99,18 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		poolingOptionsFactoryBean.setRemoteMaxSimultaneousRequests(100);
 		poolingOptionsFactoryBean.setRemoteMinSimultaneousRequests(50);
 
-		assertThat(poolingOptionsFactoryBean.getHeartbeatIntervalSeconds(), is(equalTo(15)));
-		assertThat(poolingOptionsFactoryBean.getIdleTimeoutSeconds(), is(equalTo(120)));
-		assertThat(poolingOptionsFactoryBean.getInitializationExecutor(), is(equalTo(mockExecutor)));
-		assertThat(poolingOptionsFactoryBean.getLocalCoreConnections(), is(equalTo(50)));
-		assertThat(poolingOptionsFactoryBean.getLocalMaxConnections(), is(equalTo(1000)));
-		assertThat(poolingOptionsFactoryBean.getLocalMaxSimultaneousRequests(), is(equalTo(200)));
-		assertThat(poolingOptionsFactoryBean.getLocalMinSimultaneousRequests(), is(equalTo(100)));
-		assertThat(poolingOptionsFactoryBean.getPoolTimeoutMilliseconds(), is(equalTo(300)));
-		assertThat(poolingOptionsFactoryBean.getRemoteCoreConnections(), is(equalTo(25)));
-		assertThat(poolingOptionsFactoryBean.getRemoteMaxConnections(), is(equalTo(250)));
-		assertThat(poolingOptionsFactoryBean.getRemoteMaxSimultaneousRequests(), is(equalTo(100)));
-		assertThat(poolingOptionsFactoryBean.getRemoteMinSimultaneousRequests(), is(equalTo(50)));
+		assertThat(poolingOptionsFactoryBean.getHeartbeatIntervalSeconds()).isEqualTo(15);
+		assertThat(poolingOptionsFactoryBean.getIdleTimeoutSeconds()).isEqualTo(120);
+		assertThat(poolingOptionsFactoryBean.getInitializationExecutor()).isEqualTo(mockExecutor);
+		assertThat(poolingOptionsFactoryBean.getLocalCoreConnections()).isEqualTo(50);
+		assertThat(poolingOptionsFactoryBean.getLocalMaxConnections()).isEqualTo(1000);
+		assertThat(poolingOptionsFactoryBean.getLocalMaxSimultaneousRequests()).isEqualTo(200);
+		assertThat(poolingOptionsFactoryBean.getLocalMinSimultaneousRequests()).isEqualTo(100);
+		assertThat(poolingOptionsFactoryBean.getPoolTimeoutMilliseconds()).isEqualTo(300);
+		assertThat(poolingOptionsFactoryBean.getRemoteCoreConnections()).isEqualTo(25);
+		assertThat(poolingOptionsFactoryBean.getRemoteMaxConnections()).isEqualTo(250);
+		assertThat(poolingOptionsFactoryBean.getRemoteMaxSimultaneousRequests()).isEqualTo(100);
+		assertThat(poolingOptionsFactoryBean.getRemoteMinSimultaneousRequests()).isEqualTo(50);
 	}
 
 	/**
@@ -137,12 +136,12 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		poolingOptionsFactoryBean.setLocalMinSimultaneousRequests(5);
 		poolingOptionsFactoryBean.setPoolTimeoutMilliseconds(180);
 
-		assertThat(poolingOptionsFactoryBean.getObject(), is(nullValue(PoolingOptions.class)));
+		assertThat(poolingOptionsFactoryBean.getObject()).isNull();
 
 		poolingOptionsFactoryBean.afterPropertiesSet();
 
-		assertThat(poolingOptionsFactoryBean.getObject(), is(sameInstance(poolingOptionsSpy)));
-		assertThat(poolingOptionsFactoryBean.getObjectType(), is(equalTo((Class) poolingOptionsSpy.getClass())));
+		assertThat(poolingOptionsFactoryBean.getObject()).isSameAs(poolingOptionsSpy);
+		assertThat(poolingOptionsFactoryBean.getObjectType()).isEqualTo(poolingOptionsSpy.getClass());
 
 		verify(poolingOptionsSpy).setHeartbeatIntervalSeconds(eq(60));
 		verify(poolingOptionsSpy).setIdleTimeoutSeconds(eq(300));
@@ -181,12 +180,12 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		poolingOptionsFactoryBean.setRemoteMaxSimultaneousRequests(20);
 		poolingOptionsFactoryBean.setRemoteMinSimultaneousRequests(5);
 
-		assertThat(poolingOptionsFactoryBean.getObject(), is(nullValue(PoolingOptions.class)));
+		assertThat(poolingOptionsFactoryBean.getObject()).isNull();
 
 		poolingOptionsFactoryBean.afterPropertiesSet();
 
-		assertThat(poolingOptionsFactoryBean.getObject(), is(sameInstance(poolingOptionsSpy)));
-		assertThat(poolingOptionsFactoryBean.getObjectType(), is(equalTo((Class) poolingOptionsSpy.getClass())));
+		assertThat(poolingOptionsFactoryBean.getObject()).isSameAs(poolingOptionsSpy);
+		assertThat(poolingOptionsFactoryBean.getObjectType()).isEqualTo(poolingOptionsSpy.getClass());
 
 		verify(poolingOptionsSpy).setHeartbeatIntervalSeconds(eq(33));
 		verify(poolingOptionsSpy).setIdleTimeoutSeconds(eq(112));
@@ -208,11 +207,9 @@ public class PoolingOptionsFactoryBeanUnitTests {
 	@Test
 	public void afterPropertiesSetInitializesMaxQueueSize() throws Exception {
 
-		Method setMaxQueueSize = ReflectionUtils
-				.findMethod(PoolingOptions.class, "setMaxQueueSize", int.class);
+		Method setMaxQueueSize = ReflectionUtils.findMethod(PoolingOptions.class, "setMaxQueueSize", int.class);
 
-		Method getMaxQueueSize = ReflectionUtils
-				.findMethod(PoolingOptions.class, "getMaxQueueSize");
+		Method getMaxQueueSize = ReflectionUtils.findMethod(PoolingOptions.class, "getMaxQueueSize");
 
 		assumeNotNull(setMaxQueueSize);
 
@@ -227,9 +224,9 @@ public class PoolingOptionsFactoryBeanUnitTests {
 
 		poolingOptionsFactoryBean.afterPropertiesSet();
 
-		assertThat(poolingOptionsFactoryBean.getObject(), is(sameInstance(poolingOptionsSpy)));
-		assertThat(poolingOptionsFactoryBean.getObjectType(), is(equalTo((Class) poolingOptionsSpy.getClass())));
-		assertThat(invokeMethod(getMaxQueueSize, poolingOptionsSpy), is(equalTo((Object) 1234)));
+		assertThat(poolingOptionsFactoryBean.getObject()).isSameAs(poolingOptionsSpy);
+		assertThat(poolingOptionsFactoryBean.getObjectType()).isEqualTo(poolingOptionsSpy.getClass());
+		assertThat(invokeMethod(getMaxQueueSize, poolingOptionsSpy)).isEqualTo(1234);
 	}
 
 	/**
@@ -260,21 +257,21 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		poolingOptionsFactoryBean.setRemoteMaxSimultaneousRequests(127);
 		poolingOptionsFactoryBean.setRemoteMinSimultaneousRequests(111);
 
-		assertThat(poolingOptionsFactoryBean.getObject(), is(nullValue(PoolingOptions.class)));
+		assertThat(poolingOptionsFactoryBean.getObject()).isNull();
 
 		poolingOptionsFactoryBean.afterPropertiesSet();
 
 		PoolingOptions poolingOptions = poolingOptionsFactoryBean.getObject();
 
-		assertThat(poolingOptions, is(notNullValue(PoolingOptions.class)));
-		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.LOCAL), is(equalTo(100)));
-		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.LOCAL), is(equalTo(200)));
-		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.LOCAL), is(equalTo(99)));
-		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.LOCAL), is(equalTo(97)));
-		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.REMOTE), is(equalTo(110)));
-		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.REMOTE), is(equalTo(210)));
-		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.REMOTE), is(equalTo(127)));
-		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE), is(equalTo(111)));
+		assertThat(poolingOptions).isNotNull();
+		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.LOCAL)).isEqualTo(100);
+		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.LOCAL)).isEqualTo(200);
+		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.LOCAL)).isEqualTo(99);
+		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.LOCAL)).isEqualTo(97);
+		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.REMOTE)).isEqualTo(110);
+		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.REMOTE)).isEqualTo(210);
+		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.REMOTE)).isEqualTo(127);
+		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE)).isEqualTo(111);
 
 		verify(poolingOptions).setMaxConnectionsPerHost(eq(HostDistance.LOCAL), eq(200));
 		verify(poolingOptions).setCoreConnectionsPerHost(eq(HostDistance.LOCAL), eq(100));
@@ -304,11 +301,11 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		PoolingOptionsFactoryBean.HostDistancePoolingOptions poolingOptions = poolingOptionsFactoryBean
 				.newLocalHostDistancePoolingOptions();
 
-		assertThat(poolingOptions.getHostDistance(), is(equalTo(HostDistance.LOCAL)));
-		assertThat(poolingOptions.getCoreConnectionsPerHost(), is(equalTo(50)));
-		assertThat(poolingOptions.getMaxConnectionsPerHost(), is(equalTo(500)));
-		assertThat(poolingOptions.getMaxRequestsPerConnection(), is(equalTo(1000)));
-		assertThat(poolingOptions.getNewConnectionThreshold(), is(equalTo(100)));
+		assertThat(poolingOptions.getHostDistance()).isEqualTo(HostDistance.LOCAL);
+		assertThat(poolingOptions.getCoreConnectionsPerHost()).isEqualTo(50);
+		assertThat(poolingOptions.getMaxConnectionsPerHost()).isEqualTo(500);
+		assertThat(poolingOptions.getMaxRequestsPerConnection()).isEqualTo(1000);
+		assertThat(poolingOptions.getNewConnectionThreshold()).isEqualTo(100);
 	}
 
 	/**
@@ -329,11 +326,11 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		PoolingOptionsFactoryBean.HostDistancePoolingOptions poolingOptions = poolingOptionsFactoryBean
 				.newRemoteHostDistancePoolingOptions();
 
-		assertThat(poolingOptions.getHostDistance(), is(equalTo(HostDistance.REMOTE)));
-		assertThat(poolingOptions.getCoreConnectionsPerHost(), is(equalTo(20)));
-		assertThat(poolingOptions.getMaxConnectionsPerHost(), is(equalTo(200)));
-		assertThat(poolingOptions.getMaxRequestsPerConnection(), is(equalTo(400)));
-		assertThat(poolingOptions.getNewConnectionThreshold(), is(equalTo(40)));
+		assertThat(poolingOptions.getHostDistance()).isEqualTo(HostDistance.REMOTE);
+		assertThat(poolingOptions.getCoreConnectionsPerHost()).isEqualTo(20);
+		assertThat(poolingOptions.getMaxConnectionsPerHost()).isEqualTo(200);
+		assertThat(poolingOptions.getMaxRequestsPerConnection()).isEqualTo(400);
+		assertThat(poolingOptions.getNewConnectionThreshold()).isEqualTo(40);
 	}
 
 	/**
@@ -359,8 +356,8 @@ public class PoolingOptionsFactoryBeanUnitTests {
 			}
 		};
 
-		assertThat(poolingOptionsFactoryBean.configureLocalHostDistancePoolingOptions(poolingOptionsSpy),
-				is(sameInstance(poolingOptionsSpy)));
+		assertThat(poolingOptionsFactoryBean.configureLocalHostDistancePoolingOptions(poolingOptionsSpy))
+				.isSameAs(poolingOptionsSpy);
 
 		verify(mockHostDistancePoolingOptions).configure(same(poolingOptionsSpy));
 	}
@@ -388,8 +385,8 @@ public class PoolingOptionsFactoryBeanUnitTests {
 			}
 		};
 
-		assertThat(poolingOptionsFactoryBean.configureRemoteHostDistancePoolingOptions(poolingOptionsSpy),
-				is(sameInstance(poolingOptionsSpy)));
+		assertThat(poolingOptionsFactoryBean.configureRemoteHostDistancePoolingOptions(poolingOptionsSpy))
+				.isSameAs(poolingOptionsSpy);
 
 		verify(mockHostDistancePoolingOptions).configure(same(poolingOptionsSpy));
 	}

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -54,8 +53,8 @@ public class CassandraQueryMethodUnitTests {
 		CassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "method");
 		CassandraEntityMetadata<?> metadata = queryMethod.getEntityInformation();
 
-		assertThat(metadata.getJavaType(), is(typeCompatibleWith(Person.class)));
-		assertThat(metadata.getTableName().toCql(), is("person"));
+		assertThat(metadata.getJavaType()).isAssignableFrom(Person.class);
+		assertThat(metadata.getTableName().toCql()).isEqualTo("person");
 	}
 
 	/**
@@ -78,7 +77,7 @@ public class CassandraQueryMethodUnitTests {
 
 		CassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "method");
 
-		assertThat(queryMethod.isCollectionQuery(), is(true));
+		assertThat(queryMethod.isCollectionQuery()).isTrue();
 	}
 
 	private CassandraQueryMethod queryMethod(Class<?> repository, String name, Class<?>... parameters) throws Exception {

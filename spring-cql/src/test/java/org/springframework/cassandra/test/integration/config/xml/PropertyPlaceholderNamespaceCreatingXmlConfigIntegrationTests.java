@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.test.integration.config.xml;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +54,7 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		IntegrationTestUtils.assertSession(session);
 		IntegrationTestUtils.assertKeyspaceExists("ppncxct", session);
 
-		assertNotNull(ops);
+		assertThat(ops).isNotNull();
 	}
 
 	/**
@@ -66,17 +65,17 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 
 		PoolingOptions poolingOptions = cassandraCluster.getConfiguration().getPoolingOptions();
 
-		assertThat(poolingOptions, is(notNullValue(PoolingOptions.class)));
-		assertThat(poolingOptions.getHeartbeatIntervalSeconds(), is(equalTo(60)));
-		assertThat(poolingOptions.getIdleTimeoutSeconds(), is(equalTo(180)));
-		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.LOCAL), is(equalTo(4)));
-		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.LOCAL), is(equalTo(8)));
-		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.LOCAL), is(equalTo(20)));
-		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.LOCAL), is(equalTo(10)));
-		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.REMOTE), is(equalTo(2)));
-		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.REMOTE), is(equalTo(4)));
-		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.REMOTE), is(equalTo(10)));
-		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE), is(equalTo(5)));
+		assertThat(poolingOptions).isNotNull();
+		assertThat(poolingOptions.getHeartbeatIntervalSeconds()).isEqualTo(60);
+		assertThat(poolingOptions.getIdleTimeoutSeconds()).isEqualTo(180);
+		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.LOCAL)).isEqualTo(4);
+		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.LOCAL)).isEqualTo(8);
+		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.LOCAL)).isEqualTo(20);
+		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.LOCAL)).isEqualTo(10);
+		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.REMOTE)).isEqualTo(2);
+		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.REMOTE)).isEqualTo(4);
+		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.REMOTE)).isEqualTo(10);
+		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE)).isEqualTo(5);
 	}
 
 	/**
@@ -87,14 +86,14 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 
 		SocketOptions socketOptions = cassandraCluster.getConfiguration().getSocketOptions();
 
-		assertThat(socketOptions, is(notNullValue(SocketOptions.class)));
-		assertThat(socketOptions.getConnectTimeoutMillis(), is(equalTo(15000)));
-		assertThat(socketOptions.getKeepAlive(), is(true));
-		assertThat(socketOptions.getReadTimeoutMillis(), is(equalTo(60000)));
-		assertThat(socketOptions.getReceiveBufferSize(), is(equalTo(1024)));
-		assertThat(socketOptions.getReuseAddress(), is(true));
-		assertThat(socketOptions.getSendBufferSize(), is(equalTo(2048)));
-		assertThat(socketOptions.getSoLinger(), is(equalTo(5)));
-		assertThat(socketOptions.getTcpNoDelay(), is(false));
+		assertThat(socketOptions).isNotNull();
+		assertThat(socketOptions.getConnectTimeoutMillis()).isEqualTo(15000);
+		assertThat(socketOptions.getKeepAlive()).isTrue();
+		assertThat(socketOptions.getReadTimeoutMillis()).isEqualTo(60000);
+		assertThat(socketOptions.getReceiveBufferSize()).isEqualTo(1024);
+		assertThat(socketOptions.getReuseAddress()).isTrue();
+		assertThat(socketOptions.getSendBufferSize()).isEqualTo(2048);
+		assertThat(socketOptions.getSoLinger()).isEqualTo(5);
+		assertThat(socketOptions.getTcpNoDelay()).isFalse();
 	}
 }
