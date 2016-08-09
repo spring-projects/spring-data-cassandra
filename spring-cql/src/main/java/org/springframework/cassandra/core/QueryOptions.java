@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ import com.datastax.driver.core.SocketOptions;
 /**
  * Cassandra Query Options for queries. {@link QueryOptions} allow tuning of various query options on a per-request
  * level. Only options that are set are applied to queries.
- * 
+ *
  * @author David Webb
  * @author Mark Paluch
  */
@@ -36,9 +36,11 @@ public class QueryOptions {
 	private RetryPolicy retryPolicy;
 	private com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy;
 
-	private Long readTimeout;
-	private Integer fetchSize;
 	private Boolean tracing;
+
+	private Integer fetchSize;
+
+	private Long readTimeout;
 
 	/**
 	 * Creates new {@link QueryOptions}.
@@ -47,7 +49,7 @@ public class QueryOptions {
 
 	/**
 	 * Creates new {@link QueryOptions} for the given {@link ConsistencyLevel} and {@link RetryPolicy}.
-	 * 
+	 *
 	 * @param consistencyLevel the consistency level, may be {@literal null}.
 	 * @param retryPolicy the retry policy, may be {@literal null}.
 	 */
@@ -58,7 +60,7 @@ public class QueryOptions {
 
 	/**
 	 * Creates a new {@link QueryOptionsBuilder}.
-	 * 
+	 *
 	 * @return a new {@link QueryOptionsBuilder}.
 	 * @since 1.5
 	 */
@@ -68,7 +70,7 @@ public class QueryOptions {
 
 	/**
 	 * Returns the {@link ConsistencyLevel}.
-	 * 
+	 *
 	 * @return the consistencyLevel.
 	 * @deprecated Use {@link #setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel)}
 	 */
@@ -80,7 +82,7 @@ public class QueryOptions {
 	/**
 	 * Sets the driver {@link ConsistencyLevel}. Setting both ({@link ConsistencyLevel} and
 	 * {@link com.datastax.driver.core.ConsistencyLevel driver ConsistencyLevel}) consistency levels is not supported.
-	 * 
+	 *
 	 * @param consistencyLevel the consistencyLevel to set.
 	 * @throws IllegalStateException if the {@link com.datastax.driver.core.ConsistencyLevel driver ConsistencyLevel} is
 	 *           set
@@ -173,30 +175,6 @@ public class QueryOptions {
 	}
 
 	/**
-	 * Sets the read timeout in milliseconds. Overrides the default per-host read timeout (
-	 * {@link SocketOptions#getReadTimeoutMillis()}).
-	 *
-	 * @param readTimeout the read timeout in milliseconds. Negative values are not allowed. If it is {@code 0}, the read timeout
-	 *          will be disabled for this statement.
-	 * @since 1.5
-	 * @see SocketOptions#getReadTimeoutMillis()
-	 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
-	 */
-	public void setReadTimeout(long readTimeout) {
-
-		Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater or equal to zero");
-		this.readTimeout = readTimeout;
-	}
-
-	/**
-	 * @return the read timeout in milliseconds. May be {@literal null} if not set.
-	 * @since 1.5
-	 */
-	protected Long getReadTimeout() {
-		return readTimeout;
-	}
-
-	/**
 	 * Sets the query fetch size for {@link com.datastax.driver.core.ResultSet} chunks.
 	 * <p>
 	 * The fetch size controls how much resulting rows will be retrieved simultaneously (the goal being to avoid loading
@@ -211,7 +189,7 @@ public class QueryOptions {
 	 */
 	public void setFetchSize(int fetchSize) {
 
-		Assert.isTrue(fetchSize >= 0, "FetchSize must be greater or equal to zero");
+		Assert.isTrue(fetchSize >= 0, "FetchSize must be greater than equal to zero");
 		this.fetchSize = fetchSize;
 	}
 
@@ -221,6 +199,30 @@ public class QueryOptions {
 	 */
 	protected Integer getFetchSize() {
 		return fetchSize;
+	}
+
+	/**
+	 * Sets the read timeout in milliseconds. Overrides the default per-host read timeout (
+	 * {@link SocketOptions#getReadTimeoutMillis()}).
+	 *
+	 * @param readTimeout the read timeout in milliseconds. Negative values are not allowed. If it is {@code 0}, the read timeout
+	 *          will be disabled for this statement.
+	 * @since 1.5
+	 * @see SocketOptions#getReadTimeoutMillis()
+	 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
+	 */
+	public void setReadTimeout(long readTimeout) {
+
+		Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
+		this.readTimeout = readTimeout;
+	}
+
+	/**
+	 * @return the read timeout in milliseconds. May be {@literal null} if not set.
+	 * @since 1.5
+	 */
+	protected Long getReadTimeout() {
+		return readTimeout;
 	}
 
 	/**
@@ -253,11 +255,27 @@ public class QueryOptions {
 		private RetryPolicy retryPolicy;
 		private com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy;
 
-		private Long readTimeout;
-		private Integer fetchSize;
 		private Boolean tracing;
 
+		private Integer fetchSize;
+
+		private Long readTimeout;
+
 		QueryOptionsBuilder() {}
+
+		/**
+		 * Sets the {@link com.datastax.driver.core.ConsistencyLevel} to use.
+		 *
+		 * @param driverConsistencyLevel must not be {@literal null}.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 */
+		public QueryOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel driverConsistencyLevel) {
+
+			Assert.notNull(driverConsistencyLevel, "Driver ConsistencyLevel must not be null");
+
+			this.driverConsistencyLevel = driverConsistencyLevel;
+			return this;
+		}
 
 		/**
 		 * Sets the {@link RetryPolicy} to use. Setting both ({@link RetryPolicy} and
@@ -297,16 +315,23 @@ public class QueryOptions {
 		}
 
 		/**
-		 * Sets the {@link com.datastax.driver.core.ConsistencyLevel} to use.
+		 * Sets the query fetch size for {@link com.datastax.driver.core.ResultSet} chunks.
+		 * <p>
+		 * The fetch size controls how much resulting rows will be retrieved simultaneously (the goal being to avoid loading
+		 * too much results in memory for queries yielding large results). Please note that while value as low as 1 can be
+		 * used, it is *highly* discouraged to use such a low value in practice as it will yield very poor performance.
 		 *
-		 * @param driverConsistencyLevel must not be {@literal null}.
+		 * @param fetchSize the number of rows to fetch per chunking request. To disable chunking of the result set, use
+		 *          {@code fetchSize == Integer.MAX_VALUE}. Negative values are not allowed.
 		 * @return {@code this} {@link QueryOptionsBuilder}
+		 * @see com.datastax.driver.core.QueryOptions#getFetchSize()
+		 * @see com.datastax.driver.core.Cluster.Builder#withQueryOptions(com.datastax.driver.core.QueryOptions)
 		 */
-		public QueryOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel driverConsistencyLevel) {
+		public QueryOptionsBuilder fetchSize(int fetchSize) {
 
-			Assert.notNull(driverConsistencyLevel, "Driver ConsistencyLevel must not be null");
+			Assert.isTrue(fetchSize >= 0, "FetchSize must be greater or equal to zero");
 
-			this.driverConsistencyLevel = driverConsistencyLevel;
+			this.fetchSize = fetchSize;
 			return this;
 		}
 
@@ -349,27 +374,6 @@ public class QueryOptions {
 		}
 
 		/**
-		 * Sets the query fetch size for {@link com.datastax.driver.core.ResultSet} chunks.
-		 * <p>
-		 * The fetch size controls how much resulting rows will be retrieved simultaneously (the goal being to avoid loading
-		 * too much results in memory for queries yielding large results). Please note that while value as low as 1 can be
-		 * used, it is *highly* discouraged to use such a low value in practice as it will yield very poor performance.
-		 *
-		 * @param fetchSize the number of rows to fetch per chunking request. To disable chunking of the result set, use
-		 *          {@code fetchSize == Integer.MAX_VALUE}. Negative values are not allowed.
-		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @see com.datastax.driver.core.QueryOptions#getFetchSize()
-		 * @see com.datastax.driver.core.Cluster.Builder#withQueryOptions(com.datastax.driver.core.QueryOptions)
-		 */
-		public QueryOptionsBuilder fetchSize(int fetchSize) {
-
-			Assert.isTrue(fetchSize >= 0, "FetchSize must be greater or equal to zero");
-
-			this.fetchSize = fetchSize;
-			return this;
-		}
-
-		/**
 		 * Enables statement tracing.
 		 *
 		 * @param tracing {@literal true} to enable statement tracing to the executed statements.
@@ -383,7 +387,7 @@ public class QueryOptions {
 
 		/**
 		 * Enables statement tracing.
-		 * 
+		 *
 		 * @return {@code this} {@link QueryOptionsBuilder}
 		 */
 		public QueryOptionsBuilder withTracing() {
@@ -405,12 +409,12 @@ public class QueryOptions {
 			queryOptions.setRetryPolicy(retryPolicy);
 			queryOptions.setRetryPolicy(driverRetryPolicy);
 
-			if (readTimeout != null) {
-				queryOptions.setReadTimeout(readTimeout);
-			}
-
 			if (fetchSize != null) {
 				queryOptions.setFetchSize(fetchSize);
+			}
+
+			if (readTimeout != null) {
+				queryOptions.setReadTimeout(readTimeout);
 			}
 
 			if (tracing != null) {

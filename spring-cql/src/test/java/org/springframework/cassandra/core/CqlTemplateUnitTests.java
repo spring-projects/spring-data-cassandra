@@ -67,13 +67,13 @@ public class CqlTemplateUnitTests {
 
 	private CqlTemplate template;
 
-	@Mock private Session mockSession;
+	@Mock private Insert mockInsert;
 
 	@Mock private PreparedStatement mockPreparedStatement;
 
-	@Mock private Statement mockStatement;
+	@Mock private Session mockSession;
 
-	@Mock private Insert mockInsert;
+	@Mock private Statement mockStatement;
 
 	@Mock private Update mockUpdate;
 
@@ -449,8 +449,8 @@ public class CqlTemplateUnitTests {
 	@Test
 	public void addPreparedStatementOptionsShouldAddOurQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder() //
-				.retryPolicy(RetryPolicy.FALLTHROUGH).build();
+		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(RetryPolicy.FALLTHROUGH).build();
+
 		queryOptions.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.LOCAL_QUOROM);
 
 		template.addPreparedStatementOptions(mockPreparedStatement, queryOptions);
@@ -465,7 +465,8 @@ public class CqlTemplateUnitTests {
 	@Test
 	public void addStatementQueryOptionsShouldAddDriverQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(ConsistencyLevel.EACH_QUORUM) //
+		QueryOptions queryOptions = QueryOptions.builder()
+				.consistencyLevel(ConsistencyLevel.EACH_QUORUM) //
 				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
 				.build();
 
@@ -481,9 +482,8 @@ public class CqlTemplateUnitTests {
 	@Test
 	public void addStatementQueryOptionsShouldAddOurQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder() //
-				.retryPolicy(RetryPolicy.FALLTHROUGH) //
-				.build();
+		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(RetryPolicy.FALLTHROUGH).build();
+
 		queryOptions.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.LOCAL_QUOROM);
 
 		template.addQueryOptions(mockStatement, queryOptions);
@@ -512,8 +512,8 @@ public class CqlTemplateUnitTests {
 	public void addStatementQueryOptionsShouldAddGenericQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
-				.readTimeout(1, TimeUnit.MINUTES) //
 				.fetchSize(10) //
+				.readTimeout(1, TimeUnit.MINUTES) //
 				.withTracing() //
 				.build();
 

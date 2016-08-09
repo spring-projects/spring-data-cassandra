@@ -137,10 +137,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @param queryOptions query options (e.g. consistency level) to add to the Cassandra {@link PreparedStatement}.
 	 */
 	public static PreparedStatement addPreparedStatementOptions(PreparedStatement preparedStatement,
-		QueryOptions queryOptions) {
+			QueryOptions queryOptions) {
 
 		if (queryOptions != null) {
-
 			if (queryOptions.getDriverConsistencyLevel() != null) {
 				preparedStatement.setConsistencyLevel(queryOptions.getDriverConsistencyLevel());
 			} else if (queryOptions.getConsistencyLevel() != null) {
@@ -167,7 +166,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	public static <T extends Statement> T addQueryOptions(T statement, QueryOptions queryOptions) {
 
 		if (queryOptions != null) {
-
 			if (queryOptions.getDriverConsistencyLevel() != null) {
 				statement.setConsistencyLevel(queryOptions.getDriverConsistencyLevel());
 			} else if (queryOptions.getConsistencyLevel() != null) {
@@ -180,12 +178,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				statement.setRetryPolicy(RetryPolicyResolver.resolve(queryOptions.getRetryPolicy()));
 			}
 
-			if (queryOptions.getReadTimeout() != null) {
-				statement.setReadTimeoutMillis(queryOptions.getReadTimeout().intValue());
-			}
-
 			if (queryOptions.getFetchSize() != null) {
 				statement.setFetchSize(queryOptions.getFetchSize());
+			}
+
+			if (queryOptions.getReadTimeout() != null) {
+				statement.setReadTimeoutMillis(queryOptions.getReadTimeout().intValue());
 			}
 
 			if (queryOptions.getTracing() != null) {

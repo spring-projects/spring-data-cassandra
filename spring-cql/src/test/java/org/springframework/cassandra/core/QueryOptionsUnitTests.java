@@ -29,7 +29,7 @@ import com.datastax.driver.core.policies.LoggingRetryPolicy;
 
 /**
  * Unit tests for {@link QueryOptions}.
- * 
+ *
  * @author Mark Paluch
  */
 public class QueryOptionsUnitTests {
@@ -90,9 +90,7 @@ public class QueryOptionsUnitTests {
 	 */
 	@Test(expected = IllegalStateException.class)
 	public void builderShouldRejectSettingOurAndDriverRetryPolicy() {
-
-		QueryOptions.builder() //
-				.retryPolicy(RetryPolicy.DEFAULT).retryPolicy(FallthroughRetryPolicy.INSTANCE);
+		QueryOptions.builder().retryPolicy(RetryPolicy.DEFAULT).retryPolicy(FallthroughRetryPolicy.INSTANCE);
 	}
 
 	/**
@@ -100,11 +98,7 @@ public class QueryOptionsUnitTests {
 	 */
 	@Test(expected = IllegalStateException.class)
 	public void builderShouldRejectSettingDriverAndOurRetryPolicy() {
-
-		QueryOptions.builder() //
-				.retryPolicy(FallthroughRetryPolicy.INSTANCE)//
-				.retryPolicy(RetryPolicy.DEFAULT);
-
+		QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).retryPolicy(RetryPolicy.DEFAULT);
 	}
 
 	/**

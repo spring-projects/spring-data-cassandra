@@ -26,7 +26,7 @@ import com.datastax.driver.core.policies.FallthroughRetryPolicy;
 
 /**
  * Unit tests for {@link WriteOptions}.
- * 
+ *
  * @author Mark Paluch
  */
 public class WriteOptionsUnitTests {
@@ -61,9 +61,7 @@ public class WriteOptionsUnitTests {
 	@Test
 	public void buildReadTimeoutOptionsWriteOptions() {
 
-		WriteOptions writeOptions = WriteOptions.builder() //
-				.readTimeout(1, TimeUnit.MINUTES)//
-				.build(); //
+		WriteOptions writeOptions = WriteOptions.builder().readTimeout(1, TimeUnit.MINUTES).build();
 
 		assertThat(writeOptions.getReadTimeout(), is(60L * 1000L));
 		assertThat(writeOptions.getFetchSize(), is(nullValue()));
@@ -76,9 +74,7 @@ public class WriteOptionsUnitTests {
 	@Test
 	public void buildQueryOptionsWithDriverRetryPolicy() {
 
-		QueryOptions writeOptions = QueryOptions.builder() //
-				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
-				.build(); //
+		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
 
 		assertThat(writeOptions.getRetryPolicy(), is(nullValue()));
 		assertThat(writeOptions.getDriverRetryPolicy(),
@@ -91,9 +87,7 @@ public class WriteOptionsUnitTests {
 	@Test
 	public void buildQueryOptionsWithRetryPolicy() {
 
-		QueryOptions writeOptions = QueryOptions.builder() //
-				.retryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY) //
-				.build(); //
+		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY).build();
 
 		assertThat(writeOptions.getRetryPolicy(), is(RetryPolicy.DOWNGRADING_CONSISTENCY));
 		assertThat(writeOptions.getDriverRetryPolicy(), is(nullValue()));
@@ -104,9 +98,7 @@ public class WriteOptionsUnitTests {
 	 */
 	@Test(expected = IllegalStateException.class)
 	public void builderShouldRejectSettingOurAndDriverRetryPolicy() {
-
-		WriteOptions.builder() //
-				.retryPolicy(RetryPolicy.DEFAULT).retryPolicy(FallthroughRetryPolicy.INSTANCE);
+		WriteOptions.builder().retryPolicy(RetryPolicy.DEFAULT).retryPolicy(FallthroughRetryPolicy.INSTANCE);
 	}
 
 	/**
@@ -114,10 +106,6 @@ public class WriteOptionsUnitTests {
 	 */
 	@Test(expected = IllegalStateException.class)
 	public void builderShouldRejectSettingDriverAndOurRetryPolicy() {
-
-		WriteOptions.builder() //
-				.retryPolicy(FallthroughRetryPolicy.INSTANCE)//
-				.retryPolicy(RetryPolicy.DEFAULT);
-
+		WriteOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).retryPolicy(RetryPolicy.DEFAULT);
 	}
 }

@@ -24,6 +24,7 @@ import com.datastax.driver.core.policies.FallthroughRetryPolicy;
  *
  * @author David Webb
  */
+@Deprecated
 public final class RetryPolicyResolver {
 
 	/**
@@ -33,17 +34,16 @@ public final class RetryPolicyResolver {
 
 	/**
 	 * Decode the generic spring data cassandra enum to the type required by the DataStax Driver.
-	 * 
+	 *
 	 * @param level
 	 * @return The DataStax Driver Consistency Level.
 	 */
+	@SuppressWarnings("deprecation")
 	public static com.datastax.driver.core.policies.RetryPolicy resolve(RetryPolicy policy) {
 
-		com.datastax.driver.core.policies.RetryPolicy resolvedPolicy = DefaultRetryPolicy.INSTANCE;
+		com.datastax.driver.core.policies.RetryPolicy resolvedPolicy;
 
-		/*
-		 * Determine the driver level based on our enum
-		 */
+		// Determine the driver RetryPolicy based on SD Cassandra's enum
 		switch (policy) {
 			case DEFAULT:
 				resolvedPolicy = DefaultRetryPolicy.INSTANCE;
@@ -60,6 +60,5 @@ public final class RetryPolicyResolver {
 		}
 
 		return resolvedPolicy;
-
 	}
 }
