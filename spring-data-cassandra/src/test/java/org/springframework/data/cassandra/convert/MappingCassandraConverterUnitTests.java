@@ -68,6 +68,7 @@ import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.util.Version;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -94,6 +95,8 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
 @SuppressWarnings("Since15")
 @RunWith(MockitoJUnitRunner.class)
 public class MappingCassandraConverterUnitTests {
+
+	private static final Version VERSION_4_3 = Version.parse("4.3");
 
 	@Rule
 	public final ExpectedException expectedException = ExpectedException.none();
@@ -139,7 +142,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test
 	public void insertEnumDoesNotMapToOrdinalBeforeSpring43() {
 
-		assumeThat(SpringVersion.getVersion(), not(startsWith("4.3")));
+		assumeTrue(Version.parse(SpringVersion.getVersion()).isLessThan(VERSION_4_3));
 
 		expectedException.expect(ConverterNotFoundException.class);
 		expectedException.expectMessage(allOf(containsString("No converter found"), containsString("java.lang.Integer")));
@@ -156,9 +159,9 @@ public class MappingCassandraConverterUnitTests {
 	 * @see DATACASS-255
 	 */
 	@Test
-	public void insertEnumMapsToOrdinalWithSpring43() {
+	public void insertEnumMapsToOrdinalWithSpring43AndHiger() {
 
-		assumeThat(SpringVersion.getVersion(), startsWith("4.3"));
+		assumeTrue(Version.parse(SpringVersion.getVersion()).isGreaterThanOrEqualTo(VERSION_4_3));
 
 		UnsupportedEnumToOrdinalMapping unsupportedEnumToOrdinalMapping = new UnsupportedEnumToOrdinalMapping();
 		unsupportedEnumToOrdinalMapping.setAsOrdinal(Condition.USED);

@@ -9,6 +9,7 @@ env:
     - PROFILE=spring42-next
     - PROFILE=spring43
     - PROFILE=spring43-next
+    - PROFILE=spring5-next
     - PROFILE=external-cassandra CASSANDRA_VERSION=2.2.6
     - PROFILE=external-cassandra CASSANDRA_VERSION=3.0.7
     - PROFILE=external-cassandra CASSANDRA_VERSION=3.2
