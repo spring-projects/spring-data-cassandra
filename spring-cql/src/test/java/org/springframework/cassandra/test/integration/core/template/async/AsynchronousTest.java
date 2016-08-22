@@ -82,6 +82,8 @@ public class AsynchronousTest extends AbstractAsynchronousTest {
 		Book[] books = new Book[n];
 		for (int i = 0; i < n; i++) {
 			Book b = books[i] = Book.random();
+			b.isbn = "i- " + i;
+			b.title = "t- " + i;
 			t.execute(String.format("insert into %s (isbn, title) values ('%s', '%s')", TABLE, b.isbn, b.title));
 		}
 		return books;

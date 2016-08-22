@@ -10,7 +10,7 @@
 	</appender>
 
 	<logger name="org.springframework" level="error" />
-	<logger name="org.springframework.cassandra" level="DEBUG" />
+	<logger name="org.springframework.cassandra" level="error" />
 	<logger name="com.datastax" level="error" />
 
 	<root level="error">
