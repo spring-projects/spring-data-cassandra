@@ -34,6 +34,7 @@
 		<failsafe.version>2.16</failsafe.version>
 		<jamm.version>0.3.1</jamm.version>
 		<cassandra.version>2.1.11</cassandra.version>
+		<netty.version>4.0.23.Final</netty.version>
 		<cassandra-driver-dse.version>2.1.7.1</cassandra-driver-dse.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 	</properties>
@@ -107,10 +108,6 @@
 					<exclusion>
 						<artifactId>guava</artifactId>
 						<groupId>com.google.guava</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>netty-handler</artifactId>
-						<groupId>io.netty</groupId>
 					</exclusion>
 				</exclusions>
 			</dependency>
