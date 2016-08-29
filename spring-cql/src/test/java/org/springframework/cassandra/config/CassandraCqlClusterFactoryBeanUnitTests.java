@@ -86,22 +86,6 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 	}
 
 	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
-	public void shouldSetCompressionType() throws Exception {
-
-		CompressionType compressionType = CompressionType.SNAPPY;
-
-		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
-		bean.setCompressionType(compressionType);
-		bean.afterPropertiesSet();
-
-		assertThat(getConfiguration(bean).getProtocolOptions().getCompression(), is(Compression.SNAPPY));
-	}
-
-	/**
 	 * @see <a href="https://jira.spring.io/browse/DATACASS-217">DATACASS-217</a>
 	 * @throws Exception
 	 */
@@ -114,7 +98,23 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		bean.setCompressionType(compressionType);
 		bean.afterPropertiesSet();
 
-		assertThat(getConfiguration(bean).getProtocolOptions().getCompression(), is(Compression.LZ4));
+		assertThat(getProtocolOptions(bean).getCompression(), is(Compression.LZ4));
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
+	 * @throws Exception
+	 */
+	@Test
+	public void shouldSetSnappyCompressionType() throws Exception {
+
+		CompressionType compressionType = CompressionType.SNAPPY;
+
+		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
+		bean.setCompressionType(compressionType);
+		bean.afterPropertiesSet();
+
+		assertThat(getProtocolOptions(bean).getCompression(), is(Compression.SNAPPY));
 	}
 
 	/**
