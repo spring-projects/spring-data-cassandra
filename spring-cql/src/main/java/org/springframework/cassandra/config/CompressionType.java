@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ package org.springframework.cassandra.config;
  * Simple enumeration for the various compression types.
  * 
  * @author Alex Shvid
+ * @author Mark Paluch
  */
 public enum CompressionType {
-	NONE, SNAPPY;
+	NONE, SNAPPY, LZ4
 }

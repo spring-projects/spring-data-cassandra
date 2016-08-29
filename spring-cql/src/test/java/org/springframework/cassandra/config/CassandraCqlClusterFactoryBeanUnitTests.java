@@ -102,6 +102,22 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 	}
 
 	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-217">DATACASS-217</a>
+	 * @throws Exception
+	 */
+	@Test
+	public void shouldSetLZ4CompressionType() throws Exception {
+
+		CompressionType compressionType = CompressionType.LZ4;
+
+		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
+		bean.setCompressionType(compressionType);
+		bean.afterPropertiesSet();
+
+		assertThat(getConfiguration(bean).getProtocolOptions().getCompression(), is(Compression.LZ4));
+	}
+
+	/**
 	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
 	 * @throws Exception
 	 */
