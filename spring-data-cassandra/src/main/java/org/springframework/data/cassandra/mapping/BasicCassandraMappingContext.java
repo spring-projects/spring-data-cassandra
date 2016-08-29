@@ -63,11 +63,8 @@ public class BasicCassandraMappingContext
 		implements CassandraMappingContext, ApplicationContextAware {
 
 	protected ApplicationContext context;
-
 	protected ClassLoader beanClassLoader;
-
-	protected CassandraPersistentEntityMetadataVerifier verifier = new BasicCassandraPersistentEntityMetadataVerifier();
-
+	protected CassandraPersistentEntityMetadataVerifier verifier = new CompositeCassandraPersistentEntityMetadataVerifier();
 	protected Mapping mapping = new Mapping();
 
 	// useful caches
