@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -26,20 +27,26 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.model.MappingException;
 
 /**
- * Unit tests for {@link org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntityMetadataVerifier}
- * through {@link CassandraMappingContext}
+ * Unit tests for {@link PrimaryKeyClassEntityMetadataVerifier}.
  *
- * @author David Webb
  * @author Mark Paluch
  */
-public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
+public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 
-	private BasicCassandraPersistentEntityMetadataVerifier verifier = new BasicCassandraPersistentEntityMetadataVerifier();
+	private PrimaryKeyClassEntityMetadataVerifier verifier = new PrimaryKeyClassEntityMetadataVerifier();
 	private BasicCassandraMappingContext context = new BasicCassandraMappingContext();
 
 	@Before
 	public void setUp() throws Exception {
 		context.setVerifier(new NoOpVerifier());
+	}
+
+	/**
+	 * @see DATACASS-258
+	 */
+	@Test
+	public void shouldAllowNonPersistentClasses() {
+		verifier.verify(getEntity(NonPersistentClass.class));
 	}
 
 	/**
@@ -54,15 +61,7 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 	 * @see DATACASS-258
 	 */
 	@Test
-	public void testPrimaryKeyClass() {
-		verifier.verify(getEntity(Animal.class));
-	}
-
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
-	public void testNonPrimaryKeyClass() {
+	public void shouldAllowTableClass() {
 		verifier.verify(getEntity(Person.class));
 	}
 
@@ -70,8 +69,8 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 	 * @see DATACASS-258
 	 */
 	@Test
-	public void testNonPersistentType() {
-		verifier.verify(getEntity(NonPersistentClass.class));
+	public void shouldVerifyPrimaryKeyClass() {
+		verifier.verify(getEntity(AnimalPK.class));
 	}
 
 	/**
@@ -85,35 +84,6 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 			fail("Missing MappingException");
 		} catch (MappingException e) {
 			assertThat(e.toString(), containsString("Entity cannot be of type @Table and @PrimaryKeyClass"));
-		}
-	}
-
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
-	public void shouldFailWithComplexTypePrimaryKey() {
-
-		try {
-			verifier.verify(getEntity(EntityWithComplexTypePrimaryKey.class));
-			fail("Missing MappingException");
-		} catch (MappingException e) {
-			assertThat(e.toString(),
-					containsString("Property [species] annotated with @PrimaryKeyColumn must be a simple CassandraType"));
-		}
-	}
-
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
-	public void shouldFailWithComplexTypeId() {
-
-		try {
-			verifier.verify(getEntity(EntityWithComplexTypeId.class));
-			fail("Missing MappingException");
-		} catch (MappingException e) {
-			assertThat(e.toString(), containsString("Property [species] annotated with @Id must be a simple CassandraType"));
 		}
 	}
 
@@ -142,7 +112,8 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(getEntity(NoPrimaryKey.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e.toString(), containsString("@Table types must have only one primary attribute, if any; Found 0"));
+			assertThat(e.toString(),
+					containsString("At least one of the @PrimaryKeyColumn annotations must have a type of PARTITIONED"));
 		}
 	}
 
@@ -150,14 +121,73 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 	 * @see DATACASS-258
 	 */
 	@Test
-	public void testPkAndPkc() {
+	public void shouldFailOnPrimaryKeyCycles() {
+
+		try {
+			verifier.verify(getEntity(TypeCycle.class));
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e.toString(),
+					containsString("Composite primary keys are not allowed inside of composite primary key classes"));
+		}
+	}
+
+	/**
+	 * @see DATACASS-258
+	 */
+	@Test
+	public void shouldFailWithNestedPrimaryKeyClassReference() {
+
+		try {
+			verifier.verify(getEntity(PKClassWithNestedCompositeKey.class));
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e.toString(),
+					containsString("Composite primary keys are not allowed inside of composite primary key classes"));
+		}
+	}
+
+	/**
+	 * @see DATACASS-258
+	 */
+	@Test
+	public void shouldFailWithComplexType() {
+
+		try {
+			verifier.verify(getEntity(PKWithComplexType.class));
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e.toString(),
+					containsString("Property [species] annotated with @PrimaryKeyColumn must be a simple CassandraType"));
+		}
+	}
+
+	/**
+	 * @see DATACASS-258
+	 */
+	@Test
+	public void shouldFailWithPrimaryKeyClassAndPrimaryKeyAnnotations() {
 
 		try {
 			verifier.verify(getEntity(PrimaryKeyAndPrimaryKeyColumn.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
 			assertThat(e.toString(),
-					containsString("@Table types must not define both @Id and @PrimaryKeyColumn properties"));
+					containsString("Annotations @Id and @PrimaryKey are invalid for type annotated with @PrimaryKeyClass"));
+		}
+	}
+
+	/**
+	 * @see DATACASS-258
+	 */
+	@Test
+	public void shouldFailForPrimaryKeyDerivedFromOtherThanObject() {
+
+		try {
+			verifier.verify(getEntity(SubclassPK.class));
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e.toString(), containsString("@PrimaryKeyClass must only extend Object"));
 		}
 	}
 
@@ -188,7 +218,7 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 	static class Animal {
 
 		@PrimaryKey AnimalPK key;
-		String name;
+		private String name;
 	}
 
 	@PrimaryKeyClass
@@ -199,49 +229,62 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING) String color;
 	}
 
-	@Table
-	static class EntityWithComplexTypePrimaryKey {
+	@PrimaryKeyClass
+	static class PKWithComplexType {
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object species;
-	}
-
-	@Table
-	static class EntityWithComplexTypeId {
-
-		@Id Object species;
 	}
 
 	@Table
 	@PrimaryKeyClass
 	static class TooManyAnnotations {}
 
-	@Table
+	@PrimaryKeyClass
 	static class NoPartitionKey {
 
 		@PrimaryKeyColumn(ordinal = 0) String key;
 	}
 
-	@Table
-	static class NoPrimaryKey {}
+	@PrimaryKeyClass
+	static class NoPrimaryKey {
 
-	@Table
+	}
+
+	@PrimaryKeyClass
+	static class TypeCycle {
+
+		@PrimaryKey TypeCycle typeCycle;
+	}
+
+	@PrimaryKeyClass
+	static class PKClassWithNestedCompositeKey {
+
+		@PrimaryKey OnePrimaryKeyColumn pkc;
+	}
+
+	@PrimaryKeyClass
 	static class PrimaryKeyAndPrimaryKeyColumn {
 
 		@PrimaryKey String primaryKey;
-		@PrimaryKeyColumn(ordinal = 0) String primaryKeyColumn;
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String primaryKeyColumn;
 	}
 
-	@Table
+	@PrimaryKeyClass
 	static class OnePrimaryKeyColumn {
 
 		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) String pk;
 	}
 
-	@Table
-	static class MultiplePrimaryKeyColumns {
+	static class MultiPrimaryKeyColumns {
 
 		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) String pk0;
 		@PrimaryKeyColumn(ordinal = 1) String pk1;
+	}
+
+	@PrimaryKeyClass
+	static class SubclassPK extends MultiPrimaryKeyColumns {
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) String pk;
 	}
 
 	private static class NoOpVerifier implements CassandraPersistentEntityMetadataVerifier {
