@@ -22,7 +22,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Identifies a domain object as Cassandra User Defined type (UDT). User defined types may contain nested user defined
+ * types.
+ *
  * @author Fabio J. Mendes
+ * @author Mark Paluch
+ * @since 1.5
  */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
@@ -30,7 +35,7 @@ import java.lang.annotation.Target;
 public @interface UserDefinedType {
 
 	/**
-	 * The name of the UDT; must be a valid CQL identifier or quoted identifier.
+	 * The name of the UDT. Must be a valid CQL identifier or quoted identifier.
 	 */
 	String value() default "";
 

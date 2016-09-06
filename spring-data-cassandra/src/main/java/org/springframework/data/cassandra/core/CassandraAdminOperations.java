@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,6 +27,8 @@ import com.datastax.driver.core.UserType;
  * 
  * @author David Webb
  * @author Matthew T. Adams
+ * @author Mark Paluch
+ * @author Fabio J. Mendes
  */
 public interface CassandraAdminOperations extends CassandraOperations {
 
@@ -42,7 +44,8 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @param entityClass The class whose fields determine the columns created.
 	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
 	 */
-	void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass, Map<String, Object> optionsByName);
+	void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
+					 Map<String, Object> optionsByName);
 
 	/**
 	 * Add columns to the given table from the given class. If parameter dropRemovedAttributColumns is true, then this
@@ -73,16 +76,21 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	void dropTable(CqlIdentifier tableName);
 
 	/**
-	 * @param keyspace
-	 * @param tableName
-	 * @return
+	 * Lookup {@link TableMetadata}.
+	 *
+	 * @param keyspace must not be empty or {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the {@link TableMetadata} or {@literal null}.
 	 */
 	TableMetadata getTableMetadata(String keyspace, CqlIdentifier tableName);
 
 	/**
-	 * @param keyspace
-	 * @param userTypeName
-	 * @return
+	 * Lookup {@link UserType} metadata.
+	 * 
+	 * @param keyspace must not be empty or {@literal null}.
+	 * @param userTypeName must not be {@literal null}.
+	 * @return the {@link UserType} or {@literal null}.
+	 * @since 1.5
 	 */
 	UserType getUserTypeMetadata(String keyspace, CqlIdentifier userTypeName);
 }
