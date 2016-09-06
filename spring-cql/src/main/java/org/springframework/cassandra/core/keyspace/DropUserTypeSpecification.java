@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,28 +18,16 @@ package org.springframework.cassandra.core.keyspace;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 /**
- * Builder class that supports the construction of <code>DROP TYPE</code> specifications.
- * 
+ * Builder class that supports the construction of {@code DROP TYPE} specifications.
+ *
  * @author Fabio J. Mendes
+ * @author Mark Paluch
+ * @since 1.5
+ * @see CqlIdentifier
  */
 public class DropUserTypeSpecification extends UserTypeNameSpecification<DropUserTypeSpecification> {
 
-	// private boolean ifExists;
-
-	// Added in Cassandra 2.0.
-
-	// public DropTableSpecification ifExists() {
-	// return ifExists(true);
-	// }
-	//
-	// public DropTableSpecification ifExists(boolean ifExists) {
-	// this.ifExists = ifExists;
-	// return this;
-	// }
-	//
-	// public boolean getIfExists() {
-	// return ifExists;
-	// }
+	private boolean ifExists;
 
 	/**
 	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API to drop a type. Convenient if imported
@@ -51,23 +39,50 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification<DropUse
 
 	/**
 	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API to drop a type. Convenient if imported
-	 * statically. This static method is shorter than the no-arg form, which would be
-	 * <code>dropType().name(typeName)</code>.
+	 * statically.
 	 * 
 	 * @param typeName The name of the type to drop.
 	 */
 	public static DropUserTypeSpecification dropType(CqlIdentifier typeName) {
-		return new DropUserTypeSpecification().name(typeName);
+		return dropType().name(typeName);
 	}
 
 	/**
 	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API to drop a type. Convenient if imported
-	 * statically. This static method is shorter than the no-arg form, which would be
-	 * <code>dropType().name(typeName)</code>.
+	 * statically.
 	 * 
 	 * @param typeName The name of the type to drop.
 	 */
 	public static DropUserTypeSpecification dropType(String typeName) {
-		return new DropUserTypeSpecification().name(typeName);
+		return dropType(CqlIdentifier.cqlId(typeName));
+	}
+
+	/**
+	 * Enables the inclusion of an{@code IF EXISTS} clause.
+	 *
+	 * @return this {@link DropUserTypeSpecification}.
+	 */
+	public DropUserTypeSpecification ifExists() {
+		return ifExists(true);
+	}
+
+	/**
+	 * Sets the inclusion of an {@code IF EXISTS} clause.
+	 *
+	 * @param ifNotExists {@literal true} to include an {@code IF EXISTS} clause, {@literal false} to omit the
+	 *          {@code IF NOT EXISTS} clause.
+	 * @return this {@link DropUserTypeSpecification}.
+	 */
+	public DropUserTypeSpecification ifExists(boolean ifExists) {
+
+		this.ifExists = ifExists;
+		return this;
+	}
+
+	/**
+	 * @return {@literal true} if the {@code IF EXISTS} clause is included.
+	 */
+	public boolean getIfExists() {
+		return ifExists;
 	}
 }

@@ -17,6 +17,7 @@ package org.springframework.cassandra.core.cql.generator;
 
 import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
 
+import org.springframework.cassandra.core.keyspace.ColumnChangeSpecification;
 import org.springframework.cassandra.core.keyspace.RenameColumnSpecification;
 
 /**
@@ -30,14 +31,24 @@ import org.springframework.cassandra.core.keyspace.RenameColumnSpecification;
  */
 public class RenameColumnCqlGenerator extends ColumnChangeCqlGenerator<RenameColumnSpecification> {
 
+	static final String RENAME = "RENAME";
+
+	final String keyword;
+
 	RenameColumnCqlGenerator(RenameColumnSpecification specification) {
+		this(RENAME, specification);
+	}
+
+	public RenameColumnCqlGenerator(String keyword, ColumnChangeSpecification specification) {
 		super(specification);
+		this.keyword = keyword;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.cql.generator.ColumnChangeCqlGenerator#toCql(java.lang.StringBuilder)
 	 */
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("RENAME ").append(spec().getName()).append(" TO ").append(spec().getTargetName());
+		return noNull(cql).append(keyword).append(' ').append(spec().getName()).append(" TO ")
+				.append(spec().getTargetName());
 	}
 }
