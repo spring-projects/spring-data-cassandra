@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,11 +18,16 @@ package org.springframework.cassandra.core.keyspace;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 /**
- * Builder class to construct a <code>CREATE TYPE</code> specification.
- * 
+ * Builder class to construct a {@code CREATE TYPE} specification.
+ *
  * @author Fabio J. Mendes
+ * @author Mark Paluch
+ * @since 1.5
+ * @see CqlIdentifier
  */
 public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUserTypeSpecification> {
+
+	private boolean ifNotExists;
 
 	/**
 	 * Entry point into the {@link CreateUserTypeSpecification}'s fluent API to create a type. Convenient if imported
@@ -37,7 +42,7 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 	 * statically.
 	 */
 	public static CreateUserTypeSpecification createType(CqlIdentifier name) {
-		return new CreateUserTypeSpecification().name(name);
+		return createType().name(name);
 	}
 
 	/**
@@ -45,41 +50,35 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 	 * statically.
 	 */
 	public static CreateUserTypeSpecification createType(String name) {
-		return new CreateUserTypeSpecification().name(name);
-	}
-
-	private boolean ifNotExists = false;
-
-	@Override
-	public CreateUserTypeSpecification name(CqlIdentifier name) {
-		return (CreateUserTypeSpecification) super.name(name);
+		return createType(CqlIdentifier.cqlId(name));
 	}
 
 	/**
-	 * Causes the inclusion of an <code>IF NOT EXISTS</code> clause.
+	 * Enables the inclusion of an{@code IF NOT EXISTS} clause.
 	 * 
-	 * @return this
+	 * @return this {@link CreateUserTypeSpecification}.
 	 */
 	public CreateUserTypeSpecification ifNotExists() {
 		return ifNotExists(true);
 	}
 
 	/**
-	 * Toggles the inclusion of an <code>IF NOT EXISTS</code> clause.
-	 * 
-	 * @return this
+	 * Sets the inclusion of an {@code IF NOT EXISTS} clause.
+	 *
+	 * @param ifNotExists {@literal true} to include an {@code IF NOT EXISTS} clause, {@literal false} to omit the
+	 *          {@code IF NOT EXISTS} clause.
+	 * @return this {@link CreateUserTypeSpecification}.
 	 */
 	public CreateUserTypeSpecification ifNotExists(boolean ifNotExists) {
+
 		this.ifNotExists = ifNotExists;
 		return this;
 	}
 
+	/**
+	 * @return {@literal true} if the {@code IF NOT EXISTS} clause is included.
+	 */
 	public boolean getIfNotExists() {
 		return ifNotExists;
-	}
-
-	@Override
-	public CreateUserTypeSpecification name(String name) {
-		return (CreateUserTypeSpecification) super.name(name);
 	}
 }

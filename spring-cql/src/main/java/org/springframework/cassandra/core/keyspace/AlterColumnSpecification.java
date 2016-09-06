@@ -19,6 +19,13 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.DataType;
 
+/**
+ * Value object for altering a column.
+ * 
+ * @author Matthew T. Adams
+ * @author Mark Paluch
+ * @see CqlIdentifier
+ */
 public class AlterColumnSpecification extends ColumnTypeChangeSpecification {
 
 	public AlterColumnSpecification(String name, DataType type) {

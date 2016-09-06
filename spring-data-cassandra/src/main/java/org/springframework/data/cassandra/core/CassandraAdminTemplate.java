@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,6 +38,7 @@ import com.datastax.driver.core.UserType;
  * Default implementation of {@link CassandraAdminOperations}.
  *
  * @author Mark Paluch
+ * @author Fabio J. Mendes
  */
 public class CassandraAdminTemplate extends CassandraTemplate implements CassandraAdminOperations {
 
@@ -53,6 +54,10 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		super(session, converter);
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, org.springframework.cassandra.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
+	 */
 	@Override
 	public void createTable(final boolean ifNotExists, final CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
@@ -63,8 +68,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 			@Override
 			public Object doInSession(Session s) throws DataAccessException {
 
-				String cql = new CreateTableCqlGenerator(getCassandraMappingContext().
-						getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists)).toCql();
+				String cql = new CreateTableCqlGenerator(
+						getCassandraMappingContext().getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists)).toCql();
 
 				log.debug(cql);
 
@@ -74,11 +79,19 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		});
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#alterTable(org.springframework.cassandra.core.cql.CqlIdentifier, java.lang.Class, boolean)
+	 */
 	@Override
 	public void alterTable(CqlIdentifier tableName, Class<?> entityClass, boolean dropRemovedAttributeColumns) {
 		throw new UnsupportedOperationException("not yet implemented");
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#replaceTable(org.springframework.cassandra.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
+	 */
 	@Override
 	public void replaceTable(CqlIdentifier tableName, Class<?> entityClass, Map<String, Object> optionsByName) {
 
@@ -120,6 +133,10 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		dropTable(getTableName(entityClass));
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(org.springframework.cassandra.core.cql.CqlIdentifier)
+	 */
 	@Override
 	public void dropTable(CqlIdentifier tableName) {
 
@@ -128,10 +145,15 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		execute(DropTableSpecification.dropTable(tableName));
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(java.lang.String, org.springframework.cassandra.core.cql.CqlIdentifier)
+	 */
 	@Override
 	public TableMetadata getTableMetadata(final String keyspace, final CqlIdentifier tableName) {
 
-		Assert.notNull(tableName);
+		Assert.hasText(keyspace, "Keyspace name must not be empty");
+		Assert.notNull(tableName, "Table name must not be null");
 
 		return execute(new SessionCallback<TableMetadata>() {
 			@Override
@@ -141,10 +163,15 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		});
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getUserTypeMetadata(java.lang.String, org.springframework.cassandra.core.cql.CqlIdentifier)
+	 */
 	@Override
 	public UserType getUserTypeMetadata(final String keyspace, final CqlIdentifier userTypeName) {
 
-		Assert.notNull(userTypeName);
+		Assert.hasText(keyspace, "Keyspace name must not be empty");
+		Assert.notNull(userTypeName, "User type name must not be null");
 
 		return execute(new SessionCallback<UserType>() {
 			@Override
