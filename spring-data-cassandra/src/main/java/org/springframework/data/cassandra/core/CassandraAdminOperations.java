@@ -20,6 +20,7 @@ import java.util.Map;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.UserType;
 
 /**
  * Operations for managing a Cassandra keyspace.
@@ -77,4 +78,11 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @return
 	 */
 	TableMetadata getTableMetadata(String keyspace, CqlIdentifier tableName);
+
+	/**
+	 * @param keyspace
+	 * @param userTypeName
+	 * @return
+	 */
+	UserType getUserTypeMetadata(String keyspace, CqlIdentifier userTypeName);
 }
