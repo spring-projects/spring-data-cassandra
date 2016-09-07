@@ -789,12 +789,24 @@ Defines a CassandraMappingContext for holding rich entity mapping information.
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="entity" type="entityType" minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="user-type-resolver" type="userTypeResolverType" minOccurs="0" maxOccurs="1" />
 			</xsd:sequence>
 			<xsd:attribute name="entity-base-packages" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 The comma-delimited base packages in which to scan for entities and their mapping information.
 					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="user-type-resolver-ref" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The reference to a UserTypeResolver. UserTypeResolver is required when working with User-defined types.
+					]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:exports
+							type="org.springframework.data.cassandra.mapping.UserTypeResolver" />
+					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
 		</xsd:complexType>
@@ -810,6 +822,23 @@ The comma-delimited base packages in which to scan for entities and their mappin
 		</xsd:annotation>
 		<xsd:union memberTypes="xsd:string"/>
 	</xsd:simpleType>
+
+	<xsd:complexType name="userTypeResolverType">
+		<xsd:attribute name="keyspace-name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of a Cassandra Keyspace.  No default; for the system keyspace, use the empty string.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cluster-ref" type="clusterRef" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra cluster; default is "cassandra-cluster".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
 
 	<xsd:complexType name="entityType">
 		<xsd:sequence>

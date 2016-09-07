@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.DropUserTypeCqlGenerator;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
+import org.springframework.cassandra.core.keyspace.DropUserTypeSpecification;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.util.CqlUtils;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.UserType;
@@ -133,16 +136,32 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		dropTable(getTableName(entityClass));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(org.springframework.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void dropTable(CqlIdentifier tableName) {
 
+		Assert.notNull(tableName, "Type name must not be null");
+
 		log.info("Dropping table => " + tableName);
 
 		execute(DropTableSpecification.dropTable(tableName));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropUserType(org.springframework.cassandra.core.cql.CqlIdentifier)
+	 */
+	@Override
+	public void dropUserType(CqlIdentifier typeName) {
+
+		Assert.notNull(typeName, "Type name must not be null");
+
+		log.info("Dropping user type => {}", typeName);
+
+		execute(DropUserTypeCqlGenerator.toCql(DropUserTypeSpecification.dropType(typeName)));
 	}
 
 	/* 
@@ -163,20 +182,21 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		});
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getUserTypeMetadata(java.lang.String, org.springframework.cassandra.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getKeyspaceMetadata()
 	 */
 	@Override
-	public UserType getUserTypeMetadata(final String keyspace, final CqlIdentifier userTypeName) {
+	public KeyspaceMetadata getKeyspaceMetadata() {
 
-		Assert.hasText(keyspace, "Keyspace name must not be empty");
-		Assert.notNull(userTypeName, "User type name must not be null");
-
-		return execute(new SessionCallback<UserType>() {
+		return execute(new SessionCallback<KeyspaceMetadata>() {
 			@Override
-			public UserType doInSession(Session s) {
-				return s.getCluster().getMetadata().getKeyspace(keyspace).getUserType(userTypeName.toCql());
+			public KeyspaceMetadata doInSession(Session s) throws DataAccessException {
+
+				KeyspaceMetadata keyspaceMetadata = s.getCluster().getMetadata().getKeyspace(s.getLoggedKeyspace());
+				Assert.state(keyspaceMetadata != null,
+						String.format("Metadata for keyspace [%s] not available", s.getLoggedKeyspace()));
+				return keyspaceMetadata;
 			}
 		});
 	}

@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.mapping;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -23,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
@@ -30,6 +32,7 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.convert.WritingConverter;
@@ -38,6 +41,8 @@ import org.springframework.data.util.ClassTypeInformation;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
 
 /**
  * Unit tests for {@link BasicCassandraMappingContext}.
@@ -48,6 +53,18 @@ import com.datastax.driver.core.DataType.Name;
 public class BasicCassandraMappingContextUnitTests {
 
 	BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+
+	@Before
+	public void before() {
+
+		mappingContext.setUserTypeResolver(new UserTypeResolver() {
+
+			@Override
+			public UserType resolveType(CqlIdentifier typeName) {
+				return null;
+			}
+		});
+	}
 
 	@Test(expected = MappingException.class)
 	public void testGetPersistentEntityOfTransientType() {
@@ -64,16 +81,6 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(mappingContext.contains(X.class)).isTrue();
 		assertThat(mappingContext.getExistingPersistentEntity(X.class)).isNotNull();
 		assertThat(mappingContext.contains(Y.class)).isFalse();
-	}
-
-	@Table
-	private static class X {
-		@PrimaryKey String key;
-	}
-
-	@Table
-	private static class Y {
-		@PrimaryKey String key;
 	}
 
 	/**
@@ -366,7 +373,172 @@ public class BasicCassandraMappingContextUnitTests {
 				.isEqualTo(DataType.list(DataType.varchar()));
 	}
 
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void shouldRegisterUdtTypes() {
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(MappedUdt.class);
+
+		assertThat(persistentEntity.isUserDefinedType()).isTrue();
+	}
+
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void getNonPrimaryKeyEntitiesShouldNotContainUdt() {
+
+		CassandraPersistentEntity<?> existingPersistentEntity = mappingContext.getPersistentEntity(MappedUdt.class);
+
+		assertThat(mappingContext.getNonPrimaryKeyEntities()).doesNotContain(existingPersistentEntity);
+	}
+
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void getPersistentEntitiesShouldContainUdt() {
+
+		CassandraPersistentEntity<?> existingPersistentEntity = mappingContext.getPersistentEntity(MappedUdt.class);
+
+		assertThat(mappingContext.getPersistentEntities(true)).contains(existingPersistentEntity);
+		assertThat(mappingContext.getPersistentEntities(false)).doesNotContain(existingPersistentEntity);
+	}
+
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void usesTypeShouldNotReportTypeUsage() {
+
+		UserType myTypeMock = mock(UserType.class, "mappedudt");
+		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
+
+		assertThat(mappingContext.usesUserType(myTypeMock)).isFalse();
+	}
+
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void usesTypeShouldReportTypeUsageInMappedUdt() {
+
+		final UserType myTypeMock = mock(UserType.class, "mappedudt");
+		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
+
+		mappingContext.setUserTypeResolver(new UserTypeResolver() {
+
+			@Override
+			public UserType resolveType(CqlIdentifier typeName) {
+				return myTypeMock;
+			}
+		});
+
+		mappingContext.getPersistentEntity(WithUdt.class);
+
+		assertThat(mappingContext.usesUserType(myTypeMock)).isTrue();
+	}
+
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void usesTypeShouldReportTypeUsageInColumn() {
+
+		final UserType myTypeMock = mock(UserType.class, "mappedudt");
+		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
+
+		mappingContext.setUserTypeResolver(new UserTypeResolver() {
+
+			@Override
+			public UserType resolveType(CqlIdentifier typeName) {
+				return myTypeMock;
+			}
+		});
+
+		mappingContext.getPersistentEntity(MappedUdt.class);
+
+		assertThat(mappingContext.usesUserType(myTypeMock)).isTrue();
+	}
+
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void createTableForComplexPrimaryKeyShouldFail() {
+
+		try {
+			mappingContext
+					.getCreateTableSpecificationFor(mappingContext.getPersistentEntity(EntityWithComplexPrimaryKeyColumn.class));
+			fail("Missing InvalidDataAccessApiUsageException");
+		} catch (InvalidDataAccessApiUsageException e) {
+			assertThat(e).hasMessageContaining("Unknown type [class java.lang.Object] for property [complexObject]");
+		}
+
+		try {
+			mappingContext.getCreateTableSpecificationFor(mappingContext.getPersistentEntity(EntityWithComplexId.class));
+			fail("Missing InvalidDataAccessApiUsageException");
+		} catch (InvalidDataAccessApiUsageException e) {
+			assertThat(e).hasMessageContaining("Unknown type [class java.lang.Object] for property [complexObject]");
+		}
+
+		try {
+			mappingContext.getCreateTableSpecificationFor(
+					mappingContext.getPersistentEntity(EntityWithPrimaryKeyClassWithComplexId.class));
+			fail("Missing InvalidDataAccessApiUsageException");
+		} catch (InvalidDataAccessApiUsageException e) {
+			assertThat(e).hasMessageContaining("Unknown type [class java.lang.Object] for property [complexObject]");
+		}
+	}
+
+	@Table
+	static class EntityWithComplexPrimaryKeyColumn {
+
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object complexObject;
+	}
+
+	@Table
+	static class EntityWithComplexId {
+
+		@Id Object complexObject;
+	}
+
+	@PrimaryKeyClass
+	static class PrimaryKeyClassWithComplexId {
+
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object complexObject;
+	}
+
+	@Table
+	static class EntityWithPrimaryKeyClassWithComplexId {
+
+		@Id PrimaryKeyClassWithComplexId primaryKeyClassWithComplexId;
+	}
+
 	private static class Human {}
+
+	@Table
+	private static class X {
+		@PrimaryKey String key;
+	}
+
+	@Table
+	private static class Y {
+		@PrimaryKey String key;
+	}
+
+	@UserDefinedType
+	private static class MappedUdt {}
+
+	@Table
+	private static class WithUdt {
+
+		@Id String id;
+
+		@CassandraType(type = DataType.Name.UDT, userTypeName = "mappedudt") UDTValue udtValue;
+	}
 
 	enum HumanToStringConverter implements Converter<Human, String> {
 

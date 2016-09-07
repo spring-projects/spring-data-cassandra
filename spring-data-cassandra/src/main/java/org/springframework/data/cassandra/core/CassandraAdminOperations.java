@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.util.Map;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.UserType;
 
 /**
  * Operations for managing a Cassandra keyspace.
@@ -45,7 +45,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
 	 */
 	void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
-					 Map<String, Object> optionsByName);
+			Map<String, Object> optionsByName);
 
 	/**
 	 * Add columns to the given table from the given class. If parameter dropRemovedAttributColumns is true, then this
@@ -85,12 +85,18 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	TableMetadata getTableMetadata(String keyspace, CqlIdentifier tableName);
 
 	/**
-	 * Lookup {@link UserType} metadata.
+	 * Returns {@link KeyspaceMetadata} for the current keyspace.
 	 * 
-	 * @param keyspace must not be empty or {@literal null}.
-	 * @param userTypeName must not be {@literal null}.
-	 * @return the {@link UserType} or {@literal null}.
+	 * @return {@link KeyspaceMetadata} for the current keyspace.
 	 * @since 1.5
 	 */
-	UserType getUserTypeMetadata(String keyspace, CqlIdentifier userTypeName);
+	KeyspaceMetadata getKeyspaceMetadata();
+
+	/**
+	 * Drops a user type.
+	 * 
+	 * @param typeName must not be {@literal null}.
+	 * @since 1.5
+	 */
+	void dropUserType(CqlIdentifier typeName);
 }

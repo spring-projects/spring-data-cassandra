@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.PropertyValueProvider;
@@ -26,11 +24,12 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.Row;
 
 /**
- * {@link PropertyValueProvider} to read property values from a {@link Row}.
+ * {@link CassandraValueProvider} to read property values from a {@link Row}.
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public class BasicCassandraRowValueProvider implements CassandraRowValueProvider {
 
@@ -45,6 +44,7 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	 * @param evaluator must not be {@literal null}.
 	 */
 	public BasicCassandraRowValueProvider(Row source, DefaultSpELExpressionEvaluator evaluator) {
+
 		Assert.notNull(source);
 		Assert.notNull(evaluator);
 
@@ -52,6 +52,9 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 		this.evaluator = evaluator;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public Object getPropertyValue(CassandraPersistentProperty property) {
@@ -64,8 +67,22 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 		return reader.get(property.getColumnName());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.convert.CassandraRowValueProvider#getRow()
+	 */
 	@Override
 	public Row getRow() {
 		return reader.getRow();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.mapping.CassandraPersistentProperty)
+	 */
+	@Override
+	public boolean hasProperty(CassandraPersistentProperty property) {
+
+		Assert.notNull(property, "CassandraPersistentProperty must not be null");
+
+		return getRow().getColumnDefinitions().contains(property.getColumnName().toCql());
 	}
 }

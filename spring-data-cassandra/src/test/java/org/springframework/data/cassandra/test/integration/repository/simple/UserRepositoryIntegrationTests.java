@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.Assert;
 import org.springframework.data.cassandra.core.CassandraOperations;
 
 import com.google.common.collect.Lists;
@@ -50,6 +51,8 @@ public class UserRepositoryIntegrationTests {
 
 	public void setUp() {
 
+		template.execute("CREATE INDEX IF NOT EXISTS users_address ON users (address);");
+
 		repository.deleteAll();
 
 		tom = new User();
@@ -58,6 +61,12 @@ public class UserRepositoryIntegrationTests {
 		tom.setLastName("Ron");
 		tom.setPassword("123");
 		tom.setPlace("SF");
+
+		AddressType address = new AddressType();
+		address.setCity("San Francisco");
+		address.setStreet("Golden Gate Way 1");
+
+		tom.setAddress(address);
 
 		bob = new User();
 		bob.setUsername("bob");
@@ -94,24 +103,33 @@ public class UserRepositoryIntegrationTests {
 		assertThat(name).isEqualTo("Bob");
 	}
 
+	public void findByDerivedQuery() {
+
+		User user = repository.findByAddress(tom.getAddress());
+
+		assertThat(user).isNotNull().isEqualTo(tom);
+	}
+
 	public void findsUserById() throws Exception {
 
-		User user = repository.findOne(bob.getUsername());
-		assertThat(user).isNotNull();
-		assertEquals(bob, user);
+		User user = repository.findOne(tom.getUsername());
+				assertThat(user).isNotNull().isEqualTo(tom);
+
 
 	}
 
 	public void findsAll() throws Exception {
+
 		List<User> result = Lists.newArrayList(repository.findAll());
+
 		assertThat(result).hasSize(all.size());
 		assertThat(result.containsAll(all)).isTrue();
-
 	}
 
 	public void findsAllWithGivenIds() {
 
 		Iterable<User> result = repository.findAll(Arrays.asList(bob.getUsername(), tom.getUsername()));
+
 		assertThat(result).contains(bob, tom);
 		assertThat(result).doesNotContain(alice, scott);
 	}
@@ -144,8 +162,7 @@ public class UserRepositoryIntegrationTests {
 
 		repository.delete(id);
 
-		assertThat(!repository.exists(id)).isTrue();
-
+		assertThat(repository.exists(id)).isFalse();
 	}
 
 	/**
@@ -162,13 +179,5 @@ public class UserRepositoryIntegrationTests {
 
 		assertThat(loadedTom.getPassword()).isNull();
 		assertThat(loadedTom.getFriends()).isNull();
-	}
-
-	private static void assertEquals(User user1, User user2) {
-		assertThat(user2.getUsername()).isEqualTo(user1.getUsername());
-		assertThat(user2.getFirstName()).isEqualTo(user1.getFirstName());
-		assertThat(user2.getLastName()).isEqualTo(user1.getLastName());
-		assertThat(user2.getPlace()).isEqualTo(user1.getPlace());
-		assertThat(user2.getPassword()).isEqualTo(user1.getPassword());
 	}
 }

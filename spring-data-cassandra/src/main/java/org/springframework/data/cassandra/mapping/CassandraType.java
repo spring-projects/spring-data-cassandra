@@ -47,4 +47,14 @@ public @interface CassandraType {
 	 * If the property is neither collection-like or a map, then this attribute is ignored.
 	 */
 	DataType.Name[] typeArguments() default {};
+
+	/**
+	 * If the property maps to a user-defined type then this attribute holds the user type name. For collection-like
+	 * properties the user type name applies to the component type. The user type name is only required if the UDT does
+	 * not map to a class annotated with {@link UserDefinedType}.
+	 * 
+	 * @return name of the user type
+	 * @since 1.5
+	 */
+	String userTypeName() default "";
 }

@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Address;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.domain.Sort;
 
@@ -36,6 +37,11 @@ interface PersonRepository extends CassandraRepository<Person> {
 	List<Person> findByLastnameOrderByFirstnameAsc(String lastname);
 
 	Person findByFirstnameAndLastname(String firstname, String lastname);
+
+	Person findByMainAddress(Address address);
+
+	@Query("select * from person where mainaddress = ?0")
+	Person findByAddress(Address address);
 
 	Person findByCreatedDate(LocalDate createdDate);
 

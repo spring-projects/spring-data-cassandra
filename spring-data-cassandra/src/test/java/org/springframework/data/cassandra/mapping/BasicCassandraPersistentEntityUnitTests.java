@@ -32,6 +32,7 @@ import org.springframework.data.util.ClassTypeInformation;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author John Blum
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class BasicCassandraPersistentEntityUnitTests {
@@ -98,6 +99,18 @@ public class BasicCassandraPersistentEntityUnitTests {
 		assertThat(entitySpy.forceQuote).isTrue();
 
 		verify(entitySpy, never()).setTableName(isA(CqlIdentifier.class));
+	}
+
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void isUserDefinedTypeShouldReturnFalse() {
+
+		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<UserLine>(
+				ClassTypeInformation.from(UserLine.class));
+
+		assertThat(entity.isUserDefinedType()).isFalse();
 	}
 
 	@Table("messages")

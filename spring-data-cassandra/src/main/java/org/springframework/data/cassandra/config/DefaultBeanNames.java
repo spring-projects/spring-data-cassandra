@@ -22,4 +22,5 @@ public interface DefaultBeanNames extends DefaultCqlBeanNames {
 	public static final String DATA_TEMPLATE = "cassandraTemplate";
 	public static final String CONVERTER = "cassandraConverter";
 	public static final String CONTEXT = "cassandraMapping";
+	public static final String USER_TYPE_RESOLVER = "userTypeResolver";
 }

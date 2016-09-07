@@ -33,18 +33,23 @@ public class RenameColumnCqlGenerator extends ColumnChangeCqlGenerator<RenameCol
 
 	static final String RENAME = "RENAME";
 
-	final String keyword;
+	private final String keyword;
 
 	RenameColumnCqlGenerator(RenameColumnSpecification specification) {
 		this(RENAME, specification);
 	}
 
-	public RenameColumnCqlGenerator(String keyword, ColumnChangeSpecification specification) {
+	/**
+	 * @param keyword the keyword to use for {@code RENAME}.
+	 * @param specification the specification.
+	 */
+	RenameColumnCqlGenerator(String keyword, ColumnChangeSpecification specification) {
 		super(specification);
 		this.keyword = keyword;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.cassandra.core.cql.generator.ColumnChangeCqlGenerator#toCql(java.lang.StringBuilder)
 	 */
 	public StringBuilder toCql(StringBuilder cql) {

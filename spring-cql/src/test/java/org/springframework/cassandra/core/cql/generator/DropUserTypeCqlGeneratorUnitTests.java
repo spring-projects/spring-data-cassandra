@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.cassandra.core.cql.generator.DropUserTypeCqlGenerator.*;
 
 import org.junit.Test;
@@ -29,19 +28,25 @@ import org.springframework.cassandra.core.keyspace.DropUserTypeSpecification;
  */
 public class DropUserTypeCqlGeneratorUnitTests {
 
+	/**
+	 * @see DATACASS-172
+	 */
 	@Test
-	public void shouldDropUserType() throws Exception {
+	public void shouldDropUserType() {
 
 		DropUserTypeSpecification spec = DropUserTypeSpecification.dropType("address");
 
-		assertThat(toCql(spec), is(equalTo("DROP TYPE address;")));
+		assertThat(toCql(spec)).isEqualTo("DROP TYPE address;");
 	}
 
+	/**
+	 * @see DATACASS-172
+	 */
 	@Test
-	public void shouldDropUserTypeIfExists() throws Exception {
+	public void shouldDropUserTypeIfExists() {
 
 		DropUserTypeSpecification spec = DropUserTypeSpecification.dropType("address").ifExists();
 
-		assertThat(toCql(spec), is(equalTo("DROP TYPE IF EXISTS address;")));
+		assertThat(toCql(spec)).isEqualTo("DROP TYPE IF EXISTS address;");
 	}
 }

@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.cassandra.core.cql.generator.AlterUserTypeCqlGenerator.*;
 
 import org.junit.Test;
@@ -40,7 +39,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
 				.add("zip", DataType.varchar());
 
-		assertThat(toCql(spec), is(equalTo("ALTER TYPE address ADD zip varchar;")));
+		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ADD zip varchar;");
 	}
 
 	/**
@@ -52,7 +51,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
 				.alter("zip", DataType.varchar());
 
-		assertThat(toCql(spec), is(equalTo("ALTER TYPE address ALTER zip TYPE varchar;")));
+		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ALTER zip TYPE varchar;");
 	}
 
 	/**
@@ -64,7 +63,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
 				.rename("zip", "zap");
 
-		assertThat(toCql(spec), is(equalTo("ALTER TYPE address RENAME zip TO zap;")));
+		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address RENAME zip TO zap;");
 	}
 
 	/**
@@ -77,7 +76,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 				.rename("zip", "zap") //
 				.rename("city", "county");
 
-		assertThat(toCql(spec), is(equalTo("ALTER TYPE address RENAME zip TO zap AND city TO county;")));
+		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address RENAME zip TO zap AND city TO county;");
 	}
 
 	/**
