@@ -38,6 +38,7 @@ import org.springframework.data.cassandra.util.SpelUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
+import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -46,6 +47,8 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.UserType;
 
 /**
  * Cassandra specific {@link org.springframework.data.mapping.model.AnnotationBasedPersistentProperty} implementation.
@@ -58,6 +61,8 @@ import com.datastax.driver.core.DataType;
  */
 public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentProperty<CassandraPersistentProperty>
 		implements CassandraPersistentProperty, ApplicationContextAware {
+
+	private final UserTypeResolver userTypeResolver;
 
 	protected ApplicationContext context;
 
@@ -89,7 +94,24 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	public BasicCassandraPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
 			CassandraPersistentEntity<?> owner, CassandraSimpleTypeHolder simpleTypeHolder) {
 
+		this(field, propertyDescriptor, owner, simpleTypeHolder, null);
+	}
+
+	/**
+	 * Creates a new {@link BasicCassandraPersistentProperty}.
+	 *
+	 * @param field the actual {@link Field} in the domain entity corresponding to this persistent entity.
+	 * @param propertyDescriptor a {@link PropertyDescriptor} for the corresponding property in the domain entity.
+	 * @param owner the containing object or {@link CassandraPersistentEntity} of this persistent property.
+	 * @param simpleTypeHolder mapping of Java [simple|wrapper] types to Cassandra data types.
+	 * @param userTypeResolver resolver for user-defined types.
+	 */
+	public BasicCassandraPersistentProperty(Field field, PropertyDescriptor propertyDescriptor,
+			CassandraPersistentEntity<?> owner, CassandraSimpleTypeHolder simpleTypeHolder,
+			UserTypeResolver userTypeResolver) {
+
 		super(field, propertyDescriptor, owner, simpleTypeHolder);
+		this.userTypeResolver = userTypeResolver;
 
 		if (owner.getApplicationContext() != null) {
 			setApplicationContext(owner.getApplicationContext());
@@ -157,7 +179,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
-				"Unknown type [%s] for property [%s] in entity [%s]; only primitive types and Collections or Maps of primitive types are allowed",
+					"Unknown type [%s] for property [%s] in entity [%s]; only primitive types and Collections or Maps of primitive types are allowed",
 					getType(), getName(), getOwner().getName()));
 		}
 
@@ -208,13 +230,39 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 						getDataTypeFor(annotation.typeArguments()[1]));
 			case LIST:
 				ensureTypeArguments(annotation.typeArguments().length, 1);
+				if (annotation.typeArguments()[0] == Name.UDT) {
+					return DataType.list(getUserType(annotation));
+				}
 				return DataType.list(getDataTypeFor(annotation.typeArguments()[0]));
 			case SET:
 				ensureTypeArguments(annotation.typeArguments().length, 1);
+				if (annotation.typeArguments()[0] == Name.UDT) {
+					return DataType.set(getUserType(annotation));
+				}
 				return DataType.set(getDataTypeFor(annotation.typeArguments()[0]));
+			case UDT:
+				return getUserType(annotation);
 			default:
 				return CassandraSimpleTypeHolder.getDataTypeFor(type);
 		}
+	}
+
+	private DataType getUserType(CassandraType annotation) {
+
+		if (!StringUtils.hasText(annotation.userTypeName())) {
+			throw new InvalidDataAccessApiUsageException(
+					String.format("Expected user type name in property ['%s'] of type ['%s'] in entity [%s]", getName(),
+							getType(), getOwner().getName()));
+		}
+
+		CqlIdentifier identifier = CqlIdentifier.cqlId(annotation.userTypeName());
+		UserType userType = userTypeResolver.resolveType(identifier);
+
+		if (userType == null) {
+			throw new MappingException(String.format("User type [%s] not found", identifier));
+		}
+
+		return userType;
 	}
 
 	@Override
@@ -249,7 +297,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
-				"Only primitive types are allowed inside Collections for property [%1$s] of type [%2$s] in entity [%3$s]",
+					"Only primitive types are allowed inside Collections for property [%1$s] of type [%2$s] in entity [%3$s]",
 					getName(), getType(), getOwner().getName()));
 		}
 
@@ -258,11 +306,16 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	protected DataType getDataTypeFor(Class<?> javaType) {
 
+		CassandraPersistentEntity<?> persistentEntity = getOwner().getMappingContext().getPersistentEntity(javaType);
+		if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
+			return persistentEntity.getUserType();
+		}
+
 		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(javaType);
 
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
-				"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
+					"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
 					getName(), getType(), getOwner().getName()));
 		}
 
@@ -272,8 +325,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	protected void ensureTypeArguments(int args, int expected) {
 		if (args != expected) {
 			throw new InvalidDataAccessApiUsageException(
-				String.format("Expected [%1$s] typed arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]",
-					expected, getName(), getType(), getOwner().getName()));
+					String.format("Expected [%1$s] typed arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]",
+							expected, getName(), getType(), getOwner().getName()));
 		}
 	}
 
@@ -362,13 +415,13 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (this.columnNames.size() != columnNames.size()) {
 			throw new IllegalStateException(String.format(
-				"Property [%s] of entity [%s] is mapped to [%s] column%s, but given column name list has size [%s]",
-					getName(), getOwner().getType().getName(), this.columnNames.size(),
-						this.columnNames.size() == 1 ? "" : "s", columnNames.size()));
+					"Property [%s] of entity [%s] is mapped to [%s] column%s, but given column name list has size [%s]",
+					getName(), getOwner().getType().getName(), this.columnNames.size(), this.columnNames.size() == 1 ? "" : "s",
+					columnNames.size()));
 		}
 
-		this.columnNames = this.explicitColumnNames =
-			Collections.unmodifiableList(new ArrayList<CqlIdentifier>(columnNames));
+		this.columnNames = this.explicitColumnNames = Collections
+				.unmodifiableList(new ArrayList<CqlIdentifier>(columnNames));
 	}
 
 	@Override
@@ -394,8 +447,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
 
 		if (!isCompositePrimaryKey()) {
-			throw new IllegalStateException(String.format(
-				"[%s] does not represent a composite primary key property", getName()));
+			throw new IllegalStateException(
+					String.format("[%s] does not represent a composite primary key property", getName()));
 		}
 
 		return getCompositePrimaryKeyEntity().getCompositePrimaryKeyProperties();

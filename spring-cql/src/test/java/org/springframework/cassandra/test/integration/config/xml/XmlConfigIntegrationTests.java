@@ -41,7 +41,7 @@ import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
 
 /**
- * Test XML namespace configuration using the spring-cql-1.0.xsd.
+ * Test XML namespace configuration using the spring-cql XSD.
  *
  * @author Matthews T. Adams
  * @author Oliver Gierke

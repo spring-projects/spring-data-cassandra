@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.repository.querymethods.conversion;
+package org.springframework.data.cassandra.test.integration.repository.simple;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import org.springframework.data.cassandra.mapping.UserDefinedType;
 
 /**
  * @author Mark Paluch
  */
+@UserDefinedType("address")
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-class Address {
+public class AddressType {
 
+	String street;
 	String city;
-	String country;
 }

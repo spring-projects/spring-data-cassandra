@@ -13,42 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.repository.querymethods.conversion;
-
-import static org.assertj.core.api.Assertions.*;
+package org.springframework.data.cassandra.repository.conversion;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
+import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
-import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.base.PersonRepository;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
+
 /**
- * Integration tests for query derivation through {@link PersonRepository}.
- *
+ * Test support for query method parameter type conversion.
+ * 
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class ParameterConversionIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
 	@EnableCassandraRepositories(considerNestedRepositories = true)
@@ -65,13 +64,26 @@ public class ParameterConversionIntegrationTests extends AbstractSpringDataEmbed
 		}
 
 		@Override
+		public CassandraSessionFactoryBean session() throws ClassNotFoundException {
+
+			Cluster cluster = cluster().getObject();
+			Session session = cluster.connect(getKeyspaceName());
+			session.execute("CREATE TYPE IF NOT EXISTS phone (number text);");
+			session.close();
+
+			return super.session();
+		}
+
+		@Override
 		public CustomConversions customConversions() {
-			return new CustomConversions(Arrays.asList(AddressReadConverter.INSTANCE, AddressWriteConverter.INSTANCE));
+			return new CustomConversions(
+					Arrays.asList(AddressReadConverter.INSTANCE, AddressWriteConverter.INSTANCE, PhoneReadConverter.INSTANCE,
+							new PhoneWriteConverter(new SimpleUserTypeResolver(cluster().getObject(), getKeyspaceName()))));
 		}
 	}
 
 	@Autowired CassandraOperations template;
-	@Autowired ContactRepository contactRepository;
+	@Autowired CassandraAdminOperations adminOperations;
 
 	Contact walter, flynn;
 
@@ -83,65 +95,88 @@ public class ParameterConversionIntegrationTests extends AbstractSpringDataEmbed
 		template.execute("CREATE INDEX IF NOT EXISTS contact_address ON contact (address);");
 		template.execute("CREATE INDEX IF NOT EXISTS contact_addresses ON contact (addresses);");
 
+		template.execute("CREATE INDEX IF NOT EXISTS contact_main_phones ON contact (mainphone);");
+		template.execute("CREATE INDEX IF NOT EXISTS contact_alternative_phones ON contact (alternativephones);");
+
 		walter = new Contact("Walter");
 		walter.setAddress(new Address("Albuquerque", "USA"));
 		walter.setAddresses(Arrays.asList(new Address("Albuquerque", "USA"), new Address("New Hampshire", "USA"),
 				new Address("Grocery Store", "Mexico")));
 
+		Phone phone = new Phone();
+		phone.setNumber("(505) 555-1258");
+
+		Phone alternative = new Phone();
+		alternative.setNumber("505-842-4205");
+
+		walter.setMainPhone(phone);
+		walter.setAlternativePhones(Collections.singletonList(alternative));
+
 		flynn = new Contact("Flynn");
 		flynn.setAddress(new Address("Albuquerque", "USA"));
 		flynn.setAddresses(Collections.singletonList(new Address("Albuquerque", "USA")));
 
-		walter = contactRepository.save(walter);
-		flynn = contactRepository.save(flynn);
-	}
-
-	/**
-	 * @see DATACASS-7
-	 */
-	@Test
-	public void shouldFindByConvertedParameter() {
-
-		List<Contact> contacts = contactRepository.findByAddress(walter.getAddress());
-
-		assertThat(contacts).contains(walter, flynn);
-	}
-
-	/**
-	 * @see DATACASS-7
-	 */
-	@Test
-	public void shouldFindByStringParameter() {
-
-		String parameter = AddressWriteConverter.INSTANCE.convert(walter.getAddress());
-		List<Contact> contacts = contactRepository.findByAddress(parameter);
-
-		assertThat(contacts).contains(walter, flynn);
-	}
-
-	/**
-	 * @see DATACASS-7
-	 */
-	@Test
-	public void findByAddressesIn() {
-
-		assertThat(contactRepository.findByAddressesContains(flynn.address)).contains(flynn, walter);
-		assertThat(contactRepository.findByAddressesContains(walter.addresses.get(1))).contains(walter);
-	}
-
-	interface ContactRepository extends CassandraRepository<Contact> {
-
-		List<Contact> findByAddress(Address address);
-
-		List<Contact> findByAddress(String address);
-
-		List<Contact> findByAddressesContains(Address address);
+		template.insert(walter);
+		template.insert(flynn);
 	}
 
 	/**
 	 * @author Mark Paluch
 	 */
-	static enum AddressReadConverter implements Converter<String, Address> {
+	enum AddressWriteConverter implements Converter<Address, String> {
+		INSTANCE;
+
+		public String convert(Address source) {
+
+			try {
+				return new ObjectMapper().writeValueAsString(source);
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
+
+	/**
+	 * @author Mark Paluch
+	 */
+	private enum PhoneReadConverter implements Converter<UDTValue, Phone> {
+
+		INSTANCE;
+
+		public Phone convert(UDTValue source) {
+
+			Phone phone = new Phone();
+			phone.setNumber(source.getString("number"));
+
+			return phone;
+		}
+	}
+
+	/**
+	 * @author Mark Paluch
+	 */
+	private static class PhoneWriteConverter implements Converter<Phone, UDTValue> {
+
+		private UserTypeResolver userTypeResolver;
+
+		PhoneWriteConverter(UserTypeResolver userTypeResolver) {
+			this.userTypeResolver = userTypeResolver;
+		}
+
+		public UDTValue convert(Phone source) {
+
+			UserType userType = userTypeResolver.resolveType(CqlIdentifier.cqlId("phone"));
+			UDTValue udtValue = userType.newValue();
+			udtValue.setString("number", source.getNumber());
+
+			return udtValue;
+		}
+	}
+
+	/**
+	 * @author Mark Paluch
+	 */
+	private enum AddressReadConverter implements Converter<String, Address> {
 
 		INSTANCE;
 
@@ -156,22 +191,6 @@ public class ParameterConversionIntegrationTests extends AbstractSpringDataEmbed
 			}
 
 			return null;
-		}
-	}
-
-	/**
-	 * @author Mark Paluch
-	 */
-	static enum AddressWriteConverter implements Converter<Address, String> {
-		INSTANCE;
-
-		public String convert(Address source) {
-
-			try {
-				return new ObjectMapper().writeValueAsString(source);
-			} catch (IOException e) {
-				throw new IllegalStateException(e);
-			}
 		}
 	}
 }

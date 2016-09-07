@@ -49,6 +49,11 @@ public abstract class UserRepositoryIntegrationTestsDelegator
 	}
 
 	@Test
+	public void findByDerivedQuery() {
+		tests.findByDerivedQuery();
+	}
+
+	@Test
 	public void findsUserById() throws Exception {
 		tests.findsUserById();
 	}

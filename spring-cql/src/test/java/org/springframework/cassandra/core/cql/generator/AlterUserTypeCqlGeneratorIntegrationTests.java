@@ -102,5 +102,4 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 	public void generationFailsWithoutFields() {
 		toCql(AlterUserTypeSpecification.alterType().name("hello"));
 	}
-
 }

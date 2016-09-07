@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.cassandra.core.cql.generator.CreateUserTypeCqlGenerator.*;
 
 import org.junit.Test;
@@ -41,7 +40,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 				.createType("address") //
 				.field("city", DataType.varchar());
 
-		assertThat(toCql(spec), is(equalTo("CREATE TYPE address (city varchar);")));
+		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (city varchar);");
 	}
 
 	/**
@@ -55,7 +54,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 				.field("zip", DataType.ascii()) //
 				.field("city", DataType.varchar());
 
-		assertThat(toCql(spec), is(equalTo("CREATE TYPE address (zip ascii, city varchar);")));
+		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (zip ascii, city varchar);");
 	}
 
 	/**
@@ -69,7 +68,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 				.name("address").ifNotExists().field("zip", DataType.ascii()) //
 				.field("city", DataType.varchar());
 
-		assertThat(toCql(spec), is(equalTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city varchar);")));
+		assertThat(toCql(spec)).isEqualTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city varchar);");
 	}
 
 	/**

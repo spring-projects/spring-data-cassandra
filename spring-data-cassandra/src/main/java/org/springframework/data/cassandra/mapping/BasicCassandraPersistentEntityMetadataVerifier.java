@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +80,10 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 		// Perform rules verification on Table/Persistent
 		// TODO Verify annotation values with CqlIndentifier
-
+		
+		/*
+		 * Perform rules verification on Table/Persistent
+		 */
 		// Ensure only one PK or at least one partitioned PK Column and not both PK(s) & PK Column(s) exist
 		if (primaryKeyColumns.isEmpty()) {
 
@@ -90,17 +94,6 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 						Table.class.getSimpleName(), idProperties.size())));
 
 				fail(entity, exceptions);
-			}
-
-			// Ensure that Id is a supported Type. At this point there is only 1.
-			CassandraPersistentProperty idProperty = idProperties.get(0);
-			Class<?> idType = idProperty.getType();
-
-			if (!idType.isAnnotationPresent(PrimaryKeyClass.class)
-					&& CassandraSimpleTypeHolder.getDataTypeFor(idType) == null) {
-				exceptions.add(new MappingException(String.format(
-					"Property [%s] annotated with @%s must be a simple CassandraType",
-						idProperty.getName(), Id.class.getSimpleName())));
 			}
 		}
 
@@ -118,14 +111,6 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 			exceptions.add(new MappingException(String.format(
 				"At least one of the @%s annotations must have a type of PARTITIONED",
 					PrimaryKeyColumn.class.getSimpleName())));
-		}
-
-		for (CassandraPersistentProperty property : primaryKeyColumns) {
-			if (CassandraSimpleTypeHolder.getDataTypeFor(property.getType()) == null) {
-				exceptions.add(new MappingException(String.format(
-					"Property [%s] annotated with @PrimaryKeyColumn must be a simple CassandraType",
-						property.getName())));
-			}
 		}
 
 		// Determine whether or not to throw Exception based on errors found

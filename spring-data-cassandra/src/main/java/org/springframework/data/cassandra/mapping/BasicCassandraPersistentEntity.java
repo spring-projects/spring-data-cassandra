@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,12 +38,15 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.UserType;
+
 /**
  * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific metadata.
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author John Blum
+ * @author Mark Paluch
  */
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty>
 		implements CassandraPersistentEntity<T>, ApplicationContextAware {
@@ -75,7 +78,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext) {
 		this(typeInformation, mappingContext, DEFAULT_VERIFIER);
-
 	}
 
 	/**
@@ -98,12 +100,11 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		Table tableAnnotation = getType().getAnnotation(Table.class);
 
-		if (tableAnnotation == null || !StringUtils.hasText(tableAnnotation.value())) {
-			return cqlId(getType().getSimpleName(), tableAnnotation != null && tableAnnotation.forceQuote());
+		if (tableAnnotation == null) {
+			return determineDefaultName();
 		}
 
-		return cqlId(spelContext == null ? tableAnnotation.value()
-			: SpelUtils.evaluate(tableAnnotation.value(), spelContext), tableAnnotation.forceQuote());
+		return determineName(tableAnnotation.value(), tableAnnotation.forceQuote());
 	}
 
 	@Override
@@ -214,5 +215,34 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	public CassandraPersistentEntityMetadataVerifier getVerifier() {
 		return verifier;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#isUserDefinedType()
+	 */
+	@Override
+	public boolean isUserDefinedType() {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getUserType()
+	 */
+	@Override
+	public UserType getUserType() {
+		return null;
+	}
+
+	protected CqlIdentifier determineDefaultName() {
+		return cqlId(getType().getSimpleName(), false);
+	}
+
+	protected CqlIdentifier determineName(String value, boolean forceQuote) {
+
+		if (!StringUtils.hasText(value)) {
+			return cqlId(getType().getSimpleName(), forceQuote);
+		}
+
+		return cqlId(spelContext == null ? value : SpelUtils.evaluate(value, spelContext), forceQuote);
 	}
 }

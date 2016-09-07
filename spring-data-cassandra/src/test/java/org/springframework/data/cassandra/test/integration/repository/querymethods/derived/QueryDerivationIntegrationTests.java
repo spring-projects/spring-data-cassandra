@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assume.*;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import org.springframework.core.SpringVersion;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
+import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Address;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.derived.PersonRepository.NumberOfChildren;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.derived.PersonRepository.PersonProjection;
@@ -84,6 +86,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		Person person = new Person("Walter", "White");
 		person.setNumberOfChildren(2);
 
+		person.setMainAddress(new Address("Albuquerque", "USA"));
+		person.setAlternativeAddresses(Arrays.asList(new Address("Albuquerque", "USA"), new Address("New Hampshire", "USA"),
+				new Address("Grocery Store", "Mexico")));
+
 		walter = personRepository.save(person);
 		skyler = personRepository.save(new Person("Skyler", "White"));
 		flynn = personRepository.save(new Person("Flynn (Walter Jr.)", "White"));
@@ -129,6 +135,38 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	public void shouldFindByFirstnameAndLastname() {
 
 		Person result = personRepository.findByFirstnameAndLastname("Walter", "White");
+
+		assertThat(result).isEqualTo(walter);
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-172">DATACASS-172</a>
+	 */
+	@Test
+	public void shouldFindByMappedUdt() throws InterruptedException {
+
+		template.execute("CREATE INDEX IF NOT EXISTS person_main_address ON person (mainaddress);");
+
+		// Give Cassandra some time to build the index
+		Thread.sleep(500);
+
+		Person result = personRepository.findByMainAddress(walter.getMainAddress());
+
+		assertThat(result).isEqualTo(walter);
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-172">DATACASS-172</a>
+	 */
+	@Test
+	public void shouldFindByMappedUdtStringQuery() throws InterruptedException {
+
+		template.execute("CREATE INDEX IF NOT EXISTS person_main_address ON person (mainaddress);");
+
+		// Give Cassandra some time to build the index
+		Thread.sleep(500);
+
+		Person result = personRepository.findByAddress(walter.getMainAddress());
 
 		assertThat(result).isEqualTo(walter);
 	}

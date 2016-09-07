@@ -107,15 +107,6 @@ public class PrimaryKeyClassEntityMetadataVerifier implements CassandraPersisten
 					Id.class.getSimpleName(), PrimaryKey.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName())));
 		}
 
-		// Ensure that PrimaryKeyColumn is a supported Type.
-		for (CassandraPersistentProperty property : primaryKeyColumns) {
-			if (CassandraSimpleTypeHolder.getDataTypeFor(property.getType()) == null) {
-				exceptions.add(new MappingException(String.format(
-					"Property [%1$s] annotated with @%2$s must be a simple CassandraType", property.getName(),
-						PrimaryKeyColumn.class.getSimpleName())));
-			}
-		}
-
 		// Determine whether or not to throw Exception based on errors found
 		if (!exceptions.isEmpty()) {
 			fail(entity, exceptions);

@@ -13,30 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.repository.querymethods.conversion;
+package org.springframework.data.cassandra.repository.conversion;
 
-import java.util.List;
-
-import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.mapping.Table;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
  * @author Mark Paluch
  */
-@Table
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
-class Contact {
+class Address {
 
-	@Id String id;
-
-	Address address;
-	List<Address> addresses;
-
-	public Contact(String id) {
-		this.id = id;
-	}
+	String city;
+	String country;
 }
