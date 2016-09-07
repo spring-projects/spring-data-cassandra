@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,24 @@ package org.springframework.data.cassandra.config.xml;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.cassandra.config.xml.DefaultCqlBeanNames;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.EntityMapping;
 import org.springframework.data.cassandra.mapping.Mapping;
 import org.springframework.data.cassandra.mapping.PropertyMapping;
+import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -68,12 +72,12 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 		String packages = element.getAttribute("entity-base-packages");
 		if (StringUtils.hasText(packages)) {
 			try {
-				Set<Class<?>> entityClasses = CassandraEntityClassScanner.scan(StringUtils
-						.commaDelimitedListToStringArray(packages));
+				Set<Class<?>> entityClasses = CassandraEntityClassScanner
+						.scan(StringUtils.commaDelimitedListToStringArray(packages));
 				builder.addPropertyValue("initialEntitySet", entityClasses);
 			} catch (Exception x) {
-				throw new IllegalArgumentException(String.format(
-						"encountered exception while scanning for entity classes in package(s) [%s]", packages), x);
+				throw new IllegalArgumentException(
+						String.format("encountered exception while scanning for entity classes in package(s) [%s]", packages), x);
 			}
 		}
 
@@ -86,6 +90,21 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 			if (entityMapping != null) {
 				mappings.add(entityMapping);
 			}
+		}
+
+		List<Element> userTypeResolvers = DomUtils.getChildElementsByTagName(element, "user-type-resolver");
+		String userTypeResolverRef = element.getAttribute("user-type-resolver-ref");
+		if (StringUtils.hasText(userTypeResolverRef)) {
+			if (!userTypeResolvers.isEmpty()) {
+				throw new IllegalArgumentException("Must not define user-type-resolver and user-type-resolver-ref");
+			}
+			builder.addPropertyReference("userTypeResolver", userTypeResolverRef);
+		}
+
+		if(!userTypeResolvers.isEmpty()){
+
+			BeanDefinition userTypeResolver = parseUserTypeResolver(userTypeResolvers.get(0));
+			builder.addPropertyValue("userTypeResolver", userTypeResolver);
 		}
 
 		Mapping mapping = new Mapping();
@@ -124,6 +143,22 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 		entityMapping.setPropertyMappings(propertyMappings);
 
 		return entityMapping;
+	}
+
+	protected BeanDefinition parseUserTypeResolver(Element entity) {
+
+		String keyspaceName = entity.getAttribute("keyspace-name");
+		if (!StringUtils.hasText(keyspaceName)) {
+			throw new IllegalStateException("keyspace-name attribute must not be null or empty");
+		}
+
+		String clusterRef = entity.getAttribute("cluster-ref");
+
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SimpleUserTypeResolver.class);
+		builder.addConstructorArgReference(StringUtils.hasText(clusterRef) ? clusterRef : DefaultCqlBeanNames.CLUSTER);
+		builder.addConstructorArgValue(keyspaceName);
+
+		return builder.getBeanDefinition();
 	}
 
 	protected Map<String, PropertyMapping> parsePropertyMappings(Element entity) {

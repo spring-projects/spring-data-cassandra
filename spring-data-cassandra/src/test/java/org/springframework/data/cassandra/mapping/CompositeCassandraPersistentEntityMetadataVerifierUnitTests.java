@@ -75,7 +75,7 @@ public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 			fail("Missing MappingException");
 		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining(
-					"Cassandra entities must be annotated with either @Persistent, @Table, or @PrimaryKeyClass");
+					"Cassandra entities must be annotated with either @Persistent, @Table, @UserDefinedType or @PrimaryKeyClass");
 		}
 	}
 

@@ -62,16 +62,15 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 
-	@Mock private CassandraConverter mockConverter;
+	@Mock CassandraConverter mockConverter;
+	@Mock Cluster mockCluster;
+	@Mock Session mockSession;
 
-	@Mock private Cluster mockCluster;
-
-	@Mock private Session mockSession;
-
-	private CassandraSessionFactoryBean factoryBean;
+	CassandraSessionFactoryBean factoryBean;
 
 	@Before
 	public void setup() {
+		
 		when(mockCluster.connect()).thenReturn(mockSession);
 		when(mockSession.getCluster()).thenReturn(mockCluster);
 
@@ -85,6 +84,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void afterPropertiesSetPerformsSchemaAction() throws Exception {
+		
 		doAnswer(new Answer<Void>() {
 			@Override
 			public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -109,6 +109,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void afterPropertiesSetThrowsIllegalStateExceptionWhenConverterIsNull() throws Exception {
+		
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("Converter was not properly initialized");
 
@@ -164,6 +165,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void performsSchemaActionDoesNotCallCreateTablesWhenSchemaActionIsNone() {
+		
 		doAnswer(new Answer<Void>() {
 			@Override
 			public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -182,100 +184,8 @@ public class CassandraSessionFactoryBeanUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
-	public void createsTableForEntity() throws Exception {
-		Metadata mockMetadata = mock(Metadata.class);
-		KeyspaceMetadata mockKeyspaceMetadata = mock(KeyspaceMetadata.class);
-		CassandraMappingContext mockMappingContext = mock(CassandraMappingContext.class);
-		CassandraPersistentEntity<Person> mockPersistentEntity = mock(CassandraPersistentEntity.class);
-		CassandraAdminOperations mockCassandraAdminOperations = mock(CassandraAdminOperations.class);
-
-		doReturn(mockCassandraAdminOperations).when(factoryBean).getCassandraAdminOperations();
-		doReturn(mockSession).when(factoryBean).getObject();
-		when(mockCluster.getMetadata()).thenReturn(mockMetadata);
-		when(mockMetadata.getKeyspace(eq("TestKeyspace"))).thenReturn(mockKeyspaceMetadata);
-		when(mockKeyspaceMetadata.getTables()).thenReturn(Collections.<TableMetadata> emptyList());
-		when(mockConverter.getMappingContext()).thenReturn(mockMappingContext);
-		when(mockMappingContext.getNonPrimaryKeyEntities())
-				.thenReturn(Collections.<CassandraPersistentEntity<?>> singletonList(mockPersistentEntity));
-		when(mockPersistentEntity.getTableName()).thenReturn(newCqlIdentifier("TestTable"));
-		when(mockPersistentEntity.getType()).thenReturn(Person.class);
-
-		factoryBean.setConverter(mockConverter);
-		factoryBean.setKeyspaceName("TestKeyspace");
-
-		assertThat(factoryBean.getConverter()).isEqualTo(mockConverter);
-
-		factoryBean.createTables(true, false, false);
-
-		verify(mockSession, times(1)).getCluster();
-		verify(mockCluster, times(1)).getMetadata();
-		verify(mockMetadata, times(1)).getKeyspace(eq("TestKeyspace"));
-		verify(mockKeyspaceMetadata, times(1)).getTables();
-		verify(mockConverter, times(1)).getMappingContext();
-		verify(mockMappingContext, times(1)).getNonPrimaryKeyEntities();
-		verify(mockPersistentEntity, times(1)).getTableName();
-		verify(mockPersistentEntity, times(1)).getType();
-		verify(mockCassandraAdminOperations, times(1)).createTable(eq(false), eq(newCqlIdentifier("TestTable")),
-				eq(Person.class), isNull(Map.class));
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void createTableForEntityIfNotExists() {
-		CassandraMappingContext mockMappingContext = mock(CassandraMappingContext.class);
-		CassandraPersistentEntity<Person> mockPersistentEntity = mock(CassandraPersistentEntity.class);
-		CassandraAdminOperations mockCassandraAdminOperations = mock(CassandraAdminOperations.class);
-
-		doReturn(mockCassandraAdminOperations).when(factoryBean).getCassandraAdminOperations();
-		doReturn(mockSession).when(factoryBean).getObject();
-		when(mockConverter.getMappingContext()).thenReturn(mockMappingContext);
-		when(mockMappingContext.getNonPrimaryKeyEntities())
-				.thenReturn(Collections.<CassandraPersistentEntity<?>> singletonList(mockPersistentEntity));
-		when(mockPersistentEntity.getTableName()).thenReturn(newCqlIdentifier("TestTable"));
-		when(mockPersistentEntity.getType()).thenReturn(Person.class);
-
-		factoryBean.setConverter(mockConverter);
-		factoryBean.setKeyspaceName("TestKeyspace");
-
-		assertThat(factoryBean.getConverter()).isEqualTo(mockConverter);
-
-		factoryBean.createTables(false, false, true);
-
-		verify(mockSession, never()).getCluster();
-		verify(mockCluster, never()).getMetadata();
-		verify(mockConverter, times(1)).getMappingContext();
-		verify(mockMappingContext, times(1)).getNonPrimaryKeyEntities();
-		verify(mockPersistentEntity, times(1)).getTableName();
-		verify(mockPersistentEntity, times(1)).getType();
-		verify(mockCassandraAdminOperations, times(1)).createTable(eq(true), eq(newCqlIdentifier("TestTable")),
-				eq(Person.class), isNull(Map.class));
-	}
-
-	@Test
-	public void createTableThrowsIllegalStateExceptionWhenKeyspaceNotFound() {
-		Metadata mockMetadata = mock(Metadata.class);
-
-		doReturn(mockSession).when(factoryBean).getObject();
-		when(mockCluster.getMetadata()).thenReturn(mockMetadata);
-		when(mockMetadata.getKeyspace(anyString())).thenReturn(null);
-
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("keyspace [TestKeyspace] does not exist");
-
-		factoryBean.setKeyspaceName("TestKeyspace");
-		factoryBean.createTables(true, false, true);
-
-		verify(mockSession, times(1)).getCluster();
-		verify(mockCluster, times(1)).getMetadata();
-		verify(mockMetadata, times(1)).getKeyspace(eq("TestKeyspace"));
-		verify(mockMetadata, times(1)).getKeyspace(eq("testkeyspace"));
-	}
-
-	// TODO: add more createTable tests covering drop tables, etc
-
-	@Test
 	public void setAndGetConverter() {
+		
 		assertThat(factoryBean.getConverter()).isNull();
 		factoryBean.setConverter(mockConverter);
 		assertThat(factoryBean.getConverter()).isEqualTo(mockConverter);
@@ -284,6 +194,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void setConverterToNull() {
+		
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("CassandraConverter must not be null");
 
@@ -292,6 +203,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void setAndGetSchemaAction() {
+		
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.NONE);
 		factoryBean.setSchemaAction(SchemaAction.CREATE);
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.CREATE);
@@ -308,5 +220,4 @@ public class CassandraSessionFactoryBeanUnitTests {
 	}
 
 	static class Person {}
-
 }

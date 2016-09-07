@@ -18,11 +18,13 @@ package org.springframework.data.cassandra.mapping;
 import java.util.Collection;
 
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.cassandra.core.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.mapping.context.MappingContext;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.UserType;
 
 /**
  * A {@link MappingContext} for Cassandra.
@@ -44,10 +46,10 @@ public interface CassandraMappingContext
 	/**
 	 * Returns all persistent entities or only non-primary-key entities.
 	 * 
-	 * @param includePrimaryKeyTypes If <code>true</code>, returns all entities, including entities that represent primary
-	 *          key types. If <code>false</code>, returns only entities that don't represent primary key types.
+	 * @param includePrimaryKeyTypesAndUdts If {@literal true}, returns all entities, including entities that represent primary
+	 *          key types and user-defined types. If {@literal false}, returns only entities that don't represent primary key types and no user-defined types.
 	 */
-	Collection<CassandraPersistentEntity<?>> getPersistentEntities(boolean includePrimaryKeyTypes);
+	Collection<CassandraPersistentEntity<?>> getPersistentEntities(boolean includePrimaryKeyTypesAndUdts);
 
 	/**
 	 * Returns only those entities representing primary key types.
@@ -62,18 +64,43 @@ public interface CassandraMappingContext
 	Collection<CassandraPersistentEntity<?>> getNonPrimaryKeyEntities();
 
 	/**
+	 * Returns only those entities representing a user defined type.
+	 *
+	 * @see #getPersistentEntities(boolean)
+	 * @since 1.5
+	 */
+	Collection<CassandraPersistentEntity<?>> getUserDefinedTypeEntities();
+
+	/**
 	 * Returns a {@link CreateTableSpecification} for the given entity, including all mapping information.
 	 * 
-	 * @param The entity. May not be null.
+	 * @param entity must not be {@literal null}.
 	 */
 	CreateTableSpecification getCreateTableSpecificationFor(CassandraPersistentEntity<?> entity);
 
 	/**
+	 * Returns a {@link CreateUserTypeSpecification} for the given entity, including all mapping information.
+	 *
+	 * @param entity must not be {@literal null}.
+	 */
+	CreateUserTypeSpecification getCreateUserTypeSpecificationFor(CassandraPersistentEntity<?> entity);
+
+	/**
 	 * Returns whether this mapping context has any entities mapped to the given table.
 	 * 
-	 * @param table May not be null.
+	 * @param table must not be {@literal null}.
+	 * @return @return {@literal true} is this {@literal TableMetadata} is used by a mapping.
 	 */
 	boolean usesTable(TableMetadata table);
+
+	/**
+	 * Returns whether this mapping context has any entities using the given user type.
+	 *
+	 * @param userType must not be {@literal null}.
+	 * @return {@literal true} is this {@literal UserType} is used.
+	 * @since 1.5
+	 */
+	boolean usesUserType(UserType userType);
 
 	/**
 	 * Returns the existing {@link CassandraPersistentEntity} for the given {@link Class}. If it is not yet known to this

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,18 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.mapping.model.PropertyValueProvider;
-
 import com.datastax.driver.core.Row;
 
-public interface CassandraRowValueProvider extends PropertyValueProvider<CassandraPersistentProperty> {
+/**
+ * {@link CassandraValueProvider} providing values based on a {@link Row}.
+ *
+ * @author Matthew T. Adams
+ * @author Mark Paluch
+ */
+public interface CassandraRowValueProvider extends CassandraValueProvider {
 
+	/**
+	 * @return the underlying {@link Row}.
+	 */
 	Row getRow();
 }

@@ -23,7 +23,7 @@ import org.springframework.util.Assert;
  *
  * @author Fabio J. Mendes
  * @author Mark Paluch
- * @param <T> The subtype of the {@link UserTypeNameSpecification}
+ * @param <T> Subtype of {@link UserTypeNameSpecification}.
  * @since 1.5
  * @see CqlIdentifier
  */

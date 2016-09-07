@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
@@ -30,10 +31,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Address;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -49,7 +53,12 @@ import org.springframework.util.ReflectionUtils;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Configuration;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
+import com.datastax.driver.core.UserType.Field;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -61,7 +70,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
-public class StringBasedCassandraQueryIntegrationUnitTests {
+public class StringBasedCassandraQueryUnitTests {
 
 	SpelExpressionParser PARSER = new SpelExpressionParser();
 
@@ -69,6 +78,8 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 	@Mock Session session;
 	@Mock Cluster cluster;
 	@Mock Configuration configuration;
+	@Mock UserTypeResolver userTypeResolver;
+	@Mock UDTValue udtValue;
 
 	RepositoryMetadata metadata;
 	MappingCassandraConverter converter;
@@ -77,14 +88,18 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 	@Before
 	public void setUp() {
 
+		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+		mappingContext.setUserTypeResolver(userTypeResolver);
+
 		when(operations.getConverter()).thenReturn(converter);
 		when(operations.getSession()).thenReturn(session);
+		when(operations.getConverter()).thenReturn(converter);
 		when(session.getCluster()).thenReturn(cluster);
 		when(cluster.getConfiguration()).thenReturn(configuration);
 		when(configuration.getCodecRegistry()).thenReturn(CodecRegistry.DEFAULT_INSTANCE);
 
 		this.metadata = AbstractRepositoryMetadata.getMetadata(SampleRepository.class);
-		this.converter = new MappingCassandraConverter(new BasicCassandraMappingContext());
+		this.converter = new MappingCassandraConverter(mappingContext);
 		this.factory = new SpelAwareProxyProjectionFactory();
 
 		this.converter.afterPropertiesSet();
@@ -322,12 +337,80 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE createdDate='2010-07-04';");
 	}
 
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void bindsMappedUdtPropertyCorrectly() throws Exception {
+
+		Field city = createField("city", DataType.varchar());
+		Field country = createField("country", DataType.varchar());
+		UserType addressType = createUserType("address", Arrays.asList(city, country));
+
+		when(userTypeResolver.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(addressType);
+		when(udtValue.getType()).thenReturn(addressType);
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", Address.class);
+		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), new Address()));
+
+		String stringQuery = cassandraQuery.createQuery(accessor);
+
+		// udtValueMock because that's the mock's UDTValue.toString() representation
+		assertThat(stringQuery).isEqualTo("SELECT * FROM person WHERE address={city:NULL,country:NULL};");
+	}
+
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void bindsUdtValuePropertyCorrectly() throws Exception {
+
+		Field city = createField("city", DataType.varchar());
+		Field country = createField("country", DataType.varchar());
+		UserType addressType = createUserType("address", Arrays.asList(city, country));
+		when(udtValue.getType()).thenReturn(addressType);
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", UDTValue.class);
+		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), udtValue));
+
+		String stringQuery = cassandraQuery.createQuery(accessor);
+
+		// udtValueMock because that's the mock's UDTValue.toString() representation
+		assertThat(stringQuery).isEqualTo("SELECT * FROM person WHERE address={city:NULL,country:NULL};");
+	}
+
 	private StringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
 		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
 				converter.getMappingContext());
 		return new StringBasedCassandraQuery(queryMethod, operations, PARSER,
 				new ExtensionAwareEvaluationContextProvider());
+	}
+
+	private Field createField(String fieldName, DataType dataType) {
+
+		try {
+			Constructor<Field> constructor = Field.class.getDeclaredConstructor(String.class, DataType.class);
+			constructor.setAccessible(true);
+			return constructor.newInstance(fieldName, dataType);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private UserType createUserType(String typeName, Collection<Field> fields) {
+
+		try {
+			Constructor<UserType> constructor = UserType.class.getDeclaredConstructor(String.class, String.class,
+					Collection.class, ProtocolVersion.class, CodecRegistry.class);
+			constructor.setAccessible(true);
+			return constructor.newInstance(typeName, typeName, fields, ProtocolVersion.NEWEST_SUPPORTED,
+					CodecRegistry.DEFAULT_INSTANCE);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	private interface SampleRepository extends Repository<Person, String> {
@@ -367,5 +450,11 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 
 		@Query("SELECT * FROM person WHERE createdDate=?0;")
 		Person findByCreatedDate(LocalDate createdDate);
+
+		@Query("SELECT * FROM person WHERE address=?0;")
+		Person findByMainAddress(Address address);
+
+		@Query("SELECT * FROM person WHERE address=?0;")
+		Person findByMainAddress(UDTValue udtValue);
 	}
 }

@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.test.integration.repository.simple;
 
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 
+import com.datastax.driver.core.UDTValue;
+
 /**
  * Sample repository managing {@link User} entities.
  *
@@ -26,4 +28,6 @@ import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 public interface UserRepository extends TypedIdCassandraRepository<User, String> {
 
 	String findByNamedQuery(String username);
+
+	User findByAddress(AddressType addressType);
 }

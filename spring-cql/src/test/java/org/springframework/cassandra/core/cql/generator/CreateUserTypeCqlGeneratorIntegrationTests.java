@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.cassandra.core.cql.generator.CreateUserTypeCqlGenerator.*;
 
 import org.junit.Before;
@@ -57,7 +56,7 @@ public class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspace
 
 		KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
 		UserType address = keyspace.getUserType("address");
-		assertThat(address.getFieldNames(), contains("zip", "city"));
+		assertThat(address.getFieldNames()).contains("zip", "city");
 	}
 
 	/**
@@ -75,7 +74,7 @@ public class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspace
 
 		KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
 		UserType address = keyspace.getUserType("address");
-		assertThat(address.getFieldNames(), contains("zip", "city"));
+		assertThat(address.getFieldNames()).contains("zip", "city");
 	}
 
 	/**

@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.test.integration.repository.querymeth
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
@@ -28,6 +29,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * Sample domain class.
+ * 
+ * @author Mark Paluch
  */
 @Table
 @Data
@@ -45,6 +48,9 @@ public class Person {
 
 	private LocalDate createdDate;
 	private ZoneId zoneId;
+
+	private Address mainAddress;
+	private List<Address> alternativeAddresses;
 
 	public Person(String firstname, String lastname) {
 

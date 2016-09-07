@@ -146,20 +146,6 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	 * @see DATACASS-258
 	 */
 	@Test
-	public void shouldFailWithComplexType() {
-
-		try {
-			verifier.verify(getEntity(PKWithComplexType.class));
-			fail("Missing MappingException");
-		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining("Property [species] annotated with @PrimaryKeyColumn must be a simple CassandraType");
-		}
-	}
-
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
 	public void shouldFailWithPrimaryKeyClassAndPrimaryKeyAnnotations() {
 
 		try {
@@ -222,12 +208,6 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
 		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) String breed;
 		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING) String color;
-	}
-
-	@PrimaryKeyClass
-	static class PKWithComplexType {
-
-		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object species;
 	}
 
 	@Table
