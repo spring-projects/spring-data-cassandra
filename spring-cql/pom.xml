@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-cassandra-parent</artifactId>
-		<version>1.5.0.BUILD-SNAPSHOT</version>
+		<version>2.0.0.BUILD-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -17,10 +17,6 @@
 	<name>Spring CQL</name>
 	<description>Raw Cassandra CQL Support for Spring Core</description>
 	<url>https://github.com/spring-projects/spring-data-cassandra/tree/master/spring-cql</url>
-
-	<properties>
-		<validation>1.0.0.GA</validation>
-	</properties>
 
 	<dependencies>
 		<dependency>
@@ -48,6 +44,15 @@
 			<artifactId>spring-data-commons</artifactId>
 			<version>${springdata.commons}</version>
 		</dependency>
+
+		<!-- Reactor -->
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+			<version>${reactor}</version>
+			<optional>true</optional>
+		</dependency>
+
 		<dependency>
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-core</artifactId>

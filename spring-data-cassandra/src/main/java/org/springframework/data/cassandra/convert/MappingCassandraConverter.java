@@ -471,8 +471,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		CassandraPersistentProperty idProperty = entity.getIdProperty();
 
 		if (idProperty != null) {
-			return accessor.getProperty(idProperty, idProperty.isCompositePrimaryKey() ? idProperty.getType()
-					: getCodec(idProperty).getJavaType().getRawType());
+			return accessor.getProperty(idProperty, (Class<?>) (idProperty.isCompositePrimaryKey() ? idProperty.getType()
+					: getCodec(idProperty).getJavaType().getRawType()));
 		}
 
 		// if the class doesn't have an id property, then it's using MapId
