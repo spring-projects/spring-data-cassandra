@@ -18,18 +18,23 @@ package org.springframework.data.cassandra.repository.config;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.cassandra.config.xml.ParsingUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
+import org.springframework.data.repository.config.RepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
+import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
+import org.springframework.data.repository.query.ReactiveWrappers;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -43,6 +48,15 @@ import org.w3c.dom.Element;
 public class CassandraRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
 	private static final String CASSANDRA_TEMPLATE_REF = "cassandra-template-ref";
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModuleName()
+	 */
+	@Override
+	public String getModuleName() {
+		return "Reactive Cassandra";
+	}
 
 	@Override
 	protected String getModulePrefix() {
@@ -90,6 +104,26 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 	@Override
 	protected Collection<Class<?>> getIdentifyingTypes() {
 		return Collections.<Class<?>> singleton(CassandraRepository.class);
+	}
+
+	@Override
+	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
+			T configSource, ResourceLoader loader, boolean strictMatchesOnly) {
+
+		Collection<RepositoryConfiguration<T>> repositoryConfigurations = super.getRepositoryConfigurations(configSource,
+				loader, strictMatchesOnly);
+
+		if (ReactiveWrappers.isAvailable()) {
+
+			return repositoryConfigurations.stream().filter(configuration -> {
+
+				Class<?> repositoryInterface = super.loadRepositoryInterface(configuration, loader);
+				return !RepositoryType.isReactiveRepository(repositoryInterface);
+
+			}).collect(Collectors.toList());
+		}
+
+		return repositoryConfigurations;
 	}
 
 }

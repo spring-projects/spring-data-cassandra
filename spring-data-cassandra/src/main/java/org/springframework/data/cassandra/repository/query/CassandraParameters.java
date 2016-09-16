@@ -19,10 +19,13 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.ReactiveWrappers;
+import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.util.Assert;
 
 /**
@@ -67,9 +70,10 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	 *
 	 * @author Mark Paluch
 	 */
-	class CassandraParameter extends Parameter {
+	static class CassandraParameter extends Parameter {
 
 		private final CassandraType cassandraType;
+		private final Class<?> parameterType;
 
 		protected CassandraParameter(MethodParameter parameter) {
 
@@ -78,23 +82,75 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 			if (parameter.hasParameterAnnotation(CassandraType.class)) {
 				CassandraType cassandraType = parameter.getParameterAnnotation(CassandraType.class);
 
-				Assert.notNull(cassandraType.type(), String.format(
-					"You must specify the type() when annotating method parameters with @%s",
-						CassandraType.class.getSimpleName()));
+				Assert.notNull(cassandraType.type(),
+						String.format("You must specify the type() when annotating method parameters with @%s",
+								CassandraType.class.getSimpleName()));
 
 				this.cassandraType = cassandraType;
 			} else {
 				this.cassandraType = null;
 			}
+
+			parameterType = potentiallyUnwrapParameterType(parameter);
 		}
 
 		/**
-		 * Returns the {@link CassandraType} for the declared parameter if specified using {@link org.springframework.data.cassandra.mapping.CassandraType}.
+		 * Returns the {@link CassandraType} for the declared parameter if specified using
+		 * {@link org.springframework.data.cassandra.mapping.CassandraType}.
 		 *
 		 * @return the {@link CassandraType} or {@literal null}.
 		 */
 		public CassandraType getCassandraType() {
 			return cassandraType;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.repository.query.Parameter#getType()
+		 */
+		@Override
+		public Class<?> getType() {
+			return parameterType;
+		}
+
+		/**
+		 * Returns the component type if the given {@link MethodParameter} is a wrapper type and the wrapper should be
+		 * unwrapped.
+		 *
+		 * @param parameter must not be {@literal null}.
+		 * @return
+		 */
+		private static Class<?> potentiallyUnwrapParameterType(MethodParameter parameter) {
+
+			Class<?> originalType = parameter.getParameterType();
+
+			if (isWrapped(parameter) && shouldUnwrap(parameter)) {
+				return ResolvableType.forMethodParameter(parameter).getGeneric(0).getRawClass();
+			}
+
+			return originalType;
+		}
+
+		/**
+		 * Returns whether the {@link MethodParameter} is wrapped in a wrapper type.
+		 *
+		 * @param parameter must not be {@literal null}.
+		 * @return
+		 * @see QueryExecutionConverters
+		 */
+		private static boolean isWrapped(MethodParameter parameter) {
+			return QueryExecutionConverters.supports(parameter.getParameterType());
+		}
+
+		/**
+		 * Returns whether the {@link MethodParameter} should be unwrapped.
+		 *
+		 * @param parameter must not be {@literal null}.
+		 * @return
+		 * @see QueryExecutionConverters
+		 */
+		private static boolean shouldUnwrap(MethodParameter parameter) {
+			return QueryExecutionConverters.supportsUnwrapping(parameter.getParameterType())
+					|| ReactiveWrappers.supports(parameter.getParameterType());
 		}
 	}
 }

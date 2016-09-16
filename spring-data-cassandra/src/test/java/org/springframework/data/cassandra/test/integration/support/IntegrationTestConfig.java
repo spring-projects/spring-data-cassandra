@@ -28,6 +28,7 @@ import org.springframework.cassandra.test.integration.support.FastShutdownNettyO
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration;
+import org.springframework.data.cassandra.config.java.AbstractReactiveCassandraConfiguration;
 
 import com.datastax.driver.core.NettyOptions;
 import com.datastax.driver.core.QueryOptions;
@@ -40,7 +41,7 @@ import com.datastax.driver.core.QueryOptions;
  * @author Mark Paluch
  */
 @Configuration
-public class IntegrationTestConfig extends AbstractCassandraConfiguration {
+public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguration {
 
 	public static final CassandraConnectionProperties PROPS = new CassandraConnectionProperties();
 	public static final int PORT = PROPS.getCassandraPort();

@@ -382,6 +382,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	private StringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
+		
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
 		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
 				converter.getMappingContext());

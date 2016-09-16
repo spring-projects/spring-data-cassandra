@@ -15,7 +15,8 @@
  */
 package org.springframework.cassandra.support;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.springframework.cassandra.support.exception.CassandraInvalidConfigurationInQueryException;
@@ -33,8 +34,9 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
  * Unit tests for {@link CassandraExceptionTranslator}
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-public class CassandraExceptionTranslatorTest {
+public class CassandraExceptionTranslatorUnitTests {
 
 	CassandraExceptionTranslator tx = new CassandraExceptionTranslator();
 
@@ -84,5 +86,18 @@ public class CassandraExceptionTranslatorTest {
 		assertThat(dax).isNotNull();
 		assertThat(dax instanceof CassandraInvalidQueryException).isTrue();
 		assertThat(dax.getCause()).isEqualTo(cx);
+	}
+
+	/**
+	 * @see DATACASS-335
+	 */
+	@Test
+	public void shouldTranslateWithCqlMessage() {
+
+		InvalidQueryException cx = new InvalidConfigurationInQueryException(null, "err");
+		DataAccessException dax = tx.translate("Query", "SELECT * FROM person", cx);
+
+		assertThat(dax).hasRootCauseInstanceOf(InvalidQueryException.class).hasMessage(
+				"Query; CQL [SELECT * FROM person]; err; nested exception is com.datastax.driver.core.exceptions.InvalidConfigurationInQueryException: err");
 	}
 }
