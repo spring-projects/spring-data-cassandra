@@ -84,11 +84,6 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	@Override
-	public Object[] getValues() {
-		return new Object[0];
-	}
-
-	@Override
 	public boolean hasBindableNullValue() {
 		return false;
 	}
@@ -101,5 +96,10 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	@Override
 	public CassandraType findCassandraType(int index) {
 		return null;
+	}
+
+	@Override
+	public Object[] getValues() {
+		return new Object[0];
 	}
 }

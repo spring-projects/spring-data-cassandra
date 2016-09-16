@@ -58,7 +58,7 @@ public class CassandraRepositoryConfigurationExtensionUnitTests {
 	 * @see DATACASS-257
 	 */
 	@Test
-	public void isStrictMatchIfDomainTypeIsAnnotatedWithDocument() {
+	public void isStrictMatchIfDomainTypeIsAnnotatedWithTable() {
 		assertHasRepo(SampleRepository.class, extension.getRepositoryConfigurations(configurationSource, loader, true));
 	}
 
@@ -74,7 +74,7 @@ public class CassandraRepositoryConfigurationExtensionUnitTests {
 	 * @see DATACASS-257
 	 */
 	@Test
-	public void isNotStrictMatchIfDomainTypeIsNotAnnotatedWithDocument() {
+	public void isNotStrictMatchIfDomainTypeIsNotAnnotatedWithTable() {
 
 		assertDoesNotHaveRepo(UnannotatedRepository.class,
 				extension.getRepositoryConfigurations(configurationSource, loader, true));
@@ -101,8 +101,8 @@ public class CassandraRepositoryConfigurationExtensionUnitTests {
 			}
 		}
 
-		fail("Expected to find config for repository interface ".concat(repositoryInterface.getName()).concat(" but got ")
-				.concat(configs.toString()));
+		fail(String.format("Expected to find config for repository interface %s but got %s", repositoryInterface.getName(),
+				configs.toString()));
 	}
 
 	@EnableCassandraRepositories(considerNestedRepositories = true)

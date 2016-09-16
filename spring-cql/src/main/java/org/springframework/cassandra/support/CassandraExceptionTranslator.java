@@ -15,6 +15,7 @@
  */
 package org.springframework.cassandra.support;
 
+import org.springframework.cassandra.core.support.CQLExceptionTranslator;
 import org.springframework.cassandra.support.exception.CassandraAuthenticationException;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.cassandra.support.exception.CassandraInsufficientReplicasAvailableException;
@@ -33,6 +34,7 @@ import org.springframework.cassandra.support.exception.CassandraUncategorizedExc
 import org.springframework.cassandra.support.exception.CassandraWriteTimeoutException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.WriteType;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
@@ -52,80 +54,110 @@ import com.datastax.driver.core.exceptions.UnavailableException;
 import com.datastax.driver.core.exceptions.WriteTimeoutException;
 
 /**
- * Simple {@link PersistenceExceptionTranslator} for Cassandra. Convert the given runtime exception to an appropriate
- * exception from the {@code org.springframework.dao} hierarchy. Return {@literal null} if no translation is
- * appropriate: any other exception may have resulted from user code, and should not be translated.
+ * Simple {@link PersistenceExceptionTranslator} for Cassandra.
+ * <p>
+ * Convert the given runtime exception to an appropriate exception from the {@code org.springframework.dao} hierarchy.
+ * Return {@literal null} if no translation is appropriate: any other exception may have resulted from user code, and
+ * should not be translated.
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-
-public class CassandraExceptionTranslator implements PersistenceExceptionTranslator {
+public class CassandraExceptionTranslator implements CQLExceptionTranslator {
 
 	@Override
-	public DataAccessException translateExceptionIfPossible(RuntimeException x) {
+	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 
-		if (x instanceof DataAccessException) {
-			return (DataAccessException) x;
+		if (ex instanceof DataAccessException) {
+			return (DataAccessException) ex;
 		}
 
-		if (!(x instanceof DriverException)) {
+		if (!(ex instanceof DriverException)) {
 			return null;
 		}
+
+		return translate(null, null, (DriverException) ex);
+	}
+
+	@Override
+	public DataAccessException translate(String task, String cql, DriverException ex) {
+
+		String message = buildMessage(task, cql, ex);
 
 		// Remember: subclasses must come before superclasses, otherwise the
 		// superclass would match before the subclass!
 
-		if (x instanceof AuthenticationException) {
-			return new CassandraAuthenticationException(((AuthenticationException) x).getHost(), x.getMessage(), x);
+		if (ex instanceof AuthenticationException) {
+			return new CassandraAuthenticationException(((AuthenticationException) ex).getHost(), message, ex);
 		}
-		if (x instanceof DriverInternalError) {
-			return new CassandraInternalException(x.getMessage(), x);
+		if (ex instanceof DriverInternalError) {
+			return new CassandraInternalException(message, ex);
 		}
-		if (x instanceof InvalidTypeException) {
-			return new CassandraTypeMismatchException(x.getMessage(), x);
+		if (ex instanceof InvalidTypeException) {
+			return new CassandraTypeMismatchException(message, ex);
 		}
-		if (x instanceof NoHostAvailableException) {
-			return new CassandraConnectionFailureException(((NoHostAvailableException) x).getErrors(), x.getMessage(), x);
+		if (ex instanceof NoHostAvailableException) {
+			return new CassandraConnectionFailureException(((NoHostAvailableException) ex).getErrors(), message, ex);
 		}
-		if (x instanceof ReadTimeoutException) {
-			return new CassandraReadTimeoutException(((ReadTimeoutException) x).wasDataRetrieved(), x.getMessage(), x);
+		if (ex instanceof ReadTimeoutException) {
+			return new CassandraReadTimeoutException(((ReadTimeoutException) ex).wasDataRetrieved(), message, ex);
 		}
-		if (x instanceof WriteTimeoutException) {
-			WriteType writeType = ((WriteTimeoutException) x).getWriteType();
-			return new CassandraWriteTimeoutException(writeType == null ? null : writeType.name(), x.getMessage(), x);
+		if (ex instanceof WriteTimeoutException) {
+			WriteType writeType = ((WriteTimeoutException) ex).getWriteType();
+			return new CassandraWriteTimeoutException(writeType == null ? null : writeType.name(), message, ex);
 		}
-		if (x instanceof TruncateException) {
-			return new CassandraTruncateException(x.getMessage(), x);
+		if (ex instanceof TruncateException) {
+			return new CassandraTruncateException(message, ex);
 		}
-		if (x instanceof UnavailableException) {
-			UnavailableException ux = (UnavailableException) x;
+		if (ex instanceof UnavailableException) {
+			UnavailableException ux = (UnavailableException) ex;
 			return new CassandraInsufficientReplicasAvailableException(ux.getRequiredReplicas(), ux.getAliveReplicas(),
-					x.getMessage(), x);
+					message, ex);
 		}
-		if (x instanceof AlreadyExistsException) {
-			AlreadyExistsException aex = (AlreadyExistsException) x;
+		if (ex instanceof AlreadyExistsException) {
+			AlreadyExistsException aex = (AlreadyExistsException) ex;
 
-			return aex.wasTableCreation() ? new CassandraTableExistsException(aex.getTable(), x.getMessage(), x)
-					: new CassandraKeyspaceExistsException(aex.getKeyspace(), x.getMessage(), x);
+			return aex.wasTableCreation() ? new CassandraTableExistsException(aex.getTable(), message, ex)
+					: new CassandraKeyspaceExistsException(aex.getKeyspace(), message, ex);
 		}
-		if (x instanceof InvalidConfigurationInQueryException) {
-			return new CassandraInvalidConfigurationInQueryException(x.getMessage(), x);
+		if (ex instanceof InvalidConfigurationInQueryException) {
+			return new CassandraInvalidConfigurationInQueryException(message, ex);
 		}
-		if (x instanceof InvalidQueryException) {
-			return new CassandraInvalidQueryException(x.getMessage(), x);
+		if (ex instanceof InvalidQueryException) {
+			return new CassandraInvalidQueryException(message, ex);
 		}
-		if (x instanceof SyntaxError) {
-			return new CassandraQuerySyntaxException(x.getMessage(), x);
+		if (ex instanceof SyntaxError) {
+			return new CassandraQuerySyntaxException(message, ex);
 		}
-		if (x instanceof UnauthorizedException) {
-			return new CassandraUnauthorizedException(x.getMessage(), x);
+		if (ex instanceof UnauthorizedException) {
+			return new CassandraUnauthorizedException(message, ex);
 		}
-		if (x instanceof TraceRetrievalException) {
-			return new CassandraTraceRetrievalException(x.getMessage(), x);
+		if (ex instanceof TraceRetrievalException) {
+			return new CassandraTraceRetrievalException(message, ex);
 		}
 
 		// unknown or unhandled exception
-		return new CassandraUncategorizedException(x.getMessage(), x);
+		return new CassandraUncategorizedException(message, ex);
+	}
+
+	/**
+	 * Build a message {@code String} for the given {@link DriverException}.
+	 * <p>
+	 * To be called by translator subclasses when creating an instance of a generic
+	 * {@link org.springframework.dao.DataAccessException} class.
+	 * 
+	 * @param task readable text describing the task being attempted
+	 * @param cql the CQL statement that caused the problem (may be {@code null})
+	 * @param ex the offending {@code DriverException}
+	 * @return the message {@code String} to use
+	 */
+	protected String buildMessage(String task, String cql, DriverException ex) {
+
+		if (StringUtils.hasText(task) || StringUtils.hasText(cql)) {
+			return task + "; CQL [" + cql + "]; " + ex.getMessage();
+		}
+
+		return ex.getMessage();
 	}
 }

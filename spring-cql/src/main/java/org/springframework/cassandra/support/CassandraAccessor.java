@@ -37,7 +37,7 @@ import com.datastax.driver.core.Session;
  */
 public class CassandraAccessor implements InitializingBean {
 
-	CassandraExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+	protected CassandraExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery.ParameterBinding;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -181,6 +180,62 @@ class ExpressionEvaluatingParameterBinder {
 		 */
 		public CassandraQueryMethod getQueryMethod() {
 			return queryMethod;
+		}
+	}
+
+	/**
+	 * A generic parameter binding with name or position information.
+	 *
+	 * @author Mark Paluch
+	 */
+	static class ParameterBinding {
+
+		private final boolean quoted;
+		private final int parameterIndex;
+		private final String expression;
+		private final String parameterName;
+
+		private ParameterBinding(int parameterIndex, boolean quoted, String expression, String parameterName) {
+			this.parameterIndex = parameterIndex;
+			this.quoted = quoted;
+			this.expression = expression;
+			this.parameterName = parameterName;
+		}
+
+		public static ParameterBinding expression(String expression, boolean quoted) {
+			return new ParameterBinding(-1, quoted, expression, null);
+		}
+
+		public static ParameterBinding indexed(int parameterIndex) {
+			return new ParameterBinding(parameterIndex, false, null, null);
+		}
+
+		public static ParameterBinding named(String name) {
+			return new ParameterBinding(-1, false, null, name);
+		}
+
+		public boolean isNamed() {
+			return (parameterName != null);
+		}
+
+		public int getParameterIndex() {
+			return parameterIndex;
+		}
+
+		public String getParameter() {
+			return ("?" + (isExpression() ? "expr" : "") + parameterIndex);
+		}
+
+		public String getExpression() {
+			return expression;
+		}
+
+		public boolean isExpression() {
+			return (this.expression != null);
+		}
+
+		public String getParameterName() {
+			return parameterName;
 		}
 	}
 }
