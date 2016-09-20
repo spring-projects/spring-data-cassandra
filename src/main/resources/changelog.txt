@@ -1,6 +1,13 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.4.3.RELEASE (2016-09-20)
+---------------------------------------------
+* DATACASS-331 - Include netty as transient dependency of cassandra-driver.
+* DATACASS-303 - Release 1.4.3 (Hopper SR3).
+* DATACASS-241 - The SchemaAction.RECREATE doesn't drop tables.
+
+
 Changes in version 1.5.0.M1 (2016-07-27)
 ----------------------------------------
 * DATACASS-325 - Implement a ClusterBuilderConfigurer callback interface to handle extended configuration when the DataStax API changes.
