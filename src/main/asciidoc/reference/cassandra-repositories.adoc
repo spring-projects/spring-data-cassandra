@@ -25,7 +25,7 @@ TODO
 [[cassandradb.repositories.misc.cdi-integration]]
 === CDI Integration
 
-The Spring Data Cassandra CDI extension will pick up the `CassandraTemplate` available as CDI bean and create a proxy for a Spring Data repository whenever an bean of a repository type is requested by the container. Thus obtaining an instance of a Spring Data repository is a matter of declaring an `@Inject`-ed property:
+The Spring Data for Apache Cassandra CDI extension will pick up the `CassandraTemplate` available as CDI bean and create a proxy for a Spring Data repository whenever an bean of a repository type is requested by the container. Thus obtaining an instance of a Spring Data repository is a matter of declaring an `@Inject`-ed property:
 
 [source,java]
 ----

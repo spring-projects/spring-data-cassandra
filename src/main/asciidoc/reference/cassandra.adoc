@@ -17,7 +17,7 @@ For most tasks you will find yourself using `CassandraTemplate` or the Repositor
 [[cassandra-getting-started]]
 == Getting Started
 
-Spring Data Cassandra uses the DataStax Java Driver version 2.X, which supports DataStax Enterprise 4/Cassandra 2.0, and Java SE 6 or higher. The latest commercial release (2.X as of this writing) is recommended. An easy way to bootstrap setting up a working environment is to create a Spring based project in http://spring.io/tools/sts[STS].
+Spring Data for Apache Cassandra uses the DataStax Java Driver version 2.X, which supports DataStax Enterprise 4/Cassandra 2.0, and Java SE 6 or higher. The latest commercial release (2.X as of this writing) is recommended. An easy way to bootstrap setting up a working environment is to create a Spring based project in http://spring.io/tools/sts[STS].
 
 First you need to set up a running Cassandra server.
 
@@ -167,7 +167,7 @@ Even in this simple example, there are a few things to observe.
 
 == Examples Repository
 
-After the initial release of Spring Data Cassandra 1.0.0, we will start working on a showcase repository with full examples.
+After the initial release of Spring Data for Apache Cassandra 1.0.0, we will start working on a showcase repository with full examples.
 
 [[cassandra-connectors]]
 == Connecting to Cassandra with Spring
@@ -193,7 +193,7 @@ We will use spring to load these properties into the Spring Context in the next 
 
 The XML Configuration elements for a basic Cassandra configuration are shown below. These elements all use default bean names to keep the configuration code clean and readable.
 
-While this example show how easy it is to configure Spring to connect to Cassandra, there are many other options. Basically, any option available with the DataStax Java Driver is also available in the Spring Data Cassandra configuration. This is including, but not limited to Authentication, Load Balancing Policies, Retry Policies and Pooling Options. All of the Spring Data Cassandra method names and XML elements are named exactly (or as close as possible) like the configuration options on the driver so mapping any existing driver configuration should be straight forward.
+While this example show how easy it is to configure Spring to connect to Cassandra, there are many other options. Basically, any option available with the DataStax Java Driver is also available in the Spring Data for Apache Cassandra configuration. This is including, but not limited to Authentication, Load Balancing Policies, Retry Policies and Pooling Options. All of the Spring Data for Apache Cassandra method names and XML elements are named exactly (or as close as possible) like the configuration options on the driver so mapping any existing driver configuration should be straight forward.
 
 [source,xml]
 ----
@@ -228,7 +228,7 @@ While this example show how easy it is to configure Spring to connect to Cassand
     Data Cassandra -->
   <cassandra:template id="cassandraTemplate" />
 
-  <!-- OPTIONAL: If you are using Spring Data Cassandra Repositories, add 
+  <!-- OPTIONAL: If you are using Spring Data for Apache Cassandra Repositories, add
     your base packages to scan here -->
   <cassandra:repositories base-package="org.spring.cassandra.example.repo" />
 
@@ -509,7 +509,7 @@ public class LoginEvent {
 
 ==== Complex Composite Primary Key
 
-The annotations provided with Spring Data Cassandra can handle any key combination available in Cassandra. Here is one more example of a Composite Primary Key with 5 columns, 2 of which are a composite partition key, and the remaining 3 are ordered clustering keys. The getters/setters, hashCode and equals are omitted for brevity.
+The annotations provided with Spring Data for Apache Cassandra can handle any key combination available in Cassandra. Here is one more example of a Composite Primary Key with 5 columns, 2 of which are a composite partition key, and the remaining 3 are ordered clustering keys. The getters/setters, hashCode and equals are omitted for brevity.
 
 [source,java]
 ----
@@ -549,7 +549,7 @@ public class DetailedLoginEventKey implements Serializable {
 [[cassandra-template.type-mapping]]
 === Type mapping
 
-Spring Data Cassandra relies on the DataStax Java Driver type mapping component. This approach ensures that as types are added or changed, the Spring Data Cassandra module will continue to function without requiring changes. For more information on the DataStax CQL3 to Java Type mappings, please see their http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html[Documentation here].
+Spring Data for Apache Cassandra relies on the DataStax Java Driver type mapping component. This approach ensures that as types are added or changed, the Spring Data for Apache Cassandra module will continue to function without requiring changes. For more information on the DataStax CQL3 to Java Type mappings, please see their http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html[Documentation here].
 
 [[cassandra-template.save-insert]]
 === Methods for saving and inserting rows
@@ -802,7 +802,7 @@ Coming Soon!
 
 The CassandraTemplate has many overloads for execute() and executeAsync(). Pass in the CQL command you wish to be executed, and handle the appropriate response.
 
-This example uses the basic AsynchronousQueryListener that comes with Spring Data Cassandra. Please see the API documentation for all the options. There should be nothing you cannot perform in Cassandra with the execute() and executeAsync() methods.
+This example uses the basic AsynchronousQueryListener that comes with Spring Data for Apache Cassandra. Please see the API documentation for all the options. There should be nothing you cannot perform in Cassandra with the execute() and executeAsync() methods.
 
 [source,java]
 ----

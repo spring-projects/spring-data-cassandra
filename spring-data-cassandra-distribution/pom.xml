@@ -7,8 +7,8 @@
 
 	<packaging>pom</packaging>
 
-	<name>Spring Data Cassandra - Distribution</name>
-	<description>Distribution build for Spring Data Cassandra</description>
+	<name>Spring Data for Apache Cassandra - Distribution</name>
+	<description>Distribution build for Spring Data for Apache Cassandra</description>
 
 	<parent>
 		<groupId>org.springframework.data</groupId>

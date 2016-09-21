@@ -1,7 +1,7 @@
 [[get-started]]
 = Additional Help Resources
 
-Learning a new framework is not always straight forward. In this section, we try to provide what we think is an easy to follow guide for starting with Spring Data Cassandra module. However, if you encounter issues or you are just looking for an advice, feel free to use one of the links below:
+Learning a new framework is not always straight forward. In this section, we try to provide what we think is an easy to follow guide for starting with Spring Data for Apache Cassandra module. However, if you encounter issues or you are just looking for an advice, feel free to use one of the links below:
 
 [[get-started.help]]
 == Support
@@ -24,9 +24,9 @@ Professional, from-the-source support, with guaranteed response time, is availab
 [[get-started.up-to-date]]
 == Following Development
 
-For information on the Spring Data Cassandra source code repository, nightly builds and snapshot artifacts please see the http://projects.spring.io/spring-data-cassandra/[Spring Data Cassandra homepage].
+For information on the Spring Data for Apache Cassandra source code repository, nightly builds and snapshot artifacts please see the http://projects.spring.io/spring-data-cassandra/[Spring Data for Apache Cassandra homepage].
 
-To follow developer activity look for the mailing list information on the Spring Data Cassandra homepage.
+To follow developer activity look for the mailing list information on the Spring Data for Apache Cassandra homepage.
 
 If you encounter a bug or want to suggest an improvement, please create a ticket on the Spring Data issue https://jira.spring.io/browse/DATACASS[tracker].
 

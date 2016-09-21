@@ -1,6 +1,6 @@
 Bundle-SymbolicName: org.springframework.data.cassandra
-Bundle-Name: Spring Data Cassandra
-Bundle-Vendor: Spring Data Cassandra Community
+Bundle-Name: Spring Data for Apache Cassandra
+Bundle-Vendor: Spring Data for Apache Cassandra
 Bundle-ManifestVersion: 2
 Excluded-Imports:
  lombok.*

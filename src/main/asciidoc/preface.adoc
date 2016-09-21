@@ -1,7 +1,7 @@
 [[preface]]
 = Preface
 
-The Spring Data Cassandra project applies core Spring concepts to the development of solutions using the Cassandra Columnar data store.  We provide a "template" as a high-level abstraction for storing and querying documents. You will notice similarities to the JDBC support in the Spring Framework.
+The Spring Data for Apache Cassandra project applies core Spring concepts to the development of solutions using the Cassandra Columnar data store.  We provide a "template" as a high-level abstraction for storing and querying documents. You will notice similarities to the JDBC support in the Spring Framework.
 
 [[project]]
 [preface]

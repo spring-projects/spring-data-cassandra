@@ -1,4 +1,4 @@
-= Spring Data Cassandra - Reference Documentation
+= Spring Data for Apache Cassandra - Reference Documentation
 David Webb, Matthew Adams
 :revnumber: {version}
 :revdate: {localdate}

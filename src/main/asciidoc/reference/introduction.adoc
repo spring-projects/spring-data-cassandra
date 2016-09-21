@@ -1,7 +1,7 @@
 [float]
 = Document Structure
 
-This part of the reference documentation explains the core functionality offered by Spring Data Cassandra.
+This part of the reference documentation explains the core functionality offered by Spring Data for Apache Cassandra.
 
 <<cassandra.core>> introduces the Cassandra module feature set.
 

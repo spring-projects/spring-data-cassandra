@@ -1,7 +1,7 @@
-[![Spring Data Cassandra](https://spring.io/badges/spring-data-cassandra/ga.svg)](http://projects.spring.io/spring-data-cassandra/#quick-start)
-[![Spring Data Cassandra](https://spring.io/badges/spring-data-cassandra/snapshot.svg)](http://projects.spring.io/spring-data-cassandra/#quick-start)
+[![Spring Data for Apache Cassandra](https://spring.io/badges/spring-data-cassandra/ga.svg)](http://projects.spring.io/spring-data-cassandra/#quick-start)
+[![Spring Data for Apache Cassandra](https://spring.io/badges/spring-data-cassandra/snapshot.svg)](http://projects.spring.io/spring-data-cassandra/#quick-start)
 
-# Spring Data Cassandra Project Info
+# Spring Data for Apache Cassandra Project Info
 
 ## Quick Start
 
@@ -207,7 +207,7 @@ Here is a very basic example to get your project connected to Cassandra running 
 ## Source Repository & Issue Tracking
 
 Source for this module is hosted on GitHub in [Spring Projects](https://github.com/spring-projects/spring-data-cassandra).  
-The Spring Data Cassandra JIRA can be found [here](https://jira.springsource.org/browse/DATACASS).
+The Spring Data for Apache Cassandra JIRA can be found [here](https://jira.springsource.org/browse/DATACASS).
 
 ## Reporting Problems
 
@@ -249,7 +249,7 @@ Also, developer discussions are being hosted on [StackOverflow](https://www.stac
 
 ## Sponsoring Companies
 
-Spring Data Cassandra is being led and supported by the following
+Spring Data for Apache Cassandra is being led and supported by the following
 companies and individuals:
 
 * [Prowave Consulting](http://www.prowaveconsulting.com) - David Webb

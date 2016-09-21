@@ -15,8 +15,8 @@
 	<version>1.5.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Spring Data Cassandra</name>
-	<description>Spring Data Cassandra</description>
+	<name>Spring Data for Apache Cassandra</name>
+	<description>Spring Data for Apache Cassandra</description>
 	<url>http://projects.spring.io/spring-data-cassandra/</url>
 
 	<developers>
