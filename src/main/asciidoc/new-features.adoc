@@ -6,4 +6,6 @@
 * Assert compatibility with Cassandra 3.0 and Cassandra Java Driver 3.0.
 * Configurable `ProtocolVersion` and `QueryOptions` on `Cluster` level.
 * Support for `Optional` as query method result and argument.
+* Declarative query methods using query derivation
+* Support for User-Defined types and mapped User-Defined types using `@UserDefinedType`.
 

@@ -247,6 +247,7 @@ class CassandraTemplateProducer {
 	public CassandraOperations createCassandraOperations(Session session) throws Exception {
 
 		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter();
+		cassandraConverter.setUserTypeResolver(new SimpleUserTypeResolver(session.getCluster(), session.getLoggedKeyspace()));
 
 		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(session, cassandraConverter);
 		return cassandraTemplate;

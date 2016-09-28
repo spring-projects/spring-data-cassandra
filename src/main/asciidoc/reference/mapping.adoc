@@ -1,14 +1,14 @@
-[[mapping-chapter]]
+[[mapping.chapter]]
 = Mapping
 
-Rich mapping support is provided by the `CassandraMappingConverter` . `CassandraMappingConverter` has a rich metadata model that provides a full feature set of functionality to map domain objects to CQL Tables. The mapping metadata model is populated using annotations on your domain objects. However, the infrastructure is not limited to using annotations as the only source of metadata information. The `CassandraMappingConverter` also allows you to map objects to documents without providing any additional metadata, by following a set of conventions.
+Rich mapping support is provided by the `MappingCassandraConverter` . `MappingCassandraConverter` has a rich metadata model that provides a full feature set of functionality to map domain objects to CQL Tables. The mapping metadata model is populated using annotations on your domain objects. However, the infrastructure is not limited to using annotations as the only source of metadata information. The `MappingCassandraConverter` also allows you to map objects to documents without providing any additional metadata, by following a set of conventions.
 
-In this section we will describe the features of the CassandraMappingConverter. How to use conventions for mapping objects to documents and how to override those conventions with annotation based mapping metadata.
+In this section we will describe the features of the MappingCassandraConverter. How to use conventions for mapping objects to documents and how to override those conventions with annotation based mapping metadata.
 
 [[mapping-conventions]]
 == Convention based Mapping
 
-`CassandraMappingConverter` has a few conventions for mapping objects to CQL Tables when no additional mapping metadata is provided. The conventions are:
+`MappingCassandraConverter` has a few conventions for mapping objects to CQL Tables when no additional mapping metadata is provided. The conventions are:
 
 * The short Java class name is mapped to the table name in the following manner. The class `com.bigbank.SavingsAccount` maps to `savingsaccount` table name.
 * The converter will use any Spring Converters registered with it to override the default mapping of object properties to document field/values.
@@ -23,7 +23,7 @@ TODO
 == Data mapping and type conversion
 
 This section explain how types are mapped to a Cassandra representation and vice versa. Spring Data Cassandra supports several types that are provided by Apache Cassandra.
-In addition to these types, Spring Data Cassandra provides a set of built-in converters to map additional types. You can provide your own converters to adjust type conversion, see <<mapping-explicit-converters>> for further details.
+In addition to these types, Spring Data Cassandra provides a set of built-in converters to map additional types. You can provide your own converters to adjust type conversion, see <<cassandra.mapping.explicit-converters>> for further details.
 
 [cols="3,2", options="header"]
 .Type
@@ -75,6 +75,9 @@ In addition to these types, Spring Data Cassandra provides a set of built-in con
 
 | `java.util.UUID`
 | `timeuuid`
+
+| `UDTValue`, mapped User-Defined types
+| user type
 
 | `java.util.Map<K, V>`
 | `map`
@@ -132,7 +135,7 @@ NOTE: `Enum` mapping using ordinal values requires at least Spring 4.3.0. Using 
 [[mapping-configuration]]
 === Mapping Configuration
 
-Unless explicitly configured, an instance of `CassandraMappingConverter` is created by default when creating a `CassandraTemplate` . You can create your own instance of the `MappingCassandraConverter` so as to tell it where to scan the classpath at startup your domain classes in order to extract metadata and construct indexes. Also, by creating your own instance you can register Spring converters to use for mapping specific classes to and from the database.
+Unless explicitly configured, an instance of `MappingCassandraConverter` is created by default when creating a `CassandraTemplate` . You can create your own instance of the `MappingCassandraConverter` so as to tell it where to scan the classpath at startup your domain classes in order to extract metadata and construct indexes. Also, by creating your own instance you can register Spring converters to use for mapping specific classes to and from the database.
 
 
 .@Configuration class to configure Cassandra mapping support
@@ -176,7 +179,7 @@ You can add additional converters to the converter by overriding the method `cus
 NOTE: `AbstractCassandraConfiguration` will create a `CassandraTemplate` instance and registered with the container under the name `cassandraTemplate`.
 
 
-[[mapping-usage]]
+[[mapping.usage]]
 == Metadata based Mapping
 
 To take full advantage of the object mapping functionality inside the Spring Data/Cassandra support, you should annotate your mapped objects with the `@Table` annotation. It allows the classpath scanner to find and pre-process your domain objects to extract the necessary metadata. If you don't use this annotation your entities will be not found or rejected, if used in repository definitions or during runtime. Only annotated entities will be used to perform schema actions. In the worst case a `SchemaAction.RECREATE_DROP_UNUSED` will drop your tables and you'll experience data loss.
@@ -191,7 +194,7 @@ package com.mycompany.domain;
 public class Person {
 
   @Id
-  private ObjectId id;
+  private String id;
 
   @CassandraType(type = Name.VARINT)
   private Integer ssn;
@@ -206,7 +209,7 @@ public class Person {
 IMPORTANT: The `@Id` annotation tells the mapper which property you want to use for the Cassandra primary key. Composite primary keys can require a slightly different data model.
 
 
-[[mapping-usage-annotations]]
+[[mapping.usage-annotations]]
 === Mapping annotation overview
 
 The `MappingCassandraConverter` can use metadata to drive the mapping of objects to rows. An overview of the annotations is provided below
@@ -219,11 +222,14 @@ The `MappingCassandraConverter` can use metadata to drive the mapping of objects
 * `@Transient` - by default all private fields are mapped to the row, this annotation excludes the field where it is applied from being stored in the database
 * `@Column` - applied at the field level. Describes the name of the column as it will be represented in the Cassandra table thus allowing the name to be different than the fieldname of the class.
 * `@CassandraType` - applied at the field level to specify a Cassandra data type. Types are derived from the declaration by default.
+* `@UserDefinedType` - applied at the type level to specify a Cassandra user defined data type. Types are derived from the declaration by default.
 
 The mapping metadata infrastructure is defined in a separate spring-data-commons project that is technology agnostic.
 
 Here is an example of a more complex mapping.
 
+.Mapped `Person` class
+====
 [source,java]
 ----
 @Table("my_person")
@@ -256,6 +262,11 @@ public class Person {
   @Column(forceQuote = true)
   private String lastName;
 
+  private Address address;
+
+  @CassandraType(type = Name.UDT, userTypeName = "myusertype")
+  private UDTValue usertype;
+
   @Transient
   private Integer accountTotal;
 
@@ -279,9 +290,37 @@ public class Person {
   }
 
 // other getters/setters ommitted
+}
 ----
+====
 
-[[mapping-explicit-converters]]
+
+.Mapped User-Defined type `Address`
+====
+[source,java]
+----
+@UserDefinedType("address")
+public class Address {
+
+  private String city;
+
+  @CassandraType(type = Name.VARCHAR)
+  private String city;
+
+  private Set<String> zipcodes;
+
+  @CassandraType(type = Name.SET, typeArguments = Name.BIGINT)
+  private List<Long> timestamps;
+
+// other getters/setters ommitted
+}
+----
+====
+
+NOTE: Working with User-Defined types requires a `UserTypeResolver` configured with the mapping context. See the <<cassandra.connectors,configuration chapter>> how to configure a `UserTypeResolver`.
+
+
+[[cassandra.mapping.explicit-converters]]
 === Overriding Mapping with explicit Converters
 
 When storing and querying your objects it is convenient to have a `CassandraConverter` instance handle the mapping of all Java types to Rows. However, sometimes you may want the `CassandraConverter` s do most of the work but allow you to selectively handle the conversion for a particular type or to optimize performance.
