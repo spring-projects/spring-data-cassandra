@@ -190,7 +190,7 @@
 				<version>${jodatime}</version>
 				<scope>test</scope>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>edu.umd.cs.mtc</groupId>
 				<artifactId>multithreadedtc</artifactId>
@@ -202,8 +202,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-release</id>
-			<url>https://repo.spring.io/libs-release</url>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
 
