@@ -20,44 +20,36 @@ import static org.springframework.data.cassandra.repository.support.MapIdFactory
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.repository.MapId;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 
 /**
  * Integration tests for {@link org.springframework.data.cassandra.core.CassandraTemplate} using {@link MapId}.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class CassandraTemplateMapIdProxyDelegateIntegrationTests
-		extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	@Configuration
-	public static class Config extends IntegrationTestConfig {
-
-		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { SinglePkc.class.getPackage().getName() };
-		}
-	}
-
-	@Autowired CassandraOperations template;
+	CassandraOperations operations;
 
 	@Before
 	public void before() {
-		assertNotNull(template);
+
+		operations = new CassandraTemplate(session);
+
+		SchemaTestUtils.potentiallyCreateTableFor(SinglePkc.class, operations);
+		SchemaTestUtils.potentiallyCreateTableFor(MultiPkc.class, operations);
+
+		SchemaTestUtils.truncate(SinglePkc.class, operations);
+		SchemaTestUtils.truncate(MultiPkc.class, operations);
 	}
 
 	@Test
@@ -66,28 +58,28 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests
 		// insert
 		SinglePkc inserted = new SinglePkc(uuid());
 		inserted.setValue(uuid());
-		SinglePkc saved = template.insert(inserted);
+		SinglePkc saved = operations.insert(inserted);
 		assertSame(saved, inserted);
 
 		// select
 		SinglePkcId id = id(SinglePkcId.class).key(saved.getKey());
-		SinglePkc selected = template.selectOneById(SinglePkc.class, id);
+		SinglePkc selected = operations.selectOneById(SinglePkc.class, id);
 		assertNotSame(selected, saved);
 		assertEquals(saved.getKey(), selected.getKey());
 		assertEquals(saved.getValue(), selected.getValue());
 
 		// update
 		selected.setValue(uuid());
-		SinglePkc updated = template.update(selected);
+		SinglePkc updated = operations.update(selected);
 		assertSame(updated, selected);
 
-		selected = template.selectOneById(SinglePkc.class, id);
+		selected = operations.selectOneById(SinglePkc.class, id);
 		assertNotSame(selected, updated);
 		assertEquals(updated.getValue(), selected.getValue());
 
 		// delete
-		template.delete(selected);
-		assertNull(template.selectOneById(SinglePkc.class, id));
+		operations.delete(selected);
+		assertNull(operations.selectOneById(SinglePkc.class, id));
 	}
 
 	public interface SinglePkcId {
@@ -137,12 +129,12 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests
 		// insert
 		MultiPkc inserted = new MultiPkc(uuid(), uuid());
 		inserted.setValue(uuid());
-		MultiPkc saved = template.insert(inserted);
+		MultiPkc saved = operations.insert(inserted);
 		assertSame(saved, inserted);
 
 		// select
 		MultiPkcId id = id(MultiPkcId.class).key0(saved.getKey0()).key1(saved.getKey1());
-		MultiPkc selected = template.selectOneById(MultiPkc.class, id);
+		MultiPkc selected = operations.selectOneById(MultiPkc.class, id);
 		assertNotSame(selected, saved);
 		assertEquals(saved.getKey0(), selected.getKey0());
 		assertEquals(saved.getKey1(), selected.getKey1());
@@ -150,16 +142,16 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests
 
 		// update
 		selected.setValue(uuid());
-		MultiPkc updated = template.update(selected);
+		MultiPkc updated = operations.update(selected);
 		assertSame(updated, selected);
 
-		selected = template.selectOneById(MultiPkc.class, id);
+		selected = operations.selectOneById(MultiPkc.class, id);
 		assertNotSame(selected, updated);
 		assertEquals(updated.getValue(), selected.getValue());
 
 		// delete
-		template.delete(selected);
-		assertNull(template.selectOneById(MultiPkc.class, id));
+		operations.delete(selected);
+		assertNull(operations.selectOneById(MultiPkc.class, id));
 	}
 
 	public interface MultiPkcId {

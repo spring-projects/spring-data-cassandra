@@ -28,54 +28,46 @@ import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.data.cassandra.test.integration.simpletons.BookCondition;
 import org.springframework.data.cassandra.test.integration.simpletons.BookReference;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.utils.UUIDs;
 
 /**
- * Integration tests for {@link CassandraOperations}.
+ * Integration tests for {@link CassandraTemplate}.
  *
  * @author David Webb
  * @author Mark Paluch
  * @author John Blum
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	@Configuration
-	public static class Config extends IntegrationTestConfig {
-
-		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { Book.class.getPackage().getName(), UserToken.class.getPackage().getName() };
-		}
-	}
-
-	@Autowired
-	CassandraOperations template;
+	CassandraTemplate template;
 
 	@Before
 	public void before() {
-		deleteAllEntities();
+
+		template = new CassandraTemplate(session);
+
+		SchemaTestUtils.potentiallyCreateTableFor(Book.class, template);
+		SchemaTestUtils.potentiallyCreateTableFor(BookReference.class, template);
+		SchemaTestUtils.potentiallyCreateTableFor(UserToken.class, template);
+
+		SchemaTestUtils.truncate(Book.class, template);
+		SchemaTestUtils.truncate(BookReference.class, template);
+		SchemaTestUtils.truncate(UserToken.class, template);
 	}
 
 	@Test
@@ -591,9 +583,6 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 
 		Book book = template.selectOne(select, Book.class);
 
-		log.debug("SingleSelect Book Title -> " + book.getTitle());
-		log.debug("SingleSelect Book Author -> " + book.getAuthor());
-
 		assertThat(book.getTitle(), is(equalTo("Spring Data Cassandra Guide")));
 		assertThat(book.getAuthor(), is(equalTo("Cassandra Guru")));
 
@@ -609,8 +598,6 @@ public class CassandraOperationsIntegrationTests extends AbstractSpringDataEmbed
 		Select select = QueryBuilder.select().all().from("book");
 
 		List<Book> selectedBooks = template.select(select, Book.class);
-
-		log.debug("Book Count -> " + selectedBooks.size());
 
 		assertThat(selectedBooks.size(), is(equalTo(20)));
 

@@ -40,7 +40,7 @@ import com.datastax.driver.core.Session;
  */
 public class KeyspaceRule extends ExternalResource {
 
-	private Cluster cluster;
+	private final CassandraRule cassandraRule;
 	private Session session;
 	private final String keyspaceName;
 
@@ -65,42 +65,25 @@ public class KeyspaceRule extends ExternalResource {
 		Assert.notNull(cassandraRule, "CassandraRule must not be null!");
 		Assert.hasText(keyspaceName, "KeyspaceName must not be empty!");
 
-		// Support initialized and initializing CassandraRule.
-		if (cassandraRule.getCluster() != null) {
-			this.cluster = cassandraRule.getCluster();
-			this.session = cluster.connect();
-		} else {
-			cassandraRule.before(new SessionCallback<Object>() {
-				@Override
-				public Object doInSession(Session s) throws DataAccessException {
-					KeyspaceRule.this.cluster = s.getCluster();
-					KeyspaceRule.this.session = cluster.connect();
-					return null;
-				}
-			});
-		}
 		this.keyspaceName = keyspaceName;
-	}
-
-	/**
-	 * Create a {@link KeyspaceRule} initialized with a {@link Cluster} for creating a keyspace using the given
-	 * {@code keyspaceName}.
-	 *
-	 * @param cluster
-	 * @param keyspaceName
-	 */
-	public KeyspaceRule(Cluster cluster, String keyspaceName) {
-
-		Assert.notNull(cluster, "Cluster must not be null!");
-		Assert.hasText(keyspaceName, "KeyspaceName must not be empty!");
-
-		this.cluster = cluster;
-		this.session = cluster.connect();
-		this.keyspaceName = keyspaceName;
+		this.cassandraRule = cassandraRule;
 	}
 
 	@Override
 	protected void before() throws Throwable {
+
+		// Support initialized and initializing CassandraRule.
+		if (cassandraRule.getCluster() != null) {
+			this.session = cassandraRule.getSession();
+		} else {
+			cassandraRule.before(new SessionCallback<Object>() {
+				@Override
+				public Object doInSession(Session s) throws DataAccessException {
+					KeyspaceRule.this.session = cassandraRule.getSession();
+					return null;
+				}
+			});
+		}
 
 		Assert.state(session != null, "Session was not initialized");
 

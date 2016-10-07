@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.collections;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,45 +26,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
 import org.springframework.data.cassandra.test.integration.simpletons.BookHistory;
 import org.springframework.data.cassandra.test.integration.simpletons.BookReference;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * @author dwebb
+ * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class CollectionsRowValueProviderIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class CollectionsRowValueProviderIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	@Configuration
-	public static class Config extends IntegrationTestConfig {
-
-		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { Book.class.getPackage().getName() };
-		}
-	}
-
-	@Autowired CassandraOperations template;
+	CassandraOperations operations;
 
 	@Before
 	public void before() throws IOException {
-		deleteAllEntities();
+
+		operations = new CassandraTemplate(session);
+
+		SchemaTestUtils.potentiallyCreateTableFor(Book.class, operations);
+		SchemaTestUtils.potentiallyCreateTableFor(BookHistory.class, operations);
+		SchemaTestUtils.potentiallyCreateTableFor(BookReference.class, operations);
+
+		SchemaTestUtils.truncate(Book.class, operations);
+		SchemaTestUtils.truncate(BookHistory.class, operations);
+		SchemaTestUtils.truncate(BookReference.class, operations);
 	}
 
 	@Test
@@ -83,22 +79,16 @@ public class CollectionsRowValueProviderIntegrationTests extends AbstractSpringD
 
 		b1.setCheckOuts(checkOutMap);
 
-		template.insert(b1);
+		operations.insert(b1);
 
 		Select select = QueryBuilder.select().all().from("bookHistory");
 		select.where(QueryBuilder.eq("isbn", "123456-1"));
 
-		BookHistory b = template.selectOne(select, BookHistory.class);
+		BookHistory b = operations.selectOne(select, BookHistory.class);
 
-		Assert.assertNotNull(b.getCheckOuts());
-
-		log.debug("Checkouts map data");
-		for (String username : b.getCheckOuts().keySet()) {
-			log.debug(username + " has " + b.getCheckOuts().get(username) + " checkouts of this book.");
-		}
-
-		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
-		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
+		assertNotNull(b.getCheckOuts());
+		assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
+		assertEquals(b.getAuthor(), "Cassandra Guru");
 
 	}
 
@@ -125,28 +115,16 @@ public class CollectionsRowValueProviderIntegrationTests extends AbstractSpringD
 		marks.add(144);
 		b1.setBookmarks(marks);
 
-		template.insert(b1);
+		operations.insert(b1);
 
 		Select select = QueryBuilder.select().all().from("bookReference");
 		select.where(QueryBuilder.eq("isbn", "123456-1"));
 
-		BookReference b = template.selectOne(select, BookReference.class);
+		BookReference b = operations.selectOne(select, BookReference.class);
 
-		Assert.assertNotNull(b.getReferences());
-		Assert.assertNotNull(b.getBookmarks());
-
-		log.debug("Bookmark List<Integer> Data");
-		for (Integer mark : b.getBookmarks()) {
-			log.debug("Bookmark set on page  " + mark);
-		}
-
-		log.debug("Reference Set<String> Data");
-		for (String ref : b.getReferences()) {
-			log.debug("Reference -> " + ref);
-		}
-
-		Assert.assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
-		Assert.assertEquals(b.getAuthor(), "Cassandra Guru");
-
+		assertNotNull(b.getReferences());
+		assertNotNull(b.getBookmarks());
+		assertEquals(b.getTitle(), "Spring Data Cassandra Guide");
+		assertEquals(b.getAuthor(), "Cassandra Guru");
 	}
 }

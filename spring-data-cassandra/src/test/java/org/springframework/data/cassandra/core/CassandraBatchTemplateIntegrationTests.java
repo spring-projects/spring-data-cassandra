@@ -23,16 +23,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.domain.FlatGroup;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.GroupKey;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -42,24 +37,20 @@ import com.datastax.driver.core.Row;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	@Configuration
-	public static class Config extends IntegrationTestConfig {
-
-		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { Group.class.getPackage().getName() };
-		}
-	}
-
-	@Autowired CassandraTemplate cassandraTemplate;
+	CassandraTemplate template;
 
 	@Before
 	public void setUp() throws Exception {
-		cassandraTemplate.deleteAll(Group.class);
+
+		template = new CassandraTemplate(session);
+
+		SchemaTestUtils.potentiallyCreateTableFor(Group.class, template);
+		SchemaTestUtils.potentiallyCreateTableFor(FlatGroup.class, template);
+
+		SchemaTestUtils.truncate(Group.class, template);
+		SchemaTestUtils.truncate(FlatGroup.class, template);
 	}
 
 	/**
@@ -71,10 +62,10 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
 		Group mike = new Group(new GroupKey("users", "0x1", "mike"));
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(walter).insert(mike).execute();
 
-		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(Group.class, walter.getId());
 
 		assertThat(loaded.getId().getUsername(), is(equalTo(walter.getId().getUsername())));
 	}
@@ -88,10 +79,10 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
 		Group mike = new Group(new GroupKey("users", "0x1", "mike"));
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(Arrays.asList(walter, mike)).execute();
 
-		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(Group.class, walter.getId());
 
 		assertThat(loaded.getId().getUsername(), is(equalTo(walter.getId().getUsername())));
 	}
@@ -102,16 +93,16 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 	@Test
 	public void shouldUpdateEntities() {
 
-		Group walter = cassandraTemplate.insert(new Group(new GroupKey("users", "0x1", "walter")));
-		Group mike = cassandraTemplate.insert(new Group(new GroupKey("users", "0x1", "mike")));
+		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
+		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.update(walter).update(mike).execute();
 
-		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(Group.class, walter.getId());
 
 		assertThat(loaded.getEmail(), is(equalTo(walter.getEmail())));
 	}
@@ -122,16 +113,16 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 	@Test
 	public void shouldUpdateCollectionOfEntities() {
 
-		Group walter = cassandraTemplate.insert(new Group(new GroupKey("users", "0x1", "walter")));
-		Group mike = cassandraTemplate.insert(new Group(new GroupKey("users", "0x1", "mike")));
+		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
+		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.update(Arrays.asList(walter, mike)).execute();
 
-		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(Group.class, walter.getId());
 
 		assertThat(loaded.getEmail(), is(equalTo(walter.getEmail())));
 	}
@@ -142,16 +133,16 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 	@Test
 	public void shouldUpdatesCollectionOfEntities() {
 
-		FlatGroup walter = cassandraTemplate.insert(new FlatGroup("users", "0x1", "walter"));
-		FlatGroup mike = cassandraTemplate.insert(new FlatGroup("users", "0x1", "mike"));
+		FlatGroup walter = template.insert(new FlatGroup("users", "0x1", "walter"));
+		FlatGroup mike = template.insert(new FlatGroup("users", "0x1", "mike"));
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.update(Arrays.asList(walter, mike)).execute();
 
-		FlatGroup loaded = cassandraTemplate.selectOneById(FlatGroup.class, walter);
+		FlatGroup loaded = template.selectOneById(FlatGroup.class, walter);
 
 		assertThat(loaded.getEmail(), is(equalTo(walter.getEmail())));
 	}
@@ -162,14 +153,14 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 	@Test
 	public void shouldDeleteEntities() {
 
-		Group walter = cassandraTemplate.insert(new Group(new GroupKey("users", "0x1", "walter")));
-		Group mike = cassandraTemplate.insert(new Group(new GroupKey("users", "0x1", "mike")));
+		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
+		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 
 		batchOperations.delete(walter).delete(mike).execute();
 
-		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(Group.class, walter.getId());
 
 		assertThat(loaded, is(nullValue()));
 	}
@@ -180,14 +171,14 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 	@Test
 	public void shouldDeleteCollectionOfEntities() {
 
-		Group walter = cassandraTemplate.insert(new Group(new GroupKey("users", "0x1", "walter")));
-		Group mike = cassandraTemplate.insert(new Group(new GroupKey("users", "0x1", "mike")));
+		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
+		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 
 		batchOperations.delete(Arrays.asList(walter, mike)).execute();
 
-		Group loaded = cassandraTemplate.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(Group.class, walter.getId());
 
 		assertThat(loaded, is(nullValue()));
 	}
@@ -206,10 +197,10 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 
 		long timestamp = (System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1)) * 1000;
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(walter).insert(mike).withTimestamp(timestamp).execute();
 
-		ResultSet resultSet = cassandraTemplate.query("SELECT writetime(email) FROM group;");
+		ResultSet resultSet = template.query("SELECT writetime(email) FROM group;");
 
 		assertThat(resultSet.getAvailableWithoutFetching(), is(2));
 
@@ -224,7 +215,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 	@Test(expected = IllegalStateException.class)
 	public void shouldNotExecuteTwice() {
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(new Group(new GroupKey("users", "0x1", "walter"))).execute();
 
 		batchOperations.execute();
@@ -238,7 +229,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractSpringDataEm
 	@Test(expected = IllegalStateException.class)
 	public void shouldNotAllowModificationAfterExecution() {
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(cassandraTemplate);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(new Group(new GroupKey("users", "0x1", "walter"))).execute();
 
 		batchOperations.update(new Group());

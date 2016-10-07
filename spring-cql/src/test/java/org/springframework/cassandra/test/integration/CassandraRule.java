@@ -16,13 +16,13 @@
 
 package org.springframework.cassandra.test.integration;
 
-import static org.apache.cassandra.db.marshal.CompositeType.build;
 import static org.springframework.cassandra.test.integration.CassandraRule.InvocationMode.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.rules.ExternalResource;
 import org.springframework.cassandra.core.SessionCallback;
@@ -36,6 +36,7 @@ import org.springframework.util.SocketUtils;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SocketOptions;
 
 /**
  * Rule to provide a Cassandra context for integration tests. This rule can use/spin up either an embedded Cassandra
@@ -54,6 +55,8 @@ import com.datastax.driver.core.Session;
  * @since 1.5
  */
 public class CassandraRule extends ExternalResource {
+
+	private static ResourceHolder resourceHolder;
 
 	private final CassandraConnectionProperties properties = new CassandraConnectionProperties();
 	private final String configurationFileName;
@@ -318,28 +321,51 @@ public class CassandraRule extends ExternalResource {
 			QueryOptions queryOptions = new QueryOptions();
 			queryOptions.setRefreshSchemaIntervalMillis(0);
 
-			cluster = new Cluster.Builder().addContactPoints(hostIp) //
-					.withPort(port) //
-					.withMaxSchemaAgreementWaitSeconds(3) //
-					.withQueryOptions(queryOptions) //
-					.withNettyOptions(FastShutdownNettyOptions.INSTANCE) //
-					.build();
+			SocketOptions socketOptions = new SocketOptions();
+			socketOptions.setConnectTimeoutMillis((int) TimeUnit.SECONDS.toMillis(15));
+			socketOptions.setReadTimeoutMillis((int) TimeUnit.SECONDS.toMillis(15));
+
+			if (resourceHolder == null) {
+
+				cluster = new Cluster.Builder().addContactPoints(hostIp) //
+						.withPort(port) //
+						.withQueryOptions(queryOptions) //
+						.withMaxSchemaAgreementWaitSeconds(3) //
+						.withSocketOptions(socketOptions) //
+						.withNettyOptions(FastShutdownNettyOptions.INSTANCE) //
+						.build();
+
+				if (properties.getBoolean("build.cassandra.reuse-cluster")) {
+					resourceHolder = new ResourceHolder(cluster, cluster.connect());
+				}
+			} else {
+				cluster = resourceHolder.cluster;
+			}
+
 		} else {
 			cluster = parent.cluster;
 			cassandraPort = parent.cassandraPort;
 		}
 
-		session = cluster.connect();
+		if (parent != null) {
+			session = parent.getSession();
+		} else if (resourceHolder == null) {
+			session = cluster.connect();
+		} else {
+			session = resourceHolder.session;
+		}
 	}
 
 	private void cleanupConnection() {
 
-		if (parent == null) {
-			session.close();
-			cluster.closeAsync();
-			cluster = null;
-		} else {
-			session.closeAsync();
+		if (resourceHolder == null) {
+			if (parent == null) {
+				session.close();
+				cluster.closeAsync();
+				cluster = null;
+			} else {
+				session.closeAsync();
+			}
 		}
 
 		session = null;
@@ -394,6 +420,26 @@ public class CassandraRule extends ExternalResource {
 
 		private InvocationMode() {
 
+		}
+	}
+
+	private static class ResourceHolder {
+
+		private Cluster cluster;
+		private Session session;
+
+		public ResourceHolder(final Cluster cluster, final Session session) {
+			this.cluster = cluster;
+			this.session = session;
+
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+
+				@Override
+				public void run() {
+					session.close();
+					cluster.close();
+				}
+			});
 		}
 	}
 }

@@ -28,20 +28,15 @@ import java.util.Set;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CustomConversions;
-import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.Table;
-import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
-import org.springframework.data.cassandra.test.integration.repository.querymethods.datekey.DateThingRepo;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Row;
@@ -57,40 +52,30 @@ import lombok.NoArgsConstructor;
  * 
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class CustomConversionTests {
+public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	@Configuration
-	@EnableCassandraRepositories(basePackageClasses = DateThingRepo.class)
-	public static class Config extends IntegrationTestConfig {
-
-		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { Employee.class.getPackage().getName() };
-		}
-
-		@Override
-		public SchemaAction getSchemaAction() {
-			return SchemaAction.RECREATE_DROP_UNUSED;
-		}
-
-		@Override
-		public CustomConversions customConversions() {
-
-			List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
-			converters.add(new PersonReadConverter());
-			converters.add(new PersonWriteConverter());
-
-			return new CustomConversions(converters);
-		}
-	}
-
-	@Autowired CassandraOperations cassandraOperations;
+	CassandraTemplate cassandraOperations;
 
 	@Before
 	public void setUp() {
-		cassandraOperations.deleteAll(Employee.class);
+
+		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+		converters.add(new PersonReadConverter());
+		converters.add(new PersonWriteConverter());
+		CustomConversions customConversions = new CustomConversions(converters);
+
+		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+		mappingContext.setCustomConversions(customConversions);
+		mappingContext.afterPropertiesSet();
+
+		MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
+		converter.setCustomConversions(customConversions);
+		converter.afterPropertiesSet();
+
+		cassandraOperations = new CassandraTemplate(session, converter);
+
+		SchemaTestUtils.potentiallyCreateTableFor(Employee.class, cassandraOperations);
+		SchemaTestUtils.truncate(Employee.class, cassandraOperations);
 	}
 
 	/**

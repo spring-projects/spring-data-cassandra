@@ -24,21 +24,16 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.Cancellable;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.RetryPolicy;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.test.integration.support.ObjectListener;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.DeletionListener;
@@ -46,11 +41,12 @@ import org.springframework.data.cassandra.core.WriteListener;
 import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
+import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.integration.support.TestListener;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Integration tests for asynchronous {@link CassandraTemplate} operations.
@@ -58,15 +54,17 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class AsynchronousCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	@Autowired CassandraOperations cassandraOperations;
+	CassandraOperations operations;
 
 	@Before
 	public void before() {
-		deleteAllEntities();
+
+		operations = new CassandraTemplate(session);
+
+		SchemaTestUtils.potentiallyCreateTableFor(Person.class, operations);
+		SchemaTestUtils.truncate(Person.class, operations);
 	}
 
 	@Test
@@ -84,7 +82,7 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 		Person person = Person.random();
 		PersonListener listener = new PersonListener();
 
-		cassandraOperations.insertAsynchronously(person, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+		operations.insertAsynchronously(person, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
 		listener.await();
 
 		if (listener.exception != null) {
@@ -112,9 +110,9 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 		Cancellable cancellable;
 
 		if (insert) {
-			cancellable = cassandraOperations.insertAsynchronously(person, listener, null);
+			cancellable = operations.insertAsynchronously(person, listener, null);
 		} else {
-			cancellable = cassandraOperations.updateAsynchronously(person, listener, null);
+			cancellable = operations.updateAsynchronously(person, listener, null);
 		}
 		cancellable.cancel();
 		listener.await();
@@ -145,10 +143,10 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 
 		Person person = Person.random();
 		person.setFirstname("Homer");
-		cassandraOperations.insert(person);
+		operations.insert(person);
 
 		PersonListener listener = new PersonListener();
-		cassandraOperations.updateAsynchronously(person, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+		operations.updateAsynchronously(person, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
 
 		listener.await();
 		if (listener.exception != null) {
@@ -172,16 +170,16 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 
 		Person person = Person.random();
 
-		cassandraOperations.insert(person);
+		operations.insert(person);
 
 		PersonListener listener = new PersonListener();
-		cassandraOperations.deleteAsynchronously(person, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
+		operations.deleteAsynchronously(person, listener, new WriteOptions(cl, RetryPolicy.LOGGING));
 
 		listener.await();
 		if (listener.exception != null) {
 			throw listener.exception;
 		}
-		assertFalse(cassandraOperations.exists(Person.class, id("id", person.id)));
+		assertFalse(operations.exists(Person.class, id("id", person.id)));
 	}
 
 	@Test(expected = CancellationException.class)
@@ -189,7 +187,7 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 
 		Person person = Person.random();
 		PersonListener listener = new PersonListener();
-		cassandraOperations.deleteAsynchronously(person, listener, null).cancel();
+		operations.deleteAsynchronously(person, listener, null).cancel();
 		listener.await();
 
 		// if listener.success is true then the
@@ -211,12 +209,12 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 	public void shouldSelectOneAsynchronously() throws Exception {
 
 		Person person = Person.random();
-		cassandraOperations.insert(person);
+		operations.insert(person);
 
 		ObjectListener<Person> objectListener = ObjectListener.create();
 		String cql = String.format("SELECT * from person where id = '%s'", person.id);
 
-		cassandraOperations.selectOneAsynchronously(cql, Person.class, objectListener);
+		operations.selectOneAsynchronously(cql, Person.class, objectListener);
 		objectListener.await();
 
 		assertThat(objectListener.getResult(), is(notNullValue()));
@@ -232,14 +230,11 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractSprin
 		ObjectListener<Person> objectListener = ObjectListener.create();
 		String cql = String.format("SELECT * from person where id = '%s'", "unknown");
 
-		cassandraOperations.selectOneAsynchronously(cql, Person.class, objectListener);
+		operations.selectOneAsynchronously(cql, Person.class, objectListener);
 		objectListener.await();
 
 		assertThat(objectListener.getResult(), is(nullValue()));
 	}
-
-	@Configuration
-	public static class Config extends IntegrationTestConfig {}
 
 	@Table
 	@Data

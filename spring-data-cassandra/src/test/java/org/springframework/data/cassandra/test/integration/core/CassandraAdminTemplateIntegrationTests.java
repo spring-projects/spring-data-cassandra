@@ -22,21 +22,15 @@ import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.test.integration.simpletons.Book;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
-import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
 /**
@@ -44,23 +38,15 @@ import com.datastax.driver.core.TableMetadata;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class CassandraAdminTemplateIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	@Configuration
-	public static class Config extends IntegrationTestConfig {
-
-		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { Book.class.getPackage().getName() };
-		}
-	}
-
-	@Autowired private CassandraAdminTemplate cassandraAdminTemplate;
+	private CassandraAdminTemplate cassandraAdminTemplate;
 
 	@Before
 	public void before() {
+
+		cassandraAdminTemplate = new CassandraAdminTemplate(session, new MappingCassandraConverter());
+
 		KeyspaceMetadata keyspace = getKeyspaceMetadata();
 		Collection<TableMetadata> tables = keyspace.getTables();
 		for (TableMetadata table : tables) {
@@ -71,10 +57,6 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractSpringDataEm
 	private KeyspaceMetadata getKeyspaceMetadata() {
 		Metadata metadata = getSession().getCluster().getMetadata();
 		return metadata.getKeyspace(getSession().getLoggedKeyspace());
-	}
-
-	private Session getSession() {
-		return cassandraAdminTemplate.getSession();
 	}
 
 	/**
