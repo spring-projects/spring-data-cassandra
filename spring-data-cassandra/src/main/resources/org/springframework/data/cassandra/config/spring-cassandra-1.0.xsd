@@ -272,6 +272,24 @@ LoadBalancingPolicy implementation.
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
+		<xsd:attribute name="netty-options-ref" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+NettyOptions implementation reference.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:assignable-to
+								type="com.datastax.driver.core.NettyOptions" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:union memberTypes="xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
 		<xsd:attribute name="max-queue-size" type="xsd:string" default="256" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[

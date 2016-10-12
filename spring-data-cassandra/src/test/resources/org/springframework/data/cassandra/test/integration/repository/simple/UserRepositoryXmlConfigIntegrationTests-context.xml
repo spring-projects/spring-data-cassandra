@@ -16,7 +16,7 @@
 		</cass:entity>
 	</cass:mapping>
 
-	<cass:cluster port="${build.cassandra.native_transport_port}">
+	<cass:cluster port="${build.cassandra.native_transport_port}" netty-options-ref="nettyOptions">
 		<cass:keyspace name="#{randomKeyspaceName}"
 			action="CREATE_DROP" durable-writes="true">
 		</cass:keyspace>

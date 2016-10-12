@@ -44,6 +44,7 @@ import org.w3c.dom.NodeList;
  * Test suite of Unit tests testing the contract and functionality of the {@link CassandraCqlClusterParser}.
  *
  * @author John Blum
+ * @author Mark Paluch
  */
 // TODO add more tests!
 @RunWith(MockitoJUnitRunner.class)
@@ -92,6 +93,7 @@ public class CassandraCqlClusterParserUnitTests {
 		when(mockElement.getAttribute("host-state-listener-ref")).thenReturn("testHostStateListener");
 		when(mockElement.getAttribute("latency-tracker-ref")).thenReturn("testLatencyTracker");
 		when(mockElement.getAttribute("load-balancing-policy-ref")).thenReturn("testLoadBalancingPolicy");
+		when(mockElement.getAttribute("netty-options-ref")).thenReturn("testNettyOptions");
 		when(mockElement.getAttribute("reconnection-policy-ref")).thenReturn("testReconnectionPolicy");
 		when(mockElement.getAttribute("retry-policy-ref")).thenReturn("testRetryPolicy");
 		when(mockElement.getAttribute("speculative-execution-policy-ref")).thenReturn("testSpeculativeExecutionPolicy");
@@ -129,6 +131,7 @@ public class CassandraCqlClusterParserUnitTests {
 		assertThat(getPropertyValueAsString(beanDefinition, "hostStateListener"), is(equalTo("testHostStateListener")));
 		assertThat(getPropertyValueAsString(beanDefinition, "latencyTracker"), is(equalTo("testLatencyTracker")));
 		assertThat(getPropertyValueAsString(beanDefinition, "loadBalancingPolicy"), is(equalTo("testLoadBalancingPolicy")));
+		assertThat(getPropertyValueAsString(beanDefinition, "nettyOptions"), is(equalTo("testNettyOptions")));
 		assertThat(getPropertyValueAsString(beanDefinition, "reconnectionPolicy"), is(equalTo("testReconnectionPolicy")));
 		assertThat(getPropertyValueAsString(beanDefinition, "retryPolicy"), is(equalTo("testRetryPolicy")));
 		assertThat(getPropertyValueAsString(beanDefinition, "speculativeExecutionPolicy"), is(equalTo("testSpeculativeExecutionPolicy")));
@@ -152,6 +155,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockElement).getAttribute(eq("host-state-listener-ref"));
 		verify(mockElement).getAttribute(eq("latency-tracker-ref"));
 		verify(mockElement).getAttribute(eq("load-balancing-policy-ref"));
+		verify(mockElement).getAttribute(eq("netty-options-ref"));
 		verify(mockElement).getAttribute(eq("reconnection-policy-ref"));
 		verify(mockElement).getAttribute(eq("retry-policy-ref"));
 		verify(mockElement).getAttribute(eq("speculative-execution-policy-ref"));

@@ -23,6 +23,8 @@
 
 	<bean name="testTimestampGenerator" class="com.datastax.driver.core.AtomicMonotonicTimestampGenerator"/>
 
+	<bean id="nettyOptions" class="org.springframework.cassandra.test.integration.support.FastShutdownNettyOptions" />
+
 	<cassandra:cluster
 		cluster-name="skynet" contact-points="localhost" port="${build.cassandra.native_transport_port}"
 		address-translator-ref="testAddressTranslator"
@@ -33,7 +35,9 @@
 		max-schema-agreement-wait-seconds="2"
 		pool-timeout-milliseconds="15000"
 		speculative-execution-policy-ref="testSpeculativeExecutionPolicy"
-		timestamp-generator-ref="testTimestampGenerator">
+		timestamp-generator-ref="testTimestampGenerator"
+		netty-options-ref="nettyOptions"
+		>
 
 		<cassandra:local-pooling-options
 			core-connections="2"
