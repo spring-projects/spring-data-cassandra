@@ -24,8 +24,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.cassandra.core.keyspace.ColumnSpecification;
+import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.mapping.model.MappingException;
@@ -37,7 +41,7 @@ import org.springframework.data.util.ClassTypeInformation;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class MappingContextUnitTests {
+public class BasicCassandraMappingContextUnitTests {
 
 	BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
 
@@ -107,7 +111,8 @@ public class MappingContextUnitTests {
 	@Test
 	public void primaryKeyColumnsOnPropertyShouldWork() {
 
-		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(PrimaryKeyColumnsOnProperty.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
+				.getPersistentEntity(PrimaryKeyColumnsOnProperty.class);
 
 		assertThat(persistentEntity.isCompositePrimaryKey(), is(false));
 
@@ -154,13 +159,13 @@ public class MappingContextUnitTests {
 	 * @see DATACASS-248
 	 */
 	@Test
-	public void primaryKeyClassWithprimaryKeyColumnsOnPropertyShouldWork() {
+	public void primaryKeyClassWithPrimaryKeyColumnsOnPropertyShouldWork() {
 
-		CassandraPersistentEntity<?> persistentEntity =
-				mappingContext.getPersistentEntity(PrimaryKeyOnPropertyWithPrimaryKeyClass.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
+				.getPersistentEntity(PrimaryKeyOnPropertyWithPrimaryKeyClass.class);
 
-		CassandraPersistentEntity<?> primaryKeyClass =
-				mappingContext.getPersistentEntity(CompositePrimaryKeyClassWithProperties.class);
+		CassandraPersistentEntity<?> primaryKeyClass = mappingContext
+				.getPersistentEntity(CompositePrimaryKeyClassWithProperties.class);
 
 		assertThat(persistentEntity.isCompositePrimaryKey(), is(false));
 		assertThat(persistentEntity.getPersistentProperty("key").isCompositePrimaryKey(), is(true));
@@ -181,6 +186,60 @@ public class MappingContextUnitTests {
 		assertThat(lastname.isPartitionKeyColumn(), is(false));
 		assertThat(lastname.isClusterKeyColumn(), is(true));
 		assertThat(lastname.getColumnName().toCql(), is(equalTo("mylastname")));
+	}
+
+	/**
+	 * @see DATACASS-340
+	 */
+	@Test
+	public void createdTableSpecificationShouldConsiderClusterColumnOrdering() {
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
+				.getPersistentEntity(EntityWithOrderedClusteredColumns.class);
+
+		CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
+
+		assertThat(tableSpecification.getPartitionKeyColumns(), hasSize(1));
+		assertThat(tableSpecification.getClusteredKeyColumns(), hasSize(3));
+
+		ColumnSpecification breed = tableSpecification.getClusteredKeyColumns().get(0);
+		assertThat(breed.getName().toCql(), is(equalTo("breed")));
+		assertThat(breed.getOrdering(), is(Ordering.ASCENDING));
+
+		ColumnSpecification color = tableSpecification.getClusteredKeyColumns().get(1);
+		assertThat(color.getName().toCql(), is(equalTo("color")));
+		assertThat(color.getOrdering(), is(Ordering.DESCENDING));
+
+		ColumnSpecification kind = tableSpecification.getClusteredKeyColumns().get(2);
+		assertThat(kind.getName().toCql(), is(equalTo("kind")));
+		assertThat(kind.getOrdering(), is(Ordering.ASCENDING));
+	}
+
+	/**
+	 * @see DATACASS-340
+	 */
+	@Test
+	public void createdTableSpecificationShouldConsiderPrimaryKeyClassClusterColumnOrdering() {
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
+				.getPersistentEntity(EntityWithPrimaryKeyWithOrderedClusteredColumns.class);
+
+		CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
+
+		assertThat(tableSpecification.getPartitionKeyColumns(), hasSize(1));
+		assertThat(tableSpecification.getClusteredKeyColumns(), hasSize(3));
+
+		ColumnSpecification breed = tableSpecification.getClusteredKeyColumns().get(0);
+		assertThat(breed.getName().toCql(), is(equalTo("breed")));
+		assertThat(breed.getOrdering(), is(Ordering.ASCENDING));
+
+		ColumnSpecification color = tableSpecification.getClusteredKeyColumns().get(1);
+		assertThat(color.getName().toCql(), is(equalTo("color")));
+		assertThat(color.getOrdering(), is(Ordering.DESCENDING));
+
+		ColumnSpecification kind = tableSpecification.getClusteredKeyColumns().get(2);
+		assertThat(kind.getName().toCql(), is(equalTo("kind")));
+		assertThat(kind.getOrdering(), is(Ordering.ASCENDING));
 	}
 
 	@Table
@@ -223,6 +282,30 @@ public class MappingContextUnitTests {
 		}
 	}
 
+	@Table
+	static class EntityWithOrderedClusteredColumns {
+
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING) String breed;
+		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING) String color;
+		@PrimaryKeyColumn(ordinal = 3, type = PrimaryKeyType.CLUSTERED) String kind;
+	}
+
+	@PrimaryKeyClass
+	static class PrimaryKeyWithOrderedClusteredColumns implements Serializable {
+
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING) String breed;
+		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING) String color;
+		@PrimaryKeyColumn(ordinal = 3, type = PrimaryKeyType.CLUSTERED) String kind;
+	}
+
+	@Table
+	private static class EntityWithPrimaryKeyWithOrderedClusteredColumns {
+
+		@PrimaryKey PrimaryKeyWithOrderedClusteredColumns key;
+	}
+
 	/**
 	 * @see DATACASS-296
 	 */
@@ -245,8 +328,7 @@ public class MappingContextUnitTests {
 		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(false));
 	}
 
-	private static class Human {
-	}
+	private static class Human {}
 
 	private static class HumanToStringConverter implements Converter<Human, String> {
 

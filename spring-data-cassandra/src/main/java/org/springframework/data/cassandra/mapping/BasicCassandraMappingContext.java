@@ -216,13 +216,12 @@ public class BasicCassandraMappingContext
 					if (property.isIdProperty() || property.isPartitionKeyColumn()) {
 						spec.partitionKeyColumn(property.getColumnName(), getDataType(property));
 					} else if (property.isClusterKeyColumn()) {
-						spec.clusteredKeyColumn(property.getColumnName(), getDataType(property));
+						spec.clusteredKeyColumn(property.getColumnName(), getDataType(property), property.getPrimaryKeyOrdering());
 					} else {
 						spec.column(property.getColumnName(), getDataType(property));
 					}
 				}
 			}
-
 		});
 
 		if (spec.getPartitionKeyColumns().isEmpty()) {
