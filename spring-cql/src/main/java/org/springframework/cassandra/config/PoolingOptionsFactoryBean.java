@@ -56,15 +56,15 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 
 	private Executor initializationExecutor;
 
-	private Integer heartbeatIntervalSeconds;
-	private Integer idleTimeoutSeconds;
+	private int heartbeatIntervalSeconds;
+	private int idleTimeoutSeconds;
 	private Integer localCoreConnections;
 	private Integer localMaxConnections;
 	private Integer localMaxSimultaneousRequests;
 	private Integer localMinSimultaneousRequests;
 
 	// Deprecated since Cassandra Driver 3.1.1
-	private Integer poolTimeoutMilliseconds;
+	private int poolTimeoutMilliseconds;
 
 	// Available since Cassandra Driver 3.1.1
 	private int maxQueueSize;
@@ -85,11 +85,11 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		poolingOptions = configureRemoteHostDistancePoolingOptions(
 			configureLocalHostDistancePoolingOptions(newPoolingOptions()));
 
-		if (heartbeatIntervalSeconds != null) {
+		if (heartbeatIntervalSeconds != DEFAULT.getHeartbeatIntervalSeconds()) {
 			poolingOptions.setHeartbeatIntervalSeconds(heartbeatIntervalSeconds);
 		}
 
-		if (idleTimeoutSeconds != null) {
+		if (idleTimeoutSeconds != DEFAULT.getIdleTimeoutSeconds()) {
 			poolingOptions.setIdleTimeoutSeconds(idleTimeoutSeconds);
 		}
 
@@ -97,7 +97,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 			poolingOptions.setInitializationExecutor(initializationExecutor);
 		}
 
-		if (poolTimeoutMilliseconds != null) {
+		if (poolTimeoutMilliseconds != DEFAULT.getPoolTimeoutMillis()) {
 			poolingOptions.setPoolTimeoutMillis(poolTimeoutMilliseconds);
 		}
 
@@ -219,7 +219,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param heartbeatIntervalSeconds interval in seconds between heartbeat messages to keep idle connections alive.
 	 */
-	public void setHeartbeatIntervalSeconds(Integer heartbeatIntervalSeconds) {
+	public void setHeartbeatIntervalSeconds(int heartbeatIntervalSeconds) {
 		this.heartbeatIntervalSeconds = heartbeatIntervalSeconds;
 	}
 
@@ -228,7 +228,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code heartbeatIntervalSeconds}.
 	 */
-	public Integer getHeartbeatIntervalSeconds() {
+	public int getHeartbeatIntervalSeconds() {
 		return heartbeatIntervalSeconds;
 	}
 
@@ -237,7 +237,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param idleTimeoutSeconds idle timeout in seconds before a connection is removed.
 	 */
-	public void setIdleTimeoutSeconds(Integer idleTimeoutSeconds) {
+	public void setIdleTimeoutSeconds(int idleTimeoutSeconds) {
 		this.idleTimeoutSeconds = idleTimeoutSeconds;
 	}
 
@@ -246,7 +246,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code idleTimeoutSeconds}.
 	 */
-	public Integer getIdleTimeoutSeconds() {
+	public int getIdleTimeoutSeconds() {
 		return idleTimeoutSeconds;
 	}
 
@@ -273,7 +273,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param poolTimeoutMilliseconds timeout in milliseconds used to acquire a connection from the host's pool.
 	 */
-	public void setPoolTimeoutMilliseconds(Integer poolTimeoutMilliseconds) {
+	public void setPoolTimeoutMilliseconds(int poolTimeoutMilliseconds) {
 		this.poolTimeoutMilliseconds = poolTimeoutMilliseconds;
 	}
 
@@ -282,7 +282,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code poolTimeoutMilliseconds}.
 	 */
-	public Integer getPoolTimeoutMilliseconds() {
+	public int getPoolTimeoutMilliseconds() {
 		return poolTimeoutMilliseconds;
 	}
 

@@ -172,10 +172,10 @@ public class PoolingOptionsFactoryBeanUnitTests {
 			}
 		};
 
-		poolingOptionsFactoryBean.setHeartbeatIntervalSeconds(30);
-		poolingOptionsFactoryBean.setIdleTimeoutSeconds(120);
+		poolingOptionsFactoryBean.setHeartbeatIntervalSeconds(33);
+		poolingOptionsFactoryBean.setIdleTimeoutSeconds(112);
 		poolingOptionsFactoryBean.setInitializationExecutor(mockExecutor);
-		poolingOptionsFactoryBean.setPoolTimeoutMilliseconds(120);
+		poolingOptionsFactoryBean.setPoolTimeoutMilliseconds(130);
 		poolingOptionsFactoryBean.setRemoteCoreConnections(5);
 		poolingOptionsFactoryBean.setRemoteMaxConnections(50);
 		poolingOptionsFactoryBean.setRemoteMaxSimultaneousRequests(20);
@@ -188,10 +188,10 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		assertThat(poolingOptionsFactoryBean.getObject(), is(sameInstance(poolingOptionsSpy)));
 		assertThat(poolingOptionsFactoryBean.getObjectType(), is(equalTo((Class) poolingOptionsSpy.getClass())));
 
-		verify(poolingOptionsSpy).setHeartbeatIntervalSeconds(eq(30));
-		verify(poolingOptionsSpy).setIdleTimeoutSeconds(eq(120));
+		verify(poolingOptionsSpy).setHeartbeatIntervalSeconds(eq(33));
+		verify(poolingOptionsSpy).setIdleTimeoutSeconds(eq(112));
 		verify(poolingOptionsSpy).setInitializationExecutor(eq(mockExecutor));
-		verify(poolingOptionsSpy).setPoolTimeoutMillis(eq(120));
+		verify(poolingOptionsSpy).setPoolTimeoutMillis(eq(130));
 		verify(poolingOptionsSpy).setCoreConnectionsPerHost(eq(HostDistance.REMOTE), eq(5));
 		verify(poolingOptionsSpy).setMaxConnectionsPerHost(eq(HostDistance.REMOTE), eq(50));
 		verify(poolingOptionsSpy).setMaxRequestsPerConnection(eq(HostDistance.REMOTE), eq(20));
