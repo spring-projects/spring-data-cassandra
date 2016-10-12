@@ -30,7 +30,7 @@
 		heartbeat-interval-seconds="60"
 		initialization-executor-ref="testExecutor"
 		idle-timeout-seconds="300"
-		max-schema-agreement-wait-seconds="30"
+		max-schema-agreement-wait-seconds="2"
 		pool-timeout-milliseconds="15000"
 		speculative-execution-policy-ref="testSpeculativeExecutionPolicy"
 		timestamp-generator-ref="testTimestampGenerator">

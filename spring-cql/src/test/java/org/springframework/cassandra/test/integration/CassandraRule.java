@@ -16,6 +16,7 @@
 
 package org.springframework.cassandra.test.integration;
 
+import static org.apache.cassandra.db.marshal.CompositeType.build;
 import static org.springframework.cassandra.test.integration.CassandraRule.InvocationMode.*;
 
 import java.util.ArrayList;
@@ -317,11 +318,12 @@ public class CassandraRule extends ExternalResource {
 			QueryOptions queryOptions = new QueryOptions();
 			queryOptions.setRefreshSchemaIntervalMillis(0);
 
-			cluster = new Cluster.Builder().addContactPoints(hostIp).//
-					withPort(port).//
-					withQueryOptions(queryOptions).//
-					withNettyOptions(FastShutdownNettyOptions.INSTANCE).//
-					build();
+			cluster = new Cluster.Builder().addContactPoints(hostIp) //
+					.withPort(port) //
+					.withMaxSchemaAgreementWaitSeconds(3) //
+					.withQueryOptions(queryOptions) //
+					.withNettyOptions(FastShutdownNettyOptions.INSTANCE) //
+					.build();
 		} else {
 			cluster = parent.cluster;
 			cassandraPort = parent.cassandraPort;

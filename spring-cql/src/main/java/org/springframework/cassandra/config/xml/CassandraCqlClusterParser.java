@@ -48,6 +48,7 @@ import com.datastax.driver.core.SocketOptions;
  * @author Matthew T. Adams
  * @author David Webb
  * @author John Blum
+ * @author Mark Paluch
  */
 public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 
@@ -95,6 +96,7 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 		addOptionalPropertyReference(builder, "hostStateListener", element, "host-state-listener-ref");
 		addOptionalPropertyReference(builder, "latencyTracker", element, "latency-tracker-ref");
 		addOptionalPropertyReference(builder, "loadBalancingPolicy", element, "load-balancing-policy-ref");
+		addOptionalPropertyReference(builder, "nettyOptions", element, "netty-options-ref");
 		addOptionalPropertyReference(builder, "reconnectionPolicy", element, "reconnection-policy-ref");
 		addOptionalPropertyReference(builder, "retryPolicy", element, "retry-policy-ref");
 		addOptionalPropertyReference(builder, "speculativeExecutionPolicy", element, "speculative-execution-policy-ref");
@@ -138,6 +140,7 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 		addOptionalPropertyValue(poolingOptionsBuilder, "heartbeatIntervalSeconds", element, "heartbeat-interval-seconds");
 		addOptionalPropertyValue(poolingOptionsBuilder, "idleTimeoutSeconds", element, "idle-timeout-seconds");
 		addOptionalPropertyValue(poolingOptionsBuilder, "poolTimeoutMilliseconds", element, "pool-timeout-milliseconds");
+		addOptionalPropertyValue(poolingOptionsBuilder, "maxQueueSize", element, "max-queue-size");
 
 		// parse child elements
 		for (Element subElement : DomUtils.getChildElements(element)) {

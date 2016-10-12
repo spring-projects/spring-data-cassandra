@@ -15,6 +15,10 @@
  */
 package org.springframework.cassandra.config;
 
+
+import static org.springframework.util.ReflectionUtils.invokeMethod;
+
+import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
 
 import org.springframework.beans.factory.FactoryBean;
@@ -22,6 +26,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Spring {@link FactoryBean} for the Cassandra Java driver {@link PoolingOptions}.
@@ -37,6 +42,18 @@ import com.datastax.driver.core.PoolingOptions;
 @SuppressWarnings("unused")
 public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, InitializingBean {
 
+	private static final PoolingOptions DEFAULT = new PoolingOptions();
+
+	private static final Method SET_MAX_QUEUE_SIZE;
+	private static final Method GET_MAX_QUEUE_SIZE;
+
+	static {
+		SET_MAX_QUEUE_SIZE = ReflectionUtils
+				.findMethod(PoolingOptions.class, "setMaxQueueSize", int.class);
+		GET_MAX_QUEUE_SIZE = ReflectionUtils
+				.findMethod(PoolingOptions.class, "getMaxQueueSize");
+	}
+
 	private Executor initializationExecutor;
 
 	private Integer heartbeatIntervalSeconds;
@@ -45,7 +62,12 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	private Integer localMaxConnections;
 	private Integer localMaxSimultaneousRequests;
 	private Integer localMinSimultaneousRequests;
+
+	// Deprecated since Cassandra Driver 3.1.1
 	private Integer poolTimeoutMilliseconds;
+
+	// Available since Cassandra Driver 3.1.1
+	private int maxQueueSize;
 	private Integer remoteCoreConnections;
 	private Integer remoteMaxConnections;
 	private Integer remoteMaxSimultaneousRequests;
@@ -78,6 +100,23 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		if (poolTimeoutMilliseconds != null) {
 			poolingOptions.setPoolTimeoutMillis(poolTimeoutMilliseconds);
 		}
+
+		if (!isDefaultMaxQueueSize() && SET_MAX_QUEUE_SIZE != null) {
+			invokeMethod(SET_MAX_QUEUE_SIZE, poolingOptions, maxQueueSize);
+		}
+	}
+
+	private boolean isDefaultMaxQueueSize() {
+
+		if(GET_MAX_QUEUE_SIZE != null){
+
+			Integer defaultMaxQueueSize = (Integer) invokeMethod(GET_MAX_QUEUE_SIZE, poolingOptions);
+			if(defaultMaxQueueSize.intValue() == maxQueueSize){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/*
@@ -245,6 +284,24 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 */
 	public Integer getPoolTimeoutMilliseconds() {
 		return poolTimeoutMilliseconds;
+	}
+
+	/**
+	 * Sets the maximum number of requests that get enqueued if no connection is available.
+	 *
+	 * @param maxQueueSize maximum number of requests that get enqueued if no connection is available.
+	 */
+	public void setMaxQueueSize(Integer maxQueueSize) {
+		this.maxQueueSize = maxQueueSize;
+	}
+
+	/**
+	 * Gets the maximum number of requests that get enqueued if no connection is available.
+	 *
+	 * @return the {@code maxQueueSize}.
+	 */
+	public Integer getMaxQueueSize() {
+		return maxQueueSize;
 	}
 
 	/**

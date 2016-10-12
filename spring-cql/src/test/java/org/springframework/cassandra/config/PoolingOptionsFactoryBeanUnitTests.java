@@ -17,12 +17,15 @@ package org.springframework.cassandra.config;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeNotNull;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.same;
+import static org.springframework.util.ReflectionUtils.invokeMethod;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
 
 import org.junit.Before;
@@ -36,6 +39,7 @@ import org.mockito.stubbing.Answer;
 
 import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.PoolingOptions;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Unit tests for {@link PoolingOptionsFactoryBean}.
@@ -43,6 +47,7 @@ import com.datastax.driver.core.PoolingOptions;
  * @author Sumit Kumar
  * @author David Webb
  * @author John Blum
+ * @author Mark Paluch
  * @see <a href="https://jira.spring.io/browse/DATACASS-176">DATACASS-176</a>
  * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
  */
@@ -77,6 +82,7 @@ public class PoolingOptionsFactoryBeanUnitTests {
 
 	/**
 	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-344">DATACASS-344</a>
 	 */
 	@Test
 	public void setAndGetFactoryBeanProperties() {
@@ -194,6 +200,36 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		verify(poolingOptionsSpy, never()).setMaxRequestsPerConnection(eq(HostDistance.LOCAL), anyInt());
 		verify(poolingOptionsSpy, never()).setNewConnectionThreshold(eq(HostDistance.LOCAL), anyInt());
 		verify(poolingOptionsSpy, never()).setNewConnectionThreshold(eq(HostDistance.REMOTE), eq(5));
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-344">DATACASS-344</a>
+	 */
+	@Test
+	public void afterPropertiesSetInitializesMaxQueueSize() throws Exception {
+
+		Method setMaxQueueSize = ReflectionUtils
+				.findMethod(PoolingOptions.class, "setMaxQueueSize", int.class);
+
+		Method getMaxQueueSize = ReflectionUtils
+				.findMethod(PoolingOptions.class, "getMaxQueueSize");
+
+		assumeNotNull(setMaxQueueSize);
+
+		PoolingOptionsFactoryBean poolingOptionsFactoryBean = new PoolingOptionsFactoryBean() {
+			@Override
+			PoolingOptions newPoolingOptions() {
+				return poolingOptionsSpy;
+			}
+		};
+
+		poolingOptionsFactoryBean.setMaxQueueSize(1234);
+
+		poolingOptionsFactoryBean.afterPropertiesSet();
+
+		assertThat(poolingOptionsFactoryBean.getObject(), is(sameInstance(poolingOptionsSpy)));
+		assertThat(poolingOptionsFactoryBean.getObjectType(), is(equalTo((Class) poolingOptionsSpy.getClass())));
+		assertThat(invokeMethod(getMaxQueueSize, poolingOptionsSpy), is(equalTo((Object) 1234)));
 	}
 
 	/**

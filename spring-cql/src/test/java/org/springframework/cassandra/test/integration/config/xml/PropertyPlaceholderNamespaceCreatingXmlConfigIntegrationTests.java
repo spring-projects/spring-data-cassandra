@@ -69,7 +69,6 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		assertThat(poolingOptions, is(notNullValue(PoolingOptions.class)));
 		assertThat(poolingOptions.getHeartbeatIntervalSeconds(), is(equalTo(60)));
 		assertThat(poolingOptions.getIdleTimeoutSeconds(), is(equalTo(180)));
-		assertThat(poolingOptions.getPoolTimeoutMillis(), is(equalTo(30000)));
 		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.LOCAL), is(equalTo(4)));
 		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.LOCAL), is(equalTo(8)));
 		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.LOCAL), is(equalTo(20)));

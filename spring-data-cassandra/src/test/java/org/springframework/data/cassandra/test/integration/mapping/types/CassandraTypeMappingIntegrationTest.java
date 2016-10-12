@@ -718,21 +718,6 @@ public class CassandraTypeMappingIntegrationTest extends AbstractSpringDataEmbed
 	}
 
 	/**
-	 * @see DATACASS-271
-	 */
-	@Test(expected = InvalidQueryException.class)
-	public void insertFailsOnWriteTime() {
-
-		// writing of time is not supported with Insert/Update statements as they mix up types.
-		// The only way to insert a time right now seems a PreparedStatement
-		String id = "1";
-		long time = 21312214L;
-
-		Insert insert = QueryBuilder.insertInto("timeentity").value("id", id).value("time", time);
-		cassandraOperations.getSession().execute(insert);
-	}
-
-	/**
 	 * @see DATACASS-285
 	 */
 	@Test

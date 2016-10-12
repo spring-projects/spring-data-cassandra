@@ -97,7 +97,7 @@ public class XmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrat
 	public void clusterConfigurationIsCorrect() {
 		assertThat(cluster.getConfiguration().getPolicies().getAddressTranslator(), is(equalTo(addressTranslator)));
 		assertThat(cluster.getClusterName(), is(equalTo("skynet")));
-		assertThat(cluster.getConfiguration().getProtocolOptions().getMaxSchemaAgreementWaitSeconds(), is(equalTo(30)));
+		assertThat(cluster.getConfiguration().getProtocolOptions().getMaxSchemaAgreementWaitSeconds(), is(equalTo(2)));
 
 		assertThat(cluster.getConfiguration().getPolicies().getSpeculativeExecutionPolicy(),
 			is(equalTo(speculativeExecutionPolicy)));
@@ -123,7 +123,6 @@ public class XmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrat
 		assertThat(poolingOptions.getHeartbeatIntervalSeconds(), is(equalTo(60)));
 		assertThat(poolingOptions.getIdleTimeoutSeconds(), is(equalTo(300)));
 		assertThat(poolingOptions.getInitializationExecutor(), is(equalTo(executor)));
-		assertThat(poolingOptions.getPoolTimeoutMillis(), is(equalTo(15000)));
 		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.LOCAL), is(equalTo(2)));
 		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.LOCAL), is(equalTo(8)));
 		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.LOCAL), is(equalTo(100)));

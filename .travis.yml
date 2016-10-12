@@ -4,6 +4,9 @@ jdk:
 env:
   matrix:
     - PROFILE=ci
+    - PROFILE=ci CASSANDRA_DRIVER_VERSION=3.0.3
+    - PROFILE=ci CASSANDRA_DRIVER_VERSION=3.1.0
+    - PROFILE=ci CASSANDRA_DRIVER_VERSION=3.1.1
     - PROFILE=spring41-next
     - PROFILE=spring42
     - PROFILE=spring42-next
@@ -29,4 +32,4 @@ sudo: false
 before_install:
   - sed -i.bak -e 's|https://nexus.codehaus.org/snapshots/|https://oss.sonatype.org/content/repositories/codehaus-snapshots/|g' ~/.m2/settings.xml
 install: if [ ! -z ${CASSANDRA_VERSION} ]; then ./setup-cassandra.sh; fi;
-script: mvn clean install -P${PROFILE} -Dmaven.javadoc.skip=true
+script: mvn clean install -P${PROFILE} -Dcassandra-driver.version=${CASSANDRA_DRIVER_VERSION:-3.1.1} -Dmaven.javadoc.skip=true

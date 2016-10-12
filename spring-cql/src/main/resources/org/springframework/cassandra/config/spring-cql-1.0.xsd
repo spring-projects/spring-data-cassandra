@@ -263,6 +263,16 @@ LoadBalancingPolicy implementation.
 				<xsd:union memberTypes="xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
+		<xsd:attribute name="max-queue-size" type="xsd:string" default="256" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Sets the maximum number of requests that get enqueued if no connection is available.
+If the queue grows past this value, new requests will be rejected immediately (and the driver will move to the
+next host in the query plan). This limit is per connection pool, not global to the driver.
+See com.datastax.driver.core.PoolingOption for more details. Available since Cassandra Driver 3.1.1.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="max-schema-agreement-wait-seconds" type="xsd:string" default="10" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
