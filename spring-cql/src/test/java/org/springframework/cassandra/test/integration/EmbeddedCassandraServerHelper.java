@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.cassandra.config.Config;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.commitlog.CommitLog;
 import org.apache.cassandra.io.util.FileUtils;
@@ -189,7 +190,7 @@ class EmbeddedCassandraServerHelper {
 		createCassandraDirectories();
 
 		CommitLog commitLog = CommitLog.instance;
-		commitLog.getContext(); // wait for commit log allocator instantiation to avoid hanging on a race condition
+		commitLog.getCurrentPosition(); // wait for commit log allocator instantiation to avoid hanging on a race condition
 		commitLog.resetUnsafe(true); // cleanup screws w/ CommitLog, this brings it back to safe state
 	}
 

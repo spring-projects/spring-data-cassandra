@@ -105,6 +105,30 @@ partitioner: org.apache.cassandra.dht.Murmur3Partitioner
 # Directories where Cassandra should store data on disk.  Cassandra
 # will spread data evenly across them, subject to the granularity of
 # the configured compaction strategy.
+# If not set, the default directory is $CASSANDRA_HOME/data/data.
+# data_file_directories:
+#     - /var/lib/cassandra/data
+
+# commit log.  when running on magnetic HDD, this should be a
+# separate spindle than the data directories.
+# If not set, the default directory is $CASSANDRA_HOME/data/commitlog.
+# commitlog_directory: /var/lib/cassandra/commitlog
+
+# Enable / disable CDC functionality on a per-node basis. This modifies the logic used
+# for write path allocation rejection (standard: never reject. cdc: reject Mutation
+# containing a CDC-enabled table if at space limit in cdc_raw_directory).
+cdc_enabled: false
+
+# CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the
+# segment contains mutations for a CDC-enabled table. This should be placed on a
+# separate spindle than the data directories. If not set, the default directory is
+# $CASSANDRA_HOME/data/cdc_raw.
+cdc_raw_directory: target/embeddedCassandra/data/cdc_raw
+
+
+# Directories where Cassandra should store data on disk.  Cassandra
+# will spread data evenly across them, subject to the granularity of
+# the configured compaction strategy.
 data_file_directories:
     - target/embeddedCassandra/data
 
