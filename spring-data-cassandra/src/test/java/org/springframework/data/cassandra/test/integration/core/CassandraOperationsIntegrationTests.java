@@ -724,6 +724,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 	public void stream() throws InterruptedException {
 
 		while(template.select("SELECT * FROM book", Book.class).size() != 0){
+			template.truncate("book");
 			Thread.sleep(10);
 		}
 
