@@ -15,15 +15,10 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import java.nio.ByteBuffer;
-
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.PropertyAccessor;
 import org.springframework.expression.TypedValue;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Row;
 
 /**
@@ -31,6 +26,7 @@ import com.datastax.driver.core.Row;
  *
  * @author Alex Shvid
  * @author Antoine Toulme
+ * @author Mark Paluch
  */
 enum RowReaderPropertyAccessor implements PropertyAccessor {
 
@@ -48,14 +44,14 @@ enum RowReaderPropertyAccessor implements PropertyAccessor {
 
 	@Override
 	public TypedValue read(EvaluationContext context, Object target, String name) {
+
 		Row row = (Row) target;
+
 		if (row.isNull(name)) {
 			return TypedValue.NULL;
 		}
-		DataType columnType = row.getColumnDefinitions().getType(name);
-		ByteBuffer bytes = row.getBytes(name);
-		Object object = CodecRegistry.DEFAULT_INSTANCE.codecFor(columnType).deserialize(bytes, ProtocolVersion.NEWEST_SUPPORTED);
-		return new TypedValue(object);
+
+		return new TypedValue(row.getObject(name));
 	}
 
 	@Override

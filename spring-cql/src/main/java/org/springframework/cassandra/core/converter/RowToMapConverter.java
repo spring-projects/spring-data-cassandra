@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.cassandra.core.converter;
 
 import java.util.HashMap;
@@ -22,10 +21,8 @@ import java.util.Map;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
-import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
-import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Row;
 
 /**
@@ -48,7 +45,6 @@ public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
 			return null;
 		}
 
-		CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 		ColumnDefinitions cols = row.getColumnDefinitions();
 		Map<String, Object> map = new HashMap<String, Object>(cols.size());
 
@@ -56,10 +52,7 @@ public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
 
 			String name = def.getName();
 
-			map.put(name,
-					row.isNull(name) ? null
-							: codecRegistry.codecFor(def.getType()).deserialize(row.getBytesUnsafe(name),
-									ProtocolVersion.NEWEST_SUPPORTED));
+			map.put(name, row.isNull(name) ? null : row.getObject(name));
 		}
 
 		return map;

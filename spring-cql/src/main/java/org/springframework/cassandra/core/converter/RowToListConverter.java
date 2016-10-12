@@ -21,10 +21,8 @@ import java.util.List;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
-import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
-import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Row;
 
 /**
@@ -47,16 +45,13 @@ public class RowToListConverter implements Converter<Row, List<Object>> {
 			return null;
 		}
 
-		CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 		ColumnDefinitions cols = row.getColumnDefinitions();
 		List<Object> list = new ArrayList<Object>(cols.size());
 
 		for (Definition def : cols.asList()) {
 			String name = def.getName();
 
-			list.add(row.isNull(name) ? null
-					: codecRegistry.codecFor(def.getType()).deserialize(row.getBytesUnsafe(name),
-							ProtocolVersion.NEWEST_SUPPORTED));
+			list.add(row.isNull(name) ? null : row.getObject(name));
 		}
 
 		return list;

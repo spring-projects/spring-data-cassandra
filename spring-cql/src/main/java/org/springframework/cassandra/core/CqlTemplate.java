@@ -617,8 +617,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/* (non-Javadoc) */
 	<T> T columnToObject(Row row, Definition columnDefinition) {
-		TypeCodec<T> typeCodec = CodecRegistry.DEFAULT_INSTANCE.codecFor(columnDefinition.getType());
-		return typeCodec.deserialize(row.getBytesUnsafe(columnDefinition.getName()), ProtocolVersion.NEWEST_SUPPORTED);
+		return (T) row.getObject(columnDefinition.getName());
 	}
 
 	protected Map<String, Object> toMap(Row row) {
