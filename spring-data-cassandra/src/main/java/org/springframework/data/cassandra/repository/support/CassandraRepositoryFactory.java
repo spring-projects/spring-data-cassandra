@@ -36,6 +36,7 @@ import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
 /**
@@ -49,20 +50,22 @@ import org.springframework.util.Assert;
  */
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
-	private final CassandraOperations cassandraOperations;
+	private static final SpelExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
+
+	private final CassandraOperations operations;
 	private final CassandraMappingContext mappingContext;
 
 	/**
 	 * Creates a new {@link CassandraRepositoryFactory} with the given {@link CassandraOperations}.
 	 *
-	 * @param cassandraOperations must not be {@literal null}
+	 * @param operations must not be {@literal null}
 	 */
-	public CassandraRepositoryFactory(CassandraOperations cassandraOperations) {
+	public CassandraRepositoryFactory(CassandraOperations operations) {
 
-		Assert.notNull(cassandraOperations);
+		Assert.notNull(operations);
 
-		this.cassandraOperations = cassandraOperations;
-		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
+		this.operations = operations;
+		this.mappingContext = operations.getConverter().getMappingContext();
 	}
 
 	/*
@@ -82,7 +85,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	protected Object getTargetRepository(RepositoryInformation information) {
 
 		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
-		return getTargetRepositoryViaReflection(information, entityInformation, cassandraOperations);
+		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
 
 	/*
@@ -101,7 +104,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		}
 
 		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
-				cassandraOperations.getConverter());
+				operations.getConverter());
 	}
 
 	/*
@@ -119,10 +122,21 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
-		return new CassandraQueryLookupStrategy();
+		return new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext);
 	}
 
 	private class CassandraQueryLookupStrategy implements QueryLookupStrategy {
+
+		private final CassandraOperations operations;
+		private final EvaluationContextProvider evaluationContextProvider;
+		private final CassandraMappingContext mappingContext;
+
+		public CassandraQueryLookupStrategy(CassandraOperations operations,
+				EvaluationContextProvider evaluationContextProvider, CassandraMappingContext mappingContext) {
+			this.operations = operations;
+			this.evaluationContextProvider = evaluationContextProvider;
+			this.mappingContext = mappingContext;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -137,11 +151,12 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 			if (namedQueries.hasQuery(namedQueryName)) {
 				String namedQuery = namedQueries.getQuery(namedQueryName);
-				return new StringBasedCassandraQuery(namedQuery, queryMethod, cassandraOperations);
+				return new StringBasedCassandraQuery(namedQuery, queryMethod, operations, EXPRESSION_PARSER,
+						evaluationContextProvider);
 			} else if (queryMethod.hasAnnotatedQuery()) {
-				return new StringBasedCassandraQuery(queryMethod, cassandraOperations);
+				return new StringBasedCassandraQuery(queryMethod, operations, EXPRESSION_PARSER, evaluationContextProvider);
 			} else {
-				return new PartTreeCassandraQuery(queryMethod, cassandraOperations);
+				return new PartTreeCassandraQuery(queryMethod, operations);
 			}
 		}
 	}

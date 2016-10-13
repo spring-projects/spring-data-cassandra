@@ -21,9 +21,7 @@ import java.util.Iterator;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.geo.Distance;
 import org.springframework.data.repository.query.ParameterAccessor;
 
 import com.datastax.driver.core.CodecRegistry;
@@ -83,6 +81,11 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	@Override
 	public Object getBindableValue(int index) {
 		return values[index];
+	}
+
+	@Override
+	public Object[] getValues() {
+		return new Object[0];
 	}
 
 	@Override

@@ -48,11 +48,13 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 	private final static TypeInformation<Set> SET = ClassTypeInformation.from(Set.class);
 
-	private final CassandraConverter cassandraConverter;
+	private final CassandraConverter converter;
 	private final CassandraParameterAccessor delegate;
 
-	ConvertingParameterAccessor(CassandraConverter cassandraConverter, CassandraParameterAccessor delegate) {
-		this.cassandraConverter = cassandraConverter;
+	ConvertingParameterAccessor(CassandraConverter converter,
+			CassandraParameterAccessor delegate) {
+
+		this.converter = converter;
 		this.delegate = delegate;
 	}
 
@@ -101,8 +103,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 		DataType dataType = delegate.getDataType(index);
 
-		return (dataType != null ? dataType
-			: cassandraConverter.getMappingContext().getDataType(getParameterType(index)));
+		return (dataType != null ? dataType : converter.getMappingContext().getDataType(getParameterType(index)));
 	}
 
 	/* (non-Javadoc)
@@ -126,6 +127,14 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	public Iterator<Object> iterator() {
 		return new ConvertingIterator(delegate.iterator());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getValues()
+	 */
+	@Override
+	public Object[] getValues() {
+		return delegate.getValues();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -164,15 +173,15 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			return bindableValue;
 		}
 
-		return cassandraConverter.getConversionService().convert(bindableValue, cassandraType.getJavaType().getRawType());
+		return converter.getConversionService().convert(bindableValue, cassandraType.getJavaType().getRawType());
 	}
 
 	private CustomConversions getCustomConversions() {
-		return cassandraConverter.getCustomConversions();
+		return converter.getCustomConversions();
 	}
 
 	private ConversionService getConversionService() {
-		return cassandraConverter.getConversionService();
+		return converter.getConversionService();
 	}
 
 	/**
@@ -191,7 +200,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			return CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type());
 		}
 
-		CassandraMappingContext mappingContext = cassandraConverter.getMappingContext();
+		CassandraMappingContext mappingContext = converter.getMappingContext();
 		TypeInformation<?> typeInformation = ClassTypeInformation.from(getParameterType(index));
 
 		if (property == null) {

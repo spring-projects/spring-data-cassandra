@@ -29,6 +29,7 @@ import org.springframework.data.cassandra.test.integration.repository.querymetho
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.named.PersonRepositoryWithNamedQueries;
 
 import com.datastax.driver.core.ResultSet;
+import org.springframework.data.repository.query.Param;
 
 /**
  * we extend {@link PersonRepositoryWithNamedQueries} here just to keep the test codebase in sync.
@@ -50,16 +51,16 @@ public interface PersonRepositoryWithQueryAnnotations extends PersonRepository {
 	Person[] findFolksWithLastnameAsArray(String lastname);
 
 	@Override
-	@Query("select * from person where lastname = ?0 and firstname = ?1")
+	@Query("select * from person where lastname = ?#{[0]} and firstname = ?1")
 	Person findSingle(String last, String first);
 
 	@Override
-	@Query("select * from person where lastname = ?0")
-	List<Map<String, Object>> findFolksWithLastnameAsListOfMapOfStringToObject(String last);
+	@Query("select * from person where lastname = :last")
+	List<Map<String, Object>> findFolksWithLastnameAsListOfMapOfStringToObject(@Param("last") String last);
 
 	@Override
-	@Query("select nickname from person where lastname = ?0 and firstname = ?1")
-	String findSingleNickname(String last, String first);
+	@Query("select nickname from person where lastname = :#{#last} and firstname = ?1")
+	String findSingleNickname(@Param("last") String last, @Param("first") String first);
 
 	@Override
 	@Query("select birthdate from person where lastname = ?0 and firstname = ?1")
