@@ -15,14 +15,22 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -31,6 +39,7 @@ import org.springframework.data.util.ClassTypeInformation;
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author John Blum
  */
 @RunWith(MockitoJUnitRunner.class)
 public class BasicCassandraPersistentEntityUnitTests {
@@ -68,6 +77,35 @@ public class BasicCassandraPersistentEntityUnitTests {
 		entity.setApplicationContext(context);
 
 		assertThat(entity.getTableName().toCql(), is(bean.tableName));
+	}
+
+	@Test
+	public void setForceQuoteCallsSetTableName() {
+		BasicCassandraPersistentEntity<Message> entitySpy =
+			spy(new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
+
+		entitySpy.tableName = CqlIdentifier.cqlId("Messages", false);
+
+		assertThat(entitySpy.forceQuote, is(nullValue(Boolean.class)));
+
+		entitySpy.setForceQuote(true);
+
+		assertThat(entitySpy.forceQuote, is(true));
+
+		verify(entitySpy, times(1)).setTableName(isA(CqlIdentifier.class));
+	}
+
+	@Test
+	public void setForceQuoteDoesNothing() {
+		BasicCassandraPersistentEntity<Message> entitySpy =
+			spy(new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
+
+		entitySpy.forceQuote = true;
+		entitySpy.setForceQuote(true);
+
+		assertThat(entitySpy.forceQuote, is(true));
+
+		verify(entitySpy, never()).setTableName(isA(CqlIdentifier.class));
 	}
 
 	@Table("messages")

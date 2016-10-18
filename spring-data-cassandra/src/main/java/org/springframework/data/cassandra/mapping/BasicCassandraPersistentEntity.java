@@ -48,14 +48,20 @@ import org.springframework.util.StringUtils;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty>
 		implements CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
+	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER =
+		new CompositeCassandraPersistentEntityMetadataVerifier();
+
+	protected ApplicationContext context;
+
+	protected Boolean forceQuote;
+
+	protected CassandraMappingContext mappingContext;
+
+	protected CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
 	protected CqlIdentifier tableName;
-	protected CassandraMappingContext mappingContext;
+
 	protected StandardEvaluationContext spelContext;
-	protected CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
-	protected ApplicationContext context;
-	protected Boolean forceQuote;
 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
 		this(typeInformation, null);
@@ -111,50 +117,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext context) throws BeansException {
-
-		Assert.notNull(context, "ApplicationContext must not be null");
-
-		this.context = context;
-		spelContext = new StandardEvaluationContext();
-		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
-		spelContext.setBeanResolver(new BeanFactoryResolver(context));
-		spelContext.setRootObject(context);
-	}
-
-	@Override
-	public CqlIdentifier getTableName() {
-
-		tableName = (tableName != null ? tableName : determineTableName());
-
-		return tableName;
-	}
-
-	@Override
-	public void setTableName(CqlIdentifier tableName) {
-
-		Assert.notNull(tableName);
-		this.tableName = tableName;
-	}
-
-	@Override
-	public void setForceQuote(boolean forceQuote) {
-
-		if (this.forceQuote != null && this.forceQuote == forceQuote) {
-			return;
-		} else {
-			this.forceQuote = forceQuote;
-		}
-
-		setTableName(cqlId(tableName.getUnquoted(), forceQuote));
-	}
-
-	@Override
-	public CassandraMappingContext getMappingContext() {
-		return mappingContext;
-	}
-
-	@Override
 	public boolean isCompositePrimaryKey() {
 		return getType().isAnnotationPresent(PrimaryKeyClass.class);
 	}
@@ -164,10 +126,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		List<CassandraPersistentProperty> properties = new ArrayList<CassandraPersistentProperty>();
 
-		if (!isCompositePrimaryKey()) {
-			throw new IllegalStateException(String.format("[%s] does not represent a composite primary key class",
-					this.getType().getName()));
-		}
+		Assert.state(isCompositePrimaryKey(), String.format("[%s] does not represent a composite primary key class",
+			this.getType().getName()));
 
 		addCompositePrimaryKeyProperties(this, properties);
 
@@ -180,12 +140,12 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		compositePrimaryKeyEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty p) {
+			public void doWithPersistentProperty(CassandraPersistentProperty property) {
 
-				if (p.isCompositePrimaryKey()) {
-					addCompositePrimaryKeyProperties(p.getCompositePrimaryKeyEntity(), properties);
+				if (property.isCompositePrimaryKey()) {
+					addCompositePrimaryKeyProperties(property.getCompositePrimaryKeyEntity(), properties);
 				} else {
-					properties.add(p);
+					properties.add(property);
 				}
 			}
 		});
@@ -194,16 +154,52 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public void verify() throws MappingException {
 		super.verify();
+
 		if (verifier != null) {
 			verifier.verify(this);
 		}
 	}
 
-	/**
-	 * @return Returns the verifier.
-	 */
-	public CassandraPersistentEntityMetadataVerifier getVerifier() {
-		return verifier;
+	@Override
+	public void setApplicationContext(ApplicationContext context) throws BeansException {
+
+		Assert.notNull(context, "ApplicationContext must not be null");
+
+		this.context = context;
+		spelContext = new StandardEvaluationContext();
+		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
+		spelContext.setBeanResolver(new BeanFactoryResolver(context));
+		spelContext.setRootObject(context);
+	}
+
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return context;
+	}
+
+	@Override
+	public void setForceQuote(boolean forceQuote) {
+		if (this.forceQuote == null || this.forceQuote != forceQuote) {
+			this.forceQuote = forceQuote;
+			setTableName(cqlId(tableName.getUnquoted(), forceQuote));
+		}
+	}
+
+	@Override
+	public CassandraMappingContext getMappingContext() {
+		return mappingContext;
+	}
+
+	@Override
+	public void setTableName(CqlIdentifier tableName) {
+		Assert.notNull(tableName);
+		this.tableName = tableName;
+	}
+
+	@Override
+	public CqlIdentifier getTableName() {
+		tableName = (tableName != null ? tableName : determineTableName());
+		return tableName;
 	}
 
 	/**
@@ -213,8 +209,10 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		this.verifier = verifier;
 	}
 
-	@Override
-	public ApplicationContext getApplicationContext() {
-		return context;
+	/**
+	 * @return Returns the verifier.
+	 */
+	public CassandraPersistentEntityMetadataVerifier getVerifier() {
+		return verifier;
 	}
 }

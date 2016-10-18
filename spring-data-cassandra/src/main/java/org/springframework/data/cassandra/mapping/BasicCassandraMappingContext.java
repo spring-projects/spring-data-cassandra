@@ -63,8 +63,12 @@ public class BasicCassandraMappingContext
 		implements CassandraMappingContext, ApplicationContextAware {
 
 	protected ApplicationContext context;
+
+	protected CassandraPersistentEntityMetadataVerifier verifier =
+		new CompositeCassandraPersistentEntityMetadataVerifier();
+
 	protected ClassLoader beanClassLoader;
-	protected CassandraPersistentEntityMetadataVerifier verifier = new CompositeCassandraPersistentEntityMetadataVerifier();
+
 	protected Mapping mapping = new Mapping();
 
 	// useful caches
@@ -194,17 +198,20 @@ public class BasicCassandraMappingContext
 
 				if (property.isCompositePrimaryKey()) {
 
-					CassandraPersistentEntity<?> pkEntity = getPersistentEntity(property.getRawType());
+					CassandraPersistentEntity<?> primaryKeyEntity = getPersistentEntity(property.getRawType());
 
-					pkEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+					primaryKeyEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
 
 						@Override
-						public void doWithPersistentProperty(CassandraPersistentProperty pkProp) {
+						public void doWithPersistentProperty(CassandraPersistentProperty primaryKeyProperty) {
 
-							if (pkProp.isPartitionKeyColumn()) {
-								spec.partitionKeyColumn(pkProp.getColumnName(), getDataType(pkProp));
-							} else { // it's a cluster column
-								spec.clusteredKeyColumn(pkProp.getColumnName(), getDataType(pkProp), pkProp.getPrimaryKeyOrdering());
+							if (primaryKeyProperty.isPartitionKeyColumn()) {
+								spec.partitionKeyColumn(primaryKeyProperty.getColumnName(), getDataType(primaryKeyProperty));
+							}
+							else { // it's a cluster column
+								spec.clusteredKeyColumn(primaryKeyProperty.getColumnName(),
+									getDataType(primaryKeyProperty),
+									primaryKeyProperty.getPrimaryKeyOrdering());
 							}
 						}
 					});
@@ -212,9 +219,11 @@ public class BasicCassandraMappingContext
 				} else {
 					if (property.isIdProperty() || property.isPartitionKeyColumn()) {
 						spec.partitionKeyColumn(property.getColumnName(), getDataType(property));
-					} else if (property.isClusterKeyColumn()) {
+					}
+					else if (property.isClusterKeyColumn()) {
 						spec.clusteredKeyColumn(property.getColumnName(), getDataType(property), property.getPrimaryKeyOrdering());
-					} else {
+					}
+					else {
 						spec.column(property.getColumnName(), getDataType(property));
 					}
 				}
@@ -233,7 +242,6 @@ public class BasicCassandraMappingContext
 	 */
 	@Override
 	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> typeInfo) {
-
 		return (!customConversions.hasCustomWriteTarget(typeInfo.getType())
 			&& super.shouldCreatePersistentEntityFor(typeInfo));
 	}
@@ -243,7 +251,6 @@ public class BasicCassandraMappingContext
 	 */
 	@Override
 	protected CassandraPersistentEntity<?> addPersistentEntity(TypeInformation<?> typeInformation) {
-
 		// Prevent conversion types created as CassandraPersistentEntity
 		return (shouldCreatePersistentEntityFor(typeInformation) ? super.addPersistentEntity(typeInformation) : null);
 	}
@@ -289,7 +296,6 @@ public class BasicCassandraMappingContext
 	 */
 	@Override
 	public DataType getDataType(Class<?> type) {
-
 		return (customConversions.hasCustomWriteTarget(type)
 			? getDataTypeFor(customConversions.getCustomWriteTarget(type)) : getDataTypeFor(type));
 	}
@@ -300,10 +306,10 @@ public class BasicCassandraMappingContext
 		this.mapping = mapping;
 	}
 
+	@SuppressWarnings("all")
 	protected void processMappingOverrides() {
 		if (mapping != null) {
 			for (EntityMapping entityMapping : mapping.getEntityMappings()) {
-
 				if (entityMapping != null) {
 					String entityClassName = entityMapping.getEntityClassName();
 
@@ -312,10 +318,8 @@ public class BasicCassandraMappingContext
 
 						CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
 
-						if (entity == null) {
-							throw new IllegalStateException(String.format(
-								"Unknown persistent entity class name [%s]", entityClassName));
-						}
+						Assert.state(entity != null, String.format("Unknown persistent entity class name [%s]",
+							entityClassName));
 
 						String tableName = entityMapping.getTableName();
 
@@ -377,7 +381,7 @@ public class BasicCassandraMappingContext
 			return entity;
 		}
 
-		throw new IllegalArgumentException(String.format("unknown persistent type [%s]", type.getName()));
+		throw new IllegalArgumentException(String.format("Unknown persistent type [%s]", type.getName()));
 	}
 
 	@Override

@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.mapping;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mapping.model.MappingException;
@@ -24,7 +25,7 @@ import org.springframework.util.Assert;
 
 /**
  * Composite {@link CassandraPersistentEntityMetadataVerifier} to verify persistent entities and primary key classes.
- * 
+ *
  * @author Mark Paluch
  * @since 1.5
  * @see BasicCassandraPersistentEntityMetadataVerifier
@@ -37,19 +38,18 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 	/**
 	 * Creates a new {@link CompositeCassandraPersistentEntityMetadataVerifier} using default entity and primary key
 	 * verifiers.
-	 * 
+	 *
 	 * @see BasicCassandraPersistentEntityMetadataVerifier
 	 * @see PrimaryKeyClassEntityMetadataVerifier
 	 */
 	public CompositeCassandraPersistentEntityMetadataVerifier() {
-		this(Arrays.asList(new PersistentAnnotationVerifier(), //
-				new PrimaryKeyClassEntityMetadataVerifier(), //
-				new BasicCassandraPersistentEntityMetadataVerifier()));
+		this(Arrays.asList(new PersistentAnnotationVerifier(), new PrimaryKeyClassEntityMetadataVerifier(),
+			new BasicCassandraPersistentEntityMetadataVerifier()));
 	}
 
 	/**
 	 * Creates a new {@link CompositeCassandraPersistentEntityMetadataVerifier} for the given {@code verifiers}
-	 * 
+	 *
 	 * @param verifiers must not be {@literal null}.
 	 */
 	private CompositeCassandraPersistentEntityMetadataVerifier(
@@ -60,13 +60,12 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 		this.verifiers = verifiers;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntityMetadataVerifier#verify(org.springframework.data.cassandra.mapping.CassandraPersistentEntity)
 	 */
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
-
 		for (CassandraPersistentEntityMetadataVerifier verifier : verifiers) {
 			verifier.verify(entity);
 		}
@@ -75,26 +74,22 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 	/**
 	 * {@link CassandraPersistentEntityMetadataVerifier} implementation that requires classes to be annotated with
 	 * {@link Persistent}, {@link Table} or {@link PrimaryKeyClass}.
-	 * 
+	 *
 	 * @author Mark Paluch
 	 */
 	private static class PersistentAnnotationVerifier implements CassandraPersistentEntityMetadataVerifier {
 
 		@Override
 		public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
-
 			if (entity.getType().isInterface()) {
 				return;
 			}
 
 			// Ensure entity is either a @Table/@Persistent or a @PrimaryKey
 			if (entity.findAnnotation(Persistent.class) == null) {
-
-				VerifierMappingExceptions exceptions = new VerifierMappingExceptions(entity,
-						Arrays.asList(new MappingException(String.format(
-								"Cassandra entities must be annotated with either @%s, @%s, or @%s", Persistent.class.getSimpleName(),
-								Table.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName()))));
-				throw exceptions;
+				throw new VerifierMappingExceptions(entity, Collections.singletonList(new MappingException(
+					String.format("Cassandra entities must be annotated with either @%s, @%s, or @%s",
+						Persistent.class.getSimpleName(), Table.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName()))));
 			}
 		}
 	}

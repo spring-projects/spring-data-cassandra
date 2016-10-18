@@ -38,7 +38,7 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 	@Deprecated protected boolean strict = false;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntityMetadataVerifier#verify(org.springframework.data.cassandra.mapping.CassandraPersistentEntity)
 	 */
@@ -77,10 +77,7 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 			}
 		});
 
-		/*
-		 * Perform rules verification on Table/Persistent
-		 */
-
+		// Perform rules verification on Table/Persistent
 		// TODO Verify annotation values with CqlIndentifier
 
 		// Ensure only one PK or at least one partitioned PK Column and not both PK(s) & PK Column(s) exist
@@ -88,9 +85,9 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 			// Can only have one PK
 			if (idProperties.size() != 1) {
-				exceptions
-						.add(new MappingException(String.format("@%s types must have only one primary attribute, if any; Found %s",
-								Table.class.getSimpleName(), idProperties.size())));
+				exceptions.add(new MappingException(String.format(
+					"@%s types must have only one primary attribute, if any; Found %s",
+						Table.class.getSimpleName(), idProperties.size())));
 
 				fail(entity, exceptions);
 			}
@@ -101,10 +98,9 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 			if (!idType.isAnnotationPresent(PrimaryKeyClass.class)
 					&& CassandraSimpleTypeHolder.getDataTypeFor(idType) == null) {
-
-				exceptions
-						.add(new MappingException(String.format("Property [%s] annotated with @%s must be a simple CassandraType",
-								idProperty.getName(), Id.class.getSimpleName())));
+				exceptions.add(new MappingException(String.format(
+					"Property [%s] annotated with @%s must be a simple CassandraType",
+						idProperty.getName(), Id.class.getSimpleName())));
 			}
 		}
 
@@ -119,15 +115,16 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 		// We have no PKs & only PK Column(s); ensure at least one is of type PARTITIONED
 		if (!primaryKeyColumns.isEmpty() && partitionKeyColumns.isEmpty()) {
-			exceptions
-					.add(new MappingException(String.format("At least one of the @%s annotations must have a type of PARTITIONED",
-							PrimaryKeyColumn.class.getSimpleName())));
+			exceptions.add(new MappingException(String.format(
+				"At least one of the @%s annotations must have a type of PARTITIONED",
+					PrimaryKeyColumn.class.getSimpleName())));
 		}
 
 		for (CassandraPersistentProperty property : primaryKeyColumns) {
 			if (CassandraSimpleTypeHolder.getDataTypeFor(property.getType()) == null) {
 				exceptions.add(new MappingException(String.format(
-						"Property [%s] annotated with @PrimaryKeyColumn must be a simple CassandraType", property.getName())));
+					"Property [%s] annotated with @PrimaryKeyColumn must be a simple CassandraType",
+						property.getName())));
 			}
 		}
 
@@ -141,8 +138,8 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 	 * @return the setting for strict.
 	 * @deprecated Will be removed in future versions.
 	 */
-	@SuppressWarnings("unused")
 	@Deprecated
+	@SuppressWarnings("unused")
 	public boolean isStrict() {
 		return strict;
 	}
@@ -151,8 +148,8 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 	 * @param strict boolean setting for strict.
 	 * @deprecated Will be removed in future versions.
 	 */
-	@SuppressWarnings("unused")
 	@Deprecated
+	@SuppressWarnings("unused")
 	public void setStrict(boolean strict) {
 		this.strict = strict;
 	}
