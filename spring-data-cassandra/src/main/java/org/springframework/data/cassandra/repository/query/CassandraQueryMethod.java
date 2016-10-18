@@ -114,6 +114,15 @@ public class CassandraQueryMethod extends QueryMethod {
 		return this.entityMetadata;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.QueryMethod#getParameters()
+	 */
+	@Override
+	public CassandraParameters getParameters() {
+		return (CassandraParameters) super.getParameters();
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.query.QueryMethod#createParameters(java.lang.reflect.Method)
 	 */
