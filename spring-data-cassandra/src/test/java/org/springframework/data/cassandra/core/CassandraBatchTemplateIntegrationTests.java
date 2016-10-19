@@ -65,7 +65,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(walter).insert(mike).execute();
 
-		Group loaded = template.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(walter.getId(), Group.class);
 
 		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
 	}
@@ -82,7 +82,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(Arrays.asList(walter, mike)).execute();
 
-		Group loaded = template.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(walter.getId(), Group.class);
 
 		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
 	}
@@ -102,7 +102,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.update(walter).update(mike).execute();
 
-		Group loaded = template.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(walter.getId(), Group.class);
 
 		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
 	}
@@ -122,7 +122,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.update(Arrays.asList(walter, mike)).execute();
 
-		Group loaded = template.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(walter.getId(), Group.class);
 
 		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
 	}
@@ -142,7 +142,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.update(Arrays.asList(walter, mike)).execute();
 
-		FlatGroup loaded = template.selectOneById(FlatGroup.class, walter);
+		FlatGroup loaded = template.selectOneById(walter, FlatGroup.class);
 
 		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
 	}
@@ -160,7 +160,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		batchOperations.delete(walter).delete(mike).execute();
 
-		Group loaded = template.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(walter.getId(), Group.class);
 
 		assertThat(loaded).isNull();
 	}
@@ -178,7 +178,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		batchOperations.delete(Arrays.asList(walter, mike)).execute();
 
-		Group loaded = template.selectOneById(Group.class, walter.getId());
+		Group loaded = template.selectOneById(walter.getId(), Group.class);
 
 		assertThat(loaded).isNull();
 	}
@@ -200,7 +200,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(walter).insert(mike).withTimestamp(timestamp).execute();
 
-		ResultSet resultSet = template.query("SELECT writetime(email) FROM group;");
+		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT writetime(email) FROM group;");
 
 		assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(2);
 

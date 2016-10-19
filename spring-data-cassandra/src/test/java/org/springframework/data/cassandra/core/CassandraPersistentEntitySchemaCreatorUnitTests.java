@@ -26,6 +26,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.UserDefinedType;
@@ -44,7 +45,8 @@ import lombok.Data;
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraPersistentEntitySchemaCreatorUnitTests {
 
-	@Mock CassandraAdminOperations operations;
+	@Mock CassandraAdminOperations adminOperations;
+	@Mock CqlOperations operations;
 	@Mock KeyspaceMetadata metadata;
 	@Mock UserType universetype;
 	@Mock UserType moontype;
@@ -63,6 +65,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 				return metadata.getUserType(typeName.toCql());
 			}
 		});
+
+		when(adminOperations.getCqlOperations()).thenReturn(operations);
 	}
 
 	@Test
@@ -76,7 +80,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		when(metadata.getUserType("moontype")).thenReturn(moontype);
 
 		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
-				operations);
+				adminOperations);
 
 		schemaCreator.createUserTypes(false, false, false);
 

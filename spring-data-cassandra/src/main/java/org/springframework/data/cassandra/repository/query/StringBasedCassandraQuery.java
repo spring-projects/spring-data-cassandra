@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -73,7 +75,9 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 
 		super(queryMethod, operations);
 
-		CodecRegistry codecRegistry = operations.getSession().getCluster().getConfiguration().getCodecRegistry();
+		Cluster cluster = operations.getCqlOperations().execute(Session::getCluster);
+
+		CodecRegistry codecRegistry = cluster.getConfiguration().getCodecRegistry();
 		this.stringBasedQuery = new StringBasedQuery(query,
 				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider), codecRegistry);
 	}

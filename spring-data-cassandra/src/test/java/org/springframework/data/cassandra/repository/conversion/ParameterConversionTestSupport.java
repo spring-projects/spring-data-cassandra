@@ -92,11 +92,11 @@ abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbedded
 
 		deleteAllEntities();
 
-		template.execute("CREATE INDEX IF NOT EXISTS contact_address ON contact (address);");
-		template.execute("CREATE INDEX IF NOT EXISTS contact_addresses ON contact (addresses);");
+		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS contact_address ON contact (address);");
+		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS contact_addresses ON contact (addresses);");
 
-		template.execute("CREATE INDEX IF NOT EXISTS contact_main_phones ON contact (mainphone);");
-		template.execute("CREATE INDEX IF NOT EXISTS contact_alternative_phones ON contact (alternativephones);");
+		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS contact_main_phones ON contact (mainphone);");
+		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS contact_alternative_phones ON contact (alternativephones);");
 
 		walter = new Contact("Walter");
 		walter.setAddress(new Address("Albuquerque", "USA"));

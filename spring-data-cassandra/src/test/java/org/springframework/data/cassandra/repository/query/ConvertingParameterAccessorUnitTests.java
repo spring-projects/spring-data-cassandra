@@ -45,9 +45,9 @@ import com.datastax.driver.core.DataType;
 @RunWith(MockitoJUnitRunner.class)
 public class ConvertingParameterAccessorUnitTests {
 
-	@Mock private CassandraParameterAccessor mockParameterAccessor;
+	@Mock CassandraParameterAccessor mockParameterAccessor;
 
-	@Mock private CassandraPersistentProperty mockProperty;
+	@Mock CassandraPersistentProperty mockProperty;
 
 	ConvertingParameterAccessor convertingParameterAccessor;
 

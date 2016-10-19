@@ -49,8 +49,8 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	@Rule public final CassandraRule cassandraRule = cassandraEnvironment.testInstance()
 			.before(new SessionCallback<Object>() {
 				@Override
-				public Object doInSession(Session s) throws DataAccessException {
-					AbstractEmbeddedCassandraIntegrationTest.this.cluster = s.getCluster();
+				public Object doInSession(Session session) throws DataAccessException {
+					AbstractEmbeddedCassandraIntegrationTest.this.cluster = session.getCluster();
 					return null;
 				}
 			});

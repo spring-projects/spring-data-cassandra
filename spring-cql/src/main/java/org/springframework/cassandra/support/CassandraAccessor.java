@@ -15,9 +15,11 @@
  */
 package org.springframework.cassandra.support;
 
+import com.datastax.driver.core.exceptions.DriverException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
@@ -102,5 +104,51 @@ public class CassandraAccessor implements InitializingBean {
 	public Session getSession() {
 		Assert.state(this.session != null, "Session was not properly initialized");
 		return this.session;
+	}
+	
+		/**
+	 * Translate the given {@link DriverException} into a generic {@link DataAccessException}.
+	 * <p>
+	 * The returned {@link DataAccessException} is supposed to contain the original {@code DriverException} as root cause.
+	 * However, client code may not generally rely on this due to {@link DataAccessException}s possibly being caused by
+	 * other resource APIs as well. That said, a {@code getRootCause() instanceof DataAccessException} check (and
+	 * subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
+	 *
+	 * @param ex the offending {@link DriverException}
+	 * @return the DataAccessException, wrapping the {@code DriverException}
+	 * @see <a href=
+	 *      "http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions">Consistent
+	 *      exception hierarchy</a>
+	 * @see DataAccessException
+	 */
+	protected DataAccessException translateExceptionIfPossible(DriverException ex) {
+
+		Assert.notNull(ex, "DriverException must not be null");
+
+		return getExceptionTranslator().translateExceptionIfPossible(ex);
+	}
+
+	/**
+	 * Translate the given {@link DriverException} into a generic {@link DataAccessException}.
+	 * <p>
+	 * The returned {@link DataAccessException} is supposed to contain the original {@code DriverException} as root cause.
+	 * However, client code may not generally rely on this due to {@link DataAccessException}s possibly being caused by
+	 * other resource APIs as well. That said, a {@code getRootCause() instanceof DataAccessException} check (and
+	 * subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
+	 *
+	 * @param task readable text describing the task being attempted
+	 * @param cql CQL query or update that caused the problem (may be {@code null})
+	 * @param ex the offending {@link DriverException}
+	 * @return the DataAccessException, wrapping the {@code DriverException}
+	 * @see org.springframework.dao.DataAccessException#getRootCause()
+	 * @see <a href=
+	 *      "http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions">Consistent
+	 *      exception hierarchy</a>
+	 */
+	protected DataAccessException translate(String task, String cql, DriverException ex) {
+
+		Assert.notNull(ex, "DriverException must not be null");
+
+		return getExceptionTranslator().translate(task, cql, ex);
 	}
 }

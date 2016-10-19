@@ -71,10 +71,10 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 		cassandraRule.before(new SessionCallback<Object>() {
 
 			@Override
-			public Object doInSession(Session s) throws DataAccessException {
+			public Object doInSession(Session session) throws DataAccessException {
 
-				if (!keyspace.equals(s.getLoggedKeyspace())) {
-					s.execute(String.format("USE %s;", keyspace));
+				if (!keyspace.equals(session.getLoggedKeyspace())) {
+					session.execute(String.format("USE %s;", keyspace));
 				}
 				return null;
 			}

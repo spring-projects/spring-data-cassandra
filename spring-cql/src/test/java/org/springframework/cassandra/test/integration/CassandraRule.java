@@ -129,8 +129,8 @@ public class CassandraRule extends ExternalResource {
 
 		SessionCallback<Void> sessionCallback = new SessionCallback<Void>() {
 			@Override
-			public Void doInSession(Session s) throws DataAccessException {
-				load(s, cqlDataSet);
+			public Void doInSession(Session session) throws DataAccessException {
+				load(session, cqlDataSet);
 				return null;
 			}
 		};
@@ -180,8 +180,8 @@ public class CassandraRule extends ExternalResource {
 
 		after.add(new SessionCallback<Void>() {
 			@Override
-			public Void doInSession(Session s) throws DataAccessException {
-				load(session, cqlDataSet);
+			public Void doInSession(Session session) throws DataAccessException {
+				load(CassandraRule.this.session, cqlDataSet);
 				return null;
 			}
 		});

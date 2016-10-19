@@ -78,7 +78,7 @@ public class KeyspaceRule extends ExternalResource {
 		} else {
 			cassandraRule.before(new SessionCallback<Object>() {
 				@Override
-				public Object doInSession(Session s) throws DataAccessException {
+				public Object doInSession(Session session) throws DataAccessException {
 					KeyspaceRule.this.session = cassandraRule.getSession();
 					return null;
 				}
