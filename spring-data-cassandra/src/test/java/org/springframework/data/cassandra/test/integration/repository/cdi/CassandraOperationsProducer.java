@@ -23,6 +23,9 @@ import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
+import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.support.RandomKeySpaceName;
@@ -72,16 +75,16 @@ class CassandraOperationsProducer {
 
 		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(KEYSPACE_NAME)
 				.ifNotExists();
-		cassandraTemplate.execute(createKeyspaceSpecification);
-		cassandraTemplate.execute("USE " + KEYSPACE_NAME);
+		cassandraTemplate.getCqlOperations().execute(CreateKeyspaceCqlGenerator.toCql(createKeyspaceSpecification));
+		cassandraTemplate.getCqlOperations().execute("USE " + KEYSPACE_NAME);
 
 		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(mappingContext, cassandraTemplate);
 		schemaCreator.createUserTypes(false, false, true);
 		schemaCreator.createTables(false, false, true);
 
 		for (CassandraPersistentEntity<?> entity : cassandraTemplate.getConverter().getMappingContext()
-				.getNonPrimaryKeyEntities()) {
-			cassandraTemplate.truncate(entity.getTableName());
+				.getPersistentEntities()) {
+			cassandraTemplate.truncate(entity.getType());
 		}
 
 		return cassandraTemplate;
@@ -97,8 +100,8 @@ class CassandraOperationsProducer {
 
 	public void close(@Disposes CassandraOperations cassandraOperations) {
 
-		cassandraOperations.execute(DropKeyspaceSpecification.dropKeyspace(KEYSPACE_NAME));
-		cassandraOperations.getSession().close();
+		cassandraOperations.getCqlOperations()
+				.execute(DropKeyspaceCqlGenerator.toCql(DropKeyspaceSpecification.dropKeyspace(KEYSPACE_NAME)));
 	}
 
 	public void close(@Disposes Cluster cluster) {

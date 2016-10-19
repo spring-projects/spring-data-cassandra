@@ -63,7 +63,7 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractKeyspaceCreat
 
 		// select
 		MapId id = id("key", saved.getKey());
-		SinglePkc selected = operations.selectOneById(SinglePkc.class, id);
+		SinglePkc selected = operations.selectOneById(id, SinglePkc.class);
 		assertThat(saved).isNotSameAs(selected);
 		assertThat(selected.getKey()).isEqualTo(saved.getKey());
 		assertThat(selected.getValue()).isEqualTo(saved.getValue());
@@ -73,13 +73,13 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractKeyspaceCreat
 		SinglePkc updated = operations.update(selected);
 		assertThat(selected).isSameAs(updated);
 
-		selected = operations.selectOneById(SinglePkc.class, id);
+		selected = operations.selectOneById(id, SinglePkc.class);
 		assertThat(updated).isNotSameAs(selected);
 		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
 		operations.delete(selected);
-		assertThat(operations.selectOneById(SinglePkc.class, id)).isNull();
+		assertThat(operations.selectOneById(id, SinglePkc.class)).isNull();
 	}
 
 	@Table
@@ -121,7 +121,7 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractKeyspaceCreat
 
 		// select
 		MapId id = id("key0", saved.getKey0()).with("key1", saved.getKey1());
-		MultiPkc selected = operations.selectOneById(MultiPkc.class, id);
+		MultiPkc selected = operations.selectOneById(id, MultiPkc.class);
 		assertThat(saved).isNotSameAs(selected);
 		assertThat(selected.getKey0()).isEqualTo(saved.getKey0());
 		assertThat(selected.getKey1()).isEqualTo(saved.getKey1());
@@ -132,13 +132,13 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractKeyspaceCreat
 		MultiPkc updated = operations.update(selected);
 		assertThat(selected).isSameAs(updated);
 
-		selected = operations.selectOneById(MultiPkc.class, id);
+		selected = operations.selectOneById(id, MultiPkc.class);
 		assertThat(updated).isNotSameAs(selected);
 		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
 		operations.delete(selected);
-		assertThat(operations.selectOneById(MultiPkc.class, id)).isNull();
+		assertThat(operations.selectOneById(id, MultiPkc.class)).isNull();
 	}
 
 	@Table

@@ -18,8 +18,36 @@ package org.springframework.cassandra.core;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.DriverException;
 
+/**
+ * An interface used by {@link CqlTemplate} for processing rows of a {@link com.datastax.driver.core.ResultSet} on a
+ * per-row basis. Implementations of this interface perform the actual work of processing each row but don't need to
+ * worry about exception handling. {@link DriverException}s will be caught and handled by the calling
+ * {@link CqlTemplate}.
+ * <p>
+ * In contrast to a {@link ResultSetExtractor}, a {@link RowCallbackHandler} object is typically stateful: It keeps the
+ * result state within the object, to be available for later inspection.
+ * <p>
+ * Consider using a {@link RowMapper} instead if you need to map exactly one result object per row, assembling them into
+ * a List.
+ *
+ * @author Mark Paluch
+ * @see CqlTemplate
+ * @see RowMapper
+ * @see ResultSetExtractor
+ */
+@FunctionalInterface
 public interface RowCallbackHandler {
 
+	/**
+	 * Implementations must implement this method to process each row of data in the {@link ResultSet}. This method is only
+	 * supposed to extract values of the current row.
+	 * <p>
+	 * Exactly what the implementation chooses to do is up to it: A trivial implementation might simply count rows, while
+	 * another implementation might build an XML document.
+	 * 
+	 * @param row the {@link Row} to process (pre-initialized for the current row)
+	 * @throws DriverException if a {@link DriverException} is encountered getting column values (that is, there's no need
+	 *           to catch {@link DriverException})
+	 */
 	void processRow(Row row) throws DriverException;
-
 }

@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2016 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,9 +19,10 @@ import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
- * Generic callback interface for code that operates on a Cassandra {@link Session}. Allows to execute any number of
+ * Generic callback interface for code that operates asynchronously on a Cassandra {@link Session}. Allows to execute any number of
  * operations on a single session, using any type and number of statements.
  * <p>
  * This is particularly useful for delegating to existing data access code that expects a {@link Session} to work on and
@@ -30,10 +31,10 @@ import com.datastax.driver.core.exceptions.DriverException;
  *
  * @author David Webb
  * @author Mark Paluch
- * @see CqlTemplate#execute(SessionCallback)
- * @see CqlTemplate#query
+ * @see AsyncCqlTemplate#execute(AsyncSessionCallback)
+ * @see AsyncCqlTemplate#query
  */
-public interface SessionCallback<T> {
+public interface AsyncSessionCallback<T> {
 
 	/**
 	 * Gets called by {@link CqlTemplate#execute} with an active Cassandra {@link Session}. Does not need to care about
@@ -48,9 +49,9 @@ public interface SessionCallback<T> {
 	 * @return a result object, or {@code null} if none.
 	 * @throws DriverException if thrown by a Session method, to be auto-converted to a {@link DataAccessException}.
 	 * @throws DataAccessException in case of custom exceptions.
-	 * @see CqlTemplate#queryForObject(String, Class)
-	 * @see CqlTemplate#queryForResultSet(String)
+	 * @see AsyncCqlTemplate#queryForObject(String, Class)
+	 * @see AsyncCqlTemplate#queryForResultSet(String)
 	 */
-	T doInSession(Session session) throws DriverException, DataAccessException;
+	ListenableFuture<T> doInSession(Session session) throws DriverException, DataAccessException;
 
 }

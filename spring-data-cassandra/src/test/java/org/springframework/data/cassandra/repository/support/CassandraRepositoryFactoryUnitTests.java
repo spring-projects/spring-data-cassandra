@@ -42,13 +42,13 @@ import org.springframework.data.repository.Repository;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CassandraRepositoryFactoryUnitTests {
 
-	@Mock private CassandraConverter converter;
+	@Mock CassandraConverter converter;
 
-	@Mock private CassandraMappingContext mappingContext;
+	@Mock CassandraMappingContext mappingContext;
 
-	@Mock private CassandraPersistentEntity entity;
+	@Mock CassandraPersistentEntity entity;
 
-	@Mock private CassandraTemplate template;
+	@Mock CassandraTemplate template;
 
 	@Before
 	public void setUp() {

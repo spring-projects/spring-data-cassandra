@@ -18,13 +18,42 @@ package org.springframework.cassandra.core;
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 
 /**
+ * Generic callback interface for code that operates on a {@link PreparedStatement}. Allows to execute any number of
+ * operations on a single {@link PreparedStatement}, for example a single {@link Session#execute(Statement).
+ * <p>
+ * Used internally by {@link CqlTemplate}, but also useful for application code. Note that the passed-in
+ * {@link PreparedStatement} can have been created by the framework or by a custom {@link PreparedStatementCreator}.
+ * However, the latter is hardly ever necessary, as most custom callback actions will perform updates in which case a
+ * standard {@link PreparedStatement is fine. Custom actions will always set parameter values themselves, so that
+ * {@link PreparedStatementCreator} capability is not needed either.
+ *
  * @author David Webb
+ * @author Mark Paluch
+ * @see CqlTemplate#execute(String, PreparedStatementCallback)
+ * @see CqlTemplate#execute(PreparedStatementCreator, PreparedStatementCallback)
  */
 public interface PreparedStatementCallback<T> {
 
+	/**
+	 * Gets called by {@link CqlTemplate#execute(String, PreparedStatementCallback)} with a {@link PreparedStatement}.
+	 * <p>
+	 * Allows for returning a result object created within the callback, i.e. a domain object or a collection of domain
+	 * objects. Note that there's special support for single step actions: see
+	 * {@link CqlTemplate#queryForObject(String, Class, Object...)} etc. A thrown RuntimeException is treated as
+	 * application exception, it gets propagated to the caller of the template.
+	 * 
+	 * @param ps the {@link PreparedStatement}, must not be {@literal null}.
+	 * @return a result object publisher.
+	 * @throws DriverException if thrown by a session method, to be auto-converted to a DataAccessException.
+	 * @throws DataAccessException in case of custom exceptions.
+	 * @see CqlTemplate#queryForObject(String, Class, Object...)
+	 * @see CqlTemplate#queryForList(String, Object...)
+	 */
 	T doInPreparedStatement(PreparedStatement ps) throws DriverException, DataAccessException;
 
 }

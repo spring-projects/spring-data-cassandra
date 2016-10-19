@@ -33,11 +33,11 @@ public class ForceQuotedRepositoryTests {
 	CassandraOperations cassandraTemplate;
 
 	public void before() {
-		cassandraTemplate.deleteAll(Implicit.class);
+		cassandraTemplate.truncate(Implicit.class);
 	}
 
 	public String query(String columnName, String tableName, String keyColumnName, String key) {
-		return cassandraTemplate.queryForObject(
+		return cassandraTemplate.getCqlOperations().queryForObject(
 				String.format("select %s from %s where %s = '%s'", columnName, tableName, keyColumnName, key), String.class);
 	}
 

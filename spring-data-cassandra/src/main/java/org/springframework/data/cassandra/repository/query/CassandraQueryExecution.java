@@ -54,14 +54,7 @@ interface CassandraQueryExecution {
 		 */
 		@Override
 		public Object execute(String query, Class<?> type) {
-
-			return StreamUtils.createStreamFromIterator(operations.stream(query, type)).map(new Function<Object, Object>() {
-
-				@Override
-				public Object apply(Object t) {
-					return resultProcessing.convert(t);
-				}
-			});
+			return operations.stream(query, type).map(resultProcessing::convert);
 		}
 	}
 
@@ -118,7 +111,7 @@ interface CassandraQueryExecution {
 		 */
 		@Override
 		public Object execute(String query, Class<?> type) {
-			return operations.query(query);
+			return operations.getCqlOperations().queryForResultSet(query);
 		}
 	}
 

@@ -51,7 +51,7 @@ public class UserRepositoryIntegrationTests {
 
 	public void setUp() {
 
-		template.execute("CREATE INDEX IF NOT EXISTS users_address ON users (address);");
+		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS users_address ON users (address);");
 
 		repository.deleteAll();
 
@@ -89,7 +89,8 @@ public class UserRepositoryIntegrationTests {
 		scott.setPassword("444");
 		scott.setPlace("Boston");
 
-		all = template.insert(Arrays.asList(tom, bob, alice, scott));
+		all = Arrays.asList(tom, bob, alice, scott);
+		template.batchOps().insert(all).execute();
 	}
 
 	public void before() {

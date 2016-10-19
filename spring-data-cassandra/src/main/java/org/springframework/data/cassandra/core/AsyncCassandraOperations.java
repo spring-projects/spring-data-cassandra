@@ -15,40 +15,27 @@
  */
 package org.springframework.data.cassandra.core;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 
-import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.cassandra.core.AsyncCqlOperations;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.WriteOptions;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.driver.core.Statement;
 
 /**
- * Interface specifying a basic set of Cassandra operations. Implemented by {@link CassandraTemplate}. Not often used
- * directly, but a useful option to enhance testability, as it can easily be mocked or stubbed.
+ * Interface specifying a basic set of asynchronous Cassandra operations. Implemented by {@link AsyncCassandraTemplate}.
+ * Not often used directly, but a useful option to enhance testability, as it can easily be mocked or stubbed.
  *
- * @author Alex Shvid
- * @author David Webb
- * @author Matthew Adams
  * @author Mark Paluch
- * @see CassandraTemplate
- * @see CqlOperations
- * @see Statement
+ * @since 2.0
+ * @see AsyncCassandraTemplate
  */
-public interface CassandraOperations {
-
-	/**
-	 * The table name used for the specified class by this template.
-	 *
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return the {@link CqlIdentifier}
-	 */
-	CqlIdentifier getTableName(Class<?> entityClass);
+public interface AsyncCassandraOperations {
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with static CQL
@@ -62,21 +49,20 @@ public interface CassandraOperations {
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> select(String cql, Class<T> entityClass) throws DataAccessException;
+	<T> ListenableFuture<List<T>> select(String cql, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Execute a {@code SELECT} query and convert the resulting items to a {@link Iterator} of entities.
-	 * <p>
-	 * Returns a {@link Iterator} that wraps the Cassandra {@link com.datastax.driver.core.ResultSet}.
+	 * Execute a {@code SELECT} query and convert the resulting items notifying {@link Consumer} for each entity.
 	 *
-	 * @param <T> element return type.
-	 * @param cql query to execute. Must not be empty or {@literal null}.
-	 * @param entityClass Class type of the elements in the {@link Iterator} stream. Must not be {@literal null}.
-	 * @return an {@link Iterator} (stream) over the elements in the query result set.
+	 * @param cql must not be {@literal null}.
+	 * @param entityConsumer object that will be notified on each entity, one object at a time, must not be
+	 *          {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the completion handle
 	 * @throws DataAccessException if there is any problem executing the query.
-	 * @since 1.5
 	 */
-	<T> Stream<T> stream(String cql, Class<T> entityClass) throws DataAccessException;
+	<T> ListenableFuture<Void> select(String cql, Consumer<T> entityConsumer, Class<T> entityClass)
+			throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
@@ -86,7 +72,7 @@ public interface CassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T selectOne(String cql, Class<T> entityClass) throws DataAccessException;
+	<T> ListenableFuture<T> selectOne(String cql, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with com.datastax.driver.core.Statement
@@ -100,21 +86,20 @@ public interface CassandraOperations {
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> select(Statement statement, Class<T> entityClass) throws DataAccessException;
+	<T> ListenableFuture<List<T>> select(Statement statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Execute a {@code SELECT} query and convert the resulting items to a {@link Iterator} of entities.
-	 * <p>
-	 * Returns a {@link Iterator} that wraps the Cassandra {@link com.datastax.driver.core.ResultSet}.
+	 * Execute a {@code SELECT} query and convert the resulting items notifying {@link Consumer} for each entity.
 	 *
-	 * @param <T> element return type.
-	 * @param statement query to execute. Must not be empty or {@literal null}.
-	 * @param entityClass Class type of the elements in the {@link Iterator} stream. Must not be {@literal null}.
-	 * @return an {@link Iterator} (stream) over the elements in the query result set.
+	 * @param statement must not be {@literal null}.
+	 * @param entityConsumer object that will be notified on each entity, one object at a time, must not be
+	 *          {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the completion handle
 	 * @throws DataAccessException if there is any problem executing the query.
-	 * @since 1.5
 	 */
-	<T> Stream<T> stream(Statement statement, Class<T> entityClass) throws DataAccessException;
+	<T> ListenableFuture<Void> select(Statement statement, Consumer<T> entityConsumer, Class<T> entityClass)
+			throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
@@ -124,7 +109,7 @@ public interface CassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T selectOne(Statement statement, Class<T> entityClass) throws DataAccessException;
+	<T> ListenableFuture<T> selectOne(Statement statement, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with entities
@@ -138,27 +123,17 @@ public interface CassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
-
-	/**
-	 * Select objects for the given {@code entityClass} and {@code ids}.
-	 *
-	 * @param ids must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return the converted results
-	 * @throws DataAccessException if there is any problem executing the query.
-	 */
-	<T> List<T> selectBySimpleIds(Iterable<?> ids, Class<T> entityClass) throws DataAccessException;
+	<T> ListenableFuture<T> selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Determine whether the row {@code entityClass} with the given {@code id} exists.
 	 *
 	 * @param id must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return true, if the object exists.
+	 * @param entityClass must not be {@literal null}.
+	 * @return {@literal true}, if the object exists.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	boolean exists(Object id, Class<?> entityClass) throws DataAccessException;
+	ListenableFuture<Boolean> exists(Object id, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Returns the number of rows for the given entity class.
@@ -167,7 +142,7 @@ public interface CassandraOperations {
 	 * @return the number of existing entities.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	long count(Class<?> entityClass) throws DataAccessException;
+	ListenableFuture<Long> count(Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Insert the given entity and return the entity if the insert was applied.
@@ -176,7 +151,7 @@ public interface CassandraOperations {
 	 * @return the inserted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T insert(T entity) throws DataAccessException;
+	<T> ListenableFuture<T> insert(T entity) throws DataAccessException;
 
 	/**
 	 * Insert the given entity applying {@link WriteOptions} and return the entity if the insert was applied.
@@ -186,7 +161,7 @@ public interface CassandraOperations {
 	 * @return the inserted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T insert(T entity, WriteOptions options) throws DataAccessException;
+	<T> ListenableFuture<T> insert(T entity, WriteOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and return the entity if the update was applied.
@@ -195,7 +170,7 @@ public interface CassandraOperations {
 	 * @return the updated entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T update(T entity) throws DataAccessException;
+	<T> ListenableFuture<T> update(T entity) throws DataAccessException;
 
 	/**
 	 * Update the given entity applying {@link WriteOptions} and return the entity if the update was applied.
@@ -205,16 +180,17 @@ public interface CassandraOperations {
 	 * @return the updated entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T update(T entity, WriteOptions options) throws DataAccessException;
+	<T> ListenableFuture<T> update(T entity, WriteOptions options) throws DataAccessException;
 
 	/**
 	 * Remove the given object from the table by id.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return {@literal true} if the deletion was applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	boolean deleteById(Object id, Class<?> entityClass) throws DataAccessException;
+	ListenableFuture<Boolean> deleteById(Object id, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Delete the given entity and return the entity if the delete was applied.
@@ -223,7 +199,7 @@ public interface CassandraOperations {
 	 * @return the deleted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T delete(T entity) throws DataAccessException;
+	<T> ListenableFuture<T> delete(T entity) throws DataAccessException;
 
 	/**
 	 * Delete the given entity applying {@link QueryOptions} and return the entity if the delete was applied.
@@ -233,7 +209,7 @@ public interface CassandraOperations {
 	 * @return the deleted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T delete(T entity, QueryOptions options) throws DataAccessException;
+	<T> ListenableFuture<T> delete(T entity, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Execute a {@code TRUNCATE} query to remove all entities of a given class.
@@ -241,15 +217,7 @@ public interface CassandraOperations {
 	 * @param entityClass The entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	void truncate(Class<?> entityClass) throws DataAccessException;
-
-	/**
-	 * Returns a new {@link CassandraBatchOperations}. Each {@link CassandraBatchOperations} instance can be executed only
-	 * once so you might want to obtain new {@link CassandraBatchOperations} instances for each batch.
-	 *
-	 * @return a new {@link CassandraBatchOperations} associated with the given entity class.
-	 */
-	CassandraBatchOperations batchOps();
+	ListenableFuture<Void> truncate(Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
@@ -259,10 +227,10 @@ public interface CassandraOperations {
 	CassandraConverter getConverter();
 
 	/**
-	 * Expose the underlying {@link CqlOperations} to allow CQL operations.
-	 * 
-	 * @return the underlying {@link CqlOperations}.
-	 * @see CqlOperations
+	 * Expose the underlying {@link AsyncCqlOperationsOperations} to allow asynchronous CQL operations.
+	 *
+	 * @return the underlying {@link AsyncCqlOperations}.
+	 * @see AsyncCqlOperations
 	 */
-	CqlOperations getCqlOperations();
+	AsyncCqlOperations getAsyncCqlOperations();
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.core;
+package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
@@ -49,7 +50,8 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCrea
 		KeyspaceMetadata keyspace = getKeyspaceMetadata();
 		Collection<TableMetadata> tables = keyspace.getTables();
 		for (TableMetadata table : tables) {
-			cassandraAdminTemplate.execute(DropTableSpecification.dropTable(table.getName()));
+			cassandraAdminTemplate.getCqlOperations()
+					.execute(DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(table.getName())));
 		}
 	}
 

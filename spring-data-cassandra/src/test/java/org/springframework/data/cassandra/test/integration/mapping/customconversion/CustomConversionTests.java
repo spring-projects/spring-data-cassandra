@@ -168,7 +168,8 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 	@Test
 	public void shouldLoadCustomConvertedObject() {
 
-		cassandraOperations.execute(QueryBuilder.insertInto("employee").value("id", "employee-id").value("person",
+		cassandraOperations.getCqlOperations().execute(QueryBuilder.insertInto("employee").value("id", "employee-id")
+				.value("person",
 				"{\"firstname\":\"Homer\",\"lastname\":\"Simpson\"}"));
 
 		Employee employee = cassandraOperations.selectOne(QueryBuilder.select("id", "person").from("employee"),
@@ -186,7 +187,8 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 	@Test
 	public void shouldLoadCustomConvertedWithCollectionsObject() {
 
-		cassandraOperations.execute(QueryBuilder.insertInto("employee").value("id", "employee-id").value("people",
+		cassandraOperations.getCqlOperations().execute(QueryBuilder.insertInto("employee").value("id", "employee-id")
+				.value("people",
 				Collections.singleton("{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}")));
 
 		Employee employee = cassandraOperations.selectOne(QueryBuilder.select("id", "people").from("employee"),
@@ -205,9 +207,9 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 	@Test
 	public void dummy() {
 
-		cassandraOperations.execute(QueryBuilder.insertInto("employee").value("id", "employee-id"));
+		cassandraOperations.getCqlOperations().execute(QueryBuilder.insertInto("employee").value("id", "employee-id"));
 
-		cassandraOperations
+		cassandraOperations.getCqlOperations()
 				.execute(QueryBuilder.update("employee").where(QueryBuilder.eq("id", "employee-id")).with(QueryBuilder
 						.set("people", Collections.singleton("{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}"))));
 	}

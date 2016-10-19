@@ -21,39 +21,44 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyInt;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import com.datastax.driver.core.querybuilder.Batch;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
-import org.springframework.data.cassandra.test.integration.simpletons.Book;
+import com.google.common.util.concurrent.AbstractFuture;
 
 /**
- * Unit tests for {@link CassandraTemplate}.
+ * Unit tests for {@link AsyncCassandraTemplate}.
  * 
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
-public class CassandraTemplateUnitTests {
+public class AsyncCassandraTemplateUnitTests {
 
 	@Mock Session session;
 	@Mock ResultSet resultSet;
@@ -61,14 +66,14 @@ public class CassandraTemplateUnitTests {
 	@Mock ColumnDefinitions columnDefinitions;
 	@Captor ArgumentCaptor<Statement> statementCaptor;
 
-	private CassandraTemplate template;
+	private AsyncCassandraTemplate template;
 
 	@Before
 	public void setUp() {
 
-		template = new CassandraTemplate(session, new MappingCassandraConverter());
-		when(session.execute(anyString())).thenReturn(resultSet);
-		when(session.execute(any(Statement.class))).thenReturn(resultSet);
+		template = new AsyncCassandraTemplate(session);
+		when(session.executeAsync(anyString())).thenReturn(new TestResultSetFuture(resultSet));
+		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
 		when(resultSet.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 	}
@@ -91,10 +96,39 @@ public class CassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		List<Person> list = template.select("SELECT * FROM person", Person.class);
+		ListenableFuture<List<Person>> list = template.select("SELECT * FROM person", Person.class);
 
+		assertThat(getUninterruptibly(list)).hasSize(1).contains(new Person("myid", "Walter", "White"));
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person");
+	}
+
+	/**
+	 * @see DATACASS-292
+	 */
+	@Test
+	public void selectUsingCqlShouldInvokeCallbackWithMappedResults() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.spliterator()).thenReturn(Arrays.asList(row).spliterator());
+		when(columnDefinitions.contains(anyString())).thenReturn(true);
+		when(columnDefinitions.getType(anyInt())).thenReturn(DataType.ascii());
+
+		when(columnDefinitions.getIndexOf("id")).thenReturn(0);
+		when(columnDefinitions.getIndexOf("firstname")).thenReturn(1);
+		when(columnDefinitions.getIndexOf("lastname")).thenReturn(2);
+
+		when(row.getObject(0)).thenReturn("myid");
+		when(row.getObject(1)).thenReturn("Walter");
+		when(row.getObject(2)).thenReturn("White");
+
+		List<Person> list = new ArrayList<>();
+
+		ListenableFuture<Void> result = template.select("SELECT * FROM person", list::add, Person.class);
+
+		assertThat(getUninterruptibly(result)).isNull();
 		assertThat(list).hasSize(1).contains(new Person("myid", "Walter", "White"));
-		verify(session).execute(statementCaptor.capture());
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person");
 	}
 
@@ -106,12 +140,15 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.iterator()).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
+		ListenableFuture<List<Person>> list = template.select("SELECT * FROM person", Person.class);
+
 		try {
-			template.select("SELECT * FROM person", Person.class);
+			list.get();
 
 			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
+		} catch (ExecutionException e) {
+			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
+					.hasRootCauseInstanceOf(NoHostAvailableException.class);
 		}
 	}
 
@@ -133,10 +170,10 @@ public class CassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		Person person = template.selectOne("SELECT * FROM person WHERE id='myid';", Person.class);
+		ListenableFuture<Person> future = template.selectOne("SELECT * FROM person WHERE id='myid';", Person.class);
 
-		assertThat(person).isEqualTo(new Person("myid", "Walter", "White"));
-		verify(session).execute(statementCaptor.capture());
+		assertThat(getUninterruptibly(future)).isEqualTo(new Person("myid", "Walter", "White"));
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
@@ -158,10 +195,10 @@ public class CassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		Person person = template.selectOneById("myid", Person.class);
+		ListenableFuture<Person> future = template.selectOneById("myid", Person.class);
 
-		assertThat(person).isEqualTo(new Person("myid", "Walter", "White"));
-		verify(session).execute(statementCaptor.capture());
+		assertThat(getUninterruptibly(future)).isEqualTo(new Person("myid", "Walter", "White"));
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
@@ -175,10 +212,10 @@ public class CassandraTemplateUnitTests {
 		when(columnDefinitions.contains(anyString())).thenReturn(true);
 		when(columnDefinitions.getType(anyInt())).thenReturn(DataType.ascii());
 
-		boolean exists = template.exists("myid", Person.class);
+		ListenableFuture<Boolean> future = template.exists("myid", Person.class);
 
-		assertThat(exists).isTrue();
-		verify(session).execute(statementCaptor.capture());
+		assertThat(getUninterruptibly(future)).isTrue();
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
@@ -190,10 +227,10 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.iterator()).thenReturn(Collections.emptyIterator());
 
-		boolean exists = template.exists("myid", Person.class);
+		ListenableFuture<Boolean> future = template.exists("myid", Person.class);
 
-		assertThat(exists).isFalse();
-		verify(session).execute(statementCaptor.capture());
+		assertThat(getUninterruptibly(future)).isFalse();
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
@@ -207,10 +244,10 @@ public class CassandraTemplateUnitTests {
 		when(row.getLong(0)).thenReturn(42L);
 		when(columnDefinitions.size()).thenReturn(1);
 
-		long count = template.count(Person.class);
+		ListenableFuture<Long> future = template.count(Person.class);
 
-		assertThat(count).isEqualTo(42L);
-		verify(session).execute(statementCaptor.capture());
+		assertThat(getUninterruptibly(future)).isEqualTo(42L);
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM person;");
 	}
 
@@ -224,10 +261,10 @@ public class CassandraTemplateUnitTests {
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		Person inserted = template.insert(person);
+		ListenableFuture<Person> future = template.insert(person);
 
-		assertThat(inserted).isEqualTo(person);
-		verify(session).execute(statementCaptor.capture());
+		assertThat(getUninterruptibly(future)).isEqualTo(person);
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("INSERT INTO person (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
 	}
@@ -239,14 +276,18 @@ public class CassandraTemplateUnitTests {
 	public void insertShouldTranslateException() throws Exception {
 
 		reset(session);
-		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.executeAsync(any(Statement.class)))
+				.thenReturn(TestResultSetFuture.failed(new NoHostAvailableException(Collections.emptyMap())));
+
+		ListenableFuture<Person> future = template.insert(new Person("heisenberg", "Walter", "White"));
 
 		try {
-			template.insert(new Person("heisenberg", "Walter", "White"));
+			future.get();
 
 			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
+		} catch (ExecutionException e) {
+			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
+					.hasRootCauseInstanceOf(NoHostAvailableException.class);
 		}
 	}
 
@@ -260,9 +301,9 @@ public class CassandraTemplateUnitTests {
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		Person inserted = template.insert(person);
+		ListenableFuture<Person> future = template.insert(person);
 
-		assertThat(inserted).isNull();
+		assertThat(getUninterruptibly(future)).isNull();
 	}
 
 	/**
@@ -275,10 +316,10 @@ public class CassandraTemplateUnitTests {
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		Person updated = template.update(person);
+		ListenableFuture<Person> future = template.update(person);
 
-		assertThat(updated).isEqualTo(person);
-		verify(session).execute(statementCaptor.capture());
+		assertThat(getUninterruptibly(future)).isEqualTo(person);
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("UPDATE person SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
 	}
@@ -290,14 +331,18 @@ public class CassandraTemplateUnitTests {
 	public void updateShouldTranslateException() throws Exception {
 
 		reset(session);
-		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.executeAsync(any(Statement.class)))
+				.thenReturn(TestResultSetFuture.failed(new NoHostAvailableException(Collections.emptyMap())));
+
+		ListenableFuture<Person> future = template.update(new Person("heisenberg", "Walter", "White"));
 
 		try {
-			template.update(new Person("heisenberg", "Walter", "White"));
+			future.get();
 
 			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
+		} catch (ExecutionException e) {
+			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
+					.hasRootCauseInstanceOf(NoHostAvailableException.class);
 		}
 	}
 
@@ -311,9 +356,9 @@ public class CassandraTemplateUnitTests {
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		Person updated = template.update(person);
+		ListenableFuture<Person> future = template.update(person);
 
-		assertThat(updated).isNull();
+		assertThat(getUninterruptibly(future)).isNull();
 	}
 
 	/**
@@ -326,10 +371,10 @@ public class CassandraTemplateUnitTests {
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		boolean deleted = template.deleteById(person.getId(), Person.class);
+		ListenableFuture<Boolean> future = template.deleteById(person.getId(), Person.class);
 
-		assertThat(deleted).isTrue();
-		verify(session).execute(statementCaptor.capture());
+		assertThat(getUninterruptibly(future)).isTrue();
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM person WHERE id='heisenberg';");
 	}
 
@@ -343,10 +388,10 @@ public class CassandraTemplateUnitTests {
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		Person deleted = template.delete(person);
+		ListenableFuture<Person> future = template.delete(person);
 
-		assertThat(deleted).isEqualTo(person);
-		verify(session).execute(statementCaptor.capture());
+		assertThat(getUninterruptibly(future)).isEqualTo(person);
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM person WHERE id='heisenberg';");
 	}
 
@@ -357,14 +402,18 @@ public class CassandraTemplateUnitTests {
 	public void deleteShouldTranslateException() throws Exception {
 
 		reset(session);
-		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.executeAsync(any(Statement.class)))
+				.thenReturn(TestResultSetFuture.failed(new NoHostAvailableException(Collections.emptyMap())));
+
+		ListenableFuture<Person> future = template.delete(new Person("heisenberg", "Walter", "White"));
 
 		try {
-			template.delete(new Person("heisenberg", "Walter", "White"));
+			future.get();
 
 			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
+		} catch (ExecutionException e) {
+			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
+					.hasRootCauseInstanceOf(NoHostAvailableException.class);
 		}
 	}
 
@@ -378,9 +427,9 @@ public class CassandraTemplateUnitTests {
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		Person deleted = template.delete(person);
+		ListenableFuture<Person> future = template.delete(person);
 
-		assertThat(deleted).isNull();
+		assertThat(getUninterruptibly(future)).isNull();
 	}
 
 	/**
@@ -391,19 +440,58 @@ public class CassandraTemplateUnitTests {
 
 		template.truncate(Person.class);
 
-		verify(session).execute(statementCaptor.capture());
+		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("TRUNCATE person;");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
-	@Ignore
-	public void batchOperationsShouldCallSession() {
+	private static <T> T getUninterruptibly(Future<T> future) {
 
-		template.batchOps().insert(new Book()).execute();
+		try {
+			return future.get();
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+	}
 
-		verify(session).execute(Mockito.any(Batch.class));
+	private static class TestResultSetFuture extends AbstractFuture<ResultSet> implements ResultSetFuture {
+
+		public TestResultSetFuture() {}
+
+		public TestResultSetFuture(ResultSet resultSet) {
+			set(resultSet);
+		}
+
+		@Override
+		public boolean set(ResultSet value) {
+			return super.set(value);
+		}
+
+		@Override
+		public ResultSet getUninterruptibly() {
+			return null;
+		}
+
+		@Override
+		public ResultSet getUninterruptibly(long l, TimeUnit timeUnit) throws TimeoutException {
+			return null;
+		}
+
+		@Override
+		protected boolean setException(Throwable throwable) {
+			return super.setException(throwable);
+		}
+
+		/**
+		 * Create a completed future that reports a failure given {@link Throwable}.
+		 * 
+		 * @param throwable must not be {@literal null}.
+		 * @return the completed/failed {@link TestResultSetFuture}.
+		 */
+		public static TestResultSetFuture failed(Throwable throwable) {
+
+			TestResultSetFuture future = new TestResultSetFuture();
+			future.setException(throwable);
+			return future;
+		}
 	}
 }

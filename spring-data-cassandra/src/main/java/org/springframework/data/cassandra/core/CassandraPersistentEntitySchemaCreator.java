@@ -90,7 +90,7 @@ public class CassandraPersistentEntitySchemaCreator {
 		List<CreateUserTypeSpecification> specifications = createUserTypeSpecifications(ifNotExists);
 
 		for (CreateUserTypeSpecification specification : specifications) {
-			cassandraAdminOperations.execute(CreateUserTypeCqlGenerator.toCql(specification));
+			cassandraAdminOperations.getCqlOperations().execute(CreateUserTypeCqlGenerator.toCql(specification));
 		}
 	}
 
@@ -111,7 +111,7 @@ public class CassandraPersistentEntitySchemaCreator {
 		List<CreateTableSpecification> specifications = createTableSpecifications(ifNotExists);
 
 		for (CreateTableSpecification specification : specifications) {
-			cassandraAdminOperations.execute(CreateTableCqlGenerator.toCql(specification));
+			cassandraAdminOperations.getCqlOperations().execute(CreateTableCqlGenerator.toCql(specification));
 		}
 	}
 
