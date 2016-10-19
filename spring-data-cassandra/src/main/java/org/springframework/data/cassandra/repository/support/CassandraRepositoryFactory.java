@@ -52,8 +52,8 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	private static final SpelExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
 
-	private final CassandraOperations operations;
 	private final CassandraMappingContext mappingContext;
+	private final CassandraOperations operations;
 
 	/**
 	 * Creates a new {@link CassandraRepositoryFactory} with the given {@link CassandraOperations}.
@@ -84,7 +84,9 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 
-		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
+		CassandraEntityInformation<?, Serializable> entityInformation =
+			getEntityInformation(information.getDomainType());
+
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
 
@@ -99,8 +101,8 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(domainClass);
 
 		if (entity == null) {
-			throw new MappingException(
-					String.format("Could not lookup mapping metadata for domain class %s!", domainClass.getName()));
+			throw new MappingException(String.format("Could not lookup mapping metadata for domain class %s",
+				domainClass.getName()));
 		}
 
 		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
@@ -127,12 +129,13 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	private class CassandraQueryLookupStrategy implements QueryLookupStrategy {
 
-		private final CassandraOperations operations;
 		private final EvaluationContextProvider evaluationContextProvider;
 		private final CassandraMappingContext mappingContext;
+		private final CassandraOperations operations;
 
 		public CassandraQueryLookupStrategy(CassandraOperations operations,
 				EvaluationContextProvider evaluationContextProvider, CassandraMappingContext mappingContext) {
+
 			this.operations = operations;
 			this.evaluationContextProvider = evaluationContextProvider;
 			this.mappingContext = mappingContext;
@@ -154,7 +157,8 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 				return new StringBasedCassandraQuery(namedQuery, queryMethod, operations, EXPRESSION_PARSER,
 						evaluationContextProvider);
 			} else if (queryMethod.hasAnnotatedQuery()) {
-				return new StringBasedCassandraQuery(queryMethod, operations, EXPRESSION_PARSER, evaluationContextProvider);
+				return new StringBasedCassandraQuery(queryMethod, operations, EXPRESSION_PARSER,
+						evaluationContextProvider);
 			} else {
 				return new PartTreeCassandraQuery(queryMethod, operations);
 			}

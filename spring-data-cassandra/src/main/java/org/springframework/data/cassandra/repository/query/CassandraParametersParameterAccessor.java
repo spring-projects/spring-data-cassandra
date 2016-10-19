@@ -26,10 +26,12 @@ import org.springframework.data.repository.query.ParametersParameterAccessor;
 import com.datastax.driver.core.DataType;
 
 /**
- * Cassandra-specific {@link ParameterAccessor} exposing a Cassandra {@link DataType types} that are supported by the
- * driver and parameter type.
+ * Cassandra-specific {@link ParameterAccessor} exposing Cassandra {@link DataType types}
+ * that are supported by the driver and parameter type.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor
+ * @see org.springframework.data.repository.query.ParametersParameterAccessor
  */
 public class CassandraParametersParameterAccessor extends ParametersParameterAccessor
 		implements CassandraParameterAccessor {

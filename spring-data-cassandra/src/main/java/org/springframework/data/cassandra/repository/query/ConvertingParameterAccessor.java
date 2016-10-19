@@ -51,9 +51,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	private final CassandraConverter converter;
 	private final CassandraParameterAccessor delegate;
 
-	ConvertingParameterAccessor(CassandraConverter converter,
-			CassandraParameterAccessor delegate) {
-
+	ConvertingParameterAccessor(CassandraConverter converter, CassandraParameterAccessor delegate) {
 		this.converter = converter;
 		this.delegate = delegate;
 	}
@@ -210,7 +208,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		DataType dataType = mappingContext.getDataType(property);
 
 		if (property.isCollectionLike() && !typeInformation.isCollectionLike()) {
-
 			if (dataType instanceof CollectionType) {
 				CollectionType collectionType = (CollectionType) dataType;
 
@@ -221,7 +218,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		}
 
 		if (!property.isCollectionLike() && typeInformation.isCollectionLike()) {
-
 			if (typeInformation.isAssignableFrom(SET)) {
 				return DataType.set(dataType);
 			}
@@ -230,7 +226,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		}
 
 		if (property.isMap()) {
-
 			if (dataType instanceof CollectionType) {
 				CollectionType collectionType = (CollectionType) dataType;
 

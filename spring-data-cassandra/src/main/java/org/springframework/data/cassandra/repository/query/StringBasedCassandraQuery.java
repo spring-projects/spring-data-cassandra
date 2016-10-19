@@ -54,19 +54,23 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	private static final Logger LOG = LoggerFactory.getLogger(StringBasedCassandraQuery.class);
 	private static final ParameterBindingParser BINDING_PARSER = ParameterBindingParser.INSTANCE;
 
-	private final String query;
-	private final List<ParameterBinding> queryParameterBindings;
-	private final ExpressionEvaluatingParameterBinder parameterBinder;
 	private final CodecRegistry codecRegistry;
+
+	private final ExpressionEvaluatingParameterBinder parameterBinder;
+
+	private final List<ParameterBinding> queryParameterBindings;
+
+	private final String query;
 
 	/**
 	 * Creates a new {@link StringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
 	 * {@link CassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
 	 *
-	 * @param queryMethod
-	 * @param operations
-	 * @param expressionParser
-	 * @param evaluationContextProvider
+	 * @param queryMethod {@link CassandraQueryMethod} on which this query is based.
+	 * @param operations {@link CassandraOperations} used to perform data access in Cassandra.
+	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
+	 * @param evaluationContextProvider {@link EvaluationContextProvider} used to access the potentially shared
+	 * {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
 	 */
 	public StringBasedCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations,
 			SpelExpressionParser expressionParser, EvaluationContextProvider evaluationContextProvider) {
@@ -100,10 +104,10 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor)
 	 */
 	@Override
-	public String createQuery(CassandraParameterAccessor accessor) {
+	public String createQuery(CassandraParameterAccessor parameterAccessor) {
 
 		try {
-			List<Object> arguments = this.parameterBinder.bind(accessor,
+			List<Object> arguments = this.parameterBinder.bind(parameterAccessor,
 					new BindingContext(getQueryMethod(), queryParameterBindings));
 
 			String boundQuery = bind(query, arguments);
@@ -143,86 +147,94 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 			StringBuilder result = new StringBuilder();
 
 			int startIndex = 0;
-			int currentPos = 0;
+			int currentPosition = 0;
 			int parameterIndex = 0;
 
 			Matcher matcher = ARGUMENT_PLACEHOLDER_PATTERN.matcher(input);
 
-			while (currentPos < input.length()) {
+			while (currentPosition < input.length()) {
 
 				if (!matcher.find()) {
 					break;
 				}
-				int exprStart = matcher.start();
-				result.append(input.subSequence(startIndex, exprStart));
 
+				int exprStart = matcher.start();
+
+				result.append(input.subSequence(startIndex, exprStart));
 				result = appendValue(parameters.get(parameterIndex++), codecRegistry, result);
 
-				currentPos = matcher.end();
-				startIndex = currentPos;
+				currentPosition = matcher.end();
+				startIndex = currentPosition;
 			}
 
-			return result.append(input.subSequence(currentPos, input.length())).toString();
+			return result.append(input.subSequence(currentPosition, input.length())).toString();
 		}
 
-		static StringBuilder appendValue(Object value, CodecRegistry codecRegistry, StringBuilder sb) {
+		static StringBuilder appendValue(Object value, CodecRegistry codecRegistry, StringBuilder builder) {
+
 			if (value == null) {
-				sb.append("null");
+				builder.append("null");
 			} else if (value instanceof BindMarker) {
-				sb.append(value);
+				builder.append(value);
 			} else if (value instanceof List && isSerializable(value)) {
 				// bind variables are not supported inside collection literals
-				appendList((List<?>) value, codecRegistry, sb);
+				appendList((List<?>) value, codecRegistry, builder);
 			} else if (value instanceof Set && isSerializable(value)) {
 				// bind variables are not supported inside collection literals
-				appendSet((Set<?>) value, codecRegistry, sb);
+				appendSet((Set<?>) value, codecRegistry, builder);
 			} else if (value instanceof Map && isSerializable(value)) {
 				// bind variables are not supported inside collection literals
-				appendMap((Map<?, ?>) value, codecRegistry, sb);
+				appendMap((Map<?, ?>) value, codecRegistry, builder);
 			} else if (isSerializable(value)) {
 				TypeCodec<Object> codec = codecRegistry.codecFor(value);
-				sb.append(codec.format(value));
+				builder.append(codec.format(value));
 			} else {
 				throw new IllegalArgumentException(String.format("Argument value [%s] is not serializable", value.toString()));
 			}
-			return sb;
+
+			return builder;
 		}
 
-		private static StringBuilder appendList(List<?> l, CodecRegistry codecRegistry, StringBuilder sb) {
-			for (int i = 0; i < l.size(); i++) {
-				if (i > 0)
-					sb.append(',');
-				appendValue(l.get(i), codecRegistry, sb);
+		private static StringBuilder appendList(List<?> list, CodecRegistry codecRegistry, StringBuilder builder) {
+
+			for (int index = 0, size = list.size(); index < size; index++) {
+				builder.append(index > 0 ? "," : "");
+				appendValue(list.get(index), codecRegistry, builder);
 			}
-			return sb;
+
+			return builder;
 		}
 
-		private static StringBuilder appendSet(Set<?> s, CodecRegistry codecRegistry, StringBuilder sb) {
+		private static StringBuilder appendSet(Set<?> set, CodecRegistry codecRegistry, StringBuilder builder) {
+
 			boolean first = true;
-			for (Object elt : s) {
-				if (first)
-					first = false;
-				else
-					sb.append(',');
-				appendValue(elt, codecRegistry, sb);
+
+			for (Object element : set) {
+				builder.append(first ? "" : ",");
+				appendValue(element, codecRegistry, builder);
+				first = false;
 			}
-			return sb;
+
+			return builder;
 		}
 
-		private static StringBuilder appendMap(Map<?, ?> m, CodecRegistry codecRegistry, StringBuilder sb) {
-			sb.append('{');
+		private static StringBuilder appendMap(Map<?, ?> map, CodecRegistry codecRegistry, StringBuilder builder) {
+
+			builder.append('{');
+
 			boolean first = true;
-			for (Map.Entry<?, ?> entry : m.entrySet()) {
-				if (first)
-					first = false;
-				else
-					sb.append(',');
-				appendValue(entry.getKey(), codecRegistry, sb);
-				sb.append(':');
-				appendValue(entry.getValue(), codecRegistry, sb);
+
+			for (Map.Entry<?, ?> entry : map.entrySet()) {
+				builder.append(first ? "" : ",");
+				appendValue(entry.getKey(), codecRegistry, builder);
+				builder.append(':');
+				appendValue(entry.getValue(), codecRegistry, builder);
+				first = false;
 			}
-			sb.append('}');
-			return sb;
+
+			builder.append('}');
+
+			return builder;
 		}
 
 		/**
@@ -236,30 +248,52 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		 * @return true if the value is serializable, false otherwise.
 		 */
 		static boolean isSerializable(Object value) {
-			if (containsSpecialValue(value))
+
+			if (containsSpecialValue(value)) {
 				return false;
-			if (value instanceof Collection)
-				for (Object elt : (Collection) value)
-					if (!isSerializable(elt))
+			}
+
+			if (value instanceof Collection) {
+				for (Object element : (Collection) value) {
+					if (!isSerializable(element)) {
 						return false;
-			if (value instanceof Map)
-				for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet())
-					if (!isSerializable(entry.getKey()) || !isSerializable(entry.getValue()))
+					}
+				}
+			}
+
+			if (value instanceof Map) {
+				for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
+					if (!isSerializable(entry.getKey()) || !isSerializable(entry.getValue())) {
 						return false;
+					}
+				}
+			}
+
 			return true;
 		}
 
 		static boolean containsSpecialValue(Object value) {
-			if (value instanceof BindMarker)
+
+			if (value instanceof BindMarker) {
 				return true;
-			if (value instanceof Collection)
-				for (Object elt : (Collection) value)
-					if (containsSpecialValue(elt))
+			}
+
+			if (value instanceof Collection) {
+				for (Object element : (Collection) value) {
+					if (containsSpecialValue(element)) {
 						return true;
-			if (value instanceof Map)
-				for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet())
-					if (containsSpecialValue(entry.getKey()) || containsSpecialValue(entry.getValue()))
+					}
+				}
+			}
+
+			if (value instanceof Map) {
+				for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
+					if (containsSpecialValue(entry.getKey()) || containsSpecialValue(entry.getValue())) {
 						return true;
+					}
+				}
+			}
+
 			return false;
 		}
 	}
@@ -287,15 +321,16 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		 *
 		 * @param input can be {@literal null} or empty.
 		 * @param bindings must not be {@literal null}.
-		 * @return
+		 * @return a list of {@link ParameterBinding}s found in the given {@code input}.
 		 */
-		public String parseAndCollectParameterBindingsFromQueryIntoBindings(String input, List<ParameterBinding> bindings) {
+		public String parseAndCollectParameterBindingsFromQueryIntoBindings(String input,
+				List<ParameterBinding> bindings) {
 
 			if (!StringUtils.hasText(input)) {
 				return input;
 			}
 
-			Assert.notNull(bindings, "Parameter bindings must not be null!");
+			Assert.notNull(bindings, "Parameter bindings must not be null");
 
 			return transformQueryAndCollectExpressionParametersIntoBindings(input, bindings);
 		}
@@ -306,11 +341,11 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 			StringBuilder result = new StringBuilder();
 
 			int startIndex = 0;
-			int currentPos = 0;
+			int currentPosition = 0;
 
-			while (currentPos < input.length()) {
+			while (currentPosition < input.length()) {
 
-				Matcher matcher = findNextBindingOrExpression(input, currentPos);
+				Matcher matcher = findNextBindingOrExpression(input, currentPosition);
 
 				// no expression parameter found
 				if (matcher == null) {
@@ -318,20 +353,20 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 				}
 
 				int exprStart = matcher.start();
-				currentPos = exprStart;
+				currentPosition = exprStart;
 
 				if (matcher.pattern() == NAME_BASED_EXPRESSION_PATTERN || matcher.pattern() == INDEX_BASED_EXPRESSION_PATTERN) {
 					// eat parameter expression
-					int curlyBraceOpenCnt = 1;
-					currentPos += 3;
+					int curlyBraceOpenCount = 1;
+					currentPosition += 3;
 
-					while (curlyBraceOpenCnt > 0 && currentPos < input.length()) {
-						switch (input.charAt(currentPos++)) {
+					while (curlyBraceOpenCount > 0 && currentPosition < input.length()) {
+						switch (input.charAt(currentPosition++)) {
 							case CURRLY_BRACE_OPEN:
-								curlyBraceOpenCnt++;
+								curlyBraceOpenCount++;
 								break;
 							case CURRLY_BRACE_CLOSE:
-								curlyBraceOpenCnt--;
+								curlyBraceOpenCount--;
 								break;
 							default:
 						}
@@ -345,44 +380,41 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 				result.append(ARGUMENT_PLACEHOLDER);
 
 				if (matcher.pattern() == NAME_BASED_EXPRESSION_PATTERN || matcher.pattern() == INDEX_BASED_EXPRESSION_PATTERN) {
-					bindings.add(ParameterBinding.expression(input.substring(exprStart + 3, currentPos - 1), true));
+					bindings.add(ParameterBinding.expression(input.substring(exprStart + 3, currentPosition - 1), true));
 				} else {
-
 					if (matcher.pattern() == INDEX_PARAMETER_BINDING_PATTERN) {
 						bindings.add(ParameterBinding.indexed(Integer.parseInt(matcher.group(1))));
 					} else {
 						bindings.add(ParameterBinding.named(matcher.group(1)));
 					}
 
-					currentPos = matcher.end();
+					currentPosition = matcher.end();
 				}
 
-				startIndex = currentPos;
+				startIndex = currentPosition;
 			}
 
-			return result.append(input.subSequence(currentPos, input.length())).toString();
+			return result.append(input.subSequence(currentPosition, input.length())).toString();
 		}
 
 		private static Matcher findNextBindingOrExpression(String input, int position) {
 
 			List<Matcher> matchers = new ArrayList<Matcher>();
+
 			matchers.add(INDEX_PARAMETER_BINDING_PATTERN.matcher(input));
 			matchers.add(NAMED_PARAMETER_BINDING_PATTERN.matcher(input));
 			matchers.add(INDEX_BASED_EXPRESSION_PATTERN.matcher(input));
 			matchers.add(NAME_BASED_EXPRESSION_PATTERN.matcher(input));
 
 			TreeMap<Integer, Matcher> matcherMap = new TreeMap<Integer, Matcher>();
+
 			for (Matcher matcher : matchers) {
 				if (matcher.find(position)) {
 					matcherMap.put(matcher.start(), matcher);
 				}
 			}
 
-			if (matcherMap.isEmpty()) {
-				return null;
-			}
-
-			return matcherMap.values().iterator().next();
+			return (matcherMap.isEmpty() ? null : matcherMap.values().iterator().next());
 		}
 	}
 
@@ -393,8 +425,8 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 */
 	static class ParameterBinding {
 
-		private final int parameterIndex;
 		private final boolean quoted;
+		private final int parameterIndex;
 		private final String expression;
 		private final String parameterName;
 
@@ -418,7 +450,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		}
 
 		public boolean isNamed() {
-			return parameterName != null;
+			return (parameterName != null);
 		}
 
 		public int getParameterIndex() {
@@ -426,7 +458,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		}
 
 		public String getParameter() {
-			return "?" + (isExpression() ? "expr" : "") + parameterIndex;
+			return ("?" + (isExpression() ? "expr" : "") + parameterIndex);
 		}
 
 		public String getExpression() {
@@ -434,7 +466,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		}
 
 		public boolean isExpression() {
-			return this.expression != null;
+			return (this.expression != null);
 		}
 
 		public String getParameterName() {

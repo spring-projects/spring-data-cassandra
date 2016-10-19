@@ -30,7 +30,7 @@ import org.springframework.util.CollectionUtils;
 /**
  * {@link ExpressionEvaluatingParameterBinder} allows to evaluate, convert and bind parameters to placeholders within a
  * {@link String}.
- * 
+ *
  * @author Mark Paluch
  * @since 1.5
  */
@@ -41,15 +41,15 @@ class ExpressionEvaluatingParameterBinder {
 
 	/**
 	 * Creates new {@link ExpressionEvaluatingParameterBinder}
-	 * 
+	 *
 	 * @param expressionParser must not be {@literal null}.
 	 * @param evaluationContextProvider must not be {@literal null}.
 	 */
 	public ExpressionEvaluatingParameterBinder(SpelExpressionParser expressionParser,
 			EvaluationContextProvider evaluationContextProvider) {
 
-		Assert.notNull(expressionParser, "ExpressionParser must not be null!");
-		Assert.notNull(evaluationContextProvider, "EvaluationContextProvider must not be null!");
+		Assert.notNull(expressionParser, "ExpressionParser must not be null");
+		Assert.notNull(evaluationContextProvider, "EvaluationContextProvider must not be null");
 
 		this.expressionParser = expressionParser;
 		this.evaluationContextProvider = evaluationContextProvider;
@@ -58,13 +58,12 @@ class ExpressionEvaluatingParameterBinder {
 	/**
 	 * Bind values provided by {@link CassandraParameterAccessor} to placeholders in {@link BindingContext} while
 	 * considering potential conversions and parameter types.
-	 * 
-	 * @param raw can be {@literal null} or empty.
-	 * @param accessor must not be {@literal null}.
+	 *
+	 * @param parameterAccessor must not be {@literal null}.
 	 * @param bindingContext must not be {@literal null}.
 	 * @return {@literal null} if given {@code raw} value is empty.
 	 */
-	public List<Object> bind(CassandraParameterAccessor accessor, BindingContext bindingContext) {
+	public List<Object> bind(CassandraParameterAccessor parameterAccessor, BindingContext bindingContext) {
 
 		if (!bindingContext.hasBindings()) {
 			return Collections.emptyList();
@@ -73,7 +72,7 @@ class ExpressionEvaluatingParameterBinder {
 		List<Object> parameters = new ArrayList<Object>(bindingContext.getBindings().size());
 
 		for (ParameterBinding binding : bindingContext.getBindings()) {
-			parameters.add(getParameterValueForBinding(accessor, bindingContext.getParameters(), binding));
+			parameters.add(getParameterValueForBinding(parameterAccessor, bindingContext.getParameters(), binding));
 		}
 
 		return parameters;
@@ -81,21 +80,22 @@ class ExpressionEvaluatingParameterBinder {
 
 	/**
 	 * Returns the value to be used for the given {@link ParameterBinding}.
-	 * 
-	 * @param accessor must not be {@literal null}.
+	 *
+	 * @param parameterAccessor must not be {@literal null}.
 	 * @param parameters must not be {@literal null}.
 	 * @param binding must not be {@literal null}.
-	 * @return
+	 * @return the value used for the given {@link ParameterBinding}.
 	 */
-	private Object getParameterValueForBinding(CassandraParameterAccessor accessor, CassandraParameters parameters,
-			ParameterBinding binding) {
+	private Object getParameterValueForBinding(CassandraParameterAccessor parameterAccessor,
+			CassandraParameters parameters, ParameterBinding binding) {
 
 		if (binding.isExpression()) {
-			return evaluateExpression(binding.getExpression(), parameters, accessor.getValues());
+			return evaluateExpression(binding.getExpression(), parameters, parameterAccessor.getValues());
 		}
 
-		return binding.isNamed() ? accessor.getBindableValue(getParameterIndex(parameters, binding.getParameterName()))
-				: accessor.getBindableValue(binding.getParameterIndex());
+		return binding.isNamed()
+				? parameterAccessor.getBindableValue(getParameterIndex(parameters, binding.getParameterName()))
+				: parameterAccessor.getBindableValue(binding.getParameterIndex());
 	}
 
 	private int getParameterIndex(CassandraParameters parameters, String parameterName) {
@@ -107,18 +107,19 @@ class ExpressionEvaluatingParameterBinder {
 		}
 
 		throw new IllegalArgumentException(
-				String.format("Invalid parameter name! Cannot resolve parameter [%s]", parameterName));
+				String.format("Invalid parameter name; Cannot resolve parameter [%s]", parameterName));
 	}
 
 	/**
 	 * Evaluates the given {@code expressionString}.
-	 * 
+	 *
 	 * @param expressionString must not be {@literal null} or empty.
 	 * @param parameters must not be {@literal null}.
 	 * @param parameterValues must not be {@literal null}.
-	 * @return
+	 * @return the value of the {@code expressionString} evaluation.
 	 */
-	private Object evaluateExpression(String expressionString, CassandraParameters parameters, Object[] parameterValues) {
+	private Object evaluateExpression(String expressionString, CassandraParameters parameters,
+			Object[] parameterValues) {
 
 		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, parameterValues);
 		Expression expression = expressionParser.parseExpression(expressionString);
@@ -137,9 +138,10 @@ class ExpressionEvaluatingParameterBinder {
 
 		/**
 		 * Creates new {@link BindingContext}.
-		 * 
-		 * @param queryMethod
-		 * @param bindings
+		 *
+		 * @param queryMethod {@link CassandraQueryMethod} on which the parameters are evaluated.
+		 * @param bindings {@link List} of {@link ParameterBinding} containing name or position (index)
+		 * information pertaining to the parameter in the referenced {@code queryMethod}.
 		 */
 		public BindingContext(CassandraQueryMethod queryMethod, List<ParameterBinding> bindings) {
 
@@ -156,7 +158,7 @@ class ExpressionEvaluatingParameterBinder {
 
 		/**
 		 * Get unmodifiable list of {@link ParameterBinding}s.
-		 * 
+		 *
 		 * @return never {@literal null}.
 		 */
 		public List<ParameterBinding> getBindings() {
@@ -165,8 +167,8 @@ class ExpressionEvaluatingParameterBinder {
 
 		/**
 		 * Get the associated {@link CassandraParameters}.
-		 * 
-		 * @return
+		 *
+		 * @return the {@link CassandraParameters} associated with the {@link CassandraQueryMethod}.
 		 */
 		public CassandraParameters getParameters() {
 			return queryMethod.getParameters();
@@ -175,11 +177,10 @@ class ExpressionEvaluatingParameterBinder {
 		/**
 		 * Get the {@link CassandraQueryMethod}.
 		 *
-		 * @return
+		 * @return the {@link CassandraQueryMethod} used in the expression evaluation context.
 		 */
 		public CassandraQueryMethod getQueryMethod() {
 			return queryMethod;
 		}
-
 	}
 }
