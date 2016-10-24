@@ -21,7 +21,7 @@ package org.springframework.cassandra.core;
  *
  * @author David Webb
  * @author Mark Paluch
- * @deprecated Use the driver's {@link com.datastax.driver.core.policies.RetryPolicy}.
+ * @deprecated as of 1.5, use the driver's {@link com.datastax.driver.core.policies.RetryPolicy}.
  */
 @Deprecated
 public enum RetryPolicy {

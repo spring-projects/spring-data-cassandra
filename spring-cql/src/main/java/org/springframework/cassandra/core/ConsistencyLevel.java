@@ -20,7 +20,7 @@ package org.springframework.cassandra.core;
  *
  * @author David Webb
  * @author Antoine Toulme
- * @deprecated Use the driver's {@link com.datastax.driver.core.ConsistencyLevel}.
+ * @deprecated as of 1.5, use the driver's {@link com.datastax.driver.core.ConsistencyLevel}.
  */
 @Deprecated
 public enum ConsistencyLevel {
@@ -28,17 +28,17 @@ public enum ConsistencyLevel {
 	ANY, ONE, TWO, THREE,
 
 	/**
-	 * @deprecated Use {@link #QUORUM}
+	 * @deprecated as of 1.5, use {@link #QUORUM}
 	 */
 	@Deprecated QUOROM,
 
 	/**
-	 * @deprecated Use {@link #LOCAL_QUORUM}
+	 * @deprecated as of 1.5, use {@link #LOCAL_QUORUM}
 	 */
 	@Deprecated LOCAL_QUOROM,
 
 	/**
-	 * @deprecated Use {@link #EACH_QUORUM}
+	 * @deprecated as of 1.5, use {@link #EACH_QUORUM}
 	 */
 	@Deprecated EACH_QUOROM,
 

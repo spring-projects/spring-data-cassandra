@@ -32,13 +32,6 @@ public class MultiPrimaryKeyColumns {
 
 	@Column String value;
 
-	/**
-	 * @deprecated for persistence use only
-	 */
-	@Deprecated
-	@SuppressWarnings("unused")
-	private MultiPrimaryKeyColumns() {}
-
 	public MultiPrimaryKeyColumns(String key0, String key1) {
 		setKey0(key0);
 		setKey1(key1);

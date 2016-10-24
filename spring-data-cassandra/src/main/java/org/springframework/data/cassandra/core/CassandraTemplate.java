@@ -142,7 +142,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * @deprecated see {@link #getMappingContext()}.
+	 * @deprecated as of 1.5, see {@link #getMappingContext()}.
 	 */
 	@Deprecated
 	public CassandraMappingContext getCassandraMappingContext() {
@@ -291,7 +291,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * @deprecated See {@link #insertAsynchronously(Object, WriteListener)}
+	 * @deprecated as of 1.2, see {@link #insertAsynchronously(Object, WriteListener)}
 	 */
 	@Deprecated
 	@Override
@@ -301,7 +301,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * @deprecated See {@link #insertAsynchronously(List, WriteListener, WriteOptions)}
+	 * @deprecated as of 1.2, see {@link #insertAsynchronously(List, WriteListener, WriteOptions)}
 	 */
 	@Deprecated
 	@Override
@@ -330,7 +330,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * @deprecated See {@link #insertAsynchronously(List, WriteListener, WriteOptions)}.
+	 * @deprecated as of 1.2, see {@link #insertAsynchronously(List, WriteListener, WriteOptions)}.
 	 */
 	@Deprecated
 	@Override
@@ -340,7 +340,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * @deprecated See {@link #insertAsynchronously(List, WriteListener, WriteOptions)}.
+	 * @deprecated as of 1.2, see {@link #insertAsynchronously(List, WriteListener, WriteOptions)}.
 	 */
 	@Deprecated
 	@Override
@@ -1028,7 +1028,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * @deprecated Method renamed. Use {@link #createUpdateBatchQuery(String, List, WriteOptions, EntityWriter)}
+	 * @deprecated as of 1.2, method renamed. Use {@link #createUpdateBatchQuery(String, List, WriteOptions, EntityWriter)}
 	 * @see #createUpdateBatchQuery(String, List, WriteOptions, EntityWriter)
 	 */
 	@Deprecated
@@ -1039,7 +1039,7 @@ public class CassandraTemplate extends CqlTemplate implements CassandraOperation
 	}
 
 	/**
-	 * @deprecated Method renamed. Use {@link #createUpdateQuery(String, Object, WriteOptions, EntityWriter)}
+	 * @deprecated as of 1.2, method renamed. Use {@link #createUpdateQuery(String, Object, WriteOptions, EntityWriter)}
 	 * @see #createUpdateQuery(String, Object, WriteOptions, EntityWriter)
 	 */
 	@Deprecated

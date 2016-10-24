@@ -72,7 +72,7 @@ public class QueryOptions {
 	 * Returns the {@link ConsistencyLevel}.
 	 *
 	 * @return the consistencyLevel.
-	 * @deprecated Use {@link #setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel)}
+	 * @deprecated as of 1.5, use {@link #setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel)}
 	 */
 	@Deprecated
 	public ConsistencyLevel getConsistencyLevel() {

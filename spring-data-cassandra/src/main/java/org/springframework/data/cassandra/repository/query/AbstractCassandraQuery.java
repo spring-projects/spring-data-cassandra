@@ -98,13 +98,12 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		ResultProcessor resultProcessor = queryMethod.getResultProcessor().withDynamicProjection(parameterAccessor);
 
 		CassandraQueryExecution queryExecution = getExecution(query, parameterAccessor,
-			new ResultProcessingConverter(resultProcessor));
+				new ResultProcessingConverter(resultProcessor));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
-			template.getConverter().getCustomConversions());
+				template.getConverter().getCustomConversions());
 
-		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType()
-			: returnedType.getReturnedType());
+		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
 
 		return queryExecution.execute(query, resultType);
 	}
@@ -141,7 +140,8 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 * @param declaredReturnType
 	 * @param returnedUnwrappedObjectType
 	 * @return
-	 * @deprecated {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type conversion.
+	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type
+	 *             conversion.
 	 */
 	@Deprecated
 	public Object getCollectionOfEntity(ResultSet resultSet, Class<?> declaredReturnType,
@@ -170,7 +170,8 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 * @param resultSet
 	 * @param type
 	 * @return
-	 * @deprecated {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type conversion.
+	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type
+	 *             conversion.
 	 */
 	@Deprecated
 	public Object getSingleEntity(ResultSet resultSet, Class<?> type) {
@@ -183,6 +184,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	}
 
 	private void warnIfMoreResults(ResultSet resultSet) {
+
 		if (log.isWarnEnabled() && !resultSet.isExhausted()) {
 			int count = 0;
 
@@ -196,11 +198,13 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 	@Deprecated
 	protected void warnIfMoreResults(Iterator<Row> iterator) {
+
 		if (log.isWarnEnabled() && iterator.hasNext()) {
 			int count = 0;
 
-			for ( ; iterator.hasNext(); iterator.next()) {
+			while (iterator.hasNext()) {
 				count++;
+				iterator.next();
 			}
 
 			log.warn("ignoring extra {} row{}", count, count == 1 ? "" : "s");
@@ -208,14 +212,19 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	}
 
 	/**
-	 * @deprecated {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type conversion.
+	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type
+	 *             conversion.
 	 */
 	@Deprecated
 	public void setConversionService(ConversionService conversionService) {
 		throw new UnsupportedOperationException("setConversionService(ConversionService) is not supported anymore. "
-			+ "Please use CassandraMappingContext instead");
+				+ "Please use CassandraMappingContext instead");
 	}
 
+	/**
+	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type
+	 *             conversion.
+	 */
 	@Deprecated
 	public ConversionService getConversionService() {
 		return template.getConverter().getConversionService();

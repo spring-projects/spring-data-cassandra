@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
  *
  * @author David Webb
  * @author Antoine Toulme
- * @deprecated Use the driver's {@link com.datastax.driver.core.ConsistencyLevel}.
+ * @deprecated as of 1.5, use the driver's {@link com.datastax.driver.core.ConsistencyLevel}.
  */
 @Deprecated
 public final class ConsistencyLevelResolver {

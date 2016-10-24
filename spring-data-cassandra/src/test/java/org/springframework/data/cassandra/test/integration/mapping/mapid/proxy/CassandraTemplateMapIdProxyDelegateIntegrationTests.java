@@ -95,13 +95,6 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends Abstrac
 
 		@Column String value;
 
-		/**
-		 * @deprecated for persistence use only
-		 */
-		@Deprecated
-		@SuppressWarnings("unused")
-		private SinglePkc() {}
-
 		public SinglePkc(String key) {
 			setKey(key);
 		}
@@ -172,13 +165,6 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends Abstrac
 		@PrimaryKeyColumn(ordinal = 1) String key1;
 
 		@Column String value;
-
-		/**
-		 * @deprecated for persistence use only
-		 */
-		@Deprecated
-		@SuppressWarnings("unused")
-		private MultiPkc() {}
 
 		public MultiPkc(String key0, String key1) {
 			setKey0(key0);

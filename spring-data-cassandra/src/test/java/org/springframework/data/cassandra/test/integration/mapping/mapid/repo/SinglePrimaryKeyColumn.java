@@ -30,13 +30,6 @@ public class SinglePrimaryKeyColumn {
 
 	@Column String value;
 
-	/**
-	 * @deprecated for persistence use only
-	 */
-	@Deprecated
-	@SuppressWarnings("unused")
-	private SinglePrimaryKeyColumn() {}
-
 	public SinglePrimaryKeyColumn(String key) {
 		setKey(key);
 	}

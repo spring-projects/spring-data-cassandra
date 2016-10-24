@@ -33,10 +33,6 @@ public class Comment {
 
 	private String text;
 
-	/**
-	 * @deprecated Only for use by persistence infrastructure
-	 */
-	@Deprecated
 	protected Comment() {}
 
 	public Comment(String author, String company) {

@@ -36,12 +36,6 @@ public class CommentKey implements Serializable {
 
 	@PrimaryKeyColumn(ordinal = 1) private String company;
 
-	/**
-	 * @deprecated Only for use by persistence infrastructure
-	 */
-	@Deprecated
-	protected CommentKey() {}
-
 	public CommentKey(String author, String company) {
 		setAuthor(author);
 		setCompany(company);

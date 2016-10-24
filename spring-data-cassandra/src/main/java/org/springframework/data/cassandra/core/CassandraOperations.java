@@ -247,7 +247,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entity The entity to insert
 	 * @return The entity given
 	 * @see #insertAsynchronously(Object, WriteListener)
-	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 * @deprecated as of 1.2, this method does not allow for query cancellation or notification of completion. Favor
 	 *             {@link #insertAsynchronously(Object, WriteListener)}.
 	 */
 	@Deprecated
@@ -259,7 +259,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entity The entity to insert
 	 * @return The entity given
 	 * @see #insertAsynchronously(Object, WriteOptions)
-	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 * @deprecated as of 1.2, this method does not allow for query cancellation or notification of completion. Favor
 	 *             {@link #insertAsynchronously(Object, WriteListener, WriteOptions)}.
 	 */
 	@Deprecated
@@ -290,7 +290,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The entities to insert
 	 * @return The entities given
 	 * @see #insertAsynchronously(List, WriteListener)
-	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 * @deprecated as of 1.2, this method does not allow for query cancellation or notification of completion. Favor
 	 *             {@link #insertAsynchronously(List, WriteListener)}.
 	 */
 	@Deprecated
@@ -302,7 +302,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The entities to insert
 	 * @return The entities given
 	 * @see #insertAsynchronously(List, WriteListener, WriteOptions)
-	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 * @deprecated as of 1.2, this method does not allow for query cancellation or notification of completion. Favor
 	 *             {@link #insertAsynchronously(List, WriteListener, WriteOptions)}.
 	 */
 	@Deprecated
@@ -386,7 +386,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entity The entity to update
 	 * @return The entity given
 	 * @see #updateAsynchronously(Object, WriteListener)
-	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 * @deprecated as of 1.2, this method does not allow for query cancellation or notification of completion. Favor
 	 *             {@link #updateAsynchronously(Object, WriteListener)}.
 	 */
 	@Deprecated
@@ -398,7 +398,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entity The entity to update
 	 * @return The entity given
 	 * @see #updateAsynchronously(Object, WriteOptions)
-	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 * @deprecated as of 1.2, this method does not allow for query cancellation or notification of completion. Favor
 	 *             {@link #updateAsynchronously(Object, WriteListener, WriteOptions)}.
 	 */
 	@Deprecated
@@ -429,7 +429,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The entities to update
 	 * @return The entities given
 	 * @see #updateAsynchronously(List, WriteListener)
-	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 * @deprecated as of 1.2, this method does not allow for query cancellation or notification of completion. Favor
 	 *             {@link #updateAsynchronously(List, WriteListener)}.
 	 */
 	@Deprecated
@@ -441,7 +441,7 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The entities to update
 	 * @return The entities given
 	 * @see #updateAsynchronously(List, WriteListener, WriteOptions)
-	 * @deprecated This method does not allow for query cancellation or notification of completion. Favor
+	 * @deprecated as of 1.2, this method does not allow for query cancellation or notification of completion. Favor
 	 *             {@link #updateAsynchronously(List, WriteListener, WriteOptions)}.
 	 */
 	@Deprecated
