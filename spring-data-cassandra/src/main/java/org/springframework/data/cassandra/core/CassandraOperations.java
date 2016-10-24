@@ -31,7 +31,18 @@ import com.datastax.driver.core.querybuilder.Select;
 /**
  * Operations for interacting with Cassandra. These operations are used by the Repository implementation, but can also
  * be used directly when that is desired by the developer.
- *
+ * <h3>Deprecation note</h3>
+ * <p>
+ * Methods accepting a {@link List} of entities perform batching operations (insert/update/delete). This can be fine for
+ * entities sharing a partition key but leads in most cases to distributed batches across a Cassandra cluster which is
+ * an anti-pattern. Please use {@link #batchOps()} if your intention is batching. As of Version 1.5, all methods
+ * accepting a {@link List} of entities are deprecated because there is no alternative of inserting multiple rows in an
+ * atomic way that guarantees not to harm Cassandra performance. These methods will be removed in Version 2.0. Please
+ * issue multiple calls to the corresponding single-entity method.
+ * <p>
+ * {@link CassandraOperations} mixes synchronous and asynchronous methods so asynchronous methods are subject to be
+ * moved into an asynchronous Cassandra template.
+ * 
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew Adams
@@ -207,7 +218,12 @@ public interface CassandraOperations extends CqlOperations {
 	 *
 	 * @param entities The entities to insert.
 	 * @return The entities given.
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and inserts all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. Please use
+	 *             {@link #batchOps()} for if your intent is batching or issue multiple calls to {@link #insert(Object)}
+	 *             as that's the preferred approach. This method will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> List<T> insert(List<T> entities);
 
 	/**
@@ -216,7 +232,13 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The entities to insert.
 	 * @param options The {@link WriteOptions} to use.
 	 * @return The entities given.
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and inserts all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. Please use
+	 *             {@link #batchOps()} for if your intent is batching or issue multiple calls to
+	 *             {@link #insert(Object, WriteOptions)} as that's the preferred approach. This method will be removed in
+	 *             Version 2.0.
 	 */
+	@Deprecated
 	<T> List<T> insert(List<T> entities, WriteOptions options);
 
 	/**
@@ -292,7 +314,11 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The entities to insert
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. This method
+	 *             will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener);
 
 	/**
@@ -302,7 +328,11 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param listener The listener to receive notification of completion
 	 * @param options The {@link WriteOptions} to use
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. This method
+	 *             will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> Cancellable insertAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options);
 
 	/**
@@ -327,7 +357,12 @@ public interface CassandraOperations extends CqlOperations {
 	 *
 	 * @param entities The entities to update.
 	 * @return The entities given.
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and updates all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. Please use
+	 *             {@link #batchOps()} for if your intent is batching or issue multiple calls to {@link #update(Object)}
+	 *             as that's the preferred approach. This method will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> List<T> update(List<T> entities);
 
 	/**
@@ -336,7 +371,13 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The entities to update.
 	 * @param options The {@link WriteOptions} to use.
 	 * @return The entities given.
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and updates all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. Please use
+	 *             {@link #batchOps()} for if your intent is batching or issue multiple calls to
+	 *             {@link #update(Object, WriteOptions)} as that's the preferred approach. This method will be removed in
+	 *             Version 2.0.
 	 */
+	@Deprecated
 	<T> List<T> update(List<T> entities, WriteOptions options);
 
 	/**
@@ -412,7 +453,11 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The entities to update
 	 * @param listener The listener to receive notification of completion
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. This method
+	 *             will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener);
 
 	/**
@@ -422,7 +467,11 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param listener The listener to receive notification of completion
 	 * @param options The {@link WriteOptions} to use
 	 * @return A {@link Cancellable} enabling the cancellation of the operation
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. This method
+	 *             will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> Cancellable updateAsynchronously(List<T> entities, WriteListener<T> listener, WriteOptions options);
 
 	/**
@@ -452,7 +501,12 @@ public interface CassandraOperations extends CqlOperations {
 	 * Remove the given objects from the table by id.
 	 *
 	 * @param entities must not be {@literal null}.
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. Please use
+	 *             {@link #batchOps()} for if your intent is batching or issue multiple calls to {@link #delete(Object)}
+	 *             as that's the preferred approach. This method will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> void delete(List<T> entities);
 
 	/**
@@ -460,7 +514,13 @@ public interface CassandraOperations extends CqlOperations {
 	 *
 	 * @param entities must not be {@literal null}.
 	 * @param options may be {@literal null}.
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. Please use
+	 *             {@link #batchOps()} for if your intent is batching or issue multiple calls to
+	 *             {@link #delete(Object, WriteOptions)} as that's the preferred approach. This method will be removed in
+	 *             Version 2.0.
 	 */
+	@Deprecated
 	<T> void delete(List<T> entities, QueryOptions options);
 
 	/**
@@ -506,7 +566,11 @@ public interface CassandraOperations extends CqlOperations {
 	 * Remove the given objects from the table by id.
 	 *
 	 * @param entities The objects to delete
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. This method
+	 *             will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> Cancellable deleteAsynchronously(List<T> entities);
 
 	/**
@@ -514,7 +578,11 @@ public interface CassandraOperations extends CqlOperations {
 	 *
 	 * @param entities The objects to delete
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. This method
+	 *             will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener<T> listener);
 
 	/**
@@ -522,7 +590,11 @@ public interface CassandraOperations extends CqlOperations {
 	 *
 	 * @param entities The objects to delete
 	 * @param options The {@link QueryOptions} to use
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. This method
+	 *             will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> Cancellable deleteAsynchronously(List<T> entities, QueryOptions options);
 
 	/**
@@ -531,7 +603,11 @@ public interface CassandraOperations extends CqlOperations {
 	 * @param entities The objects to delete
 	 * @param listener The {@link DeletionListener} to receive notification upon completion
 	 * @param options The {@link QueryOptions} to use
+	 * @deprecated as of 1.5. This method accepts a {@link List} of entities and deletes all entities in a batch. That's
+	 *             not transparent to users and a Cassandra anti-pattern if used with multiple partition keys. This method
+	 *             will be removed in Version 2.0.
 	 */
+	@Deprecated
 	<T> Cancellable deleteAsynchronously(List<T> entities, DeletionListener<T> listener, QueryOptions options);
 
 	/**
