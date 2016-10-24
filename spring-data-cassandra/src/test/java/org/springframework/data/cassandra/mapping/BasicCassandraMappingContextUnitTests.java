@@ -19,21 +19,26 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
+
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Unit tests for {@link BasicCassandraMappingContext}.
@@ -322,19 +327,82 @@ public class BasicCassandraMappingContextUnitTests {
 	@Test
 	public void shouldNotCreateEntitiesForCustomConvertedTypes() {
 
-		List<?> converters = Arrays.asList(new HumanToStringConverter());
-		mappingContext.setCustomConversions(new CustomConversions(converters));
+		mappingContext
+				.setCustomConversions(new CustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
 		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class)), is(false));
 	}
 
+	/**
+	 * @see DATACASS-349
+	 */
+	@Test
+	public void propertyTypeShouldConsiderRegisteredConverterForPropertyType() {
+
+		mappingContext
+				.setCustomConversions(new CustomConversions(Collections.singletonList(StringMapToStringConverter.INSTANCE)));
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
+				.getPersistentEntity(TypeWithCustomConvertedMap.class);
+
+		assertThat(mappingContext.getDataType(persistentEntity.getPersistentProperty("stringMap")),
+				is(equalTo(DataType.varchar())));
+
+		assertThat(mappingContext.getDataType(persistentEntity.getPersistentProperty("blobMap")),
+				is(equalTo(DataType.ascii())));
+	}
+
+	/**
+	 * @see DATACASS-349
+	 */
+	@Test
+	public void propertyTypeShouldConsiderRegisteredConverterForCollectionComponentType() {
+
+		mappingContext
+				.setCustomConversions(new CustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(TypeWithListOfHumans.class);
+
+		assertThat(mappingContext.getDataType(persistentEntity.getPersistentProperty("humans")),
+				is(equalTo((DataType) DataType.list(DataType.varchar()))));
+	}
+
 	private static class Human {}
 
-	private static class HumanToStringConverter implements Converter<Human, String> {
+	enum HumanToStringConverter implements Converter<Human, String> {
+
+		INSTANCE;
 
 		@Override
 		public String convert(Human source) {
 			return "hello";
+		}
+	}
+
+	@Table
+	private static class TypeWithCustomConvertedMap {
+
+		@Id String id;
+		Map<String, Collection<String>> stringMap;
+
+		@CassandraType(type = Name.ASCII) Map<String, Collection<String>> blobMap;
+	}
+
+	@Table
+	private static class TypeWithListOfHumans {
+
+		@Id String id;
+		List<Human> humans;
+	}
+
+	@WritingConverter
+	enum StringMapToStringConverter implements Converter<Map<String, Collection<String>>, String> {
+
+		INSTANCE;
+
+		@Override
+		public String convert(Map<String, Collection<String>> source) {
+			return "serialized";
 		}
 	}
 }

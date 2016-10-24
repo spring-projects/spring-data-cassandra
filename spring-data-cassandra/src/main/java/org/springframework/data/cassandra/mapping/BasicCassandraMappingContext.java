@@ -269,6 +269,10 @@ public class BasicCassandraMappingContext
 			return property.getDataType();
 		}
 
+		if (customConversions.hasCustomWriteTarget(property.getType())) {
+			return getDataTypeFor(customConversions.getCustomWriteTarget(property.getType()));
+		}
+
 		if (customConversions.hasCustomWriteTarget(property.getActualType())) {
 
 			Class<?> targetType = customConversions.getCustomWriteTarget(property.getActualType());
@@ -285,7 +289,6 @@ public class BasicCassandraMappingContext
 			}
 
 			return getDataTypeFor(targetType);
-
 		}
 
 		return property.getDataType();
