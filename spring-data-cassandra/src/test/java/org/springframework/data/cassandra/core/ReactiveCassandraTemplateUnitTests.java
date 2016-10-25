@@ -198,7 +198,6 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-
 		Mono<Person> mono = template.insert(person);
 
 		assertThat(mono.block()).isEqualTo(person);
@@ -237,43 +236,9 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(false);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-
 		Mono<Person> mono = template.insert(person);
 
 		assertThat(mono.block()).isNull();
-	}
-
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
-	public void insertEntitiesShouldInsertEntities() {
-
-		when(reactiveResultSet.wasApplied()).thenReturn(true);
-
-		Person person = new Person("heisenberg", "Walter", "White");
-
-		Flux<Person> flux = template.insert(Collections.singletonList(person));
-
-		assertThat(flux.collectList().block()).contains(person);
-		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString())
-				.isEqualTo("INSERT INTO person (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
-	}
-
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
-	public void insertEntitiesShouldNotApplyInsert() {
-
-		when(reactiveResultSet.wasApplied()).thenReturn(false);
-
-		Person person = new Person("heisenberg", "Walter", "White");
-
-		Flux<Person> flux = template.insert(Collections.singletonList(person));
-
-		assertThat(flux.collectList().block()).isEmpty();
 	}
 
 	/**
@@ -285,7 +250,6 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-
 		Mono<Person> mono = template.update(person);
 
 		assertThat(mono.block()).isEqualTo(person);
@@ -324,43 +288,9 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(false);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-
 		Mono<Person> mono = template.update(person);
 
 		assertThat(mono.block()).isNull();
-	}
-
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
-	public void updateEntitiesShouldInsertEntities() {
-
-		when(reactiveResultSet.wasApplied()).thenReturn(true);
-
-		Person person = new Person("heisenberg", "Walter", "White");
-
-		Flux<Person> flux = template.update(Collections.singletonList(person));
-
-		assertThat(flux.collectList().block()).contains(person);
-		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString())
-				.isEqualTo("UPDATE person SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
-	}
-
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
-	public void updateEntitiesShouldNotApplyUpdate() {
-
-		when(reactiveResultSet.wasApplied()).thenReturn(false);
-
-		Person person = new Person("heisenberg", "Walter", "White");
-
-		Flux<Person> flux = template.update(Collections.singletonList(person));
-
-		assertThat(flux.collectList().block()).isEmpty();
 	}
 
 	/**
@@ -410,42 +340,9 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(false);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-
 		Mono<Person> mono = template.delete(person);
 
 		assertThat(mono.block()).isNull();
-	}
-
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
-	public void deleteEntitiesShouldRemoveEntities() {
-
-		when(reactiveResultSet.wasApplied()).thenReturn(true);
-
-		Person person = new Person("heisenberg", "Walter", "White");
-
-		Flux<Person> flux = template.delete(Collections.singletonList(person));
-
-		assertThat(flux.collectList().block()).contains(person);
-		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM person WHERE id='heisenberg';");
-	}
-
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
-	public void deleteEntitiesShouldNotApplyRemoval() {
-
-		when(reactiveResultSet.wasApplied()).thenReturn(false);
-
-		Person person = new Person("heisenberg", "Walter", "White");
-
-		Flux<Person> flux = template.delete(Collections.singletonList(person));
-
-		assertThat(flux.collectList().block()).isEmpty();
 	}
 
 	/**

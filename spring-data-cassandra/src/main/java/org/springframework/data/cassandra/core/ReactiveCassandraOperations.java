@@ -146,25 +146,6 @@ public interface ReactiveCassandraOperations {
 	 * @return the inserted entities.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Flux<T> insert(Iterable<? extends T> entities) throws DataAccessException;
-
-	/**
-	 * Insert the given entities applying {@link WriteOptions} and emit the entity if the insert was applied.
-	 *
-	 * @param entities The entities to insert, must not be {@literal null}.
-	 * @param options may be {@literal null}.
-	 * @return the inserted entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> insert(Iterable<? extends T> entities, WriteOptions options) throws DataAccessException;
-
-	/**
-	 * Insert the given entities and emit the entity if the insert was applied.
-	 *
-	 * @param entities The entities to insert, must not be {@literal null}.
-	 * @return the inserted entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
 	<T> Flux<T> insert(Publisher<? extends T> entities) throws DataAccessException;
 
 	/**
@@ -195,25 +176,6 @@ public interface ReactiveCassandraOperations {
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
 	<T> Mono<T> update(T entity, WriteOptions options) throws DataAccessException;
-
-	/**
-	 * Update the given entities and emit the entity if the update was applied.
-	 *
-	 * @param entities The entities to update, must not be {@literal null}.
-	 * @return the updated entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> update(Iterable<? extends T> entities) throws DataAccessException;
-
-	/**
-	 * Update the given entities applying {@link WriteOptions} and emit the entity if the update was applied.
-	 *
-	 * @param entities The entities to update, must not be {@literal null}.
-	 * @param options may be {@literal null}.
-	 * @return the updated entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> update(Iterable<? extends T> entities, WriteOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entities and emit the entity if the update was applied.
@@ -262,25 +224,6 @@ public interface ReactiveCassandraOperations {
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
 	<T> Mono<T> delete(T entity, QueryOptions options) throws DataAccessException;
-
-	/**
-	 * Delete the given entities and emit the entity if the delete was applied.
-	 *
-	 * @param entities must not be {@literal null}.
-	 * @return the deleted entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> delete(Iterable<? extends T> entities) throws DataAccessException;
-
-	/**
-	 * Delete the given entities applying {@link QueryOptions} and emit the entity if the delete was applied.
-	 *
-	 * @param entities must not be {@literal null}.
-	 * @param options may be {@literal null}.
-	 * @return the deleted entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> delete(Iterable<? extends T> entities, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Delete the given entities and emit the entity if the delete was applied.

@@ -271,38 +271,11 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Insert insertQuery = createInsertQuery(tableName.toCql(), entity, options, converter);
 
-		return cqlOperations.execute(new ReactiveSessionCallback<T>() {
-
-			@Override
-			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(insertQuery)
-						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
-			}
-
-		}).next();
+		return cqlOperations.execute((ReactiveSessionCallback<T>) session -> (Publisher<T>) session.execute(insertQuery)
+				.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty())).next();
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Iterable)
-	 */
-	@Override
-	public <T> Flux<T> insert(Iterable<? extends T> entities) {
-		return insert(entities, null);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Iterable, org.springframework.cassandra.core.WriteOptions)
-	 */
-	@Override
-	public <T> Flux<T> insert(Iterable<? extends T> entities, WriteOptions options) {
-
-		Assert.notNull(entities, "Entities must not be null");
-		return insert(Flux.fromIterable(entities), options);
-	}
-
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher)
 	 */
@@ -344,38 +317,11 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Update update = createUpdateQuery(tableName.toCql(), entity, options, converter);
 
-		return cqlOperations.execute(new ReactiveSessionCallback<T>() {
-
-			@Override
-			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(update)
-						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
-			}
-
-		}).next();
+		return cqlOperations.execute((ReactiveSessionCallback<T>) session -> (Publisher<T>) session.execute(update)
+				.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty())).next();
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Iterable)
-	 */
-	@Override
-	public <T> Flux<T> update(Iterable<? extends T> entities) {
-		return update(entities, null);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Iterable, org.springframework.cassandra.core.WriteOptions)
-	 */
-	@Override
-	public <T> Flux<T> update(Iterable<? extends T> entities, WriteOptions options) {
-
-		Assert.notNull(entities, "Entities must not be null");
-		return update(Flux.fromIterable(entities), options);
-	}
-
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher)
 	 */
@@ -435,38 +381,11 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Delete delete = createDeleteQuery(tableName.toCql(), entity, options, converter);
 
-		return cqlOperations.execute(new ReactiveSessionCallback<T>() {
-
-			@Override
-			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(delete)
-						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
-			}
-
-		}).next();
+		return cqlOperations.execute((ReactiveSessionCallback<T>) session -> (Publisher<T>) session.execute(delete)
+				.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty())).next();
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Iterable)
-	 */
-	@Override
-	public <T> Flux<T> delete(Iterable<? extends T> entities) {
-		return delete(entities, null);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Iterable, org.springframework.cassandra.core.QueryOptions)
-	 */
-	@Override
-	public <T> Flux<T> delete(Iterable<? extends T> entities, QueryOptions options) {
-
-		Assert.notNull(entities, "Entities must not be null");
-		return delete(Flux.fromIterable(entities), options);
-	}
-
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.reactivestreams.Publisher)
 	 */

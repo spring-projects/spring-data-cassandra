@@ -63,10 +63,10 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 	@Autowired private ReactiveCassandraOperations operations;
 
-	private ReactiveCassandraRepositoryFactory factory;
-	private ClassLoader classLoader;
-	private BeanFactory beanFactory;
-	private PersonRepostitory repository;
+	ReactiveCassandraRepositoryFactory factory;
+	ClassLoader classLoader;
+	BeanFactory beanFactory;
+	PersonRepostitory repository;
 
 	Person dave, oliver, carter, boyd;
 

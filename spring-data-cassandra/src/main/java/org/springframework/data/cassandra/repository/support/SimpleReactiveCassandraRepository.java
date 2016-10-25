@@ -43,7 +43,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 
 	/**
 	 * Creates a new {@link SimpleReactiveCassandraRepository} for the given {@link CassandraEntityInformation} and
-	 * {@link ReactiveCassandraOperationsTemplate}.
+	 * {@link ReactiveCassandraOperations}.
 	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
@@ -51,8 +51,8 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	public SimpleReactiveCassandraRepository(CassandraEntityInformation<T, ID> metadata,
 			ReactiveCassandraOperations operations) {
 
-		Assert.notNull(operations);
-		Assert.notNull(metadata);
+		Assert.notNull(metadata, "CassandraEntityInformation must not be null");
+		Assert.notNull(operations, "ReactiveCassandraOperations must not be null");
 
 		this.entityInformation = metadata;
 		this.operations = operations;
@@ -61,7 +61,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public <S extends T> Mono<S> save(S entity) {
 
-		Assert.notNull(entity, "Entity must not be null!");
+		Assert.notNull(entity, "Entity must not be null");
 
 		if (entityInformation.isNew(entity)) {
 			return operations.insert(entity);
@@ -74,7 +74,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public <S extends T> Flux<S> save(Iterable<S> entities) {
 
-		Assert.notNull(entities, "The given Iterable of entities must not be null!");
+		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
 		return save(Flux.fromIterable(entities));
 	}
@@ -82,7 +82,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public <S extends T> Flux<S> save(Publisher<S> entityStream) {
 
-		Assert.notNull(entityStream, "The given Publisher of entities must not be null!");
+		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
 		return Flux.from(entityStream).flatMap(entity -> {
 
@@ -97,7 +97,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public <S extends T> Mono<S> insert(S entity) {
 
-		Assert.notNull(entity, "Entity must not be null!");
+		Assert.notNull(entity, "Entity must not be null");
 
 		return operations.insert(entity);
 	}
@@ -105,15 +105,15 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public <S extends T> Flux<S> insert(Iterable<S> entities) {
 
-		Assert.notNull(entities, "The given Iterable of entities must not be null!");
+		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		return operations.insert(entities);
+		return operations.insert(Flux.fromIterable(entities));
 	}
 
 	@Override
 	public <S extends T> Flux<S> insert(Publisher<S> entityStream) {
 
-		Assert.notNull(entityStream, "The given Publisher of entities must not be null!");
+		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
 		return operations.insert(entityStream);
 	}
@@ -121,7 +121,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public Mono<T> findOne(ID id) {
 
-		Assert.notNull(id, "The given id must not be null!");
+		Assert.notNull(id, "The given id must not be null");
 
 		return operations.selectOneById(id, entityInformation.getJavaType());
 	}
@@ -129,7 +129,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public Mono<T> findOne(Mono<ID> mono) {
 
-		Assert.notNull(mono, "The given id must not be null!");
+		Assert.notNull(mono, "The given id must not be null");
 
 		return mono.then(id -> operations.selectOneById(id, entityInformation.getJavaType()));
 	}
@@ -137,7 +137,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public Mono<Boolean> exists(ID id) {
 
-		Assert.notNull(id, "The given id must not be null!");
+		Assert.notNull(id, "The given id must not be null");
 
 		return operations.exists(id, entityInformation.getJavaType());
 	}
@@ -145,7 +145,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public Mono<Boolean> exists(Mono<ID> mono) {
 
-		Assert.notNull(mono, "The given id must not be null!");
+		Assert.notNull(mono, "The given id must not be null");
 
 		return mono.then(id -> operations.exists(id, entityInformation.getJavaType()));
 	}
@@ -160,7 +160,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public Flux<T> findAll(Iterable<ID> iterable) {
 
-		Assert.notNull(iterable, "The given Iterable of id's must not be null!");
+		Assert.notNull(iterable, "The given Iterable of id's must not be null");
 
 		return findAll(Flux.fromIterable(iterable));
 	}
@@ -168,7 +168,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public Flux<T> findAll(Publisher<ID> idStream) {
 
-		Assert.notNull(idStream, "The given Publisher of id's must not be null!");
+		Assert.notNull(idStream, "The given Publisher of id's must not be null");
 
 		return Flux.from(idStream).flatMap(id -> operations.selectOneById(id, entityInformation.getJavaType()));
 	}
@@ -197,15 +197,15 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	@Override
 	public Mono<Void> delete(Iterable<? extends T> entities) {
 
-		Assert.notNull(entities, "The given Iterable of entities must not be null!");
+		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		return operations.delete(entities).then();
+		return operations.delete(Flux.fromIterable(entities)).then();
 	}
 
 	@Override
 	public Mono<Void> delete(Publisher<? extends T> entityStream) {
 
-		Assert.notNull(entityStream, "The given Publisher of entities must not be null!");
+		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
 		return operations.delete(entityStream).then();
 	}
