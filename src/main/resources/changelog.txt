@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.4.5.RELEASE (2016-11-03)
+---------------------------------------------
+* DATACASS-342 - Release 1.4.5 (Hopper SR5).
+
+
 Changes in version 1.4.4.RELEASE (2016-09-29)
 ---------------------------------------------
 * DATACASS-337 - Release 1.4.4 (Hopper SR4).
