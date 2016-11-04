@@ -81,15 +81,18 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 
 		@Override
 		public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
+
 			if (entity.getType().isInterface()) {
 				return;
 			}
 
-			// Ensure entity is either a @Table/@Persistent or a @PrimaryKey
-			if (entity.findAnnotation(Persistent.class) == null) {
-				throw new VerifierMappingExceptions(entity, Collections.singletonList(new MappingException(
-					String.format("Cassandra entities must be annotated with either @%s, @%s, or @%s",
-						Persistent.class.getSimpleName(), Table.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName()))));
+			// Ensure entity is either a @Table/@Persistent, @UserDefinedType or a @PrimaryKey
+			if (entity.findAnnotation(Persistent.class) == null && entity.findAnnotation(UserDefinedType.class) == null) {
+				throw new VerifierMappingExceptions(entity,
+						Collections.singletonList(new MappingException(
+								String.format("Cassandra entities must be annotated with either @%s, @%s, @%s or @%s",
+										Persistent.class.getSimpleName(), Table.class.getSimpleName(),
+										UserDefinedType.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName()))));
 			}
 		}
 	}

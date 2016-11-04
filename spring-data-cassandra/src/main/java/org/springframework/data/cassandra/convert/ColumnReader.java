@@ -119,7 +119,7 @@ public class ColumnReader {
 			return row.getMap(i, keyTypeCodec.getJavaType().getRawType(), valueTypeCodec.getJavaType().getRawType());
 		}
 
-		throw new IllegalStateException("Unknown Collection type encountered.  Valid collections are Set, List and Map.");
+		throw new IllegalStateException("Unknown Collection type encountered. Valid collections are Set, List and Map.");
 	}
 
 	public Row getRow() {

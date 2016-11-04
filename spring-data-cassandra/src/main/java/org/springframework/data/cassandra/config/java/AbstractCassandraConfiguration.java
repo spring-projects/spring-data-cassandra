@@ -32,6 +32,7 @@ import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.mapping.context.MappingContext;
 
@@ -50,7 +51,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	protected ClassLoader beanClassLoader;
 
 	@Bean
-	public CassandraSessionFactoryBean session() throws Exception {
+	public CassandraSessionFactoryBean session() throws ClassNotFoundException {
 
 		CassandraSessionFactoryBean session = new CassandraSessionFactoryBean();
 
@@ -74,7 +75,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 * @see #customConversions()
 	 */
 	@Bean
-	public CassandraConverter cassandraConverter() throws Exception {
+	public CassandraConverter cassandraConverter() throws ClassNotFoundException {
 
 		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter(cassandraMapping());
 
@@ -115,6 +116,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(cluster().getObject(), getKeyspaceName()));
 
 		return mappingContext;
 	}

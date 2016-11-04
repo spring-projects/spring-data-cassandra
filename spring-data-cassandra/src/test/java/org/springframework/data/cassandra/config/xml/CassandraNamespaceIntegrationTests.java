@@ -21,9 +21,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Configuration;
@@ -90,5 +93,18 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 		assertThat(socketOptions.getSoLinger()).isEqualTo(60);
 		assertThat(socketOptions.getReceiveBufferSize()).isEqualTo(65536);
 		assertThat(socketOptions.getSendBufferSize()).isEqualTo(65536);
+	}
+
+	/**
+	 * @see DATACASS-172
+	 */
+	@Test
+	public void mappingContextShouldHaveUserTypeResolverConfigured() {
+
+		BasicCassandraMappingContext mappingContext = applicationContext.getBean(BasicCassandraMappingContext.class);
+
+		SimpleUserTypeResolver userTypeResolver = (SimpleUserTypeResolver) ReflectionTestUtils.getField(mappingContext, "userTypeResolver");
+
+		assertThat(userTypeResolver).isNotNull();
 	}
 }

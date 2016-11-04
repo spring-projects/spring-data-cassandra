@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2016 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,16 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
+import com.datastax.driver.core.UserType;
+
 /**
  * Cassandra specific {@link PersistentEntity} abstraction.
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
-public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T, CassandraPersistentProperty>,
-		ApplicationContextAware {
+public interface CassandraPersistentEntity<T>
+		extends MutablePersistentEntity<T, CassandraPersistentProperty>, ApplicationContextAware {
 
 	/**
 	 * Returns whether this entity represents a composite primary key.
@@ -51,4 +53,18 @@ public interface CassandraPersistentEntity<T> extends MutablePersistentEntity<T,
 	ApplicationContext getApplicationContext();
 
 	void setForceQuote(boolean forceQuote);
+
+	/**
+	 * @return {@literal true} if the type is a mapped user defined type
+	 * @since 1.5
+	 * @see UserDefinedType
+	 */
+	boolean isUserDefinedType();
+
+	/**
+	 * @return the CQL {@link UserType} if the type is a mapped user defined type, otherwise {@literal null}.
+	 * @since 1.5
+	 * @see UserDefinedType
+	 */
+	UserType getUserType();
 }

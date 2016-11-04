@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,17 +28,23 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Address;
+import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+import org.springframework.util.ClassUtils;
+
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
 
 /**
  * Unit tests for {@link PartTreeCassandraQuery}.
@@ -49,17 +56,25 @@ public class PartTreeCassandraQueryUnitTests {
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 
-	@Mock private CassandraOperations mockCassandraOperations;
+	@Mock CassandraOperations mockCassandraOperations;
+	@Mock UserTypeResolver userTypeResolverMock;
+	@Mock UserType userTypeMock;
+	@Mock UDTValue udtValueMock;
 
-	private CassandraMappingContext mappingContext;
-	private CassandraConverter converter;
+	BasicCassandraMappingContext mappingContext;
+	CassandraConverter converter;
 
 	@Before
 	public void setUp() {
-		mappingContext = new BasicCassandraMappingContext();
-		converter = new MappingCassandraConverter(mappingContext);
+
+		this.mappingContext = new BasicCassandraMappingContext();
+		this.mappingContext.setUserTypeResolver(userTypeResolverMock);
+
+		this.converter = new MappingCassandraConverter(mappingContext);
 
 		when(mockCassandraOperations.getConverter()).thenReturn(converter);
+		when(udtValueMock.getType()).thenReturn(userTypeMock);
+		when(userTypeMock.iterator()).thenReturn(Collections.<UserType.Field> emptyIterator());
 	}
 
 	/**
@@ -102,11 +117,39 @@ public class PartTreeCassandraQueryUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person;");
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-172">DATACASS-172</a>
+	 */
+	@Test
+	public void shouldDeriveSimpleQueryWithMappedUDT() {
+
+		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);
+		when(userTypeMock.newValue()).thenReturn(udtValueMock);
+
+		String query = deriveQueryFromMethod("findByMainAddress", new Address());
+
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={};");
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-172">DATACASS-172</a>
+	 */
+	@Test
+	public void shouldDeriveSimpleQueryWithUDTValue() {
+
+		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);
+		when(userTypeMock.newValue()).thenReturn(udtValueMock);
+
+		String query = deriveQueryFromMethod("findByMainAddress", udtValueMock);
+
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={};");
+	}
+
 	private String deriveQueryFromMethod(String method, Object... args) {
 		Class<?>[] types = new Class<?>[args.length];
 
 		for (int i = 0; i < args.length; i++) {
-			types[i] = args[i].getClass();
+			types[i] = ClassUtils.getUserClass(args[i].getClass());
 		}
 
 		PartTreeCassandraQuery partTreeQuery = createQueryForMethod(method, types);
@@ -145,6 +188,10 @@ public class PartTreeCassandraQueryUnitTests {
 		Person findByAge(Integer age);
 
 		Person findPersonBy();
+
+		Person findByMainAddress(Address address);
+
+		Person findByMainAddress(UDTValue udtValue);
 
 		PersonProjection findPersonProjectedBy();
 

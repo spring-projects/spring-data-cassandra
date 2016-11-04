@@ -27,6 +27,7 @@ import org.springframework.data.cassandra.mapping.Table;
  * information, emails, following users, friends.
  *
  * @author Alex Shvid
+ * @author Mark Paluch
  */
 @Table("users")
 public class User {
@@ -72,6 +73,8 @@ public class User {
 	 * Friends of the user
 	 */
 	private Set<String> friends;
+
+	private AddressType address;
 
 	public String getUsername() {
 		return username;
@@ -149,6 +152,14 @@ public class User {
 	 */
 	public void setBirthYear(int birthYear) {
 		this.birthYear = birthYear;
+	}
+
+	public AddressType getAddress() {
+		return address;
+	}
+
+	public void setAddress(AddressType address) {
+		this.address = address;
 	}
 
 	@Override

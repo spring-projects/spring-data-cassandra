@@ -135,6 +135,12 @@ public class CustomConversions {
 	 * @return
 	 */
 	public boolean isSimpleType(Class<?> type) {
+
+		// Enums have no native Cassandra support
+		if (type.isEnum()) {
+			return false;
+		}
+
 		return simpleTypeHolder.isSimpleType(type);
 	}
 

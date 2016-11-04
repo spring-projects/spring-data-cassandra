@@ -91,35 +91,6 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 	 * @see DATACASS-258
 	 */
 	@Test
-	public void shouldFailWithComplexTypePrimaryKey() {
-
-		try {
-			verifier.verify(getEntity(EntityWithComplexTypePrimaryKey.class));
-			fail("Missing MappingException");
-		} catch (MappingException e) {
-			assertThat(e)
-					.hasMessageContaining("Property [species] annotated with @PrimaryKeyColumn must be a simple CassandraType");
-		}
-	}
-
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
-	public void shouldFailWithComplexTypeId() {
-
-		try {
-			verifier.verify(getEntity(EntityWithComplexTypeId.class));
-			fail("Missing MappingException");
-		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining("Property [species] annotated with @Id must be a simple CassandraType");
-		}
-	}
-
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
 	public void shouldFailWithoutPartitionKey() {
 
 		try {
@@ -201,12 +172,6 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 	static class EntityWithComplexTypePrimaryKey {
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object species;
-	}
-
-	@Table
-	static class EntityWithComplexTypeId {
-
-		@Id Object species;
 	}
 
 	@Table
