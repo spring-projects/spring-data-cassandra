@@ -18,16 +18,9 @@ package org.springframework.data.cassandra.core;
 import static org.springframework.data.cassandra.core.CassandraTemplate.*;
 
 import org.reactivestreams.Publisher;
-import org.springframework.cassandra.core.DefaultReactiveSessionFactory;
-import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.ReactiveCqlOperations;
-import org.springframework.cassandra.core.ReactiveCqlTemplate;
-import org.springframework.cassandra.core.ReactiveResultSet;
-import org.springframework.cassandra.core.ReactiveSession;
-import org.springframework.cassandra.core.ReactiveSessionCallback;
-import org.springframework.cassandra.core.ReactiveSessionFactory;
-import org.springframework.cassandra.core.WriteOptions;
+import org.springframework.cassandra.core.*;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
@@ -39,6 +32,7 @@ import org.springframework.util.ClassUtils;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -269,10 +263,23 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		CqlIdentifier tableName = getTableName(entity);
 
-		Insert insertQuery = createInsertQuery(tableName.toCql(), entity, options, converter);
+		Insert insert = createInsertQuery(tableName.toCql(), entity, options, converter);
 
-		return cqlOperations.execute((ReactiveSessionCallback<T>) session -> (Publisher<T>) session.execute(insertQuery)
-				.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty())).next();
+		class InsertCallback implements ReactiveSessionCallback<T>, CqlProvider {
+
+			@Override
+			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
+				return session.execute(insert)
+						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+			}
+
+			@Override
+			public String getCql() {
+				return insert.toString();
+			}
+		}
+
+		return cqlOperations.execute(new InsertCallback()).next();
 	}
 
 	/*
@@ -317,8 +324,21 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Update update = createUpdateQuery(tableName.toCql(), entity, options, converter);
 
-		return cqlOperations.execute((ReactiveSessionCallback<T>) session -> (Publisher<T>) session.execute(update)
-				.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty())).next();
+		class UpdateCallback implements ReactiveSessionCallback<T>, CqlProvider {
+
+			@Override
+			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
+				return session.execute(update)
+						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+			}
+
+			@Override
+			public String getCql() {
+				return update.toString();
+			}
+		}
+
+		return cqlOperations.execute(new UpdateCallback()).next();
 	}
 
 	/*
@@ -381,8 +401,21 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Delete delete = createDeleteQuery(tableName.toCql(), entity, options, converter);
 
-		return cqlOperations.execute((ReactiveSessionCallback<T>) session -> (Publisher<T>) session.execute(delete)
-				.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty())).next();
+		class DeleteCallback implements ReactiveSessionCallback<T>, CqlProvider {
+
+			@Override
+			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
+				return session.execute(delete)
+						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+			}
+
+			@Override
+			public String getCql() {
+				return delete.toString();
+			}
+		}
+
+		return cqlOperations.execute(new DeleteCallback()).next();
 	}
 
 	/*
