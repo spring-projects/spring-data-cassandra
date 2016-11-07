@@ -63,7 +63,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 	/**
 	 * Creates a new {@link DefaultBridgedReactiveSession} for a {@link Session} and {@link Scheduler}.
-	 * 
+	 *
 	 * @param session must not be {@literal null}.
 	 * @param scheduler must not be {@literal null}.
 	 */

@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link RepositoryConfigurationExtension} for Cassandra.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
@@ -69,14 +69,14 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Repositor
 		return ReactiveCassandraRepositoryFactoryBean.class.getName();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.XmlRepositoryConfigurationSource)
 	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource)
 	 */
@@ -97,7 +97,7 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Repositor
 	 */
 	@Override
 	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return Collections.<Class<? extends Annotation>>singleton(Table.class);
+		return Collections.<Class<? extends Annotation>> singleton(Table.class);
 	}
 
 	/*
@@ -106,10 +106,10 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Repositor
 	 */
 	@Override
 	protected Collection<Class<?>> getIdentifyingTypes() {
-		return Collections.<Class<?>>singleton(ReactiveCassandraRepository.class);
+		return Collections.<Class<?>> singleton(ReactiveCassandraRepository.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getRepositoryConfigurations(T, org.springframework.core.io.ResourceLoader, boolean)
 	 */
@@ -120,11 +120,8 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Repositor
 		Collection<RepositoryConfiguration<T>> repositoryConfigurations = super.getRepositoryConfigurations(configSource,
 				loader, strictMatchesOnly);
 
-		return repositoryConfigurations.stream().filter(configuration -> {
-
-			Class<?> repositoryInterface = super.loadRepositoryInterface(configuration, loader);
-			return RepositoryType.isReactiveRepository(repositoryInterface);
-
-		}).collect(Collectors.toList());
+		return repositoryConfigurations.stream()
+				.filter(configuration -> RepositoryType.isReactiveRepository(loadRepositoryInterface(configuration, loader)))
+				.collect(Collectors.toList());
 	}
 }

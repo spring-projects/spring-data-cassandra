@@ -32,7 +32,7 @@ import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.config.EnableReactiveCassandraRepositories;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-import org.springframework.data.repository.reactive.RxJavaCrudRepository;
+import org.springframework.data.repository.reactive.RxJava1CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -71,7 +71,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Autowired ReactiveCassandraTemplate template;
 	@Autowired MixedPersonRepostitory reactiveRepository;
 	@Autowired PersonRepostitory reactivePersonRepostitory;
-	@Autowired RxJavaPersonRepostitory rxJavaPersonRepostitory;
+	@Autowired RxJava1PersonRepostitory rxJava1PersonRepostitory;
 
 	Person dave, oliver, carter, boyd;
 
@@ -130,7 +130,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void simpleRxJavaMethodsShouldWork() {
 
 		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
-		rxJavaPersonRepostitory.exists(dave.getId()).subscribe(subscriber);
+		rxJava1PersonRepostitory.exists(dave.getId()).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
 		subscriber.assertCompleted();
@@ -145,7 +145,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void existsWithSingleRxJavaIdMethodsShouldWork() {
 
 		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
-		rxJavaPersonRepostitory.exists(Single.just(dave.getId())).subscribe(subscriber);
+		rxJava1PersonRepostitory.exists(Single.just(dave.getId())).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
 		subscriber.assertCompleted();
@@ -160,7 +160,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void singleRxJavaQueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
-		rxJavaPersonRepostitory.findManyByLastname(dave.getLastname()).subscribe(subscriber);
+		rxJava1PersonRepostitory.findManyByLastname(dave.getLastname()).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
 		subscriber.assertNoErrors();
@@ -175,7 +175,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void singleProjectedRxJavaQueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<ProjectedPerson> subscriber = new rx.observers.TestSubscriber<>();
-		rxJavaPersonRepostitory.findProjectedByLastname(carter.getLastname()).subscribe(subscriber);
+		rxJava1PersonRepostitory.findProjectedByLastname(carter.getLastname()).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
 		subscriber.assertCompleted();
@@ -192,7 +192,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void observableRxJavaQueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
-		rxJavaPersonRepostitory.findByLastname(boyd.getLastname()).subscribe(subscriber);
+		rxJava1PersonRepostitory.findByLastname(boyd.getLastname()).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
 		subscriber.assertCompleted();
@@ -229,7 +229,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Repository
-	interface RxJavaPersonRepostitory extends RxJavaCrudRepository<Person, String> {
+	interface RxJava1PersonRepostitory extends RxJava1CrudRepository<Person, String> {
 
 		Observable<Person> findManyByLastname(String lastname);
 

@@ -18,16 +18,9 @@ package org.springframework.data.cassandra.core;
 import static org.springframework.data.cassandra.core.CassandraTemplate.*;
 
 import org.reactivestreams.Publisher;
-import org.springframework.cassandra.core.DefaultReactiveSessionFactory;
-import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.ReactiveCqlOperations;
-import org.springframework.cassandra.core.ReactiveCqlTemplate;
-import org.springframework.cassandra.core.ReactiveResultSet;
-import org.springframework.cassandra.core.ReactiveSession;
-import org.springframework.cassandra.core.ReactiveSessionCallback;
-import org.springframework.cassandra.core.ReactiveSessionFactory;
-import org.springframework.cassandra.core.WriteOptions;
+import org.springframework.cassandra.core.*;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
@@ -39,6 +32,7 @@ import org.springframework.util.ClassUtils;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -149,7 +143,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	// Methods dealing with static CQL
 	// -------------------------------------------------------------------------
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#select(java.lang.String, java.lang.Class)
 	 */
@@ -174,7 +168,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	// Methods dealing with com.datastax.driver.core.Statement
 	// -------------------------------------------------------------------------
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#select(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
@@ -200,7 +194,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	// Methods dealing with entities
 	// -------------------------------------------------------------------------
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#selectOneById(java.lang.Object, java.lang.Class)
 	 */
@@ -218,7 +212,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return selectOne(select, entityClass);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#exists(java.lang.Object, java.lang.Class)
 	 */
@@ -235,7 +229,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return cqlOperations.queryForRows(select).hasElements();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#count(java.lang.Class)
 	 */
@@ -249,7 +243,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return cqlOperations.queryForObject(select, Long.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object)
 	 */
@@ -258,7 +252,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return insert(entity, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
 	 */
@@ -269,10 +263,23 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		CqlIdentifier tableName = getTableName(entity);
 
-		Insert insertQuery = createInsertQuery(tableName.toCql(), entity, options, converter);
+		Insert insert = createInsertQuery(tableName.toCql(), entity, options, converter);
 
-		return cqlOperations.execute((ReactiveSessionCallback<T>) session -> (Publisher<T>) session.execute(insertQuery)
-				.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty())).next();
+		class InsertCallback implements ReactiveSessionCallback<T>, CqlProvider {
+
+			@Override
+			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
+				return session.execute(insert)
+						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+			}
+
+			@Override
+			public String getCql() {
+				return insert.toString();
+			}
+		}
+
+		return cqlOperations.execute(new InsertCallback()).next();
 	}
 
 	/*
@@ -284,7 +291,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return insert(entities, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher, org.springframework.cassandra.core.WriteOptions)
 	 */
@@ -295,7 +302,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return Flux.from(entities).flatMap(entity -> insert(entity, options));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object)
 	 */
@@ -304,7 +311,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return update(entity, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
 	 */
@@ -317,8 +324,21 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Update update = createUpdateQuery(tableName.toCql(), entity, options, converter);
 
-		return cqlOperations.execute((ReactiveSessionCallback<T>) session -> (Publisher<T>) session.execute(update)
-				.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty())).next();
+		class UpdateCallback implements ReactiveSessionCallback<T>, CqlProvider {
+
+			@Override
+			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
+				return session.execute(update)
+						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+			}
+
+			@Override
+			public String getCql() {
+				return update.toString();
+			}
+		}
+
+		return cqlOperations.execute(new UpdateCallback()).next();
 	}
 
 	/*
@@ -330,7 +350,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return update(entities, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher, org.springframework.cassandra.core.WriteOptions)
 	 */
@@ -341,7 +361,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return Flux.from(entities).flatMap(entity -> update(entity, options));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#deleteById(java.lang.Object, java.lang.Class)
 	 */
@@ -359,7 +379,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return cqlOperations.execute(delete);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Object)
 	 */
@@ -368,7 +388,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return delete(entity, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Object, org.springframework.cassandra.core.QueryOptions)
 	 */
@@ -381,8 +401,21 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Delete delete = createDeleteQuery(tableName.toCql(), entity, options, converter);
 
-		return cqlOperations.execute((ReactiveSessionCallback<T>) session -> (Publisher<T>) session.execute(delete)
-				.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty())).next();
+		class DeleteCallback implements ReactiveSessionCallback<T>, CqlProvider {
+
+			@Override
+			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
+				return session.execute(delete)
+						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+			}
+
+			@Override
+			public String getCql() {
+				return delete.toString();
+			}
+		}
+
+		return cqlOperations.execute(new DeleteCallback()).next();
 	}
 
 	/*
@@ -394,7 +427,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return delete(entities, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.reactivestreams.Publisher, org.springframework.cassandra.core.QueryOptions)
 	 */
@@ -405,7 +438,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return Flux.from(entities).flatMap(entity -> delete(entity, options));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#truncate(java.lang.Class)
 	 */
@@ -418,7 +451,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return cqlOperations.execute(truncate).then();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#getConverter()
 	 */

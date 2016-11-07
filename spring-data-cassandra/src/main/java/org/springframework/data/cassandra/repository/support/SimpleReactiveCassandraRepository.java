@@ -31,7 +31,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * Reactive repository base implementation for Cassandra.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */

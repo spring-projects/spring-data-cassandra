@@ -111,7 +111,7 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	private ReactiveStringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
 
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
-		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
+		ReactiveCassandraQueryMethod queryMethod = new ReactiveCassandraQueryMethod(method, metadata, factory,
 				converter.getMappingContext());
 		return new ReactiveStringBasedCassandraQuery(queryMethod, operations, PARSER,
 				new ExtensionAwareEvaluationContextProvider());

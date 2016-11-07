@@ -31,7 +31,7 @@ import reactor.core.scheduler.Schedulers;
 
 /**
  * Integration tests for {@link ReactiveCassandraTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {

@@ -86,6 +86,13 @@
 			<optional>true</optional>
 		</dependency>
 
+		<dependency>
+			<groupId>io.reactivex</groupId>
+			<artifactId>rxjava-reactive-streams</artifactId>
+			<version>${rxjava-reactive-streams}</version>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- CDI -->
 		<dependency>
 			<groupId>javax.enterprise</groupId>

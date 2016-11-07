@@ -15,13 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.springframework.data.repository.query.ReactiveWrappers.*;
-
 import java.lang.reflect.Method;
 
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import org.springframework.data.repository.util.ReactiveWrappers;
 
 /**
  * Reactive specific implementation of {@link CassandraQueryMethod}.
@@ -55,7 +56,7 @@ public class ReactiveCassandraQueryMethod extends CassandraQueryMethod {
 	 */
 	@Override
 	public boolean isCollectionQuery() {
-		return !(isPageQuery() || isSliceQuery()) && isMultiType(method.getReturnType());
+		return !(isPageQuery() || isSliceQuery()) && ReactiveWrappers.isMultiValueType(method.getReturnType());
 	}
 
 	/*
@@ -66,5 +67,21 @@ public class ReactiveCassandraQueryMethod extends CassandraQueryMethod {
 	@Override
 	public boolean isStreamQuery() {
 		return true;
+	}
+
+	/**
+	 * Check if the given {@link org.springframework.data.repository.query.QueryMethod} receives a reactive parameter
+	 * wrapper as one of its parameters.
+	 *
+	 * @return
+	 */
+	public boolean hasReactiveWrapperParameter() {
+
+		for (CassandraParameter cassandraParameter : getParameters()) {
+			if (ReactiveWrapperConverters.supports(cassandraParameter.getType())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

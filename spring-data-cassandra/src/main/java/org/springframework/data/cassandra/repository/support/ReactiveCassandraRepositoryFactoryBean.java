@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
 /**
  * {@link org.springframework.beans.factory.FactoryBean} to create
  * {@link org.springframework.data.cassandra.repository.ReactiveCassandraRepository} instances.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  * @see org.springframework.data.repository.reactive.ReactivePagingAndSortingRepository
@@ -64,7 +64,7 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.springframework.data.repository.support.RepositoryFactoryBeanSupport
 	 * #createRepositoryFactory()
@@ -76,7 +76,7 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 
 	/**
 	 * Creates and initializes a {@link RepositoryFactorySupport} instance.
-	 * 
+	 *
 	 * @param operations
 	 * @return
 	 */

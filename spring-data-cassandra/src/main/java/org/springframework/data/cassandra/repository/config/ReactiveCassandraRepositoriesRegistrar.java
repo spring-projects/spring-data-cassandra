@@ -24,13 +24,13 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
 /**
  * {@link ImportBeanDefinitionRegistrar} to setup Cassandra repositories via
  * {@link EnableReactiveCassandraRepositories}.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
 class ReactiveCassandraRepositoriesRegistrar extends RepositoryBeanDefinitionRegistrarSupport {
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getAnnotation()
 	 */
@@ -39,7 +39,7 @@ class ReactiveCassandraRepositoriesRegistrar extends RepositoryBeanDefinitionReg
 		return EnableReactiveCassandraRepositories.class;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getExtension()
 	 */

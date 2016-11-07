@@ -125,8 +125,8 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		try {
 			Method method = Repo.class.getMethod(methodName, paramTypes);
 			ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, new DefaultRepositoryMetadata(Repo.class),
-					factory, mappingContext);
+			ReactiveCassandraQueryMethod queryMethod = new ReactiveCassandraQueryMethod(method,
+					new DefaultRepositoryMetadata(Repo.class), factory, mappingContext);
 
 			return new ReactivePartTreeCassandraQuery(queryMethod, mockCassandraOperations);
 		} catch (NoSuchMethodException e) {
