@@ -25,7 +25,6 @@ import java.lang.annotation.Target;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
 import org.springframework.data.cassandra.repository.support.ReactiveCassandraRepositoryFactoryBean;
 import org.springframework.data.repository.config.DefaultRepositoryBaseClass;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -35,7 +34,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * Annotation to activate reactive Cassandra repositories. If no base package is configured through either
  * {@link #value()}, {@link #basePackages()} or {@link #basePackageClasses()} it will trigger scanning of the package of
  * annotated class.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
@@ -81,7 +80,7 @@ public @interface EnableReactiveCassandraRepositories {
 	 * Returns the postfix to be used when looking up custom repository implementations. Defaults to {@literal Impl}. So
 	 * for a repository named {@code UserRepository} the corresponding implementation class will be looked up scanning for
 	 * {@code UserRepositoryImpl}.
-	 * 
+	 *
 	 * @return
 	 */
 	String repositoryImplementationPostfix() default "Impl";
@@ -89,7 +88,7 @@ public @interface EnableReactiveCassandraRepositories {
 	/**
 	 * Configures the location of where to find the Spring Data named queries properties file. Will default to
 	 * {@code META-INF/cassandra-named-queries.properties}.
-	 * 
+	 *
 	 * @return
 	 */
 	String namedQueriesLocation() default "";
@@ -97,7 +96,7 @@ public @interface EnableReactiveCassandraRepositories {
 	/**
 	 * Returns the key of the {@link QueryLookupStrategy} to be used for lookup queries for query methods. Defaults to
 	 * {@link Key#CREATE_IF_NOT_FOUND}.
-	 * 
+	 *
 	 * @return
 	 */
 	Key queryLookupStrategy() default Key.CREATE_IF_NOT_FOUND;
@@ -105,14 +104,14 @@ public @interface EnableReactiveCassandraRepositories {
 	/**
 	 * Returns the {@link FactoryBean} class to be used for each repository instance. Defaults to
 	 * {@link ReactiveCassandraRepositoryFactoryBean}.
-	 * 
+	 *
 	 * @return
 	 */
 	Class<?> repositoryFactoryBeanClass() default ReactiveCassandraRepositoryFactoryBean.class;
 
 	/**
 	 * Configure the repository base class to be used to create repository proxies for this particular configuration.
-	 * 
+	 *
 	 * @return
 	 */
 	Class<?> repositoryBaseClass() default DefaultRepositoryBaseClass.class;
@@ -120,7 +119,7 @@ public @interface EnableReactiveCassandraRepositories {
 	/**
 	 * Configures the name of the {@link org.springframework.data.cassandra.core.ReactiveCassandraTemplate} bean to be
 	 * used with the repositories detected.
-	 * 
+	 *
 	 * @return
 	 */
 	String reactiveCassandraTemplateRef() default "reactiveCassandraTemplate";

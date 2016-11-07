@@ -16,14 +16,17 @@
 package org.springframework.data.cassandra.repository.config;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.springframework.data.repository.query.ReactiveWrappers;
+import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.util.ReflectionUtils;
 
 import lombok.experimental.UtilityClass;
 
 /**
  * Utility class to discover whether a repository interface uses reactive wrapper types.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
@@ -33,7 +36,7 @@ class RepositoryType {
 	/**
 	 * Check whether {@code repositoryInterface} uses reactive wrapper types as return type or parameter types in its
 	 * methods.
-	 * 
+	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 * @return {@literal true} if the {@code repositoryInterface} uses reactive wrapper types.
 	 * @see ReactiveWrappers
@@ -45,16 +48,9 @@ class RepositoryType {
 			return false;
 		}
 
-		Method[] methods = repositoryInterface.getMethods();
-
-		for (Method method : methods) {
-
-			if (usesReactiveWrappers(method)) {
-				return true;
-			}
-		}
-
-		return false;
+		List<Method> reactiveMethods = new ArrayList<>();
+		ReflectionUtils.doWithMethods(repositoryInterface, reactiveMethods::add, RepositoryType::usesReactiveWrappers);
+		return !reactiveMethods.isEmpty();
 	}
 
 	private static boolean usesReactiveWrappers(Method method) {

@@ -24,7 +24,6 @@ import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
-import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.ReactivePartTreeCassandraQuery;
 import org.springframework.data.cassandra.repository.query.ReactiveStringBasedCassandraQuery;
@@ -141,7 +140,8 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 		private final CassandraMappingContext mappingContext;
 		private final ConversionService conversionService;
 
-		CassandraQueryLookupStrategy(ReactiveCassandraOperations operations, EvaluationContextProvider evaluationContextProvider, CassandraMappingContext mappingContext,
+		CassandraQueryLookupStrategy(ReactiveCassandraOperations operations,
+				EvaluationContextProvider evaluationContextProvider, CassandraMappingContext mappingContext,
 				ConversionService conversionService) {
 
 			this.evaluationContextProvider = evaluationContextProvider;
@@ -158,7 +158,8 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
 				NamedQueries namedQueries) {
 
-			CassandraQueryMethod queryMethod = new ReactiveCassandraQueryMethod(method, metadata, factory, mappingContext);
+			ReactiveCassandraQueryMethod queryMethod = new ReactiveCassandraQueryMethod(method, metadata, factory,
+					mappingContext);
 			String namedQueryName = queryMethod.getNamedQueryName();
 
 			if (namedQueries.hasQuery(namedQueryName)) {

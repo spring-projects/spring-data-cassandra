@@ -43,7 +43,7 @@ public interface ReactiveResultSetExtractor<T> {
 
 	/**
 	 * Implementations must implement this method to process the entire {@link ReactiveResultSet}.
-	 * 
+	 *
 	 * @param resultSet {@link ReactiveResultSet} to extract data from, must not be {@literal null}.
 	 * @return an arbitrary result object {@link Publisher}.
 	 * @throws DriverException if a {@link DriverException} is encountered getting column values or navigating (that is,

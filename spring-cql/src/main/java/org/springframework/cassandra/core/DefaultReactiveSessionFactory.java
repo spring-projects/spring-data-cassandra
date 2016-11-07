@@ -19,7 +19,7 @@ package org.springframework.cassandra.core;
  * Default implementation of {@link ReactiveSessionFactory}.
  * <p>
  * This implementation returns always the same {@link ReactiveSession}.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */

@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.repository.query;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.PartTree;
 
@@ -34,13 +33,14 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	private final PartTree tree;
 
 	/**
-	 * Creates a new {@link ReactivePartTreeCassandraQuery} from the given {@link QueryMethod} and
+	 * Creates a new {@link ReactivePartTreeCassandraQuery} from the given {@link ReactiveCassandraQueryMethod} and
 	 * {@link ReactiveCassandraOperations}.
 	 *
 	 * @param queryMethod must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
 	 */
-	public ReactivePartTreeCassandraQuery(CassandraQueryMethod queryMethod, ReactiveCassandraOperations operations) {
+	public ReactivePartTreeCassandraQuery(ReactiveCassandraQueryMethod queryMethod,
+			ReactiveCassandraOperations operations) {
 
 		super(queryMethod, operations);
 

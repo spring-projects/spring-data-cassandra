@@ -48,7 +48,7 @@ public interface ReactivePreparedStatementCallback<T> {
 	 * objects. Note that there's special support for single step actions: see
 	 * {@link ReactiveCqlTemplate#queryForObject(String, Class, Object...)} etc. A thrown RuntimeException is treated as
 	 * application exception, it gets propagated to the caller of the template.
-	 * 
+	 *
 	 * @param session active Cassandra session, must not be {@literal null}.
 	 * @param ps the {@link PreparedStatement}, must not be {@literal null}.
 	 * @return a result object publisher.

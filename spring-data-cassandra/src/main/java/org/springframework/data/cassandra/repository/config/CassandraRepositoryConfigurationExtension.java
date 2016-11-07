@@ -34,7 +34,7 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
-import org.springframework.data.repository.query.ReactiveWrappers;
+import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 

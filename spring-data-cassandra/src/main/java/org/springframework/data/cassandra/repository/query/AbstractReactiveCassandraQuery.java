@@ -16,8 +16,6 @@
 package org.springframework.data.cassandra.repository.query;
 
 import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
@@ -26,7 +24,6 @@ import org.springframework.data.cassandra.repository.query.ReactiveCassandraQuer
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SingleEntityExecution;
 import org.springframework.data.repository.query.ParameterAccessor;
-import org.springframework.data.repository.query.ReactiveWrapperConverters;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.util.Assert;
@@ -42,9 +39,7 @@ import reactor.core.publisher.Mono;
  */
 public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery {
 
-	protected static Logger log = LoggerFactory.getLogger(AbstractReactiveCassandraQuery.class);
-
-	private final CassandraQueryMethod method;
+	private final ReactiveCassandraQueryMethod method;
 	private final ReactiveCassandraOperations operations;
 
 	/**
@@ -54,9 +49,9 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 	 * @param method must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
 	 */
-	public AbstractReactiveCassandraQuery(CassandraQueryMethod method, ReactiveCassandraOperations operations) {
+	public AbstractReactiveCassandraQuery(ReactiveCassandraQueryMethod method, ReactiveCassandraOperations operations) {
 
-		Assert.notNull(method, "CassandraQueryMethod must not be null");
+		Assert.notNull(method, "ReactiveCassandraQueryMethod must not be null");
 		Assert.notNull(operations, "ReactiveCassandraOperations must not be null");
 
 		this.method = method;
@@ -77,11 +72,8 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 	@Override
 	public Object execute(Object[] parameters) {
 
-		if (hasReactiveWrapperParameter()) {
-			return executeDeferred(parameters);
-		}
-
-		return execute(new ReactiveCassandraParameterAccessor(method, parameters));
+		return method.hasReactiveWrapperParameter() ? executeDeferred(parameters)
+				: execute(new ReactiveCassandraParameterAccessor(method, parameters));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -137,16 +129,6 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 		} else {
 			return new SingleEntityExecution(operations);
 		}
-	}
-
-	private boolean hasReactiveWrapperParameter() {
-
-		for (CassandraParameters.CassandraParameter cassandraParameter : method.getParameters()) {
-			if (ReactiveWrapperConverters.supports(cassandraParameter.getType())) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**

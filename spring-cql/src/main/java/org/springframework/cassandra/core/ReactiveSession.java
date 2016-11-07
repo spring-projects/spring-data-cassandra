@@ -144,14 +144,14 @@ public interface ReactiveSession extends Closeable {
 	 * <p/>
 	 * This method behaves like {@link #prepare(String)}, but note that the resulting {@code PreparedStatement} will
 	 * inherit the query properties set on {@code statement}. Concretely, this means that in the following code:
-	 * 
+	 *
 	 * <pre>
 	 * RegularStatement toPrepare = new SimpleStatement("SELECT * FROM test WHERE k=?")
 	 * 		.setConsistencyLevel(ConsistencyLevel.QUORUM);
 	 * PreparedStatement prepared = session.prepare(toPrepare);
 	 * session.execute(prepared.bind("someValue"));
 	 * </pre>
-	 * 
+	 *
 	 * the final execution will be performed with Quorum consistency.
 	 * <p/>
 	 * Please note that if the same CQL statement is prepared more than once, all calls to this method will return the

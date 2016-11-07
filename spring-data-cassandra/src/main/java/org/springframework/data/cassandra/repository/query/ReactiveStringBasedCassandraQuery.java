@@ -50,14 +50,15 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 * Creates a new {@link ReactiveStringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
 	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
 	 *
-	 * @param queryMethod {@link CassandraQueryMethod} on which this query is based.
+	 * @param queryMethod {@link ReactiveCassandraQueryMethod} on which this query is based.
 	 * @param operations {@link ReactiveCassandraOperations} used to perform data access in Cassandra.
 	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
 	 * @param evaluationContextProvider {@link EvaluationContextProvider} used to access the potentially shared
 	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
 	 */
-	public ReactiveStringBasedCassandraQuery(CassandraQueryMethod queryMethod, ReactiveCassandraOperations operations,
-			SpelExpressionParser expressionParser, EvaluationContextProvider evaluationContextProvider) {
+	public ReactiveStringBasedCassandraQuery(ReactiveCassandraQueryMethod queryMethod,
+			ReactiveCassandraOperations operations, SpelExpressionParser expressionParser,
+			EvaluationContextProvider evaluationContextProvider) {
 		this(queryMethod.getAnnotatedQuery(), queryMethod, operations, expressionParser, evaluationContextProvider);
 	}
 
@@ -65,13 +66,13 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 * Creates a new {@link ReactiveStringBasedCassandraQuery} for the given {@code query}, {@link CassandraQueryMethod},
 	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
 	 *
-	 * @param queryMethod {@link CassandraQueryMethod} on which this query is based.
+	 * @param queryMethod {@link ReactiveCassandraQueryMethod} on which this query is based.
 	 * @param operations {@link ReactiveCassandraOperations} used to perform data access in Cassandra.
 	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
 	 * @param evaluationContextProvider {@link EvaluationContextProvider} used to access the potentially shared
 	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
 	 */
-	public ReactiveStringBasedCassandraQuery(String query, CassandraQueryMethod queryMethod,
+	public ReactiveStringBasedCassandraQuery(String query, ReactiveCassandraQueryMethod queryMethod,
 			ReactiveCassandraOperations operations, SpelExpressionParser expressionParser,
 			EvaluationContextProvider evaluationContextProvider) {
 

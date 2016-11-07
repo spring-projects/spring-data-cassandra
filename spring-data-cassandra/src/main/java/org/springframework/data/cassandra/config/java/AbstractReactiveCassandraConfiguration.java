@@ -17,11 +17,13 @@ package org.springframework.data.cassandra.config.java;
 
 import org.springframework.cassandra.core.DefaultBridgedReactiveSession;
 import org.springframework.cassandra.core.DefaultReactiveSessionFactory;
+import org.springframework.cassandra.core.ReactiveCqlOperations;
 import org.springframework.cassandra.core.ReactiveCqlTemplate;
 import org.springframework.cassandra.core.ReactiveSession;
 import org.springframework.cassandra.core.ReactiveSessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
+import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 
 import reactor.core.scheduler.Schedulers;
@@ -29,7 +31,7 @@ import reactor.core.scheduler.Schedulers;
 /**
  * Extension to {@link AbstractCassandraConfiguration} providing Spring Data Cassandra configuration for Spring Data's
  * Reactive Cassandra support using JavaConfig.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
@@ -38,7 +40,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	/**
 	 * Creates a {@link ReactiveSession} object. This wraps a {@link com.datastax.driver.core.Session} to expose Cassandra
 	 * access in a reactive style.
-	 * 
+	 *
 	 * @return
 	 * @see #session()
 	 * @see DefaultBridgedReactiveSession
@@ -51,7 +53,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	/**
 	 * Creates a {@link ReactiveSessionFactory} to be used by the {@link ReactiveCassandraTemplate}. Will use the
 	 * {@link ReactiveSession} instance configured in {@link #reactiveSession()}.
-	 * 
+	 *
 	 * @return
 	 * @see #reactiveSession()
 	 * @see #reactiveCassandraTemplate()
@@ -63,24 +65,24 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 
 	/**
 	 * Creates a {@link CassandraAdminTemplate}.
-	 * 
+	 *
 	 * @return
 	 * @see #reactiveSessionFactory()
 	 * @see #cassandraConverter()
 	 */
 	@Bean
-	public ReactiveCassandraTemplate reactiveCassandraTemplate() throws Exception {
+	public ReactiveCassandraOperations reactiveCassandraTemplate() throws Exception {
 		return new ReactiveCassandraTemplate(reactiveSessionFactory(), cassandraConverter());
 	}
 
 	/**
 	 * Creates a {@link ReactiveCqlTemplate} using the configured {@link ReactiveSessionFactory}.
-	 * 
+	 *
 	 * @return
 	 * @see #reactiveSessionFactory()
 	 */
 	@Bean
-	public ReactiveCqlTemplate reactiveCqlTemplate() throws Exception {
+	public ReactiveCqlOperations reactiveCqlTemplate() throws Exception {
 		return new ReactiveCqlTemplate(reactiveSessionFactory());
 	}
 }

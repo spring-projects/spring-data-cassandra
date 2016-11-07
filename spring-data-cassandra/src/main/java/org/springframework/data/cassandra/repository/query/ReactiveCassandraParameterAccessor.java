@@ -15,7 +15,11 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import org.springframework.data.repository.query.ReactiveWrapperConverters;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
+import org.springframework.data.repository.util.ReactiveWrappers;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,35 +30,31 @@ import reactor.core.publisher.MonoProcessor;
  * to reactive parameter wrapper types upon creation. This class performs synchronization when acessing parameters.
  *
  * @author Mark Paluch
+ * @since 2.0
  */
 class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAccessor {
 
 	private final Object[] values;
-	private final MonoProcessor<?>[] subscriptions;
+	private final List<MonoProcessor<?>> subscriptions;
 
 	public ReactiveCassandraParameterAccessor(CassandraQueryMethod method, Object[] values) {
 
 		super(method, values);
 
 		this.values = values;
-		this.subscriptions = new MonoProcessor<?>[values.length];
+		this.subscriptions = new ArrayList<>(values.length);
 
-		for (int i = 0; i < values.length; i++) {
+		for (Object value : values) {
 
-			Object value = values[i];
-
-			if (value == null) {
+			if (value == null || !ReactiveWrappers.supports(value.getClass())) {
+				subscriptions.add(null);
 				continue;
 			}
 
-			if (!ReactiveWrapperConverters.supports(value.getClass())) {
-				continue;
-			}
-
-			if (ReactiveWrapperConverters.isSingleLike(value.getClass())) {
-				subscriptions[i] = ReactiveWrapperConverters.toWrapper(value, Mono.class).subscribe();
+			if (ReactiveWrappers.isSingleValueType(value.getClass())) {
+				subscriptions.add(ReactiveWrapperConverters.toWrapper(value, Mono.class).subscribe());
 			} else {
-				subscriptions[i] = ReactiveWrapperConverters.toWrapper(value, Flux.class).collectList().subscribe();
+				subscriptions.add(ReactiveWrapperConverters.toWrapper(value, Flux.class).collectList().subscribe());
 			}
 		}
 	}
@@ -66,8 +66,8 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 	@Override
 	protected <T> T getValue(int index) {
 
-		if (subscriptions[index] != null) {
-			return (T) subscriptions[index].block();
+		if (subscriptions.get(index) != null) {
+			return (T) subscriptions.get(index).block();
 		}
 
 		return super.getValue(index);

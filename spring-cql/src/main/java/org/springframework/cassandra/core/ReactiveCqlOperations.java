@@ -52,7 +52,7 @@ public interface ReactiveCqlOperations {
 	 * {@link DataAccessException} hierarchy.
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
-	 * 
+	 *
 	 * @param action the callback object that specifies the action.
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -65,7 +65,7 @@ public interface ReactiveCqlOperations {
 
 	/**
 	 * Issue a single CQL execute, typically a DDL statement, insert, update or delete statement.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @return boolean value whether the statement was applied.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -77,7 +77,7 @@ public interface ReactiveCqlOperations {
 	 * <p>
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
 	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@literal null} as argument array.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rse object that will extract all rows of results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the ReactiveResultSetExtractor.
@@ -91,7 +91,7 @@ public interface ReactiveCqlOperations {
 	 * <p>
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
 	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@literal null} as argument array.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link Flux}, containing mapped objects.
@@ -106,7 +106,7 @@ public interface ReactiveCqlOperations {
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
 	 * {@link PreparedStatement}, use the overloaded {@link #queryForObject(String, RowMapper, Object...)} method with
 	 * {@literal null} as argument array.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the single mapped object.
@@ -125,7 +125,7 @@ public interface ReactiveCqlOperations {
 	 * <p>
 	 * This method is useful for running static CQL with a known outcome. The query is expected to be a single row/single
 	 * column query; the returned result will be directly mapped to the corresponding object type.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
 	 * @return the result object of the required type, or {@link Mono#empty()} in case of CQL NULL.
@@ -145,7 +145,7 @@ public interface ReactiveCqlOperations {
 	 * <p>
 	 * The query is expected to be a single row query; the result row will be mapped to a Map (one entry for each column,
 	 * using the column name as the key).
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @return the result Map (one entry for each column, using the column name as the key), must not be {@literal null}.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row.
@@ -163,7 +163,7 @@ public interface ReactiveCqlOperations {
 	 * <p>
 	 * The results will be mapped to a {@link Flux} (one item for each row) of result objects, each of them matching the
 	 * specified element type.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param elementType the required type of element in the result {@link Flux} (for example, {@code Integer.class}),
 	 *          must not be {@literal null}.
@@ -183,7 +183,7 @@ public interface ReactiveCqlOperations {
 	 * The results will be mapped to a {@link Flux} (one item for each row) of {@link Map}s (one entry for each column
 	 * using the column name as the key). Each item in the {@link Flux} will be of the form returned by this interface's
 	 * queryForMap() methods.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @return a {@link Flux} that contains a {@link Map} per row.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -407,7 +407,7 @@ public interface ReactiveCqlOperations {
 	 * {@link com.datastax.driver.core.exceptions.DriverException}s into Spring's {@link DataAccessException} hierarchy.
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
-	 * 
+	 *
 	 * @param psc object that can create a {@link PreparedStatement} given a {@link ReactiveSession}, must not be
 	 *          {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
@@ -424,7 +424,7 @@ public interface ReactiveCqlOperations {
 	 * {@link com.datastax.driver.core.exceptions.DriverException}s into Spring's {@link DataAccessException} hierarchy.
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}
@@ -434,7 +434,7 @@ public interface ReactiveCqlOperations {
 
 	/**
 	 * Query using a prepared statement, reading the {@link ReactiveResultSet} with a {@link ReactiveResultSetExtractor}.
-	 * 
+	 *
 	 * @param psc object that can create a {@link PreparedStatement} given a {@link ReactiveSession}, must not be
 	 *          {@literal null}.
 	 * @param rse object that will extract results, must not be {@literal null}.
@@ -445,7 +445,7 @@ public interface ReactiveCqlOperations {
 
 	/**
 	 * Query using a prepared statement, reading the {@link ReactiveResultSet} with a {@link ReactiveResultSetExtractor}.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
@@ -476,7 +476,7 @@ public interface ReactiveCqlOperations {
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, reading the
 	 * {@link ReactiveResultSet} with a {@link ReactiveResultSetExtractor}.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rse object that will extract results, must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
@@ -488,7 +488,7 @@ public interface ReactiveCqlOperations {
 
 	/**
 	 * Query using a prepared statement, mapping each row to a Java object via a {@link RowMapper}.
-	 * 
+	 *
 	 * @param psc object that can create a {@link PreparedStatement} given a {@link ReactiveSession}, must not be
 	 *          {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
@@ -500,7 +500,7 @@ public interface ReactiveCqlOperations {
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a {@link PreparedStatement}Binder implementation that
 	 * knows how to bind values to the query, mapping each row to a Java object via a {@link RowMapper}.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
@@ -530,7 +530,7 @@ public interface ReactiveCqlOperations {
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, mapping each
 	 * row to a Java object via a {@link RowMapper}.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rowMapper object that will map one object per row
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
@@ -543,7 +543,7 @@ public interface ReactiveCqlOperations {
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, mapping a
 	 * single result row to a Java object via a {@link RowMapper}.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
@@ -560,7 +560,7 @@ public interface ReactiveCqlOperations {
 	 * <p>
 	 * The query is expected to be a single row/single column query; the returned result will be directly mapped to the
 	 * corresponding object type.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the PreparedStatement to guess the corresponding CQL
@@ -580,7 +580,7 @@ public interface ReactiveCqlOperations {
 	 * <p>
 	 * The query is expected to be a single row query; the result row will be mapped to a Map (one entry for each column,
 	 * using the column name as the key).
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
@@ -598,7 +598,7 @@ public interface ReactiveCqlOperations {
 	 * <p>
 	 * The results will be mapped to a {@link Flux} (one item for each row) of result objects, each of them matching the
 	 * specified element type.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param elementType the required type of element in the result {@link Flux} (for example, {@code Integer.class}),
 	 *          must not be {@literal null}.
@@ -618,7 +618,7 @@ public interface ReactiveCqlOperations {
 	 * The results will be mapped to a {@link Flux} (one item for each row) of {@link Map}s (one entry for each column,
 	 * using the column name as the key). Each item in the {@link Flux} will be of the form returned by this interface's
 	 * queryForMap() methods.
-	 * 
+	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
@@ -698,7 +698,7 @@ public interface ReactiveCqlOperations {
 	/**
 	 * Issue a single CQL operation (such as an insert, update or delete statement) via a prepared statement, binding the
 	 * given arguments.
-	 * 
+	 *
 	 * @param cql static CQL to execute containing bind parameters, must not be empty or {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).

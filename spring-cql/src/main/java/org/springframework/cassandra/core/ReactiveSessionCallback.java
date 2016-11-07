@@ -38,14 +38,14 @@ import com.datastax.driver.core.exceptions.DriverException;
 public interface ReactiveSessionCallback<T> {
 
 	/**
-	 * Gets called by {@link ReactiveCqlTemplate#execute(ReactiveSessionCallback)} with an active Cassandra session. Does not
-	 * need to care about activating or closing the {@link ReactiveSession}.
+	 * Gets called by {@link ReactiveCqlTemplate#execute(ReactiveSessionCallback)} with an active Cassandra session. Does
+	 * not need to care about activating or closing the {@link ReactiveSession}.
 	 * <p>
 	 * Allows for returning a result object created within the callback, i.e. a domain object or a collection of domain
 	 * objects. Note that there's special support for single step actions: see
 	 * {@link ReactiveCqlTemplate#queryForObject(Statement, Class)} etc. A thrown {@link RuntimeException} is treated as
 	 * application exception: it gets propagated to the caller of the template.
-	 * 
+	 *
 	 * @param session active Cassandra session.
 	 * @return a result object publisher
 	 * @throws DriverException if thrown by a session method, to be auto-converted to a DataAccessException

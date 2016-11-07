@@ -831,7 +831,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 	/**
 	 * Determine CQL from potential provider object.
-	 * 
+	 *
 	 * @param cqlProvider object that's potentially a {@link CqlProvider}
 	 * @return the CQL string, or {@code null}
 	 * @see CqlProvider

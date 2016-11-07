@@ -149,7 +149,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	// Methods dealing with static CQL
 	// -------------------------------------------------------------------------
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#select(java.lang.String, java.lang.Class)
 	 */
@@ -174,7 +174,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	// Methods dealing with com.datastax.driver.core.Statement
 	// -------------------------------------------------------------------------
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#select(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
@@ -200,7 +200,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	// Methods dealing with entities
 	// -------------------------------------------------------------------------
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#selectOneById(java.lang.Object, java.lang.Class)
 	 */
@@ -218,7 +218,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return selectOne(select, entityClass);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#exists(java.lang.Object, java.lang.Class)
 	 */
@@ -235,7 +235,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return cqlOperations.queryForRows(select).hasElements();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#count(java.lang.Class)
 	 */
@@ -249,7 +249,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return cqlOperations.queryForObject(select, Long.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object)
 	 */
@@ -258,7 +258,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return insert(entity, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
 	 */
@@ -284,7 +284,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return insert(entities, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher, org.springframework.cassandra.core.WriteOptions)
 	 */
@@ -295,7 +295,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return Flux.from(entities).flatMap(entity -> insert(entity, options));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object)
 	 */
@@ -304,7 +304,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return update(entity, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
 	 */
@@ -330,7 +330,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return update(entities, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher, org.springframework.cassandra.core.WriteOptions)
 	 */
@@ -341,7 +341,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return Flux.from(entities).flatMap(entity -> update(entity, options));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#deleteById(java.lang.Object, java.lang.Class)
 	 */
@@ -359,7 +359,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return cqlOperations.execute(delete);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Object)
 	 */
@@ -368,7 +368,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return delete(entity, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Object, org.springframework.cassandra.core.QueryOptions)
 	 */
@@ -394,7 +394,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return delete(entities, null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.reactivestreams.Publisher, org.springframework.cassandra.core.QueryOptions)
 	 */
@@ -405,7 +405,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return Flux.from(entities).flatMap(entity -> delete(entity, options));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#truncate(java.lang.Class)
 	 */
@@ -418,7 +418,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return cqlOperations.execute(truncate).then();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#getConverter()
 	 */
