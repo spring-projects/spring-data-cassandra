@@ -18,13 +18,17 @@ package org.springframework.data.cassandra.domain;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author Mark Paluch
  */
 @Table
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Person {
 
 	@Id String id;

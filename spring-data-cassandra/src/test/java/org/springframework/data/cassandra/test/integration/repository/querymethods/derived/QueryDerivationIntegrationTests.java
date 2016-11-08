@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.test.integration.repository.querymethods.derived;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assume.*;
 
 import java.time.LocalDate;
@@ -150,7 +149,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test
 	public void shouldFindByNumberOfChildren() throws Exception {
 
-		assumeThat(SpringVersion.getVersion(), startsWith("4.3"));
+		assumeTrue(Version.parse(SpringVersion.getVersion()).isGreaterThanOrEqualTo(Version.parse("4.3")));
 
 		template.execute("CREATE INDEX IF NOT EXISTS person_number_of_children ON person (numberofchildren);");
 

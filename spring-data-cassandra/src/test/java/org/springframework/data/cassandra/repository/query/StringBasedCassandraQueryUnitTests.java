@@ -61,7 +61,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
-public class StringBasedCassandraQueryIntegrationUnitTests {
+public class StringBasedCassandraQueryUnitTests {
 
 	SpelExpressionParser PARSER = new SpelExpressionParser();
 
@@ -323,6 +323,7 @@ public class StringBasedCassandraQueryIntegrationUnitTests {
 	}
 
 	private StringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
+		
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
 		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
 				converter.getMappingContext());

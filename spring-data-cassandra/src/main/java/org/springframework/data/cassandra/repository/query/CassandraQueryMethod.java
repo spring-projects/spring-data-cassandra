@@ -58,8 +58,8 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @param projectionFactory must not be {@literal null}.
 	 * @param mappingContext must not be {@literal null}.
 	 */
-	public CassandraQueryMethod(Method method, RepositoryMetadata repositoryMetadata,
-			ProjectionFactory projectionFactory, CassandraMappingContext mappingContext) {
+	public CassandraQueryMethod(Method method, RepositoryMetadata repositoryMetadata, ProjectionFactory projectionFactory,
+			CassandraMappingContext mappingContext) {
 
 		super(method, repositoryMetadata, projectionFactory);
 
@@ -83,6 +83,10 @@ public class CassandraQueryMethod extends QueryMethod {
 		}
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.query.QueryMethod#getEntityInformation()
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public CassandraEntityMetadata<?> getEntityInformation() {
@@ -93,21 +97,21 @@ public class CassandraQueryMethod extends QueryMethod {
 
 			if (ClassUtils.isPrimitiveOrWrapper(returnedObjectType)) {
 				this.entityMetadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) domainClass,
-					mappingContext.getPersistentEntity(domainClass));
+						mappingContext.getPersistentEntity(domainClass));
 
 			} else {
 				CassandraPersistentEntity<?> returnedEntity = mappingContext.getPersistentEntity(returnedObjectType);
 				CassandraPersistentEntity<?> managedEntity = mappingContext.getPersistentEntity(domainClass);
 
-				returnedEntity = (returnedEntity == null || returnedEntity.getType().isInterface()
-					? managedEntity : returnedEntity);
+				returnedEntity = (returnedEntity == null || returnedEntity.getType().isInterface() ? managedEntity
+						: returnedEntity);
 
 				// TODO collectionEntity?
 				CassandraPersistentEntity<?> collectionEntity = domainClass.isAssignableFrom(returnedObjectType)
-					? returnedEntity : managedEntity;
+						? returnedEntity : managedEntity;
 
-				this.entityMetadata = new SimpleCassandraEntityMetadata<Object>(
-					(Class<Object>) returnedEntity.getType(), collectionEntity);
+				this.entityMetadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) returnedEntity.getType(),
+						collectionEntity);
 			}
 		}
 

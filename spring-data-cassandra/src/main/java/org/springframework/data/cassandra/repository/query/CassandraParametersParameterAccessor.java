@@ -67,8 +67,8 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 
 		CassandraType cassandraType = findCassandraType(index);
 
-		return (cassandraType != null ?  CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type())
-			: CassandraSimpleTypeHolder.getDataTypeFor(getParameterType(index)));
+		return (cassandraType != null ? CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type())
+				: CassandraSimpleTypeHolder.getDataTypeFor(getParameterType(index)));
 	}
 
 	/*
