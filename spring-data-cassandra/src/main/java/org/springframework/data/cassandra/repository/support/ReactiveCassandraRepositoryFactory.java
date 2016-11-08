@@ -74,7 +74,7 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
 
 		DefaultConversionService conversionService = new DefaultConversionService();
-		QueryExecutionConverters.registerConvertersIn(conversionService);
+		ReactiveWrapperConverters.registerConvertersIn(conversionService);
 
 		this.conversionService = conversionService;
 		setConversionService(conversionService);
