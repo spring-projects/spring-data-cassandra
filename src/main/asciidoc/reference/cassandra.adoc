@@ -175,7 +175,7 @@ After the initial release of Spring Data for Apache Cassandra 1.0.0, we will sta
 [[cassandra-connectors.ext_properties]]
 === Externalize Connection Properties
 
-Create a properties file with the information you need to connect to Cassandra. The contact points are keyspace are the minimal required fields, but port is added here for clarity.
+Create a properties file with the information you need to connect to Cassandra. The contact points and keyspace are the minimal required fields, but port is added here for clarity.
 
 We will call this cassandra.properties
 
