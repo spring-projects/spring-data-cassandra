@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.convert;
 
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
-import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
 import org.springframework.util.Assert;
 
@@ -27,7 +26,7 @@ import com.datastax.driver.core.UDTValue;
 
 /**
  * {@link CassandraValueProvider} to read property values from a {@link UDTValue}.
- * 
+ *
  * @author Mark Paluch
  * @since 1.5
  */
@@ -40,7 +39,7 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	/**
 	 * Creates a new {@link CassandraUDTValueProvider} with the given {@link UDTValue} and
 	 * {@link DefaultSpELExpressionEvaluator}.
-	 * 
+	 *
 	 * @param udtValue must not be {@literal null}.
 	 * @param codecRegistry must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
@@ -64,6 +63,7 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	public Object getPropertyValue(CassandraPersistentProperty property) {
 
 		String expression = property.getSpelExpression();
+
 		if (expression != null) {
 			return evaluator.evaluate(expression);
 		}

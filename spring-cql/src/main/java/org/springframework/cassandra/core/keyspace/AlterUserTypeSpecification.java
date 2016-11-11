@@ -47,21 +47,21 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API to alter a type. Convenient if imported
 	 * statically.
 	 */
-	public static AlterUserTypeSpecification alterType(CqlIdentifier typeName) {
-		return alterType().name(typeName);
+	public static AlterUserTypeSpecification alterType(String typeName) {
+		return alterType(CqlIdentifier.cqlId(typeName));
 	}
 
 	/**
 	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API to alter a type. Convenient if imported
 	 * statically.
 	 */
-	public static AlterUserTypeSpecification alterType(String typeName) {
-		return alterType(CqlIdentifier.cqlId(typeName));
+	public static AlterUserTypeSpecification alterType(CqlIdentifier typeName) {
+		return alterType().name(typeName);
 	}
 
 	/**
 	 * Adds an {@literal ADD} to the list of field changes.
-	 * 
+	 *
 	 * @param field must not be empty or {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
@@ -72,7 +72,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 
 	/**
 	 * Adds an {@literal ADD} to the list of field changes.
-	 * 
+	 *
 	 * @param field must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
@@ -80,12 +80,13 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	public AlterUserTypeSpecification add(CqlIdentifier field, DataType type) {
 
 		changes.add(new AddColumnSpecification(field, type));
+
 		return this;
 	}
 
 	/**
 	 * Adds an {@literal ALTER} to the list of field changes.
-	 * 
+	 *
 	 * @param field must not be empty or {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
@@ -96,7 +97,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 
 	/**
 	 * Adds an {@literal ALTER} to the list of field changes.
-	 * 
+	 *
 	 * @param field must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
@@ -104,12 +105,13 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	public AlterUserTypeSpecification alter(CqlIdentifier field, DataType type) {
 
 		changes.add(new AlterColumnSpecification(field, type));
+
 		return this;
 	}
 
 	/**
 	 * Adds an {@literal RENAME} to the list of field changes.
-	 * 
+	 *
 	 * @param from must not be empty or {@literal null}.
 	 * @param to must not be empty or {@literal null}.
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
@@ -128,6 +130,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	public AlterUserTypeSpecification rename(CqlIdentifier from, CqlIdentifier to) {
 
 		changes.add(new RenameColumnSpecification(from, to));
+
 		return this;
 	}
 

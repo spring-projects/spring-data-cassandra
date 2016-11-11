@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
-import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.*;
-import static org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder.*;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.createTable;
+import static org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder.getDataTypeFor;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -84,6 +84,7 @@ public class BasicCassandraMappingContext
 	protected Set<CassandraPersistentEntity<?>> userDefinedTypes = new HashSet<CassandraPersistentEntity<?>>();
 
 	private CustomConversions customConversions;
+
 	private UserTypeResolver userTypeResolver;
 
 	/**
@@ -109,7 +110,7 @@ public class BasicCassandraMappingContext
 
 	/**
 	 * Sets the {@link UserTypeResolver}.
-	 * 
+	 *
 	 * @param userTypeResolver must not be {@literal null}.
 	 * @since 1.5
 	 */
@@ -146,7 +147,7 @@ public class BasicCassandraMappingContext
 		return Collections.unmodifiableSet(userDefinedTypes);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext#getPersistentEntities(boolean)
 	 */
@@ -242,7 +243,7 @@ public class BasicCassandraMappingContext
 
 		CqlIdentifier identifier = CqlIdentifier.cqlId(userType.getTypeName());
 
-		return hasMappedUserType(identifier) || hasReferencedUserType(identifier);
+		return (hasMappedUserType(identifier) || hasReferencedUserType(identifier));
 	}
 
 	private boolean hasReferencedUserType(final CqlIdentifier identifier) {
@@ -257,6 +258,7 @@ public class BasicCassandraMappingContext
 				public void doWithPersistentProperty(CassandraPersistentProperty persistentProperty) {
 
 					CassandraType cassandraType = persistentProperty.findAnnotation(CassandraType.class);
+
 					if (cassandraType == null) {
 						return;
 					}
@@ -429,8 +431,8 @@ public class BasicCassandraMappingContext
 	 */
 	@Override
 	public DataType getDataType(Class<?> type) {
-		return customConversions.hasCustomWriteTarget(type)
-			? getDataTypeFor(customConversions.getCustomWriteTarget(type)) : getDataTypeFor(type);
+		return (customConversions.hasCustomWriteTarget(type)
+			? getDataTypeFor(customConversions.getCustomWriteTarget(type)) : getDataTypeFor(type));
 	}
 
 	public void setMapping(Mapping mapping) {
@@ -451,15 +453,16 @@ public class BasicCassandraMappingContext
 			if (entityMapping == null) {
 				continue;
 			}
+
 			String entityClassName = entityMapping.getEntityClassName();
 
 			try {
-				
 				Class<?> entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
 
 				CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
 
-				Assert.state(entity != null, String.format("Unknown persistent entity class name [%s]", entityClassName));
+				Assert.state(entity != null,
+						String.format("Unknown persistent entity class name [%s]", entityClassName));
 
 				String tableName = entityMapping.getTableName();
 
@@ -470,7 +473,8 @@ public class BasicCassandraMappingContext
 				processMappingOverrides(entity, entityMapping);
 
 			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException(String.format("Unknown persistent entity name [%s]", entityClassName), e);
+				throw new IllegalStateException(
+						String.format("Unknown persistent entity name [%s]", entityClassName), e);
 			}
 		}
 	}
@@ -485,10 +489,8 @@ public class BasicCassandraMappingContext
 
 		CassandraPersistentProperty property = entity.getPersistentProperty(mapping.getPropertyName());
 
-		if (property == null) {
-			throw new IllegalArgumentException(String.format("Entity class [%s] has no persistent property named [%s]",
-					entity.getType().getName(), mapping.getPropertyName()));
-		}
+		Assert.notNull(property, String.format("Entity class [%s] has no persistent property named [%s]",
+				entity.getType().getName(), mapping.getPropertyName()));
 
 		boolean forceQuote = false;
 
@@ -514,11 +516,9 @@ public class BasicCassandraMappingContext
 
 		CassandraPersistentEntity<?> entity = entitiesByType.get(type);
 
-		if (entity != null) {
-			return entity;
-		}
+		Assert.notNull(entity, String.format("Unknown persistent type [%s]", type.getName()));
 
-		throw new IllegalArgumentException(String.format("Unknown persistent type [%s]", type.getName()));
+		return entity;
 	}
 
 	@Override

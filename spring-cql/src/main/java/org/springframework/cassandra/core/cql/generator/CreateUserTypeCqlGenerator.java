@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
 import org.springframework.cassandra.core.keyspace.CreateUserTypeSpecification;
 import org.springframework.cassandra.core.keyspace.FieldSpecification;
@@ -37,14 +37,14 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 
 	/**
 	 * Creates a new {@link CreateUserTypeCqlGenerator} for a given {@link CreateUserTypeSpecification}.
-	 * 
+	 *
 	 * @param specification must not be {@literal null}.
 	 */
 	public CreateUserTypeCqlGenerator(CreateUserTypeSpecification specification) {
 		super(specification);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.cassandra.core.cql.generator.UserTypeNameCqlGenerator#toCql(java.lang.StringBuilder)
 	 */
@@ -52,17 +52,11 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 	public StringBuilder toCql(StringBuilder cql) {
 
 		Assert.notNull(getSpecification().getName(), "User type name must not be null");
+
 		Assert.isTrue(!getSpecification().getFields().isEmpty(),
 				String.format("User type [%s] does not contain fields", getSpecification().getName()));
 
-		cql = noNull(cql);
-
-		preambleCql(cql);
-		columns(cql);
-
-		cql.append(";");
-
-		return cql;
+		return columns(preambleCql(cql)).append(";");
 	}
 
 	private StringBuilder preambleCql(StringBuilder cql) {
@@ -78,13 +72,13 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 		cql.append(" (");
 
 		boolean first = true;
-		for (FieldSpecification col : spec().getFields()) {
 
+		for (FieldSpecification column : spec().getFields()) {
 			if (!first) {
 				cql.append(", ");
 			}
 
-			col.toCql(cql);
+			column.toCql(cql);
 
 			first = false;
 		}

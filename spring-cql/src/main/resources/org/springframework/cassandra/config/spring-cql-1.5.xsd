@@ -29,17 +29,6 @@ Defines the configuration elements in the XML namespace for Spring Cassandra.
 		]]></xsd:documentation>
 	</xsd:annotation>
 
-	<xsd:simpleType name="executorRef" final="union">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<tool:annotation kind="ref">
-					<tool:assignable-to type="java.util.concurrent.Executor"/>
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-		<xsd:union memberTypes="xsd:string" />
-	</xsd:simpleType>
-
 	<xsd:element name="cluster" type="clusterType">
 		<xsd:annotation>
 			<xsd:documentation
@@ -54,11 +43,62 @@ Defines a Cassandra cluster.
 		</xsd:annotation>
 	</xsd:element>
 
+	<xsd:element name="session" type="sessionType">
+		<xsd:annotation>
+			<xsd:documentation
+				source="org.springframework.data.cassandra.config.xml.CassandraDataSessionFactoryBean"><![CDATA[
+Defines a Cassandra session.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.datastax.driver.core.Session" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="template" type="templateType">
+		<xsd:annotation>
+			<xsd:documentation
+				source="org.springframework.data.cassandra.config.xml.CassandraDataTemplateFactoryBean"><![CDATA[
+Defines a CassandraTemplate.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports
+						type="org.springframework.data.cassandra.CassandraTemplate" />
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+
 	<xsd:simpleType name="clusterRef" final="union">
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
 					<tool:assignable-to type="com.datastax.driver.core.Cluster"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string" />
+	</xsd:simpleType>
+
+	<xsd:simpleType name="executorRef" final="union">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to type="java.util.concurrent.Executor"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string" />
+	</xsd:simpleType>
+
+	<xsd:simpleType name="sessionRef" final="union">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to type="com.datastax.driver.core.Session" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -447,105 +487,6 @@ When Authentication is enabled, the username to use when connecting to the Clust
 		</xsd:attribute>
 	</xsd:complexType>
 
-	<xsd:element name="session" type="sessionType">
-		<xsd:annotation>
-			<xsd:documentation
-				source="org.springframework.data.cassandra.config.xml.CassandraDataSessionFactoryBean"><![CDATA[
-Defines a Cassandra session.
-			]]></xsd:documentation>
-			<xsd:appinfo>
-				<tool:annotation>
-					<tool:exports type="com.datastax.driver.core.Session" />
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-	</xsd:element>
-
-	<xsd:simpleType name="sessionRef" final="union">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<tool:annotation kind="ref">
-					<tool:assignable-to type="com.datastax.driver.core.Session" />
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-		<xsd:union memberTypes="xsd:string" />
-	</xsd:simpleType>
-
-	<xsd:complexType name="sessionType">
-		<xsd:sequence>
-			<xsd:element name="startup-cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
-				<!-- TODO: cql could come from a resource via a resource attribute... -->
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-Arbitrary CQL script to be executed against the session's keyspace during bean initialization.  Multiple elements will be executed in document order.
-					]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="shutdown-cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
-				<!-- TODO: cql could come from a resource via a resource attribute... -->
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-Arbitrary CQL script to be executed against the session's keyspace during bean destruction.  Multiple elements will be executed in document order.
-					]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-		<xsd:attribute name="id" type="xsd:ID" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The name of the session definition; default is "cassandra-session".
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="cluster-ref" type="clusterRef" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The reference to a Cassandra cluster; default is "cassandra-cluster".
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="keyspace-name" type="xsd:string" use="required">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The name of a Cassandra Keyspace.  No default; for the system keyspace, use the empty string.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-
-	<xsd:element name="template" type="templateType">
-		<xsd:annotation>
-			<xsd:documentation
-				source="org.springframework.data.cassandra.config.xml.CassandraDataTemplateFactoryBean"><![CDATA[
-Defines a CassandraTemplate.
-			]]></xsd:documentation>
-			<xsd:appinfo>
-				<tool:annotation>
-					<tool:exports
-						type="org.springframework.data.cassandra.CassandraTemplate" />
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-	</xsd:element>
-
-	<xsd:complexType name="templateType">
-		<xsd:attribute name="id" type="xsd:ID" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The name of the template; default is "cassandraTemplate".
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="session-ref" type="sessionRef" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The reference to a Cassandra session; default is "cassandra-session".
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-
 	<xsd:complexType name="datacenterType">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
@@ -637,6 +578,48 @@ If the utilisation of opened connections drops below by this configured threshol
 		</xsd:attribute>
 	</xsd:complexType>
 
+	<xsd:complexType name="sessionType">
+		<xsd:sequence>
+			<xsd:element name="startup-cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
+				<!-- TODO: cql could come from a resource via a resource attribute... -->
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the session's keyspace during bean initialization.  Multiple elements will be executed in document order.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="shutdown-cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
+				<!-- TODO: cql could come from a resource via a resource attribute... -->
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the session's keyspace during bean destruction.  Multiple elements will be executed in document order.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the session definition; default is "cassandra-session".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cluster-ref" type="clusterRef" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra cluster; default is "cassandra-cluster".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="keyspace-name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of a Cassandra Keyspace.  No default; for the system keyspace, use the empty string.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
 	<xsd:complexType name="socketOptionsType">
 		<xsd:attribute name="connect-timeout-millis" type="xsd:string">
 			<xsd:annotation>
@@ -722,6 +705,23 @@ The name of the replication class; default is "SIMPLE_STRATEGY".
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 The replication factor; default is 1.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="templateType">
+		<xsd:attribute name="id" type="xsd:ID" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the template; default is "cassandraTemplate".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="session-ref" type="sessionRef" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra session; default is "cassandra-session".
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>

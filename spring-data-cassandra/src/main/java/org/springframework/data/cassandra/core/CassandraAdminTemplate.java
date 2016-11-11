@@ -57,7 +57,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		super(session, converter);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, org.springframework.cassandra.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
 	 */
@@ -82,7 +82,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		});
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#alterTable(org.springframework.cassandra.core.cql.CqlIdentifier, java.lang.Class, boolean)
 	 */
@@ -91,7 +91,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		throw new UnsupportedOperationException("not yet implemented");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#replaceTable(org.springframework.cassandra.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
 	 */
@@ -143,7 +143,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	@Override
 	public void dropTable(CqlIdentifier tableName) {
 
-		Assert.notNull(tableName, "Type name must not be null");
+		Assert.notNull(tableName, "Table name must not be null");
 
 		log.info("Dropping table => " + tableName);
 
@@ -164,7 +164,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		execute(DropUserTypeCqlGenerator.toCql(DropUserTypeSpecification.dropType(typeName)));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(java.lang.String, org.springframework.cassandra.core.cql.CqlIdentifier)
 	 */
@@ -190,6 +190,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	public KeyspaceMetadata getKeyspaceMetadata() {
 
 		return execute(new SessionCallback<KeyspaceMetadata>() {
+
 			@Override
 			public KeyspaceMetadata doInSession(Session s) throws DataAccessException {
 

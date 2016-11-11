@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,13 +35,14 @@ import org.springframework.data.cassandra.mapping.EntityMapping;
 import org.springframework.data.cassandra.mapping.Mapping;
 import org.springframework.data.cassandra.mapping.PropertyMapping;
 import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
  * Spring Data Cassandra XML namespace parser for the &lt;mapping&gt; element.
- * 
+ *
  * @author Matthew T. Adams
  */
 public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
@@ -56,7 +57,8 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : DefaultBeanNames.CONTEXT;
+
+		return (StringUtils.hasText(id) ? id : DefaultBeanNames.CONTEXT);
 	}
 
 	@Override
@@ -70,14 +72,17 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 	protected void parseMapping(Element element, BeanDefinitionBuilder builder) {
 
 		String packages = element.getAttribute("entity-base-packages");
+
 		if (StringUtils.hasText(packages)) {
 			try {
-				Set<Class<?>> entityClasses = CassandraEntityClassScanner
-						.scan(StringUtils.commaDelimitedListToStringArray(packages));
+				Set<Class<?>> entityClasses = CassandraEntityClassScanner.scan(
+					StringUtils.commaDelimitedListToStringArray(packages));
+
 				builder.addPropertyValue("initialEntitySet", entityClasses);
 			} catch (Exception x) {
 				throw new IllegalArgumentException(
-						String.format("encountered exception while scanning for entity classes in package(s) [%s]", packages), x);
+						String.format("encountered exception while scanning for entity classes in package(s) [%s]",
+							packages), x);
 			}
 		}
 
@@ -94,15 +99,13 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 
 		List<Element> userTypeResolvers = DomUtils.getChildElementsByTagName(element, "user-type-resolver");
 		String userTypeResolverRef = element.getAttribute("user-type-resolver-ref");
+
 		if (StringUtils.hasText(userTypeResolverRef)) {
-			if (!userTypeResolvers.isEmpty()) {
-				throw new IllegalArgumentException("Must not define user-type-resolver and user-type-resolver-ref");
-			}
+			Assert.isTrue(userTypeResolvers.isEmpty(), "Must not define user-type-resolver and user-type-resolver-ref");
 			builder.addPropertyReference("userTypeResolver", userTypeResolverRef);
 		}
 
-		if(!userTypeResolvers.isEmpty()){
-
+		if (!userTypeResolvers.isEmpty()){
 			BeanDefinition userTypeResolver = parseUserTypeResolver(userTypeResolvers.get(0));
 			builder.addPropertyValue("userTypeResolver", userTypeResolver);
 		}
@@ -116,23 +119,18 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 	protected EntityMapping parseEntity(Element entity) {
 
 		String className = entity.getAttribute("class");
-		if (!StringUtils.hasText(className)) {
-			throw new IllegalStateException("class attribute must not be empty");
-		}
+
+		Assert.state(StringUtils.hasText(className), "class attribute must not be empty");
+
+		Element table = DomUtils.getChildElementByTagName(entity, "table");
 
 		String tableName = "";
 		String forceQuote = "";
-		Element table = DomUtils.getChildElementByTagName(entity, "table");
+
 		if (table != null) {
 			tableName = table.getAttribute("name");
-			if (!StringUtils.hasText(tableName)) {
-				tableName = "";
-			}
-
-			forceQuote = table.getAttribute("force-quote");
-			if (!StringUtils.hasText(forceQuote)) {
-				forceQuote = Boolean.FALSE.toString();
-			}
+			tableName = (StringUtils.hasText(tableName) ? tableName : "");
+			forceQuote = String.valueOf(Boolean.parseBoolean(table.getAttribute("force-quote")));
 		}
 
 		// TODO: parse future entity mappings here, like table options
@@ -148,9 +146,8 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 	protected BeanDefinition parseUserTypeResolver(Element entity) {
 
 		String keyspaceName = entity.getAttribute("keyspace-name");
-		if (!StringUtils.hasText(keyspaceName)) {
-			throw new IllegalStateException("keyspace-name attribute must not be null or empty");
-		}
+
+		Assert.state(StringUtils.hasText(keyspaceName), "keyspace-name attribute must not be null or empty");
 
 		String clusterRef = entity.getAttribute("cluster-ref");
 
@@ -163,29 +160,31 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 
 	protected Map<String, PropertyMapping> parsePropertyMappings(Element entity) {
 
-		Map<String, PropertyMapping> pms = new HashMap<String, PropertyMapping>();
+		Map<String, PropertyMapping> propertyMappings = new HashMap<String, PropertyMapping>();
 
 		for (Element property : DomUtils.getChildElementsByTagName(entity, "property")) {
 
 			String value = property.getAttribute("name");
-			if (!StringUtils.hasText(value)) {
-				throw new IllegalStateException("name attribute must not be empty");
-			}
-			PropertyMapping pm = new PropertyMapping(value);
+
+			Assert.state(StringUtils.hasText(value), "name attribute must not be empty");
+
+			PropertyMapping propertyMapping = new PropertyMapping(value);
 
 			value = property.getAttribute("column-name");
+
 			if (StringUtils.hasText(value)) {
-				pm.setColumnName(value);
+				propertyMapping.setColumnName(value);
 			}
 
 			value = property.getAttribute("force-quote");
+
 			if (StringUtils.hasText(value)) {
-				pm.setForceQuote(value);
+				propertyMapping.setForceQuote(value);
 			}
 
-			pms.put(pm.getPropertyName(), pm);
+			propertyMappings.put(propertyMapping.getPropertyName(), propertyMapping);
 		}
 
-		return pms;
+		return propertyMappings;
 	}
 }

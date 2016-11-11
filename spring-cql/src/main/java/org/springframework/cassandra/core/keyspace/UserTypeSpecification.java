@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +40,7 @@ public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends U
 
 	/**
 	 * Adds the given field to the type.
-	 * 
+	 *
 	 * @param name must not be empty or {@literal null}.
 	 * @param type The data type of the field.
 	 * @return {@code this} specification.
@@ -60,6 +60,7 @@ public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends U
 	public T field(CqlIdentifier name, DataType type) {
 
 		fields.add(new FieldSpecification().name(name).type(type));
+
 		return (T) this;
 	}
 
