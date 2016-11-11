@@ -43,7 +43,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 
 	/**
 	 * Create a new {@link SingleColumnRowMapper} for bean-style configuration.
-	 * 
+	 *
 	 * @see #setRequiredType
 	 */
 	public SingleColumnRowMapper() {}
@@ -53,7 +53,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * <p>
 	 * Consider using the {@link #newInstance} factory method instead, which allows for specifying the required type once
 	 * only.
-	 * 
+	 *
 	 * @param requiredType the type that each result object is expected to match
 	 */
 	public SingleColumnRowMapper(Class<T> requiredType) {
@@ -74,7 +74,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * <p>
 	 * Validates that there is only one column selected, then delegates to {@code getColumnValue()} and also
 	 * {@code convertValueToRequiredType}, if necessary.
-	 * 
+	 *
 	 * @see ColumnDefinitions#size()
 	 * @see #getColumnValue(Row, int, Class)
 	 * @see #convertValueToRequiredType(Object, Class)
@@ -86,12 +86,14 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 		// Validate column count.
 		ColumnDefinitions definitions = row.getColumnDefinitions();
 		int nrOfColumns = definitions.size();
+
 		if (nrOfColumns != 1) {
 			throw new IncorrectResultSetColumnCountException(1, nrOfColumns);
 		}
 
 		// Extract column value from CQL ResultSet.
 		Object result = getColumnValue(row, 0, this.requiredType);
+
 		if (result != null && this.requiredType != null && !this.requiredType.isInstance(result)) {
 			// Extracted value does not match already: try to convert it.
 			try {
@@ -102,6 +104,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 								definitions.getType(0), ex.getMessage()));
 			}
 		}
+
 		return (T) result;
 	}
 
@@ -111,7 +114,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * The default implementation calls {@link RowUtils#getRowValue(Row, int, Class)}. If no required type has been
 	 * specified, this method delegates to {@code getColumnValue(rs, index)}, which basically calls
 	 * {@link Row#getObject(int)} but applies some additional default conversion to appropriate value types.
-	 * 
+	 *
 	 * @param row is the {@link Row} holding the data, must not be {@literal null}.
 	 * @param index is the column index
 	 * @param requiredType the type that each result object is expected to match (or {@code null} if none specified).
@@ -154,7 +157,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * If the required type is String, the value will simply get stringified via {@code toString()}. In case of a Number,
 	 * the value will be converted into a Number, either through number conversion or through String parsing (depending on
 	 * the value type).
-	 * 
+	 *
 	 * @param value the column value as extracted from {@code getColumnValue()} (never {@code null})
 	 * @param requiredType the type that each result object is expected to match (never {@code null})
 	 * @return the converted value
@@ -166,7 +169,6 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 		if (String.class == requiredType) {
 			return value.toString();
 		} else if (Number.class.isAssignableFrom(requiredType)) {
-
 			if (value instanceof Number) {
 				// Convert original Number to target Number class.
 				return NumberUtils.convertNumberToTargetClass(((Number) value), (Class<Number>) requiredType);
@@ -183,7 +185,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 
 	/**
 	 * Static factory method to create a new {@code SingleColumnRowMapper} (with the required type specified only once).
-	 * 
+	 *
 	 * @param requiredType the type that each result object is expected to match
 	 */
 	public static <T> SingleColumnRowMapper<T> newInstance(Class<T> requiredType) {

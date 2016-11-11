@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,7 +40,7 @@ import org.w3c.dom.Element;
 
 /**
  * {@link RepositoryConfigurationExtension} for Cassandra.
- * 
+ *
  * @author Alex Shvid
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -83,6 +83,7 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 		AnnotationAttributes attributes = config.getAttributes();
 
 		String cassandraTemplateRef = attributes.getString("cassandraTemplateRef");
+
 		if (StringUtils.hasText(cassandraTemplateRef)) {
 			builder.addPropertyReference("cassandraTemplate", cassandraTemplateRef);
 		}
@@ -118,12 +119,11 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 			return repositoryConfigurations.stream().filter(configuration -> {
 
 				Class<?> repositoryInterface = super.loadRepositoryInterface(configuration, loader);
-				return !RepositoryType.isReactiveRepository(repositoryInterface);
 
+				return !RepositoryType.isReactiveRepository(repositoryInterface);
 			}).collect(Collectors.toList());
 		}
 
 		return repositoryConfigurations;
 	}
-
 }

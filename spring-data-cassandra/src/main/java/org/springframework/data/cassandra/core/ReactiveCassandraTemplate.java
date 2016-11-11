@@ -15,10 +15,21 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.springframework.data.cassandra.core.CassandraTemplate.*;
+import static org.springframework.data.cassandra.core.CassandraTemplate.createDeleteQuery;
+import static org.springframework.data.cassandra.core.CassandraTemplate.createInsertQuery;
+import static org.springframework.data.cassandra.core.CassandraTemplate.createUpdateQuery;
 
 import org.reactivestreams.Publisher;
-import org.springframework.cassandra.core.*;
+import org.springframework.cassandra.core.CqlProvider;
+import org.springframework.cassandra.core.DefaultReactiveSessionFactory;
+import org.springframework.cassandra.core.QueryOptions;
+import org.springframework.cassandra.core.ReactiveCqlOperations;
+import org.springframework.cassandra.core.ReactiveCqlTemplate;
+import org.springframework.cassandra.core.ReactiveResultSet;
+import org.springframework.cassandra.core.ReactiveSession;
+import org.springframework.cassandra.core.ReactiveSessionCallback;
+import org.springframework.cassandra.core.ReactiveSessionFactory;
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -269,8 +280,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 			@Override
 			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(insert)
-						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+				return session.execute(insert).flatMap(
+					reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
 			}
 
 			@Override
@@ -299,6 +310,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	public <T> Flux<T> insert(Publisher<? extends T> entities, WriteOptions options) {
 
 		Assert.notNull(entities, "Entity publisher must not be null");
+
 		return Flux.from(entities).flatMap(entity -> insert(entity, options));
 	}
 
@@ -328,8 +340,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 			@Override
 			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(update)
-						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+				return session.execute(update).flatMap(
+					reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
 			}
 
 			@Override
@@ -358,6 +370,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	public <T> Flux<T> update(Publisher<? extends T> entities, WriteOptions options) {
 
 		Assert.notNull(entities, "Entity publisher must not be null");
+
 		return Flux.from(entities).flatMap(entity -> update(entity, options));
 	}
 
@@ -405,8 +418,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 			@Override
 			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(delete)
-						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+				return session.execute(delete).flatMap(
+					reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
 			}
 
 			@Override
@@ -435,6 +448,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	public <T> Flux<T> delete(Publisher<? extends T> entities, QueryOptions options) {
 
 		Assert.notNull(entities, "Entity publisher must not be null");
+
 		return Flux.from(entities).flatMap(entity -> delete(entity, options));
 	}
 
@@ -446,6 +460,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	public Mono<Void> truncate(Class<?> entityClass) {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
+
 		Truncate truncate = QueryBuilder.truncate(getPersistentEntity(entityClass).getTableName().toCql());
 
 		return cqlOperations.execute(truncate).then();

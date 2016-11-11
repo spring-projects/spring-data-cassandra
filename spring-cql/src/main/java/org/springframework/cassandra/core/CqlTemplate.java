@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,8 +55,17 @@ import org.springframework.dao.QueryTimeoutException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Delete;
@@ -131,7 +140,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			if (queryOptions.getDriverConsistencyLevel() != null) {
 				preparedStatement.setConsistencyLevel(queryOptions.getDriverConsistencyLevel());
 			} else if (queryOptions.getConsistencyLevel() != null) {
-				preparedStatement.setConsistencyLevel(ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
+				preparedStatement.setConsistencyLevel(
+					ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
 			}
 
 			if (queryOptions.getDriverRetryPolicy() != null) {
@@ -455,7 +465,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			@Override
 			public ResultSetFuture doInSession(Session session) {
 				return session
-						.executeAsync(addQueryOptions(new SimpleStatement(logCql("async execute CQL [{}]", cql)), queryOptions));
+						.executeAsync(
+							addQueryOptions(new SimpleStatement(logCql("async execute CQL [{}]", cql)), queryOptions));
 			}
 		}));
 	}

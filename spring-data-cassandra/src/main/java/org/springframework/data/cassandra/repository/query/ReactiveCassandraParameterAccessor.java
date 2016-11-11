@@ -45,7 +45,6 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 		this.subscriptions = new ArrayList<>(values.length);
 
 		for (Object value : values) {
-
 			if (value == null || !ReactiveWrappers.supports(value.getClass())) {
 				subscriptions.add(null);
 				continue;
@@ -65,12 +64,7 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 	@SuppressWarnings("unchecked")
 	@Override
 	protected <T> T getValue(int index) {
-
-		if (subscriptions.get(index) != null) {
-			return (T) subscriptions.get(index).block();
-		}
-
-		return super.getValue(index);
+		return (subscriptions.get(index) != null ? (T) subscriptions.get(index).block() : super.getValue(index));
 	}
 
 	/* (non-Javadoc)
@@ -80,9 +74,11 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 	public Object[] getValues() {
 
 		Object[] result = new Object[values.length];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = getValue(i);
+
+		for (int index = 0; index < result.length; index++) {
+			result[index] = getValue(index);
 		}
+
 		return result;
 	}
 

@@ -23,7 +23,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.ExecutionInfo;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import reactor.core.publisher.Flux;
@@ -118,9 +128,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		Assert.notNull(statement, "Statement must not be null");
 
 		return Mono.defer(() -> {
-
 			try {
-
 				if (logger.isDebugEnabled()) {
 					logger.debug("Executing Statement [{}]", statement);
 				}
@@ -168,9 +176,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		Assert.notNull(statement, "Statement must not be null");
 
 		return Mono.defer(() -> {
-
 			try {
-
 				if (logger.isDebugEnabled()) {
 					logger.debug("Preparing Statement [{}]", statement);
 				}
@@ -238,6 +244,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		public Flux<Row> rows() {
 
 			int prefetch = Math.max(1, resultSet.getAvailableWithoutFetching());
+
 			return Flux.fromIterable(resultSet) //
 					.subscribeOn(scheduler) //
 					.publishOn(Schedulers.immediate(), prefetch); // limit prefetching to available size

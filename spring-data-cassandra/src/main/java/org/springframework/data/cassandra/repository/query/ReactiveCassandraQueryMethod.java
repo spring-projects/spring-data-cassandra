@@ -82,6 +82,7 @@ public class ReactiveCassandraQueryMethod extends CassandraQueryMethod {
 				return true;
 			}
 		}
+
 		return false;
 	}
 }

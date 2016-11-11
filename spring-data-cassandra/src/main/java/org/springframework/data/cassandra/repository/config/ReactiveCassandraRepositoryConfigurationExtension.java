@@ -86,6 +86,7 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Repositor
 		AnnotationAttributes attributes = config.getAttributes();
 
 		String reactiveCassandraTemplateRef = attributes.getString("reactiveCassandraTemplateRef");
+
 		if (StringUtils.hasText(reactiveCassandraTemplateRef)) {
 			builder.addPropertyReference("reactiveCassandraOperations", reactiveCassandraTemplateRef);
 		}
@@ -97,7 +98,7 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Repositor
 	 */
 	@Override
 	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return Collections.<Class<? extends Annotation>> singleton(Table.class);
+		return Collections.<Class<? extends Annotation>>singleton(Table.class);
 	}
 
 	/*
@@ -106,7 +107,7 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Repositor
 	 */
 	@Override
 	protected Collection<Class<?>> getIdentifyingTypes() {
-		return Collections.<Class<?>> singleton(ReactiveCassandraRepository.class);
+		return Collections.<Class<?>>singleton(ReactiveCassandraRepository.class);
 	}
 
 	/*

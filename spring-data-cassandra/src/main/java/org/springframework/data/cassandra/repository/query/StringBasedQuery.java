@@ -35,7 +35,7 @@ import com.datastax.driver.core.querybuilder.BindMarker;
 
 /**
  * String-based Query abstracting a CQL query with parameter bindings.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
@@ -49,7 +49,7 @@ class StringBasedQuery {
 	/**
 	 * Creates a new {@link StringBasedQuery} given {@code query}, {@link ExpressionEvaluatingParameterBinder} and
 	 * {@link CodecRegistry}.
-	 * 
+	 *
 	 * @param query must not be empty.
 	 * @param parameterBinder must not be {@literal null}.
 	 * @param codecRegistry must not be {@literal null}.
@@ -71,7 +71,7 @@ class StringBasedQuery {
 
 	/**
 	 * Bind the query to actual parameters using {@link CassandraParameterAccessor},
-	 * 
+	 *
 	 * @param parameterAccessor must not be {@literal null}.
 	 * @param queryMethod must not be {@literal null}.
 	 * @return the bound String query containing formatted parameters.
@@ -80,10 +80,10 @@ class StringBasedQuery {
 
 		Assert.notNull(parameterAccessor, "CassandraParameterAccessor must not be null");
 		Assert.notNull(queryMethod, "CassandraQueryMethod must not be null");
-		
+
 		List<Object> arguments = parameterBinder.bind(parameterAccessor,
 				new BindingContext(queryMethod, queryParameterBindings));
-		
+
 		return ParameterBinder.INSTANCE.bind(query, codecRegistry, arguments);
 	}
 
@@ -344,8 +344,8 @@ class StringBasedQuery {
 							.expression(input.substring(exprStart + 3, currentPosition - 1), true));
 				} else {
 					if (matcher.pattern() == INDEX_PARAMETER_BINDING_PATTERN) {
-						bindings
-								.add(ExpressionEvaluatingParameterBinder.ParameterBinding.indexed(Integer.parseInt(matcher.group(1))));
+						bindings.add(ExpressionEvaluatingParameterBinder.ParameterBinding.indexed(
+								Integer.parseInt(matcher.group(1))));
 					} else {
 						bindings.add(ExpressionEvaluatingParameterBinder.ParameterBinding.named(matcher.group(1)));
 					}

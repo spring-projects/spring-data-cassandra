@@ -40,7 +40,6 @@ import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.RepositoryQuery;
-import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -98,6 +97,7 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 
 		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType(),
 				information);
+
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
 
@@ -213,10 +213,12 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 
 			ReactiveCassandraQueryMethod queryMethod = new ReactiveCassandraQueryMethod(method, metadata, factory,
 					mappingContext);
+
 			String namedQueryName = queryMethod.getNamedQueryName();
 
 			if (namedQueries.hasQuery(namedQueryName)) {
 				String namedQuery = namedQueries.getQuery(namedQueryName);
+
 				return new ReactiveStringBasedCassandraQuery(namedQuery, queryMethod, operations, EXPRESSION_PARSER,
 						evaluationContextProvider);
 			} else if (queryMethod.hasAnnotatedQuery()) {

@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 
-import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
@@ -38,8 +37,9 @@ import org.springframework.util.Assert;
 public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
-	private ReactiveCassandraOperations operations;
 	private boolean mappingContextConfigured = false;
+
+	private ReactiveCassandraOperations operations;
 
 	/**
 	 * Configures the {@link ReactiveCassandraOperations} used for Cassandra data access operations.
@@ -59,6 +59,7 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
 
 		super.setMappingContext(mappingContext);
+
 		this.mappingContextConfigured = true;
 	}
 
@@ -92,6 +93,7 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 	public void afterPropertiesSet() {
 
 		super.afterPropertiesSet();
+
 		Assert.notNull(operations, "ReactiveCassandraOperations must not be null!");
 
 		if (!mappingContextConfigured) {

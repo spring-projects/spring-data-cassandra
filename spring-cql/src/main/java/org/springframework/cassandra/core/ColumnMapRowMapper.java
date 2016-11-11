@@ -53,6 +53,7 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 			Object obj = getColumnValue(rs, i);
 			mapOfColValues.put(key, obj);
 		}
+
 		return mapOfColValues;
 	}
 
@@ -60,7 +61,7 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 	 * Create a {@link Map} instance to be used as column map.
 	 * <p>
 	 * By default, a linked case-insensitive Map will be created.
-	 * 
+	 *
 	 * @param columnCount the column count, to be used as initial capacity for the {@link Map}, must not be {@literal null}.
 	 * @return the new Map instance.
 	 * @see org.springframework.util.LinkedCaseInsensitiveMap
@@ -71,7 +72,7 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 
 	/**
 	 * Determine the key to use for the given column in the column Map.
-	 * 
+	 *
 	 * @param columnName the column name as returned by the {@link Row}, must not be {@literal null}.
 	 * @return the column key to use.
 	 * @see ColumnDefinitions#getName(int)
@@ -84,7 +85,7 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 	 * Retrieve a CQL object value for the specified column.
 	 * <p>
 	 * The default implementation uses the {@code getObject} method.
-	 * 
+	 *
 	 * @param row is the {@link Row} holding the data, must not be {@literal null}.
 	 * @param index is the column index.
 	 * @return the Object returned

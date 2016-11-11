@@ -124,11 +124,8 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 	private ReactiveCassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor accessor,
 			Converter<Object, Object> resultProcessing) {
 
-		if (method.isCollectionQuery()) {
-			return new CollectionExecution(operations);
-		} else {
-			return new SingleEntityExecution(operations);
-		}
+		return (method.isCollectionQuery() ? new CollectionExecution(operations)
+				: new SingleEntityExecution(operations));
 	}
 
 	/**
@@ -137,4 +134,5 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 	 * @param accessor must not be {@literal null}.
 	 */
 	protected abstract String createQuery(CassandraParameterAccessor accessor);
+
 }

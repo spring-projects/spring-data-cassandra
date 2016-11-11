@@ -44,7 +44,7 @@ public class ReactiveRowMapperResultSetExtractor<T> implements ReactiveResultSet
 
 	/**
 	 * Create a new {@link ReactiveRowMapperResultSetExtractor}.
-	 * 
+	 *
 	 * @param rowMapper the {@link RowMapper} which creates an object for each row, must not be {@literal null}.
 	 */
 	public ReactiveRowMapperResultSetExtractor(RowMapper<T> rowMapper) {
@@ -67,6 +67,7 @@ public class ReactiveRowMapperResultSetExtractor<T> implements ReactiveResultSet
 			if (value == null) {
 				return Mono.empty();
 			}
+
 			return Mono.just(value);
 		});
 	}
