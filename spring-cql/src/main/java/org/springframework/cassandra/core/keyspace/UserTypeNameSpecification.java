@@ -33,7 +33,7 @@ public abstract class UserTypeNameSpecification<T extends UserTypeNameSpecificat
 
 	/**
 	 * Sets the type name.
-	 * 
+	 *
 	 * @param name must not be empty or {@literal null}.
 	 * @return this
 	 */
@@ -43,7 +43,7 @@ public abstract class UserTypeNameSpecification<T extends UserTypeNameSpecificat
 
 	/**
 	 * Sets the type name.
-	 * 
+	 *
 	 * @param name must not be {@literal null}.
 	 * @return this
 	 */
@@ -53,6 +53,7 @@ public abstract class UserTypeNameSpecification<T extends UserTypeNameSpecificat
 		Assert.notNull(name, "Name must not be null");
 
 		this.name = name;
+
 		return (T) this;
 	}
 

@@ -117,7 +117,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 			}
 
 			return boundQuery;
-		} catch (RuntimeException e) { e.printStackTrace();
+		} catch (RuntimeException e) {
 			throw QueryCreationException.create(getQueryMethod(), e);
 		}
 	}

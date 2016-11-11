@@ -55,7 +55,7 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 
 	/**
 	 * Enables the inclusion of an{@code IF NOT EXISTS} clause.
-	 * 
+	 *
 	 * @return this {@link CreateUserTypeSpecification}.
 	 */
 	public CreateUserTypeSpecification ifNotExists() {
@@ -72,6 +72,7 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 	public CreateUserTypeSpecification ifNotExists(boolean ifNotExists) {
 
 		this.ifNotExists = ifNotExists;
+
 		return this;
 	}
 

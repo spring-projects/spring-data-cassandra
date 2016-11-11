@@ -25,7 +25,7 @@ import com.datastax.driver.core.UserType;
 /**
  * Default implementation of {@link UserTypeResolver} that resolves {@link UserType} by their name from
  * {@link Cluster#getMetadata()}.
- * 
+ *
  * @author Mark Paluch
  * @since 1.5
  */
@@ -56,6 +56,7 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 	public UserType resolveType(CqlIdentifier typeName) {
 
 		KeyspaceMetadata keyspace = cluster.getMetadata().getKeyspace(keyspaceName);
+
 		return keyspace.getUserType(typeName.toCql());
 	}
 }

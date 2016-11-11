@@ -155,6 +155,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 		// TODO: Polishing necessary
 		DataType parameterType = getDataType(index, property);
+
 		if (parameterType != null) {
 
 			if (property != null && getCustomConversions().hasCustomWriteTarget(property.getActualType())
@@ -176,23 +177,26 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			}
 
 			if (property != null) {
-				CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
-						.getPersistentEntity(property.getActualType());
+				CassandraPersistentEntity<?> persistentEntity =
+						converter.getMappingContext().getPersistentEntity(property.getActualType());
+
 				if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
 					return toUDTValue(bindableValue, persistentEntity);
 				}
 			}
 
 			TypeCodec<?> cassandraType = CodecRegistry.DEFAULT_INSTANCE.codecFor(parameterType);
+
 			if (cassandraType.getJavaType().getRawType().isAssignableFrom(bindableValue.getClass())) {
 				return bindableValue;
 			}
 
-		return converter.getConversionService().convert(bindableValue, cassandraType.getJavaType().getRawType());
-	}
+			return converter.getConversionService().convert(bindableValue, cassandraType.getJavaType().getRawType());
+		}
 
-		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
-				.getPersistentEntity(bindableValue.getClass());
+		CassandraPersistentEntity<?> persistentEntity =
+				converter.getMappingContext().getPersistentEntity(bindableValue.getClass());
+
 		if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
 			return toUDTValue(bindableValue, persistentEntity);
 		}
@@ -207,6 +211,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		}
 
 		UDTValue udtValue = persistentEntity.getUserType().newValue();
+
 		converter.write(bindableValue, udtValue, persistentEntity);
 
 		return udtValue;

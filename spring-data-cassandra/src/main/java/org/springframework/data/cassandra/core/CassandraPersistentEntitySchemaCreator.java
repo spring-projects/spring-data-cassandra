@@ -43,7 +43,7 @@ import com.datastax.driver.core.UserType;
 /**
  * Schema creation support for Cassandra based on {@link CassandraMappingContext} and {@link CassandraPersistentEntity}.
  * This class generates CQL to drop, recreate and create user types (UDT) and tables.
- * 
+ *
  * @author Mark Paluch
  * @since 1.5
  * @see org.springframework.data.cassandra.mapping.Table
@@ -58,7 +58,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	/**
 	 * Creates a new {@link CassandraPersistentEntitySchemaCreator} for the given {@link CassandraMappingContext} and
 	 * {@link CassandraAdminOperations}.
-	 * 
+	 *
 	 * @param mappingContext must not be {@literal null}.
 	 * @param cassandraAdminOperations must not be {@literal null}.
 	 */
@@ -74,7 +74,7 @@ public class CassandraPersistentEntitySchemaCreator {
 
 	/**
 	 * Create user types. Can drop types and drop unused types.
-	 * 
+	 *
 	 * @param dropUserTypes {@literal true} to drop types before creation.
 	 * @param dropUnused {@literal true} to drop unused types before creation. Type usage is determined from existing
 	 *          mapped {@link org.springframework.data.cassandra.mapping.UserDefinedType}s and UDT names on field
@@ -129,6 +129,7 @@ public class CassandraPersistentEntitySchemaCreator {
 		List<CreateUserTypeSpecification> specifications = new ArrayList<CreateUserTypeSpecification>();
 
 		Set<CqlIdentifier> created = new HashSet<CqlIdentifier>();
+
 		for (CassandraPersistentEntity<?> entity : entities) {
 
 			Set<CqlIdentifier> seen = new LinkedHashSet<CqlIdentifier>();
@@ -141,8 +142,8 @@ public class CassandraPersistentEntitySchemaCreator {
 			for (CqlIdentifier identifier : ordered) {
 
 				if (created.add(identifier)) {
-					specifications
-							.add(mappingContext.getCreateUserTypeSpecificationFor(byName.get(identifier)).ifNotExists(ifNotExists));
+					specifications.add(mappingContext.getCreateUserTypeSpecificationFor(
+						byName.get(identifier)).ifNotExists(ifNotExists));
 				}
 			}
 		}
@@ -158,12 +159,14 @@ public class CassandraPersistentEntitySchemaCreator {
 		for (CassandraPersistentEntity<?> entity : entities) {
 			specifications.add(mappingContext.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists));
 		}
+
 		return specifications;
 	}
 
 	private void visitUserTypes(CassandraPersistentEntity<?> entity, final Set<CqlIdentifier> seen) {
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty persistentProperty) {
 

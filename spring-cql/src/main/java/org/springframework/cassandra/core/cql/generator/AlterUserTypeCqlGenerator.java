@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
 
 import org.springframework.cassandra.core.keyspace.AddColumnSpecification;
 import org.springframework.cassandra.core.keyspace.AlterColumnSpecification;
@@ -43,14 +43,14 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 
 	/**
 	 * Creates a new {@link AlterUserTypeCqlGenerator} for a {@link AlterUserTypeSpecification}.
-	 * 
+	 *
 	 * @param specification must not be {@literal null}.
 	 */
 	public AlterUserTypeCqlGenerator(AlterUserTypeSpecification specification) {
 		super(specification);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.cassandra.core.cql.generator.UserTypeNameCqlGenerator#toCql(java.lang.StringBuilder)
 	 */
@@ -58,17 +58,11 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 	public StringBuilder toCql(StringBuilder cql) {
 
 		Assert.notNull(getSpecification().getName(), "User type name must not be null");
+
 		Assert.isTrue(!getSpecification().getChanges().isEmpty(),
 				String.format("User type [%s] does not contain fields", getSpecification().getName()));
 
-		cql = noNull(cql);
-
-		preambleCql(cql);
-		changesCql(cql);
-
-		cql.append(";");
-
-		return cql;
+		return changesCql(preambleCql(cql)).append(";");
 	}
 
 	private StringBuilder preambleCql(StringBuilder cql) {
@@ -82,14 +76,13 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 		boolean lastChangeWasRename = false;
 
 		for (ColumnChangeSpecification change : spec().getChanges()) {
-			if (first) {
-				first = false;
-			} else {
+			if (!first) {
 				cql.append(' ');
 			}
-			getCqlGeneratorFor(change, lastChangeWasRename).toCql(cql);
 
+			getCqlGeneratorFor(change, lastChangeWasRename).toCql(cql);
 			lastChangeWasRename = change instanceof RenameColumnSpecification;
+			first = false;
 		}
 
 		return cql;
@@ -102,12 +95,12 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 			return new AddColumnCqlGenerator((AddColumnSpecification) change);
 		}
 
-		if (change instanceof RenameColumnSpecification) {
-			return new RenameColumnCqlGenerator(lastChangeWasRename ? "AND" : RenameColumnCqlGenerator.RENAME, change);
-		}
-
 		if (change instanceof AlterColumnSpecification) {
 			return new AlterColumnCqlGenerator((AlterColumnSpecification) change);
+		}
+
+		if (change instanceof RenameColumnSpecification) {
+			return new RenameColumnCqlGenerator(lastChangeWasRename ? "AND" : RenameColumnCqlGenerator.RENAME, change);
 		}
 
 		throw new IllegalArgumentException(
