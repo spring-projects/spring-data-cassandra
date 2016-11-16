@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.cassandra.repository.config;
 
 import java.lang.annotation.Annotation;
@@ -22,8 +23,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.cassandra.config.xml.ParsingUtils;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
@@ -35,6 +36,7 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
 import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -49,25 +51,33 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 
 	private static final String CASSANDRA_TEMPLATE_REF = "cassandra-template-ref";
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModuleName()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public String getModuleName() {
 		return "Reactive Cassandra";
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	protected String getModulePrefix() {
 		return "cassandra";
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public String getRepositoryFactoryClassName() {
 		return CassandraRepositoryFactoryBean.class.getName();
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, XmlRepositoryConfigurationSource config) {
 
@@ -77,53 +87,78 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 				DefaultBeanNames.TEMPLATE);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
 
-		AnnotationAttributes attributes = config.getAttributes();
-
-		String cassandraTemplateRef = attributes.getString("cassandraTemplateRef");
+		String cassandraTemplateRef = config.getAttributes().getString("cassandraTemplateRef");
 
 		if (StringUtils.hasText(cassandraTemplateRef)) {
 			builder.addPropertyReference("cassandraTemplate", cassandraTemplateRef);
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getIdentifyingAnnotations()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return Collections.<Class<? extends Annotation>> singleton(Table.class);
+		return Collections.singleton(Table.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getIdentifyingTypes()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	protected Collection<Class<?>> getIdentifyingTypes() {
-		return Collections.<Class<?>> singleton(CassandraRepository.class);
+		return Collections.singleton(CassandraRepository.class);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
 			T configSource, ResourceLoader loader, boolean strictMatchesOnly) {
 
-		Collection<RepositoryConfiguration<T>> repositoryConfigurations = super.getRepositoryConfigurations(configSource,
-				loader, strictMatchesOnly);
+		Collection<RepositoryConfiguration<T>> repositoryConfigurations =
+			super.getRepositoryConfigurations(configSource, loader, strictMatchesOnly);
 
-		if (ReactiveWrappers.isAvailable()) {
+		return (ReactiveWrappers.isAvailable() ? filter(repositoryConfigurations, loader) : repositoryConfigurations);
+	}
 
-			return repositoryConfigurations.stream().filter(configuration -> {
+	/* (non-Javadoc) */
+	private <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> filter(
+			Collection<RepositoryConfiguration<T>> repositoryConfigurations, ResourceLoader loader) {
 
-				Class<?> repositoryInterface = super.loadRepositoryInterface(configuration, loader);
+		return repositoryConfigurations.stream().filter(
+			configuration -> isNonReactiveRepository(configuration, loader)).collect(Collectors.toList());
+	}
 
-				return !RepositoryType.isReactiveRepository(repositoryInterface);
-			}).collect(Collectors.toList());
+	/* (non-Javadoc) */
+	private boolean isNonReactiveRepository(RepositoryConfiguration<?> repositoryConfiguration, ResourceLoader loader) {
+		return !RepositoryType.isReactiveRepository(loadRepositoryInterface(repositoryConfiguration, loader));
+	}
+
+	/**
+	 * TODO replace with {@link org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#loadRepositoryInterface(RepositoryConfiguration, ResourceLoader)}
+	 * Loads the Repository interface specified in the given {@link RepositoryConfiguration} using
+	 * the given {@link ResourceLoader}.
+	 *
+	 * @param configuration must not be {@literal null}.
+	 * @param loader must not be {@literal null}.
+	 * @return the Repository interface.
+	 * @throws InvalidDataAccessApiUsageException if the Repository interface could not loaded.
+	 */
+	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
+		try {
+			return ClassUtils.forName(configuration.getRepositoryInterface(), loader.getClassLoader());
 		}
-
-		return repositoryConfigurations;
+		catch (ClassNotFoundException | LinkageError e) {
+			throw new InvalidDataAccessApiUsageException(String.format(
+				"Could not find Repository type [%s]", configuration.getRepositoryInterface()), e);
+		}
 	}
 }

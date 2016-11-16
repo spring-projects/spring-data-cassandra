@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
@@ -20,8 +21,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.reactivestreams.Publisher;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -58,7 +57,6 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 
 	private final ReactiveCassandraOperations operations;
 	private final CassandraMappingContext mappingContext;
-	private final ConversionService conversionService;
 
 	/**
 	 * Creates a new {@link ReactiveCassandraRepositoryFactory} with the given {@link ReactiveCassandraOperations}.
@@ -71,12 +69,6 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 
 		this.operations = cassandraOperations;
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
-
-		DefaultConversionService conversionService = new DefaultConversionService();
-		ReactiveWrapperConverters.registerConvertersIn(conversionService);
-
-		this.conversionService = conversionService;
-		setConversionService(conversionService);
 	}
 
 	/*
@@ -95,8 +87,8 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 
-		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType(),
-				information);
+		CassandraEntityInformation<?, Serializable> entityInformation =
+			getEntityInformation(information.getDomainType());
 
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
@@ -107,7 +99,7 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
-		return new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext, conversionService);
+		return new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext);
 	}
 
 	/*
@@ -161,23 +153,16 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
 	 */
-	public <T, ID extends Serializable> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-		return getEntityInformation(domainClass, null);
-	}
-
 	@SuppressWarnings("unchecked")
-	private <T, ID extends Serializable> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass,
-			RepositoryInformation information) {
-
+	public <T, ID extends Serializable> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(domainClass);
 
 		if (entity == null) {
 			throw new MappingException(
-					String.format("Could not lookup mapping metadata for domain class %s!", domainClass.getName()));
+				String.format("Could not lookup mapping metadata for domain class %s!", domainClass.getName()));
 		}
 
-		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
-				operations.getConverter());
+		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity, operations.getConverter());
 	}
 
 	/**
@@ -191,16 +176,13 @@ public class ReactiveCassandraRepositoryFactory extends RepositoryFactorySupport
 		private final EvaluationContextProvider evaluationContextProvider;
 		private final ReactiveCassandraOperations operations;
 		private final CassandraMappingContext mappingContext;
-		private final ConversionService conversionService;
 
 		CassandraQueryLookupStrategy(ReactiveCassandraOperations operations,
-				EvaluationContextProvider evaluationContextProvider, CassandraMappingContext mappingContext,
-				ConversionService conversionService) {
+				EvaluationContextProvider evaluationContextProvider, CassandraMappingContext mappingContext) {
 
 			this.evaluationContextProvider = evaluationContextProvider;
 			this.operations = operations;
 			this.mappingContext = mappingContext;
-			this.conversionService = conversionService;
 		}
 
 		/*

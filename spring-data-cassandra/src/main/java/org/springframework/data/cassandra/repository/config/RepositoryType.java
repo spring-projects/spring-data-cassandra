@@ -44,7 +44,7 @@ class RepositoryType {
 	 */
 	public static boolean isReactiveRepository(Class<?> repositoryInterface) {
 
-		if (!ReactiveWrappers.isAvailable()) {
+		if (repositoryInterface == null || !ReactiveWrappers.isAvailable()) {
 			return false;
 		}
 
