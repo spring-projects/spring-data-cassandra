@@ -39,9 +39,9 @@ public class ColumnReaderUnitTests {
 
 	public static final String NON_EXISTENT_COLUMN = "column_name";
 
-	@Mock private Row row;
+	@Mock Row row;
 
-	@Mock private ColumnDefinitions columnDefinitions;
+	@Mock ColumnDefinitions columnDefinitions;
 
 	private ColumnReader underTest;
 

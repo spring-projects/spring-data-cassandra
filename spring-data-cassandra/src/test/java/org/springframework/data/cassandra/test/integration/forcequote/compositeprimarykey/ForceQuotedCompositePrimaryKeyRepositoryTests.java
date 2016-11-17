@@ -31,13 +31,14 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 	CassandraTemplate cassandraTemplate;
 
 	public void before() {
-		cassandraTemplate.deleteAll(Implicit.class);
+		cassandraTemplate.truncate(Implicit.class);
 	}
 
 	public String query(String columnName, String tableName, String keyZeroColumnName, String keyZero,
 			String keyOneColumnName, String keyOne) {
 
-		return cassandraTemplate.queryForObject(String.format("select %s from %s where %s = '%s' and %s = '%s'", columnName,
+		return cassandraTemplate.getCqlOperations()
+				.queryForObject(String.format("select %s from %s where %s = '%s' and %s = '%s'", columnName,
 				tableName, keyZeroColumnName, keyZero, keyOneColumnName, keyOne), String.class);
 	}
 

@@ -36,16 +36,19 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	static final Object[] EMPTY_ARRAY = new Object[0];
 
 	private AtomicBoolean executed = new AtomicBoolean();
-
 	private final Batch batch;
+	private final CassandraOperations operations;
 
-	private final CassandraTemplate cassandraTemplate;
+	/**
+	 * Creates a new {@link CassandraBatchTemplate} given {@link CassandraOperations}.
+	 * 
+	 * @param operations must not be {@literal null}.
+	 */
+	public CassandraBatchTemplate(CassandraOperations operations) {
 
-	public CassandraBatchTemplate(CassandraTemplate cassandraTemplate) {
+		Assert.notNull(operations, "CassandraOperations must not be null");
 
-		Assert.notNull(cassandraTemplate, "CassandraTemplate must not be null");
-
-		this.cassandraTemplate = cassandraTemplate;
+		this.operations = operations;
 		this.batch = QueryBuilder.batch();
 	}
 
@@ -57,7 +60,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	public void execute() {
 
 		if (executed.compareAndSet(false, true)) {
-			cassandraTemplate.execute(batch);
+			operations.getCqlOperations().execute(batch);
 			return;
 		}
 
@@ -98,7 +101,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 		for (Object entity : nullSafeIterable(entities)) {
 			Assert.notNull(entity, "Entity must not be null");
-			batch.add(cassandraTemplate.createInsertQuery(entity, null));
+			batch.add(QueryUtils.createInsertQuery(getTableName(entity), entity, null, operations.getConverter()));
 		}
 
 		return this;
@@ -124,7 +127,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 		for (Object entity : nullSafeIterable(entities)) {
 			Assert.notNull(entity, "Entity must not be null");
-			batch.add(cassandraTemplate.createUpdateQuery(entity, null));
+			batch.add(QueryUtils.createUpdateQuery(getTableName(entity), entity, null, operations.getConverter()));
 		}
 
 		return this;
@@ -150,7 +153,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 		for (Object entity : nullSafeIterable(entities)) {
 			Assert.notNull(entity, "Entity must not be null");
-			batch.add(cassandraTemplate.createDeleteQuery(entity, null));
+			batch.add(QueryUtils.createDeleteQuery(getTableName(entity), entity, null, operations.getConverter()));
 		}
 
 		return this;
@@ -160,11 +163,17 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		Assert.state(!executed.get(), "This Cassandra Batch was already executed");
 	}
 
+	private String getTableName(Object entity) {
+
+		Assert.notNull(entity, "Entity must not be null");
+		return operations.getTableName(entity.getClass()).toCql();
+	}
+
 	private <T> Iterable<T> nullSafeIterable(T... array) {
-		return (array == null ? Collections.<T>emptyList() : Arrays.asList(array));
+		return (array == null ? Collections.<T> emptyList() : Arrays.asList(array));
 	}
 
 	private <T> Iterable<T> nullSafeIterable(Iterable<T> iterable) {
-		return (iterable != null ? iterable : Collections.<T>emptyList());
+		return (iterable != null ? iterable : Collections.<T> emptyList());
 	}
 }

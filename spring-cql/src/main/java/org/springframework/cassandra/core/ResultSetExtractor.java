@@ -20,7 +20,36 @@ import org.springframework.dao.DataAccessException;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.exceptions.DriverException;
 
+/**
+ * Callback interface used by {@link CqlTemplate}'s query methods. Implementations of this interface perform the actual
+ * work of extracting results from a {@link ResultSet}, but don't need to worry about exception handling.
+ * {@link DriverException}s will be caught and handled by the calling {@link CqlTemplate}.
+ * <p>
+ * This interface is mainly used within the CQL framework itself. A {@link RowMapper} is usually a simpler choice for
+ * {@link ResultSet} processing, mapping one result object per row instead of one result object for the entire
+ * {@link ResultSet}.
+ * <p>
+ * Note: In contrast to a {@link RowCallbackHandler}, a {@link ResultSetExtractor} object is typically stateless and
+ * thus reusable, as long as it doesn't access stateful resources or keep result state within the object.
+ *
+ * @author Matthew T. Adams
+ * @author Mark Paluch
+ * @since April 24, 2003
+ * @see CqlTemplate
+ * @see RowCallbackHandler
+ * @see RowMapper
+ */
 public interface ResultSetExtractor<T> {
 
+	/**
+	 * Implementations must implement this method to process the entire {@link ResultSet}.
+	 * 
+	 * @param rs {@link ResultSet} to extract data from.
+	 * @return an arbitrary result object, or {@code null} if none (the extractor will typically be stateful in the latter
+	 *         case).
+	 * @throws DriverException if a {@link DriverException} is encountered getting column values or navigating (that is,
+	 *           there's no need to catch {@link DriverException})
+	 * @throws DataAccessException in case of custom exceptions
+	 */
 	T extractData(ResultSet rs) throws DriverException, DataAccessException;
 }

@@ -15,9 +15,9 @@
  */
 package org.springframework.cassandra.core;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.springframework.util.Assert;
 
@@ -25,29 +25,26 @@ import com.datastax.driver.core.Host;
 import com.datastax.driver.core.exceptions.DriverException;
 
 /**
+ * {@link HostMapper} to to map hosts into {@link RingMember} objects.
+ * 
  * @author David Webb
+ * @author Mark Paluch
  * @param <T>
  */
-public class RingMemberHostMapper implements HostMapper<RingMember> {
+public enum RingMemberHostMapper implements HostMapper<RingMember> {
+
+	INSTANCE;
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.HostMapper#mapHosts(java.util.Set)
+	 * @see org.springframework.cassandra.core.HostMapper#mapHosts(java.util.Iterable)
 	 */
 	@Override
-	public List<RingMember> mapHosts(Set<Host> hosts) throws DriverException {
+	public Collection<RingMember> mapHosts(Iterable<Host> hosts) throws DriverException {
 
-		List<RingMember> members = new ArrayList<RingMember>();
+		Assert.notNull(hosts, "Hosts must not be null");
 
-		Assert.notNull(hosts);
-		Assert.notEmpty(hosts);
-
-		RingMember r = null;
-		for (Host host : hosts) {
-			r = new RingMember(host);
-			members.add(r);
-		}
-
-		return members;
-
+		return StreamSupport.stream(hosts.spliterator(), false) //
+				.map(RingMember::new) //
+				.collect(Collectors.toList());
 	}
 }

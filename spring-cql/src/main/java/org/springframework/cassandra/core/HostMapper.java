@@ -16,13 +16,30 @@
 package org.springframework.cassandra.core;
 
 import java.util.Collection;
-import java.util.Set;
 
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.exceptions.DriverException;
 
+/**
+ * An interface used by {@link CqlTemplate} for mapping {@link Host}s of a {@link com.datastax.driver.core.Metadata} on
+ * a per-item basis.. Implementations of this interface perform the actual work of mapping each host to a result object,
+ * but don't need to worry about exception handling. {@link DriverException} will be caught and handled by the calling
+ * {@link CqlTemplate}.
+ *
+ * @author Matthew T. Adams
+ * @author Mark Paluch
+ * @see CqlTemplate
+ */
 public interface HostMapper<T> {
 
-	Collection<T> mapHosts(Set<Host> host) throws DriverException;
-
+	/**
+	 * Implementations must implement this method to map each {@link Host} in the
+	 * {@link com.datastax.driver.core.Metadata}.
+	 * 
+	 * @param hosts the {@link Iterable} of {@link Host}s to map, must not be {@literal null}.
+	 * @return the result objects for the given hosts.
+	 * @throws DriverException if a {@link DriverException} is encountered mapping values (that is, there's no need to
+	 *           catch {@link DriverException}).
+	 */
+	Collection<T> mapHosts(Iterable<Host> hosts) throws DriverException;
 }

@@ -25,6 +25,7 @@ import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
 /**
@@ -36,8 +37,8 @@ import com.datastax.driver.core.querybuilder.Select;
  */
 public class SimpleCassandraRepository<T, ID extends Serializable> implements TypedIdCassandraRepository<T, ID> {
 
-	protected CassandraOperations operations;
-	protected CassandraEntityInformation<T, ID> entityInformation;
+	private CassandraOperations operations;
+	private CassandraEntityInformation<T, ID> entityInformation;
 
 	/**
 	 * Creates a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
@@ -67,22 +68,22 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 	@Override
 	public T findOne(ID id) {
-		return operations.selectOneById(entityInformation.getJavaType(), id);
+		return operations.selectOneById(id, entityInformation.getJavaType());
 	}
 
 	@Override
 	public boolean exists(ID id) {
-		return operations.exists(entityInformation.getJavaType(), id);
+		return operations.exists(id, entityInformation.getJavaType());
 	}
 
 	@Override
 	public long count() {
-		return operations.count(entityInformation.getTableName());
+		return operations.count(entityInformation.getJavaType());
 	}
 
 	@Override
 	public void delete(ID id) {
-		operations.deleteById(entityInformation.getJavaType(), id);
+		operations.deleteById(id, entityInformation.getJavaType());
 	}
 
 	@Override
@@ -97,20 +98,19 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 	@Override
 	public void deleteAll() {
-		operations.truncate(entityInformation.getTableName());
+		operations.truncate(entityInformation.getJavaType());
 	}
 
 	@Override
 	public List<T> findAll() {
-		return operations.selectAll(entityInformation.getJavaType());
+
+		Select select = QueryBuilder.select().all().from(entityInformation.getTableName().toCql());
+
+		return operations.select(select, entityInformation.getJavaType());
 	}
 
 	@Override
 	public Iterable<T> findAll(Iterable<ID> ids) {
-		return operations.selectBySimpleIds(entityInformation.getJavaType(), ids);
-	}
-
-	protected List<T> findAll(Select query) {
-		return operations.select(query, entityInformation.getJavaType());
+		return operations.selectBySimpleIds(ids, entityInformation.getJavaType());
 	}
 }

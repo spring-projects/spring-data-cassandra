@@ -18,8 +18,32 @@ package org.springframework.cassandra.core;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.DriverException;
 
+/**
+ * An interface used by {@link CqlTemplate} for mapping rows of a {@link com.datastax.driver.core.ResultSet} on a
+ * per-row basis. Implementations of this interface perform the actual work of mapping each row to a result object, but
+ * don't need to worry about exception handling. {@link DriverException}s will be caught and handled by the calling
+ * {@link CqlTemplate}.
+ * <p>
+ * Typically used either for {@link CqlTemplate}'s query methods or for out parameters of stored procedures.
+ * {@link RowMapper} objects are typically stateless and thus reusable; they are an ideal choice for implementing
+ * row-mapping logic in a single place.
+ *
+ * @author Matthew T. Adams
+ * @author Mark Paluch
+ * @see RowCallbackHandler
+ * @see ResultSetExtractor
+ */
 public interface RowMapper<T> {
 
+	/**
+	 * Implementations must implement this method to map each row of data in the
+	 * {@link com.datastax.driver.core.ResultSet}.
+	 * 
+	 * @param row the {@link Row} to map, must not be {@literal null}.
+	 * @param rowNum the number of the current row.
+	 * @return the result object for the current row.
+	 * @throws DriverException if a {@link DriverException} is encountered getting column values (that is, there's no need
+	 *           to catch {@link DriverException})
+	 */
 	T mapRow(Row row, int rowNum) throws DriverException;
-
 }

@@ -79,16 +79,14 @@ public class CompositeKeyCrudIntegrationTests extends AbstractKeyspaceCreatingIn
 
 		assertThat(correlationEntities).hasSize(2);
 
-		QueryOptions qo = new QueryOptions();
-		qo.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.ONE);
-		ArrayList<CorrelationEntity> entities = new ArrayList<CorrelationEntity>();
-		entities.add(correlationEntity1);
-		entities.add(correlationEntity2);
-		operations.delete(entities, qo);
+		QueryOptions queryOptions = new QueryOptions();
+		queryOptions.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.ONE);
+
+		operations.delete(correlationEntity1, queryOptions);
+		operations.delete(correlationEntity2, queryOptions);
 
 		correlationEntities = operations.select(select, CorrelationEntity.class);
 
 		assertThat(correlationEntities).isEmpty();
 	}
-
 }

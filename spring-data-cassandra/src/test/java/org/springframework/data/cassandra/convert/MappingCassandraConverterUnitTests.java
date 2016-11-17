@@ -97,9 +97,9 @@ public class MappingCassandraConverterUnitTests {
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
-	@Mock private ColumnDefinitions columnDefinitionsMock;
+	@Mock ColumnDefinitions columnDefinitionsMock;
 
-	@Mock private Row rowMock;
+	@Mock Row rowMock;
 
 	private CassandraMappingContext mappingContext;
 	private MappingCassandraConverter mappingCassandraConverter;

@@ -70,7 +70,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Before
 	public void setup() {
-		
+
 		when(mockCluster.connect()).thenReturn(mockSession);
 		when(mockSession.getCluster()).thenReturn(mockCluster);
 
@@ -84,7 +84,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void afterPropertiesSetPerformsSchemaAction() throws Exception {
-		
+
 		doAnswer(new Answer<Void>() {
 			@Override
 			public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -109,7 +109,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void afterPropertiesSetThrowsIllegalStateExceptionWhenConverterIsNull() throws Exception {
-		
+
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("Converter was not properly initialized");
 
@@ -165,7 +165,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void performsSchemaActionDoesNotCallCreateTablesWhenSchemaActionIsNone() {
-		
+
 		doAnswer(new Answer<Void>() {
 			@Override
 			public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -185,7 +185,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void setAndGetConverter() {
-		
+
 		assertThat(factoryBean.getConverter()).isNull();
 		factoryBean.setConverter(mockConverter);
 		assertThat(factoryBean.getConverter()).isEqualTo(mockConverter);
@@ -194,7 +194,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void setConverterToNull() {
-		
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("CassandraConverter must not be null");
 
@@ -203,7 +203,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test
 	public void setAndGetSchemaAction() {
-		
+
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.NONE);
 		factoryBean.setSchemaAction(SchemaAction.CREATE);
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.CREATE);

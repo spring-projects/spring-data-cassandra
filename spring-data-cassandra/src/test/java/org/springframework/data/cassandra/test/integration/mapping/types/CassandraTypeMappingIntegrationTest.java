@@ -28,10 +28,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
+import com.datastax.driver.core.SimpleStatement;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
@@ -74,7 +76,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setInet(InetAddress.getByName("127.0.0.1"));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getInet()).isEqualTo(entity.getInet());
 	}
@@ -89,7 +91,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setUuid(UUID.randomUUID());
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getUuid()).isEqualTo(entity.getUuid());
 	}
@@ -104,7 +106,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBoxedShort(Short.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBoxedShort()).isEqualTo(entity.getBoxedShort());
 	}
@@ -119,7 +121,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setPrimitiveShort(Short.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getPrimitiveShort()).isEqualTo(entity.getPrimitiveShort());
 	}
@@ -134,7 +136,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBoxedByte(Byte.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBoxedByte()).isEqualTo(entity.getBoxedByte());
 	}
@@ -149,7 +151,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setPrimitiveByte(Byte.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getPrimitiveByte()).isEqualTo(entity.getPrimitiveByte());
 	}
@@ -164,7 +166,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBoxedLong(Long.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBoxedLong()).isEqualTo(entity.getBoxedLong());
 	}
@@ -179,7 +181,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setPrimitiveLong(Long.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getPrimitiveLong()).isEqualTo(entity.getPrimitiveLong());
 	}
@@ -194,7 +196,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBoxedInteger(Integer.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBoxedInteger()).isEqualTo(entity.getBoxedInteger());
 	}
@@ -209,7 +211,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setPrimitiveInteger(Integer.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getPrimitiveInteger()).isEqualTo(entity.getPrimitiveInteger());
 	}
@@ -224,7 +226,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBoxedFloat(Float.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBoxedFloat()).isEqualTo(entity.getBoxedFloat());
 	}
@@ -239,7 +241,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setPrimitiveFloat(Float.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getPrimitiveFloat()).isEqualTo(entity.getPrimitiveFloat());
 	}
@@ -254,7 +256,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBoxedDouble(Double.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBoxedDouble()).isEqualTo(entity.getBoxedDouble());
 	}
@@ -269,7 +271,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setPrimitiveDouble(Double.MAX_VALUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getPrimitiveDouble()).isEqualTo(entity.getPrimitiveDouble());
 	}
@@ -284,7 +286,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBoxedBoolean(Boolean.TRUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBoxedBoolean()).isEqualTo(entity.getBoxedBoolean());
 	}
@@ -299,7 +301,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setPrimitiveBoolean(Boolean.TRUE);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.isPrimitiveBoolean()).isEqualTo(entity.isPrimitiveBoolean());
 	}
@@ -315,7 +317,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setTimestamp(new Date(1));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getTimestamp()).isEqualTo(entity.getTimestamp());
 	}
@@ -330,7 +332,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setDate(LocalDate.fromDaysSinceEpoch(1));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getDate()).isEqualTo(entity.getDate());
 	}
@@ -345,7 +347,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBigInteger(new BigInteger("123456"));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBigInteger()).isEqualTo(entity.getBigInteger());
 	}
@@ -360,7 +362,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBigDecimal(new BigDecimal("123456.7890123"));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBigDecimal()).isEqualTo(entity.getBigDecimal());
 	}
@@ -375,7 +377,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBlob(ByteBuffer.wrap("Hello".getBytes()));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		ByteBuffer blob = loaded.getBlob();
 		byte[] bytes = new byte[blob.remaining()];
@@ -393,7 +395,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setSetOfString(Collections.singleton("hello"));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getSetOfString()).isEqualTo(entity.getSetOfString());
 	}
@@ -408,7 +410,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setSetOfString(new HashSet<String>());
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getSetOfString()).isNull();
 	}
@@ -423,7 +425,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setListOfString(Collections.singletonList("hello"));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getListOfString()).isEqualTo(entity.getListOfString());
 	}
@@ -438,7 +440,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setListOfString(new ArrayList<String>());
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getListOfString()).isNull();
 	}
@@ -453,7 +455,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setMapOfString(Collections.singletonMap("hello", "world"));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getMapOfString()).isEqualTo(entity.getMapOfString());
 	}
@@ -468,7 +470,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setMapOfString(new HashMap<String, String>());
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getMapOfString()).isNull();
 	}
@@ -483,7 +485,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setAnEnum(Condition.MINT);
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getAnEnum()).isEqualTo(entity.getAnEnum());
 	}
@@ -499,11 +501,10 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		String id = "1";
 		long time = 21312214L;
 
-		PreparedStatement prepare = operations.getSession().prepare("INSERT INTO timeentity (id, time) values(?,?)");
-		BoundStatement boundStatement = prepare.bind(id, time);
-		operations.execute(boundStatement);
+		operations.getCqlOperations()
+				.execute(new SimpleStatement("INSERT INTO timeentity (id, time) values(?,?)", id, time));
 
-		TimeEntity loaded = operations.selectOneById(TimeEntity.class, id);
+		TimeEntity loaded = operations.selectOneById(id, TimeEntity.class);
 
 		assertThat(loaded.getTime()).isEqualTo(time);
 	}
@@ -518,7 +519,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setLocalDate(java.time.LocalDate.of(2010, 7, 4));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getLocalDate()).isEqualTo(entity.getLocalDate());
 	}
@@ -533,7 +534,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setLocalDateTime(java.time.LocalDateTime.of(2010, 7, 4, 1, 2, 3));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getLocalDateTime()).isEqualTo(entity.getLocalDateTime());
 	}
@@ -548,7 +549,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setLocalTime(java.time.LocalTime.of(1, 2, 3));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getLocalTime()).isEqualTo(entity.getLocalTime());
 	}
@@ -563,7 +564,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setInstant(java.time.Instant.now());
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getInstant()).isEqualTo(entity.getInstant());
 	}
@@ -578,7 +579,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setZoneId(java.time.ZoneId.of("Europe/Paris"));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getZoneId()).isEqualTo(entity.getZoneId());
 	}
@@ -593,7 +594,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setJodaLocalDate(new org.joda.time.LocalDate(2010, 7, 4));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getJodaLocalDate()).isEqualTo(entity.getJodaLocalDate());
 	}
@@ -608,7 +609,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setJodaDateMidnight(new org.joda.time.DateMidnight(2010, 7, 4));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getJodaDateMidnight()).isEqualTo(entity.getJodaDateMidnight());
 	}
@@ -623,7 +624,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setJodaDateTime(new org.joda.time.DateTime(2010, 7, 4, 1, 2, 3));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getJodaDateTime()).isEqualTo(entity.getJodaDateTime());
 	}
@@ -638,7 +639,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBpLocalDate(org.threeten.bp.LocalDate.of(2010, 7, 4));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBpLocalDate()).isEqualTo(entity.getBpLocalDate());
 	}
@@ -653,7 +654,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBpLocalDateTime(org.threeten.bp.LocalDateTime.of(2010, 7, 4, 1, 2, 3));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBpLocalDateTime()).isEqualTo(entity.getBpLocalDateTime());
 	}
@@ -668,7 +669,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBpLocalTime(org.threeten.bp.LocalTime.of(1, 2, 3));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBpLocalTime()).isEqualTo(entity.getBpLocalTime());
 	}
@@ -683,7 +684,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBpInstant(org.threeten.bp.Instant.now());
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBpZoneId()).isEqualTo(entity.getBpZoneId());
 	}
@@ -698,7 +699,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setBpZoneId(org.threeten.bp.ZoneId.of("Europe/Paris"));
 
 		operations.insert(entity);
-		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getBpZoneId()).isEqualTo(entity.getBpZoneId());
 	}
@@ -714,7 +715,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		entity.setCount(1);
 
 		operations.update(entity);
-		CounterEntity loaded = operations.selectOneById(CounterEntity.class, entity.getId());
+		CounterEntity loaded = operations.selectOneById(entity.getId(), CounterEntity.class);
 
 		assertThat(loaded.getCount()).isEqualTo(entity.getCount());
 	}

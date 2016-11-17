@@ -35,9 +35,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraPersistentPropertyComparatorUnitTests {
 
-	@Mock private CassandraPersistentProperty left;
+	@Mock CassandraPersistentProperty left;
 
-	@Mock private CassandraPersistentProperty right;
+	@Mock CassandraPersistentProperty right;
 
 	@Test
 	public void leftAndRightAreNullReturnsZero() {
