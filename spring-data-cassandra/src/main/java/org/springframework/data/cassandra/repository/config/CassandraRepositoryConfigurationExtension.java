@@ -13,30 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.repository.config;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.cassandra.config.xml.ParsingUtils;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
-import org.springframework.data.repository.config.RepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
-import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
-import org.springframework.data.repository.util.ReactiveWrappers;
-import org.springframework.util.ClassUtils;
+import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -116,49 +109,12 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 		return Collections.singleton(CassandraRepository.class);
 	}
 
-	/**
-	 * @inheritDoc
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#useRepositoryConfiguration(org.springframework.data.repository.core.RepositoryMetadata)
 	 */
 	@Override
-	public <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> getRepositoryConfigurations(
-			T configSource, ResourceLoader loader, boolean strictMatchesOnly) {
-
-		Collection<RepositoryConfiguration<T>> repositoryConfigurations =
-			super.getRepositoryConfigurations(configSource, loader, strictMatchesOnly);
-
-		return (ReactiveWrappers.isAvailable() ? filter(repositoryConfigurations, loader) : repositoryConfigurations);
-	}
-
-	/* (non-Javadoc) */
-	private <T extends RepositoryConfigurationSource> Collection<RepositoryConfiguration<T>> filter(
-			Collection<RepositoryConfiguration<T>> repositoryConfigurations, ResourceLoader loader) {
-
-		return repositoryConfigurations.stream().filter(
-			configuration -> isNonReactiveRepository(configuration, loader)).collect(Collectors.toList());
-	}
-
-	/* (non-Javadoc) */
-	private boolean isNonReactiveRepository(RepositoryConfiguration<?> repositoryConfiguration, ResourceLoader loader) {
-		return !RepositoryType.isReactiveRepository(loadRepositoryInterface(repositoryConfiguration, loader));
-	}
-
-	/**
-	 * TODO replace with {@link org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#loadRepositoryInterface(RepositoryConfiguration, ResourceLoader)}
-	 * Loads the Repository interface specified in the given {@link RepositoryConfiguration} using
-	 * the given {@link ResourceLoader}.
-	 *
-	 * @param configuration must not be {@literal null}.
-	 * @param loader must not be {@literal null}.
-	 * @return the Repository interface.
-	 * @throws InvalidDataAccessApiUsageException if the Repository interface could not loaded.
-	 */
-	private Class<?> loadRepositoryInterface(RepositoryConfiguration<?> configuration, ResourceLoader loader) {
-		try {
-			return ClassUtils.forName(configuration.getRepositoryInterface(), loader.getClassLoader());
-		}
-		catch (ClassNotFoundException | LinkageError e) {
-			throw new InvalidDataAccessApiUsageException(String.format(
-				"Could not find Repository type [%s]", configuration.getRepositoryInterface()), e);
-		}
+	protected boolean useRepositoryConfiguration(RepositoryMetadata metadata) {
+		return !metadata.isReactiveRepository();
 	}
 }
