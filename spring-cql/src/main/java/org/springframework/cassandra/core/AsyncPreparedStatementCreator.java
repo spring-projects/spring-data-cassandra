@@ -15,11 +15,11 @@
  */
 package org.springframework.cassandra.core;
 
-import org.springframework.util.concurrent.ListenableFuture;
-
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
+
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * One of the two central callback interfaces used by the {@link AsyncCqlTemplate} class. This interface prepares a CQL
@@ -43,11 +43,12 @@ public interface AsyncPreparedStatementCreator {
 	 * Create a statement in this session. Allows implementations to use {@link PreparedStatement}s. The
 	 * {@link CqlTemplate} will attempt to cache the {@link PreparedStatement}s for future use without the overhead of
 	 * re-preparing on the entire cluster.
-	 * 
+	 *
 	 * @param session Session to use to create statement, must not be {@literal null}.
 	 * @return a prepared statement
 	 * @throws DriverException there is no need to catch DriverException that may be thrown in the implementation of this
 	 *           method. The {@link CqlTemplate} class will handle them.
 	 */
 	ListenableFuture<PreparedStatement> createPreparedStatement(Session session) throws DriverException;
+
 }

@@ -18,12 +18,12 @@ package org.springframework.cassandra.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.dao.DataAccessException;
-import org.springframework.util.Assert;
-
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.DriverException;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.util.Assert;
 
 /**
  * Adapter implementation of the {@link ResultSetExtractor} interface that delegates to a {@link RowMapper} which is
@@ -42,13 +42,13 @@ import com.datastax.driver.core.exceptions.DriverException;
  */
 public class RowMapperResultSetExtractor<T> implements ResultSetExtractor<List<T>> {
 
-	private final RowMapper<T> rowMapper;
-
 	private final int rowsExpected;
+
+	private final RowMapper<T> rowMapper;
 
 	/**
 	 * Create a new {@link RowMapperResultSetExtractor}.
-	 * 
+	 *
 	 * @param rowMapper the {@link RowMapper} which creates an object for each row, must not be {@literal null}.
 	 */
 	public RowMapperResultSetExtractor(RowMapper<T> rowMapper) {
@@ -57,7 +57,7 @@ public class RowMapperResultSetExtractor<T> implements ResultSetExtractor<List<T
 
 	/**
 	 * Create a new {@link RowMapperResultSetExtractor}.
-	 * 
+	 *
 	 * @param rowMapper the {@link RowMapper} which creates an object for each row, must not be {@literal null}.
 	 * @param rowsExpected the number of expected rows (just used for optimized collection handling).
 	 */
@@ -75,11 +75,12 @@ public class RowMapperResultSetExtractor<T> implements ResultSetExtractor<List<T
 	@Override
 	public List<T> extractData(ResultSet resultSet) throws DriverException, DataAccessException {
 
-		List<T> results = (this.rowsExpected > 0 ? new ArrayList<>(this.rowsExpected) : new ArrayList<T>());
+		List<T> results = (this.rowsExpected > 0 ? new ArrayList<>(this.rowsExpected) : new ArrayList<>());
 
-		int rowNum = 0;
+		int rowNumber = 0;
+
 		for (Row row : resultSet) {
-			results.add(this.rowMapper.mapRow(row, rowNum++));
+			results.add(this.rowMapper.mapRow(row, rowNumber++));
 		}
 
 		return results;

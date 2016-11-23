@@ -16,13 +16,10 @@
 
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.function.Function;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
-import org.springframework.data.util.StreamUtils;
 import org.springframework.util.ClassUtils;
 
 import lombok.NonNull;

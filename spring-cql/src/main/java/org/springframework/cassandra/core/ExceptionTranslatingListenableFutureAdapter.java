@@ -31,7 +31,7 @@ import org.springframework.util.concurrent.SuccessCallback;
 /**
  * Adapter class to {@link ListenableFuture} {@link ExecutionException} by applying a
  * {@link PersistenceExceptionTranslator}.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
@@ -57,10 +57,10 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		this.future = adaptListenableFuture(adaptee, persistenceExceptionTranslator);
 	}
 
-	private static <T> ListenableFuture adaptListenableFuture(ListenableFuture<T> listenableFuture,
+	private static <T> ListenableFuture<T> adaptListenableFuture(ListenableFuture<T> listenableFuture,
 			PersistenceExceptionTranslator exceptionTranslator) {
 
-		SettableListenableFuture<T> settableFuture = new SettableListenableFuture<T>();
+		SettableListenableFuture<T> settableFuture = new SettableListenableFuture<>();
 
 		listenableFuture.addCallback(new ListenableFutureCallback<T>() {
 
@@ -71,11 +71,10 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 
 			@Override
 			public void onFailure(Throwable ex) {
-
 				if (ex instanceof RuntimeException) {
+					DataAccessException dataAccessException =
+						exceptionTranslator.translateExceptionIfPossible((RuntimeException) ex);
 
-					DataAccessException dataAccessException = exceptionTranslator
-							.translateExceptionIfPossible((RuntimeException) ex);
 					if (dataAccessException != null) {
 						settableFuture.setException(dataAccessException);
 						return;
@@ -87,10 +86,9 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		});
 
 		return settableFuture;
-
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.util.concurrent.ListenableFuture#addCallback(org.springframework.util.concurrent.ListenableFutureCallback)
 	 */
@@ -99,7 +97,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		future.addCallback(callback);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.util.concurrent.ListenableFuture#addCallback(org.springframework.util.concurrent.SuccessCallback, org.springframework.util.concurrent.FailureCallback)
 	 */
@@ -108,7 +106,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		future.addCallback(successCallback, failureCallback);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#cancel(boolean)
 	 */
@@ -117,7 +115,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		return adaptee.cancel(mayInterruptIfRunning);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#isCancelled()
 	 */
@@ -126,7 +124,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		return adaptee.isCancelled();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#isDone()
 	 */
@@ -135,7 +133,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		return future.isDone();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#get()
 	 */
@@ -144,7 +142,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		return future.get();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#get(long, java.util.concurrent.TimeUnit)
 	 */

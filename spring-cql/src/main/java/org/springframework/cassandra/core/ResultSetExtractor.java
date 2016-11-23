@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,10 +15,10 @@
  */
 package org.springframework.cassandra.core;
 
-import org.springframework.dao.DataAccessException;
-
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.exceptions.DriverException;
+
+import org.springframework.dao.DataAccessException;
 
 /**
  * Callback interface used by {@link CqlTemplate}'s query methods. Implementations of this interface perform the actual
@@ -43,13 +43,14 @@ public interface ResultSetExtractor<T> {
 
 	/**
 	 * Implementations must implement this method to process the entire {@link ResultSet}.
-	 * 
-	 * @param rs {@link ResultSet} to extract data from.
+	 *
+	 * @param resultSet {@link ResultSet} to extract data from.
 	 * @return an arbitrary result object, or {@code null} if none (the extractor will typically be stateful in the latter
 	 *         case).
 	 * @throws DriverException if a {@link DriverException} is encountered getting column values or navigating (that is,
 	 *           there's no need to catch {@link DriverException})
 	 * @throws DataAccessException in case of custom exceptions
 	 */
-	T extractData(ResultSet rs) throws DriverException, DataAccessException;
+	T extractData(ResultSet resultSet) throws DriverException, DataAccessException;
+
 }

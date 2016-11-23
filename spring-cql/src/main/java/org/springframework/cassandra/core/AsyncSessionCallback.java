@@ -15,10 +15,10 @@
  */
 package org.springframework.cassandra.core;
 
-import org.springframework.dao.DataAccessException;
-
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
+
+import org.springframework.dao.DataAccessException;
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
@@ -44,7 +44,7 @@ public interface AsyncSessionCallback<T> {
 	 * objects. Note that there's special support for single step actions: see {@link CqlTemplate#queryForObject} etc. A
 	 * thrown {@link RuntimeException} is treated as application exception: it gets propagated to the caller of the
 	 * template.
-	 * 
+	 *
 	 * @param session active Cassandra Session, must not be {@literal null}.
 	 * @return a result object, or {@code null} if none.
 	 * @throws DriverException if thrown by a Session method, to be auto-converted to a {@link DataAccessException}.

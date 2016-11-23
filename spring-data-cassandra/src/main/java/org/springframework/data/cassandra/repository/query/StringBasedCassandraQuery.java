@@ -16,15 +16,15 @@
 package org.springframework.data.cassandra.repository.query;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Session;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-
-import com.datastax.driver.core.CodecRegistry;
 
 /**
  * String-based {@link AbstractCassandraQuery} implementation.
@@ -78,6 +78,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		Cluster cluster = operations.getCqlOperations().execute(Session::getCluster);
 
 		CodecRegistry codecRegistry = cluster.getConfiguration().getCodecRegistry();
+
 		this.stringBasedQuery = new StringBasedQuery(query,
 				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider), codecRegistry);
 	}
@@ -87,7 +88,6 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 */
 	@Override
 	public String createQuery(CassandraParameterAccessor parameterAccessor) {
-
 		try {
 			String boundQuery = stringBasedQuery.bindQuery(parameterAccessor, getQueryMethod());
 

@@ -19,6 +19,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.Assert;
@@ -28,13 +31,10 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.util.concurrent.SettableListenableFuture;
 import org.springframework.util.concurrent.SuccessCallback;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-
 /**
  * Adapter class to adapt Guava's {@link com.google.common.util.concurrent.ListenableFuture} into a Spring
  * {@link ListenableFuture}.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
@@ -46,7 +46,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 	/**
 	 * Create a new {@link GuavaListenableFutureAdapter} given a Guava
 	 * {@link com.google.common.util.concurrent.ListenableFuture} and a {@link PersistenceExceptionTranslator}.
-	 * 
+	 *
 	 * @param adaptee must not be {@literal null}.
 	 * @param persistenceExceptionTranslator must not be {@literal null}.
 	 */
@@ -60,11 +60,11 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		this.future = adaptListenableFuture(adaptee, persistenceExceptionTranslator);
 	}
 
-	private static <T> ListenableFuture adaptListenableFuture(
+	private static <T> ListenableFuture<T> adaptListenableFuture(
 			com.google.common.util.concurrent.ListenableFuture<T> guavaFuture,
 			PersistenceExceptionTranslator exceptionTranslator) {
 
-		SettableListenableFuture<T> settableFuture = new SettableListenableFuture<T>();
+		SettableListenableFuture<T> settableFuture = new SettableListenableFuture<>();
 
 		Futures.addCallback(guavaFuture, new FutureCallback<T>() {
 			@Override
@@ -74,11 +74,10 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 
 			@Override
 			public void onFailure(Throwable t) {
-
 				if (t instanceof RuntimeException) {
+					DataAccessException dataAccessException =
+						exceptionTranslator.translateExceptionIfPossible((RuntimeException) t);
 
-					DataAccessException dataAccessException = exceptionTranslator
-							.translateExceptionIfPossible((RuntimeException) t);
 					if (dataAccessException != null) {
 						settableFuture.setException(dataAccessException);
 						return;
@@ -90,10 +89,9 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		});
 
 		return settableFuture;
-
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.util.concurrent.ListenableFuture#addCallback(org.springframework.util.concurrent.ListenableFutureCallback)
 	 */
@@ -102,7 +100,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		future.addCallback(callback);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.util.concurrent.ListenableFuture#addCallback(org.springframework.util.concurrent.SuccessCallback, org.springframework.util.concurrent.FailureCallback)
 	 */
@@ -111,7 +109,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		future.addCallback(successCallback, failureCallback);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#cancel(boolean)
 	 */
@@ -120,7 +118,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		return adaptee.cancel(mayInterruptIfRunning);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#isCancelled()
 	 */
@@ -129,7 +127,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		return adaptee.isCancelled();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#isDone()
 	 */
@@ -138,7 +136,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		return future.isDone();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#get()
 	 */
@@ -147,7 +145,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		return future.get();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.util.concurrent.Future#get(long, java.util.concurrent.TimeUnit)
 	 */

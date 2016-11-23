@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,12 +15,12 @@
  */
 package org.springframework.cassandra.core;
 
-import org.springframework.dao.DataAccessException;
-
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
+
+import org.springframework.dao.DataAccessException;
 
 /**
  * Generic callback interface for code that operates on a {@link PreparedStatement}. Allows to execute any number of
@@ -46,14 +46,14 @@ public interface PreparedStatementCallback<T> {
 	 * objects. Note that there's special support for single step actions: see
 	 * {@link CqlTemplate#queryForObject(String, Class, Object...)} etc. A thrown RuntimeException is treated as
 	 * application exception, it gets propagated to the caller of the template.
-	 * 
-	 * @param ps the {@link PreparedStatement}, must not be {@literal null}.
+	 *
+	 * @param preparedStatement the {@link PreparedStatement}, must not be {@literal null}.
 	 * @return a result object publisher.
 	 * @throws DriverException if thrown by a session method, to be auto-converted to a DataAccessException.
 	 * @throws DataAccessException in case of custom exceptions.
 	 * @see CqlTemplate#queryForObject(String, Class, Object...)
 	 * @see CqlTemplate#queryForList(String, Object...)
 	 */
-	T doInPreparedStatement(PreparedStatement ps) throws DriverException, DataAccessException;
+	T doInPreparedStatement(PreparedStatement preparedStatement) throws DriverException, DataAccessException;
 
 }

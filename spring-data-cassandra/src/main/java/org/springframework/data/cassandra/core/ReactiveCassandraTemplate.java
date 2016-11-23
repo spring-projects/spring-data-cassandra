@@ -15,6 +15,17 @@
  */
 package org.springframework.data.cassandra.core;
 
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Truncate;
+import com.datastax.driver.core.querybuilder.Update;
+
 import org.reactivestreams.Publisher;
 import org.springframework.cassandra.core.CqlProvider;
 import org.springframework.cassandra.core.DefaultReactiveSessionFactory;
@@ -35,17 +46,6 @@ import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.DriverException;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Truncate;
-import com.datastax.driver.core.querybuilder.Update;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -141,6 +141,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	private static MappingCassandraConverter newConverter() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
+
 		converter.afterPropertiesSet();
 
 		return converter;
@@ -212,6 +213,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 
 		converter.write(id, select.where(), entity);
@@ -230,7 +232,9 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+
 		Select select = QueryBuilder.select().from(entity.getTableName().toCql());
+
 		converter.write(id, select.where(), entity);
 
 		return cqlOperations.queryForRows(select).hasElements();
@@ -268,9 +272,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		CqlIdentifier tableName = getTableName(entity);
-
-		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, converter);
+		Insert insert = QueryUtils.createInsertQuery(getTableName(entity).toCql(), entity, options, converter);
 
 		class InsertCallback implements ReactiveSessionCallback<T>, CqlProvider {
 
@@ -328,9 +330,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		CqlIdentifier tableName = getTableName(entity);
-
-		Update update = QueryUtils.createUpdateQuery(tableName.toCql(), entity, options, converter);
+		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, converter);
 
 		class UpdateCallback implements ReactiveSessionCallback<T>, CqlProvider {
 
@@ -381,6 +381,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+
 		Delete delete = QueryBuilder.delete().from(entity.getTableName().toCql());
 
 		converter.write(id, delete.where(), entity);
@@ -406,9 +407,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		CqlIdentifier tableName = getTableName(entity);
-
-		Delete delete = QueryUtils.createDeleteQuery(tableName.toCql(), entity, options, converter);
+		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity).toCql(), entity, options, converter);
 
 		class DeleteCallback implements ReactiveSessionCallback<T>, CqlProvider {
 

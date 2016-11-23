@@ -19,6 +19,18 @@ import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Truncate;
+import com.datastax.driver.core.querybuilder.Update;
+
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.CqlProvider;
 import org.springframework.cassandra.core.CqlTemplate;
@@ -36,18 +48,6 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.DriverException;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Truncate;
-import com.datastax.driver.core.querybuilder.Update;
-
 /**
  * Primary implementation of {@link CassandraOperations}. It simplifies the use of Cassandra usage and helps to avoid
  * common errors. It executes core Cassandra workflow. This class executes CQL queries or updates, initiating iteration
@@ -61,6 +61,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * to the service directly, in the second case to the prepared template.
  *
  * @author Mark Paluch
+ * @author John Blum
  * @since 2.0
  */
 public class CassandraTemplate implements CassandraOperations {
@@ -209,16 +210,45 @@ public class CassandraTemplate implements CassandraOperations {
 
 		List<T> result = select(statement, entityClass);
 
-		if (result.isEmpty()) {
-			return null;
-		}
-
-		return result.get(0);
+		return (result.isEmpty() ? null : result.get(0));
 	}
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with entities
 	// -------------------------------------------------------------------------
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(java.lang.Class)
+	 */
+	@Override
+	public long count(Class<?> entityClass) {
+
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		Select select = QueryBuilder.select().countAll().from(getPersistentEntity(entityClass).getTableName().toCql());
+
+		return cqlOperations.queryForObject(select, Long.class);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#exists(java.lang.Object, java.lang.Class)
+	 */
+	@Override
+	public boolean exists(Object id, Class<?> entityClass) {
+
+		Assert.notNull(id, "Id must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+
+		Select select = QueryBuilder.select().from(entity.getTableName().toCql());
+
+		converter.write(id, select.where(), entity);
+
+		return cqlOperations.queryForResultSet(select).iterator().hasNext();
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -231,6 +261,7 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 
 		converter.write(id, select.where(), entity);
@@ -264,37 +295,6 @@ public class CassandraTemplate implements CassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#exists(java.lang.Object, java.lang.Class)
-	 */
-	@Override
-	public boolean exists(Object id, Class<?> entityClass) {
-
-		Assert.notNull(id, "Id must not be null");
-		Assert.notNull(entityClass, "Entity type must not be null");
-
-		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
-		Select select = QueryBuilder.select().from(entity.getTableName().toCql());
-		converter.write(id, select.where(), entity);
-
-		return cqlOperations.queryForResultSet(select).iterator().hasNext();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(java.lang.Class)
-	 */
-	@Override
-	public long count(Class<?> entityClass) {
-
-		Assert.notNull(entityClass, "Entity type must not be null");
-
-		Select select = QueryBuilder.select().countAll().from(getPersistentEntity(entityClass).getTableName().toCql());
-
-		return cqlOperations.queryForObject(select, Long.class);
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object)
 	 */
 	@Override
@@ -311,9 +311,8 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		CqlIdentifier tableName = getTableName(entity.getClass());
-
-		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, converter);
+		Insert insert = QueryUtils.createInsertQuery(getTableName(entity.getClass()).toCql(),
+			entity, options, converter);
 
 		return cqlOperations.execute(new StatementCallback<>(insert, entity));
 	}
@@ -336,29 +335,10 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		CqlIdentifier tableName = getTableName(entity.getClass());
-
-		Update update = QueryUtils.createUpdateQuery(tableName.toCql(), entity, options, converter);
+		Update update = QueryUtils.createUpdateQuery(getTableName(entity.getClass()).toCql(),
+			entity, options, converter);
 
 		return cqlOperations.execute(new StatementCallback<>(update, entity));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteById(java.lang.Object, java.lang.Class)
-	 */
-	@Override
-	public boolean deleteById(Object id, Class<?> entityClass) {
-
-		Assert.notNull(id, "Id must not be null");
-		Assert.notNull(entityClass, "Entity type must not be null");
-
-		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
-		Delete delete = QueryBuilder.delete().from(entity.getTableName().toCql());
-
-		converter.write(id, delete.where(), entity);
-
-		return cqlOperations.execute(delete);
 	}
 
 	/*
@@ -379,11 +359,29 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		CqlIdentifier tableName = getTableName(entity.getClass());
-
-		Delete delete = QueryUtils.createDeleteQuery(tableName.toCql(), entity, options, converter);
+		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity.getClass()).toCql(),
+			entity, options, converter);
 
 		return cqlOperations.execute(new StatementCallback<>(delete, entity));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteById(java.lang.Object, java.lang.Class)
+	 */
+	@Override
+	public boolean deleteById(Object id, Class<?> entityClass) {
+
+		Assert.notNull(id, "Id must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+
+		Delete delete = QueryBuilder.delete().from(entity.getTableName().toCql());
+
+		converter.write(id, delete.where(), entity);
+
+		return cqlOperations.execute(delete);
 	}
 
 	/*
@@ -394,10 +392,15 @@ public class CassandraTemplate implements CassandraOperations {
 	public void truncate(Class<?> entityClass) {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
+
 		Truncate truncate = QueryBuilder.truncate(getPersistentEntity(entityClass).getTableName().toCql());
 
 		cqlOperations.execute(truncate);
 	}
+
+	// -------------------------------------------------------------------------
+	// Implementation hooks and helper methods
+	// -------------------------------------------------------------------------
 
 	/*
 	 * (non-Javadoc)
@@ -417,26 +420,6 @@ public class CassandraTemplate implements CassandraOperations {
 		return cqlOperations;
 	}
 
-	// -------------------------------------------------------------------------
-	// Implementation hooks and helper methods
-	// -------------------------------------------------------------------------
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperationsNG#getTableName(java.lang.Class)
-	 */
-	@Override
-	public CqlIdentifier getTableName(Class<?> entityClass) {
-		return getPersistentEntity(ClassUtils.getUserClass(entityClass)).getTableName();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperationsNG#batchOps()
-	 */
-	@Override
-	public CassandraBatchOperations batchOps() {
-		return new CassandraBatchTemplate(this);
-	}
-
 	protected <T> CassandraPersistentEntity<?> getPersistentEntity(Class<T> entityClass) {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -445,10 +428,28 @@ public class CassandraTemplate implements CassandraOperations {
 
 		if (entity == null) {
 			throw new InvalidDataAccessApiUsageException(
-					String.format("No Persistent Entity information found for the class [%s]", entityClass.getName()));
+				String.format("No Persistent Entity information found for the class [%s]", entityClass.getName()));
 		}
 
 		return entity;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperationsNG#getTableName(java.lang.Class)
+	 */
+	@Override
+	public CqlIdentifier getTableName(Class<?> entityClass) {
+		return getPersistentEntity(ClassUtils.getUserClass(entityClass)).getTableName();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperationsNG#batchOps()
+	 */
+	@Override
+	public CassandraBatchOperations batchOps() {
+		return new CassandraBatchTemplate(this);
 	}
 
 	private static class StatementCallback<T> implements SessionCallback<T>, CqlProvider {

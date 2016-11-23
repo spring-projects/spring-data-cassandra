@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,10 +44,11 @@ public interface RowCallbackHandler {
 	 * <p>
 	 * Exactly what the implementation chooses to do is up to it: A trivial implementation might simply count rows, while
 	 * another implementation might build an XML document.
-	 * 
+	 *
 	 * @param row the {@link Row} to process (pre-initialized for the current row)
 	 * @throws DriverException if a {@link DriverException} is encountered getting column values (that is, there's no need
 	 *           to catch {@link DriverException})
 	 */
 	void processRow(Row row) throws DriverException;
+
 }

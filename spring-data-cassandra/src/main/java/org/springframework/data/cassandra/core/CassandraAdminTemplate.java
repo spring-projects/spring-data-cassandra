@@ -17,6 +17,10 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Map;
 
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TableMetadata;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.SessionCallback;
@@ -32,15 +36,12 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
-
 /**
  * Default implementation of {@link CassandraAdminOperations}.
  *
  * @author Mark Paluch
  * @author Fabio J. Mendes
+ * @author John Blum
  */
 public class CassandraAdminTemplate extends CassandraTemplate implements CassandraAdminOperations {
 
@@ -61,10 +62,11 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, org.springframework.cassandra.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
 	 */
 	@Override
-	public void createTable(final boolean ifNotExists, final CqlIdentifier tableName, Class<?> entityClass,
+	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
 
 		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+
 		CreateTableSpecification createTableSpecification = getConverter().getMappingContext()
 				.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists);
 
@@ -92,6 +94,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	public void dropUserType(CqlIdentifier typeName) {
 
 		Assert.notNull(typeName, "Type name must not be null");
+
 		getCqlOperations().execute(DropUserTypeCqlGenerator.toCql(DropUserTypeSpecification.dropType(typeName)));
 	}
 
@@ -119,11 +122,14 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		return getCqlOperations().execute(new SessionCallback<KeyspaceMetadata>() {
 
 			@Override
-			public KeyspaceMetadata doInSession(Session s) throws DataAccessException {
+			public KeyspaceMetadata doInSession(Session session) throws DataAccessException {
 
-				KeyspaceMetadata keyspaceMetadata = s.getCluster().getMetadata().getKeyspace(s.getLoggedKeyspace());
-				Assert.state(keyspaceMetadata != null,
-						String.format("Metadata for keyspace [%s] not available", s.getLoggedKeyspace()));
+				KeyspaceMetadata keyspaceMetadata = session.getCluster().getMetadata()
+					.getKeyspace(session.getLoggedKeyspace());
+
+				Assert.state(keyspaceMetadata != null, String.format("Metadata for keyspace [%s] not available",
+					session.getLoggedKeyspace()));
+
 				return keyspaceMetadata;
 			}
 		});

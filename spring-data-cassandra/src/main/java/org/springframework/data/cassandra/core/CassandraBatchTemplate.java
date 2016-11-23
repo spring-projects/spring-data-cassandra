@@ -39,9 +39,20 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	private final Batch batch;
 	private final CassandraOperations operations;
 
+	/* (non-Javadoc) */
+	@SafeVarargs
+	private static <T> Iterable<T> nullSafeIterable(T... array) {
+		return (array == null ? Collections.emptyList() : Arrays.asList(array));
+	}
+
+	/* (non-Javadoc) */
+	private static <T> Iterable<T> nullSafeIterable(Iterable<T> iterable) {
+		return (iterable != null ? iterable : Collections::emptyIterator);
+	}
+
 	/**
 	 * Creates a new {@link CassandraBatchTemplate} given {@link CassandraOperations}.
-	 * 
+	 *
 	 * @param operations must not be {@literal null}.
 	 */
 	public CassandraBatchTemplate(CassandraOperations operations) {
@@ -166,14 +177,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	private String getTableName(Object entity) {
 
 		Assert.notNull(entity, "Entity must not be null");
+
 		return operations.getTableName(entity.getClass()).toCql();
-	}
-
-	private <T> Iterable<T> nullSafeIterable(T... array) {
-		return (array == null ? Collections.<T> emptyList() : Arrays.asList(array));
-	}
-
-	private <T> Iterable<T> nullSafeIterable(Iterable<T> iterable) {
-		return (iterable != null ? iterable : Collections.<T> emptyList());
 	}
 }

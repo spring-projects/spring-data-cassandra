@@ -32,10 +32,27 @@ import com.datastax.driver.core.Statement;
  * Not often used directly, but a useful option to enhance testability, as it can easily be mocked or stubbed.
  *
  * @author Mark Paluch
+ * @author John Blum
  * @since 2.0
  * @see AsyncCassandraTemplate
+ * @see CassandraOperations
  */
 public interface AsyncCassandraOperations {
+
+	/**
+	 * Expose the underlying {@link AsyncCqlOperationsOperations} to allow asynchronous CQL operations.
+	 *
+	 * @return the underlying {@link AsyncCqlOperations}.
+	 * @see AsyncCqlOperations
+	 */
+	AsyncCqlOperations getAsyncCqlOperations();
+
+	/**
+	 * Returns the underlying {@link CassandraConverter}.
+	 *
+	 * @return the underlying {@link CassandraConverter}.
+	 */
+	CassandraConverter getConverter();
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with static CQL
@@ -116,14 +133,13 @@ public interface AsyncCassandraOperations {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Execute the Select by {@code id} for the given {@code entityClass}.
+	 * Returns the number of rows for the given entity class.
 	 *
-	 * @param id must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return the converted object or {@literal null}.
+	 * @param entityClass must not be {@literal null}.
+	 * @return the number of existing entities.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
+	ListenableFuture<Long> count(Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Determine whether the row {@code entityClass} with the given {@code id} exists.
@@ -136,13 +152,14 @@ public interface AsyncCassandraOperations {
 	ListenableFuture<Boolean> exists(Object id, Class<?> entityClass) throws DataAccessException;
 
 	/**
-	 * Returns the number of rows for the given entity class.
+	 * Execute the Select by {@code id} for the given {@code entityClass}.
 	 *
-	 * @param entityClass must not be {@literal null}.
-	 * @return the number of existing entities.
+	 * @param id must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	ListenableFuture<Long> count(Class<?> entityClass) throws DataAccessException;
+	<T> ListenableFuture<T> selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Insert the given entity and return the entity if the insert was applied.
@@ -183,16 +200,6 @@ public interface AsyncCassandraOperations {
 	<T> ListenableFuture<T> update(T entity, WriteOptions options) throws DataAccessException;
 
 	/**
-	 * Remove the given object from the table by id.
-	 *
-	 * @param id must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return {@literal true} if the deletion was applied.
-	 * @throws DataAccessException if there is any problem executing the query.
-	 */
-	ListenableFuture<Boolean> deleteById(Object id, Class<?> entityClass) throws DataAccessException;
-
-	/**
 	 * Delete the given entity and return the entity if the delete was applied.
 	 *
 	 * @param entity must not be {@literal null}.
@@ -212,25 +219,21 @@ public interface AsyncCassandraOperations {
 	<T> ListenableFuture<T> delete(T entity, QueryOptions options) throws DataAccessException;
 
 	/**
+	 * Remove the given object from the table by id.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return {@literal true} if the deletion was applied.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	ListenableFuture<Boolean> deleteById(Object id, Class<?> entityClass) throws DataAccessException;
+
+	/**
 	 * Execute a {@code TRUNCATE} query to remove all entities of a given class.
-	 * 
+	 *
 	 * @param entityClass The entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	ListenableFuture<Void> truncate(Class<?> entityClass) throws DataAccessException;
 
-	/**
-	 * Returns the underlying {@link CassandraConverter}.
-	 *
-	 * @return the underlying {@link CassandraConverter}.
-	 */
-	CassandraConverter getConverter();
-
-	/**
-	 * Expose the underlying {@link AsyncCqlOperationsOperations} to allow asynchronous CQL operations.
-	 *
-	 * @return the underlying {@link AsyncCqlOperations}.
-	 * @see AsyncCqlOperations
-	 */
-	AsyncCqlOperations getAsyncCqlOperations();
 }

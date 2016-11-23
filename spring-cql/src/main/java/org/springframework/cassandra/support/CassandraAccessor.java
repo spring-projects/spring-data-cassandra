@@ -15,14 +15,32 @@
  */
 package org.springframework.cassandra.support;
 
+import java.util.Map;
+import java.util.stream.StreamSupport;
+
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.policies.RetryPolicy;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cassandra.core.ArgumentPreparedStatementBinder;
+import org.springframework.cassandra.core.ColumnMapRowMapper;
+import org.springframework.cassandra.core.CqlProvider;
+import org.springframework.cassandra.core.PreparedStatementBinder;
+import org.springframework.cassandra.core.ResultSetExtractor;
+import org.springframework.cassandra.core.RowCallbackHandler;
+import org.springframework.cassandra.core.RowMapper;
+import org.springframework.cassandra.core.RowMapperResultSetExtractor;
+import org.springframework.cassandra.core.SingleColumnRowMapper;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
-
-import com.datastax.driver.core.Session;
 
 /**
  * {@link CassandraAccessor} provides access to a Cassandra {@link Session} and the {@link CassandraExceptionTranslator}
@@ -39,9 +57,32 @@ import com.datastax.driver.core.Session;
  */
 public class CassandraAccessor implements InitializingBean {
 
+	/**
+	 * Placeholder for default values.
+	 */
+	private final static Statement DEFAULTS = QueryBuilder.select().from("DEFAULT");
+
+	/**
+	 * If this variable is set to a non-negative value, it will be used for setting the {@code fetchSize} property on
+	 * statements used for query processing.
+	 */
+	private int fetchSize = -1;
+
 	protected CassandraExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
+	/**
+	 * If this variable is set to a value, it will be used for setting the {@code consistencyLevel} property on statements
+	 * used for query processing.
+	 */
+	private com.datastax.driver.core.ConsistencyLevel consistencyLevel;
+
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+	/**
+	 * If this variable is set to a value, it will be used for setting the {@code retryPolicy} property on statements used
+	 * for query processing.
+	 */
+	private com.datastax.driver.core.policies.RetryPolicy retryPolicy;
 
 	private Session session;
 
@@ -54,10 +95,31 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/* (non-Javadoc) */
+	@SuppressWarnings("unused")
 	protected void logDebug(String logMessage, Object... array) {
 		if (logger.isDebugEnabled()) {
 			logger.debug(logMessage, array);
 		}
+	}
+
+	/**
+	 * Set the consistency level for this template. Consistency level defines the number of nodes
+	 * involved into query processing. Relaxed consistency level settings use fewer nodes but eventual consistency is more
+	 * likely to occur while a higher consistency level involves more nodes to obtain results with a higher consistency
+	 * guarantee.
+	 *
+	 * @see Statement#setConsistencyLevel(ConsistencyLevel)
+	 * @see RetryPolicy
+	 */
+	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
+		this.consistencyLevel = consistencyLevel;
+	}
+
+	/**
+	 * @return the {@link ConsistencyLevel} specified for this template.
+	 */
+	public ConsistencyLevel getConsistencyLevel() {
+		return this.consistencyLevel;
 	}
 
 	/**
@@ -85,6 +147,43 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
+	 * Set the fetch size for this template. This is important for processing large result sets: Setting this
+	 * higher than the default value will increase processing speed at the cost of memory consumption; setting this lower
+	 * can avoid transferring row data that will never be read by the application. Default is -1, indicating to use the
+	 * CQL driver's default configuration (i.e. to not pass a specific fetch size setting on to the driver).
+	 *
+	 * @see Statement#setFetchSize(int)
+	 */
+	public void setFetchSize(int fetchSize) {
+		this.fetchSize = fetchSize;
+	}
+
+	/**
+	 * @return the fetch size specified for this template.
+	 */
+	public int getFetchSize() {
+		return this.fetchSize;
+	}
+
+	/**
+	 * Set the retry policy for this template. This is important for defining behavior when a request
+	 * fails.
+	 *
+	 * @see Statement#setRetryPolicy(RetryPolicy)
+	 * @see RetryPolicy
+	 */
+	public void setRetryPolicy(RetryPolicy retryPolicy) {
+		this.retryPolicy = retryPolicy;
+	}
+
+	/**
+	 * @return the {@link RetryPolicy} specified for this template.
+	 */
+	public RetryPolicy getRetryPolicy() {
+		return this.retryPolicy;
+	}
+
+	/**
 	 * Sets the Cassandra {@link Session} used by this template to perform Cassandra data access operations.
 	 *
 	 * @param session Cassandra {@link Session} used by this template. Must not be{@literal null}.
@@ -105,8 +204,151 @@ public class CassandraAccessor implements InitializingBean {
 		Assert.state(this.session != null, "Session was not properly initialized");
 		return this.session;
 	}
-	
-		/**
+
+	/**
+	 * Prepare the given CQL Statement (or {@link com.datastax.driver.core.PreparedStatement}), applying statement
+	 * settings such as retry policy and consistency level.
+	 *
+	 * @param statement the CQL Statement to prepare
+	 * @see #setRetryPolicy(RetryPolicy)
+	 * @see #setConsistencyLevel(ConsistencyLevel)
+	 */
+	protected <T extends PreparedStatement> T applyStatementSettings(T statement) {
+
+		ConsistencyLevel consistencyLevel = getConsistencyLevel();
+
+		if (consistencyLevel != null) {
+			statement.setConsistencyLevel(consistencyLevel);
+		}
+
+		RetryPolicy retryPolicy = getRetryPolicy();
+
+		if (retryPolicy != null) {
+			statement.setRetryPolicy(retryPolicy);
+		}
+
+		return statement;
+	}
+
+	/**
+	 * Prepare the given CQL Statement (or {@link com.datastax.driver.core.PreparedStatement}), applying statement
+	 * settings such as fetch size, retry policy, and consistency level.
+	 *
+	 * @param statement the CQL Statement to prepare
+	 * @see #setFetchSize(int)
+	 * @see #setRetryPolicy(RetryPolicy)
+	 * @see #setConsistencyLevel(ConsistencyLevel)
+	 */
+	protected <T extends Statement> T applyStatementSettings(T statement) {
+
+		ConsistencyLevel consistencyLevel = getConsistencyLevel();
+
+		if (consistencyLevel != null && statement.getConsistencyLevel() == DEFAULTS.getConsistencyLevel()) {
+			statement.setConsistencyLevel(consistencyLevel);
+		}
+
+		int fetchSize = getFetchSize();
+
+		if (fetchSize != -1 && statement.getFetchSize() == DEFAULTS.getFetchSize()) {
+			statement.setFetchSize(fetchSize);
+		}
+
+		RetryPolicy retryPolicy = getRetryPolicy();
+
+		if (retryPolicy != null && statement.getRetryPolicy() == DEFAULTS.getRetryPolicy()) {
+			statement.setRetryPolicy(retryPolicy);
+		}
+
+		return statement;
+	}
+
+	/**
+	 * Create a new arg-based PreparedStatementSetter using the args passed in. By default, we'll create an
+	 * {@link ArgumentPreparedStatementBinder}. This method allows for the creation to be overridden by subclasses.
+	 *
+	 * @param args object array with arguments
+	 * @return the new {@link PreparedStatementBinder} to use
+	 */
+	protected PreparedStatementBinder newPreparedStatementBinder(Object[] args) {
+		return new ArgumentPreparedStatementBinder(args);
+	}
+
+	/**
+	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting
+	 * the given {@link RowCallbackHandler}.
+	 *
+	 * @param rowCallbackHandler {@link RowCallbackHandler} to adapt as a {@link ResultSetExtractor}.
+	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowCallbackHandler}.
+	 * @see org.springframework.cassandra.core.AsyncCqlTemplate.RowCallbackHandlerResultSetExtractor
+	 * @see org.springframework.cassandra.core.ResultSetExtractor
+	 * @see org.springframework.cassandra.core.RowCallbackHandler
+	 */
+	protected RowCallbackHandlerResultSetExtractor newResultSetExtractor(RowCallbackHandler rowCallbackHandler) {
+		return new RowCallbackHandlerResultSetExtractor(rowCallbackHandler);
+	}
+
+	/**
+	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting
+	 * the given {@link RowMapper}.
+	 *
+	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
+	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.
+	 * @see org.springframework.cassandra.core.ResultSetExtractor
+	 * @see org.springframework.cassandra.core.RowMapper
+	 * @see org.springframework.cassandra.core.RowMapperResultSetExtractor
+	 */
+	protected <T> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper) {
+		return new RowMapperResultSetExtractor<>(rowMapper);
+	}
+
+	/**
+	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting
+	 * the given {@link RowMapper}.
+	 *
+	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
+	 * @param rowsExpected number of expected rows in the {@link ResultSet}.
+	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.
+	 * @see org.springframework.cassandra.core.ResultSetExtractor
+	 * @see org.springframework.cassandra.core.RowMapper
+	 * @see org.springframework.cassandra.core.RowMapperResultSetExtractor
+	 */
+	protected <T> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper, int rowsExpected) {
+		return new RowMapperResultSetExtractor<>(rowMapper, rowsExpected);
+	}
+
+	/**
+	 * Create a new RowMapper for reading columns as key-value pairs.
+	 *
+	 * @return the RowMapper to use
+	 * @see ColumnMapRowMapper
+	 */
+	protected RowMapper<Map<String, Object>> newColumnMapRowMapper() {
+		return new ColumnMapRowMapper();
+	}
+
+	/**
+	 * Create a new RowMapper for reading result objects from a single column.
+	 *
+	 * @param requiredType the type that each result object is expected to match
+	 * @return the RowMapper to use
+	 * @see SingleColumnRowMapper
+	 */
+	protected <T> RowMapper<T> newSingleColumnRowMapper(Class<T> requiredType) {
+		return SingleColumnRowMapper.newInstance(requiredType);
+	}
+
+	/**
+	 * Determine CQL from potential provider object.
+	 *
+	 * @param cqlProvider object that's potentially a {@link CqlProvider}
+	 * @return the CQL string, or {@code null}
+	 * @see CqlProvider
+	 */
+	protected static String toCql(Object cqlProvider) {
+		return (cqlProvider instanceof CqlProvider ? ((CqlProvider) cqlProvider).getCql() : null);
+	}
+
+	/**
 	 * Translate the given {@link DriverException} into a generic {@link DataAccessException}.
 	 * <p>
 	 * The returned {@link DataAccessException} is supposed to contain the original {@code DriverException} as root cause.
@@ -150,5 +392,28 @@ public class CassandraAccessor implements InitializingBean {
 		Assert.notNull(ex, "DriverException must not be null");
 
 		return getExceptionTranslator().translate(task, cql, ex);
+	}
+
+	/**
+	 * Adapter to enable use of a {@link RowCallbackHandler} inside a {@link ResultSetExtractor}.
+	 */
+	protected static class RowCallbackHandlerResultSetExtractor implements ResultSetExtractor<Object> {
+
+		private final RowCallbackHandler rowCallbackHandler;
+
+		protected RowCallbackHandlerResultSetExtractor(RowCallbackHandler rowCallbackHandler) {
+			this.rowCallbackHandler = rowCallbackHandler;
+		}
+
+		/**
+		 * @inheritDoc
+		 */
+		@Override
+		public Object extractData(ResultSet resultSet) {
+
+			StreamSupport.stream(resultSet.spliterator(), false).forEach(rowCallbackHandler::processRow);
+
+			return null;
+		}
 	}
 }

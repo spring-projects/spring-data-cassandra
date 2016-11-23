@@ -17,14 +17,14 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Map;
 
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+
 /**
  * Operations for managing a Cassandra keyspace.
- * 
+ *
  * @author David Webb
  * @author Matthew T. Adams
  * @author Mark Paluch
@@ -37,7 +37,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * parameter <code>ifNotExists</code> is {@literal true}, this is a no-op and {@literal false} is returned. If the
 	 * table doesn't exist, parameter <code>ifNotExists</code> is ignored, the table is created and {@literal true} is
 	 * returned.
-	 * 
+	 *
 	 * @param ifNotExists If true, will only create the table if it doesn't exist, else the create operation will be
 	 *          ignored and the method will return {@literal false}.
 	 * @param tableName The name of the table.
@@ -49,7 +49,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 
 	/**
 	 * Drops the named table.
-	 * 
+	 *
 	 * @param tableName The name of the table.
 	 */
 	void dropTable(CqlIdentifier tableName);
@@ -78,4 +78,5 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @since 1.5
 	 */
 	void dropUserType(CqlIdentifier typeName);
+
 }

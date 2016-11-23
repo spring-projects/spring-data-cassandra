@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,9 @@ package org.springframework.data.cassandra.repository.support;
 import java.io.Serializable;
 import java.util.List;
 
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+
 import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -25,12 +28,9 @@ import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-
 /**
  * Repository base implementation for Cassandra.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
@@ -43,7 +43,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	/**
 	 * Creates a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
 	 * {@link CassandraTemplate}.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
 	 */

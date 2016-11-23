@@ -15,17 +15,17 @@
  */
 package org.springframework.cassandra.core;
 
-import org.springframework.util.Assert;
-
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Update;
 
+import org.springframework.util.Assert;
+
 /**
  * Utility class to associate {@link QueryOptions} and {@link WriteOptions} with QueryBuilder {@link Statement}s.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */
@@ -115,7 +115,6 @@ public abstract class QueryOptionsUtil {
 		Assert.notNull(insert, "Insert must not be null");
 
 		if (writeOptions != null) {
-
 			addQueryOptions(insert, writeOptions);
 
 			if (writeOptions.getTtl() != null) {
@@ -138,7 +137,6 @@ public abstract class QueryOptionsUtil {
 		Assert.notNull(update, "Update must not be null");
 
 		if (writeOptions != null) {
-
 			addQueryOptions(update, writeOptions);
 
 			if (writeOptions.getTtl() != null) {

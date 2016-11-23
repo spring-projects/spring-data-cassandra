@@ -19,14 +19,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.datastax.driver.core.Statement;
+
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-
-import com.datastax.driver.core.Statement;
 
 /**
  * Interface specifying a basic set of Cassandra operations. Implemented by {@link CassandraTemplate}. Not often used
@@ -41,6 +41,29 @@ import com.datastax.driver.core.Statement;
  * @see Statement
  */
 public interface CassandraOperations {
+
+	/**
+	 * Returns a new {@link CassandraBatchOperations}. Each {@link CassandraBatchOperations} instance can be executed only
+	 * once so you might want to obtain new {@link CassandraBatchOperations} instances for each batch.
+	 *
+	 * @return a new {@link CassandraBatchOperations} associated with the given entity class.
+	 */
+	CassandraBatchOperations batchOps();
+
+	/**
+	 * Returns the underlying {@link CassandraConverter}.
+	 *
+	 * @return the underlying {@link CassandraConverter}.
+	 */
+	CassandraConverter getConverter();
+
+	/**
+	 * Expose the underlying {@link CqlOperations} to allow CQL operations.
+	 *
+	 * @return the underlying {@link CqlOperations}.
+	 * @see CqlOperations
+	 */
+	CqlOperations getCqlOperations();
 
 	/**
 	 * The table name used for the specified class by this template.
@@ -131,6 +154,25 @@ public interface CassandraOperations {
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Returns the number of rows for the given entity class.
+	 *
+	 * @param entityClass must not be {@literal null}.
+	 * @return the number of existing entities.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	long count(Class<?> entityClass) throws DataAccessException;
+
+	/**
+	 * Determine whether the row {@code entityClass} with the given {@code id} exists.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return true, if the object exists.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	boolean exists(Object id, Class<?> entityClass) throws DataAccessException;
+
+	/**
 	 * Execute the Select by {@code id} for the given {@code entityClass}.
 	 *
 	 * @param id must not be {@literal null}.
@@ -149,25 +191,6 @@ public interface CassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> List<T> selectBySimpleIds(Iterable<?> ids, Class<T> entityClass) throws DataAccessException;
-
-	/**
-	 * Determine whether the row {@code entityClass} with the given {@code id} exists.
-	 *
-	 * @param id must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return true, if the object exists.
-	 * @throws DataAccessException if there is any problem executing the query.
-	 */
-	boolean exists(Object id, Class<?> entityClass) throws DataAccessException;
-
-	/**
-	 * Returns the number of rows for the given entity class.
-	 *
-	 * @param entityClass must not be {@literal null}.
-	 * @return the number of existing entities.
-	 * @throws DataAccessException if there is any problem executing the query.
-	 */
-	long count(Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Insert the given entity and return the entity if the insert was applied.
@@ -208,15 +231,6 @@ public interface CassandraOperations {
 	<T> T update(T entity, WriteOptions options) throws DataAccessException;
 
 	/**
-	 * Remove the given object from the table by id.
-	 *
-	 * @param id must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @throws DataAccessException if there is any problem executing the query.
-	 */
-	boolean deleteById(Object id, Class<?> entityClass) throws DataAccessException;
-
-	/**
 	 * Delete the given entity and return the entity if the delete was applied.
 	 *
 	 * @param entity must not be {@literal null}.
@@ -236,33 +250,20 @@ public interface CassandraOperations {
 	<T> T delete(T entity, QueryOptions options) throws DataAccessException;
 
 	/**
+	 * Remove the given object from the table by id.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	boolean deleteById(Object id, Class<?> entityClass) throws DataAccessException;
+
+	/**
 	 * Execute a {@code TRUNCATE} query to remove all entities of a given class.
-	 * 
+	 *
 	 * @param entityClass The entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	void truncate(Class<?> entityClass) throws DataAccessException;
 
-	/**
-	 * Returns a new {@link CassandraBatchOperations}. Each {@link CassandraBatchOperations} instance can be executed only
-	 * once so you might want to obtain new {@link CassandraBatchOperations} instances for each batch.
-	 *
-	 * @return a new {@link CassandraBatchOperations} associated with the given entity class.
-	 */
-	CassandraBatchOperations batchOps();
-
-	/**
-	 * Returns the underlying {@link CassandraConverter}.
-	 *
-	 * @return the underlying {@link CassandraConverter}.
-	 */
-	CassandraConverter getConverter();
-
-	/**
-	 * Expose the underlying {@link CqlOperations} to allow CQL operations.
-	 * 
-	 * @return the underlying {@link CqlOperations}.
-	 * @see CqlOperations
-	 */
-	CqlOperations getCqlOperations();
 }

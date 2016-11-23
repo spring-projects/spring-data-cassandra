@@ -15,25 +15,13 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.StreamSupport;
-
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Update;
-import org.springframework.cassandra.support.CassandraAccessor;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.util.Assert;
+import java.util.function.Function;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
@@ -42,8 +30,11 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
-import com.datastax.driver.core.policies.RetryPolicy;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+
+import org.springframework.cassandra.support.CassandraAccessor;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.util.Assert;
 
 /**
  * <b>This is the central class in the CQL core package.</b> It simplifies the use of CQL and helps to avoid common
@@ -88,102 +79,26 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
-	 * Placeholder for default values.
-	 */
-	private final static Statement DEFAULTS = QueryBuilder.select().from("DEFAULT");
-
-	/**
-	 * If this variable is set to a non-negative value, it will be used for setting the {@code fetchSize} property on
-	 * statements used for query processing.
-	 */
-	private int fetchSize = -1;
-
-	/**
-	 * If this variable is set to a value, it will be used for setting the {@code retryPolicy} property on statements used
-	 * for query processing.
-	 */
-	private RetryPolicy retryPolicy;
-
-	/**
-	 * If this variable is set to a value, it will be used for setting the {@code consistencyLevel} property on statements
-	 * used for query processing.
-	 */
-	private com.datastax.driver.core.ConsistencyLevel consistencyLevel;
-
-	/**
-	 * Construct a new {@link CqlTemplate}. Note: The {@link Session} has to be set before using the instance.
+	 * Constructs a new, uninitialized {@link CqlTemplate}.
+	 *
+	 * Note: The {@link Session} has to be set before using the instance.
 	 *
 	 * @see #setSession(Session)
 	 */
 	public CqlTemplate() {}
 
 	/**
-	 * Construct a new {@link CqlTemplate}, given a {@link Session}.
+	 * Constructs a new {@link CqlTemplate} initialized with the given {@link Session}.
 	 *
 	 * @param session the active Cassandra {@link Session}.
+	 * @throws IllegalStateException if {@link Session} is {@literal null}.
+	 * @see com.datastax.driver.core.Session
 	 */
 	public CqlTemplate(Session session) {
 
 		Assert.notNull(session, "Session must not be null");
 
 		setSession(session);
-	}
-
-	/**
-	 * Set the fetch size for this {@link CqlTemplate}. This is important for processing large result sets: Setting this
-	 * higher than the default value will increase processing speed at the cost of memory consumption; setting this lower
-	 * can avoid transferring row data that will never be read by the application. Default is -1, indicating to use the
-	 * CQL driver's default configuration (i.e. to not pass a specific fetch size setting on to the driver).
-	 *
-	 * @see Statement#setFetchSize(int)
-	 */
-	public void setFetchSize(int fetchSize) {
-		this.fetchSize = fetchSize;
-	}
-
-	/**
-	 * @return the fetch size specified for this {@link CqlTemplate}.
-	 */
-	public int getFetchSize() {
-		return this.fetchSize;
-	}
-
-	/**
-	 * Set the retry policy for this {@link CqlTemplate}. This is important for defining behavior when a request
-	 * fails.
-	 *
-	 * @see Statement#setRetryPolicy(RetryPolicy)
-	 * @see RetryPolicy
-	 */
-	public void setRetryPolicy(RetryPolicy retryPolicy) {
-		this.retryPolicy = retryPolicy;
-	}
-
-	/**
-	 * @return the {@link RetryPolicy} specified for this {@link CqlTemplate}.
-	 */
-	public RetryPolicy getRetryPolicy() {
-		return retryPolicy;
-	}
-
-	/**
-	 * Set the consistency level for this {@link CqlTemplate}. Consistency level defines the number of nodes
-	 * involved into query processing. Relaxed consistency level settings use fewer nodes but eventual consistency is more
-	 * likely to occur while a higher consistency level involves more nodes to obtain results with a higher consistency
-	 * guarantee.
-	 *
-	 * @see Statement#setConsistencyLevel(ConsistencyLevel)
-	 * @see RetryPolicy
-	 */
-	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
-		this.consistencyLevel = consistencyLevel;
-	}
-
-	/**
-	 * @return the {@link ConsistencyLevel} specified for this {@link CqlTemplate}.
-	 */
-	public ConsistencyLevel getConsistencyLevel() {
-		return consistencyLevel;
 	}
 
 	// -------------------------------------------------------------------------
@@ -202,7 +117,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		try {
 			return action.doInSession(getSession());
 		} catch (DriverException e) {
-			throw translateException("SessionCallback", getCql(action), e);
+			throw translateException("SessionCallback", toCql(action), e);
 		}
 	}
 
@@ -227,22 +142,21 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.ResultSetExtractor)
 	 */
 	@Override
-	public <T> T query(String cql, ResultSetExtractor<T> rse) throws DataAccessException {
+	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 
 		Assert.hasText(cql, "CQL must not be empty");
-		Assert.notNull(rse, "ResultSetExtractor must not be null");
+		Assert.notNull(resultSetExtractor, "ResultSetExtractor must not be null");
 
 		try {
-
 			if (logger.isDebugEnabled()) {
 				logger.debug("Executing CQL Statement [{}]", cql);
 			}
 
-			SimpleStatement simpleStatement = new SimpleStatement(cql);
+			SimpleStatement statement = applyStatementSettings(new SimpleStatement(cql));
 
-			applyStatementSettings(simpleStatement);
+			ResultSet results = getSession().execute(statement);
 
-			return rse.extractData(getSession().execute(simpleStatement));
+			return resultSetExtractor.extractData(results);
 		} catch (DriverException e) {
 			throw translateException("Query", cql, e);
 		}
@@ -253,8 +167,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.RowCallbackHandler)
 	 */
 	@Override
-	public void query(String cql, RowCallbackHandler rch) throws DataAccessException {
-		query(cql, new RowCallbackHandlerResultSetExtractor(rch));
+	public void query(String cql, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
+		query(cql, newResultSetExtractor(rowCallbackHandler));
 	}
 
 	/*
@@ -263,45 +177,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(cql, new RowMapperResultSetExtractor<>(rowMapper));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper)
-	 */
-	@Override
-	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-
-		List<T> results = query(cql, rowMapper);
-		return DataAccessUtils.requiredSingleResult(results);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, java.lang.Class)
-	 */
-	@Override
-	public <T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
-		return queryForObject(cql, getSingleColumnRowMapper(requiredType));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForMap(java.lang.String)
-	 */
-	@Override
-	public Map<String, Object> queryForMap(String cql) throws DataAccessException {
-		return queryForObject(cql, getColumnMapRowMapper());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(java.lang.String, java.lang.Class)
-	 */
-	@Override
-	public <T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException {
-		return query(cql, getSingleColumnRowMapper(elementType));
+		return query(cql, newResultSetExtractor(rowMapper));
 	}
 
 	/*
@@ -310,7 +186,43 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public List<Map<String, Object>> queryForList(String cql) throws DataAccessException {
-		return query(cql, getColumnMapRowMapper());
+		return query(cql, newResultSetExtractor(newColumnMapRowMapper()));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(java.lang.String, java.lang.Class)
+	 */
+	@Override
+	public <T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException {
+		return query(cql, newResultSetExtractor(newSingleColumnRowMapper(elementType)));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForMap(java.lang.String)
+	 */
+	@Override
+	public Map<String, Object> queryForMap(String cql) throws DataAccessException {
+		return queryForObject(cql, newColumnMapRowMapper());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, java.lang.Class)
+	 */
+	@Override
+	public <T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
+		return queryForObject(cql, newSingleColumnRowMapper(requiredType));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper)
+	 */
+	@Override
+	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
+		return DataAccessUtils.requiredSingleResult(query(cql, newResultSetExtractor(rowMapper)));
 	}
 
 	/*
@@ -327,8 +239,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForRows(java.lang.String)
 	 */
 	@Override
-	public Iterator<Row> queryForRows(String cql) throws DataAccessException {
-		return queryForResultSet(cql).iterator();
+	public Iterable<Row> queryForRows(String cql) throws DataAccessException {
+		return () -> queryForResultSet(cql).iterator();
 	}
 
 	// -------------------------------------------------------------------------
@@ -352,20 +264,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(com.datastax.driver.core.Statement, org.springframework.cassandra.core.ResultSetExtractor)
 	 */
 	@Override
-	public <T> T query(Statement statement, ResultSetExtractor<T> rse) throws DataAccessException {
+	public <T> T query(Statement statement, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 
 		Assert.notNull(statement, "CQL Statement must not be null");
-		Assert.notNull(rse, "ResultSetExtractor must not be null");
+		Assert.notNull(resultSetExtractor, "ResultSetExtractor must not be null");
 
 		try {
-
 			if (logger.isDebugEnabled()) {
 				logger.debug("Executing CQL Statement [{}]", statement);
 			}
 
-			applyStatementSettings(statement);
-
-			return rse.extractData(getSession().execute(statement));
+			return resultSetExtractor.extractData(getSession().execute(applyStatementSettings(statement)));
 		} catch (DriverException e) {
 			throw translateException("Query", statement.toString(), e);
 		}
@@ -376,8 +285,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(com.datastax.driver.core.Statement, org.springframework.cassandra.core.RowCallbackHandler)
 	 */
 	@Override
-	public void query(Statement statement, RowCallbackHandler rch) throws DataAccessException {
-		query(statement, new RowCallbackHandlerResultSetExtractor(rch));
+	public void query(Statement statement, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
+		query(statement, newResultSetExtractor(rowCallbackHandler));
 	}
 
 	/*
@@ -386,45 +295,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public <T> List<T> query(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(statement, new RowMapperResultSetExtractor<>(rowMapper));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(com.datastax.driver.core.Statement, org.springframework.cassandra.core.RowMapper)
-	 */
-	@Override
-	public <T> T queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
-
-		List<T> results = query(statement, rowMapper);
-		return DataAccessUtils.requiredSingleResult(results);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(com.datastax.driver.core.Statement, java.lang.Class)
-	 */
-	@Override
-	public <T> T queryForObject(Statement statement, Class<T> requiredType) throws DataAccessException {
-		return queryForObject(statement, getSingleColumnRowMapper(requiredType));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForMap(com.datastax.driver.core.Statement)
-	 */
-	@Override
-	public Map<String, Object> queryForMap(Statement statement) throws DataAccessException {
-		return queryForObject(statement, getColumnMapRowMapper());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(com.datastax.driver.core.Statement, java.lang.Class)
-	 */
-	@Override
-	public <T> List<T> queryForList(Statement statement, Class<T> elementType) throws DataAccessException {
-		return query(statement, getSingleColumnRowMapper(elementType));
+		return query(statement, newResultSetExtractor(rowMapper));
 	}
 
 	/*
@@ -433,7 +304,43 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public List<Map<String, Object>> queryForList(Statement statement) throws DataAccessException {
-		return query(statement, getColumnMapRowMapper());
+		return query(statement, newResultSetExtractor(newColumnMapRowMapper()));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(com.datastax.driver.core.Statement, java.lang.Class)
+	 */
+	@Override
+	public <T> List<T> queryForList(Statement statement, Class<T> elementType) throws DataAccessException {
+		return query(statement, newResultSetExtractor(newSingleColumnRowMapper(elementType)));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForMap(com.datastax.driver.core.Statement)
+	 */
+	@Override
+	public Map<String, Object> queryForMap(Statement statement) throws DataAccessException {
+		return queryForObject(statement, newColumnMapRowMapper());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(com.datastax.driver.core.Statement, java.lang.Class)
+	 */
+	@Override
+	public <T> T queryForObject(Statement statement, Class<T> requiredType) throws DataAccessException {
+		return queryForObject(statement, newSingleColumnRowMapper(requiredType));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(com.datastax.driver.core.Statement, org.springframework.cassandra.core.RowMapper)
+	 */
+	@Override
+	public <T> T queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
+		return DataAccessUtils.requiredSingleResult(query(statement, newResultSetExtractor(rowMapper)));
 	}
 
 	/*
@@ -450,72 +357,30 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForRows(com.datastax.driver.core.Statement)
 	 */
 	@Override
-	public Iterator<Row> queryForRows(Statement statement) throws DataAccessException {
-		return queryForResultSet(statement).iterator();
+	public Iterable<Row> queryForRows(Statement statement) throws DataAccessException {
+		return () -> queryForResultSet(statement).iterator();
 	}
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with prepared statements
+	// Methods dealing with com.datastax.driver.core.PreparedStatement
 	// -------------------------------------------------------------------------
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementCallback)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(java.lang.String, java.lang.Object[])
 	 */
 	@Override
-	public <T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action) throws DataAccessException {
-
-		Assert.notNull(psc, "PreparedStatementCreator must not be null");
-		Assert.notNull(action, "PreparedStatementCallback object must not be null");
-
-		try {
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("Preparing statement [{}] using {}", getCql(psc), psc);
-			}
-
-			PreparedStatement preparedStatement = psc.createPreparedStatement(getSession());
-			applyStatementSettings(preparedStatement);
-
-			return action.doInPreparedStatement(preparedStatement);
-
-		} catch (DriverException e) {
-			throw translateException("PreparedStatementCallback", getCql(psc), e);
-		}
+	public boolean execute(String cql, Object... args) throws DataAccessException {
+		return execute(cql, newPreparedStatementBinder(args));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder)
 	 */
 	@Override
-	public <T> T query(PreparedStatementCreator psc, PreparedStatementBinder psb, ResultSetExtractor<T> rse)
-			throws DataAccessException {
-
-		Assert.notNull(psc, "PreparedStatementCreator must not be null");
-		Assert.notNull(rse, "ResultSetExtractor object must not be null");
-
-		try {
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("Preparing statement [{}] using {}", getCql(psc), psc);
-			}
-
-			Session session = getSession();
-			PreparedStatement ps = psc.createPreparedStatement(session);
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("Executing prepared statement [{}]", ps);
-			}
-
-			BoundStatement boundStatement = psb != null ? psb.bindValues(ps) : ps.bind();
-
-			applyStatementSettings(boundStatement);
-			return rse.extractData(session.execute(boundStatement));
-
-		} catch (DriverException e) {
-			throw translateException("Query", getCql(psc), e);
-		}
+	public boolean execute(String cql, PreparedStatementBinder preparedStatementBinder) throws DataAccessException {
+		return query(new SimplePreparedStatementCreator(cql), preparedStatementBinder, ResultSet::wasApplied);
 	}
 
 	/*
@@ -524,7 +389,40 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public <T> T execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException {
-		return execute(new SimplePreparedStatementCreator(cql), action);
+		return execute(newPreparedStatementCreator(cql), action);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(org.springframework.cassandra.core.PreparedStatementCreator)
+	 */
+	@Override
+	public boolean execute(PreparedStatementCreator preparedStatementCreator) throws DataAccessException {
+		return query(preparedStatementCreator, ResultSet::wasApplied);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementCallback)
+	 */
+	@Override
+	public <T> T execute(PreparedStatementCreator preparedStatementCreator, PreparedStatementCallback<T> action)
+			throws DataAccessException {
+
+		Assert.notNull(preparedStatementCreator, "PreparedStatementCreator must not be null");
+		Assert.notNull(action, "PreparedStatementCallback object must not be null");
+
+		try {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Preparing statement [{}] using {}", toCql(preparedStatementCreator), preparedStatementCreator);
+			}
+
+			return action.doInPreparedStatement(applyStatementSettings(
+				preparedStatementCreator.createPreparedStatement(getSession())));
+
+		} catch (DriverException e) {
+			throw translateException("PreparedStatementCallback", toCql(preparedStatementCreator), e);
+		}
 	}
 
 	/*
@@ -532,26 +430,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.ResultSetExtractor)
 	 */
 	@Override
-	public <T> T query(PreparedStatementCreator psc, ResultSetExtractor<T> rse) throws DataAccessException {
-		return query(psc, null, rse);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor)
-	 */
-	@Override
-	public <T> T query(String cql, PreparedStatementBinder psb, ResultSetExtractor<T> rse) throws DataAccessException {
-		return query(new SimplePreparedStatementCreator(cql), psb, rse);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.ResultSetExtractor, java.lang.Object[])
-	 */
-	@Override
-	public <T> T query(String cql, ResultSetExtractor<T> rse, Object... args) throws DataAccessException {
-		return query(cql, newArgPreparedStatementBinder(args), rse);
+	public <T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
+		return query(preparedStatementCreator, null, resultSetExtractor);
 	}
 
 	/*
@@ -559,36 +439,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowCallbackHandler)
 	 */
 	@Override
-	public void query(PreparedStatementCreator psc, RowCallbackHandler rch) throws DataAccessException {
-		query(psc, new RowCallbackHandlerResultSetExtractor(rch));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler)
-	 */
-	@Override
-	public void query(String cql, PreparedStatementBinder psb, RowCallbackHandler rch) throws DataAccessException {
-		query(cql, psb, new RowCallbackHandlerResultSetExtractor(rch));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler)
-	 */
-	@Override
-	public void query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowCallbackHandler rch)
-			throws DataAccessException {
-		query(psc, psb, new RowCallbackHandlerResultSetExtractor(rch));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.RowCallbackHandler, java.lang.Object[])
-	 */
-	@Override
-	public void query(String cql, RowCallbackHandler rch, Object... args) throws DataAccessException {
-		query(cql, newArgPreparedStatementBinder(args), new RowCallbackHandlerResultSetExtractor(rch));
+	public void query(PreparedStatementCreator preparedStatementCreator, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
+		query(preparedStatementCreator, null, newResultSetExtractor(rowCallbackHandler));
 	}
 
 	/*
@@ -596,17 +448,55 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowMapper)
 	 */
 	@Override
-	public <T> List<T> query(PreparedStatementCreator psc, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(psc, new RowMapperResultSetExtractor<>(rowMapper));
+	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper) throws DataAccessException {
+		return query(preparedStatementCreator, null, newResultSetExtractor(rowMapper));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor)
 	 */
 	@Override
-	public <T> List<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(cql, psb, new RowMapperResultSetExtractor<>(rowMapper));
+	public <T> T query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
+			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
+
+		Assert.notNull(preparedStatementCreator, "PreparedStatementCreator must not be null");
+		Assert.notNull(resultSetExtractor, "ResultSetExtractor object must not be null");
+
+		try {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Preparing statement [{}] using {}", toCql(preparedStatementCreator), preparedStatementCreator);
+			}
+
+			Session session = getSession();
+
+			PreparedStatement preparedStatement = preparedStatementCreator.createPreparedStatement(session);
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Executing prepared statement [{}]", preparedStatement);
+			}
+
+			BoundStatement boundStatement = applyStatementSettings(preparedStatementBinder != null
+				? preparedStatementBinder.bindValues(preparedStatement) : preparedStatement.bind());
+
+			ResultSet results = session.execute(boundStatement);
+
+			return resultSetExtractor.extractData(results);
+
+		} catch (DriverException e) {
+			throw translateException("Query", toCql(preparedStatementCreator), e);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler)
+	 */
+	@Override
+	public void query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
+			RowCallbackHandler rowCallbackHandler) throws DataAccessException {
+
+		query(preparedStatementCreator, preparedStatementBinder, newResultSetExtractor(rowCallbackHandler));
 	}
 
 	/*
@@ -614,9 +504,28 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
 	 */
 	@Override
-	public <T> List<T> query(PreparedStatementCreator psc, PreparedStatementBinder psb, RowMapper<T> rowMapper)
-			throws DataAccessException {
-		return query(psc, psb, new RowMapperResultSetExtractor<>(rowMapper));
+	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
+			RowMapper<T> rowMapper) throws DataAccessException {
+
+		return query(preparedStatementCreator, preparedStatementBinder, newResultSetExtractor(rowMapper));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.ResultSetExtractor, java.lang.Object[])
+	 */
+	@Override
+	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor, Object... args) throws DataAccessException {
+		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), resultSetExtractor);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.RowCallbackHandler, java.lang.Object[])
+	 */
+	@Override
+	public void query(String cql, RowCallbackHandler rowCallbackHandler, Object... args) throws DataAccessException {
+		query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newResultSetExtractor(rowCallbackHandler));
 	}
 
 	/*
@@ -625,45 +534,40 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
-		return query(cql, newArgPreparedStatementBinder(args), new RowMapperResultSetExtractor<>(rowMapper));
+		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newResultSetExtractor(rowMapper));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper, java.lang.Object[])
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor)
 	 */
 	@Override
-	public <T> T queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
+	public <T> T query(String cql, PreparedStatementBinder preparedStatementBinder, ResultSetExtractor<T> resultSetExtractor)
+			throws DataAccessException {
 
-		List<T> results = query(cql, newArgPreparedStatementBinder(args), new RowMapperResultSetExtractor<>(rowMapper, 1));
-		return DataAccessUtils.requiredSingleResult(results);
+		return query(newPreparedStatementCreator(cql), preparedStatementBinder, resultSetExtractor);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, java.lang.Class, java.lang.Object[])
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler)
 	 */
 	@Override
-	public <T> T queryForObject(String cql, Class<T> requiredType, Object... args) throws DataAccessException {
-		return queryForObject(cql, getSingleColumnRowMapper(requiredType), args);
+	public void query(String cql, PreparedStatementBinder preparedStatementBinder, RowCallbackHandler rowCallbackHandler)
+			throws DataAccessException {
+
+		query(newPreparedStatementCreator(cql), preparedStatementBinder, newResultSetExtractor(rowCallbackHandler));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForMap(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
 	 */
 	@Override
-	public Map<String, Object> queryForMap(String cql, Object... args) throws DataAccessException {
-		return queryForObject(cql, getColumnMapRowMapper(), args);
-	}
+	public <T> List<T> query(String cql, PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper)
+			throws DataAccessException {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(java.lang.String, java.lang.Class, java.lang.Object[])
-	 */
-	@Override
-	public <T> List<T> queryForList(String cql, Class<T> elementType, Object... args) throws DataAccessException {
-		return query(cql, getSingleColumnRowMapper(elementType), args);
+		return query(newPreparedStatementCreator(cql), preparedStatementBinder, newResultSetExtractor(rowMapper));
 	}
 
 	/*
@@ -672,7 +576,46 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public List<Map<String, Object>> queryForList(String cql, Object... args) throws DataAccessException {
-		return query(cql, getColumnMapRowMapper(), args);
+		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args),
+			newResultSetExtractor(newColumnMapRowMapper()));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(java.lang.String, java.lang.Class, java.lang.Object[])
+	 */
+	@Override
+	public <T> List<T> queryForList(String cql, Class<T> elementType, Object... args) throws DataAccessException {
+		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args),
+			newResultSetExtractor(newSingleColumnRowMapper(elementType)));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForMap(java.lang.String, java.lang.Object[])
+	 */
+	@Override
+	public Map<String, Object> queryForMap(String cql, Object... args) throws DataAccessException {
+		return queryForObject(cql, newColumnMapRowMapper(), args);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, java.lang.Class, java.lang.Object[])
+	 */
+	@Override
+	public <T> T queryForObject(String cql, Class<T> requiredType, Object... args) throws DataAccessException {
+		return queryForObject(cql, newSingleColumnRowMapper(requiredType), args);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper, java.lang.Object[])
+	 */
+	@Override
+	public <T> T queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
+		return DataAccessUtils.requiredSingleResult(query(newPreparedStatementCreator(cql),
+			newPreparedStatementBinder(args), newResultSetExtractor(rowMapper, 1)));
 	}
 
 	/*
@@ -681,7 +624,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public ResultSet queryForResultSet(String cql, Object... args) throws DataAccessException {
-		return query(cql, rs -> rs, args);
+		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), rs -> rs);
 	}
 
 	/*
@@ -689,35 +632,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForRows(java.lang.String, java.lang.Object[])
 	 */
 	@Override
-	public Iterator<Row> queryForRows(String cql, Object... args) throws DataAccessException {
-		return queryForResultSet(cql, args).iterator();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(org.springframework.cassandra.core.PreparedStatementCreator)
-	 */
-	@Override
-	public boolean execute(PreparedStatementCreator psc) throws DataAccessException {
-		return query(psc, ResultSet::wasApplied);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder)
-	 */
-	@Override
-	public boolean execute(String cql, PreparedStatementBinder psb) throws DataAccessException {
-		return query(new SimplePreparedStatementCreator(cql), psb, ResultSet::wasApplied);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(java.lang.String, java.lang.Object[])
-	 */
-	@Override
-	public boolean execute(String cql, Object... args) throws DataAccessException {
-		return execute(cql, newArgPreparedStatementBinder(args));
+	public Iterable<Row> queryForRows(String cql, Object... args) throws DataAccessException {
+		return () -> queryForResultSet(cql, args).iterator();
 	}
 
 	/*
@@ -741,8 +657,14 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return hostMapper.mapHosts(getHosts());
 	}
 
+	/* (non-Javadoc) */
 	private Set<Host> getHosts() {
 		return getSession().getCluster().getMetadata().getAllHosts();
+	}
+
+	/* (non-Javadoc) */
+	protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
+		return new SimplePreparedStatementCreator(cql);
 	}
 
 	// -------------------------------------------------------------------------
@@ -754,109 +676,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 *
 	 * @param task readable text describing the task being attempted
 	 * @param cql CQL query or update that caused the problem (may be {@code null})
-	 * @param ex the offending {@code RuntimeException}.
+	 * @param driverException the offending {@code RuntimeException}.
 	 * @return the exception translation {@link Function}
 	 * @see CqlProvider
 	 */
 	@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 	protected DataAccessException translateException(String task, String cql, DriverException driverException) {
 		return translate(task, cql, driverException);
-	}
-
-	/**
-	 * Create a new RowMapper for reading columns as key-value pairs.
-	 *
-	 * @return the RowMapper to use
-	 * @see ColumnMapRowMapper
-	 */
-	protected RowMapper<Map<String, Object>> getColumnMapRowMapper() {
-		return new ColumnMapRowMapper();
-	}
-
-	/**
-	 * Create a new RowMapper for reading result objects from a single column.
-	 *
-	 * @param requiredType the type that each result object is expected to match
-	 * @return the RowMapper to use
-	 * @see SingleColumnRowMapper
-	 */
-	protected <T> RowMapper<T> getSingleColumnRowMapper(Class<T> requiredType) {
-		return SingleColumnRowMapper.newInstance(requiredType);
-	}
-
-	/**
-	 * Prepare the given CQL Statement (or {@link com.datastax.driver.core.PreparedStatement}), applying statement
-	 * settings such as fetch size, retry policy, and consistency level.
-	 *
-	 * @param stmt the CQL Statement to prepare
-	 * @see #setFetchSize(int)
-	 * @see #setRetryPolicy(RetryPolicy)
-	 * @see #setConsistencyLevel(ConsistencyLevel)
-	 */
-	protected void applyStatementSettings(Statement stmt) {
-
-		int fetchSize = getFetchSize();
-		if (fetchSize != -1 && stmt.getFetchSize() == DEFAULTS.getFetchSize()) {
-			stmt.setFetchSize(fetchSize);
-		}
-
-		RetryPolicy retryPolicy = getRetryPolicy();
-		if (retryPolicy != null && stmt.getRetryPolicy() == DEFAULTS.getRetryPolicy()) {
-			stmt.setRetryPolicy(retryPolicy);
-		}
-
-		ConsistencyLevel consistencyLevel = getConsistencyLevel();
-		if (consistencyLevel != null && stmt.getConsistencyLevel() == DEFAULTS.getConsistencyLevel()) {
-			stmt.setConsistencyLevel(consistencyLevel);
-		}
-	}
-
-	/**
-	 * Prepare the given CQL Statement (or {@link com.datastax.driver.core.PreparedStatement}), applying statement
-	 * settings such as retry policy and consistency level.
-	 *
-	 * @param stmt the CQL Statement to prepare
-	 * @see #setRetryPolicy(RetryPolicy)
-	 * @see #setConsistencyLevel(ConsistencyLevel)
-	 */
-	protected void applyStatementSettings(PreparedStatement stmt) {
-
-		RetryPolicy retryPolicy = getRetryPolicy();
-		if (retryPolicy != null) {
-			stmt.setRetryPolicy(retryPolicy);
-		}
-
-		ConsistencyLevel consistencyLevel = getConsistencyLevel();
-		if (consistencyLevel != null) {
-			stmt.setConsistencyLevel(consistencyLevel);
-		}
-	}
-
-	/**
-	 * Create a new arg-based PreparedStatementSetter using the args passed in. By default, we'll create an
-	 * {@link ArgumentPreparedStatementBinder}. This method allows for the creation to be overridden by subclasses.
-	 *
-	 * @param args object array with arguments
-	 * @return the new {@link PreparedStatementBinder} to use
-	 */
-	protected PreparedStatementBinder newArgPreparedStatementBinder(Object[] args) {
-		return new ArgumentPreparedStatementBinder(args);
-	}
-
-	/**
-	 * Determine CQL from potential provider object.
-	 *
-	 * @param cqlProvider object that's potentially a {@link CqlProvider}
-	 * @return the CQL string, or {@code null}
-	 * @see CqlProvider
-	 */
-	private static String getCql(Object cqlProvider) {
-
-		if (cqlProvider instanceof CqlProvider) {
-			return ((CqlProvider) cqlProvider).getCql();
-		} else {
-			return null;
-		}
 	}
 
 	private class SimplePreparedStatementCreator implements PreparedStatementCreator, CqlProvider {
@@ -878,25 +704,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		@Override
 		public String getCql() {
 			return cql;
-		}
-	}
-
-	/**
-	 * Adapter to enable use of a {@link RowCallbackHandler} inside a {@link ResultSetExtractor}.
-	 */
-	private static class RowCallbackHandlerResultSetExtractor implements ResultSetExtractor<Object> {
-
-		private final RowCallbackHandler rch;
-
-		public RowCallbackHandlerResultSetExtractor(RowCallbackHandler rch) {
-			this.rch = rch;
-		}
-
-		@Override
-		public Object extractData(ResultSet rs) {
-
-			StreamSupport.stream(rs.spliterator(), false).forEach(rch::processRow);
-			return null;
 		}
 	}
 }
