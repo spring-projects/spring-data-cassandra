@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.0.M1 (2016-11-23)
+----------------------------------------
+* DATACASS-354 - Release 2.0 M1 (Kay).
+* DATACASS-172 - Add support for User-defined types.
+
+
 Changes in version 1.4.4.RELEASE (2016-09-29)
 ---------------------------------------------
 * DATACASS-337 - Release 1.4.4 (Hopper SR4).
