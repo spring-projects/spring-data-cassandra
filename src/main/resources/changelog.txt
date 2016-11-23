@@ -5,6 +5,8 @@ Changes in version 2.0.0.M1 (2016-11-23)
 ----------------------------------------
 * DATACASS-354 - Release 2.0 M1 (Kay).
 * DATACASS-172 - Add support for User-defined types.
+* DATACASS-292 - Separate asynchronous and synchronous operations in CqlOperations and CassandraOperations into dedicated interfaces and templates.
+* DATACASS-335 - Support for reactive data access.
 
 
 Changes in version 1.4.4.RELEASE (2016-09-29)
