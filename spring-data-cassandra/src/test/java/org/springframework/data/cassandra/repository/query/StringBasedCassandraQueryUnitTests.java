@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.repository.query;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -117,6 +119,21 @@ public class StringBasedCassandraQueryUnitTests {
 	public void bindsIndexParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
+		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod(), "Matthews");
+
+		String actual = cassandraQuery.createQuery(accessor);
+
+		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
+	}
+
+	/**
+	 * @see DATACASS-259
+	 */
+	@Test
+	public void bindsIndexParameterForComposedQueryAnnotationCorrectly() {
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByComposedQueryAnnotation", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
 				cassandraQuery.getQueryMethod(), "Matthews");
 
@@ -462,5 +479,13 @@ public class StringBasedCassandraQueryUnitTests {
 
 		@Query("SELECT * FROM person WHERE address=?0;")
 		Person findByMainAddress(UDTValue udtValue);
+
+		@ComposedQueryAnnotation
+		Person findByComposedQueryAnnotation(String lastname);
+	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Query("SELECT * FROM person WHERE lastname = ?0;")
+	@interface ComposedQueryAnnotation {
 	}
 }

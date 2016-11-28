@@ -15,11 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
 import org.springframework.data.repository.query.Parameter;
@@ -79,8 +82,11 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 
 			super(parameter);
 
-			if (parameter.hasParameterAnnotation(CassandraType.class)) {
-				CassandraType cassandraType = parameter.getParameterAnnotation(CassandraType.class);
+			AnnotatedParameter annotatedParameter = new AnnotatedParameter(parameter);
+
+			if (AnnotatedElementUtils.hasAnnotation(annotatedParameter, CassandraType.class)) {
+				CassandraType cassandraType = AnnotatedElementUtils.findMergedAnnotation(annotatedParameter,
+						CassandraType.class);
 
 				Assert.notNull(cassandraType.type(),
 						String.format("You must specify the type() when annotating method parameters with @%s",
@@ -117,7 +123,6 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 * unwrapped.
 		 *
 		 * @param parameter must not be {@literal null}.
-		 * @return
 		 */
 		private static Class<?> potentiallyUnwrapParameterType(MethodParameter parameter) {
 
@@ -134,7 +139,6 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 * Returns whether the {@link MethodParameter} is wrapped in a wrapper type.
 		 *
 		 * @param parameter must not be {@literal null}.
-		 * @return
 		 * @see QueryExecutionConverters
 		 */
 		private static boolean isWrapped(MethodParameter parameter) {
@@ -145,12 +149,49 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 * Returns whether the {@link MethodParameter} should be unwrapped.
 		 *
 		 * @param parameter must not be {@literal null}.
-		 * @return
 		 * @see QueryExecutionConverters
 		 */
 		private static boolean shouldUnwrap(MethodParameter parameter) {
 			return QueryExecutionConverters.supportsUnwrapping(parameter.getParameterType())
 					|| ReactiveWrappers.supports(parameter.getParameterType());
+		}
+	}
+
+	/**
+	 * {@link AnnotatedElement} implementation as annotation source for {@link AnnotatedElementUtils}.
+	 *
+	 * @author Mark Paluch
+	 */
+	static class AnnotatedParameter implements AnnotatedElement {
+
+		private final MethodParameter methodParameter;
+
+		AnnotatedParameter(MethodParameter methodParameter) {
+			this.methodParameter = methodParameter;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.reflect.AnnotatedElement#getAnnotation(java.lang.Class)
+		 */
+		@Override
+		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+			return methodParameter.getParameterAnnotation(annotationClass);
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.reflect.AnnotatedElement#getAnnotations()
+		 */
+		@Override
+		public Annotation[] getAnnotations() {
+			return methodParameter.getParameterAnnotations();
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.reflect.AnnotatedElement#getDeclaredAnnotations()
+		 */
+		@Override
+		public Annotation[] getDeclaredAnnotations() {
+			return methodParameter.getParameterAnnotations();
 		}
 	}
 }

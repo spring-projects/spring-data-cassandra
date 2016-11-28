@@ -98,13 +98,10 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	protected CqlIdentifier determineTableName() {
 
-		Table tableAnnotation = getType().getAnnotation(Table.class);
+		Table tableAnnotation = findAnnotation(Table.class);
 
-		if (tableAnnotation == null) {
-			return determineDefaultName();
-		}
-
-		return determineName(tableAnnotation.value(), tableAnnotation.forceQuote());
+		return tableAnnotation == null ? determineDefaultName()
+				: determineName(tableAnnotation.value(), tableAnnotation.forceQuote());
 	}
 
 	@Override
@@ -119,7 +116,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return getType().isAnnotationPresent(PrimaryKeyClass.class);
+		return findAnnotation(PrimaryKeyClass.class) != null;
 	}
 
 	@Override

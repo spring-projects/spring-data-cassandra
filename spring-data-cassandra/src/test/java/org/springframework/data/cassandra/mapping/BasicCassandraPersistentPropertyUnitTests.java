@@ -17,20 +17,102 @@ package org.springframework.data.cassandra.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.Date;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
+
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentProperty}.
  *
  * @author Alex Shvid
+ * @author Mark Paluch
  */
 public class BasicCassandraPersistentPropertyUnitTests {
+
+	@Test
+	public void usesAnnotatedColumnName() {
+		assertThat(getPropertyFor(Timeline.class, "text").getColumnName().toCql()).isEqualTo("message");
+	}
+
+	@Test
+	public void checksIdProperty() {
+
+		CassandraPersistentProperty property = getPropertyFor(Timeline.class, "id");
+
+		assertThat(property.isIdProperty()).isTrue();
+	}
+
+	@Test
+	public void returnsPropertyNameForUnannotatedProperty() {
+		assertThat(getPropertyFor(Timeline.class, "time").getColumnName().toCql()).isEqualTo("time");
+	}
+
+	/**
+	 * @see DATACASS-259
+	 */
+	@Test
+	public void shouldConsiderComposedColumnAnnotation() {
+
+		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedColumnAnnotation.class, "column");
+		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("mycolumn", true));
+	}
+
+	/**
+	 * @see DATACASS-259
+	 */
+	@Test
+	public void shouldConsiderComposedPrimaryKeyColumnAnnotation() {
+
+		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyColumnAnnotation.class,
+				"column");
+		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("mycolumn", true));
+		assertThat(persistentProperty.isPrimaryKeyColumn()).isTrue();
+	}
+
+	/**
+	 * @see DATACASS-259
+	 */
+	@Test
+	public void shouldConsiderComposedPrimaryKeyAnnotation() {
+
+		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class,
+				"column");
+		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("primary-key", true));
+		assertThat(persistentProperty.isIdProperty()).isTrue();
+	}
+
+	/**
+	 * @see DATACASS-259
+	 */
+	@Test
+	public void shouldConsiderComposedCassandraTypeAnnotation() {
+
+		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedCassandraTypeAnnotation.class,
+				"column");
+
+		assertThat(persistentProperty.getDataType().getName()).isEqualTo(Name.COUNTER);
+		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();
+	}
+
+	private CassandraPersistentProperty getPropertyFor(Class<?> type, String fieldName) {
+
+		Field field = ReflectionUtils.findField(type, fieldName);
+
+		return new BasicCassandraPersistentProperty(field, null, getEntity(type), new CassandraSimpleTypeHolder());
+	}
+
+	private <T> BasicCassandraPersistentEntity<T> getEntity(Class<T> type) {
+		return new BasicCassandraPersistentEntity<T>(ClassTypeInformation.from(type));
+	}
 
 	static class Timeline {
 
@@ -39,37 +121,53 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		Date time;
 
 		@Column("message") String text;
-
 	}
 
-	CassandraPersistentEntity<Timeline> entity;
+	@Retention(RetentionPolicy.RUNTIME)
+	@Column(forceQuote = true)
+	@interface ComposedColumnAnnotation {
 
-	@Before
-	public void setup() {
-		entity = new BasicCassandraPersistentEntity<Timeline>(ClassTypeInformation.from(Timeline.class));
+		@AliasFor(annotation = Column.class)
+		String value();
 	}
 
-	@Test
-	public void usesAnnotatedColumnName() {
+	@Retention(RetentionPolicy.RUNTIME)
+	@PrimaryKeyColumn(forceQuote = true)
+	@interface ComposedPrimaryKeyColumnAnnotation {
 
-		Field field = ReflectionUtils.findField(Timeline.class, "text");
-		assertThat(getPropertyFor(field).getColumnName().toCql()).isEqualTo("message");
+		@AliasFor(annotation = PrimaryKeyColumn.class)
+		String value();
+
+		@AliasFor(annotation = PrimaryKeyColumn.class)
+		int ordinal() default 42;
 	}
 
-	@Test
-	public void checksIdProperty() {
-		Field field = ReflectionUtils.findField(Timeline.class, "id");
-		CassandraPersistentProperty property = getPropertyFor(field);
-		assertThat(property.isIdProperty()).isTrue();
+	@Retention(RetentionPolicy.RUNTIME)
+	@PrimaryKey(forceQuote = true)
+	@interface ComposedPrimaryKeyAnnotation {
+
+		@AliasFor(annotation = PrimaryKey.class)
+		String value() default "primary-key";
 	}
 
-	@Test
-	public void returnsPropertyNameForUnannotatedProperty() {
-		Field field = ReflectionUtils.findField(Timeline.class, "time");
-		assertThat(getPropertyFor(field).getColumnName().toCql()).isEqualTo("time");
+	@Retention(RetentionPolicy.RUNTIME)
+	@CassandraType(type = Name.COUNTER)
+	@interface ComposedCassandraTypeAnnotation {
 	}
 
-	private CassandraPersistentProperty getPropertyFor(Field field) {
-		return new BasicCassandraPersistentProperty(field, null, entity, new CassandraSimpleTypeHolder());
+	static class TypeWithComposedColumnAnnotation {
+		@ComposedColumnAnnotation("mycolumn") String column;
+	}
+
+	static class TypeWithComposedPrimaryKeyColumnAnnotation {
+		@ComposedPrimaryKeyColumnAnnotation("mycolumn") String column;
+	}
+
+	static class TypeWithComposedPrimaryKeyAnnotation {
+		@ComposedPrimaryKeyAnnotation String column;
+	}
+
+	static class TypeWithComposedCassandraTypeAnnotation {
+		@ComposedCassandraTypeAnnotation String column;
 	}
 }
