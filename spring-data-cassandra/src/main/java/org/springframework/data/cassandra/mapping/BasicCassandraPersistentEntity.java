@@ -20,6 +20,8 @@ import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.datastax.driver.core.UserType;
+
 import org.springframework.beans.BeansException;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.support.exception.UnsupportedCassandraOperationException;
@@ -37,8 +39,6 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.datastax.driver.core.UserType;
 
 /**
  * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific metadata.
@@ -67,7 +67,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	protected StandardEvaluationContext spelContext;
 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
-		this(typeInformation, null);
+		this(typeInformation, null, DEFAULT_VERIFIER);
 	}
 
 	/**
@@ -100,8 +100,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		Table tableAnnotation = findAnnotation(Table.class);
 
-		return tableAnnotation == null ? determineDefaultName()
-				: determineName(tableAnnotation.value(), tableAnnotation.forceQuote());
+		return (tableAnnotation != null ? determineName(tableAnnotation.value(), tableAnnotation.forceQuote())
+				: determineDefaultName());
 	}
 
 	@Override
@@ -116,7 +116,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return findAnnotation(PrimaryKeyClass.class) != null;
+		return (findAnnotation(PrimaryKeyClass.class) != null);
 	}
 
 	@Override
@@ -139,7 +139,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 			@Override
 			public void doWithPersistentProperty(CassandraPersistentProperty property) {
-
 				if (property.isCompositePrimaryKey()) {
 					addCompositePrimaryKeyProperties(property.getCompositePrimaryKeyEntity(), properties);
 				} else {

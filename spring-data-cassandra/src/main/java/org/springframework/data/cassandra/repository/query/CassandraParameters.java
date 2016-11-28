@@ -81,12 +81,11 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 			AnnotatedParameter annotatedParameter = new AnnotatedParameter(parameter);
 
 			if (AnnotatedElementUtils.hasAnnotation(annotatedParameter, CassandraType.class)) {
+				CassandraType cassandraType = AnnotatedElementUtils.findMergedAnnotation(
+						annotatedParameter, CassandraType.class);
 
-				CassandraType cassandraType = AnnotatedElementUtils.findMergedAnnotation(annotatedParameter,
-						CassandraType.class);
-
-				Assert.notNull(cassandraType.type(),
-						String.format("You must specify the type() when annotating method parameters with @%s",
+				Assert.notNull(cassandraType.type(), String.format(
+						"You must specify the type() when annotating method parameters with @%s",
 								CassandraType.class.getSimpleName()));
 
 				this.cassandraType = cassandraType;
@@ -119,24 +118,24 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 			this.methodParameter = methodParameter;
 		}
 
-		/* (non-Javadoc)
-		 * @see java.lang.reflect.AnnotatedElement#getAnnotation(java.lang.Class)
+		/**
+		 * @inheritDoc
 		 */
 		@Override
 		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
 			return methodParameter.getParameterAnnotation(annotationClass);
 		}
 
-		/* (non-Javadoc)
-		 * @see java.lang.reflect.AnnotatedElement#getAnnotations()
+		/**
+		 * @inheritDoc
 		 */
 		@Override
 		public Annotation[] getAnnotations() {
 			return methodParameter.getParameterAnnotations();
 		}
 
-		/* (non-Javadoc)
-		 * @see java.lang.reflect.AnnotatedElement#getDeclaredAnnotations()
+		/**
+		 * @inheritDoc
 		 */
 		@Override
 		public Annotation[] getDeclaredAnnotations() {

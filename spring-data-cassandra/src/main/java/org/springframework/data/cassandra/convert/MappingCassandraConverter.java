@@ -540,7 +540,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (idProperty != null) {
 			return accessor.getProperty(idProperty,
-					idProperty.isCompositePrimaryKey() ? idProperty.getType() : getTargetType(idProperty));
+					(Class) (idProperty.isCompositePrimaryKey() ? idProperty.getType() : getTargetType(idProperty)));
 		}
 
 		// if the class doesn't have an id property, then it's using MapId
