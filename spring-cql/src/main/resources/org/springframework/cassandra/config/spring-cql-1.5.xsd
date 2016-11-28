@@ -1,19 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Copyright 2016 the original author or authors.
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~      http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
 <xsd:schema xmlns="http://www.springframework.org/schema/cql"
 			xmlns:tool="http://www.springframework.org/schema/tool"
 			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -46,7 +31,7 @@ Defines a Cassandra cluster.
 	<xsd:element name="session" type="sessionType">
 		<xsd:annotation>
 			<xsd:documentation
-				source="org.springframework.data.cassandra.config.xml.CassandraDataSessionFactoryBean"><![CDATA[
+				source="org.springframework.cassandra.config.CassandraCqlSessionFactoryBean"><![CDATA[
 Defines a Cassandra session.
 			]]></xsd:documentation>
 			<xsd:appinfo>
@@ -60,13 +45,13 @@ Defines a Cassandra session.
 	<xsd:element name="template" type="templateType">
 		<xsd:annotation>
 			<xsd:documentation
-				source="org.springframework.data.cassandra.config.xml.CassandraDataTemplateFactoryBean"><![CDATA[
+				source="org.springframework.cassandra.config.CassandraCqlTemplateFactoryBean"><![CDATA[
 Defines a CassandraTemplate.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:annotation>
 					<tool:exports
-						type="org.springframework.data.cassandra.CassandraTemplate" />
+						type="org.springframework.cassandra.core.CqlTemplate" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -136,7 +121,6 @@ Provides the ability to define a keyspace.
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="startup-cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
-				<!-- TODO: cql could come from a resource via a resource attribute... -->
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Arbitrary CQL script to be executed against the system keyspace during bean initialization.  Multiple elements will be executed in document order.
@@ -144,7 +128,6 @@ Arbitrary CQL script to be executed against the system keyspace during bean init
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="shutdown-cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
-				<!-- TODO: cql could come from a resource via a resource attribute... -->
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Arbitrary CQL script to be executed against the system keyspace during bean destruction.  Multiple elements will be executed in document order.
@@ -581,7 +564,6 @@ If the utilisation of opened connections drops below by this configured threshol
 	<xsd:complexType name="sessionType">
 		<xsd:sequence>
 			<xsd:element name="startup-cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
-				<!-- TODO: cql could come from a resource via a resource attribute... -->
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Arbitrary CQL script to be executed against the session's keyspace during bean initialization.  Multiple elements will be executed in document order.
@@ -589,7 +571,6 @@ Arbitrary CQL script to be executed against the session's keyspace during bean i
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="shutdown-cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
-				<!-- TODO: cql could come from a resource via a resource attribute... -->
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Arbitrary CQL script to be executed against the session's keyspace during bean destruction.  Multiple elements will be executed in document order.
