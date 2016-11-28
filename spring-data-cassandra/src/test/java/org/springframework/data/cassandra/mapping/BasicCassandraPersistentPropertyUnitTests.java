@@ -22,13 +22,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.Date;
 
+import com.datastax.driver.core.DataType.Name;
+
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
-
-import com.datastax.driver.core.DataType.Name;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentProperty}.
@@ -62,20 +62,10 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	@Test
 	public void shouldConsiderComposedColumnAnnotation() {
 
-		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedColumnAnnotation.class, "column");
-		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("mycolumn", true));
-	}
+		CassandraPersistentProperty persistentProperty =
+				getPropertyFor(TypeWithComposedColumnAnnotation.class, "column");
 
-	/**
-	 * @see DATACASS-259
-	 */
-	@Test
-	public void shouldConsiderComposedPrimaryKeyColumnAnnotation() {
-
-		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyColumnAnnotation.class,
-				"column");
 		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("mycolumn", true));
-		assertThat(persistentProperty.isPrimaryKeyColumn()).isTrue();
 	}
 
 	/**
@@ -84,8 +74,9 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	@Test
 	public void shouldConsiderComposedPrimaryKeyAnnotation() {
 
-		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class,
-				"column");
+		CassandraPersistentProperty persistentProperty =
+				getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class, "column");
+
 		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("primary-key", true));
 		assertThat(persistentProperty.isIdProperty()).isTrue();
 	}
@@ -94,10 +85,23 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	 * @see DATACASS-259
 	 */
 	@Test
+	public void shouldConsiderComposedPrimaryKeyColumnAnnotation() {
+
+		CassandraPersistentProperty persistentProperty =
+				getPropertyFor(TypeWithComposedPrimaryKeyColumnAnnotation.class, "column");
+
+		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("mycolumn", true));
+		assertThat(persistentProperty.isPrimaryKeyColumn()).isTrue();
+	}
+
+	/**
+	 * @see DATACASS-259
+	 */
+	@Test
 	public void shouldConsiderComposedCassandraTypeAnnotation() {
 
-		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedCassandraTypeAnnotation.class,
-				"column");
+		CassandraPersistentProperty persistentProperty =
+				getPropertyFor(TypeWithComposedCassandraTypeAnnotation.class, "column");
 
 		assertThat(persistentProperty.getDataType().getName()).isEqualTo(Name.COUNTER);
 		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();
@@ -132,6 +136,14 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
+	@PrimaryKey(forceQuote = true)
+	@interface ComposedPrimaryKeyAnnotation {
+
+		@AliasFor(annotation = PrimaryKey.class)
+		String value() default "primary-key";
+	}
+
+	@Retention(RetentionPolicy.RUNTIME)
 	@PrimaryKeyColumn(forceQuote = true)
 	@interface ComposedPrimaryKeyColumnAnnotation {
 
@@ -143,14 +155,6 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
-	@PrimaryKey(forceQuote = true)
-	@interface ComposedPrimaryKeyAnnotation {
-
-		@AliasFor(annotation = PrimaryKey.class)
-		String value() default "primary-key";
-	}
-
-	@Retention(RetentionPolicy.RUNTIME)
 	@CassandraType(type = Name.COUNTER)
 	@interface ComposedCassandraTypeAnnotation {
 	}
@@ -159,12 +163,12 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		@ComposedColumnAnnotation("mycolumn") String column;
 	}
 
-	static class TypeWithComposedPrimaryKeyColumnAnnotation {
-		@ComposedPrimaryKeyColumnAnnotation("mycolumn") String column;
-	}
-
 	static class TypeWithComposedPrimaryKeyAnnotation {
 		@ComposedPrimaryKeyAnnotation String column;
+	}
+
+	static class TypeWithComposedPrimaryKeyColumnAnnotation {
+		@ComposedPrimaryKeyColumnAnnotation("mycolumn") String column;
 	}
 
 	static class TypeWithComposedCassandraTypeAnnotation {

@@ -3,19 +3,19 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-data-cassandra-distribution</artifactId>
-
-	<packaging>pom</packaging>
-
-	<name>Spring Data for Apache Cassandra - Distribution</name>
-	<description>Distribution build for Spring Data for Apache Cassandra</description>
-
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-cassandra-parent</artifactId>
 		<version>2.0.0.BUILD-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
+
+	<artifactId>spring-data-cassandra-distribution</artifactId>
+	<packaging>pom</packaging>
+
+	<name>Spring Data for Apache Cassandra - Distribution</name>
+	<description>Distribution build for Spring Data for Apache Cassandra</description>
+	<url>https://github.com/spring-projects/spring-data-cassandra/tree/master/spring-data-cassandra-distribution</url>
 
 	<properties>
 		<project.root>${basedir}/..</project.root>
