@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.convert;
 
 import static org.assertj.core.api.Assertions.*;
@@ -40,6 +39,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.LocalDate;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.querybuilder.Assignment;
+import com.datastax.driver.core.querybuilder.BuiltStatement;
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Delete.Where;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.core.querybuilder.Update.Assignments;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -68,21 +81,6 @@ import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.util.Version;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.LocalDate;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.querybuilder.Assignment;
-import com.datastax.driver.core.querybuilder.BuiltStatement;
-import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Delete.Where;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Update;
-import com.datastax.driver.core.querybuilder.Update.Assignments;
-
 /**
  * Unit tests for {@link MappingCassandraConverter}.
  *
@@ -97,9 +95,7 @@ public class MappingCassandraConverterUnitTests {
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
-	@Mock ColumnDefinitions columnDefinitionsMock;
-
-	@Mock Row rowMock;
+	@Mock private Row rowMock;
 
 	private CassandraMappingContext mappingContext;
 	private MappingCassandraConverter mappingCassandraConverter;
