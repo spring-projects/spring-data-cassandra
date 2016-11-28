@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 
 import org.junit.Test;
@@ -86,6 +88,18 @@ public class CassandraParametersUnitTests {
 		assertThat(cassandraParameters.getParameter(0).getCassandraType().type()).isEqualTo(Name.TIME);
 	}
 
+	/**
+	 * @see DATACASS-296
+	 */
+	@Test
+	public void shouldReturnTypeForComposedAnnotationType() throws Exception {
+
+		Method method = PersonRepository.class.getMethod("findByComposedAnnotationObject", Object.class);
+		CassandraParameters cassandraParameters = new CassandraParameters(method);
+
+		assertThat(cassandraParameters.getParameter(0).getCassandraType().type()).isEqualTo(Name.BOOLEAN);
+	}
+
 	interface PersonRepository {
 
 		Person findByFirstname(String firstname);
@@ -95,5 +109,12 @@ public class CassandraParametersUnitTests {
 		Person findByObject(Object firstname);
 
 		Person findByAnnotatedObject(@CassandraType(type = Name.TIME) Object firstname);
+
+		Person findByComposedAnnotationObject(@ComposedCassandraTypeAnnotation Object firstname);
+	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@CassandraType(type = Name.BOOLEAN)
+	@interface ComposedCassandraTypeAnnotation {
 	}
 }

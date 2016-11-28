@@ -17,11 +17,17 @@ package org.springframework.data.cassandra.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
@@ -82,6 +88,17 @@ public class CassandraUserTypePersistentEntityUnitTests {
 		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.cqlId("UpperCase", true));
 	}
 
+	/**
+	 * @see DATACASS-259
+	 */
+	@Test
+	public void shouldConsiderComposedUserDefinedTypeAnnotation() {
+
+		CassandraUserTypePersistentEntity<TypeWithComposedAnnotation> type = getEntity(TypeWithComposedAnnotation.class);
+
+		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.cqlId("mytype", true));
+	}
+
 	private <T> CassandraUserTypePersistentEntity<T> getEntity(Class<T> entityClass) {
 		return new CassandraUserTypePersistentEntity<T>(ClassTypeInformation.from(entityClass), mappingContextMock, null,
 				userTypeResolverMock);
@@ -95,4 +112,16 @@ public class CassandraUserTypePersistentEntityUnitTests {
 
 	@UserDefinedType(value = "UpperCase", forceQuote = true)
 	static class WithForceQuote {}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ ElementType.TYPE })
+	@UserDefinedType(forceQuote = true)
+	@interface ComposedUserDefinedTypeAnnotation {
+
+		@AliasFor(annotation = UserDefinedType.class)
+		String value() default "mytype";
+	}
+
+	@ComposedUserDefinedTypeAnnotation()
+	static class TypeWithComposedAnnotation {}
 }
