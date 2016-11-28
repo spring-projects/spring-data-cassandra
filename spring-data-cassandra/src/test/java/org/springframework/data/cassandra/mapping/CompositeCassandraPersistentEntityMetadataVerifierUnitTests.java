@@ -65,18 +65,11 @@ public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 	}
 
 	/**
-	 * @see DATACASS-258
+	 * @see DATACASS-258, DATACASS-359
 	 */
 	@Test
-	public void shouldFailWithNonPersistentClasses() {
-
-		try {
-			verifier.verify(getEntity(NonPersistentClass.class));
-			fail("Missing MappingException");
-		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining(
-					"Cassandra entities must be annotated with either @Persistent, @Table, @UserDefinedType or @PrimaryKeyClass");
-		}
+	public void shouldNotFailWithNonPersistentClasses() {
+		verifier.verify(getEntity(NonPersistentClass.class));
 	}
 
 	/**

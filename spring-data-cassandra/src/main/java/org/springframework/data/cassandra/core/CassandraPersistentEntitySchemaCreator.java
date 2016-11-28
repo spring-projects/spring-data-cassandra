@@ -152,7 +152,7 @@ public class CassandraPersistentEntitySchemaCreator {
 
 	protected List<CreateTableSpecification> createTableSpecifications(boolean ifNotExists) {
 		Collection<? extends CassandraPersistentEntity<?>> entities = new ArrayList<CassandraPersistentEntity<?>>(
-				mappingContext.getNonPrimaryKeyEntities());
+				mappingContext.getTableEntities());
 
 		List<CreateTableSpecification> specifications = new ArrayList<CreateTableSpecification>();
 

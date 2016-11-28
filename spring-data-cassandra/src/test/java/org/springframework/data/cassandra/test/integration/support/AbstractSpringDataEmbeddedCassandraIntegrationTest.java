@@ -38,7 +38,8 @@ public abstract class AbstractSpringDataEmbeddedCassandraIntegrationTest
 	 * Truncate table for all known {@link org.springframework.data.mapping.PersistentEntity entities}.
 	 */
 	public void deleteAllEntities() {
-		for (CassandraPersistentEntity<?> entity : template.getConverter().getMappingContext().getPersistentEntities()) {
+
+		for (CassandraPersistentEntity<?> entity : template.getConverter().getMappingContext().getTableEntities()) {
 
 			if (entity.getType().isInterface()) {
 				continue;
