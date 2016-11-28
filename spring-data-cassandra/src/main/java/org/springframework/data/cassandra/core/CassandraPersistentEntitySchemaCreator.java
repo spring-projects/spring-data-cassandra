@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.UserType;
+
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
@@ -35,10 +39,6 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
-
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.UserType;
 
 /**
  * Schema creation support for Cassandra based on {@link CassandraMappingContext} and {@link CassandraPersistentEntity}.
@@ -149,7 +149,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	protected List<CreateTableSpecification> createTableSpecifications(boolean ifNotExists) {
 
 		Collection<? extends CassandraPersistentEntity<?>> entities = new ArrayList<>(
-				mappingContext.getNonPrimaryKeyEntities());
+				mappingContext.getTableEntities());
 
 		List<CreateTableSpecification> specifications = new ArrayList<>();
 

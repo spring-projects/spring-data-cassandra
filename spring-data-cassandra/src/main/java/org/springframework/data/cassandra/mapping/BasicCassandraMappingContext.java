@@ -79,9 +79,9 @@ public class BasicCassandraMappingContext
 	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<Class<?>, CassandraPersistentEntity<?>>();
 	protected Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<CqlIdentifier, Set<CassandraPersistentEntity<?>>>();
 
-	protected Set<CassandraPersistentEntity<?>> nonPrimaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
 	protected Set<CassandraPersistentEntity<?>> userDefinedTypes = new HashSet<CassandraPersistentEntity<?>>();
+	protected Set<CassandraPersistentEntity<?>> tableEntities = new HashSet<CassandraPersistentEntity<?>>();
 
 	private CustomConversions customConversions;
 
@@ -128,8 +128,8 @@ public class BasicCassandraMappingContext
 	}
 
 	@Override
-	public Collection<CassandraPersistentEntity<?>> getPersistentEntities() {
-		return getPersistentEntities(false);
+	public Collection<CassandraPersistentEntity<?>> getTableEntities() {
+		return Collections.unmodifiableCollection(tableEntities);
 	}
 
 	@Override
@@ -139,7 +139,7 @@ public class BasicCassandraMappingContext
 
 	@Override
 	public Collection<CassandraPersistentEntity<?>> getNonPrimaryKeyEntities() {
-		return Collections.unmodifiableSet(nonPrimaryKeyEntities);
+		return getTableEntities();
 	}
 
 	@Override
@@ -158,7 +158,7 @@ public class BasicCassandraMappingContext
 			return super.getPersistentEntities();
 		}
 
-		return Collections.unmodifiableSet(nonPrimaryKeyEntities);
+		return getTableEntities();
 	}
 
 	@Override
@@ -207,10 +207,10 @@ public class BasicCassandraMappingContext
 		if (!entity.isUserDefinedType()) {
 			if (entity.isCompositePrimaryKey()) {
 				primaryKeyEntities.add(entity);
-			} else {
-				if (entity.findAnnotation(Persistent.class) != null) {
-					nonPrimaryKeyEntities.add(entity);
-				}
+			}
+
+			if (entity.findAnnotation(Table.class) != null) {
+				tableEntities.add(entity);
 			}
 		}
 

@@ -17,13 +17,15 @@ package org.springframework.data.cassandra.test.integration.repository.cdi;
 
 import java.util.Collections;
 import java.util.Set;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.springframework.cassandra.core.cql.CqlIdentifier;
+import com.datastax.driver.core.Cluster;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Service;
+
 import org.springframework.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
@@ -39,10 +41,6 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.test.integration.repository.simple.User;
 
-import com.datastax.driver.core.Cluster;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.Service;
-
 /**
  * @author Mark Paluch
  */
@@ -55,9 +53,8 @@ class CassandraOperationsProducer {
 	public Cluster createCluster() throws Exception {
 		CassandraConnectionProperties properties = new CassandraConnectionProperties();
 
-		Cluster cluster = Cluster.builder().addContactPoint(properties.getCassandraHost())
+		return Cluster.builder().addContactPoint(properties.getCassandraHost())
 				.withPort(properties.getCassandraPort()).build();
-		return cluster;
 	}
 
 	@Produces
@@ -83,7 +80,7 @@ class CassandraOperationsProducer {
 		schemaCreator.createTables(false, false, true);
 
 		for (CassandraPersistentEntity<?> entity : cassandraTemplate.getConverter().getMappingContext()
-				.getPersistentEntities()) {
+				.getTableEntities()) {
 			cassandraTemplate.truncate(entity.getType());
 		}
 
@@ -112,5 +109,4 @@ class CassandraOperationsProducer {
 	public Set<Service> producerToSatisfyGuavaDependenciesWhenTesting() {
 		return Sets.newHashSet();
 	}
-
 }

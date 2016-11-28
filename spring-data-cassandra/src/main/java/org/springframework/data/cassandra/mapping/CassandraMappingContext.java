@@ -44,6 +44,13 @@ public interface CassandraMappingContext
 	Collection<CassandraPersistentEntity<?>> getPersistentEntities();
 
 	/**
+	 * Returns only {@link Table} entities.
+	 *
+	 * @since 1.5
+	 */
+	Collection<CassandraPersistentEntity<?>> getTableEntities();
+
+	/**
 	 * Returns all persistent entities or only non-primary-key entities.
 	 * 
 	 * @param includePrimaryKeyTypesAndUdts If {@literal true}, returns all entities, including entities that represent primary
@@ -53,14 +60,18 @@ public interface CassandraMappingContext
 
 	/**
 	 * Returns only those entities representing primary key types.
+	 * @deprecated as of 1.5
 	 */
+	@Deprecated
 	Collection<CassandraPersistentEntity<?>> getPrimaryKeyEntities();
 
 	/**
 	 * Returns only those entities not representing primary key types.
 	 * 
 	 * @see #getPersistentEntities(boolean)
+	 * @deprecated as of 1.5, use {@link #getTableEntities()}.
 	 */
+	@Deprecated
 	Collection<CassandraPersistentEntity<?>> getNonPrimaryKeyEntities();
 
 	/**

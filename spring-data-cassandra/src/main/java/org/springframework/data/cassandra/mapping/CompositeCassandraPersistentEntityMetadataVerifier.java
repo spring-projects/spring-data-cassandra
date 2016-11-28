@@ -17,9 +17,7 @@ package org.springframework.data.cassandra.mapping;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
-import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.util.Assert;
 
@@ -43,8 +41,8 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 	 * @see PrimaryKeyClassEntityMetadataVerifier
 	 */
 	public CompositeCassandraPersistentEntityMetadataVerifier() {
-		this(Arrays.asList(new PersistentAnnotationVerifier(), new PrimaryKeyClassEntityMetadataVerifier(),
-			new BasicCassandraPersistentEntityMetadataVerifier()));
+		this(Arrays.asList(new PrimaryKeyClassEntityMetadataVerifier(),
+				new BasicCassandraPersistentEntityMetadataVerifier()));
 	}
 
 	/**
@@ -68,32 +66,6 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 		for (CassandraPersistentEntityMetadataVerifier verifier : verifiers) {
 			verifier.verify(entity);
-		}
-	}
-
-	/**
-	 * {@link CassandraPersistentEntityMetadataVerifier} implementation that requires classes to be annotated with
-	 * {@link Persistent}, {@link Table} or {@link PrimaryKeyClass}.
-	 *
-	 * @author Mark Paluch
-	 */
-	private static class PersistentAnnotationVerifier implements CassandraPersistentEntityMetadataVerifier {
-
-		@Override
-		public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
-
-			if (entity.getType().isInterface()) {
-				return;
-			}
-
-			// Ensure entity is either a @Table/@Persistent, @UserDefinedType or a @PrimaryKey
-			if (entity.findAnnotation(Persistent.class) == null && entity.findAnnotation(UserDefinedType.class) == null) {
-				throw new VerifierMappingExceptions(entity,
-						Collections.singletonList(new MappingException(
-								String.format("Cassandra entities must be annotated with either @%s, @%s, @%s or @%s",
-										Persistent.class.getSimpleName(), Table.class.getSimpleName(),
-										UserDefinedType.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName()))));
-			}
 		}
 	}
 }
