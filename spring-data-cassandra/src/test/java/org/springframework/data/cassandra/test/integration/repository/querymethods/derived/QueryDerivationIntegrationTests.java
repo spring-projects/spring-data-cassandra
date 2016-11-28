@@ -36,6 +36,7 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Address;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.derived.PersonRepository.NumberOfChildren;
+import org.springframework.data.cassandra.test.integration.repository.querymethods.derived.PersonRepository.PersonDto;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.derived.PersonRepository.PersonProjection;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.CassandraVersion;
@@ -175,11 +176,43 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
 	 */
 	@Test
-	public void executesCollectionQueryWithProjectionCorrectly() {
+	public void executesCollectionQueryWithProjection() {
 
 		Collection<PersonProjection> collection = personRepository.findPersonProjectedBy();
 
 		assertThat(collection).hasSize(3).extracting("lastname").contains("White", "White", "White");
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-359">DATACASS-359</a>
+	 */
+	@Test
+	public void executesCollectionQueryWithDtoProjection() {
+
+		Collection<PersonDto> collection = personRepository.findPersonDtoBy();
+
+		assertThat(collection).hasSize(3).extracting("lastname").contains("White", "White", "White");
+	}
+
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-359">DATACASS-359</a>
+	 */
+	@Test
+	public void executesCollectionQueryWithDtoDynamicallyProjected() throws Exception {
+
+		template.execute(
+				"CREATE CUSTOM INDEX IF NOT EXISTS fn_starts_with ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex';");
+
+		// Give Cassandra some time to build the index
+		Thread.sleep(500);
+
+		walter.setNickname("Heisenberg");
+		personRepository.save(walter);
+
+		PersonDto heisenberg = personRepository.findDtoByNicknameStartsWith("Heisen", PersonDto.class);
+
+		assertThat(heisenberg.firstname).isEqualTo("Walter");
+		assertThat(heisenberg.lastname).isEqualTo("White");
 	}
 
 	/**

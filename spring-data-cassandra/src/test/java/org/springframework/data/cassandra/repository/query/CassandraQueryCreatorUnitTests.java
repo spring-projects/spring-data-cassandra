@@ -36,12 +36,13 @@ import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
-import org.springframework.data.repository.core.EntityMetadata;
+import org.springframework.data.cassandra.repository.support.MappingCassandraEntityInformation;
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
@@ -350,13 +351,10 @@ public class CassandraQueryCreatorUnitTests {
 		return creator.createQuery().toString();
 	}
 
-	private <T> EntityMetadata<T> getEntityInformation(final Class<T> entityClass) {
-		return new EntityMetadata<T>() {
-			@Override
-			public Class<T> getJavaType() {
-				return entityClass;
-			}
-		};
+	@SuppressWarnings("unchecked")
+	private <T> CassandraEntityInformation<T, Serializable> getEntityInformation(final Class<T> entityClass) {
+		return new MappingCassandraEntityInformation<T, Serializable>(
+				(CassandraPersistentEntity) context.getPersistentEntity(entityClass), converter);
 	}
 
 	@Table

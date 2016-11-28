@@ -96,6 +96,7 @@ public class CassandraQueryMethod extends QueryMethod {
 					mappingContext.getPersistentEntity(domainClass));
 
 			} else {
+
 				CassandraPersistentEntity<?> returnedEntity = mappingContext.getPersistentEntity(returnedObjectType);
 				CassandraPersistentEntity<?> managedEntity = mappingContext.getPersistentEntity(domainClass);
 

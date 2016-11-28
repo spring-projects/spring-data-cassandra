@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,6 +39,7 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryExecuti
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultSetQuery;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SingleEntityExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.StreamExecution;
+import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -59,6 +62,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 	private final CassandraQueryMethod queryMethod;
 	private final CassandraOperations template;
+	private final EntityInstantiators instantiators;
 
 	/**
 	 * Creates a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
@@ -74,6 +78,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 		this.queryMethod = queryMethod;
 		this.template = operations;
+		this.instantiators = new EntityInstantiators();
 	}
 
 	/* (non-Javadoc)
@@ -93,12 +98,12 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(template.getConverter(),
 				new CassandraParametersParameterAccessor(queryMethod, parameters));
 
-		String query = createQuery(parameterAccessor);
-
 		ResultProcessor resultProcessor = queryMethod.getResultProcessor().withDynamicProjection(parameterAccessor);
 
+		String query = createQuery(parameterAccessor);
+
 		CassandraQueryExecution queryExecution = getExecution(query, parameterAccessor,
-				new ResultProcessingConverter(resultProcessor));
+				new ResultProcessingConverter(resultProcessor, template.getConverter().getMappingContext(), instantiators));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				template.getConverter().getCustomConversions());
@@ -237,15 +242,11 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 */
 	protected abstract String createQuery(CassandraParameterAccessor accessor);
 
+	@RequiredArgsConstructor
 	private class CassandraReturnedType {
 
 		private final ReturnedType returnedType;
 		private final CustomConversions customConversions;
-
-		CassandraReturnedType(ReturnedType returnedType, CustomConversions customConversions) {
-			this.returnedType = returnedType;
-			this.customConversions = customConversions;
-		}
 
 		boolean isProjecting() {
 
