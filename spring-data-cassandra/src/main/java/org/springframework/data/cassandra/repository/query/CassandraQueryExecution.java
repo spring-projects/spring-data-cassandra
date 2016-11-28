@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.repository.query;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.ClassUtils;
@@ -141,6 +143,8 @@ interface CassandraQueryExecution {
 	final class ResultProcessingConverter implements Converter<Object, Object> {
 
 		private final @NonNull ResultProcessor processor;
+		private final @NonNull CassandraMappingContext mappingContext;
+		private final @NonNull EntityInstantiators instantiators;
 
 		/* (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
@@ -154,7 +158,14 @@ interface CassandraQueryExecution {
 				return source;
 			}
 
-			return processor.processResult(source);
+			if (source != null && returnedType.isInstance(source)) {
+				return source;
+			}
+
+			Converter<Object, Object> converter = new DtoInstantiatingConverter(returnedType.getReturnedType(),
+					mappingContext, instantiators);
+
+			return processor.processResult(source, converter);
 		}
 	}
 }
