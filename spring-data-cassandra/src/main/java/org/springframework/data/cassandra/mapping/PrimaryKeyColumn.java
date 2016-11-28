@@ -22,12 +22,14 @@ import java.lang.annotation.Target;
 
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.core.annotation.AliasFor;
 
 /**
  * Identifies the annotated field of a composite primary key class as a primary key field that is either a partition or
  * cluster key field.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
@@ -36,12 +38,19 @@ public @interface PrimaryKeyColumn {
 	/**
 	 * The name of the column in the table.
 	 */
+	@AliasFor(attribute = "name")
+	String value() default "";
+
+	/**
+	 * The name of the column in the table.
+	 */
+	@AliasFor(attribute = "value")
 	String name() default "";
 
 	/**
 	 * The order of this column relative to other primary key columns.
 	 */
-	int ordinal();
+	int ordinal() default Integer.MIN_VALUE;
 
 	/**
 	 * The type of this key column. Default is {@link PrimaryKeyType#CLUSTERED}.

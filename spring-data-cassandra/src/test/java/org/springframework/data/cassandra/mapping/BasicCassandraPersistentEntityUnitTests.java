@@ -18,12 +18,18 @@ package org.springframework.data.cassandra.mapping;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
@@ -113,6 +119,30 @@ public class BasicCassandraPersistentEntityUnitTests {
 		assertThat(entity.isUserDefinedType()).isFalse();
 	}
 
+	/**
+	 * @see DATACASS-259
+	 */
+	@Test
+	public void shouldConsiderComposedTableAnnotation() {
+
+		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<TableWithComposedAnnotation>(
+				ClassTypeInformation.from(TableWithComposedAnnotation.class));
+
+		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.cqlId("mytable", true));
+	}
+
+	/**
+	 * @see DATACASS-259
+	 */
+	@Test
+	public void shouldConsiderComposedPrimaryKeyClassAnnotation() {
+
+		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation>(
+				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
+
+		assertThat(entity.isCompositePrimaryKey()).isTrue();
+	}
+
 	@Table("messages")
 	static class Message {}
 
@@ -132,4 +162,25 @@ public class BasicCassandraPersistentEntityUnitTests {
 			return tableName;
 		}
 	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ ElementType.TYPE })
+	@Table(forceQuote = true)
+	@interface ComposedTableAnnotation {
+
+		@AliasFor(annotation = Table.class)
+		String value() default "mytable";
+	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ ElementType.TYPE })
+	@PrimaryKeyClass
+	@interface ComposedPrimaryKeyClass {
+	}
+
+	@ComposedTableAnnotation()
+	static class TableWithComposedAnnotation {}
+
+	@ComposedPrimaryKeyClass()
+	static class PrimaryKeyClassWithComposedAnnotation {}
 }
