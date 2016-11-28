@@ -15,10 +15,13 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
 import org.springframework.data.repository.query.Parameter;
@@ -75,12 +78,16 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 
 			super(parameter);
 
-			if (parameter.hasParameterAnnotation(CassandraType.class)) {
-				CassandraType cassandraType = parameter.getParameterAnnotation(CassandraType.class);
+			AnnotatedParameter annotatedParameter = new AnnotatedParameter(parameter);
 
-				Assert.notNull(cassandraType.type(), String.format(
-					"You must specify the type() when annotating method parameters with @%s",
-						CassandraType.class.getSimpleName()));
+			if (AnnotatedElementUtils.hasAnnotation(annotatedParameter, CassandraType.class)) {
+
+				CassandraType cassandraType = AnnotatedElementUtils.findMergedAnnotation(annotatedParameter,
+						CassandraType.class);
+
+				Assert.notNull(cassandraType.type(),
+						String.format("You must specify the type() when annotating method parameters with @%s",
+								CassandraType.class.getSimpleName()));
 
 				this.cassandraType = cassandraType;
 			} else {
@@ -89,12 +96,51 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		}
 
 		/**
-		 * Returns the {@link CassandraType} for the declared parameter if specified using {@link org.springframework.data.cassandra.mapping.CassandraType}.
+		 * Returns the {@link CassandraType} for the declared parameter if specified using
+		 * {@link org.springframework.data.cassandra.mapping.CassandraType}.
 		 *
 		 * @return the {@link CassandraType} or {@literal null}.
 		 */
 		public CassandraType getCassandraType() {
 			return cassandraType;
+		}
+	}
+
+	/**
+	 * {@link AnnotatedElement} implementation as annotation source for {@link AnnotatedElementUtils}.
+	 *
+	 * @author Mark Paluch
+	 */
+	static class AnnotatedParameter implements AnnotatedElement {
+
+		private final MethodParameter methodParameter;
+
+		AnnotatedParameter(MethodParameter methodParameter) {
+			this.methodParameter = methodParameter;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.reflect.AnnotatedElement#getAnnotation(java.lang.Class)
+		 */
+		@Override
+		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+			return methodParameter.getParameterAnnotation(annotationClass);
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.reflect.AnnotatedElement#getAnnotations()
+		 */
+		@Override
+		public Annotation[] getAnnotations() {
+			return methodParameter.getParameterAnnotations();
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.reflect.AnnotatedElement#getDeclaredAnnotations()
+		 */
+		@Override
+		public Annotation[] getDeclaredAnnotations() {
+			return methodParameter.getParameterAnnotations();
 		}
 	}
 }
