@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import static org.springframework.data.cassandra.repository.support.BasicMapId.Entry;
-import static org.springframework.data.cassandra.repository.support.BasicMapId.id;
+import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,6 +35,7 @@ import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.data.cassandra.repository.MapIdentifiable;
 import org.springframework.data.convert.EntityInstantiator;
@@ -247,9 +247,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return;
 		}
 
-		Object obj = getReadValue(property, valueProvider);
-
-		propertyAccessor.setProperty(property, obj);
+		propertyAccessor.setProperty(property, getReadValue(valueProvider, property));
 	}
 
 	@SuppressWarnings("unused")
@@ -271,6 +269,25 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		throw new MappingException("Unknown row object " + ObjectUtils.nullSafeClassName(row));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.convert.CassandraConverter#convertToCassandraColumn(java.lang.Object, org.springframework.data.util.TypeInformation)
+	 */
+	@Override
+	public Object convertToCassandraColumn(Object obj, TypeInformation<?> typeInformation) {
+
+		Assert.notNull(typeInformation, "TypeInformation must not be null!");
+
+		if (obj == null) {
+			return null;
+		}
+
+		if (obj.getClass().isArray()) {
+			return obj;
+		}
+
+		return getWriteValue(obj, typeInformation);
 	}
 
 	@Override
@@ -458,8 +475,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Class<?> targetType = getTargetType(idProperty);
 
 		if (conversionService.canConvert(id.getClass(), targetType)) {
-			return Collections.singleton(QueryBuilder.eq(idProperty.getColumnName().toCql(),
-				conversionService.convert(id, targetType)));
+			return Collections.singleton(
+					QueryBuilder.eq(idProperty.getColumnName().toCql(), getPotentiallyConvertedSimpleValue(id, targetType)));
 		}
 
 		return Collections.singleton(QueryBuilder.eq(idProperty.getColumnName().toCql(), id));
@@ -514,7 +531,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 						entry.getKey(), entity.getName()));
 
 			clauses.add(QueryBuilder.eq(persistentProperty.getColumnName().toCql(),
-					getWriteValue(persistentProperty, entry.getValue())));
+					getWriteValue(entry.getValue(), persistentProperty.getTypeInformation())));
 		}
 
 		return clauses;
@@ -611,17 +628,19 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return conversions.getCustomWriteTarget(property.getType());
 		}
 
-		if (conversions.isSimpleType(property.getType())) {
+		if (property.findAnnotation(CassandraType.class) != null) {
+			return getPropertyTargetType(property);
+		}
+
+		if (property.isCompositePrimaryKey() || conversions.isSimpleType(property.getType())
+				|| property.isCollectionLike()) {
 			return property.getType();
 		}
 
-		if (property.isCompositePrimaryKey()) {
-			return property.getType();
-		}
+		return getPropertyTargetType(property);
+	}
 
-		if (property.isCollectionLike()) {
-			return property.getType();
-		}
+	private Class<?> getPropertyTargetType(CassandraPersistentProperty property) {
 
 		DataType dataType = mappingContext.getDataType(property);
 
@@ -644,78 +663,127 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	@SuppressWarnings("unchecked")
 	private Object getWriteValue(CassandraPersistentProperty property, ConvertingPropertyAccessor accessor) {
-		return getWriteValue(property, accessor.getProperty(property, getTargetType(property)));
+		return getWriteValue(accessor.getProperty(property, getTargetType(property)), property.getTypeInformation());
 	}
 
 	/**
-	 * Retrieve the value to write for the given {@link CassandraPersistentProperty} from
-	 * {@link ConvertingPropertyAccessor} and perform optionally a conversion of collection element types.
+	 * Retrieve the value from {@code value} applying the given {@link TypeInformation} and perform optionally a
+	 * conversion of collection element types.
 	 *
-	 * @param property the property.
-	 * @param value the value
+	 * @param value the value, may be {@literal null}.
+	 * @param typeInformation the type information.
 	 * @return the return value, may be {@literal null}.
 	 */
 	@SuppressWarnings("unchecked")
-	private Object getWriteValue(CassandraPersistentProperty property, Object value) {
+	private Object getWriteValue(Object value, TypeInformation<?> typeInformation) {
 
-		if (value != null) {
+		if (value == null) {
+			return null;
+		}
 
-			if (conversions.hasCustomWriteTarget(property.getActualType()) && property.isCollectionLike()) {
-				Class<?> customWriteTarget = conversions.getCustomWriteTarget(property.getActualType());
+		if (conversions.isSimpleType(value.getClass())) {
+			// Doesn't need conversion
+			return getPotentiallyConvertedSimpleValue(value, typeInformation.getType());
+		}
 
-				if (Collection.class.isAssignableFrom(property.getType()) && value instanceof Collection) {
+		if (getCustomConversions().hasCustomWriteTarget(value.getClass())) {
+			return getConversionService().convert(value, getCustomConversions().getCustomWriteTarget(value.getClass()));
+		}
 
-					Collection<Object> original = (Collection<Object>) value;
-					Collection<Object> converted = CollectionFactory.createCollection(property.getType(), original.size());
+		TypeInformation<?> type = typeInformation != null ? typeInformation : ClassTypeInformation.from(value.getClass());
+		TypeInformation<?> actualType = type.getActualType();
 
-					for (Object o : original) {
-						converted.add(getConversionService().convert(o, customWriteTarget));
-					}
+		if (value instanceof Collection) {
 
-					return converted;
-				}
+			Collection<Object> original = (Collection<Object>) value;
+			Collection<Object> converted = CollectionFactory.createCollection(getCollectionType(type), original.size());
+
+			for (Object o : original) {
+				converted.add(convertToCassandraColumn(o, actualType));
 			}
 
-			CassandraPersistentEntity<?> persistentEntity = getMappingContext().getPersistentEntity(property.getActualType());
+			return converted;
+		}
 
-			if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
+		CassandraPersistentEntity<?> persistentEntity = getMappingContext().getPersistentEntity(actualType.getType());
 
-				if (property.isCollectionLike() && value instanceof Collection) {
-					Collection<Object> original = (Collection<Object>) value;
+		if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
 
-					Collection<Object> converted = CollectionFactory.createCollection(property.getType(), original.size());
+			UDTValue udtValue = persistentEntity.getUserType().newValue();
+			write(value, udtValue, persistentEntity);
 
-					for (Object element : original) {
-						if (element instanceof UDTValue) {
-							converted.add(element);
-						} else {
-							converted.add(getWriteValue(property, element));
-						}
-					}
-					return converted;
-				}
-
-				UDTValue udtValue = persistentEntity.getUserType().newValue();
-				write(value, udtValue, persistentEntity);
-
-				return udtValue;
-			}
+			return udtValue;
 		}
 
 		return value;
 	}
 
 	/**
+	 * Checks whether we have a custom conversion registered for the given value into an arbitrary simple Cassandra type.
+	 * Returns the converted value if so. If not, we perform special enum handling or simply return the value as is.
+	 *
+	 * @param value may be {@literal null}.
+	 * @param requestedTargetType must not be {@literal null}.
+	 * @return
+	 * @see CassandraType
+	 */
+	private Object getPotentiallyConvertedSimpleValue(Object value, Class<?> requestedTargetType) {
+
+		if (value == null) {
+			return null;
+		}
+
+		if (conversions.hasCustomWriteTarget(value.getClass(), requestedTargetType)) {
+			return conversionService.convert(value, conversions.getCustomWriteTarget(value.getClass(), requestedTargetType));
+		}
+
+		// Cassandra has no default enum handling - convert it either to string
+		// or - if requested - to a different type
+		if (Enum.class.isAssignableFrom(value.getClass())) {
+
+			if (requestedTargetType != null && !requestedTargetType.isEnum()
+					&& conversionService.canConvert(value.getClass(), requestedTargetType)) {
+				return conversionService.convert(value, requestedTargetType);
+			}
+
+			return ((Enum<?>) value).name();
+		}
+
+		return value;
+	}
+
+	private Class<?> getCollectionType(TypeInformation<?> type) {
+
+		if (type.getType().isInterface()) {
+			return type.getType();
+		}
+
+		if (ClassTypeInformation.LIST.isAssignableFrom(type)) {
+			return ClassTypeInformation.LIST.getType();
+		}
+
+		if (ClassTypeInformation.SET.isAssignableFrom(type)) {
+			return ClassTypeInformation.SET.getType();
+		}
+
+		if (!type.isCollectionLike()) {
+			return ClassTypeInformation.LIST.getType();
+		}
+
+		return type.getType();
+	}
+
+	/**
 	 * Retrieve the value to read for the given {@link CassandraPersistentProperty} from
 	 * {@link BasicCassandraRowValueProvider} and perform optionally a conversion of collection element types.
 	 *
-	 * @param property the property.
 	 * @param row the row.
+	 * @param property the property.
 	 * @return the return value, may be {@literal null}.
 	 */
 	@SuppressWarnings("unchecked")
-	private Object getReadValue(CassandraPersistentProperty property,
-			PropertyValueProvider<CassandraPersistentProperty> row) {
+	private Object getReadValue(PropertyValueProvider<CassandraPersistentProperty> row,
+			CassandraPersistentProperty property) {
 
 		Object obj = row.getPropertyValue(property);
 

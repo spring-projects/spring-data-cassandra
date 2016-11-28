@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.junit.Before;
@@ -118,6 +120,17 @@ public class PartTreeCassandraQueryUnitTests {
 	}
 
 	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-357">DATACASS-357</a>
+	 */
+	@Test
+	public void shouldDeriveFieldInCollectionQuery() {
+		String query = deriveQueryFromMethod("findByFirstnameIn", new Class[] { Collection.class },
+				Arrays.asList("Hank", "Walter"));
+
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Hank','Walter');");
+	}
+
+	/**
 	 * @see <a href="https://jira.spring.io/browse/DATACASS-172">DATACASS-172</a>
 	 */
 	@Test
@@ -145,12 +158,33 @@ public class PartTreeCassandraQueryUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={};");
 	}
 
+	/**
+	 * @see <a href="https://jira.spring.io/browse/DATACASS-357">DATACASS-357</a>
+	 */
+	@Test
+	public void shouldDeriveUdtInCollectionQuery() {
+
+		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);
+		when(userTypeMock.newValue()).thenReturn(udtValueMock);
+
+		String query = deriveQueryFromMethod("findByMainAddressIn", new Class[] { Collection.class },
+				Collections.singleton(udtValueMock));
+
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress IN ({});");
+	}
+
 	private String deriveQueryFromMethod(String method, Object... args) {
+
 		Class<?>[] types = new Class<?>[args.length];
 
 		for (int i = 0; i < args.length; i++) {
 			types[i] = ClassUtils.getUserClass(args[i].getClass());
 		}
+
+		return deriveQueryFromMethod(method, types, args);
+	}
+
+	private String deriveQueryFromMethod(String method, Class<?>[] types, Object... args) {
 
 		PartTreeCassandraQuery partTreeQuery = createQueryForMethod(method, types);
 
@@ -192,6 +226,10 @@ public class PartTreeCassandraQueryUnitTests {
 		Person findByMainAddress(Address address);
 
 		Person findByMainAddress(UDTValue udtValue);
+
+		Person findByMainAddressIn(Collection<Address> address);
+
+		Person findByFirstnameIn(Collection<String> firstname);
 
 		PersonProjection findPersonProjectedBy();
 

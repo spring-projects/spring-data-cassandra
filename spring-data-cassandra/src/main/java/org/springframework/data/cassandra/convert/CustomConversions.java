@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.convert;
 
 import java.util.ArrayList;
@@ -135,9 +134,7 @@ public class CustomConversions {
 	 * @return
 	 */
 	public boolean isSimpleType(Class<?> type) {
-
-		// Enums have no native Cassandra support
-		return (!type.isEnum() && simpleTypeHolder.isSimpleType(type));
+		return simpleTypeHolder.isSimpleType(type);
 	}
 
 	/**
