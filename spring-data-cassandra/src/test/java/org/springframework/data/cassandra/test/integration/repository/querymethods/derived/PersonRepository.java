@@ -19,6 +19,8 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+import lombok.Data;
+import lombok.Getter;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Address;
@@ -53,6 +55,10 @@ interface PersonRepository extends CassandraRepository<Person> {
 
 	Collection<PersonProjection> findPersonProjectedBy();
 
+	Collection<PersonDto> findPersonDtoBy();
+
+	<T> T findDtoByNicknameStartsWith(String prefix, Class<T> projectionType);
+
 	@Query("select * from person where firstname = ?0 and lastname = 'White'")
 	List<Person> findByFirstname(String firstname);
 
@@ -65,5 +71,16 @@ interface PersonRepository extends CassandraRepository<Person> {
 		String getFirstname();
 
 		String getLastname();
+	}
+
+	static class PersonDto {
+
+		public String firstname, lastname;
+
+		public PersonDto(String firstname, String lastname) {
+
+			this.firstname = firstname;
+			this.lastname = lastname;
+		}
 	}
 }
