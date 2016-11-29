@@ -21,6 +21,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -33,16 +37,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentPropertyPath;
-import org.springframework.data.repository.core.EntityMetadata;
 import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
-
-import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * Custom query creator to create Cassandra criteria.
@@ -53,13 +52,13 @@ import com.datastax.driver.core.querybuilder.Select;
  */
 class CassandraQueryCreator extends AbstractQueryCreator<Select, Clause> {
 
-	private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("\\p{Punct}");
 	private static final Logger LOG = LoggerFactory.getLogger(CassandraQueryCreator.class);
+	private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("\\p{Punct}");
 
 	private final CassandraMappingContext mappingContext;
 	private final CassandraPersistentEntity<?> entity;
-	private final WhereBuilder whereBuilder = new WhereBuilder();
 	private final CqlIdentifier tableName;
+	private final WhereBuilder whereBuilder = new WhereBuilder();
 
 	/**
 	 * Creates a new {@link CassandraQueryCreator} from the given {@link PartTree}, {@link ConvertingParameterAccessor}
@@ -89,7 +88,9 @@ class CassandraQueryCreator extends AbstractQueryCreator<Select, Clause> {
 	@Override
 	protected Clause create(Part part, Iterator<Object> iterator) {
 
-		PersistentPropertyPath<CassandraPersistentProperty> path = mappingContext.getPersistentPropertyPath(part.getProperty());
+		PersistentPropertyPath<CassandraPersistentProperty> path =
+			mappingContext.getPersistentPropertyPath(part.getProperty());
+
 		CassandraPersistentProperty property = path.getLeafProperty();
 
 		return from(part, property, (PotentiallyConvertingIterator) iterator);
