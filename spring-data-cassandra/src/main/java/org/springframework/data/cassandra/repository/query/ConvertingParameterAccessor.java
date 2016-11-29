@@ -15,16 +15,11 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.springframework.core.CollectionFactory;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.mapping.CassandraType;
@@ -37,7 +32,6 @@ import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.CollectionType;
 import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.UDTValue;
 
 /**
  * Custom {@link org.springframework.data.repository.query.ParameterAccessor} that uses a {@link CassandraConverter} to
@@ -144,85 +138,27 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			return null;
 		}
 
-		if (bindableValue.getClass().isArray()) {
-			return bindableValue;
-		}
-
-		if (property == null && getCustomConversions().hasCustomWriteTarget(bindableValue.getClass())) {
-			return converter.getConversionService().convert(bindableValue,
-					getCustomConversions().getCustomWriteTarget(bindableValue.getClass()));
-		}
-
-		// TODO: Polishing necessary
-		DataType parameterType = getDataType(index, property);
-
-		if (parameterType != null) {
-
-			if (property != null && getCustomConversions().hasCustomWriteTarget(property.getActualType())
-					&& property.isCollectionLike()) {
-
-				Class<?> customWriteTarget = getCustomConversions().getCustomWriteTarget(property.getActualType());
-
-				if (Collection.class.isAssignableFrom(property.getType()) && bindableValue instanceof Collection) {
-
-					Collection<Object> original = (Collection<Object>) bindableValue;
-					Collection<Object> converted = CollectionFactory.createCollection(property.getType(), original.size());
-
-					for (Object element : original) {
-						converted.add(getConversionService().convert(element, customWriteTarget));
-					}
-
-					return converted;
-				}
-			}
-
-			if (property != null) {
-				CassandraPersistentEntity<?> persistentEntity =
-						converter.getMappingContext().getPersistentEntity(property.getActualType());
-
-				if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
-					return toUDTValue(bindableValue, persistentEntity);
-				}
-			}
-
-			TypeCodec<?> cassandraType = CodecRegistry.DEFAULT_INSTANCE.codecFor(parameterType);
-
-			if (cassandraType.getJavaType().getRawType().isAssignableFrom(bindableValue.getClass())) {
-				return bindableValue;
-			}
-
-			return converter.getConversionService().convert(bindableValue, cassandraType.getJavaType().getRawType());
-		}
-
-		CassandraPersistentEntity<?> persistentEntity =
-				converter.getMappingContext().getPersistentEntity(bindableValue.getClass());
-
-		if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
-			return toUDTValue(bindableValue, persistentEntity);
-		}
-
-		return bindableValue;
+		return converter.convertToCassandraColumn(bindableValue, findTypeInformation(index, bindableValue, property));
 	}
 
-	private UDTValue toUDTValue(Object bindableValue, CassandraPersistentEntity<?> persistentEntity) {
+	private TypeInformation<?> findTypeInformation(int index, Object bindableValue,
+			CassandraPersistentProperty property) {
 
-		if (bindableValue instanceof UDTValue) {
-			return (UDTValue) bindableValue;
+		if (delegate.findCassandraType(index) != null) {
+
+			TypeCodec<?> typeCodec = CodecRegistry.DEFAULT_INSTANCE.codecFor(getDataType(index, property));
+			if (typeCodec.getJavaType().getType() instanceof Class<?>) {
+				return ClassTypeInformation.from((Class<?>) typeCodec.getJavaType().getType());
+			}
+
+			return ClassTypeInformation.from(typeCodec.getJavaType().getRawType());
 		}
 
-		UDTValue udtValue = persistentEntity.getUserType().newValue();
+		if (property == null) {
+			return ClassTypeInformation.from(bindableValue.getClass());
+		}
 
-		converter.write(bindableValue, udtValue, persistentEntity);
-
-		return udtValue;
-	}
-
-	private CustomConversions getCustomConversions() {
-		return converter.getCustomConversions();
-	}
-
-	private ConversionService getConversionService() {
-		return converter.getConversionService();
+		return property.getTypeInformation();
 	}
 
 	/**

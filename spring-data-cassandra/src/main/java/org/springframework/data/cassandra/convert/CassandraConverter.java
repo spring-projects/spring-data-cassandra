@@ -19,6 +19,7 @@ import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.EntityConverter;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Central Cassandra specific converter interface from Object to Row.
@@ -61,6 +62,16 @@ public interface CassandraConverter
 	 * @param entity must not be {@literal null}.
 	 */
 	void write(Object source, Object sink, CassandraPersistentEntity<?> entity);
+
+	/**
+	 * Converts the given object into one Cassandra will be able to store natively in a column.
+	 *
+	 * @param obj can be {@literal null}.
+	 * @param typeInformation must not be {@literal null}.
+	 * @return
+	 * @since 1.5
+	 */
+	Object convertToCassandraColumn(Object obj, TypeInformation<?> typeInformation);
 
 	/**
 	 * Returns the {@link CustomConversions} registered in the {@link CassandraConverter}.

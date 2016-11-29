@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.convert;
 
 import static org.assertj.core.api.Assertions.*;
@@ -68,7 +67,6 @@ import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.util.Version;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.LocalDate;
@@ -96,8 +94,6 @@ public class MappingCassandraConverterUnitTests {
 	private static final Version VERSION_4_3 = Version.parse("4.3");
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
-
-	@Mock private ColumnDefinitions columnDefinitionsMock;
 
 	@Mock private Row rowMock;
 
