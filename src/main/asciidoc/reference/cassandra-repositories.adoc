@@ -49,14 +49,13 @@ Right now this interface simply serves typing purposes but we will add additiona
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	   xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
-	   xsi:schemaLocation="
-		http://www.springframework.org/schema/data/cassandra
-		http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
-		http://www.springframework.org/schema/beans
-		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-		">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/data/cassandra
+    http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <cassandra:cluster port="9042"/>
     <cassandra:session keyspace-name="keyspaceName"/>

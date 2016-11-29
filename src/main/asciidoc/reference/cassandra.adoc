@@ -415,21 +415,21 @@ We will use Spring to load these properties into the Spring context in the next 
 
 While you can use Spring's traditional `<beans/>` XML namespace to register an instance of `com.datastax.driver.core.Session` with the container, the XML can be quite verbose as it is general purpose. XML namespaces are a better alternative to configuring commonly used objects such as the Session instance. The `cql` and `cassandra` namespaces allow you to create a Session instance.
 
-To use the Mongo namespace elements you will need to reference the Mongo schema:
+To use the Cassandra namespace elements you will need to reference the Cassandra schema:
 
 .XML schema to configure Cassandra using the `cql` namespace
 ====
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-
 <beans xmlns="http://www.springframework.org/schema/beans"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xmlns:cql="http://www.springframework.org/schema/data/cql"
-          xmlns:context="http://www.springframework.org/schema/context"
-          xsi:schemaLocation="http://www.springframework.org/schema/cql http://www.springframework.org/schema/cql/spring-cql-1.0.xsd
-          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cql="http://www.springframework.org/schema/data/cql"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/cql
+    http://www.springframework.org/schema/cql/spring-cql.xsd
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <!-- Default bean name is 'cassandraCluster' -->
   <cql:cluster contact-points="localhost" port="9042">
@@ -448,14 +448,14 @@ To use the Mongo namespace elements you will need to reference the Mongo schema:
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-
 <beans xmlns="http://www.springframework.org/schema/beans"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
-          xmlns:context="http://www.springframework.org/schema/context"
-          http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
-          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/data/cassandra
+    http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <!-- Default bean name is 'cassandraCluster' -->
   <cassandra:cluster contact-points="localhost" port="9042">
@@ -463,7 +463,7 @@ To use the Mongo namespace elements you will need to reference the Mongo schema:
   </cassandra:cluster>
 
   <!-- Default bean name is 'cassandraSession' -->
-  <cass:session keyspace-name="${cassandra.keyspace}" schema-action="NONE" />
+  <cassandra:session keyspace-name="${cassandra.keyspace}" schema-action="NONE" />
 
 </beans>
 ----
@@ -475,47 +475,192 @@ The XML Configuration elements for a more advanced Cassandra configuration are s
 
 While this example show how easy it is to configure Spring to connect to Cassandra, there are many other options. Basically, any option available with the DataStax Java Driver is also available in the Spring Data for Apache Cassandra configuration. This is including, but not limited to Authentication, Load Balancing Policies, Retry Policies and Pooling Options. All of the Spring Data for Apache Cassandra method names and XML elements are named exactly (or as close as possible) like the configuration options on the driver so mapping any existing driver configuration should be straight forward.
 
+.Configuring Spring Data Components via XML
+====
 [source,xml]
 ----
-<?xml version='1.0'?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
-          xmlns:context="http://www.springframework.org/schema/context"
-          http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
-          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-  <!-- Loads the properties into the Spring Context and uses them to fill 
-    in placeholders in the bean definitions -->
-  <context:property-placeholder location="classpath:cassandra.properties" />
+<!-- Loads the properties into the Spring Context and uses them to fill
+in placeholders in the bean definitions -->
+<context:property-placeholder location="classpath:cassandra.properties" />
 
-  <!-- REQUIRED: The Cassandra Cluster -->
-  <cassandra:cluster contact-points="${cassandra.contactpoints}"
-    port="${cassandra.port}" />
+<!-- REQUIRED: The Cassandra Cluster -->
+<cassandra:cluster contact-points="${cassandra.contactpoints}"
+port="${cassandra.port}" />
 
-  <!-- REQUIRED: The Cassandra Session, built from the Cluster, and attaching 
-    to a keyspace -->
-  <cassandra:session keyspace-name="${cassandra.keyspace}" />
+<!-- REQUIRED: The Cassandra Session, built from the Cluster, and attaching
+to a keyspace -->
+<cassandra:session keyspace-name="${cassandra.keyspace}" />
 
-  <!-- REQUIRED: The Default Cassandra Mapping Context used by CassandraConverter -->
-  <cassandra:mapping>
-    <cassandra:user-type-resolver keyspace-name="${cassandra.keyspace}" />
-  </cassandra:mapping>
+<!-- REQUIRED: The Default Cassandra Mapping Context used by CassandraConverter -->
+<cassandra:mapping>
+  <cassandra:user-type-resolver keyspace-name="${cassandra.keyspace}" />
+</cassandra:mapping>
 
-  <!-- REQUIRED: The Default Cassandra Converter used by CassandraTemplate -->
-  <cassandra:converter />
+<!-- REQUIRED: The Default Cassandra Converter used by CassandraTemplate -->
+<cassandra:converter />
 
-  <!-- REQUIRED: The Cassandra Template is the building block of all Spring 
-    Data Cassandra -->
-  <cassandra:template id="cassandraTemplate" />
+<!-- REQUIRED: The Cassandra Template is the building block of all Spring
+Data Cassandra -->
+<cassandra:template id="cassandraTemplate" />
 
-  <!-- OPTIONAL: If you are using Spring Data for Apache Cassandra Repositories, add
-    your base packages to scan here -->
-  <cassandra:repositories base-package="org.spring.cassandra.example.repo" />
+<!-- OPTIONAL: If you are using Spring Data for Apache Cassandra Repositories, add
+your base packages to scan here -->
+<cassandra:repositories base-package="org.spring.cassandra.example.repo" />
 
-</beans>
 ----
+====
+
+[[cassandra-schema-management]]
+== Schema Management
+
+Apache Cassandra is a data store that requires a schema definition prior to any data interaction. Spring Data Cassandra can support you with that task.
+
+=== Keyspaces and Lifecycle scripts
+
+The very first thing to start with is a Cassandra keyspace. It is a logical grouping of tables that share the same replication factor and replication strategy. Keyspace management is located in the `Cluster` configuration which has the notion of `KeyspaceSpecification` and startup/shutdown CQL script execution.
+
+Declaring a keyspace with a specification allows creation/dropping of the keyspace. It will derive CQL from the specification so you're not required to write CQL yourself.
+
+.Specifying a Cassandra Keyspace via XML
+====
+[source,xml]
+----
+<cql:cluster>
+
+    <cql:keyspace action="CREATE_DROP" durable-writes="true" name="my_keyspace">
+
+    <cql:replication class="NETWORK_TOPOLOGY_STRATEGY">
+      <cql:data-center name="foo" replication-factor="1" />
+      <cql:data-center name="bar" replication-factor="2" />
+    </cql:replication>
+  </cql:keyspace>
+
+</cql:cluster>
+----
+====
+
+.Specifying a Cassandra Keyspace via JavaConfig
+====
+[source,java]
+----
+@Configuration
+public abstract class AbstractCassandraConfiguration extends AbstractClusterConfiguration
+		implements BeanClassLoaderAware {
+
+  @Override
+  protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
+
+    CreateKeyspaceSpecification specification = CreateKeyspaceSpecification.createKeyspace("my_keyspace")
+      .with(KeyspaceOption.DURABLE_WRITES, true)
+      .withNetworkReplication(DataCenterReplication.dcr("foo", 1), DataCenterReplication.dcr("bar", 2));
+
+    return Arrays.asList(specification);
+  }
+
+  @Override
+  protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
+    return Arrays.asList(DropKeyspaceSpecification.dropKeyspace("my_keyspace"));
+  }
+
+  // ...
+}
+----
+====
+
+Startup/shutdown CQL execution follows a slightly different approach that is bound to the `Cluster` lifecycle. You can provide arbitrary CQL that is executed on `Cluster` initialization and shutdown in the `SYSTEM` keyspace.
+
+.Specifying Startup/Shutdown scripts via XML
+====
+[source,xml]
+----
+<cql:cluster>
+  <cql:startup-cql><![CDATA[
+CREATE KEYSPACE IF NOT EXISTS my_other_keyspace WITH durable_writes = true AND replication = { 'replication_factor' : 1, 'class' : 'SimpleStrategy' };
+    ]]></cql:startup-cql>
+  <cql:shutdown-cql><![CDATA[
+DROP KEYSPACE my_other_keyspace;
+    ]]></cql:shutdown-cql>
+</cql:cluster>
+----
+====
+
+.Specifying a Startup/Shutdown scripts via JavaConfig
+====
+[source,java]
+----
+@Configuration
+public class CassandraConfiguration extends AbstractCassandraConfiguration {
+
+  @Override
+  protected List<String> getStartupScripts() {
+
+    String script = "CREATE KEYSPACE IF NOT EXISTS my_other_keyspace "
+      + "WITH durable_writes = true "
+      + "AND replication = { 'replication_factor' : 1, 'class' : 'SimpleStrategy' };";
+
+    return Arrays.asList(script);
+  }
+
+  @Override
+  protected List<String> getShutdownScripts() {
+    return Arrays.asList("DROP KEYSPACE my_other_keyspace;");
+  }
+
+  // ...
+}
+----
+====
+
+NOTE: `KeyspaceSpecifications` and lifecycle CQL scripts are available with the `cql` and `cassandra` namespaces.
+
+NOTE: Keyspace creation allows rapid bootstrapping without the need of external keyspace management. This can be useful for certain scenarios but should be used with care. Dropping a keyspace on application shutdown will remove the keyspace and all data stored inside the tables.
+
+=== Tables and User-defined types
+
+Spring Data Cassandra's approaches data access with mapped entity classes that fit your data model. These entity classes can be used to create Cassandra table specifications and user type definitions.
+
+Schema creation is tied to `Session` initialization with `SchemaAction`. Following actions are supported:
+
+* `SchemaAction.NONE`: No tables/types will be created or dropped. This is the default setting.
+* `SchemaAction.CREATE`: Create tables and user-defined types from entities annotated with `@Table and types annotated with `@UserDefinedType`. Existing tables/types will cause an error if the type is attempted to be created.
+* `SchemaAction.CREATE_IF_NOT_EXISTS`: Like `SchemaAction.CREATE` but with `IF NOT EXISTS` applied. Existing tables/types won't cause any errors but may remain stale.
+* `SchemaAction.RECREATE`: Drops and recreate existing tables and types that are known to be used. Tables and types that are not configured in the application are not dropped.
+* `SchemaAction.RECREATE_DROP_UNUSED`: Drop all tables and types and recreate only known tables and types.
+
+NOTE: `SchemaAction.RECREATE`/`SchemaAction.RECREATE_DROP_UNUSED` will drop your tables and you will experience data loss. `RECREATE_DROP_UNUSED` also drops tables and types that are not know to the application.
+
+==== Enabling Tables and User-Defined Types for Schema Management
+
+<<mapping.usage>> explains object mapping using conventions and annotations. Schema management is only active for entities annotated with `@Table` and user-defined types annotated with `@UserDefinedType` to prevent unwanted classes from being created as table/type. Entities are discovered by scanning the class path. Entity scanning requires one or more base packages.
+
+.Specifying Entity Base Packages via XML
+====
+[source,xml]
+----
+
+<cassandra:mapping entity-base-packages="com.foo,com.bar"/>
+
+----
+====
+
+.Specifying Entity Base Packages via JavaConfig
+====
+[source,java]
+----
+@Configuration
+public class CassandraConfiguration extends AbstractCassandraConfiguration {
+
+	@Override
+	public String[] getEntityBasePackages() {
+		return new String[] { "com.foo", "com.bar" };
+	}
+
+	// ...
+}
+----
+====
+
 
 [[cassandra-template]]
 == Introduction to CassandraTemplate
@@ -603,8 +748,10 @@ create table login_event(
 
 Class defining the *Composite Primary Key*. 
 
-NOTE: PrimaryKeyClass must implement `Serializable` and provide implementation of `hashCode()` and `equals()` just like the example.
+NOTE: PrimaryKeyClass must implement `Serializable` should provide implementations of `hashCode()` and `equals()`.
 
+.Composite Primary Key Class
+====
 [source,java]
 ----
 package org.spring.cassandra.example;
@@ -674,9 +821,14 @@ public class LoginEventKey implements Serializable {
   }
 }
 ----
+====
+
+NOTE:
 
 Class defining the CQL Table, having the *Composite Primary Key* as an attribute and annotated as the `PrimaryKey`.
 
+.Annotated Entity
+====
 [source,java]
 ----
 package org.spring.cassandra.example;
@@ -720,14 +872,16 @@ public class LoginEvent {
   public void setIpAddress(String ipAddress) {
     this.ipAddress = ipAddress;
   }
-
 }
 ----
+====
 
 ==== Complex Composite Primary Key
 
 The annotations provided with Spring Data for Apache Cassandra can handle any key combination available in Cassandra. Here is one more example of a Composite Primary Key with 5 columns, 2 of which are a composite partition key, and the remaining 3 are ordered clustering keys. The getters/setters, hashCode and equals are omitted for brevity.
 
+.Composite Primary Key Class
+====
 [source,java]
 ----
 package org.spring.cassandra.example;
@@ -758,10 +912,11 @@ public class DetailedLoginEventKey implements Serializable {
   @PrimaryKeyColumn(name = "event_time", ordinal = 4, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
   private Date eventTime;
 
-  ...
+  // other methods omitted
 
 }
 ----
+====
 
 [[cassandra-template.type-mapping]]
 === Type mapping
