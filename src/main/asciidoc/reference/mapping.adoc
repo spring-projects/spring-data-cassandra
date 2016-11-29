@@ -22,8 +22,8 @@ TODO
 [[mapping-conversion]]
 == Data mapping and type conversion
 
-This section explain how types are mapped to a Cassandra representation and vice versa. Spring Data Cassandra supports several types that are provided by Apache Cassandra.
-In addition to these types, Spring Data Cassandra provides a set of built-in converters to map additional types. You can provide your own converters to adjust type conversion, see <<cassandra.mapping.explicit-converters>> for further details.
+This section explain how types are mapped to a Cassandra representation and vice versa. Spring Data for Apache Cassandra supports several types that are provided by Apache Cassandra.
+In addition to these types, Spring Data for Apache Cassandra provides a set of built-in converters to map additional types. You can provide your own converters to adjust type conversion, see <<cassandra.mapping.explicit-converters>> for further details.
 
 [cols="3,2", options="header"]
 .Type

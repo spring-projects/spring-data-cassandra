@@ -17,15 +17,15 @@ Includes integrated object mapping between CQL Tables and POJOs.
 For most data oriented tasks you will use the `CassandraTemplate` or the `Repository` support, which leverage the
 rich mapping functionality. `CassandraTemplate` is commonly used to increment counters or perform ad-hoc CRUD
 operations. `CassandraTemplate` also provides callback methods making it easy to get a hold of low-level API objects
-such as `com.datastax.driver.core.Session` allowing you to communicate directly with Cassandra. Spring Data Cassandra
+such as `com.datastax.driver.core.Session` allowing you to communicate directly with Cassandra. Spring Data for Apache Cassandra
 uses consistent naming conventions on objects in various APIs to those found in the DataStax Java Driver so that they
 are familiar and so you can  map your existing knowledge onto the Spring APIs.
 
 
 [[cassandra.modules]]
-== Spring CQL and Spring Data Cassandra modules
+== Spring CQL and Spring Data for Apache Cassandra modules
 
-Spring Data for Apache Cassandra comes with two modules: Spring CQL and Spring Data Cassandra.
+Spring Data for Apache Cassandra comes with two modules: Spring CQL and Spring Data for Apache Cassandra.
 
 The value-add provided by the Spring Data for Apache Cassandra abstraction is perhaps best shown by the sequence of actions outlined in the table below. The table shows what actions Spring will take care of and which actions are the responsibility of you, the application developer.
 
@@ -72,7 +72,7 @@ The value-add provided by the Spring Data for Apache Cassandra abstraction is pe
 |===
 
 Spring CQL takes care of all the low-level details that can make Cassandra and CQL such a
-tedious API to develop with. Spring Data Cassandra adds object mapping, schema generation and repository support to the featureset.
+tedious API to develop with. Spring Data for Apache Cassandra adds object mapping, schema generation and repository support to the featureset.
 
 
 [[cassandra.choose-style]]
@@ -365,9 +365,9 @@ public class CassandraConfig {
 ----
 ====
 
-Creating configuration classes registering Spring Data Cassandra components can get an exhausing challenge so Spring Data Cassandra comes with a prebuilt configuration support class. Classes extending from `AbstractCassandraConfiguration` will register beans for Spring Data Cassandra use. `AbstractCassandraConfiguration` lets you provide various configuration options such as initial entities, default query options, socket options, pooling options and much more. `AbstractCassandraConfiguration` will support you also with schema generation based on initial entities, if any provided. Extending from `AbstractCassandraConfiguration` requires you to at least provide the keyspace name by implementing the `getKeyspaceName` method.
+Creating configuration classes registering Spring Data for Apache Cassandra components can get an exhausing challenge so Spring Data for Apache Cassandra comes with a prebuilt configuration support class. Classes extending from `AbstractCassandraConfiguration` will register beans for Spring Data for Apache Cassandra use. `AbstractCassandraConfiguration` lets you provide various configuration options such as initial entities, default query options, socket options, pooling options and much more. `AbstractCassandraConfiguration` will support you also with schema generation based on initial entities, if any provided. Extending from `AbstractCassandraConfiguration` requires you to at least provide the keyspace name by implementing the `getKeyspaceName` method.
 
-.Registering Spring Data Cassandra beans using AbstractCassandraConfiguration
+.Registering Spring Data for Apache Cassandra beans using AbstractCassandraConfiguration
 ====
 [source,java]
 ----
@@ -514,7 +514,7 @@ your base packages to scan here -->
 [[cassandra-schema-management]]
 == Schema Management
 
-Apache Cassandra is a data store that requires a schema definition prior to any data interaction. Spring Data Cassandra can support you with that task.
+Apache Cassandra is a data store that requires a schema definition prior to any data interaction. Spring Data for Apache Cassandra can support you with that task.
 
 === Keyspaces and Lifecycle scripts
 
@@ -618,7 +618,7 @@ NOTE: Keyspace creation allows rapid bootstrapping without the need of external 
 
 === Tables and User-defined types
 
-Spring Data Cassandra's approaches data access with mapped entity classes that fit your data model. These entity classes can be used to create Cassandra table specifications and user type definitions.
+Spring Data for Apache Cassandra's approaches data access with mapped entity classes that fit your data model. These entity classes can be used to create Cassandra table specifications and user type definitions.
 
 Schema creation is tied to `Session` initialization with `SchemaAction`. Following actions are supported:
 
@@ -1203,7 +1203,7 @@ static class PersonReadConverter implements Converter<String, Person> {
 [[cassandra.custom-converters.java]]
 === Registering Spring Converters with the CassandraConverter
 
-The Spring Data Cassandra Java Config provides a convenient way to register Spring `Converter` s with the `MappingCassandraConverter`. The configuration snippet below shows how to manually register converters as well as configuring the `CustomConversions`.
+The Spring Data for Apache Cassandra Java Config provides a convenient way to register Spring `Converter` s with the `MappingCassandraConverter`. The configuration snippet below shows how to manually register converters as well as configuring the `CustomConversions`.
 
 [source,java]
 ----
