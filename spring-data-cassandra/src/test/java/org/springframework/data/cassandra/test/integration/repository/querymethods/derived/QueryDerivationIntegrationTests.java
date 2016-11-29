@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import com.datastax.driver.core.Session;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +44,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.datastax.driver.core.Session;
 
 /**
  * Integration tests for query derivation through {@link PersonRepository}.

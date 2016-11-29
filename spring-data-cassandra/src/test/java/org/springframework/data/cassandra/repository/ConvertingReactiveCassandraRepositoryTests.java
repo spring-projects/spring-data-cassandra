@@ -17,6 +17,12 @@ package org.springframework.data.cassandra.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.TestSubscriber;
+import rx.Observable;
+import rx.Single;
+
 import java.util.Arrays;
 
 import org.junit.Before;
@@ -40,11 +46,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
-
-import reactor.core.publisher.Mono;
-import reactor.test.TestSubscriber;
-import rx.Observable;
-import rx.Single;
 
 /**
  * Test for {@link ReactiveCassandraRepository} using reactive wrapper type conversion.
@@ -121,6 +122,22 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 				.subscribe(reactivePersonRepostitory.findByLastname(boyd.getLastname()));
 
 		subscriber.awaitAndAssertNextValueCount(1).assertValues(boyd);
+	}
+
+	/**
+	 * @see DATACASS-360
+	 */
+	@Test
+	public void dtoProjectionShouldWork() {
+
+		TestSubscriber<PersonDto> subscriber = TestSubscriber
+				.subscribe(reactivePersonRepostitory.findProjectedByLastname(boyd.getLastname()));
+
+		subscriber.awaitAndAssertNextValueCount(1).assertValuesWith(personDto -> {
+
+			assertThat(personDto.firstname).isEqualTo(boyd.getFirstname());
+			assertThat(personDto.lastname).isEqualTo(boyd.getLastname());
+		});
 	}
 
 	/**
@@ -226,6 +243,8 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	interface PersonRepostitory extends ReactiveCrudRepository<Person, String> {
 
 		Publisher<Person> findByLastname(String lastname);
+
+		Flux<PersonDto> findProjectedByLastname(String lastname);
 	}
 
 	@Repository
@@ -251,5 +270,16 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		String getId();
 
 		String getFirstname();
+	}
+
+	static class PersonDto {
+
+		public String firstname, lastname;
+
+		public PersonDto(String firstname, String lastname) {
+
+			this.firstname = firstname;
+			this.lastname = lastname;
+		}
 	}
 }
