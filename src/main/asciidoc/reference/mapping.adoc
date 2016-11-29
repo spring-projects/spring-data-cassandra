@@ -14,11 +14,6 @@ In this section we will describe the features of the MappingCassandraConverter. 
 * The converter will use any Spring Converters registered with it to override the default mapping of object properties to document field/values.
 * The properties of an object are used to convert to and from properties in the document.
 
-[[mapping-conventions-id-field]]
-=== How the CQL Composite Primary Key fields are handled in the mapping layer
-
-TODO
-
 [[mapping-conversion]]
 == Data mapping and type conversion
 
