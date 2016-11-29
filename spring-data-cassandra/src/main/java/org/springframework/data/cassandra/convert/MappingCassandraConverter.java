@@ -22,6 +22,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.TypeCodec;
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -53,19 +66,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.UDTValue;
-import com.datastax.driver.core.UserType;
-import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
-
 /**
  * {@link CassandraConverter} that uses a {@link MappingContext} to do sophisticated mapping of domain objects to
  * {@link Row}.
@@ -86,8 +86,8 @@ import com.datastax.driver.core.querybuilder.Update;
 public class MappingCassandraConverter extends AbstractCassandraConverter
 		implements CassandraConverter, ApplicationContextAware, BeanClassLoaderAware {
 
-	protected final CassandraMappingContext mappingContext;
 	protected ApplicationContext applicationContext;
+	protected final CassandraMappingContext mappingContext;
 	protected ClassLoader beanClassLoader;
 	protected SpELContext spELContext;
 
@@ -126,16 +126,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return (R) row;
 		}
 
-		if (conversions.hasCustomReadTarget(Row.class, rawType) || conversionService.canConvert(Row.class, rawType)) {
-			return conversionService.convert(row, rawType);
+		if (getCustomConversions().hasCustomReadTarget(Row.class, rawType)
+				|| getConversionService().canConvert(Row.class, rawType)) {
+
+			return getConversionService().convert(row, rawType);
 		}
 
 		if (typeInfo.isCollectionLike() || typeInfo.isMap()) {
-			return conversionService.convert(row, type);
+			return getConversionService().convert(row, type);
 		}
 
 		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>)
-				mappingContext.getPersistentEntity(typeInfo);
+				getMappingContext().getPersistentEntity(typeInfo);
 
 		if (persistentEntity == null) {
 			throw new MappingException(String.format("No mapping metadata found for %s", rawType.getName()));
@@ -279,11 +281,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		Assert.notNull(typeInformation, "TypeInformation must not be null!");
 
-		if (obj == null) {
-			return null;
-		}
-
-		if (obj.getClass().isArray()) {
+		if (obj == null || obj.getClass().isArray()) {
 			return obj;
 		}
 
@@ -295,7 +293,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (source != null) {
 			Class<?> beanClassLoaderClass = transformClassToBeanClassLoaderClass(source.getClass());
-			CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(beanClassLoaderClass);
+			CassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(beanClassLoaderClass);
 
 			write(source, sink, entity);
 		}
@@ -434,7 +432,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 					log.debug("Adding udt.value [{}] - [{}]", property.getColumnName().toCql(), value);
 				}
 
-				TypeCodec<Object> typeCodec = CodecRegistry.DEFAULT_INSTANCE.codecFor(mappingContext.getDataType(property));
+				TypeCodec<Object> typeCodec = CodecRegistry.DEFAULT_INSTANCE.codecFor(
+						getMappingContext().getDataType(property));
 
 				udtValue.set(property.getColumnName().toCql(), value, typeCodec);
 			}
@@ -474,13 +473,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		Class<?> targetType = getTargetType(idProperty);
 
-		if (conversionService.canConvert(id.getClass(), targetType)) {
-			return Collections.singleton(
-					QueryBuilder.eq(idProperty.getColumnName().toCql(), getPotentiallyConvertedSimpleValue(id, targetType)));
+		if (getConversionService().canConvert(id.getClass(), targetType)) {
+			return Collections.singleton(QueryBuilder.eq(idProperty.getColumnName().toCql(),
+					getPotentiallyConvertedSimpleValue(id, targetType)));
 		}
 
 		return Collections.singleton(QueryBuilder.eq(idProperty.getColumnName().toCql(), id));
-
 	}
 
 	private Object extractId(Object source, CassandraPersistentEntity<?> entity) {
@@ -609,7 +607,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		PersistentPropertyAccessor propertyAccessor = (source instanceof PersistentPropertyAccessor
 				? (PersistentPropertyAccessor) source : entity.getPropertyAccessor(source));
 
-		return new ConvertingPropertyAccessor(propertyAccessor, conversionService);
+		return new ConvertingPropertyAccessor(propertyAccessor, getConversionService());
 	}
 
 	/**
@@ -624,16 +622,17 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private Class<?> getTargetType(CassandraPersistentProperty property) {
 
-		if (conversions.hasCustomWriteTarget(property.getType())) {
-			return conversions.getCustomWriteTarget(property.getType());
+		if (getCustomConversions().hasCustomWriteTarget(property.getType())) {
+			return getCustomConversions().getCustomWriteTarget(property.getType());
 		}
 
 		if (property.findAnnotation(CassandraType.class) != null) {
 			return getPropertyTargetType(property);
 		}
 
-		if (property.isCompositePrimaryKey() || conversions.isSimpleType(property.getType())
+		if (property.isCompositePrimaryKey() || getCustomConversions().isSimpleType(property.getType())
 				|| property.isCollectionLike()) {
+
 			return property.getType();
 		}
 
@@ -642,13 +641,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private Class<?> getPropertyTargetType(CassandraPersistentProperty property) {
 
-		DataType dataType = mappingContext.getDataType(property);
+		DataType dataType = getMappingContext().getDataType(property);
 
 		if (dataType instanceof UserType) {
 			return property.getType();
 		}
 
-		TypeCodec<Object> codec = CodecRegistry.DEFAULT_INSTANCE.codecFor(mappingContext.getDataType(property));
+		TypeCodec<Object> codec = CodecRegistry.DEFAULT_INSTANCE.codecFor(getMappingContext().getDataType(property));
 
 		return codec.getJavaType().getRawType();
 	}
@@ -681,7 +680,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return null;
 		}
 
-		if (conversions.isSimpleType(value.getClass())) {
+		if (getCustomConversions().isSimpleType(value.getClass())) {
 			// Doesn't need conversion
 			return getPotentiallyConvertedSimpleValue(value, typeInformation.getType());
 		}
@@ -690,7 +689,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return getConversionService().convert(value, getCustomConversions().getCustomWriteTarget(value.getClass()));
 		}
 
-		TypeInformation<?> type = typeInformation != null ? typeInformation : ClassTypeInformation.from(value.getClass());
+		TypeInformation<?> type = (typeInformation != null ? typeInformation : ClassTypeInformation.from(value.getClass()));
 		TypeInformation<?> actualType = type.getActualType();
 
 		if (value instanceof Collection) {
@@ -698,8 +697,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			Collection<Object> original = (Collection<Object>) value;
 			Collection<Object> converted = CollectionFactory.createCollection(getCollectionType(type), original.size());
 
-			for (Object o : original) {
-				converted.add(convertToCassandraColumn(o, actualType));
+			for (Object element : original) {
+				converted.add(convertToCassandraColumn(element, actualType));
 			}
 
 			return converted;
@@ -710,6 +709,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
 
 			UDTValue udtValue = persistentEntity.getUserType().newValue();
+
 			write(value, udtValue, persistentEntity);
 
 			return udtValue;
@@ -724,7 +724,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 *
 	 * @param value may be {@literal null}.
 	 * @param requestedTargetType must not be {@literal null}.
-	 * @return
 	 * @see CassandraType
 	 */
 	private Object getPotentiallyConvertedSimpleValue(Object value, Class<?> requestedTargetType) {
@@ -733,17 +732,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return null;
 		}
 
-		if (conversions.hasCustomWriteTarget(value.getClass(), requestedTargetType)) {
-			return conversionService.convert(value, conversions.getCustomWriteTarget(value.getClass(), requestedTargetType));
+		if (getCustomConversions().hasCustomWriteTarget(value.getClass(), requestedTargetType)) {
+			return getConversionService().convert(value,
+					getCustomConversions().getCustomWriteTarget(value.getClass(), requestedTargetType));
 		}
 
 		// Cassandra has no default enum handling - convert it either to string
 		// or - if requested - to a different type
 		if (Enum.class.isAssignableFrom(value.getClass())) {
-
 			if (requestedTargetType != null && !requestedTargetType.isEnum()
-					&& conversionService.canConvert(value.getClass(), requestedTargetType)) {
-				return conversionService.convert(value, requestedTargetType);
+					&& getConversionService().canConvert(value.getClass(), requestedTargetType)) {
+
+				return getConversionService().convert(value, requestedTargetType);
 			}
 
 			return ((Enum<?>) value).name();

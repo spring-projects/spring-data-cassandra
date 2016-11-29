@@ -106,8 +106,8 @@ public class CustomConversions {
 		toRegister.addAll(Jsr310Converters.getConvertersToRegister());
 		toRegister.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
 
-		for (Object c : toRegister) {
-			registerConversion(c);
+		for (Object converter : toRegister) {
+			registerConversion(converter);
 		}
 
 		Collections.reverse(toRegister);

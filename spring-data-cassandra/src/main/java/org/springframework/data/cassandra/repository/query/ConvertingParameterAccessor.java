@@ -18,6 +18,11 @@ package org.springframework.data.cassandra.repository.query;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.DataType.CollectionType;
+import com.datastax.driver.core.TypeCodec;
+
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -27,11 +32,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
-
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.CollectionType;
-import com.datastax.driver.core.TypeCodec;
 
 /**
  * Custom {@link org.springframework.data.repository.query.ParameterAccessor} that uses a {@link CassandraConverter} to
@@ -134,19 +134,16 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	@SuppressWarnings("unchecked")
 	private Object potentiallyConvert(int index, Object bindableValue, CassandraPersistentProperty property) {
 
-		if (bindableValue == null) {
-			return null;
-		}
-
-		return converter.convertToCassandraColumn(bindableValue, findTypeInformation(index, bindableValue, property));
+		return (bindableValue == null ? null
+				: converter.convertToCassandraColumn(bindableValue, findTypeInformation(index, bindableValue, property)));
 	}
 
 	private TypeInformation<?> findTypeInformation(int index, Object bindableValue,
 			CassandraPersistentProperty property) {
 
 		if (delegate.findCassandraType(index) != null) {
-
 			TypeCodec<?> typeCodec = CodecRegistry.DEFAULT_INSTANCE.codecFor(getDataType(index, property));
+
 			if (typeCodec.getJavaType().getType() instanceof Class<?>) {
 				return ClassTypeInformation.from((Class<?>) typeCodec.getJavaType().getType());
 			}
