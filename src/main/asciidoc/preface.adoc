@@ -10,11 +10,11 @@ This document is the reference guide for Spring Data support for Cassandra. It e
 semantics and the syntax for various stores namespaces.
 
 This section provides a basic introduction to Spring, Spring Data and the Cassandra database. The rest of the document
-refers only to Spring Data Cassandra features and assumes the user is familiar with Cassandra as well as
+refers only to Spring Data for Apache Cassandra features and assumes the user is familiar with Cassandra as well as
 core Spring concepts.
 
 This section provides some basic introduction to Spring and Cassandra database. The rest of the document
-refers only to Spring Data Cassandra features and assumes the user is familiar with Apache Cassandra as
+refers only to Spring Data for Apache Cassandra features and assumes the user is familiar with Apache Cassandra as
 well as Spring concepts.
 
 [[get-started:first-steps:spring]]
@@ -34,7 +34,7 @@ behind IoC should be familiar no matter what IoC container you choose to use.
 
 The core functionality of the Cassandra support can be used directly, with no need to invoke the IoC services
 of the Spring container. This is much like `JdbcTemplate`, which can be used 'standalone' without any other services
-of the Spring container. To leverage all the features of Spring Data Cassandra, such as the repository support,
+of the Spring container. To leverage all the features of Spring Data for Apache Cassandra, such as the repository support,
 you will need to configure some parts of the library using Spring.
 
 To learn more about Spring, you can refer to the comprehensive (and sometimes disarming) http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/[documentation]
@@ -47,7 +47,7 @@ Take a look at the Spring Framework http://projects.spring.io/spring-framework/[
 NoSQL stores have taken the storage world by storm. It is a vast domain with a plethora of solutions, terms and patterns
 (to make things worse, even the term itself has multiple http://www.google.com/search?q=nosoql+acronym[meanings]).
 While some of the principles are common, it is crucial that the user is familiar to some degree with
-the Cassandra Columnar NoSQL Datastore supported by Spring Data Cassandra. The best way to get acquainted with Cassandra
+the Cassandra Columnar NoSQL Datastore supported by Spring Data for Apache Cassandra. The best way to get acquainted with Cassandra
 is to read the documentation and follow the examples.  It usually doesn't take more then 5-10 minutes to go through them
 and if you are coming from a RDBMS background, many times these exercises can be an eye opener.
 
@@ -65,14 +65,14 @@ with a Apache Cassandra instance in combination with the online shell.
 [[requirements]]
 == Requirements
 
-Spring Data Cassandra 1.x binaries require JDK level 6.0 and above, and http://spring.io/docs[Spring Framework] {springVersion} and above.
+Spring Data for Apache Cassandra 1.x binaries require JDK level 6.0 and above, and http://spring.io/docs[Spring Framework] {springVersion} and above.
 
 In terms of http://cassandra.apache.org/[Cassandra] at least 2.0.
 
 == Additional Help Resources
 
 Learning a new framework is not always straight forward. In this section, we try to provide what we
-think is an easy to follow guide for starting with Spring Data Cassandra module.
+think is an easy to follow guide for starting with Spring Data for Apache Cassandra module.
 However, if you encounter issues or you are just looking for an advice, feel free to use one of the links below:
 
 [[get-started:help]]
@@ -102,11 +102,11 @@ http://pivotal.io/[Pivotal Sofware, Inc.], the company behind Spring Data and Sp
 [[get-started:up-to-date]]
 === Following Development
 
-For information on the Spring Data Cassandra source code repository, nightly builds and snapshot artifacts
-please see the http://projects.spring.io/spring-data-cassandra/[Spring Data Cassandra homepage].
+For information on the Spring Data for Apache Cassandra source code repository, nightly builds and snapshot artifacts
+please see the http://projects.spring.io/spring-data-cassandra/[Spring Data for Apache Cassandra homepage].
 You can help make Spring Data best serve the needs of the Spring community by interacting with developers
 through the Community on http://stackoverflow.com/questions/tagged/spring-data[Stackoverflow].
-To follow developer activity look for the mailing list information on the Spring Data Cassandra homepage.
+To follow developer activity look for the mailing list information on the Spring Data for Apache Cassandra homepage.
 If you encounter a bug or want to suggest an improvement, please create a ticket on the Spring Data issue
 https://jira.spring.io/browse/DATACASS[tracker]. To stay up to date with the latest news and announcements
 in the Spring eco system, subscribe to the Spring Community http://spring.io[Portal].
