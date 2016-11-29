@@ -182,7 +182,7 @@ NOTE: `AbstractCassandraConfiguration` will create a `CassandraTemplate` instanc
 [[mapping.usage]]
 == Metadata based Mapping
 
-To take full advantage of the object mapping functionality inside the Spring Data/Cassandra support, you should annotate your mapped objects with the `@Table` annotation. It allows the classpath scanner to find and pre-process your domain objects to extract the necessary metadata. If you don't use this annotation your entities will be not found or rejected, if used in repository definitions or during runtime. Only annotated entities will be used to perform schema actions. In the worst case a `SchemaAction.RECREATE_DROP_UNUSED` will drop your tables and you'll experience data loss.
+To take full advantage of the object mapping functionality inside the Spring Data/Cassandra support, you should annotate your mapped objects with the `@Table` annotation. It allows the classpath scanner to find and pre-process your domain objects to extract the necessary metadata. Only annotated entities will be used to perform schema actions. In the worst case a `SchemaAction.RECREATE_DROP_UNUSED` will drop your tables and you will experience data loss.
 
 .Example domain object
 ====
