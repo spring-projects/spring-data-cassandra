@@ -66,7 +66,7 @@ public class BasicCassandraMappingContextUnitTests {
 		});
 	}
 
-	@Test(expected = MappingException.class)
+	@Test
 	public void testGetPersistentEntityOfTransientType() {
 		mappingContext.getPersistentEntity(Transient.class);
 	}
@@ -392,11 +392,11 @@ public class BasicCassandraMappingContextUnitTests {
 
 		CassandraPersistentEntity<?> existingPersistentEntity = mappingContext.getPersistentEntity(MappedUdt.class);
 
-		assertThat(mappingContext.getNonPrimaryKeyEntities()).doesNotContain(existingPersistentEntity);
+		assertThat(mappingContext.getTableEntities()).doesNotContain(existingPersistentEntity);
 	}
 
 	/**
-	 * @see DATACASS-172
+	 * @see DATACASS-172, DATACASS-359
 	 */
 	@Test
 	public void getPersistentEntitiesShouldContainUdt() {
@@ -404,7 +404,9 @@ public class BasicCassandraMappingContextUnitTests {
 		CassandraPersistentEntity<?> existingPersistentEntity = mappingContext.getPersistentEntity(MappedUdt.class);
 
 		assertThat(mappingContext.getPersistentEntities(true)).contains(existingPersistentEntity);
+		assertThat(mappingContext.getUserDefinedTypeEntities()).contains(existingPersistentEntity);
 		assertThat(mappingContext.getPersistentEntities(false)).doesNotContain(existingPersistentEntity);
+		assertThat(mappingContext.getTableEntities()).doesNotContain(existingPersistentEntity);
 	}
 
 	/**
