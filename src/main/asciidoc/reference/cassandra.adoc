@@ -724,204 +724,151 @@ CassandraOperations cassandraOperations = applicationContext.getBean("cassandraT
 `CassandraTemplate` provides a simple way for you to save, update, and delete your domain objects and map those objects to documents stored in Cassandra.
 
 [[cassandra-template.id-handling]]
-=== How the Composite Primary Key fields are handled in the mapping layer
+=== Working with Primary Keys
 
-Cassandra requires that you have at least 1 Partition Key field for a CQL Table. Alternately, you can have one or more Clustering Key fields. When your CQL Table has a composite Primary Key field you must create a @PrimaryKeyClass to define the structure of the composite PK. In this context, composite PK means one or more partition columns, or 1 partition column plus one or more clustering columns.
+Cassandra requires at least one partition key field for a CQL Table. A table can declare additionally one or more clustering key fields. When your CQL Table has a composite primary key, you must create a `@PrimaryKeyClass` to define the structure of the composite primary key. In this context, composite primary key means one or more partition columns optionally combined with one or more clustering columns.
 
-==== Simplest Composite Key
+Primary keys can make use of any singular simple Cassandra type or mapped User-Defined type. Collection-typed primary keys are not supported.
+
+==== Simple Primary Key
+
+A simple primary key consists of one partition key field within an entity class. Since it's one field only, we safely can assume it's a partition key.
+
+.CQL Table defined in Cassandra
+====
+[source]
+----
+CREATE TABLE user (
+  user_id text,
+  firstname text,
+  lastname text,
+  PRIMARY KEY (user_id))
+;
+----
+====
+
+.Annotated Entity
+====
+[source,java]
+----
+@Table(value = "login_event")
+public class LoginEvent {
+
+  @PrimaryKey("user_id")
+  private String userId;
+
+  private String firstname;
+  private String lastname;
+
+  // getters and setters omitted for brevity
+
+}
+----
+====
+
+==== Composite Key
+
+Composite primary keys (or compound keys) consist of more than one primary key fields. That said, a composite primary key can consist of multiple partition keys, a partition key and a clustering key or a multitude of primary key fields.
+
+Composite keys can be represented in two ways with Spring Data for Apache Cassandra:
+
+1. Embedded in an entity.
+2. By using `@PrimaryKeyClass`.
 
 The simplest for of a Composite key is a key with one partition key and one clustering key. Here is an example of a CQL Table, and the corresponding POJOs that represent the table and it's composite key.
 
-CQL Table defined in Cassandra
-
+.CQL Table with a Composite Primary Key
+====
 [source]
 ----
-create table login_event(
+CREATE TABLE login_event(
   person_id text, 
-  event_time timestamp,
   event_code int,
+  event_time timestamp,
   ip_address text,
-  primary key (person_id, event_time))
-  with CLUSTERING ORDER BY (event_time DESC)
+  PRIMARY KEY (person_id, event_code, event_time))
+  WITH CLUSTERING ORDER BY (event_time DESC)
 ;
 ----
+====
 
-Class defining the *Composite Primary Key*. 
+==== Flat Composite Primary Key
 
-NOTE: PrimaryKeyClass must implement `Serializable` should provide implementations of `hashCode()` and `equals()`.
+Flat composite primary keys are embedded inside the entity as flat fields. Primary key fields are annotated with `@PrimaryKeyColumn` along with other fields in the entity. Selection requires either a query to contain predicates for the individual fields or the use of `MapId`.
+
+.Using a flat Composite Primary Key
+====
+[source,java]
+----
+@Table(value = "login_event")
+public class LoginEvent {
+
+  @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+  private String personId;
+
+  @PrimaryKeyColumn(name = "event_code", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+  private int eventCode;
+
+  @PrimaryKeyColumn(name = "event_time", ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+  private Date eventTime;
+
+  @Column("ip_address)
+  private String ipAddress;
+
+  // getters and setters omitted for brevity
+}
+----
+====
+
+==== Primary Key Class
+
+A primary key class is a composite primary key class that is mapped to multiple fields or properties of the entity. It's annotated with `@PrimaryKeyClass` and defines equals and hashCode methods. The semantics of value equality for these methods should be consistent with the database equality for the database types to which the key is mapped. Primary key classes can be used with repositories (as Id type) and to represent an entities' identity in a single complex object.
 
 .Composite Primary Key Class
 ====
 [source,java]
 ----
-package org.spring.cassandra.example;
-
-import java.io.Serializable;
-import java.util.Date;
-
-import org.springframework.cassandra.core.Ordering;
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
-
 @PrimaryKeyClass
 public class LoginEventKey implements Serializable {
 
   @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
   private String personId;
 
-  @PrimaryKeyColumn(name = "event_time", ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+  @PrimaryKeyColumn(name = "event_code", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+  private int eventCode;
+
+  @PrimaryKeyColumn(name = "event_time", ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
   private Date eventTime;
 
-  public String getPersonId() {
-    return personId;
-  }
-
-  public void setPersonId(String personId) {
-    this.personId = personId;
-  }
-
-  public Date getEventTime() {
-    return eventTime;
-  }
-
-  public void setEventTime(Date eventTime) {
-    this.eventTime = eventTime;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((eventTime == null) ? 0 : eventTime.hashCode());
-    result = prime * result + ((personId == null) ? 0 : personId.hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    LoginEventKey other = (LoginEventKey) obj;
-    if (eventTime == null) {
-      if (other.eventTime != null)
-        return false;
-    } else if (!eventTime.equals(other.eventTime))
-      return false;
-    if (personId == null) {
-      if (other.personId != null)
-        return false;
-    } else if (!personId.equals(other.personId))
-      return false;
-    return true;
-  }
+  // other methods omitted for brevity
 }
 ----
 ====
 
-NOTE:
-
-Class defining the CQL Table, having the *Composite Primary Key* as an attribute and annotated as the `PrimaryKey`.
-
-.Annotated Entity
+.Using a Composite Primary Key
 ====
 [source,java]
 ----
-package org.spring.cassandra.example;
-
-import org.springframework.data.cassandra.mapping.Column;
-import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.Table;
-
 @Table(value = "login_event")
 public class LoginEvent {
 
   @PrimaryKey
-  private LoginEventKey pk;
+  private LoginEventKey key;
 
-  @Column(value = "event_code")
-  private int eventCode;
-
-  @Column(value = "ip_address")
+  @Column("ip_address)
   private String ipAddress;
 
-  public LoginEventKey getPk() {
-    return pk;
-  }
-
-  public void setPk(LoginEventKey pk) {
-    this.pk = pk;
-  }
-
-  public int getEventCode() {
-    return eventCode;
-  }
-
-  public void setEventCode(int eventCode) {
-    this.eventCode = eventCode;
-  }
-
-  public String getIpAddress() {
-    return ipAddress;
-  }
-
-  public void setIpAddress(String ipAddress) {
-    this.ipAddress = ipAddress;
-  }
+  // getters and setters omitted for brevity
 }
 ----
 ====
 
-==== Complex Composite Primary Key
-
-The annotations provided with Spring Data for Apache Cassandra can handle any key combination available in Cassandra. Here is one more example of a Composite Primary Key with 5 columns, 2 of which are a composite partition key, and the remaining 3 are ordered clustering keys. The getters/setters, hashCode and equals are omitted for brevity.
-
-.Composite Primary Key Class
-====
-[source,java]
-----
-package org.spring.cassandra.example;
-
-import java.io.Serializable;
-import java.util.Date;
-
-import org.springframework.cassandra.core.Ordering;
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
-
-@PrimaryKeyClass
-public class DetailedLoginEventKey implements Serializable {
-
-  @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-  private String personId;
-
-  @PrimaryKeyColumn(name = "wks_id", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
-  private String workstationId;
-
-  @PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING)
-  private Date application;
-
-  @PrimaryKeyColumn(name = "event_code", ordinal = 3, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING)
-  private Date eventCode;
-
-  @PrimaryKeyColumn(name = "event_time", ordinal = 4, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
-  private Date eventTime;
-
-  // other methods omitted
-
-}
-----
-====
+NOTE: PrimaryKeyClass must implement `Serializable` should provide implementations of `hashCode()` and `equals()`.
 
 [[cassandra-template.type-mapping]]
 === Type mapping
 
-Spring Data for Apache Cassandra relies on the DataStax Java Driver type mapping component. This approach ensures that as types are added or changed, the Spring Data for Apache Cassandra module will continue to function without requiring changes. For more information on the DataStax CQL3 to Java Type mappings, please see their http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html[Documentation here].
+Spring Data for Apache Cassandra relies on the DataStax Java Driver's `CodecRegistry` to ensure type support. As as types are added or changed, the Spring Data for Apache Cassandra module will continue to function without requiring changes. See https://docs.datastax.com/en/cql/3.3/cql/cql_reference/cql_data_types_c.html[CQL data types] and <<mapping-conversion>> for the current type mapping matrix.
 
 [[cassandra-template.save-insert]]
 === Methods for saving and inserting rows
@@ -1265,7 +1212,7 @@ This example shows how to create and drop a table, using different API objects, 
 
 [source]
 ----
-cassandraOperations.execute("create table test_table (id uuid primary key, event text)");
+cassandraOperations.execute("CREATE TABLE test_table (id uuid primary key, event text)");
 
 DropTableSpecification dropper = DropTableSpecification.dropTable("test_table");
 cassandraOperations.execute(dropper);
