@@ -17,7 +17,7 @@
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
-Defines the configuration elements in the XML namespace for Spring Data Cassandra.
+Defines configuration elements in the XML namespace for Spring Data for Apache Cassandra.
 		]]></xsd:documentation>
 	</xsd:annotation>
 
@@ -736,38 +736,7 @@ The reference to a Cassandra session; default is "cassandra-session".
 		</xsd:attribute>
 	</xsd:complexType>
 
-	<xsd:attributeGroup name="cassandra-repository-attributes">
-		<xsd:attribute name="cassandra-template-ref" type="cassandraTemplateRef">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The reference to a cassandraTemplate. Will default to 'cassandraTemplate'.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:attributeGroup>
-
-	<xsd:element name="repositories">
-		<xsd:complexType>
-			<xsd:complexContent>
-				<xsd:extension base="repository:repositories">
-					<xsd:attributeGroup ref="cassandra-repository-attributes" />
-					<xsd:attributeGroup ref="repository:repository-attributes" />
-				</xsd:extension>
-			</xsd:complexContent>
-		</xsd:complexType>
-	</xsd:element>
-
-	<xsd:simpleType name="cassandraTemplateRef" final="union">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<tool:annotation kind="ref">
-					<tool:assignable-to
-						type="org.springframework.data.cassandra.core.CassandraTemplate" />
-				</tool:annotation>
-			</xsd:appinfo>
-		</xsd:annotation>
-		<xsd:union memberTypes="xsd:string"/>
-	</xsd:simpleType>
+	<!-- Spring Data Repository and Mapping (Persistence) Schema Elements -->
 
 	<xsd:element name="converter">
 		<xsd:annotation>
@@ -827,11 +796,44 @@ The reference to a UserTypeResolver. UserTypeResolver is required when working w
 		</xsd:complexType>
 	</xsd:element>
 
+	<xsd:element name="repositories">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="repository:repositories">
+					<xsd:attributeGroup ref="cassandra-repository-attributes" />
+					<xsd:attributeGroup ref="repository:repository-attributes" />
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:attributeGroup name="cassandra-repository-attributes">
+		<xsd:attribute name="cassandra-template-ref" type="cassandraTemplateRef">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a CassandraTemplate. Will default to 'cassandraTemplate'.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+
 	<xsd:simpleType name="cassandraConverterRef" final="union">
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
 					<tool:assignable-to type="org.springframework.data.cassandra.convert.CassandraConverter"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="cassandraTemplateRef" final="union">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+						type="org.springframework.data.cassandra.core.CassandraTemplate" />
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>

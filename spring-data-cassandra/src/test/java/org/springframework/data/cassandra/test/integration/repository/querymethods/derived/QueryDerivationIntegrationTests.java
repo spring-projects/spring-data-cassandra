@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.querymethods.derived;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.datastax.driver.core.Session;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -200,7 +201,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test
 	public void executesCollectionQueryWithDtoDynamicallyProjected() throws Exception {
 
-		template.execute(
+		template.getCqlOperations().execute(
 				"CREATE CUSTOM INDEX IF NOT EXISTS fn_starts_with ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex';");
 
 		// Give Cassandra some time to build the index

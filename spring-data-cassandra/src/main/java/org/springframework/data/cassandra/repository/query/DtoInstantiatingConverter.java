@@ -43,7 +43,7 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 
 	/**
 	 * Creates a new {@link Converter} to instantiate DTOs.
-	 * 
+	 *
 	 * @param dtoType must not be {@literal null}.
 	 * @param context must not be {@literal null}.
 	 * @param instantiators must not be {@literal null}.
@@ -61,7 +61,7 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 		this.instantiator = instantiator.getInstantiatorFor(context.getPersistentEntity(dtoType));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 	 */
@@ -75,8 +75,6 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 		final PersistentEntity<?, ?> sourceEntity = context.getPersistentEntity(source.getClass());
 		final PersistentPropertyAccessor sourceAccessor = sourceEntity.getPropertyAccessor(source);
 		final PersistentEntity<?, ?> targetEntity = context.getPersistentEntity(targetType);
-		final PreferredConstructor<?, ? extends PersistentProperty<?>> constructor = targetEntity
-				.getPersistenceConstructor();
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		Object dto = instantiator.createInstance(targetEntity, new ParameterValueProvider() {
@@ -87,7 +85,9 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 			}
 		});
 
-		final PersistentPropertyAccessor dtoAccessor = targetEntity.getPropertyAccessor(dto);
+		final PersistentPropertyAccessor targetAccessor = targetEntity.getPropertyAccessor(dto);
+		final PreferredConstructor<?, ? extends PersistentProperty<?>> constructor =
+			targetEntity.getPersistenceConstructor();
 
 		targetEntity.doWithProperties(new SimplePropertyHandler() {
 
@@ -98,7 +98,7 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 					return;
 				}
 
-				dtoAccessor.setProperty(property,
+				targetAccessor.setProperty(property,
 						sourceAccessor.getProperty(sourceEntity.getPersistentProperty(property.getName())));
 			}
 		});

@@ -64,8 +64,6 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 	 */
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
-		for (CassandraPersistentEntityMetadataVerifier verifier : verifiers) {
-			verifier.verify(entity);
-		}
+		verifiers.forEach(verifier -> verifier.verify(entity));
 	}
 }

@@ -10,7 +10,7 @@
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
-Defines the configuration elements in the XML namespace for Spring Cassandra.
+Defines configuration elements in the XML namespace for Spring for Apache Cassandra.
 		]]></xsd:documentation>
 	</xsd:annotation>
 
@@ -561,6 +561,37 @@ If the utilisation of opened connections drops below by this configured threshol
 		</xsd:attribute>
 	</xsd:complexType>
 
+	<xsd:complexType name="replicationType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Provides the ability to configure the keyspace's replication settings.
+					]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="data-center" type="datacenterType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Provides the ability to specify replication factors by data center.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="class" type="xsd:string" use="optional" default="SimpleStrategy">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the replication class; default is "SIMPLE_STRATEGY".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="replication-factor" type="xsd:string" use="optional" default="1">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The replication factor; default is 1.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
 	<xsd:complexType name="sessionType">
 		<xsd:sequence>
 			<xsd:element name="startup-cql" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
@@ -655,37 +686,6 @@ Sets the SO_LINGER socket option.
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 Sets the SO_TCPNODELAY socket option.
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-
-	<xsd:complexType name="replicationType">
-		<xsd:annotation>
-			<xsd:documentation><![CDATA[
-Provides the ability to configure the keyspace's replication settings.
-					]]></xsd:documentation>
-		</xsd:annotation>
-		<xsd:sequence>
-			<xsd:element name="data-center" type="datacenterType" minOccurs="0" maxOccurs="unbounded">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-Provides the ability to specify replication factors by data center.
-					]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-		<xsd:attribute name="class" type="xsd:string" use="optional" default="SimpleStrategy">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The name of the replication class; default is "SIMPLE_STRATEGY".
-				]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="replication-factor" type="xsd:string" use="optional" default="1">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-The replication factor; default is 1.
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>

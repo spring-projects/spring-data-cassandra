@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,21 +15,20 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-import static org.springframework.cassandra.core.cql.CqlIdentifier.quotedCqlId;
-
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Mapping between a persistent entity's property and its column.
- * 
+ *
  * @author Matthew T. Adams
+ * @author John Blum
  */
 public class PropertyMapping {
 
-	protected String propertyName;
-	protected String columnName;
-	protected String forceQuote;
+	private String columnName;
+	private String forceQuote;
+	private String propertyName;
 
 	public PropertyMapping(String propertyName) {
 		setPropertyName(propertyName);
@@ -40,19 +39,9 @@ public class PropertyMapping {
 	}
 
 	public PropertyMapping(String propertyName, String columnName, String forceQuote) {
-
 		setPropertyName(propertyName);
 		setColumnName(columnName);
 		setForceQuote(forceQuote);
-	}
-
-	public String getPropertyName() {
-		return propertyName;
-	}
-
-	public void setPropertyName(String propertyName) {
-		Assert.notNull(propertyName);
-		this.propertyName = propertyName;
 	}
 
 	public String getColumnName() {
@@ -72,54 +61,53 @@ public class PropertyMapping {
 		this.forceQuote = forceQuote;
 	}
 
-	@Override
-	public boolean equals(Object that) {
-
-		if (this == that) {
-			return true;
-		}
-		if (that == null) {
-			return false;
-		}
-		if (!(that instanceof PropertyMapping)) {
-			return false;
-		}
-
-		PropertyMapping other = (PropertyMapping) that;
-
-		if (this.propertyName == null) {
-			if (other.propertyName != null) {
-				return false;
-			}
-		} else if (!this.propertyName.equals(other.propertyName)) {
-			return false;
-		}
-
-		if (this.columnName == null) {
-			if (other.columnName != null) {
-				return false;
-			}
-		} else if (!this.columnName.equals(other.columnName)) {
-			return false;
-		}
-
-		if (this.forceQuote == null) {
-			if (other.forceQuote != null) {
-				return false;
-			}
-		} else if (this.forceQuote.equals(other.forceQuote)) {
-			return false;
-		}
-
-		return true;
+	public String getPropertyName() {
+		return propertyName;
 	}
 
+	public void setPropertyName(String propertyName) {
+		Assert.notNull(propertyName);
+		this.propertyName = propertyName;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+
+		if (!(obj instanceof PropertyMapping)) {
+			return false;
+		}
+
+		PropertyMapping that = (PropertyMapping) obj;
+
+		return ObjectUtils.nullSafeEquals(this.getPropertyName(), that.getPropertyName())
+			&& ObjectUtils.nullSafeEquals(this.getColumnName(), that.getColumnName())
+			&& ObjectUtils.nullSafeEquals(this.getForceQuote(), that.getForceQuote());
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public int hashCode() {
-		int hashCode = 37;
-		hashCode ^= propertyName == null ? 0 : propertyName.hashCode();
-		hashCode ^= columnName == null ? 0 : columnName.hashCode();
-		hashCode ^= forceQuote == null ? 0 : forceQuote.hashCode();
-		return hashCode;
+		int hashValue = 17;
+		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getPropertyName());
+		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getColumnName());
+		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getForceQuote());
+		return hashValue;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public String toString() {
+		return String.format("{ @type = %1$s, propertyName = %2$s, columnName = %3$s, forceQuote = %4$s }",
+			getClass().getName(), getPropertyName(), getColumnName(), getForceQuote());
 	}
 }
