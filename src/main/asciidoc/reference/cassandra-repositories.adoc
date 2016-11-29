@@ -219,7 +219,7 @@ include::../{spring-data-commons-docs}/repository-projections.adoc[leveloffset=+
 [[cassandra.repositories.misc.cdi-integration]]
 === CDI Integration
 
-Instances of the repository interfaces are usually created by a container, which Spring is the most natural choice when working with Spring Data. Spring Data Cassandra ships with a custom CDI extension that allows using the repository abstraction in CDI environments. The extension is part of the JAR so all you need to do to activate it is dropping the Spring Data Cassandra JAR into your classpath. You can now set up the infrastructure by implementing a CDI Producer for the `CassandraTemplate`:
+Instances of the repository interfaces are usually created by a container, which Spring is the most natural choice when working with Spring Data. Spring Data for Apache Cassandra ships with a custom CDI extension that allows using the repository abstraction in CDI environments. The extension is part of the JAR so all you need to do to activate it is dropping the Spring Data for Apache Cassandra JAR into your classpath. You can now set up the infrastructure by implementing a CDI Producer for the `CassandraTemplate`:
 
 [source,java]
 ----
