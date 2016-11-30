@@ -181,7 +181,8 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Collection<PersonProjection> collection = personRepository.findPersonProjectedBy();
 
-		assertThat(collection).hasSize(3).extracting("lastname").contains("White", "White", "White");
+		assertThat(collection).hasSize(3).extracting("firstname").contains(
+				flynn.getFirstname(), skyler.getFirstname(), walter.getFirstname());
 	}
 
 	/**
@@ -192,7 +193,8 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Collection<PersonDto> collection = personRepository.findPersonDtoBy();
 
-		assertThat(collection).hasSize(3).extracting("lastname").contains("White", "White", "White");
+		assertThat(collection).hasSize(3).extracting("firstname").contains(
+				flynn.getFirstname(), skyler.getFirstname(), walter.getFirstname());
 	}
 
 	/**

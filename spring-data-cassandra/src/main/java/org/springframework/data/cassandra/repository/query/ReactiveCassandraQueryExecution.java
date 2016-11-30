@@ -47,7 +47,8 @@ interface ReactiveCassandraQueryExecution {
 
 		private final @NonNull ReactiveCassandraOperations operations;
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
@@ -66,7 +67,8 @@ interface ReactiveCassandraQueryExecution {
 
 		private final @NonNull ReactiveCassandraOperations operations;
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
@@ -87,7 +89,8 @@ interface ReactiveCassandraQueryExecution {
 		private final @NonNull ReactiveCassandraQueryExecution delegate;
 		private final @NonNull Converter<Object, Object> converter;
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
@@ -108,7 +111,8 @@ interface ReactiveCassandraQueryExecution {
 		private final @NonNull CassandraMappingContext mappingContext;
 		private final @NonNull EntityInstantiators instantiators;
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
 		@Override

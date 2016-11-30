@@ -51,7 +51,6 @@ import com.datastax.driver.core.TableMetadata;
  * Test for {@link ReactiveCassandraRepository} using reactive wrapper type conversion.
  *
  * @author Mark Paluch
- * @soundtrack Dj Marc - Euromix 97 Part 1
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = ConvertingReactiveCassandraRepositoryTests.Config.class)
@@ -83,7 +82,6 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		TableMetadata person = keyspace.getTable("person");
 
 		if (person.getIndex("IX_person_lastname") == null) {
-
 			session.execute("CREATE INDEX IX_person_lastname ON person (lastname);");
 			Thread.sleep(500);
 		}
@@ -96,6 +94,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		boyd = new Person("45", "Boyd", "Tinsley");
 
 		TestSubscriber<Person> subscriber = TestSubscriber.create();
+
 		reactiveRepository.save(Arrays.asList(oliver, dave, carter, boyd)).subscribe(subscriber);
 
 		subscriber.await().assertComplete().assertNoError();
@@ -118,8 +117,8 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test
 	public void reactiveStreamsQueryMethodsShouldWork() {
 
-		TestSubscriber<Person> subscriber = TestSubscriber
-				.subscribe(reactivePersonRepostitory.findByLastname(boyd.getLastname()));
+		TestSubscriber<Person> subscriber = TestSubscriber.subscribe(
+				reactivePersonRepostitory.findByLastname(boyd.getLastname()));
 
 		subscriber.awaitAndAssertNextValueCount(1).assertValues(boyd);
 	}
@@ -130,11 +129,10 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test
 	public void dtoProjectionShouldWork() {
 
-		TestSubscriber<PersonDto> subscriber = TestSubscriber
-				.subscribe(reactivePersonRepostitory.findProjectedByLastname(boyd.getLastname()));
+		TestSubscriber<PersonDto> subscriber = TestSubscriber.subscribe(
+				reactivePersonRepostitory.findProjectedByLastname(boyd.getLastname()));
 
 		subscriber.awaitAndAssertNextValueCount(1).assertValuesWith(personDto -> {
-
 			assertThat(personDto.firstname).isEqualTo(boyd.getFirstname());
 			assertThat(personDto.lastname).isEqualTo(boyd.getLastname());
 		});
@@ -147,6 +145,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void simpleRxJavaMethodsShouldWork() {
 
 		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
+
 		rxJava1PersonRepostitory.exists(dave.getId()).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
@@ -162,6 +161,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void existsWithSingleRxJavaIdMethodsShouldWork() {
 
 		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
+
 		rxJava1PersonRepostitory.exists(Single.just(dave.getId())).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
@@ -177,6 +177,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void singleRxJavaQueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
+
 		rxJava1PersonRepostitory.findManyByLastname(dave.getLastname()).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
@@ -192,6 +193,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void singleProjectedRxJavaQueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<ProjectedPerson> subscriber = new rx.observers.TestSubscriber<>();
+
 		rxJava1PersonRepostitory.findProjectedByLastname(carter.getLastname()).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
@@ -209,6 +211,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	public void observableRxJavaQueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
+
 		rxJava1PersonRepostitory.findByLastname(boyd.getLastname()).subscribe(subscriber);
 
 		subscriber.awaitTerminalEvent();
