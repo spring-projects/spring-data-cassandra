@@ -1,0 +1,12 @@
+[[new-features]]
+= New & Noteworthy
+
+[[new-features.1-5-0]]
+== What's new in Spring Data for Apache Cassandra 1.5
+* Assert compatibility with Cassandra 3.0 and Cassandra Java Driver 3.0.
+* Configurable `ProtocolVersion` and `QueryOptions` on `Cluster` level.
+* Support for `Optional` as query method result and argument.
+* Declarative query methods using query derivation
+* Support for User-Defined types and mapped User-Defined types using `@UserDefinedType`.
+* The following annotations have been enabled to build own, composed annotations:  `@Table`, `@UserDefinedType`, `@PrimaryKey`, `@PrimaryKeyClass`, `@PrimaryKeyColumn`, `@Column`, `@Query`, `@CassandraType`.
+

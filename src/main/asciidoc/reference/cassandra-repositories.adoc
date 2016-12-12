@@ -9,23 +9,260 @@ This chapter will point out the specialties for repository support for Cassandra
 [[cassandra-repo-usage]]
 == Usage
 
-To access domain entities stored in a Cassandra you can leverage our sophisticated repository support that eases implementing those quite significantly. To do so, simply create an interface for your repository:
+To access domain entities stored in Cassandra you can leverage our sophisticated repository support that eases implementing those quite significantly. To do so, simply create an interface for your repository:
 
-TODO
+.Sample Person entity
+====
+[source,java]
+----
+@Table
+public class Person {
 
-[[cassandradb.repositories.queries]]
+  @Id
+  private String id;
+  private String firstname;
+  private String lastname;
+
+  // … getters and setters omitted
+}
+----
+====
+
+We have a quite simple domain object here. Note that it has a property named `id` of type `String`. The default serialization mechanism used in `CassandraTemplate` (which is backing the repository support) regards properties named id as row id.
+
+.Basic repository interface to persist Person entities
+====
+[source]
+----
+public interface PersonRepository extends CrudRepository<Person, String> {
+
+  // additional custom finder methods go here
+}
+----
+====
+
+Right now this interface simply serves typing purposes but we will add additional methods to it later. In your Spring configuration simply add
+
+.General Cassandra repository Spring configuration
+====
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/data/cassandra
+    http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <cassandra:cluster port="9042"/>
+    <cassandra:session keyspace-name="keyspaceName"/>
+
+    <cassandra:mapping
+            entity-base-packages="com.acme.*.entities">
+    </cassandra:mapping>
+
+    <cassandra:converter/>
+
+    <cassandra:template/>
+
+    <cassandra:repositories base-package="com.acme.*.entities"/>
+</beans>
+----
+====
+
+This namespace element will cause the base packages to be scanned for interfaces extending `CrudRepository` and create Spring beans for each of them found. By default the repositories will get a `CassandraTemplate` Spring bean wired that is called `cassandraTemplate`, so you only need to configure `cassandra-template-ref` explicitly if you deviate from this convention.
+
+If you'd rather like to go with JavaConfig use the `@EnableCassandraRepositories` annotation. The annotation carries the very same attributes like the namespace element. If no base package is configured the infrastructure will scan the package of the annotated configuration class.
+
+.JavaConfig for repositories
+====
+[source,java]
+----
+@Configuration
+@EnableCassandraRepositories
+class ApplicationConfig extends AbstractCassandraConfiguration {
+
+  @Override
+  protected String getKeyspaceName() {
+    return "keyspace";
+  }
+
+  public String[] getEntityBasePackages() {
+    return new String[] { "com.oreilly.springdata.cassandra" };
+  }
+}
+----
+====
+
+As our domain repository extends `CrudRepository` it provides you with CRUD operations.
+Working with the repository instance is just a matter of dependency injecting it into a client.
+
+.Paging access to Person entities
+====
+[source,java]
+----
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
+public class PersonRepositoryTests {
+
+    @Autowired PersonRepository repository;
+
+    @Test
+    public void readsPersonTableCorrectly() {
+
+      List<Person> persons = repository.findAll();
+      assertThat(persons.isEmpty(), is(false));
+    }
+}
+----
+====
+
+The sample creates an application context with Spring's unit test support which will perform annotation based dependency injection into test cases. Inside the test method we simply use the repository to query the datastore. We invoke the repository query method that requests the all `Person` instances.
+
+[[cassandra.repositories.queries]]
 == Query methods
 
-[[cassandradb.repositories.queries.delete]]
-=== Repository delete queries
+Most of the data access operations you usually trigger on a repository result a query being executed against the Cassandra database. Defining such a query is just a matter of declaring a method on the repository interface.
 
-[[cassandradb.repositories.misc]]
+.PersonRepository with query methods
+====
+[source,java]
+----
+public interface PersonRepository extends CrudRepository<Person, String> {
+
+    List<Person> findByLastname(String lastname);                      <1>
+
+    List<Person> findByFirstname(String firstname, Sort sort);         <2>
+
+    Person findByShippingAddresses(Address address);                   <3>
+
+    Stream<Person> findAllBy();                                        <4>
+}
+----
+<1> The method shows a query for all people with the given lastname. The query will be derived parsing the method name for constraints which can be concatenated with `And`. Thus the method name will result in a query expression of `SELECT * from person WHERE lastname = 'lastname'`.
+<2> Applies dynamic sorting to a query. Just equip your method signature with a `Sort` parameter and we will automatically apply sortin  to the query accordingly.
+<3> Shows that you can query based on properties which are not a primitive type using registered `Converter` 's in `CustomConversions`.
+<4> Uses a Java 8 `Stream` which reads and converts individual elements while iterating the stream.
+====
+
+NOTE: Note that querying non-primary key properties requires secondary indexes.
+
+[cols="1,2,3", options="header"]
+.Supported keywords for query methods
+|===
+| Keyword
+| Sample
+| Logical result
+
+| `After`
+| `findByBirthdateAfter(Date date)`
+| `birthdate > date`
+
+| `GreaterThan`
+| `findByAgeGreaterThan(int age)`
+| `age > age`
+
+| `GreaterThanEqual`
+| `findByAgeGreaterThanEqual(int age)`
+| `age >= age`
+
+| `Before`
+| `findByBirthdateBefore(Date date)`
+| `birthdate < date`
+
+| `LessThan`
+| `findByAgeLessThan(int age)`
+| `age < age`
+
+| `LessThanEqual`
+| `findByAgeLessThanEqual(int age)`
+| `age <= age`
+
+| `In`
+| `findByAgeIn(Collection ages)`
+| `age IN (ages...)`
+
+| `Like`, `StartingWith`, `EndingWith`
+| `findByFirstnameLike(String name)`
+| `firstname LIKE (name as like expression)`
+
+| `Containing` on String
+| `findByFirstnameContaining(String name)`
+| `firstname LIKE (name as like expression)`
+
+| `Containing` on Collection
+| `findByAddressesContaining(Address address)`
+| `addresses CONTAINING address`
+
+| `(No keyword)`
+| `findByFirstname(String name)`
+| `firstname = name`
+
+| `IsTrue`, `True`
+| `findByActiveIsTrue()`
+| `active = true`
+
+| `IsFalse`,  `False`
+| `findByActiveIsFalse()`
+| `active = false`
+
+|===
+
+include::../{spring-data-commons-docs}/repository-projections.adoc[leveloffset=+2]
+
+[[cassandra.repositories.misc]]
 == Miscellaneous
 
-[[cassandradb.repositories.misc.cdi-integration]]
+[[cassandra.repositories.misc.cdi-integration]]
 === CDI Integration
 
-The Spring Data for Apache Cassandra CDI extension will pick up the `CassandraTemplate` available as CDI bean and create a proxy for a Spring Data repository whenever an bean of a repository type is requested by the container. Thus obtaining an instance of a Spring Data repository is a matter of declaring an `@Inject`-ed property:
+Instances of the repository interfaces are usually created by a container, which Spring is the most natural choice when working with Spring Data. Spring Data for Apache Cassandra ships with a custom CDI extension that allows using the repository abstraction in CDI environments. The extension is part of the JAR so all you need to do to activate it is dropping the Spring Data for Apache Cassandra JAR into your classpath. You can now set up the infrastructure by implementing a CDI Producer for the `CassandraTemplate`:
+
+[source,java]
+----
+class CassandraTemplateProducer {
+
+	@Produces
+	@Singleton
+	public Cluster createCluster() throws Exception {
+		CassandraConnectionProperties properties = new CassandraConnectionProperties();
+
+		Cluster cluster = Cluster.builder().addContactPoint(properties.getCassandraHost())
+				.withPort(properties.getCassandraPort()).build();
+		return cluster;
+	}
+
+	@Produces
+	@Singleton
+	public Session createSession(Cluster cluster) throws Exception {
+		return cluster.connect();
+	}
+
+	@Produces
+	@ApplicationScoped
+	public CassandraOperations createCassandraOperations(Session session) throws Exception {
+
+		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter();
+		cassandraConverter.setUserTypeResolver(new SimpleUserTypeResolver(session.getCluster(), session.getLoggedKeyspace()));
+
+		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(session, cassandraConverter);
+		return cassandraTemplate;
+	}
+
+	public void close(@Disposes Session session) {
+		session.close();
+	}
+
+	public void close(@Disposes Cluster cluster) {
+		cluster.close();
+	}
+}
+----
+
+The Spring Data for Apache Cassandra CDI extension will pick up `CassandraOperations` available as CDI bean and create a proxy for a Spring Data repository whenever an bean of a repository type is requested by the container. Thus obtaining an instance of a Spring Data repository is a matter of declaring an `@Inject`-ed property:
 
 [source,java]
 ----
@@ -35,7 +272,6 @@ class RepositoryClient {
   PersonRepository repository;
 
   public void businessMethod() {
-
     List<Person> people = repository.findAll();
   }
 }
