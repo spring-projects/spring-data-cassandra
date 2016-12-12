@@ -1,265 +1,197 @@
 [![Spring Data for Apache Cassandra](https://spring.io/badges/spring-data-cassandra/ga.svg)](http://projects.spring.io/spring-data-cassandra/#quick-start)
 [![Spring Data for Apache Cassandra](https://spring.io/badges/spring-data-cassandra/snapshot.svg)](http://projects.spring.io/spring-data-cassandra/#quick-start)
 
-# Spring Data for Apache Cassandra Project Info
+# Spring Data for Apache Cassandra
+
+The primary goal of the [Spring Data](http://projects.spring.io/spring-data) project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
+
+The Spring Data for Apache Cassandra project aims to provide a familiar and consistent Spring-based programming model for new datastores while retaining store-specific features and capabilities. The Spring Data for Apache Cassandra project provides integration with the Apache Cassandra database. Key functional areas of Spring Data for Apache Cassandra are a CQL abstraction, a POJO centric model for interacting with an Apache Cassandra tables and easily writing a repository style data access layer.
+
+
+## Getting Help
+
+For a comprehensive treatment of all the Spring Data for Apache Cassandra features, please refer to:
+
+* the [User Guide](http://docs.spring.io/spring-data/cassandra/docs/current/reference/html/)
+* the [JavaDocs](http://docs.spring.io/spring-data/cassandra/docs/current/api/) have extensive comments in them as well.
+* the home page of [Spring Data for Apache Cassandra](http://projects.spring.io/spring-data-cassandra) contains links to articles and other resources.
+* for more detailed questions, use [Spring Data for Apache Cassandra on Stackoverflow](http://stackoverflow.com/questions/tagged/spring-data-cassandra).
+
+If you are new to Spring as well as to Spring Data, look for information about [Spring projects](http://projects.spring.io/).
+
 
 ## Quick Start
 
-To begin working with ``spring-cql`` or ``spring-data-cassandra``, add the Spring Maven Snapshot Repository to your ``pom.xml``.
+Prerequisites:
+* Java 6
+* [DataStax Java Driver for Apache Cassandra 3.x](https://docs.datastax.com/en/developer/driver-matrix/doc/javaDrivers.html)
+* Apache Cassandra 1.x, 2.x or 3.x
 
-### Releases
+### Maven configuration
 
-Generally available releases are available in Maven Central.
+Add the Maven dependency:
 
-### Snapshots
+```xml
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-cql</artifactId>
+  <version>${version}.RELEASE</version>
+</dependency>
 
-	<repository>
-		<id>spring-libs-snapshot</id>
-  		<url>http://repo.spring.io/libs-snapshot</url>
-		<snapshots>
-			<enabled>true</enabled>
-		</snapshots>
-	</repository>
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-cassandra</artifactId>
+  <version>${version}.RELEASE</version>
+</dependency>
+```
 
-### Raw CQL only with no POJO mapping (``spring-cql``)
+If you would rather like the latest snapshots of the upcoming major version, use our Maven snapshot repository and declare the appropriate dependency version.
 
-*Maven Coordinates*
+```xml
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-cql</artifactId>
+  <version>${version}.BUILD-SNAPSHOT</version>
+</dependency>
 
-	<dependency>
-		<groupId>org.springframework.data</groupId>
-		<artifactId>spring-cql</artifactId>
-		<version>${version}.RELEASE</version>
-	</dependency>
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-cassandra</artifactId>
+  <version>${version}.BUILD-SNAPSHOT</version>
+</dependency>
 
-*Minimal Spring XML Configuration*
+<repository>
+  <id>spring-libs-snapshot</id>
+  <name>Spring Snapshot Repository</name>
+  <url>http://repo.spring.io/libs-snapshot</url>
+</repository>
+```
 
-	<cql:cluster />
-	<cql:session keyspace-name="sensors" />
-	<cql:template />
+### CassandraTemplate
 
-*Minimal Spring JavaConfig*
+`CassandraTemplate` is the central support class for Cassandra database operations. It provides:
 
-	@Configuration
-	public class MyConfig extends AbstractSessionConfiguration {
-		
-		@Override
-		public String getKeyspaceName() {
-			return "sensors";
-		}
-		
-		@Bean
-		public CqlOperations cqlTemplate() {
-			return new CqlTemplate(session.getObject());
-		}
-	}
+* Increased productivity by handling common Cassandra operations properly. Includes integrated object mapping between CQL Tables and POJOs.
+* Exception translation into Spring's [technology agnostic DAO exception hierarchy](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/dao.html#dao-exceptions).
+* Feature rich object mapping integrated with Spring’s Conversion Service.
+* Annotation-based mapping metadata but extensible to support other metadata formats.
 
-*Application Class*
 
-	public class SensorService {
-		
-		@Autowired
-		CqlOperations template;
-		
-		// ...
-	}
-	
-### CQL and POJO mapping (``spring-data-cassandra``)
+### Spring Data repositories
 
-*Maven Coordinates*
+To simplify the creation of data repositories Spring Data for Apache Cassandra provides a generic repository programming model. It will automatically create a repository proxy for you that adds implementations of finder methods you specify on an interface.  
 
-	<dependency>
-		<groupId>org.springframework.data</groupId>
-		<artifactId>spring-data-cassandra</artifactId>
-		<version>${version}.RELEASE</version>
-	</dependency>
+For example, given a `Person` class with first and last name properties, a `PersonRepository` interface that can query for `Person` by last name and when the first name matches a like expression is shown below:
 
-*Minimal Spring XML Configuration*
+```java
+public interface PersonRepository extends CrudRepository<Person, Long> {
 
-	<cassandra:cluster />
-	<cassandra:session keyspace-name="foobar" />
-	<cassandra:repositories base-package="org.example.domain" />
+  List<Person> findByLastname(String lastname);
 
-*Minimal Spring JavaConfig*
+  List<Person> findByFirstnameLike(String firstname);
+}
+```
 
-	@Configuration
-	@EnableCassandraRepositories(basePackages = "org.example.domain")
-	public class MyConfig extends AbstractCassandraConfiguration {
-		
-		@Override
-		public String getKeyspaceName() {
-			return "foobar";
-		}
-	}
+The queries issued on execution will be derived from the method name. Extending `CrudRepository` causes CRUD methods being pulled into the interface so that you can easily save and find single entities and collections of them.
 
-*Application Class*
+You can have Spring automatically create a proxy for the interface by using the following JavaConfig:
 
-	public class SensorService {
-		
-		@Autowired
-		SensorRepository repo;
-		
-		// ...
-	}
-	
+```java
+@Configuration
+@EnableCassandraRepositories
+class ApplicationConfig extends AbstractCassandraConfiguration {
+
+  @Override
+  public String getContactPoints() {
+    return "localhost";
+  }
+
+  @Override
+  protected String getKeyspaceName() {
+    return "springdata";
+  }
+}
+```
+
+This sets up a connection to a local Apache Cassandra instance and enables the detection of Spring Data repositories (through `@EnableCassandraRepositories`). The same configuration would look like this in XML:
+
+```xml
+<cassandra:cluster contact-points="localhost" port="9042" />
+
+<cassandra:session keyspace-name="springdata" />
+
+<cassandra:template id="cassandraTemplate" />
+
+<cassandra:repositories base-package="com.acme.repository" />
+```
+
+This will find the repository interface and register a proxy object in the container. You can use it as shown below:
+
+```java
+@Service
+public class MyService {
+
+  private final PersonRepository repository;
+
+  @Autowired
+  public MyService(PersonRepository repository) {
+    this.repository = repository;
+  }
+
+  public void doWork() {
+
+     repository.deleteAll();
+
+     Person person = new Person();
+     person.setFirstname("Oliver");
+     person.setLastname("Gierke");
+     person = repository.save(person);
+
+     List<Person> lastNameResults = repository.findByLastname("Gierke");
+     List<Person> firstNameResults = repository.findByFirstnameLike("Oli*");
+ }
+}
+```
 
 ## What's included
 
-There are two modules included in the ``spring-data-cassandra`` repository:  ``spring-cql`` and ``spring-data-cassandra``.
+Spring Data for Apache Cassandra consists of two modules:
+  
+* Spring CQL
+* Spring Data for Apache Cassandra
 
-### Module ``spring-cql``:  Pure CQL support a la Spring's template pattern
+You can choose among several approaches to form the basis for your Cassandra database access. Spring’s support for Apache Cassandra comes in different flavors. Once you start using one of these approaches, you can still mix and match to include a feature from a different approach.
 
-This is the low-level core template framework, like the ones you are used to using on all your Spring projects.  Our
-``CqlTemplate`` provides everything you need for working with Cassandra using Spring's familiar template pattern in a manner very similar to Spring's ``JdbcTemplate``.
+### Spring CQL
 
-This includes persistence exception translation, Spring JavaConfig and XML configuration support.  Define your Spring beans to setup your
-Cassandra ``Cluster`` object, then create your ``Session`` and you are ready to interact with Cassandra using the ``CqlTemplate``.
+Spring CQL takes care of all the low-level details that can make Cassandra and CQL such a tedious API to develop with.
 
-The module also offers convenient builder pattern classes to easily specify the creation, alteration, and dropping of keyspaces via a fluent API.  They are intended to be used with generators that produce CQL that can then be easily executed by ``CqlTemplate``.  See test class ``CreateTableCqlGeneratorTests`` for examples.  Don't forget to check out class ``MapBuilder`` for easy creation of Cassandra ``TableOption`` values.  The builders & CQL generators for ``CREATE TABLE``, ``ALTER TABLE``, and ``DROP TABLE`` operations are
+`CqlTemplate` is the classic Spring CQL approach and the most popular. This "lowest level" approach and all others use a `CqlTemplate` under the covers including schema generation support.
 
-* ``CreateTableSpecification`` & ``CreateTableCqlGenerator``,
-* ``AlterTableSpecification`` & ``AlterTableCqlGenerator``, and
-* ``DropTableSpecification`` & ``DropTableCqlGenerator``, respectively.
+### Spring Data Cassandra
 
-The support for Spring JavaConfig and a Spring Cassandra XML namespace makes it easy to configure your context to work with Cassandra, including XML namespace support for automatic keyspace creations, drops & more, which can be convenient when writing integration tests.
+Spring Data for Apache Cassandra adds object mapping, schema generation and repository support to the feature set.
 
-### Module ``spring-data-cassandra``:  Spring Data POJO persistence over Cassandra
+`CassandraTemplate` wraps a `CqlTemplate` to provide result to object mapping and the use of `SELECT`, `INSERT`, `UPDATE` and `DELETE` methods instead of writing CQL statements. This approach provides better documentation and ease of use. Schema generation support supports fast bootstrapping by using mapped objects to create tables and user types.
 
-The ``spring-data-cassandra`` module depends on the ``spring-cql`` module and adds the familiar Spring Data features like repositories and lightweight POJO persistence.
+## Contributing to Spring Data
 
-### Best practices
+Here are some ways for you to get involved in the community:
 
-We have worked closely with the DataStax Driver Engineering team to ensure that our implementation around their native
-CQL Driver takes advantage of all that it has to offer. If you need access to more than one keyspace in your application,
-create more than one ``CqlTemplate`` (one ``CqlTemplate`` per session, one session per keyspace), then use the appropriate template instance where needed.
+* Get involved with the Spring community on Stackoverflow and help out on the [spring-data-cassandra](http://stackoverflow.com/questions/tagged/spring-data-cassandra) tag by responding to questions and joining the debate.
+* Create [JIRA](https://jira.springframework.org/browse/DATACASS) tickets for bugs and new features and comment and vote on the ones that you are interested in.  
+* Github is for social coding: if you want to write code, we encourage contributions through pull requests from [forks of this repository](http://help.github.com/forking/). If you want to contribute code this way, please reference a JIRA ticket as well covering the specific issue you are addressing.
+* Watch for upcoming articles on Spring by [subscribing](http://spring.io/blog) to spring.io.
 
-Here are some considerations when designing your application for use with ``spring-cql`` (as well as ``spring-data-cassandra``).
+Before we accept a non-trivial patch or pull request we will need you to sign the [contributor's agreement](https://support.springsource.com/spring_committer_signup).  Signing the contributor's agreement does not grant anyone commit rights to the main repository, but it does mean that we can accept your contributions, and you will get an author credit if we do.  Active contributors might be asked to join the core team, and given the ability to merge pull requests.
 
-* When creating a template, wire in a single ``Session`` per keyspace.
-* ``Session`` is threadsafe, so only use one per keyspace per application context!
-* __Do not issue__ ``USE <keyspace>`` __commands__ on your session; instead, _configure_ the keyspace name you intend to use.
-* The DataStax Java Driver handles all failover and retry logic for you.  Become familiar with the [Driver Documentation](http://www.datastax.com/documentation/developer/java-driver/1.0/webhelp/index.html), which will help you configure your ``Cluster``.
-* If you are using a Cassandra ``Cluster`` spanning multiple data centers, please be insure to include hosts from all data centers in your contact points.
+## Initial Contributors
 
-### High Performance Ingestion
-
-We have included a variety of overloaded ``ingest(..)`` methods in ``CqlTemplate`` for high performance batch writes.
-
-### ``CassandraRepository``
-
-The base Spring Data Repository interface for Cassandra is ``CassandraRepository``.  This allows you to simply annotate key fields directly in your entity instead of having to define your own primary key classes, although you still can (see the parent interface of ``CassandraRepository``, called ``TypedIdCassandraRepository<T,ID>``).  In fact, ``CassandraRepository`` uses a provided primary key class called ``MapId``, and declares itself to extend ``TypedIdCassandraRepository<T, MapId>``!
-
-### ``CassandraTemplate``
-
-``CassandraTemplate`` extends ``CqlTemplate``, adding mapping information so you can work with Cassandra using annotated POJOs.
-The Spring Data ``CassandraRepository`` implementation also happens to be a client of ``CassandraTemplate`` so, if necessary, a developer can work with annotated POJOs and the template pattern without ever using ``CassandraRepository``.
-
-### ``CassandraAdminTemplate``
-
-This is another Spring template class to help you with your keyspace and table administration tasks.
-
-## ``CqlTemplate`` Examples
-
-### JavaConfig
-
-Here is a very basic example to get your project connected to Cassandra running on your local machine.
-
-	@Configuration
-	public class TestConfig extends AbstractCassandraConfiguration {
-
-		public static final String KEYSPACE = "test";
-
-		@Override
-		protected String getKeyspaceName() {
-			return KEYSPACE;
-		}
-
-		@Bean
-		public CqlOperations CqlTemplate() {
-			return new CqlTemplate(session().getObject());
-		}
-	}
-
-### XML Configuration
-
-	<cassandra-cluster />
-	<cassandra-session keyspace-name="test" />
-	<cassandra-template />
-
-### Using CqlTemplate
-
-	public class CqlOperationsTest {
-
-		@Autowired
-		private CqlOperations template;
-		
-		public Integer getCount() throws DataAccessException {
-		
-			String cql = "select count(*) from table_name where id='12345'";
-			
-			Integer count = template.queryForObject(cql, Integer.class);
-			
-			log.info("Row Count is -> " + count);
-			
-			return count;
-		}
-	}
-
-## Source Repository & Issue Tracking
-
-Source for this module is hosted on GitHub in [Spring Projects](https://github.com/spring-projects/spring-data-cassandra).  
-The Spring Data for Apache Cassandra JIRA can be found [here](https://jira.springsource.org/browse/DATACASS).
-
-## Reporting Problems
-
-If you encounter a problem using this module, please report the issue to us using [JIRA](https://jira.springsource.org/browse/DATACASS).  Please provide as much information as you can, including:
-
-* Cassandra version
-* Community or DataStax distribution of Cassandra
-* JDK Version
-* Output of ``show schema`` where applicable
-* Any stacktraces showing the location of the problem
-* Steps to reproduce
-* Any other relevant information that you would like to see if you were diagnosing the problem.
-
-Please do not post anything to Jira or the mailing list on how to use Cassandra.  That is beyond the scope
-of this module and there are a variety of resources available targeting that specific subject.
-
-We recommend reading the following:
-
-* [PlanetCassandra.org](http://planetcassandra.org/)
-* [Getting Started](http://wiki.apache.org/cassandra/GettingStarted)
-* [Driver Documentation](http://docs.datastax.com/en/developer/java-driver/2.1/java-driver/whatsNew2.html)
-
-
-## Contact
-
-For more information, feel free to contact the individuals listed
-below:
-
-* David Webb:  dwebb _at_ prowaveconsulting _dot_ com
-* Matthew Adams:  matthew _dot_ adams _at_ scispike _dot_ com
-
-Also, developer discussions are being hosted on [StackOverflow](https://www.stackoverflow.com) using the tag ``spring-data-cassandra``.
-
-## Contributing Individuals
+Spring Data for Apache Cassandra was initially created and supported by the following
+companies and individuals:
 
 * David Webb
 * Matthew Adams
 * John McPeek
-
-## Sponsoring Companies
-
-Spring Data for Apache Cassandra is being led and supported by the following
-companies and individuals:
-
 * [Prowave Consulting](http://www.prowaveconsulting.com) - David Webb
 * [SciSpike](http://www.scispike.com) - Matthew Adams
-
-The following companies and individuals are also generously providing
-support:
-
-* [DataStax](http://www.datastax.com)
-* [Spring](http://www.spring.io) @ [Pivotal](http://www.gopivotal.com)
-* Docbook Editor provided by [Oxygen XML](http://www.oxygenxml.com)
-
-![Oxygen XML Logo](http://www.oxygenxml.com/img/resources/oxygen190x62.png)
