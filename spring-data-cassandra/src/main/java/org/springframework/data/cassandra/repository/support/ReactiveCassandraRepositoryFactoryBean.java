@@ -40,6 +40,15 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 	private boolean mappingContextConfigured = false;
 
 	private ReactiveCassandraOperations operations;
+	
+	/**
+	 * Creates a new {@link ReactiveCassandraRepositoryFactoryBean} for the given repository interface.
+	 * 
+	 * @param repositoryInterface must not be {@literal null}.
+	 */
+	public ReactiveCassandraRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
+		super(repositoryInterface);
+	}
 
 	/**
 	 * Configures the {@link ReactiveCassandraOperations} used for Cassandra data access operations.
