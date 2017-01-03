@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.test.integration.repository.querymethods.derived;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assume.*;
 
 import java.time.LocalDate;
@@ -29,7 +28,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.SpringVersion;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
@@ -73,7 +71,6 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	@Autowired private CassandraOperations template;
-
 	@Autowired private PersonRepository personRepository;
 
 	private Person walter;
@@ -200,6 +197,8 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test
 	public void executesCollectionQueryWithDtoDynamicallyProjected() throws Exception {
 
+		assumeTrue(CassandraVersion.get(template.getSession()).isGreaterThanOrEqualTo(Version.parse("3.4")));
+
 		template.execute(
 				"CREATE CUSTOM INDEX IF NOT EXISTS fn_starts_with ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex';");
 
@@ -220,8 +219,6 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	 */
 	@Test
 	public void shouldFindByNumberOfChildren() throws Exception {
-
-		assumeThat(SpringVersion.getVersion(), startsWith("4.3"));
 
 		template.execute("CREATE INDEX IF NOT EXISTS person_number_of_children ON person (numberofchildren);");
 
