@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,16 +29,30 @@ import org.springframework.cassandra.core.PrimaryKeyType;
  * <li>{@link PrimaryKeyColumn#ordering()}.</li>
  * </ul>
  * 
- * @see PrimaryKeyType#compareTo(PrimaryKeyType)
- * @see Ordering#compareTo(Ordering)
  * @author Matthew T. Adams
  * @author John Blum
+ * @author Mark Paluch
+ * @see PrimaryKeyType#compare(PrimaryKeyType, PrimaryKeyType)
+ * @see Ordering#compare(Ordering, Ordering)
  * @see java.util.Comparator
  * @see org.springframework.data.cassandra.mapping.PrimaryKeyColumn
  */
 public enum CassandraPrimaryKeyColumnAnnotationComparator implements Comparator<PrimaryKeyColumn> {
+
+	/**
+	 * Comparator instance.
+	 */
+	INSTANCE,
+
+	/**
+	 * @deprecated as of 1.5, use {@link #INSTANCE}
+	 */
+	@Deprecated
 	IT;
 
+	/* (non-Javadoc)
+	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+	 */
 	@Override
 	public int compare(PrimaryKeyColumn left, PrimaryKeyColumn right) {
 

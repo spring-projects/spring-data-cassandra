@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,19 @@ import java.util.Comparator;
  * {@link Comparator} implementation that uses {@link Column#value()}.
  * 
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public enum CassandraColumnAnnotationComparator implements Comparator<Column> {
 
 	/**
-	 * The sole instance of this class.
+	 * Comparator instance.
 	 */
+	INSTANCE,
+
+	/**
+	 * @deprecated as of 1.5, use {@link #INSTANCE}
+	 */
+	@Deprecated
 	IT;
 
 	@Override

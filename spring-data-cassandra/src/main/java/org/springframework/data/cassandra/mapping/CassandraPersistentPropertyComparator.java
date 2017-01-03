@@ -51,6 +51,9 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 	@Deprecated
 	IT;
 
+	/* (non-Javadoc)
+	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+	 */
 	@Override
 	public int compare(CassandraPersistentProperty left, CassandraPersistentProperty right) {
 
@@ -75,7 +78,7 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 		boolean rightIsPrimaryKey = right.isPrimaryKeyColumn();
 
 		if (leftIsPrimaryKey && rightIsPrimaryKey) {
-			return CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(left.findAnnotation(PrimaryKeyColumn.class),
+			return CassandraPrimaryKeyColumnAnnotationComparator.INSTANCE.compare(left.findAnnotation(PrimaryKeyColumn.class),
 					right.findAnnotation(PrimaryKeyColumn.class));
 		}
 
