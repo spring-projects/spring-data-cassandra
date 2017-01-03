@@ -80,6 +80,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	private Person walter;
 	private Person skyler;
 	private Person flynn;
+	private Version cassandraVersion;
 
 	@Before
 	public void before() {
@@ -95,6 +96,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		walter = personRepository.save(person);
 		skyler = personRepository.save(new Person("Skyler", "White"));
 		flynn = personRepository.save(new Person("Flynn (Walter Jr.)", "White"));
+		cassandraVersion = CassandraVersion.get(session);
 	}
 
 	/**
@@ -203,6 +205,8 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test
 	public void executesCollectionQueryWithDtoDynamicallyProjected() throws Exception {
 
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(Version.parse("3.4")));
+
 		template.getCqlOperations().execute(
 				"CREATE CUSTOM INDEX IF NOT EXISTS fn_starts_with ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex';");
 
@@ -223,8 +227,6 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	 */
 	@Test
 	public void shouldFindByNumberOfChildren() throws Exception {
-
-		assumeTrue(Version.parse(SpringVersion.getVersion()).isGreaterThanOrEqualTo(Version.parse("4.3")));
 
 		template.getCqlOperations()
 				.execute("CREATE INDEX IF NOT EXISTS person_number_of_children ON person (numberofchildren);");
@@ -277,7 +279,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test
 	public void shouldUseStartsWithQuery() throws InterruptedException {
 
-		assumeTrue(CassandraVersion.get(session).isGreaterThanOrEqualTo(Version.parse("3.4")));
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(Version.parse("3.4")));
 
 		template.getCqlOperations().execute(
 				"CREATE CUSTOM INDEX IF NOT EXISTS fn_starts_with ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex';");
@@ -297,7 +299,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test
 	public void shouldUseContainsQuery() throws InterruptedException {
 
-		assumeTrue(CassandraVersion.get(session).isGreaterThanOrEqualTo(Version.parse("3.4")));
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(Version.parse("3.4")));
 
 		template.getCqlOperations().execute(
 				"CREATE CUSTOM INDEX IF NOT EXISTS fn_contains ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex'\n"
