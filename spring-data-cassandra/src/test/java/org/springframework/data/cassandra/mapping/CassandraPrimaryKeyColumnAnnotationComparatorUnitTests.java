@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2016 the original author or authors
+ *  Copyright 2013-2017 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.springframework.data.cassandra.mapping;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.mapping.CassandraPrimaryKeyColumnAnnotationComparator.*;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -31,19 +31,19 @@ import org.springframework.cassandra.core.PrimaryKeyType;
  * and functionality of the {@link CassandraPrimaryKeyColumnAnnotationComparator} class.
  *
  * @author John Blum
- * @see org.springframework.data.cassandra.mapping.CassandraPrimaryKeyColumnAnnotationComparator
- * @since 1.5.0
+ * @author Mark Paluch
  */
 public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 
-	private static PrimaryKeyColumn entityOne;
-	private static PrimaryKeyColumn entityTwo;
-	private static PrimaryKeyColumn entityThree;
-	private static PrimaryKeyColumn entityFour;
-	private static PrimaryKeyColumn entityFive;
+	static PrimaryKeyColumn entityOne;
+	static PrimaryKeyColumn entityTwo;
+	static PrimaryKeyColumn entityThree;
+	static PrimaryKeyColumn entityFour;
+	static PrimaryKeyColumn entityFive;
 
 	@BeforeClass
 	public static void setup() throws Exception {
+
 		entityOne = EntityOne.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
 		entityTwo = EntityTwo.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
 		entityThree = EntityThree.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
@@ -51,32 +51,48 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 		entityFive = EntityFive.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
 	}
 
+	/**
+	 * @see DATACASS-248
+	 */
 	@Test
 	public void compareTypes() {
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityTwo)).isEqualTo(1);
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityTwo, entityTwo)).isEqualTo(0);
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityTwo, entityOne)).isEqualTo(-1);
+
+		assertThat(INSTANCE.compare(entityOne, entityTwo)).isEqualTo(1);
+		assertThat(INSTANCE.compare(entityTwo, entityTwo)).isEqualTo(0);
+		assertThat(INSTANCE.compare(entityTwo, entityOne)).isEqualTo(-1);
 	}
 
+	/**
+	 * @see DATACASS-248
+	 */
 	@Test
 	public void compareOrdinals() {
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityThree)).isEqualTo(-1);
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityThree, entityThree)).isEqualTo(0);
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityThree, entityOne)).isEqualTo(1);
+
+		assertThat(INSTANCE.compare(entityOne, entityThree)).isEqualTo(-1);
+		assertThat(INSTANCE.compare(entityThree, entityThree)).isEqualTo(0);
+		assertThat(INSTANCE.compare(entityThree, entityOne)).isEqualTo(1);
 	}
 
+	/**
+	 * @see DATACASS-248
+	 */
 	@Test
 	public void compareName() {
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityFour)).isEqualTo(-1);
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFour, entityFour)).isEqualTo(0);
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFour, entityOne)).isEqualTo(1);
+
+		assertThat(INSTANCE.compare(entityOne, entityFour)).isEqualTo(-1);
+		assertThat(INSTANCE.compare(entityFour, entityFour)).isEqualTo(0);
+		assertThat(INSTANCE.compare(entityFour, entityOne)).isEqualTo(1);
 	}
 
+	/**
+	 * @see DATACASS-248
+	 */
 	@Test
 	public void compareOrdering() {
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityOne, entityFive)).isEqualTo(-1);
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFive, entityFive)).isEqualTo(0);
-		assertThat(CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(entityFive, entityOne)).isEqualTo(1);
+
+		assertThat(INSTANCE.compare(entityOne, entityFive)).isEqualTo(-1);
+		assertThat(INSTANCE.compare(entityFive, entityFive)).isEqualTo(0);
+		assertThat(INSTANCE.compare(entityFive, entityOne)).isEqualTo(1);
 	}
 
 	static class EntityOne {
