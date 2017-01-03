@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 /**
  * The CassandraPersistentPropertyComparatorUnitTests class is a test suite of test cases testing the contract and
@@ -141,24 +142,48 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 
 	@Test
 	public void compareLeftAndRightNamesReturnsNegativeValue() {
+
 		when(left.isCompositePrimaryKey()).thenReturn(false);
 		when(left.isPrimaryKeyColumn()).thenReturn(true);
 		when(right.isCompositePrimaryKey()).thenReturn(true);
 		when(right.isPrimaryKeyColumn()).thenReturn(false);
-		when(left.findAnnotation(eq(Column.class))).thenReturn(null);
-		when(right.findAnnotation(eq(Column.class))).thenReturn(null);
-		when(left.getName()).thenReturn("left");
-		when(right.getName()).thenReturn("right");
+		when(left.getColumnName()).thenReturn(CqlIdentifier.cqlId("left"));
+		when(right.getColumnName()).thenReturn(CqlIdentifier.cqlId("right"));
 
-		assertThat(CassandraPersistentPropertyComparator.IT.compare(left, right)).isLessThan(0);
+		assertThat(CassandraPersistentPropertyComparator.INSTANCE.compare(left, right)).isLessThan(0);
 
 		verify(left, times(1)).isCompositePrimaryKey();
 		verify(left, times(1)).isPrimaryKeyColumn();
-		verify(left, times(1)).findAnnotation(eq(Column.class));
-		verify(left, times(1)).getName();
+		verify(left, times(1)).getColumnName();
 		verify(right, times(1)).isCompositePrimaryKey();
 		verify(right, times(1)).isPrimaryKeyColumn();
-		verify(right, times(1)).findAnnotation(eq(Column.class));
-		verify(right, times(1)).getName();
+		verify(right, times(1)).getColumnName();
+	}
+
+	/**
+	 * @see DATACASS-352
+	 */
+	@Test
+	public void columnNameComparisonShouldHonorContract() throws Exception {
+
+		BasicCassandraMappingContext context = new BasicCassandraMappingContext();
+		CassandraPersistentEntity<?> persistentEntity = context.getPersistentEntity(TwoColumns.class);
+
+		CassandraPersistentProperty annotated = persistentEntity.getPersistentProperty("annotated");
+		CassandraPersistentProperty another = persistentEntity.getPersistentProperty("anotherAnnotated");
+		CassandraPersistentProperty plain = persistentEntity.getPersistentProperty("plain");
+
+		assertThat(CassandraPersistentPropertyComparator.IT.compare(annotated, plain)).isLessThanOrEqualTo(-1);
+		assertThat(CassandraPersistentPropertyComparator.IT.compare(plain, annotated)).isGreaterThanOrEqualTo(1);
+		assertThat(CassandraPersistentPropertyComparator.IT.compare(another, another)).isEqualTo(0);
+	}
+
+	static class TwoColumns {
+
+		@Column("annotated") String annotated;
+
+		@Column("another") String anotherAnnotated;
+
+		String plain;
 	}
 }
