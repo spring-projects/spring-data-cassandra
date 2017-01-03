@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,19 @@ package org.springframework.data.cassandra.mapping;
 
 import java.util.Comparator;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+
 /**
  * {@link Comparator} implementation that orders {@link CassandraPersistentProperty} instances.
- * <p/>
- * Composite primary key properties and primary key properties sort before non-primary key properties.
+ * <p>
+ * Composite primary key properties and primary key properties sort before non-primary key properties. Ordering rules:
+ * <ul>
+ * <li>Composite primary keys first (equal if both {@link CassandraPersistentProperty} are a composite primary key)</li>
+ * <li>Primary key columns (see {@link CassandraPrimaryKeyColumnAnnotationComparator}, compare by ordinal/name/ordering)
+ * </li>
+ * <li>Regular columns, compared by column name (see
+ * {@link org.springframework.cassandra.core.cql.CqlIdentifier#compareTo(CqlIdentifier)})</li>
+ * </ul>
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
@@ -30,6 +39,16 @@ import java.util.Comparator;
  * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty
  */
 public enum CassandraPersistentPropertyComparator implements Comparator<CassandraPersistentProperty> {
+
+	/**
+	 * Comparator instance.
+	 */
+	INSTANCE,
+
+	/**
+	 * @deprecated as of 1.5, use {@link #INSTANCE}
+	 */
+	@Deprecated
 	IT;
 
 	@Override
@@ -37,14 +56,11 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 
 		if (left == null && right == null) {
 			return 0;
-		}
-		else if (left != null && right == null) {
+		} else if (left != null && right == null) {
 			return 1;
-		}
-		else if (left == null) {
+		} else if (left == null) {
 			return -1;
-		}
-		else if (left.equals(right)) {
+		} else if (left.equals(right)) {
 			return 0;
 		}
 
@@ -60,7 +76,7 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 
 		if (leftIsPrimaryKey && rightIsPrimaryKey) {
 			return CassandraPrimaryKeyColumnAnnotationComparator.IT.compare(left.findAnnotation(PrimaryKeyColumn.class),
-				right.findAnnotation(PrimaryKeyColumn.class));
+					right.findAnnotation(PrimaryKeyColumn.class));
 		}
 
 		boolean leftIsKey = leftIsCompositePrimaryKey || leftIsPrimaryKey;
@@ -68,27 +84,11 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 
 		if (leftIsKey && !rightIsKey) {
 			return -1;
-		}
-		else if (!leftIsKey && rightIsKey) {
+		} else if (!leftIsKey && rightIsKey) {
 			return 1;
 		}
 
 		// else, neither property is a composite primary key nor a primary key; compare @Column annotations
-
-		Column leftColumn = left.findAnnotation(Column.class);
-		Column rightColumn = right.findAnnotation(Column.class);
-
-		if (leftColumn != null && rightColumn != null) {
-			return CassandraColumnAnnotationComparator.IT.compare(leftColumn, rightColumn);
-		}
-		else if (leftColumn != null) {
-			return leftColumn.value().compareTo(left.getName());
-		}
-		else if (rightColumn != null) {
-			return left.getName().compareTo(rightColumn.value());
-		}
-		else {
-			return left.getName().compareTo(right.getName());
-		}
+		return left.getColumnName().compareTo(right.getColumnName());
 	}
 }
