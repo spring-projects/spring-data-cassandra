@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.UserType;
-
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
@@ -42,7 +38,7 @@ import org.springframework.util.Assert;
 
 /**
  * Schema creation support for Cassandra based on {@link CassandraMappingContext} and {@link CassandraPersistentEntity}.
- * This class generates CQL to drop, recreate and create user types (UDT) and tables.
+ * This class generates CQL to create user types (UDT) and tables.
  *
  * @author Mark Paluch
  * @since 1.5
@@ -73,18 +69,11 @@ public class CassandraPersistentEntitySchemaCreator {
 	}
 
 	/**
-	 * Create user types. Can drop types and drop unused types.
+	 * Create tables from types known to {@link CassandraMappingContext}.
 	 *
-	 * @param dropTables {@literal true} to drop tables before creation.
-	 * @param dropUnused {@literal true} to drop unused tables before creation. Table usage is determined by existing
-	 *          table mappings.
 	 * @param ifNotExists {@literal true} to create tables using {@code IF NOT EXISTS}.
 	 */
-	public void createTables(boolean dropTables, boolean dropUnused, boolean ifNotExists) {
-
-		if (dropTables) {
-			dropTables(dropUnused);
-		}
+	public void createTables(boolean ifNotExists) {
 
 		List<CreateTableSpecification> specifications = createTableSpecifications(ifNotExists);
 
@@ -97,7 +86,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	protected List<CreateTableSpecification> createTableSpecifications(boolean ifNotExists) {
 
 		Collection<? extends CassandraPersistentEntity<?>> entities = new ArrayList<CassandraPersistentEntity<?>>(
-			mappingContext.getTableEntities());
+				mappingContext.getTableEntities());
 
 		List<CreateTableSpecification> specifications = new ArrayList<CreateTableSpecification>();
 
@@ -108,32 +97,12 @@ public class CassandraPersistentEntitySchemaCreator {
 		return specifications;
 	}
 
-	/* (non-Javadoc) */
-	private void dropTables(boolean dropUnused) {
-
-		KeyspaceMetadata keyspaceMetadata = cassandraAdminOperations.getKeyspaceMetadata();
-
-		for (TableMetadata table : keyspaceMetadata.getTables()) {
-			if (dropUnused || mappingContext.usesTable(table)) {
-				cassandraAdminOperations.dropTable(CqlIdentifier.cqlId(table.getName()));
-			}
-		}
-	}
-
 	/**
-	 * Create user types. Can drop types and drop unused types.
+	 * Create user types from types known to {@link CassandraMappingContext}.
 	 *
-	 * @param dropUserTypes {@literal true} to drop types before creation.
-	 * @param dropUnused {@literal true} to drop unused types before creation. Type usage is determined from existing
-	 *          mapped {@link org.springframework.data.cassandra.mapping.UserDefinedType}s and UDT names on field
-	 *          specifications.
 	 * @param ifNotExists {@literal true} to create types using {@code IF NOT EXISTS}.
 	 */
-	public void createUserTypes(boolean dropUserTypes, boolean dropUnused, boolean ifNotExists) {
-
-		if (dropUserTypes) {
-			dropUserTypes(dropUnused);
-		}
+	public void createUserTypes(boolean ifNotExists) {
 
 		List<CreateUserTypeSpecification> specifications = createUserTypeSpecifications(ifNotExists);
 
@@ -149,8 +118,7 @@ public class CassandraPersistentEntitySchemaCreator {
 				mappingContext.getUserDefinedTypeEntities());
 
 		// TODO simplify by using Java 8 Streams API in 2.0.x
-		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName =
-				new HashMap<CqlIdentifier, CassandraPersistentEntity<?>>();
+		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName = new HashMap<CqlIdentifier, CassandraPersistentEntity<?>>();
 
 		for (CassandraPersistentEntity<?> entity : entities) {
 			byTableName.put(entity.getTableName(), entity);
@@ -172,8 +140,8 @@ public class CassandraPersistentEntitySchemaCreator {
 
 			for (CqlIdentifier identifier : ordered) {
 				if (created.add(identifier)) {
-					specifications.add(mappingContext.getCreateUserTypeSpecificationFor(byTableName.get(identifier))
-						.ifNotExists(ifNotExists));
+					specifications.add(
+							mappingContext.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists));
 				}
 			}
 		}
@@ -196,28 +164,5 @@ public class CassandraPersistentEntitySchemaCreator {
 				}
 			}
 		});
-	}
-
-	/* (non-Javadoc) */
-	private void dropUserTypes(boolean dropUnused) {
-
-		KeyspaceMetadata keyspaceMetadata = cassandraAdminOperations.getKeyspaceMetadata();
-
-		Collection<CassandraPersistentEntity<?>> userDefinedTypeEntities = mappingContext.getUserDefinedTypeEntities();
-		Set<CqlIdentifier> canRecreate = new HashSet<CqlIdentifier>();
-
-		for (CassandraPersistentEntity<?> userDefinedTypeEntity : userDefinedTypeEntities) {
-			canRecreate.add(userDefinedTypeEntity.getTableName());
-		}
-
-		for (UserType userType : keyspaceMetadata.getUserTypes()) {
-			CqlIdentifier identifier = CqlIdentifier.cqlId(userType.getTypeName());
-
-			if (canRecreate.contains(identifier)) {
-				cassandraAdminOperations.dropUserType(identifier);
-			} else if (dropUnused && !mappingContext.usesUserType(userType)) {
-				cassandraAdminOperations.dropUserType(identifier);
-			}
-		}
 	}
 }

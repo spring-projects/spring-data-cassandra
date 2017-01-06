@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.springframework.data.cassandra.core;
 
 import static org.mockito.Mockito.*;
+
+import lombok.Data;
 
 import java.util.Set;
 
@@ -34,8 +36,6 @@ import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.UserType;
 
-import lombok.Data;
-
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaCreator}.
  * 
@@ -48,9 +48,6 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 	@Mock KeyspaceMetadata metadata;
 	@Mock UserType universetype;
 	@Mock UserType moontype;
-	@Mock UserType manufacturertype;
-	@Mock UserType biketype;
-	@Mock UserType tiretype;
 
 	BasicCassandraMappingContext context = new BasicCassandraMappingContext();
 
@@ -78,7 +75,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
 				operations);
 
-		schemaCreator.createUserTypes(false, false, false);
+		schemaCreator.createUserTypes(false);
 
 		verify(operations).execute(Mockito.contains("CREATE TYPE universetype"));
 		verify(operations).execute(Mockito.contains("CREATE TYPE moontype"));

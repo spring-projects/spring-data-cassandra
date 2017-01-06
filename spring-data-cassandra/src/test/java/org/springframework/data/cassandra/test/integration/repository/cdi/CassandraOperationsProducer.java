@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCreator;
+import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
@@ -75,9 +76,15 @@ class CassandraOperationsProducer {
 		cassandraTemplate.execute(createKeyspaceSpecification);
 		cassandraTemplate.execute("USE " + KEYSPACE_NAME);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(mappingContext, cassandraTemplate);
-		schemaCreator.createUserTypes(false, false, true);
-		schemaCreator.createTables(false, false, true);
+		CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(mappingContext,
+				cassandraTemplate);
+		schemaDropper.dropTables(false);
+		schemaDropper.dropUserTypes(false);
+
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(mappingContext,
+				cassandraTemplate);
+		schemaCreator.createUserTypes(false);
+		schemaCreator.createTables(false);
 
 		for (CassandraPersistentEntity<?> entity : cassandraTemplate.getConverter().getMappingContext()
 				.getTableEntities()) {
