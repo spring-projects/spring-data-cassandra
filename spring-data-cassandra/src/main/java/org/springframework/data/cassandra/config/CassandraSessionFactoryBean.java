@@ -24,8 +24,6 @@ import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDr
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Session;
-
 /**
  * Factory to create and configure a Cassandra {@link com.datastax.driver.core.Session} with support for executing CQL
  * and initializing the database schema (a.k.a. keyspace).
@@ -44,28 +42,72 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	protected static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
 
 	private CassandraAdminOperations admin;
-
 	private CassandraConverter converter;
-
 	private SchemaAction schemaAction = SchemaAction.NONE;
 
+	/**
+	 * Set the {@link CassandraConverter} to use. Schema actions will derive table and user type information from the
+	 * {@link CassandraMappingContext} inside {@code converter}.
+	 *
+	 * @param converter must not be {@literal null}.
+	 */
+	public void setConverter(CassandraConverter converter) {
+
+		Assert.notNull(converter, "CassandraConverter must not be null");
+
+		this.converter = converter;
+	}
+
+	/**
+	 * @return the {@link CassandraConverter}.
+	 */
+	public CassandraConverter getConverter() {
+		return this.converter;
+	}
+
+	/**
+	 * @return the {@link CassandraMappingContext}.
+	 */
+	protected CassandraMappingContext getMappingContext() {
+		return getConverter().getMappingContext();
+	}
+
+	/**
+	 * Set the {@link SchemaAction}.
+	 *
+	 * @param schemaAction must not be {@literal null}.
+	 */
+	public void setSchemaAction(SchemaAction schemaAction) {
+
+		Assert.notNull(schemaAction, "SchemaAction must not be null");
+		this.schemaAction = schemaAction;
+	}
+
+	/**
+	 * @return the {@link SchemaAction}.
+	 */
+	public SchemaAction getSchemaAction() {
+		return schemaAction;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.config.CassandraCqlSessionFactoryBean#afterPropertiesSet()
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		super.afterPropertiesSet();
 
 		Assert.state(converter != null, "Converter was not properly initialized");
 
-		admin = newCassandraAdminOperations(getObject(), converter);
+		super.afterPropertiesSet();
+
+		admin = new CassandraAdminTemplate(getObject(), converter);
 
 		performSchemaAction();
 	}
 
-	/* (non-Javadoc) */
-	CassandraAdminOperations newCassandraAdminOperations(Session session, CassandraConverter converter) {
-		return new CassandraAdminTemplate(session, converter);
-	}
-
-	/* (non-Javadoc) */
+	/**
+	 * Perform the configure {@link SchemaAction} using {@link CassandraMappingContext} metadata.
+	 */
 	protected void performSchemaAction() {
 
 		boolean create = false;
@@ -92,7 +134,20 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 		}
 	}
 
+	/**
+	 * Perform schema actions.
+	 *
+	 * @param drop {@literal true} to drop types/tables.
+	 * @param dropUnused {@literal true} to drop unused types/tables (i.e. types/tables not know to be used by
+	 *          {@link CassandraMappingContext}).
+	 * @param ifNotExists {@literal true} to perform creations fail-safe by adding {@code IF NOT EXISTS} to each creation
+	 *          statement.
+	 */
 	protected void createTables(boolean drop, boolean dropUnused, boolean ifNotExists) {
+		performSchemaActions(drop, dropUnused, ifNotExists);
+	}
+
+	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists) {
 
 		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(
 				getMappingContext(), getCassandraAdminOperations());
@@ -110,35 +165,10 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 		schemaCreator.createTables(ifNotExists);
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * @return the {@link CassandraAdminOperations}.
+	 */
 	protected CassandraAdminOperations getCassandraAdminOperations() {
 		return this.admin;
-	}
-
-	/* (non-Javadoc) */
-	public void setConverter(CassandraConverter converter) {
-		Assert.notNull(converter, "CassandraConverter must not be null");
-		this.converter = converter;
-	}
-
-	/* (non-Javadoc) */
-	public CassandraConverter getConverter() {
-		return this.converter;
-	}
-
-	/* (non-Javadoc) */
-	protected CassandraMappingContext getMappingContext() {
-		return getConverter().getMappingContext();
-	}
-
-	/* (non-Javadoc) */
-	public void setSchemaAction(SchemaAction schemaAction) {
-		Assert.notNull(schemaAction, "SchemaAction must not be null");
-		this.schemaAction = schemaAction;
-	}
-
-	/* (non-Javadoc) */
-	public SchemaAction getSchemaAction() {
-		return schemaAction;
 	}
 }

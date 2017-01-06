@@ -79,7 +79,12 @@ public class CassandraPersistentEntitySchemaCreator {
 				.execute(CreateTableCqlGenerator.toCql(specification)));
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Create {@link List} of {@link CreateTableSpecification}.
+	 *
+	 * @param ifNotExists {@literal true} to create tables using {@code IF NOT EXISTS}.
+	 * @return {@link List} of {@link CreateTableSpecification}.
+	 */
 	protected List<CreateTableSpecification> createTableSpecifications(boolean ifNotExists) {
 
 		return mappingContext.getTableEntities().stream()
@@ -99,7 +104,12 @@ public class CassandraPersistentEntitySchemaCreator {
 						.execute(CreateUserTypeCqlGenerator.toCql(specification)));
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Create {@link List} of {@link CreateUserTypeSpecification}.
+	 *
+	 * @param ifNotExists {@literal true} to create types using {@code IF NOT EXISTS}.
+	 * @return {@link List} of {@link CreateUserTypeSpecification}.
+	 */
 	protected List<CreateUserTypeSpecification> createUserTypeSpecifications(boolean ifNotExists) {
 
 		Collection<? extends CassandraPersistentEntity<?>> entities = new ArrayList<>(
@@ -132,7 +142,6 @@ public class CassandraPersistentEntitySchemaCreator {
 		return specifications;
 	}
 
-	/* (non-Javadoc) */
 	private void visitUserTypes(CassandraPersistentEntity<?> entity, final Set<CqlIdentifier> seen) {
 
 		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
