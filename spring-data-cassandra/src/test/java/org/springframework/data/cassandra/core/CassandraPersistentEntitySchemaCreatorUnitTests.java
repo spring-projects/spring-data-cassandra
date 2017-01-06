@@ -62,8 +62,11 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		});
 	}
 
+	/**
+	 * @see DATACASS-172
+	 */
 	@Test
-	public void shouldCreateTypesInOrder() throws Exception {
+	public void shouldCreateTypesInOrder() {
 
 		context.getPersistentEntity(MoonType.class);
 		context.getPersistentEntity(PlanetType.class);
@@ -88,27 +91,18 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		inOrder.verify(operations).execute(Mockito.contains("CREATE TYPE planettype"));
 	}
 
-	/**
-	 * @author Mark Paluch
-	 */
 	@UserDefinedType
 	@Data
 	static class UniverseType {
 		String name;
 	}
 
-	/**
-	 * @author Mark Paluch
-	 */
 	@UserDefinedType
 	static class MoonType {
 
 		UniverseType universeType;
 	}
 
-	/**
-	 * @author Mark Paluch
-	 */
 	@UserDefinedType
 	static class PlanetType {
 
