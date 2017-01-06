@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.config;
 
 import org.springframework.cassandra.config.CassandraCqlSessionFactoryBean;
@@ -21,6 +20,7 @@ import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCreator;
+import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.util.Assert;
 
@@ -97,8 +97,17 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(
 				getMappingContext(), getCassandraAdminOperations());
 
-		schemaCreator.createUserTypes(drop, dropUnused, ifNotExists);
-		schemaCreator.createTables(drop, dropUnused, ifNotExists);
+		if (drop) {
+
+			CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(
+					getMappingContext(), getCassandraAdminOperations());
+
+			schemaDropper.dropTables(dropUnused);
+			schemaDropper.dropUserTypes(dropUnused);
+		}
+
+		schemaCreator.createUserTypes(ifNotExists);
+		schemaCreator.createTables(ifNotExists);
 	}
 
 	/* (non-Javadoc) */
