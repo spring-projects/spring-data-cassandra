@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,9 @@ package org.springframework.data.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.*;
-
-import java.util.Collections;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,15 +33,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.CassandraAdminOperations;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
 
 /**
  * The CassandraSessionFactoryBeanUnitTests class is a test suite of test cases testing the contract and functionality
@@ -54,8 +43,6 @@ import com.datastax.driver.core.TableMetadata;
  *
  * @author John Blum
  * @see org.springframework.data.cassandra.config.CassandraSessionFactoryBean
- * @see <a href="https://jira.spring.io/browse/DATACASS-219>DATACASS-219</a>
- * @since 1.5.0
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraSessionFactoryBeanUnitTests {
@@ -82,7 +69,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 		return new CqlIdentifier(id, false);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void afterPropertiesSetPerformsSchemaAction() throws Exception {
 
 		doAnswer(new Answer<Void>() {
@@ -107,7 +94,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 		verify(factoryBean, times(1)).performSchemaAction();
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void afterPropertiesSetThrowsIllegalStateExceptionWhenConverterIsNull() throws Exception {
 
 		exception.expect(IllegalStateException.class);
@@ -117,7 +104,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 		factoryBean.afterPropertiesSet();
 	}
 
-	protected void performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction schemaAction,
+	private void performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction schemaAction,
 			final boolean dropTables, final boolean dropUnused, final boolean ifNotExists) {
 
 		doAnswer(new Answer<Void>() {
@@ -131,39 +118,37 @@ public class CassandraSessionFactoryBeanUnitTests {
 		}).when(factoryBean).createTables(anyBoolean(), anyBoolean(), anyBoolean());
 
 		factoryBean.setSchemaAction(schemaAction);
-
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(schemaAction);
 
 		factoryBean.performSchemaAction();
-
 		verify(factoryBean, times(1)).createTables(eq(dropTables), eq(dropUnused), eq(ifNotExists));
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void performsSchemaActionCreatesTablesWithDefaults() {
 		performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction.CREATE, DEFAULT_DROP_TABLES,
 				DEFAULT_DROP_UNUSED_TABLES, DEFAULT_CREATE_IF_NOT_EXISTS);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void performsSchemaActionCreatesTablesIfNotExists() {
 		performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction.CREATE_IF_NOT_EXISTS,
 				DEFAULT_DROP_TABLES, DEFAULT_DROP_UNUSED_TABLES, true);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void performsSchemaActionRecreatesTables() {
 		performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction.RECREATE, true,
 				DEFAULT_DROP_UNUSED_TABLES, DEFAULT_CREATE_IF_NOT_EXISTS);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void performsSchemaActionRecreatesAndDropsUnusedTables() {
 		performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction.RECREATE_DROP_UNUSED, true,
 				true, DEFAULT_CREATE_IF_NOT_EXISTS);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void performsSchemaActionDoesNotCallCreateTablesWhenSchemaActionIsNone() {
 
 		doAnswer(new Answer<Void>() {
@@ -183,7 +168,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 		verify(factoryBean, never()).createTables(anyBoolean(), anyBoolean(), anyBoolean());
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void setAndGetConverter() {
 
 		assertThat(factoryBean.getConverter()).isNull();
@@ -192,7 +177,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 		verifyZeroInteractions(mockConverter);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void setConverterToNull() {
 
 		exception.expect(IllegalArgumentException.class);
@@ -201,7 +186,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 		factoryBean.setConverter(null);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void setAndGetSchemaAction() {
 
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.NONE);
@@ -211,8 +196,9 @@ public class CassandraSessionFactoryBeanUnitTests {
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.NONE);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void setSchemaActionToNullThrowsIllegalArgumentException() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("SchemaAction must not be null");
 

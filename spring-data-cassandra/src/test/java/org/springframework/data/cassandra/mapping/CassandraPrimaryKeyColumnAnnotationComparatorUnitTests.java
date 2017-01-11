@@ -51,10 +51,7 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 		entityFive = EntityFive.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void compareTypes() {
 
 		assertThat(INSTANCE.compare(entityOne, entityTwo)).isEqualTo(1);
@@ -62,10 +59,7 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 		assertThat(INSTANCE.compare(entityTwo, entityOne)).isEqualTo(-1);
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void compareOrdinals() {
 
 		assertThat(INSTANCE.compare(entityOne, entityThree)).isEqualTo(-1);
@@ -73,10 +67,7 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 		assertThat(INSTANCE.compare(entityThree, entityOne)).isEqualTo(1);
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void compareName() {
 
 		assertThat(INSTANCE.compare(entityOne, entityFour)).isEqualTo(-1);
@@ -84,10 +75,7 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 		assertThat(INSTANCE.compare(entityFour, entityOne)).isEqualTo(1);
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void compareOrdering() {
 
 		assertThat(INSTANCE.compare(entityOne, entityFive)).isEqualTo(-1);

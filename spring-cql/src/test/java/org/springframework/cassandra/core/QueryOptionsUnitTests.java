@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,7 @@ import com.datastax.driver.core.policies.LoggingRetryPolicy;
  */
 public class QueryOptionsUnitTests {
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void buildQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
@@ -56,10 +53,7 @@ public class QueryOptionsUnitTests {
 		assertThat(queryOptions.getTracing()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void buildQueryOptionsWithDriverRetryPolicy() {
 
 		QueryOptions writeOptions = QueryOptions.builder() //
@@ -70,10 +64,7 @@ public class QueryOptionsUnitTests {
 		assertThat(writeOptions.getDriverRetryPolicy()).isInstanceOf(LoggingRetryPolicy.class);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void buildQueryOptionsWithRetryPolicy() {
 
 		QueryOptions writeOptions = QueryOptions.builder() //
@@ -84,26 +75,17 @@ public class QueryOptionsUnitTests {
 		assertThat(writeOptions.getDriverRetryPolicy()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-202
 	public void builderShouldRejectSettingOurAndDriverRetryPolicy() {
 		QueryOptions.builder().retryPolicy(RetryPolicy.DEFAULT).retryPolicy(FallthroughRetryPolicy.INSTANCE);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-202
 	public void builderShouldRejectSettingDriverAndOurRetryPolicy() {
 		QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).retryPolicy(RetryPolicy.DEFAULT);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-202
 	public void shouldRejectSettingOurAndDriverRetryPolicy() {
 
 		QueryOptions queryOptions = new QueryOptions();
@@ -111,10 +93,7 @@ public class QueryOptionsUnitTests {
 		queryOptions.setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-202
 	public void shouldRejectSettingDriverAndOurRetryPolicy() {
 
 		QueryOptions queryOptions = new QueryOptions();
@@ -122,10 +101,7 @@ public class QueryOptionsUnitTests {
 		queryOptions.setRetryPolicy(RetryPolicy.DEFAULT);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-202
 	public void shouldRejectSettingOurAndDriverConsistencyLevel() {
 
 		QueryOptions queryOptions = new QueryOptions();
@@ -133,10 +109,7 @@ public class QueryOptionsUnitTests {
 		queryOptions.setConsistencyLevel(ConsistencyLevel.ANY);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-202
 	public void shouldRejectSettingDriverAndOurConsistencyLevel() {
 
 		QueryOptions queryOptions = new QueryOptions();

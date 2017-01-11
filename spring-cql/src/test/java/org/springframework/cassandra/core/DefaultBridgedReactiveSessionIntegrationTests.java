@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package org.springframework.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
@@ -25,9 +28,6 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.SyntaxError;
-
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 /**
  * Integration tests for {@link DefaultBridgedReactiveSession}.
@@ -46,10 +46,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 		this.reactiveSession = new DefaultBridgedReactiveSession(this.session, Schedulers.elastic());
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeShouldExecuteDeferred() throws Exception {
 
 		Mono<ReactiveResultSet> execution = reactiveSession
@@ -64,10 +61,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 		assertThat(keyspace.getTable("users")).isNotNull();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeShouldTransportExceptionsInMono() throws Exception {
 
 		Mono<ReactiveResultSet> execution = reactiveSession.execute("INSERT INTO dummy;");
@@ -80,10 +74,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeShouldReturnRows() throws Exception {
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
@@ -97,10 +88,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 		assertThat(row.getString("userid")).isEqualTo("White");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeShouldPrepareStatement() throws Exception {
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");

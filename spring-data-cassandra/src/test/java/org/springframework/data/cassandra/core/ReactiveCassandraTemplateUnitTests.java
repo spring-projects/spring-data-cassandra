@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyInt;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.Collections;
 
 import org.junit.Before;
@@ -33,7 +36,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.ReactiveResultSet;
 import org.springframework.cassandra.core.ReactiveSession;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.Person;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -41,9 +43,6 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Unit tests for {@link ReactiveCassandraTemplate}.
@@ -71,10 +70,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void selectUsingCqlShouldReturnMappedResults() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -96,10 +92,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void selectShouldTranslateException() {
 
 		when(reactiveResultSet.rows()).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
@@ -115,10 +108,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void selectOneByIdShouldReturnMappedResults() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -140,10 +130,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void existsShouldReturnExistingElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -157,10 +144,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void existsShouldReturnNonExistingElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
@@ -172,10 +156,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void countShouldExecuteCountQueryElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -189,10 +170,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM person;");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void insertShouldInsertEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
@@ -206,10 +184,7 @@ public class ReactiveCassandraTemplateUnitTests {
 				.isEqualTo("INSERT INTO person (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void insertShouldTranslateException() {
 
 		reset(session);
@@ -227,10 +202,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void insertShouldNotApplyInsert() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(false);
@@ -241,10 +213,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(mono.block()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void updateShouldUpdateEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
@@ -258,10 +227,7 @@ public class ReactiveCassandraTemplateUnitTests {
 				.isEqualTo("UPDATE person SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void updateShouldTranslateException() {
 
 		reset(session);
@@ -279,10 +245,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void updateShouldNotApplyUpdate() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(false);
@@ -293,10 +256,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(mono.block()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deleteShouldRemoveEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
@@ -310,10 +270,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM person WHERE id='heisenberg';");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deleteShouldTranslateException() {
 
 		reset(session);
@@ -331,10 +288,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deleteShouldNotApplyRemoval() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(false);
@@ -345,10 +299,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(mono.block()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void truncateShouldRemoveEntities() {
 
 		template.truncate(Person.class).block();

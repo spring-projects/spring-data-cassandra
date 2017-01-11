@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.CqlOperations;
-import org.springframework.cassandra.core.ReactiveSessionCallback;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
@@ -112,10 +111,7 @@ public class StringBasedCassandraQueryUnitTests {
 		this.converter.afterPropertiesSet();
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsIndexParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
@@ -127,10 +123,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
 	}
 
-	/**
-	 * @see DATACASS-259
-	 */
-	@Test
+	@Test // DATACASS-259
 	public void bindsIndexParameterForComposedQueryAnnotationCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByComposedQueryAnnotation", String.class);
@@ -142,10 +135,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsAndEscapesIndexParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
@@ -157,10 +147,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Mat\th''ew\"s';");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsAndEscapesBytesIndexParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
@@ -172,10 +159,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 0x01020304;");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsIndexParameterInListCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastNameIn", Collection.class);
@@ -187,10 +171,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname IN ('White','Heisenberg');");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsIndexParameterIsListCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastNamesAndAge", Collection.class, int.class);
@@ -202,10 +183,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastnames = ['White','Heisenberg'] AND age = 42;");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test(expected = QueryCreationException.class)
+	@Test(expected = QueryCreationException.class) // DATACASS-117
 	public void referencingUnknownIndexedParameterShouldFail() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByOutOfBoundsLastNameShouldFail", String.class);
@@ -215,10 +193,7 @@ public class StringBasedCassandraQueryUnitTests {
 		cassandraQuery.createQuery(accessor);
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test(expected = QueryCreationException.class)
+	@Test(expected = QueryCreationException.class) // DATACASS-117
 	public void referencingUnknownNamedParameterShouldFail() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByUnknownParameterLastNameShouldFail", String.class);
@@ -228,10 +203,7 @@ public class StringBasedCassandraQueryUnitTests {
 		cassandraQuery.createQuery(accessor);
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsIndexParameterInSetCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastNameIn", Collection.class);
@@ -243,10 +215,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname IN ('White','Heisenberg');");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsNamedParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByNamedParameter", String.class, String.class);
@@ -258,10 +227,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsIndexExpressionParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByIndexExpressionParameter", String.class);
@@ -273,10 +239,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsExpressionParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByExpressionParameter", String.class);
@@ -288,10 +251,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Matthews';");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsConditionalExpressionParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByConditionalExpressionParameter", String.class);
@@ -309,10 +269,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname = 'Walter';");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsReusedParametersCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastnameUsedTwice", String.class);
@@ -324,10 +281,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE lastname='Matthews' or firstname = 'Matthews';");
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void bindsMultipleParametersCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastnameAndFirstname", String.class, String.class);
@@ -344,10 +298,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo(expected.getQueryString());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void bindsConvertedParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByCreatedDate", LocalDate.class);
@@ -359,10 +310,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual).isEqualTo("SELECT * FROM person WHERE createdDate='2010-07-04';");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void bindsMappedUdtPropertyCorrectly() throws Exception {
 
 		Field city = createField("city", DataType.varchar());
@@ -382,10 +330,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(stringQuery).isEqualTo("SELECT * FROM person WHERE address={city:NULL,country:NULL};");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void bindsUdtValuePropertyCorrectly() throws Exception {
 
 		Field city = createField("city", DataType.varchar());
@@ -404,7 +349,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	private StringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
-		
+
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
 		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
 				converter.getMappingContext());

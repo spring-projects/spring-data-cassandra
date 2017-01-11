@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,10 +53,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		template.setSession(getSession());
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void executeShouldRemoveRecords() throws Exception {
 
 		template.execute("DELETE FROM user WHERE id = 'WHITE'");
@@ -64,10 +61,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(session.execute("SELECT * FROM user").one()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryShouldInvokeCallback() throws Exception {
 
 		List<String> result = new ArrayList<>();
@@ -78,10 +72,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(result).contains("WHITE");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryForObjectShouldReturnFirstColumn() throws Exception {
 
 		String id = template.queryForObject("SELECT id FROM user;", String.class);
@@ -89,10 +80,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(id).isEqualTo("WHITE");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryForObjectShouldReturnMap() throws Exception {
 
 		Map<String, Object> map = template.queryForMap("SELECT * FROM user;");
@@ -100,10 +88,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void executeStatementShouldRemoveRecords() throws Exception {
 
 		template.execute(QueryBuilder.delete().from("user").where(QueryBuilder.eq("id", "WHITE")));
@@ -111,10 +96,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(session.execute("SELECT * FROM user").one()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryStatementShouldInvokeCallback() throws Exception {
 
 		List<String> result = new ArrayList<>();
@@ -125,10 +107,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(result).contains("WHITE");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryForObjectStatementShouldReturnFirstColumn() throws Exception {
 
 		String id = template.queryForObject(QueryBuilder.select("id").from("user"), String.class);
@@ -136,10 +115,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(id).isEqualTo("WHITE");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryForObjectStatementShouldReturnMap() throws Exception {
 
 		Map<String, Object> map = template.queryForMap(QueryBuilder.select().from("user"));
@@ -147,10 +123,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void executeWithArgsShouldRemoveRecords() throws Exception {
 
 		template.execute("DELETE FROM user WHERE id = ?", "WHITE");
@@ -158,10 +131,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(session.execute("SELECT * FROM user").one()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryPreparedStatementShouldInvokeCallback() throws Exception {
 
 		List<String> result = new ArrayList<>();
@@ -172,10 +142,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(result).contains("WHITE");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorShouldInvokeCallback() throws Exception {
 
 		List<String> result = new ArrayList<>();
@@ -186,10 +153,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(result).contains("WHITE");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryForObjectWithArgsShouldReturnFirstColumn() throws Exception {
 
 		String id = template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE");
@@ -197,10 +161,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 		assertThat(id).isEqualTo("WHITE");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void queryForObjectWithArgsShouldReturnMap() throws Exception {
 
 		Map<String, Object> map = template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE");

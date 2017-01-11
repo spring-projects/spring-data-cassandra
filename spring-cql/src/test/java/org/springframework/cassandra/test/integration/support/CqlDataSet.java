@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.cassandra.test.integration.support;
 
+import lombok.SneakyThrows;
+
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -22,8 +24,6 @@ import java.util.List;
 import org.springframework.util.Assert;
 
 import com.google.common.io.Resources;
-
-import lombok.SneakyThrows;
 
 /**
  * An executable CQL data set. The data set can be created from class path resources and execution can be bound to a

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,10 +65,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 		qualifiedUserRepository = client.getQualifiedUserRepository();
 	}
 
-	/**
-	 * @see DATACASS-149
-	 */
-	@Test
+	@Test // DATACASS-149
 	public void testCdiRepository() {
 
 		assertThat(repository).isNotNull();
@@ -101,10 +98,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 		assertThat(retrieved).isNull();
 	}
 
-	/**
-	 * @see DATACASS-249
-	 */
-	@Test
+	@Test // DATACASS-249
 	public void testQualifiedCdiRepository() {
 
 		assertThat(qualifiedUserRepository).isNotNull();
@@ -120,10 +114,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 		assertThat(qualifiedUserRepository.exists(bean.getUsername())).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-149
-	 */
-	@Test
+	@Test // DATACASS-149
 	public void returnOneFromCustomImpl() {
 
 		assertThat(personRepository.returnOne()).isEqualTo(1);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,7 @@ import org.springframework.data.cassandra.domain.Person;
  */
 public class ConverterRegistrationUnitTests {
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void considersNotExplicitlyReadingDependingOnTypes() {
 
 		ConverterRegistration context = new ConverterRegistration(Person.class, String.class, false, false);
@@ -47,10 +44,7 @@ public class ConverterRegistrationUnitTests {
 		assertThat(context.isReading()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void forcesReadWriteOnlyIfAnnotated() {
 
 		ConverterRegistration context = new ConverterRegistration(String.class, Class.class, false, true);
@@ -62,10 +56,7 @@ public class ConverterRegistrationUnitTests {
 		assertThat(context.isReading()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void considersConverterForReadAndWriteIfBothAnnotated() {
 
 		ConverterRegistration context = new ConverterRegistration(String.class, Class.class, true, true);

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016 the original author or authors
+ *  Copyright 2016-2017 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -54,10 +54,7 @@ public class QueryOptionsUtilUnitTests {
 	@Mock Statement mockStatement;
 	@Mock Update mockUpdate;
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
@@ -71,10 +68,7 @@ public class QueryOptionsUtilUnitTests {
 		verify(mockPreparedStatement).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addPreparedStatementOptionsShouldAddOurQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(RetryPolicy.FALLTHROUGH).build();
@@ -87,10 +81,7 @@ public class QueryOptionsUtilUnitTests {
 		verify(mockPreparedStatement).setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldAddDriverQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(ConsistencyLevel.EACH_QUORUM) //
@@ -103,10 +94,7 @@ public class QueryOptionsUtilUnitTests {
 		verify(mockStatement).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldAddOurQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(RetryPolicy.FALLTHROUGH).build();
@@ -119,10 +107,7 @@ public class QueryOptionsUtilUnitTests {
 		verify(mockStatement).setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldNotAddOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().build();
@@ -132,10 +117,7 @@ public class QueryOptionsUtilUnitTests {
 		verifyZeroInteractions(mockStatement);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldAddGenericQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
@@ -151,10 +133,7 @@ public class QueryOptionsUtilUnitTests {
 		verify(mockStatement).enableTracing();
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addInsertWriteOptionsShouldAddDriverQueryOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder() //
@@ -172,10 +151,7 @@ public class QueryOptionsUtilUnitTests {
 		verify(mockInsert).using(Mockito.any(Using.class));
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addUpdateWriteOptionsShouldAddDriverQueryOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder() //

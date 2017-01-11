@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.Date;
 
-import com.datastax.driver.core.DataType.Name;
-
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
+
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentProperty}.
@@ -56,52 +56,39 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		assertThat(getPropertyFor(Timeline.class, "time").getColumnName().toCql()).isEqualTo("time");
 	}
 
-	/**
-	 * @see DATACASS-259
-	 */
-	@Test
+	@Test // DATACASS-259
 	public void shouldConsiderComposedColumnAnnotation() {
 
-		CassandraPersistentProperty persistentProperty =
-				getPropertyFor(TypeWithComposedColumnAnnotation.class, "column");
+		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedColumnAnnotation.class, "column");
 
 		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("mycolumn", true));
 	}
 
-	/**
-	 * @see DATACASS-259
-	 */
-	@Test
+	@Test // DATACASS-259
 	public void shouldConsiderComposedPrimaryKeyAnnotation() {
 
-		CassandraPersistentProperty persistentProperty =
-				getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class, "column");
+		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class,
+				"column");
 
 		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("primary-key", true));
 		assertThat(persistentProperty.isIdProperty()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-259
-	 */
-	@Test
+	@Test // DATACASS-259
 	public void shouldConsiderComposedPrimaryKeyColumnAnnotation() {
 
-		CassandraPersistentProperty persistentProperty =
-				getPropertyFor(TypeWithComposedPrimaryKeyColumnAnnotation.class, "column");
+		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyColumnAnnotation.class,
+				"column");
 
 		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("mycolumn", true));
 		assertThat(persistentProperty.isPrimaryKeyColumn()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-259
-	 */
-	@Test
+	@Test // DATACASS-259
 	public void shouldConsiderComposedCassandraTypeAnnotation() {
 
-		CassandraPersistentProperty persistentProperty =
-				getPropertyFor(TypeWithComposedCassandraTypeAnnotation.class, "column");
+		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedCassandraTypeAnnotation.class,
+				"column");
 
 		assertThat(persistentProperty.getDataType().getName()).isEqualTo(Name.COUNTER);
 		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();

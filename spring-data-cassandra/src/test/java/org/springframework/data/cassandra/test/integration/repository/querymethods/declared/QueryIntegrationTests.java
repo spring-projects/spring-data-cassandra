@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -305,10 +305,7 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 		assertThat(optional.isPresent()).isFalse();
 	}
 
-	/**
-	 * @see <a href="DATACASS-297">https://jira.spring.io/browse/DATACASS-297</a>
-	 */
-	@Test
+	@Test // DATACASS-297
 	public void streamShouldReturnEntities() {
 
 		for (int i = 0; i < 100; i++) {

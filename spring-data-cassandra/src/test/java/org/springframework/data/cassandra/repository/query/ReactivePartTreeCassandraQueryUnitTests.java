@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,10 @@ package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import rx.Single;
 
 import java.lang.reflect.Method;
 
@@ -38,10 +42,6 @@ import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import rx.Single;
 
 /**
  * Unit tests for {@link ReactivePartTreeCassandraQuery}.
@@ -66,40 +66,28 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		when(mockCassandraOperations.getConverter()).thenReturn(converter);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldDeriveSimpleQuery() {
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo';");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldDeriveSimpleQueryWithoutNames() {
 		String query = deriveQueryFromMethod("findPersonBy");
 
 		assertThat(query).isEqualTo("SELECT * FROM person;");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldDeriveAndQuery() {
 		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void usesDynamicProjection() {
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
  */
 package org.springframework.data.cassandra.test.integration.support;
 
+import lombok.experimental.UtilityClass;
+
 import org.springframework.data.util.Version;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-
-import lombok.experimental.UtilityClass;
 
 /**
  * Utility to retrieve the Cassandra release version.

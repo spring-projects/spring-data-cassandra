@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
 package org.springframework.data.cassandra.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.TestSubscriber;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,10 +41,6 @@ import org.springframework.data.cassandra.test.integration.support.IntegrationTe
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.test.TestSubscriber;
 
 /**
  * Integration tests for {@link SimpleReactiveCassandraRepository}.
@@ -101,10 +101,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		repository.save(Arrays.asList(oliver, dave, carter, boyd)).last().block();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void existsByIdShouldReturnTrueForExistingObject() {
 
 		Boolean exists = repository.exists(dave.getId()).block();
@@ -112,10 +109,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		assertThat(exists).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void existsByIdShouldReturnFalseForAbsentObject() {
 
 		TestSubscriber<Boolean> testSubscriber = TestSubscriber.subscribe(repository.exists("unknown"));
@@ -123,20 +117,14 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		testSubscriber.await().assertComplete().assertValues(false).assertNoError();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void existsByMonoOfIdShouldReturnTrueForExistingObject() {
 
 		Boolean exists = repository.exists(Mono.just(dave.getId())).block();
 		assertThat(exists).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void existsByEmptyMonoOfIdShouldReturnEmptyMono() {
 
 		TestSubscriber<Boolean> testSubscriber = TestSubscriber.subscribe(repository.exists(Mono.empty()));
@@ -144,10 +132,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		testSubscriber.await().assertComplete().assertNoValues().assertNoError();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void findOneShouldReturnObject() {
 
 		Person person = repository.findOne(dave.getId()).block();
@@ -155,10 +140,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		assertThat(person).isEqualTo(dave);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void findOneShouldCompleteWithoutValueForAbsentObject() {
 
 		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.findOne("unknown"));
@@ -166,10 +148,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		testSubscriber.await().assertComplete().assertNoValues().assertNoError();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void findOneByMonoOfIdShouldReturnTrueForExistingObject() {
 
 		Person person = repository.findOne(Mono.just(dave.getId())).block();
@@ -177,10 +156,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		assertThat(person).isEqualTo(dave);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void findOneByEmptyMonoOfIdShouldReturnEmptyMono() {
 
 		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.findOne(Mono.empty()));
@@ -188,10 +164,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		testSubscriber.await().assertComplete().assertNoValues().assertNoError();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void findAllShouldReturnAllResults() {
 
 		List<Person> persons = repository.findAll().collectList().block();
@@ -199,10 +172,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		assertThat(persons).hasSize(4);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void findAllByIterableOfIdShouldReturnResults() {
 
 		List<Person> persons = repository.findAll(Arrays.asList(dave.getId(), boyd.getId())).collectList().block();
@@ -210,10 +180,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		assertThat(persons).hasSize(2);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void findAllByPublisherOfIdShouldReturnResults() {
 
 		List<Person> persons = repository.findAll(Flux.just(dave.getId(), boyd.getId())).collectList().block();
@@ -221,10 +188,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		assertThat(persons).hasSize(2);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void findAllByEmptyPublisherOfIdShouldReturnResults() {
 
 		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.findAll(Flux.empty()));
@@ -232,10 +196,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		testSubscriber.await().assertComplete().assertNoValues().assertNoError();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void countShouldReturnNumberOfRecords() {
 
 		TestSubscriber<Long> testSubscriber = TestSubscriber.subscribe(repository.count());
@@ -243,10 +204,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		testSubscriber.await().assertComplete().assertValueCount(1).assertValues(4L).assertNoError();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void insertEntityShouldInsertEntity() {
 
 		repository.deleteAll().block();
@@ -259,10 +217,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(1L);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void insertShouldDeferredWrite() {
 
 		repository.deleteAll().block();
@@ -274,10 +229,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(0L);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void insertIterableOfEntitiesShouldInsertEntity() {
 
 		repository.deleteAll().block();
@@ -290,10 +242,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(3L);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void insertPublisherOfEntitiesShouldInsertEntity() {
 
 		repository.deleteAll().block();
@@ -304,10 +253,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(3L);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void saveEntityShouldUpdateExistingEntity() {
 
 		dave.setFirstname("Hello, Dave");
@@ -323,10 +269,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		assertThat(loaded.getLastname()).isEqualTo(dave.getLastname());
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void saveEntityShouldInsertNewEntity() {
 
 		Person person = new Person("36", "Homer", "Simpson");
@@ -340,10 +283,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		assertThat(loaded).isEqualTo(person);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void saveIterableOfNewEntitiesShouldInsertEntity() {
 
 		repository.deleteAll().block();
@@ -356,10 +296,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(3L);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void saveIterableOfMixedEntitiesShouldInsertEntity() {
 
 		Person person = new Person("36", "Homer", "Simpson");
@@ -378,10 +315,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		assertThat(persistentHomer).isEqualTo(person);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void savePublisherOfEntitiesShouldInsertEntity() {
 
 		repository.deleteAll().block();
@@ -392,10 +326,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(3L);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deleteAllShouldRemoveEntities() {
 
 		repository.deleteAll().block();
@@ -405,10 +336,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		testSubscriber.await().assertComplete().assertValueCount(0);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deleteByIdShouldRemoveEntity() {
 
 		TestSubscriber<Void> testSubscriber = TestSubscriber.subscribe(repository.delete(dave.getId()));
@@ -420,10 +348,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		verificationSubscriber.await().assertComplete().assertNoValues();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deleteShouldRemoveEntity() {
 
 		TestSubscriber<Void> testSubscriber = TestSubscriber.subscribe(repository.delete(dave));
@@ -435,10 +360,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		verificationSubscriber.await().assertComplete().assertNoValues();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deleteIterableOfEntitiesShouldRemoveEntities() {
 
 		TestSubscriber<Void> testSubscriber = TestSubscriber.subscribe(repository.delete(Arrays.asList(dave, boyd)));
@@ -449,10 +371,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		verificationSubscriber.await().assertComplete().assertNoValues();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deletePublisherOfEntitiesShouldRemoveEntities() {
 
 		TestSubscriber<Void> testSubscriber = TestSubscriber.subscribe(repository.delete(Flux.just(dave, boyd)));

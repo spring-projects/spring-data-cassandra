@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import static org.mockito.Mockito.anyInt;
 import java.util.Collections;
 import java.util.List;
 
-import com.datastax.driver.core.querybuilder.Batch;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,6 +36,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.test.integration.simpletons.Book;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
@@ -45,7 +45,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
-import org.springframework.data.cassandra.test.integration.simpletons.Book;
+import com.datastax.driver.core.querybuilder.Batch;
 
 /**
  * Unit tests for {@link CassandraTemplate}.
@@ -73,10 +73,7 @@ public class CassandraTemplateUnitTests {
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void selectUsingCqlShouldReturnMappedResults() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -98,10 +95,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void selectShouldTranslateException() throws Exception {
 
 		when(resultSet.iterator()).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
@@ -115,10 +109,7 @@ public class CassandraTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void selectOneShouldReturnMappedResults() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -140,10 +131,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void selectOneByIdShouldReturnMappedResults() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -165,10 +153,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void existsShouldReturnExistingElement() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -182,10 +167,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void existsShouldReturnNonExistingElement() {
 
 		when(resultSet.iterator()).thenReturn(Collections.emptyIterator());
@@ -197,10 +179,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void countShouldExecuteCountQueryElement() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -214,10 +193,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM person;");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void insertShouldInsertEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -232,10 +208,7 @@ public class CassandraTemplateUnitTests {
 				.isEqualTo("INSERT INTO person (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void insertShouldTranslateException() throws Exception {
 
 		reset(session);
@@ -250,10 +223,7 @@ public class CassandraTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void insertShouldNotApplyInsert() {
 
 		when(resultSet.wasApplied()).thenReturn(false);
@@ -265,10 +235,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(inserted).isNull();
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void updateShouldUpdateEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -283,10 +250,7 @@ public class CassandraTemplateUnitTests {
 				.isEqualTo("UPDATE person SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void updateShouldTranslateException() throws Exception {
 
 		reset(session);
@@ -301,10 +265,7 @@ public class CassandraTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void updateShouldNotApplyUpdate() {
 
 		when(resultSet.wasApplied()).thenReturn(false);
@@ -316,10 +277,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(updated).isNull();
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void deleteByIdShouldRemoveEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -333,10 +291,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM person WHERE id='heisenberg';");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void deleteShouldRemoveEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -350,10 +305,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM person WHERE id='heisenberg';");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void deleteShouldTranslateException() throws Exception {
 
 		reset(session);
@@ -368,10 +320,7 @@ public class CassandraTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void deleteShouldNotApplyRemoval() {
 
 		when(resultSet.wasApplied()).thenReturn(false);
@@ -383,10 +332,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(deleted).isNull();
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void truncateShouldRemoveEntities() {
 
 		template.truncate(Person.class);
@@ -395,10 +341,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("TRUNCATE person;");
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	@Ignore
 	public void batchOperationsShouldCallSession() {
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2016 the original author or authors
+ *  Copyright 2013-2017 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -40,10 +40,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 
 	@Mock CassandraPersistentProperty right;
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void leftAndRightAreNullReturnsZero() {
 
 		assertThat(INSTANCE.compare(null, null)).isEqualTo(0);
@@ -52,10 +49,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verifyZeroInteractions(right);
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void leftIsNotNullAndRightIsNullReturnsOne() {
 
 		assertThat(INSTANCE.compare(left, null)).isEqualTo(1);
@@ -64,10 +58,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verifyZeroInteractions(right);
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void leftIsNullAndRightIsNotNullReturnsMinusOne() {
 
 		assertThat(INSTANCE.compare(null, right)).isEqualTo(-1);
@@ -76,10 +67,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verifyZeroInteractions(right);
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void leftAndRightAreEqualReturnsZero() {
 
 		assertThat(INSTANCE.compare(left, left)).isEqualTo(0);
@@ -89,10 +77,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verifyZeroInteractions(right);
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void leftAndRightAreCompositePrimaryKeysReturnsZero() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(true);
@@ -104,10 +89,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verify(right, times(1)).isCompositePrimaryKey();
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void leftIsCompositePrimaryKeyReturnsMinusOne() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(true);
@@ -123,10 +105,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verify(right, times(1)).isPrimaryKeyColumn();
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void leftIsPrimaryKeyColumnReturnsMinusOne() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(false);
@@ -142,10 +121,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verify(right, times(1)).isPrimaryKeyColumn();
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void rightIsCompositePrimaryKeyReturnsOne() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(false);
@@ -161,10 +137,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verify(right, times(1)).isPrimaryKeyColumn();
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void rightIsPrimaryKeyColumnReturnsOne() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(false);
@@ -180,10 +153,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verify(right, times(1)).isPrimaryKeyColumn();
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void compareLeftAndRightNamesReturnsNegativeValue() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(false);
@@ -203,10 +173,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		verify(right, times(1)).getColumnName();
 	}
 
-	/**
-	 * @see DATACASS-352
-	 */
-	@Test
+	@Test // DATACASS-352
 	public void columnNameComparisonShouldHonorContract() throws Exception {
 
 		BasicCassandraMappingContext context = new BasicCassandraMappingContext();

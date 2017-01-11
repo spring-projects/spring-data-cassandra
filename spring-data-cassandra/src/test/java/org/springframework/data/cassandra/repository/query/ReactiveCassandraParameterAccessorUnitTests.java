@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
 package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import rx.Single;
 
 import java.lang.reflect.Method;
 
@@ -36,10 +40,6 @@ import org.threeten.bp.LocalDateTime;
 
 import com.datastax.driver.core.DataType;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import rx.Single;
-
 /**
  * Unit tests for {@link ReactiveCassandraParameterAccessor}.
  * 
@@ -57,10 +57,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PossibleRepository.class);
 	CassandraMappingContext context = new BasicCassandraMappingContext();
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void returnsCassandraSimpleType() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByFirstname", Flux.class);
@@ -70,10 +67,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.varchar());
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldReturnNoTypeForComplexTypes() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByLocalDateTime", Mono.class);
@@ -84,10 +78,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void returnTypeForAnnotatedParameter() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedByLocalDateTime", Single.class);
@@ -97,10 +88,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void returnTypeForAnnotatedParameterWhenUsingStringValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Mono.class);
@@ -110,10 +98,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void returnTypeForAnnotatedParameterWhenUsingNullValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Mono.class);

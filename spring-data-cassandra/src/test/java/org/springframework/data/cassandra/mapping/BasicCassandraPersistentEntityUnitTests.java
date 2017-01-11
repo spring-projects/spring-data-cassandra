@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,10 +107,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 		verify(entitySpy, never()).setTableName(isA(CqlIdentifier.class));
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void isUserDefinedTypeShouldReturnFalse() {
 
 		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<UserLine>(
@@ -119,10 +116,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 		assertThat(entity.isUserDefinedType()).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-259
-	 */
-	@Test
+	@Test // DATACASS-259
 	public void shouldConsiderComposedTableAnnotation() {
 
 		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<TableWithComposedAnnotation>(
@@ -131,10 +125,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.cqlId("mytable", true));
 	}
 
-	/**
-	 * @see DATACASS-259
-	 */
-	@Test
+	@Test // DATACASS-259
 	public void shouldConsiderComposedPrimaryKeyClassAnnotation() {
 
 		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation>(

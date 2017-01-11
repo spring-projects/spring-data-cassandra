@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.DefaultBridgedReactiveSession;
@@ -25,9 +28,6 @@ import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIn
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
-
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 /**
  * Integration tests for {@link ReactiveCassandraTemplate}.
@@ -51,10 +51,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		SchemaTestUtils.truncate(Person.class, cassandraTemplate);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void insertShouldInsertEntity() {
 
 		Person person = new Person("heisenberg", "Walter", "White");
@@ -69,10 +66,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		assertThat(oneById.block()).isNotNull().isEqualTo(saved);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldInsertAndCountEntities() {
 
 		Person person = new Person("heisenberg", "Walter", "White");
@@ -83,10 +77,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		assertThat(count.block()).isEqualTo(1L);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void updateShouldUpdateEntity() {
 
 		Person person = new Person("heisenberg", "Walter", "White");
@@ -100,10 +91,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		assertThat(oneById.block()).isEqualTo(person);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deleteShouldRemoveEntity() {
 
 		Person person = new Person("heisenberg", "Walter", "White");
@@ -116,10 +104,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		assertThat(oneById.block()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void deleteByIdShouldRemoveEntity() {
 
 		Person person = new Person("heisenberg", "Walter", "White");

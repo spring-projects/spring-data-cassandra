@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,8 @@ abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbedded
 		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS contact_addresses ON contact (addresses);");
 
 		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS contact_main_phones ON contact (mainphone);");
-		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS contact_alternative_phones ON contact (alternativephones);");
+		template.getCqlOperations()
+				.execute("CREATE INDEX IF NOT EXISTS contact_alternative_phones ON contact (alternativephones);");
 
 		walter = new Contact("Walter");
 		walter.setAddress(new Address("Albuquerque", "USA"));

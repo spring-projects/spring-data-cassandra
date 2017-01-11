@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,7 @@ import com.datastax.driver.core.Row;
  */
 public class CustomConversionsUnitTests {
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void findsBasicReadAndWriteConversions() {
 
 		CustomConversions conversions = new CustomConversions(
@@ -63,10 +60,7 @@ public class CustomConversionsUnitTests {
 		assertThat(conversions.hasCustomReadTarget(String.class, Locale.class)).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void considersSubtypesCorrectly() {
 
 		CustomConversions conversions = new CustomConversions(
@@ -76,20 +70,14 @@ public class CustomConversionsUnitTests {
 		assertThat(conversions.hasCustomReadTarget(String.class, Long.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void considersTypesWeRegisteredConvertersForAsSimple() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(FormatToStringConverter.INSTANCE));
 		assertThat(conversions.isSimpleType(UUID.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void populatesConversionServiceCorrectly() {
 
 		GenericConversionService conversionService = new DefaultConversionService();
@@ -100,20 +88,14 @@ public class CustomConversionsUnitTests {
 		assertThat(conversionService.canConvert(String.class, Format.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void doesNotConsiderTypeSimpleIfOnlyReadConverterIsRegistered() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(StringToFormatConverter.INSTANCE));
 		assertThat(conversions.isSimpleType(Format.class)).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void discoversConvertersForSubtypesOfCassandraTypes() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(StringToIntegerConverter.INSTANCE));
@@ -121,40 +103,28 @@ public class CustomConversionsUnitTests {
 		assertThat(conversions.hasCustomWriteTarget(String.class, Integer.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void considersUUIDASimpleType() {
 
 		CustomConversions conversions = new CustomConversions();
 		assertThat(conversions.isSimpleType(UUID.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void considersInetAddressASimpleType() {
 
 		CustomConversions conversions = new CustomConversions();
 		assertThat(conversions.isSimpleType(InetAddress.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void considersRowASimpleType() {
 
 		CustomConversions conversions = new CustomConversions();
 		assertThat(conversions.isSimpleType(Row.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	@SuppressWarnings("rawtypes")
 	public void favorsCustomConverterForIndeterminedTargetType() {
 
@@ -162,10 +132,7 @@ public class CustomConversionsUnitTests {
 		assertThat(conversions.getCustomWriteTarget(DateTime.class, null)).isEqualTo((Class) String.class);
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void customConverterOverridesDefault() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(CustomDateTimeConverter.INSTANCE));
@@ -175,30 +142,21 @@ public class CustomConversionsUnitTests {
 		assertThat(conversionService.convert(new DateTime(), Date.class)).isEqualTo(new Date(0));
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldSelectPropertCustomWriteTargetForCglibProxiedType() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(FormatToStringConverter.INSTANCE));
 		assertThat(conversions.getCustomWriteTarget(createProxyTypeFor(Format.class))).isAssignableFrom(String.class);
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldSelectPropertyCustomReadTargetForCglibProxiedType() {
 
 		CustomConversions conversions = new CustomConversions(Arrays.asList(CustomObjectToStringConverter.INSTANCE));
 		assertThat(conversions.hasCustomReadTarget(createProxyTypeFor(Object.class), String.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void registersConverterFactoryCorrectly() {
 
 		CustomConversions customConversions = new CustomConversions(
@@ -207,10 +165,7 @@ public class CustomConversionsUnitTests {
 		assertThat(customConversions.getCustomWriteTarget(String.class, SimpleDateFormat.class)).isNotNull();
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void registersConvertersForJsr310() {
 
 		CustomConversions customConversions = new CustomConversions();
@@ -218,10 +173,7 @@ public class CustomConversionsUnitTests {
 		assertThat(customConversions.hasCustomWriteTarget(java.time.LocalDateTime.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void registersConvertersForThreeTenBackPort() {
 
 		CustomConversions customConversions = new CustomConversions();
@@ -229,10 +181,7 @@ public class CustomConversionsUnitTests {
 		assertThat(customConversions.hasCustomWriteTarget(org.threeten.bp.LocalDateTime.class)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void registersConvertersForJoda() {
 
 		CustomConversions customConversions = new CustomConversions();

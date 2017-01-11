@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		SchemaTestUtils.truncate(Person.class, cassandraTemplate);
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void insertShouldInsertEntity() {
 
 		Person person = new Person("heisenberg", "Walter", "White");
@@ -64,10 +61,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isEqualTo(person);
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void shouldInsertAndCountEntities() throws Exception {
 
 		Person person = new Person("heisenberg", "Walter", "White");
@@ -78,10 +72,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(getUninterruptibly(count)).isEqualTo(1L);
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void updateShouldUpdateEntity() throws Exception {
 
 		Person person = new Person("heisenberg", "Walter", "White");
@@ -94,10 +85,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isEqualTo(person);
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void deleteShouldRemoveEntity() throws Exception {
 
 		Person person = new Person("heisenberg", "Walter", "White");
@@ -109,10 +97,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isNull();
 	}
 
-	/**
-	 * @see DATACASS-292
-	 */
-	@Test
+	@Test // DATACASS-292
 	public void deleteByIdShouldRemoveEntity() throws Exception {
 
 		Person person = new Person("heisenberg", "Walter", "White");

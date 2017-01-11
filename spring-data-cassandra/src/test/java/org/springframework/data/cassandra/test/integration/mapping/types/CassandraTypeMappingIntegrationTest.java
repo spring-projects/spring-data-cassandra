@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,20 +28,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
-import com.datastax.driver.core.SimpleStatement;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.LocalDate;
-import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.SimpleStatement;
 
 /**
  * Integration tests for type mapping using {@link CassandraOperations}.
@@ -66,10 +63,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		SchemaTestUtils.truncate(TimeEntity.class, operations);
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteInetAddress() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -81,10 +75,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getInet()).isEqualTo(entity.getInet());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteUUID() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -96,10 +87,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getUuid()).isEqualTo(entity.getUuid());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteBoxedShort() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -111,10 +99,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBoxedShort()).isEqualTo(entity.getBoxedShort());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWritePrimitiveShort() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -126,10 +111,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getPrimitiveShort()).isEqualTo(entity.getPrimitiveShort());
 	}
 
-	/**
-	 * @see DATACASS-271
-	 */
-	@Test
+	@Test // DATACASS-271
 	public void shouldReadAndWriteBoxedByte() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -141,10 +123,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBoxedByte()).isEqualTo(entity.getBoxedByte());
 	}
 
-	/**
-	 * @see DATACASS-271
-	 */
-	@Test
+	@Test // DATACASS-271
 	public void shouldReadAndWritePrimitiveByte() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -156,10 +135,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getPrimitiveByte()).isEqualTo(entity.getPrimitiveByte());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteBoxedLong() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -171,10 +147,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBoxedLong()).isEqualTo(entity.getBoxedLong());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWritePrimitiveLong() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -186,10 +159,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getPrimitiveLong()).isEqualTo(entity.getPrimitiveLong());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteBoxedInteger() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -201,10 +171,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBoxedInteger()).isEqualTo(entity.getBoxedInteger());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWritePrimitiveInteger() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -216,10 +183,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getPrimitiveInteger()).isEqualTo(entity.getPrimitiveInteger());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteBoxedFloat() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -231,10 +195,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBoxedFloat()).isEqualTo(entity.getBoxedFloat());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWritePrimitiveFloat() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -246,10 +207,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getPrimitiveFloat()).isEqualTo(entity.getPrimitiveFloat());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteBoxedDouble() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -261,10 +219,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBoxedDouble()).isEqualTo(entity.getBoxedDouble());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWritePrimitiveDouble() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -276,10 +231,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getPrimitiveDouble()).isEqualTo(entity.getPrimitiveDouble());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteBoxedBoolean() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -291,10 +243,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBoxedBoolean()).isEqualTo(entity.getBoxedBoolean());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWritePrimitiveBoolean() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -306,11 +255,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.isPrimitiveBoolean()).isEqualTo(entity.isPrimitiveBoolean());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 * @see DATACASS-271
-	 */
-	@Test
+	@Test // DATACASS-280, DATACASS-271
 	public void shouldReadAndWriteTimestamp() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -322,10 +267,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getTimestamp()).isEqualTo(entity.getTimestamp());
 	}
 
-	/**
-	 * @see DATACASS-271
-	 */
-	@Test
+	@Test // DATACASS-271
 	public void shouldReadAndWriteDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -337,10 +279,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getDate()).isEqualTo(entity.getDate());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteBigInteger() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -352,10 +291,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBigInteger()).isEqualTo(entity.getBigInteger());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteBigDecimal() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -367,10 +303,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBigDecimal()).isEqualTo(entity.getBigDecimal());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteBlob() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -385,10 +318,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(new String(bytes)).isEqualTo("Hello");
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteSetOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -400,10 +330,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getSetOfString()).isEqualTo(entity.getSetOfString());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteEmptySetOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -415,10 +342,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getSetOfString()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteListOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -430,10 +354,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getListOfString()).isEqualTo(entity.getListOfString());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteEmptyListOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -445,10 +366,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getListOfString()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteMapOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -460,10 +378,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getMapOfString()).isEqualTo(entity.getMapOfString());
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteEmptyMapOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -475,10 +390,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getMapOfString()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-280
-	 */
-	@Test
+	@Test // DATACASS-280
 	public void shouldReadAndWriteEnum() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -490,10 +402,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getAnEnum()).isEqualTo(entity.getAnEnum());
 	}
 
-	/**
-	 * @see DATACASS-271
-	 */
-	@Test
+	@Test // DATACASS-271
 	public void shouldReadAndWriteTime() {
 
 		// writing of time is not supported with Insert/Update statements as they mix up types.
@@ -509,10 +418,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getTime()).isEqualTo(time);
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteLocalDate() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -524,10 +430,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getLocalDate()).isEqualTo(entity.getLocalDate());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteLocalDateTime() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -539,10 +442,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getLocalDateTime()).isEqualTo(entity.getLocalDateTime());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteLocalTime() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -554,10 +454,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getLocalTime()).isEqualTo(entity.getLocalTime());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteInstant() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -569,10 +466,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getInstant()).isEqualTo(entity.getInstant());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteZoneId() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -584,10 +478,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getZoneId()).isEqualTo(entity.getZoneId());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteJodaLocalDate() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -599,10 +490,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getJodaLocalDate()).isEqualTo(entity.getJodaLocalDate());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteJodaDateMidnight() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -614,10 +502,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getJodaDateMidnight()).isEqualTo(entity.getJodaDateMidnight());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteJodaDateTime() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -629,10 +514,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getJodaDateTime()).isEqualTo(entity.getJodaDateTime());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteBpLocalDate() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -644,10 +526,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBpLocalDate()).isEqualTo(entity.getBpLocalDate());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteBpLocalDateTime() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -659,10 +538,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBpLocalDateTime()).isEqualTo(entity.getBpLocalDateTime());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteBpLocalTime() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -674,10 +550,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBpLocalTime()).isEqualTo(entity.getBpLocalTime());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteBpInstant() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -689,10 +562,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBpZoneId()).isEqualTo(entity.getBpZoneId());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReadAndWriteBpZoneId() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -704,10 +574,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBpZoneId()).isEqualTo(entity.getBpZoneId());
 	}
 
-	/**
-	 * @see DATACASS-285
-	 */
-	@Test
+	@Test // DATACASS-285
 	@Ignore("Counter columns are not supported with Spring Data Cassandra as the value of counter columns can only be incremented/decremented, not set")
 	public void shouldReadAndWriteCounter() {
 

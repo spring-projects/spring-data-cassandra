@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,10 +53,7 @@ public class ReactiveCassandraRepositoryFactoryUnitTests {
 		when(converter.getMappingContext()).thenReturn(mappingContext);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void usesMappingCassandraEntityInformationIfMappingContextSet() {
 
 		when(mappingContext.getPersistentEntity(Person.class)).thenReturn(entity);
@@ -70,10 +67,7 @@ public class ReactiveCassandraRepositoryFactoryUnitTests {
 		assertThat(entityInformation).isInstanceOf(MappingCassandraEntityInformation.class);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void createsRepositoryWithIdTypeLong() {
 
 		when(mappingContext.getPersistentEntity(Person.class)).thenReturn(entity);

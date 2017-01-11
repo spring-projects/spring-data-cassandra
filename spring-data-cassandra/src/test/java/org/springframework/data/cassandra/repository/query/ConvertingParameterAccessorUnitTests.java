@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,11 +47,9 @@ import com.datastax.driver.core.DataType;
 @RunWith(MockitoJUnitRunner.class)
 public class ConvertingParameterAccessorUnitTests {
 
-	@Mock
-	CassandraParameterAccessor mockParameterAccessor;
+	@Mock CassandraParameterAccessor mockParameterAccessor;
 
-	@Mock
-	CassandraPersistentProperty mockProperty;
+	@Mock CassandraPersistentProperty mockProperty;
 
 	ConvertingParameterAccessor convertingParameterAccessor;
 
@@ -65,10 +63,7 @@ public class ConvertingParameterAccessorUnitTests {
 		this.convertingParameterAccessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReturnNullBindableValue() {
 
 		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
@@ -76,10 +71,7 @@ public class ConvertingParameterAccessorUnitTests {
 		assertThat(accessor.getBindableValue(0)).isNull();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
-	 */
-	@Test
+	@Test // DATACASS-296
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldReturnNativeBindableValue() {
 
@@ -95,10 +87,7 @@ public class ConvertingParameterAccessorUnitTests {
 		assertThat(accessor.getBindableValue(0)).isEqualTo((Object) "hello");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
-	 */
-	@Test
+	@Test // DATACASS-296
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldReturnConvertedBindableValue() {
 
@@ -111,11 +100,7 @@ public class ConvertingParameterAccessorUnitTests {
 				.isEqualTo(com.datastax.driver.core.LocalDate.fromYearMonthDay(2010, 7, 4));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-296, DATACASS-7
 	public void shouldReturnDataTypeProvidedByDelegate() {
 
 		when(mockParameterAccessor.getDataType(0)).thenReturn(DataType.varchar());
@@ -123,11 +108,7 @@ public class ConvertingParameterAccessorUnitTests {
 		assertThat(convertingParameterAccessor.getDataType(0)).isEqualTo(DataType.varchar());
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-296, DATACASS-7
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldConvertCollections() {
 
@@ -147,10 +128,7 @@ public class ConvertingParameterAccessorUnitTests {
 		assertThat(list.get(0)).isInstanceOf(com.datastax.driver.core.LocalDate.class);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldProvideTypeBasedOnValue() {
 
@@ -160,10 +138,7 @@ public class ConvertingParameterAccessorUnitTests {
 		assertThat(convertingParameterAccessor.getDataType(0)).isEqualTo(DataType.date());
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldProvideTypeBasedOnPropertyType() {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,7 @@ import com.datastax.driver.core.policies.FallthroughRetryPolicy;
  */
 public class WriteOptionsUnitTests {
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void buildWriteOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder() //
@@ -54,10 +51,7 @@ public class WriteOptionsUnitTests {
 		assertThat(writeOptions.getTracing()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void buildReadTimeoutOptionsWriteOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder().readTimeout(1, TimeUnit.MINUTES).build();
@@ -67,10 +61,7 @@ public class WriteOptionsUnitTests {
 		assertThat(writeOptions.getTracing()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void buildQueryOptionsWithDriverRetryPolicy() {
 
 		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
@@ -79,10 +70,7 @@ public class WriteOptionsUnitTests {
 		assertThat(writeOptions.getDriverRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void buildQueryOptionsWithRetryPolicy() {
 
 		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY).build();
@@ -91,18 +79,12 @@ public class WriteOptionsUnitTests {
 		assertThat(writeOptions.getDriverRetryPolicy()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-202
 	public void builderShouldRejectSettingOurAndDriverRetryPolicy() {
 		WriteOptions.builder().retryPolicy(RetryPolicy.DEFAULT).retryPolicy(FallthroughRetryPolicy.INSTANCE);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-202
 	public void builderShouldRejectSettingDriverAndOurRetryPolicy() {
 		WriteOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).retryPolicy(RetryPolicy.DEFAULT);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,15 +38,10 @@ import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
  *
  * @author Mark Paluch
  * @author John Blum
- * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
  */
 public class CassandraCqlClusterFactoryBeanUnitTests {
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldInitializeWithoutAnyOptions() throws Exception {
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
@@ -58,11 +53,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getMetricsOptions().isJMXReportingEnabled()).isTrue();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldShutdownClusterInstance() throws Exception {
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
@@ -72,11 +63,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(bean.getObject().isClosed()).isTrue();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-217">DATACASS-217</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-217
 	public void shouldSetLZ4CompressionType() throws Exception {
 
 		CompressionType compressionType = CompressionType.LZ4;
@@ -88,11 +75,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getProtocolOptions(bean).getCompression()).isEqualTo(Compression.LZ4);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetSnappyCompressionType() throws Exception {
 
 		CompressionType compressionType = CompressionType.SNAPPY;
@@ -104,11 +87,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getProtocolOptions().getCompression()).isEqualTo(Compression.SNAPPY);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetPoolingOptions() throws Exception {
 
 		PoolingOptions poolingOptions = new PoolingOptions();
@@ -120,11 +99,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getPoolingOptions()).isEqualTo(poolingOptions);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetSocketOptions() throws Exception {
 
 		SocketOptions socketOptions = new SocketOptions();
@@ -136,11 +111,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getSocketOptions()).isEqualTo(socketOptions);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetQueryOptions() throws Exception {
 
 		QueryOptions queryOptions = new QueryOptions();
@@ -152,11 +123,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getQueryOptions()).isEqualTo(queryOptions);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void defaultQueryOptionsShouldHaveOwnObjectIdentity() throws Exception {
 
 		QueryOptions queryOptions = new QueryOptions();
@@ -168,11 +135,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getQueryOptions()).isNotEqualTo(queryOptions);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetAuthProvider() throws Exception {
 
 		AuthProvider authProvider = new PlainTextAuthProvider("x", "y");
@@ -184,12 +147,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getProtocolOptions().getAuthProvider()).isEqualTo(authProvider);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-263">DATACASS-263</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226, DATACASS-263
 	public void shouldSetAuthenticationProvider() throws Exception {
 
 		AuthProvider authProvider = new PlainTextAuthProvider("x", "y");
@@ -202,12 +160,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(result).isEqualTo(authProvider);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-263">DATACASS-263</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226, DATACASS-263
 	public void shouldSetAuthentication() throws Exception {
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
@@ -221,11 +174,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(ReflectionTestUtils.getField(result, "password")).isEqualTo((Object) "password");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetLoadBalancingPolicy() throws Exception {
 
 		LoadBalancingPolicy loadBalancingPolicy = new RoundRobinPolicy();
@@ -237,11 +186,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getPolicies().getLoadBalancingPolicy()).isEqualTo(loadBalancingPolicy);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetReconnectionPolicy() throws Exception {
 
 		ReconnectionPolicy reconnectionPolicy = new ExponentialReconnectionPolicy(1, 2);
@@ -253,11 +198,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getPolicies().getReconnectionPolicy()).isEqualTo(reconnectionPolicy);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetProtocolVersion() throws Exception {
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
@@ -268,11 +209,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 				.contains(ProtocolVersion.V2);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetSslOptions() throws Exception {
 
 		SSLOptions sslOptions = JdkSSLOptions.builder().build();
@@ -285,11 +222,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getProtocolOptions().getSSLOptions()).isEqualTo(sslOptions);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldDisableMetrics() throws Exception {
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
@@ -299,11 +232,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getMetricsOptions().isEnabled()).isFalse();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldDisableJmxReporting() throws Exception {
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
@@ -325,10 +254,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		verify(mockClusterBuilderConfigurer, times(1)).configure(isA(Cluster.Builder.class));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-316">DATACASS-316</a>
-	 */
-	@Test
+	@Test // DATACASS-316
 	public void shouldSetAddressTranslator() throws Exception {
 
 		AddressTranslator mockAddressTranslator = mock(AddressTranslator.class);
@@ -340,10 +266,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getPolicies(bean).getAddressTranslator()).isEqualTo(mockAddressTranslator);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-317">DATACASS-317</a>
-	 */
-	@Test
+	@Test // DATACASS-317
 	public void shouldSetClusterNameWithBeanNameProperty() throws Exception {
 
 		final Cluster.Builder mockClusterBuilder = mock(Cluster.Builder.class);
@@ -364,10 +287,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		verify(mockClusterBuilder, times(1)).withClusterName(eq("ABC"));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-317">DATACASS-317</a>
-	 */
-	@Test
+	@Test // DATACASS-317
 	public void shouldSetClusterNameWithClusterNameProperty() throws Exception {
 
 		final Cluster.Builder mockClusterBuilder = mock(Cluster.Builder.class);
@@ -388,10 +308,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		verify(mockClusterBuilder, times(1)).withClusterName(eq("XYZ"));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-319">DATACASS-319</a>
-	 */
-	@Test
+	@Test // DATACASS-319
 	public void shouldSetMaxSchemaAgreementWaitSeconds() throws Exception {
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
@@ -402,10 +319,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getProtocolOptions(bean).getMaxSchemaAgreementWaitSeconds()).isEqualTo(20);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-320">DATACASS-320</a>
-	 */
-	@Test
+	@Test // DATACASS-320
 	public void shouldSetSpeculativeExecutionPolicy() throws Exception {
 
 		SpeculativeExecutionPolicy mockSpeculativeExecutionPolicy = mock(SpeculativeExecutionPolicy.class);
@@ -417,10 +331,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		assertThat(getPolicies(bean).getSpeculativeExecutionPolicy()).isEqualTo(mockSpeculativeExecutionPolicy);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-238">DATACASS-238</a>
-	 */
-	@Test
+	@Test // DATACASS-238
 	public void shouldSetTimestampGenerator() throws Exception {
 
 		TimestampGenerator mockTimestampGenerator = mock(TimestampGenerator.class);

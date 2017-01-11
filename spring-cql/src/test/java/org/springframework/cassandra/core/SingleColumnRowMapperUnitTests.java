@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,10 +49,7 @@ public class SingleColumnRowMapperUnitTests {
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void getColumnValueWithType() {
 
 		when(row.getDouble(2)).thenReturn(42d);
@@ -62,10 +59,7 @@ public class SingleColumnRowMapperUnitTests {
 		assertThat(rowMapper.getColumnValue(row, 2, Number.class)).isEqualTo(42d);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void getColumnValue() {
 
 		when(row.getObject(2)).thenReturn(42d);
@@ -75,10 +69,7 @@ public class SingleColumnRowMapperUnitTests {
 		assertThat(rowMapper.getColumnValue(row, 2)).isEqualTo(42d);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void convertValueToRequiredTypeForNumber() {
 
 		rowMapper = new SingleColumnRowMapper<Number>();
@@ -88,10 +79,7 @@ public class SingleColumnRowMapperUnitTests {
 		assertThat(rowMapper.convertValueToRequiredType(1234.2, Double.class)).isEqualTo(1234.2);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void convertValueToRequiredTypeForString() {
 
 		rowMapper = new SingleColumnRowMapper<Number>();
@@ -100,10 +88,7 @@ public class SingleColumnRowMapperUnitTests {
 		assertThat(rowMapper.convertValueToRequiredType("1234.2", Double.class)).isEqualTo(1234.2);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACASS-335
 	public void convertValueToRequiredTypeShouldFail() {
 
 		rowMapper = new SingleColumnRowMapper<>();
@@ -111,10 +96,7 @@ public class SingleColumnRowMapperUnitTests {
 		rowMapper.convertValueToRequiredType("1234", Object.class);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void mapRowSingleColumn() {
 
 		when(columnDefinitions.size()).thenReturn(1);
@@ -125,10 +107,7 @@ public class SingleColumnRowMapperUnitTests {
 		assertThat(rowMapper.mapRow(row, 2)).isEqualTo(42);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void mapRowSingleColumnNullValue() {
 
 		when(columnDefinitions.size()).thenReturn(1);
@@ -139,10 +118,7 @@ public class SingleColumnRowMapperUnitTests {
 		assertThat(rowMapper.mapRow(row, 2)).isNull();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test(expected = TypeMismatchDataAccessException.class)
+	@Test(expected = TypeMismatchDataAccessException.class) // DATACASS-335
 	public void mapRowSingleColumnWrongType() {
 
 		when(columnDefinitions.size()).thenReturn(1);
@@ -153,10 +129,7 @@ public class SingleColumnRowMapperUnitTests {
 		rowMapper.mapRow(row, 2);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test(expected = IncorrectResultSetColumnCountException.class)
+	@Test(expected = IncorrectResultSetColumnCountException.class) // DATACASS-335
 	public void tooManyColumns() {
 
 		when(columnDefinitions.size()).thenReturn(2);

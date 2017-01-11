@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,10 +100,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		subscriber.await().assertComplete().assertNoError();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void reactiveStreamsMethodsShouldWork() throws InterruptedException {
 
 		TestSubscriber<Boolean> subscriber = TestSubscriber.subscribe(reactivePersonRepostitory.exists(dave.getId()));
@@ -111,26 +108,20 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		subscriber.awaitAndAssertNextValueCount(1).assertNoError().assertValues(true);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void reactiveStreamsQueryMethodsShouldWork() {
 
-		TestSubscriber<Person> subscriber = TestSubscriber.subscribe(
-				reactivePersonRepostitory.findByLastname(boyd.getLastname()));
+		TestSubscriber<Person> subscriber = TestSubscriber
+				.subscribe(reactivePersonRepostitory.findByLastname(boyd.getLastname()));
 
 		subscriber.awaitAndAssertNextValueCount(1).assertValues(boyd);
 	}
 
-	/**
-	 * @see DATACASS-360
-	 */
-	@Test
+	@Test // DATACASS-360
 	public void dtoProjectionShouldWork() {
 
-		TestSubscriber<PersonDto> subscriber = TestSubscriber.subscribe(
-				reactivePersonRepostitory.findProjectedByLastname(boyd.getLastname()));
+		TestSubscriber<PersonDto> subscriber = TestSubscriber
+				.subscribe(reactivePersonRepostitory.findProjectedByLastname(boyd.getLastname()));
 
 		subscriber.awaitAndAssertNextValueCount(1).assertValuesWith(personDto -> {
 			assertThat(personDto.firstname).isEqualTo(boyd.getFirstname());
@@ -138,10 +129,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void simpleRxJavaMethodsShouldWork() {
 
 		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
@@ -154,10 +142,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		subscriber.assertValue(true);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void existsWithSingleRxJavaIdMethodsShouldWork() {
 
 		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
@@ -170,10 +155,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		subscriber.assertValue(true);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void singleRxJavaQueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
@@ -186,10 +168,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		subscriber.assertValueCount(2);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void singleProjectedRxJavaQueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<ProjectedPerson> subscriber = new rx.observers.TestSubscriber<>();
@@ -204,10 +183,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		assertThat(projectedPerson.getFirstname()).isEqualTo(carter.getFirstname());
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void observableRxJavaQueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
@@ -220,10 +196,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		subscriber.assertValue(boyd);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void mixedRepositoryShouldWork() {
 
 		Person value = reactiveRepository.findByLastname(boyd.getLastname()).toBlocking().value();
@@ -231,10 +204,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		assertThat(value).isEqualTo(boyd);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldFindOneByPublisherOfLastName() {
 
 		Person carter = reactiveRepository.findByLastname(Single.just(this.carter.getLastname())).block();

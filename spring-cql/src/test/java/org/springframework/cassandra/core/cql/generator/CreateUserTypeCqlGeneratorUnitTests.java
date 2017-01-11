@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,7 @@ import com.datastax.driver.core.DataType;
  */
 public class CreateUserTypeCqlGeneratorUnitTests {
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void createUserType() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
@@ -43,10 +40,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (city varchar);");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void createMultiFieldUserType() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
@@ -57,10 +51,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (zip ascii, city varchar);");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void createUserTypeIfNotExists() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
@@ -71,18 +62,12 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city varchar);");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACASS-172
 	public void generationFailsIfNameIsNotSet() {
 		toCql(CreateUserTypeSpecification.createType());
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACASS-172
 	public void generationFailsWithoutFields() {
 		toCql(CreateUserTypeSpecification.createType().name("hello"));
 	}

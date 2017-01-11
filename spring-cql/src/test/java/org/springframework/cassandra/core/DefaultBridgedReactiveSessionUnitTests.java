@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.springframework.cassandra.core;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import reactor.core.scheduler.Schedulers;
+
 import java.util.Collections;
 
 import org.hamcrest.core.IsEqual;
@@ -32,8 +34,6 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-
-import reactor.core.scheduler.Schedulers;
 
 /**
  * Unit tests for {@link DefaultBridgedReactiveSession}.
@@ -52,10 +52,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		reactiveSession = new DefaultBridgedReactiveSession(sessionMock, Schedulers.immediate());
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeStatementShouldForwardStatementToSession() throws Exception {
 
 		SimpleStatement statement = new SimpleStatement("SELECT *");
@@ -64,10 +61,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		verify(sessionMock).executeAsync(statement);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeShouldForwardStatementToSession() throws Exception {
 
 		reactiveSession.execute("SELECT *").subscribe();
@@ -75,10 +69,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		verify(sessionMock).executeAsync(eq(new SimpleStatement("SELECT *")));
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeWithValuesShouldForwardStatementToSession() throws Exception {
 
 		reactiveSession.execute("SELECT * WHERE a = ? and b = ?", "A", "B").subscribe();
@@ -86,10 +77,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		verify(sessionMock).executeAsync(eq(new SimpleStatement("SELECT * WHERE a = ? and b = ?", "A", "B")));
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeWithValueMapShouldForwardStatementToSession() throws Exception {
 
 		reactiveSession.execute("SELECT * WHERE a = ?", Collections.singletonMap("a", "value")).subscribe();
@@ -98,10 +86,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 				.executeAsync(eq(new SimpleStatement("SELECT * WHERE a = ?", Collections.singletonMap("a", "value"))));
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void testPrepareQuery() throws Exception {
 
 		reactiveSession.prepare("SELECT *").subscribe();
@@ -109,10 +94,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		verify(sessionMock).prepareAsync(eq(new SimpleStatement("SELECT *")));
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void testPrepareStatement() throws Exception {
 
 		SimpleStatement statement = new SimpleStatement("SELECT *");
@@ -121,10 +103,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		verify(sessionMock).prepareAsync(statement);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void testClose() throws Exception {
 
 		reactiveSession.close();
@@ -132,10 +111,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		verify(sessionMock).close();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void testIsClosed() throws Exception {
 
 		when(reactiveSession.isClosed()).thenReturn(true);
@@ -146,10 +122,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		verify(sessionMock).isClosed();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void testGetCluster() throws Exception {
 
 		Cluster clusterMock = mock(Cluster.class);

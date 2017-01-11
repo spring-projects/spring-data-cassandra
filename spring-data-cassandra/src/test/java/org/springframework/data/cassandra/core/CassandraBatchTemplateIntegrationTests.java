@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,10 +53,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		SchemaTestUtils.truncate(FlatGroup.class, template);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test
+	@Test // DATACASS-288
 	public void shouldInsertEntities() {
 
 		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
@@ -70,10 +67,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test
+	@Test // DATACASS-288
 	public void shouldInsertCollectionOfEntities() {
 
 		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
@@ -87,10 +81,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test
+	@Test // DATACASS-288
 	public void shouldUpdateEntities() {
 
 		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
@@ -107,10 +98,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test
+	@Test // DATACASS-288
 	public void shouldUpdateCollectionOfEntities() {
 
 		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
@@ -127,10 +115,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test
+	@Test // DATACASS-288
 	public void shouldUpdatesCollectionOfEntities() {
 
 		FlatGroup walter = template.insert(new FlatGroup("users", "0x1", "walter"));
@@ -147,10 +132,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test
+	@Test // DATACASS-288
 	public void shouldDeleteEntities() {
 
 		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
@@ -165,10 +147,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(loaded).isNull();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test
+	@Test // DATACASS-288
 	public void shouldDeleteCollectionOfEntities() {
 
 		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
@@ -183,10 +162,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(loaded).isNull();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test
+	@Test // DATACASS-288
 	public void shouldApplyTimestampToAllEntities() {
 
 		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
@@ -209,10 +185,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		}
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-288
 	public void shouldNotExecuteTwice() {
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
@@ -223,10 +196,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		fail("Missing IllegalStateException");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-288
 	public void shouldNotAllowModificationAfterExecution() {
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);

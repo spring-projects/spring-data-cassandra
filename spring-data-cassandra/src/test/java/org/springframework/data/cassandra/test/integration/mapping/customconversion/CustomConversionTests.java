@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
 package org.springframework.data.cassandra.test.integration.mapping.customconversion;
 
 import static org.assertj.core.api.Assertions.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,10 +44,6 @@ import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Test suite for applying {@link CustomConversions} to
@@ -77,10 +77,7 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 		SchemaTestUtils.truncate(Employee.class, cassandraOperations);
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldInsertCustomConvertedObject() {
 
 		Employee employee = new Employee();
@@ -95,10 +92,7 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 		assertThat(row.getString("person")).contains("\"firstname\":\"Homer\"");
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldUpdateCustomConvertedObject() {
 
 		Employee employee = new Employee();
@@ -115,10 +109,7 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 		assertThat(row.getString("person")).contains("\"firstname\":\"Homer\"");
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldInsertCustomConvertedObjectWithCollections() {
 
 		Employee employee = new Employee();
@@ -139,10 +130,7 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 		assertThat(row.getSet("people", String.class)).hasSize(1);
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldUpdateCustomConvertedObjectWithCollections() {
 
 		Employee employee = new Employee();
@@ -162,15 +150,11 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 		assertThat(row.getSet("people", String.class)).hasSize(1);
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldLoadCustomConvertedObject() {
 
 		cassandraOperations.getCqlOperations().execute(QueryBuilder.insertInto("employee").value("id", "employee-id")
-				.value("person",
-				"{\"firstname\":\"Homer\",\"lastname\":\"Simpson\"}"));
+				.value("person", "{\"firstname\":\"Homer\",\"lastname\":\"Simpson\"}"));
 
 		Employee employee = cassandraOperations.selectOne(QueryBuilder.select("id", "person").from("employee"),
 				Employee.class);
@@ -181,15 +165,11 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 		assertThat(employee.getPerson().getLastname()).isEqualTo("Simpson");
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldLoadCustomConvertedWithCollectionsObject() {
 
 		cassandraOperations.getCqlOperations().execute(QueryBuilder.insertInto("employee").value("id", "employee-id")
-				.value("people",
-				Collections.singleton("{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}")));
+				.value("people", Collections.singleton("{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}")));
 
 		Employee employee = cassandraOperations.selectOne(QueryBuilder.select("id", "people").from("employee"),
 				Employee.class);
@@ -201,10 +181,7 @@ public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTe
 		assertThat(apu.getFirstname()).isEqualTo("Apu");
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void dummy() {
 
 		cassandraOperations.getCqlOperations().execute(QueryBuilder.insertInto("employee").value("id", "employee-id"));

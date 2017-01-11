@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package org.springframework.data.cassandra.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,9 +50,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Test for {@link ReactiveCassandraRepository} query methods.
@@ -123,10 +122,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		repository.save(Arrays.asList(oliver, dave, carter, boyd)).last().block();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldFindByLastName() {
 
 		List<Person> list = repository.findByLastname("Matthews").collectList().block();
@@ -134,10 +130,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		assertThat(list).hasSize(2).contains(dave, oliver);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldFindOneByLastName() {
 
 		Person carter = repository.findOneByLastname("Beauford").block();
@@ -145,10 +138,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		assertThat(carter.getFirstname()).isEqualTo("Carter");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldFindOneByPublisherOfLastName() {
 
 		Person carter = repository.findByLastname(Mono.just("Beauford")).block();
@@ -156,10 +146,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		assertThat(carter.getFirstname()).isEqualTo("Carter");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldFindUsingPublishersInStringQuery() {
 
 		List<Person> persons = repository.findStringQuery(Mono.just("Matthews")).collectList().block();
@@ -167,10 +154,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		assertThat(persons).contains(dave);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void shouldFindByLastNameAndSort() {
 
 		GroupKey key1 = new GroupKey("Simpsons", "hash", "Bart");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package org.springframework.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,9 +45,6 @@ import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Unit tests for {@link ReactiveCqlTemplate}.
@@ -75,10 +75,7 @@ public class ReactiveCqlTemplateUnitTests {
 	// Tests dealing with a plain org.springframework.cassandra.core.ReactiveSession
 	// -------------------------------------------------------------------------
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeCallbackShouldExecuteDeferred() {
 
 		Flux<String> flux = template.execute((ReactiveSessionCallback<String>) session -> {
@@ -91,10 +88,7 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(session).close();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeCallbackShouldTranslateExceptions() {
 
 		Flux<String> flux = template.execute((ReactiveSessionCallback<String>) session -> {
@@ -110,10 +104,7 @@ public class ReactiveCqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeCqlShouldExecuteDeferred() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -125,10 +116,7 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(session).execute(any(Statement.class));
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeCqlShouldTranslateExceptions() {
 
 		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
@@ -148,10 +136,7 @@ public class ReactiveCqlTemplateUnitTests {
 	// Tests dealing with static CQL
 	// -------------------------------------------------------------------------
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeCqlShouldCallExecution() {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
@@ -162,10 +147,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeCqlWithArgumentsShouldCallExecution() {
 
 		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
@@ -176,10 +158,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForResultSetShouldCallExecution() {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
@@ -193,10 +172,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryWithResultSetExtractorShouldCallExecution() {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
@@ -210,10 +186,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryWithResultSetExtractorWithArgumentsShouldCallExecution() {
 
 		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
@@ -227,10 +200,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryCqlShouldExecuteDeferred() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
@@ -243,10 +213,7 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(session).execute(any(Statement.class));
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryCqlShouldTranslateExceptions() {
 
 		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
@@ -262,10 +229,7 @@ public class ReactiveCqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectCqlShouldBeEmpty() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -275,10 +239,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.hasElement().block()).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectCqlShouldReturnRecord() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -288,10 +249,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.block()).isEqualTo("OK");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectCqlShouldReturnNullValue() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -301,10 +259,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.hasElement().block()).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectCqlShouldFailReturningManyRecords() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -321,10 +276,7 @@ public class ReactiveCqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectCqlWithTypeShouldReturnRecord() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -338,10 +290,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.block()).isEqualTo("OK");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForFluxCqlWithTypeShouldReturnRecord() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -355,10 +304,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(flux.collectList().block()).contains("OK", "NOT OK");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForRowsCqlReturnRows() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -369,10 +315,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(flux.collectList().block()).hasSize(2).contains(row);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeCqlShouldReturnWasApplied() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -383,10 +326,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.block()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeCqlPublisherShouldReturnWasApplied() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -403,10 +343,7 @@ public class ReactiveCqlTemplateUnitTests {
 	// Tests dealing with com.datastax.driver.core.Statement
 	// -------------------------------------------------------------------------
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeStatementShouldCallExecution() {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
@@ -417,10 +354,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeStatementWithArgumentsShouldCallExecution() {
 
 		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
@@ -431,10 +365,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForResultStatementSetShouldCallExecution() {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
@@ -448,10 +379,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryWithResultSetStatementExtractorShouldCallExecution() {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
@@ -466,10 +394,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryWithResultSetStatementExtractorWithArgumentsShouldCallExecution() {
 
 		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
@@ -484,10 +409,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryStatementShouldExecuteDeferred() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
@@ -501,10 +423,7 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(session).execute(any(Statement.class));
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryStatementShouldTranslateExceptions() {
 
 		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
@@ -521,10 +440,7 @@ public class ReactiveCqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectStatementShouldBeEmpty() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -534,10 +450,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.hasElement().block()).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectStatementShouldReturnRecord() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -547,10 +460,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.block()).isEqualTo("OK");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectStatementShouldReturnNullValue() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -560,10 +470,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.hasElement().block()).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectStatementShouldFailReturningManyRecords() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -580,10 +487,7 @@ public class ReactiveCqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectStatementWithTypeShouldReturnRecord() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -597,10 +501,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.block()).isEqualTo("OK");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForFluxStatementWithTypeShouldReturnRecord() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -614,10 +515,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(flux.collectList().block()).contains("OK", "NOT OK");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForRowsStatementReturnRows() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -628,10 +526,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(flux.collectList().block()).hasSize(2).contains(row);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executeStatementShouldReturnWasApplied() {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
@@ -646,10 +541,7 @@ public class ReactiveCqlTemplateUnitTests {
 	// Methods dealing with prepared statements
 	// -------------------------------------------------------------------------
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryPreparedStatementWithCallbackShouldCallExecution() {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
@@ -665,10 +557,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executePreparedStatementWithCallbackShouldCallExecution() {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
@@ -681,10 +570,7 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executePreparedStatementCallbackShouldExecuteDeferred() {
 
 		when(session.prepare(anyString())).thenReturn(Mono.just(preparedStatement));
@@ -701,10 +587,7 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(session).execute(boundStatement);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executePreparedStatementCreatorShouldExecuteDeferred() {
 
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
@@ -718,10 +601,7 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(session).execute(boundStatement);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executePreparedStatementCreatorShouldTranslateStatementCreationExceptions() {
 
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
@@ -740,10 +620,7 @@ public class ReactiveCqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void executePreparedStatementCreatorShouldTranslateStatementCallbackExceptions() {
 
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
@@ -762,10 +639,7 @@ public class ReactiveCqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryPreparedStatementCreatorShouldReturnResult() {
 
 		when(session.prepare(anyString())).thenReturn(Mono.just(preparedStatement));
@@ -780,10 +654,7 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(preparedStatement).bind();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryPreparedStatementCreatorAndBinderShouldReturnResult() {
 
 		when(session.prepare(anyString())).thenReturn(Mono.just(preparedStatement));
@@ -801,10 +672,7 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(preparedStatement).bind("a", "b");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryPreparedStatementCreatorAndBinderAndMapperShouldReturnResult() {
 
 		when(session.prepare(anyString())).thenReturn(Mono.just(preparedStatement));
@@ -822,10 +690,7 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(preparedStatement).bind("a", "b");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectPreparedStatementShouldBeEmpty() {
 
 		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
@@ -838,10 +703,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.hasElement().block()).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectPreparedStatementShouldReturnRecord() {
 
 		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
@@ -854,10 +716,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.block()).isEqualTo("OK");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectPreparedStatementShouldFailReturningManyRecords() {
 
 		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
@@ -876,10 +735,7 @@ public class ReactiveCqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForObjectPreparedStatementWithTypeShouldReturnRecord() {
 
 		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
@@ -895,10 +751,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.block()).isEqualTo("OK");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForFluxPreparedStatementWithTypeShouldReturnRecord() {
 
 		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
@@ -914,10 +767,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(flux.collectList().block()).contains("OK", "NOT OK");
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void queryForRowsPreparedStatementReturnRows() {
 
 		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
@@ -930,10 +780,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(flux.collectList().block()).hasSize(2).contains(row);
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void updatePreparedStatementShouldReturnApplied() {
 
 		when(session.prepare("UPDATE user SET username = ?")).thenReturn(Mono.just(preparedStatement));
@@ -946,10 +793,7 @@ public class ReactiveCqlTemplateUnitTests {
 		assertThat(mono.block()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-335
-	 */
-	@Test
+	@Test // DATACASS-335
 	public void updatePreparedStatementArgsPublisherShouldReturnApplied() {
 
 		when(session.prepare("UPDATE user SET username = ?")).thenReturn(Mono.just(preparedStatement));

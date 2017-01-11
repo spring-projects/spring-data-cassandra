@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016 the original author or authors
+ *  Copyright 2016-2017 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -49,10 +49,7 @@ public class CassandraAccessorUnitTests {
 		cassandraAccessor = new CassandraAccessor();
 	}
 
-	/**
-	 * @see DATACASS-286
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void afterPropertiesSetWithUnitializedSessionThrowsIllegalStateException() {
 
 		try {
@@ -63,20 +60,14 @@ public class CassandraAccessorUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-286
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void setAndGetExceptionTranslator() {
 
 		cassandraAccessor.setExceptionTranslator(mockExceptionTranslator);
 		assertThat(cassandraAccessor.getExceptionTranslator()).isSameAs(mockExceptionTranslator);
 	}
 
-	/**
-	 * @see DATACASS-286
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void setExceptionTranslatorToNullThrowsIllegalArgumentException() {
 
 		try {
@@ -87,28 +78,19 @@ public class CassandraAccessorUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-286
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void getUninitializedExceptionTranslatorReturnsDefault() {
 		assertThat(cassandraAccessor.getExceptionTranslator()).isEqualTo(cassandraAccessor.exceptionTranslator);
 	}
 
-	/**
-	 * @see DATACASS-286
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void setAndGetSession() {
 
 		cassandraAccessor.setSession(mockSession);
 		assertThat(cassandraAccessor.getSession()).isSameAs(mockSession);
 	}
 
-	/**
-	 * @see DATACASS-286
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void setSessionToNullThrowsIllegalArgumentException() {
 
 		try {
@@ -119,10 +101,7 @@ public class CassandraAccessorUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-286
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void getUninitializedSessionThrowsIllegalStateException() {
 
 		try {

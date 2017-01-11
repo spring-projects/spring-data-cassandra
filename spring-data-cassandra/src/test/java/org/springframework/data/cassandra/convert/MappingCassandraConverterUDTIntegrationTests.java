@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package org.springframework.data.cassandra.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+
+import lombok.Data;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,8 +54,6 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
-
-import lombok.Data;
 
 /**
  * Integration tests for UDT types through {@link MappingCassandraConverter}.
@@ -122,10 +122,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		}
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldReadMappedUdt() {
 
 		session.execute("INSERT INTO addressbook (id, currentaddress) " + "VALUES ('1', "
@@ -142,10 +139,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(address.getStreetLines()).contains("Heckenpfad", "14");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteMappedUdt() {
 
 		AddressUserType addressUserType = new AddressUserType();
@@ -164,10 +158,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 				+ "VALUES (null,{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1',null);");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldReadMappedUdtCollection() {
 
 		session.execute("INSERT INTO addressbook (id,  previousaddresses) " + "VALUES ('1', "
@@ -185,10 +176,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(address.getStreetLines()).isEmpty();
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteMappedUdtCollection() {
 
 		AddressUserType addressUserType = new AddressUserType();
@@ -207,10 +195,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 				+ "VALUES (null,null,'1',[{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']}]);");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldReadUdt() {
 
 		session.execute("INSERT INTO addressbook (id, alternate) " + "VALUES ('1', "
@@ -224,10 +209,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(addressBook.getAlternate().getString("zip")).isEqualTo("69469");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteUdt() {
 
 		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
@@ -248,10 +230,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},null,'1',null);");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteUdtPk() {
 
 		AddressUserType addressUserType = new AddressUserType();
@@ -269,10 +248,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 				"INSERT INTO addressbook (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']});");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteMappedUdtPk() {
 
 		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
@@ -292,10 +268,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 				"INSERT INTO addressbook (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']});");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldReadUdtWithCustomConversion() {
 
 		session.execute("INSERT INTO bank (id, currency) " + "VALUES ('1', {currency:'EUR'});");
@@ -307,10 +280,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(addressBook.getCurrency().getCurrencyCode()).isEqualTo("EUR");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldReadUdtListWithCustomConversion() {
 
 		session.execute("INSERT INTO bank (id, othercurrencies) " + "VALUES ('1', [{currency:'EUR'}]);");
@@ -321,10 +291,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(addressBook.getOtherCurrencies()).hasSize(1).contains(Currency.getInstance("EUR"));
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteUdtWithCustomConversion() {
 
 		Bank bank = new Bank();
@@ -333,13 +300,11 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		Insert insert = QueryBuilder.insertInto("bank");
 		converter.write(bank, insert);
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO bank (currency,id,othercurrencies) VALUES ({currency:'EUR'},null,null);");
+		assertThat(insert.toString())
+				.isEqualTo("INSERT INTO bank (currency,id,othercurrencies) VALUES ({currency:'EUR'},null,null);");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteUdtUpdateWherePrimaryKeyWithCustomConversion() {
 
 		Money money = new Money();
@@ -351,10 +316,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(update.toString()).isEqualTo("UPDATE money WHERE currency={currency:'EUR'};");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteUdtUpdateAssignmentsWithCustomConversion() {
 
 		MoneyTransfer money = new MoneyTransfer();
@@ -367,10 +329,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(update.toString()).isEqualTo("UPDATE money SET currency={currency:'EUR'} WHERE id='1';");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteUdtSelectWherePrimaryKeyWithCustomConversion() {
 
 		Money money = new Money();
@@ -382,10 +341,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(select.toString()).isEqualTo("SELECT * FROM money WHERE currency={currency:'EUR'};");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteUdtDeleteWherePrimaryKeyWithCustomConversion() {
 
 		Money money = new Money();
@@ -397,10 +353,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(delete.toString()).isEqualTo("DELETE FROM money WHERE currency={currency:'EUR'};");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteUdtListWithCustomConversion() {
 
 		Bank bank = new Bank();
@@ -409,13 +362,11 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		Insert insert = QueryBuilder.insertInto("bank");
 		converter.write(bank, insert);
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO bank (currency,id,othercurrencies) VALUES (null,null,[{currency:'EUR'}]);");
+		assertThat(insert.toString())
+				.isEqualTo("INSERT INTO bank (currency,id,othercurrencies) VALUES (null,null,[{currency:'EUR'}]);");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldReadNestedUdt() {
 
 		session.execute("INSERT INTO car (id, engine)  VALUES ('1',  {manufacturer: {name:'a good one'}});");
@@ -428,10 +379,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(car.getEngine().getManufacturer().getName()).isEqualTo("a good one");
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldWriteNestedUdt() {
 
 		session.execute("INSERT INTO car (id, engine)  VALUES ('1',  {manufacturer: {name:'a good one'}});");
@@ -449,7 +397,8 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		Insert insert = QueryBuilder.insertInto("car");
 		converter.write(car, insert);
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO car (engine,id) VALUES ({manufacturer:{name:'a good one'}},'1');");
+		assertThat(insert.toString())
+				.isEqualTo("INSERT INTO car (engine,id) VALUES ({manufacturer:{name:'a good one'}},'1');");
 	}
 
 	@Table

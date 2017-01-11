@@ -58,9 +58,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 
 	BasicCassandraMappingContext context = new BasicCassandraMappingContext();
 
-	/**
-	 * @see DATACASS-355
-	 */
+	// DATACASS-355
 	@Before
 	public void setUp() throws Exception {
 
@@ -79,10 +77,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 		when(contact.getName()).thenReturn("contact");
 	}
 
-	/**
-	 * @see DATACASS-355
-	 */
-	@Test
+	@Test // DATACASS-355
 	public void shouldDropTypes() throws Exception {
 
 		context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(MoonType.class, UniverseType.class)));
@@ -102,10 +97,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 		verifyNoMoreInteractions(operations);
 	}
 
-	/**
-	 * @see DATACASS-355
-	 */
-	@Test
+	@Test // DATACASS-355
 	public void dropUserTypesShouldRetainUnusedTypes() {
 
 		context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(MoonType.class, UniverseType.class)));
@@ -124,10 +116,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 		verifyNoMoreInteractions(operations);
 	}
 
-	/**
-	 * @see DATACASS-355
-	 */
-	@Test
+	@Test // DATACASS-355
 	public void shouldDropTables() throws Exception {
 
 		context.setInitialEntitySet(Collections.singleton(Person.class));

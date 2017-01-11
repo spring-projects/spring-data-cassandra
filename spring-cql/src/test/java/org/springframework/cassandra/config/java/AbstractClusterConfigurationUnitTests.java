@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,15 +45,10 @@ import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
  * @author Mark Paluch
  * @author John Blum
  * @soundtrack Max Graham Feat Neev Kennedy - So Caught Up (Dns Project Remix)
- * @see <a href="https://jira.spring.io/browse/DATACASS-226"></a>
  */
 public class AbstractClusterConfigurationUnitTests {
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldInitializeWithoutAnyOptions() throws Exception {
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
@@ -68,11 +63,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(getConfiguration(cluster).getMetricsOptions().isJMXReportingEnabled()).isTrue();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetCompressionType() throws Exception {
 
 		final CompressionType compressionType = CompressionType.SNAPPY;
@@ -88,11 +79,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(getConfiguration(cluster).getProtocolOptions().getCompression()).isEqualTo(Compression.SNAPPY);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetPoolingOptions() throws Exception {
 
 		final PoolingOptions poolingOptions = new PoolingOptions();
@@ -108,11 +95,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(getConfiguration(cluster).getPoolingOptions()).isEqualTo(poolingOptions);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetSocketOptions() throws Exception {
 
 		final SocketOptions socketOptions = new SocketOptions();
@@ -128,11 +111,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(getConfiguration(cluster).getSocketOptions()).isEqualTo(socketOptions);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetQueryOptions() throws Exception {
 
 		final QueryOptions queryOptions = new QueryOptions();
@@ -148,11 +127,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(getConfiguration(cluster).getQueryOptions()).isEqualTo(queryOptions);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetAuthProvider() throws Exception {
 
 		final AuthProvider authProvider = new PlainTextAuthProvider("x", "y");
@@ -168,11 +143,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(getConfiguration(cluster).getProtocolOptions().getAuthProvider()).isEqualTo(authProvider);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetLoadBalancingPolicy() throws Exception {
 
 		final LoadBalancingPolicy loadBalancingPolicy = new RoundRobinPolicy();
@@ -188,11 +159,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(getConfiguration(cluster).getPolicies().getLoadBalancingPolicy()).isEqualTo(loadBalancingPolicy);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetReconnectionPolicy() throws Exception {
 
 		final ReconnectionPolicy reconnectionPolicy = new ExponentialReconnectionPolicy(1, 2);
@@ -208,11 +175,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(getConfiguration(cluster).getPolicies().getReconnectionPolicy()).isEqualTo(reconnectionPolicy);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetProtocolVersion() throws Exception {
 
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
@@ -227,11 +190,7 @@ public class AbstractClusterConfigurationUnitTests {
 				.contains(ProtocolVersion.V2);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 * @throws Exception
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldDisableMetrics() throws Exception {
 
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
@@ -245,10 +204,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(getConfiguration(cluster).getMetricsOptions().isEnabled()).isFalse();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetKeyspaceCreations() {
 
 		final List<CreateKeyspaceSpecification> specification = Collections
@@ -263,10 +219,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(clusterConfiguration.cluster().getKeyspaceCreations()).isEqualTo(specification);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetKeyspaceDrops() {
 
 		final List<DropKeyspaceSpecification> specification = Collections
@@ -281,10 +234,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(clusterConfiguration.cluster().getKeyspaceDrops()).isEqualTo(specification);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetStartupScripts() {
 
 		final List<String> scripts = Collections.singletonList("USE BLUE_METH; CREATE TABLE...");
@@ -298,10 +248,7 @@ public class AbstractClusterConfigurationUnitTests {
 		assertThat(clusterConfiguration.cluster().getStartupScripts()).isEqualTo(scripts);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-226">DATACASS-226</a>
-	 */
-	@Test
+	@Test // DATACASS-226
 	public void shouldSetShutdownScripts() {
 
 		final List<String> scripts = Collections.singletonList("USE BLUE_METH; DROP TABLE...");

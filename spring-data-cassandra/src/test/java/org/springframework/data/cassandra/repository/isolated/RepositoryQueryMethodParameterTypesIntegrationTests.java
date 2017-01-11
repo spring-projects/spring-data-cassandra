@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ import com.datastax.driver.core.Session;
  * Integration tests for various query method parameter types.
  *
  * @author Mark Paluch
- * @see DATACASS-296
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -89,10 +88,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 		allPossibleTypesRepository.deleteAll();
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldFindByLocalDate() {
 
 		session.execute("CREATE INDEX IF NOT EXISTS allpossibletypes_localdate ON allpossibletypes ( localdate )");
@@ -110,10 +106,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 		assertThat(result).contains(allPossibleTypes);
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldFindByAnnotatedDateParameter() {
 
 		CustomConversions customConversions = new CustomConversions(
@@ -142,20 +135,13 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 		assertThat(result).contains(allPossibleTypes);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-296">DATACASS-296</a>
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-304">DATACASS-304</a>
-	 */
-	@Test(expected = CassandraInvalidQueryException.class)
+	@Test(expected = CassandraInvalidQueryException.class) // DATACASS-296, DATACASS-304
 	public void shouldThrowExceptionUsingWrongMethodParameter() {
 		session.execute("CREATE INDEX IF NOT EXISTS allpossibletypes_date ON allpossibletypes ( date )");
 		allPossibleTypesRepository.findWithDateParameter(Date.from(Instant.ofEpochSecond(44234123421L)));
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldFindByZoneId() {
 
 		ZoneId zoneId = ZoneId.of("Europe/Paris");
@@ -174,10 +160,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 		assertThat(result).contains(allPossibleTypes);
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldFindByOptionalOfZoneId() {
 
 		ZoneId zoneId = ZoneId.of("Europe/Paris");

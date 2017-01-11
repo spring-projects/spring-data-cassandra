@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import com.datastax.driver.core.TableMetadata;
  * Integration tests tests for {@link AlterTableCqlGenerator}.
  *
  * @author Mark Paluch
- * @see DATACASS-192
  */
 public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -48,10 +47,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		session.execute("DROP TABLE IF EXISTS users;");
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAlterColumnType() {
 
 		session.execute(
@@ -67,10 +63,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(column.getType()).isEqualTo(DataType.varint());
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAlterListColumnType() {
 
 		session.execute(
@@ -86,10 +79,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(column.getType()).isEqualTo((DataType) DataType.list(DataType.varchar()));
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAddColumn() {
 
 		session.execute(
@@ -105,10 +95,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(column.getType()).isEqualTo(DataType.varchar());
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAddListColumn() {
 
 		session.execute("CREATE TABLE users (user_name varchar PRIMARY KEY);");
@@ -123,10 +110,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(column.getType()).isEqualTo((DataType) DataType.list(DataType.ascii()));
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableDropColumn() {
 
 		session.execute("CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar);");
@@ -138,10 +122,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(getTableMetadata("addamsfamily").getColumn("gender")).isNull();
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableRenameColumn() {
 
 		session.execute("CREATE TABLE addamsFamily (name varchar PRIMARY KEY, firstname varchar);");
@@ -154,10 +135,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(getTableMetadata("addamsfamily").getColumn("newname")).isNotNull();
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAddCaching() {
 
 		session.execute("CREATE TABLE users (user_name varchar PRIMARY KEY);");
