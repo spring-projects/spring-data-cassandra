@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,42 +40,27 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 		context.setVerifier(new NoOpVerifier());
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldAllowNonPersistentClasses() {
 		verifier.verify(getEntity(NonPersistentClass.class));
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldAllowInterfaceTypes() {
 		verifier.verify(getEntity(MyInterface.class));
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldAllowTableClass() {
 		verifier.verify(getEntity(Person.class));
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldVerifyPrimaryKeyClass() {
 		verifier.verify(getEntity(AnimalPK.class));
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldFailWithPersistentAndPrimaryKeyClassAnnotations() {
 
 		try {
@@ -86,80 +71,67 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldFailWithoutPartitionKey() {
 
 		try {
 			verifier.verify(getEntity(NoPartitionKey.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining("At least one of the @PrimaryKeyColumn annotations must have a type of PARTITIONED");
+			assertThat(e)
+					.hasMessageContaining("At least one of the @PrimaryKeyColumn annotations must have a type of PARTITIONED");
 		}
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldFailWithoutPrimaryKey() {
 
 		try {
 			verifier.verify(getEntity(NoPrimaryKey.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining("At least one of the @PrimaryKeyColumn annotations must have a type of PARTITIONED");
+			assertThat(e)
+					.hasMessageContaining("At least one of the @PrimaryKeyColumn annotations must have a type of PARTITIONED");
 		}
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldFailOnPrimaryKeyCycles() {
 
 		try {
 			verifier.verify(getEntity(TypeCycle.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining("Composite primary keys are not allowed inside of composite primary key classes");
+			assertThat(e)
+					.hasMessageContaining("Composite primary keys are not allowed inside of composite primary key classes");
 		}
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldFailWithNestedPrimaryKeyClassReference() {
 
 		try {
 			verifier.verify(getEntity(PKClassWithNestedCompositeKey.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining("Composite primary keys are not allowed inside of composite primary key classes");
+			assertThat(e)
+					.hasMessageContaining("Composite primary keys are not allowed inside of composite primary key classes");
 		}
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldFailWithPrimaryKeyClassAndPrimaryKeyAnnotations() {
 
 		try {
 			verifier.verify(getEntity(PrimaryKeyAndPrimaryKeyColumn.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining("Annotations @Id and @PrimaryKey are invalid for type annotated with @PrimaryKeyClass");
+			assertThat(e)
+					.hasMessageContaining("Annotations @Id and @PrimaryKey are invalid for type annotated with @PrimaryKeyClass");
 		}
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldFailForPrimaryKeyDerivedFromOtherThanObject() {
 
 		try {
@@ -267,7 +239,6 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	private static class NoOpVerifier implements CassandraPersistentEntityMetadataVerifier {
 
 		@Override
-		public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
-		}
+		public void verify(CassandraPersistentEntity<?> entity) throws MappingException {}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2016 the original author or authors
+ *  Copyright 2013-2017 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -52,10 +52,7 @@ public class CassandraCqlClusterParserUnitTests {
 
 	private CassandraCqlClusterParser parser = new CassandraCqlClusterParser();
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void resolveIdFromElement() {
 
 		when(mockElement.getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE))).thenReturn("test");
@@ -64,10 +61,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockElement).getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void resolveIdUsingDefault() {
 
 		when(mockElement.getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE))).thenReturn("");
@@ -76,10 +70,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockElement).getAttribute(eq(CassandraCqlClusterParser.ID_ATTRIBUTE));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void parseInternalCallsDoParseAndConstructsBeanDefinition() {
 
 		BeanDefinition mockContainingBeanDefinition = mock(BeanDefinition.class);
@@ -171,10 +162,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockElement).getAttribute(eq("username"));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void parseChildElementsWithLocalPoolingOptions() {
 
 		Element localPoolingOptionsElement = mock(Element.class);
@@ -228,10 +216,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(localPoolingOptionsElement).getAttribute(eq("min-simultaneous-requests"));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void parseChildElementsWithRemotePoolingOptions() {
 
 		Element localPoolingOptionsElement = mock(Element.class);
@@ -285,10 +270,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(localPoolingOptionsElement).getAttribute(eq("min-simultaneous-requests"));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-242">DATACASS-242</a>
-	 */
-	@Test
+	@Test // DATACASS-242
 	public void parseChildElementsWithStartupAndShutdownScripts() {
 
 		Element mockStartupCqlOne = mock(Element.class, "MockStartupCqlOne");
@@ -322,10 +304,7 @@ public class CassandraCqlClusterParserUnitTests {
 		assertThat(shutdownScripts).contains("DROP KEYSPACE test;", "DROP USER jblum;");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void parseLocalPoolingOptionsProperlyConfiguresBeanDefinition() {
 
 		when(mockElement.getAttribute(eq("core-connections"))).thenReturn("50");
@@ -362,10 +341,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockElement).getAttribute(eq("min-simultaneous-requests"));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void parseRemotePoolingOptionsProperlyConfiguresBeanDefinition() {
 
 		when(mockElement.getAttribute(eq("core-connections"))).thenReturn("50");
@@ -402,10 +378,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockElement).getAttribute(eq("min-simultaneous-requests"));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void parseScript() {
 
 		when(mockElement.getTextContent()).thenReturn("CREATE TABLE schema.table;");
@@ -413,10 +386,7 @@ public class CassandraCqlClusterParserUnitTests {
 		verify(mockElement).getTextContent();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void newSocketOptionsBeanDefinitionIsProperlyInitialized() {
 
 		when(mockElement.getAttribute(eq("connect-timeout-millis"))).thenReturn("15000");

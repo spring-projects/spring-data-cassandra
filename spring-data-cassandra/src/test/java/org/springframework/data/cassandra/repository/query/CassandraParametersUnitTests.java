@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,10 +40,7 @@ public class CassandraParametersUnitTests {
 
 	@Mock CassandraQueryMethod queryMethod;
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReturnUnknownDataTypeForSimpleType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
@@ -52,10 +49,7 @@ public class CassandraParametersUnitTests {
 		assertThat(cassandraParameters.getParameter(0).getCassandraType()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReturnDataTypeForAnnotatedSimpleType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstTime", String.class);
@@ -64,10 +58,7 @@ public class CassandraParametersUnitTests {
 		assertThat(cassandraParameters.getParameter(0).getCassandraType().type()).isEqualTo(Name.TIME);
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReturnNoTypeForComplexType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByObject", Object.class);
@@ -76,10 +67,7 @@ public class CassandraParametersUnitTests {
 		assertThat(cassandraParameters.getParameter(0).getCassandraType()).isNull();
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReturnTypeForAnnotatedType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByAnnotatedObject", Object.class);
@@ -88,10 +76,7 @@ public class CassandraParametersUnitTests {
 		assertThat(cassandraParameters.getParameter(0).getCassandraType().type()).isEqualTo(Name.TIME);
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReturnTypeForComposedAnnotationType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByComposedAnnotationObject", Object.class);

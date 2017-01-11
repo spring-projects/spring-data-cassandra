@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,50 +79,35 @@ public class PartTreeCassandraQueryUnitTests {
 		when(userTypeMock.iterator()).thenReturn(Collections.<UserType.Field> emptyIterator());
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void shouldDeriveSimpleQuery() {
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void shouldDeriveSimpleQueryWithoutNames() {
 		String query = deriveQueryFromMethod("findPersonBy");
 
 		assertThat(query).isEqualTo("SELECT * FROM person;");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void shouldDeriveAndQuery() {
 		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void usesDynamicProjection() {
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
 		assertThat(query).isEqualTo("SELECT * FROM person;");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-357">DATACASS-357</a>
-	 */
-	@Test
+	@Test // DATACASS-357
 	public void shouldDeriveFieldInCollectionQuery() {
 		String query = deriveQueryFromMethod("findByFirstnameIn", new Class[] { Collection.class },
 				Arrays.asList("Hank", "Walter"));
@@ -130,10 +115,7 @@ public class PartTreeCassandraQueryUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Hank','Walter');");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-172">DATACASS-172</a>
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldDeriveSimpleQueryWithMappedUDT() {
 
 		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);
@@ -144,10 +126,7 @@ public class PartTreeCassandraQueryUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={};");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-172">DATACASS-172</a>
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldDeriveSimpleQueryWithUDTValue() {
 
 		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);
@@ -158,10 +137,7 @@ public class PartTreeCassandraQueryUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={};");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-357">DATACASS-357</a>
-	 */
-	@Test
+	@Test // DATACASS-357
 	public void shouldDeriveUdtInCollectionQuery() {
 
 		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);

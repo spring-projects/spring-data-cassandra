@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,7 @@ public class CassandraQueryMethodUnitTests {
 		context = new BasicCassandraMappingContext();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void detectsCollectionFromRepoTypeIfReturnTypeNotAssignable() throws Exception {
 
 		CassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "method");
@@ -57,10 +54,7 @@ public class CassandraQueryMethodUnitTests {
 		assertThat(metadata.getTableName().toCql()).isEqualTo("person");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATACASS-7
 	public void rejectsNullMappingContext() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("method");
@@ -69,10 +63,7 @@ public class CassandraQueryMethodUnitTests {
 				new SpelAwareProxyProjectionFactory(), null);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void considersMethodAsCollectionQuery() throws Exception {
 
 		CassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "method");

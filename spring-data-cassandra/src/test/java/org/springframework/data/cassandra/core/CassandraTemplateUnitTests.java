@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2016 the original author or authors
+ *  Copyright 2013-2017 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -70,10 +70,7 @@ public class CassandraTemplateUnitTests {
 		return new CassandraConverterRowCallback<T>(converter, type);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-310">DATACASS-310</a>
-	 */
-	@Test
+	@Test // DATACASS-310
 	public void processResultSetHandlesResultSetRows() {
 		ResultSet mockResultSet = mock(ResultSet.class);
 
@@ -101,10 +98,7 @@ public class CassandraTemplateUnitTests {
 		verify(mockCassandraConverter, times(1)).read(eq(Integer.class), eq(mockRowThree));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-310">DATACASS-310</a>
-	 */
-	@Test
+	@Test // DATACASS-310
 	public void processResultSetHandlesSingleElementResultSet() {
 		Select mockSelect = mock(Select.class);
 		ResultSet mockResultSet = mock(ResultSet.class);
@@ -124,10 +118,7 @@ public class CassandraTemplateUnitTests {
 		verify(mockCassandraConverter, times(1)).read(eq(String.class), eq(mockRow));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-310">DATACASS-310</a>
-	 */
-	@Test
+	@Test // DATACASS-310
 	public void processResultSetHandlesEmptyResultSet() {
 		CassandraConverter mockCassandraConverter = mock(CassandraConverter.class);
 		ResultSet mockResultSet = mock(ResultSet.class);
@@ -145,10 +136,7 @@ public class CassandraTemplateUnitTests {
 		verifyZeroInteractions(mockCassandraConverter);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-310">DATACASS-310</a>
-	 */
-	@Test
+	@Test // DATACASS-310
 	public void processResultSetHandlesNullResultSet() {
 		CassandraConverter mockCassandraConverter = mock(CassandraConverter.class);
 
@@ -163,10 +151,7 @@ public class CassandraTemplateUnitTests {
 		verifyZeroInteractions(mockCassandraConverter);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-288">DATACASS-288</a>
-	 */
-	@Test
+	@Test // DATACASS-288
 	public void batchOperationsShouldCallSession() {
 		template.batchOps().insert(new Book()).execute();
 

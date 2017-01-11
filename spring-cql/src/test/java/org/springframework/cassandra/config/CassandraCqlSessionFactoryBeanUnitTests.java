@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2016 the original author or authors
+ *  Copyright 2013-2017 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -45,8 +46,6 @@ import com.datastax.driver.core.Session;
  *
  * @author John Blum
  * @see org.springframework.cassandra.config.CassandraCqlSessionFactoryBean
- * @see <a href="https://jira.spring.io/browse/DATACASS-219>DATACASS-219</a>
- * @since 1.5.0
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraCqlSessionFactoryBeanUnitTests {
@@ -59,35 +58,28 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 	private CassandraCqlSessionFactoryBean factoryBean;
 
-	protected <T> List<T> asList(T... array) {
-		return new ArrayList<T>(Arrays.asList(array));
-	}
-
-	protected void assertNonNullEmptyCollection(Collection<?> collection) {
-		assertThat(collection).isNotNull();
-		assertThat(collection.isEmpty()).isTrue();
-	}
-
 	@Before
 	public void setup() {
 		factoryBean = spy(new CassandraCqlSessionFactoryBean());
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void cassandraCqlSessionFactoryBeanIsSingleton() {
 		assertThat(factoryBean.isSingleton()).isTrue();
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void objectTypeWhenSessionHasNotBeenInitializedIsSessionClass() {
+
 		assertThat(factoryBean.getObject()).isNull();
 		assertThat(factoryBean.<Session> getObjectType()).isEqualTo(Session.class);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	@SuppressWarnings("unchecked")
 	public void afterPropertiesSetInitializesSessionWithKeyspaceAndExecutesStartupScripts() throws Exception {
-		List<String> expectedStartupScripts = asList("/path/to/schema.cql", "/path/to/data.cql");
+
+		List<String> expectedStartupScripts = Arrays.asList("/path/to/schema.cql", "/path/to/data.cql");
 
 		CqlOperations mockCqlOperations = mock(CqlOperations.class);
 
@@ -115,10 +107,10 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		verify(mockCqlOperations, times(1)).execute(eq(expectedStartupScripts.get(1)));
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void connectToSystemKeyspace() {
-		when(mockCluster.connect()).thenReturn(mockSession);
 
+		when(mockCluster.connect()).thenReturn(mockSession);
 		factoryBean.setCluster(mockCluster);
 
 		assertThat(factoryBean.connect(null)).isEqualTo(mockSession);
@@ -127,10 +119,10 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		verify(mockCluster, never()).connect(anyString());
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void connectToTargetKeyspace() {
-		when(mockCluster.connect(eq("TestKeyspace"))).thenReturn(mockSession);
 
+		when(mockCluster.connect(eq("TestKeyspace"))).thenReturn(mockSession);
 		factoryBean.setCluster(mockCluster);
 
 		assertThat(factoryBean.connect("TestKeyspace")).isEqualTo(mockSession);
@@ -139,10 +131,10 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		verify(mockCluster, times(1)).connect(eq("TestKeyspace"));
 	}
 
-	@Test
+	@Test // DATACASS-219
 	@SuppressWarnings("unchecked")
 	public void destroySessionAndExecutesShutdownScripts() throws Exception {
-		List<String> expectedShutdownScripts = asList("/path/to/shutdown.cql");
+		List<String> expectedShutdownScripts = Collections.singletonList("/path/to/shutdown.cql");
 
 		CqlOperations mockCqlOperations = mock(CqlOperations.class);
 
@@ -159,35 +151,42 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		inOrder.verify(mockSession, times(1)).close();
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void isConnectedWithNullSessionIsFalse() {
+
 		assertThat(factoryBean.getObject()).isNull();
 		assertThat(factoryBean.isConnected()).isFalse();
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void isConnectedWithClosedSessionIsFalse() {
-		doReturn(mockSession).when(factoryBean).getObject();
+
+		when(factoryBean.getObject()).thenReturn(mockSession);
 		when(mockSession.isClosed()).thenReturn(true);
+
 		assertThat(factoryBean.isConnected()).isFalse();
 		verify(mockSession, times(1)).isClosed();
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void isConnectedWithOpenSessionIsTrue() {
-		doReturn(mockSession).when(factoryBean).getObject();
+
+		when(factoryBean.getObject()).thenReturn(mockSession);
 		when(mockSession.isClosed()).thenReturn(false);
+
 		assertThat(factoryBean.isConnected()).isTrue();
 		verify(mockSession, times(1)).isClosed();
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void setAndGetCluster() {
+
 		factoryBean.setCluster(mockCluster);
+
 		assertThat(factoryBean.getCluster()).isEqualTo(mockCluster);
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void setClusterToNullThrowsIllegalArgumentException() {
 
 		try {
@@ -199,7 +198,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void getClusterWhenUninitializedThrowsIllegalStateException() {
 
 		try {
@@ -210,20 +209,19 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		}
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void setAndGetKeyspaceName() {
+
 		assertThat(factoryBean.getKeyspaceName()).isNull();
 
 		factoryBean.setKeyspaceName("TEST");
-
 		assertThat(factoryBean.getKeyspaceName()).isEqualTo("TEST");
 
 		factoryBean.setKeyspaceName(null);
-
 		assertThat(factoryBean.getKeyspaceName()).isNull();
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void getSessionWhenUninitializedThrowsIllegalStateException() {
 
 		assertThat(factoryBean.getObject()).isNull();
@@ -237,26 +235,25 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void setAndGetStartupScripts() {
+
 		assertNonNullEmptyCollection(factoryBean.getStartupScripts());
 
-		List<String> expectedStartupScripts = asList("/path/to/schema.cql", "/path/to/data.cql");
-
+		List<String> expectedStartupScripts = Arrays.asList("/path/to/schema.cql", "/path/to/data.cql");
 		factoryBean.setStartupScripts(expectedStartupScripts);
 
 		List<String> actualStartupScripts = factoryBean.getStartupScripts();
-
 		assertThat(actualStartupScripts).isNotSameAs(expectedStartupScripts).isEqualTo(expectedStartupScripts);
 
 		factoryBean.setStartupScripts(null);
-
 		assertNonNullEmptyCollection(factoryBean.getStartupScripts());
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void startupScriptsAreImmutable() {
-		List<String> startupScripts = asList("/path/to/startup.cql");
+
+		List<String> startupScripts = new ArrayList<String>(Collections.singletonList("/path/to/startup.cql"));
 
 		factoryBean.setStartupScripts(startupScripts);
 
@@ -282,29 +279,26 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 	@Test
 	public void setAndGetShutdownScripts() {
+
 		assertNonNullEmptyCollection(factoryBean.getShutdownScripts());
 
-		List<String> expectedShutdownScripts = asList("/path/to/backup.cql", "/path/to/dropTables.cql");
-
+		List<String> expectedShutdownScripts = Arrays.asList("/path/to/backup.cql", "/path/to/dropTables.cql");
 		factoryBean.setShutdownScripts(expectedShutdownScripts);
 
 		List<String> actualShutdownScripts = factoryBean.getShutdownScripts();
-
 		assertThat(actualShutdownScripts).isEqualTo(expectedShutdownScripts).isNotSameAs(expectedShutdownScripts);
 
 		factoryBean.setShutdownScripts(null);
-
 		assertNonNullEmptyCollection(factoryBean.getShutdownScripts());
 	}
 
-	@Test
+	@Test // DATACASS-219
 	public void shutdownScriptsAreImmutable() {
-		List<String> shutdownScripts = asList("/path/to/shutdown.cql");
 
+		List<String> shutdownScripts = new ArrayList<String>(Collections.singletonList("/path/to/shutdown.cql"));
 		factoryBean.setShutdownScripts(shutdownScripts);
 
 		List<String> actualShutdownScripts = factoryBean.getShutdownScripts();
-
 		assertThat(actualShutdownScripts).isEqualTo(shutdownScripts).isNotSameAs(shutdownScripts);
 
 		shutdownScripts.add("/path/to/corruptSession.cql");
@@ -320,5 +314,11 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		} finally {
 			assertThat(actualShutdownScripts).hasSize(1);
 		}
+	}
+
+	private void assertNonNullEmptyCollection(Collection<?> collection) {
+
+		assertThat(collection).isNotNull();
+		assertThat(collection.isEmpty()).isTrue();
 	}
 }

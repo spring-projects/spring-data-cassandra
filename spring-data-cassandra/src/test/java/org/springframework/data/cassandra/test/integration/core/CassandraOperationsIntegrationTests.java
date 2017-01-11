@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -627,10 +627,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		assertThat(template.count(Book.class)).isEqualTo(count);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
-	 */
-	@Test
+	@Test // DATACASS-182
 	public void updateShouldRemoveFields() {
 
 		Book book = new Book();
@@ -649,10 +646,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		assertThat(loaded.getAuthor()).isEqualTo("author");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
-	 */
-	@Test
+	@Test // DATACASS-182
 	public void insertShouldRemoveFields() {
 
 		Book book = new Book();
@@ -672,10 +666,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		assertThat(loaded.getAuthor()).isEqualTo("author");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
-	 */
-	@Test
+	@Test // DATACASS-182
 	public void updateShouldInsertEntity() {
 
 		Book book = new Book();
@@ -692,10 +683,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		assertThat(loaded.getTitle()).isEqualTo("title");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
-	 */
-	@Test
+	@Test // DATACASS-182
 	public void insertAndUpdateToEmptyCollection() {
 
 		BookReference bookReference = new BookReference();
@@ -715,10 +703,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		assertThat(loaded.getBookmarks()).isNull();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-182">DATACASS-182</a>
-	 */
-	@Test
+	@Test // DATACASS-182
 	public void stream() throws InterruptedException {
 
 		while (template.select("SELECT * FROM book", Book.class).size() != 0) {
@@ -742,10 +727,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		assertThat(selectedBooks.get(0)).isInstanceOf(Book.class);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-206">DATACASS-206</a>
-	 */
-	@Test
+	@Test // DATACASS-206
 	public void shouldUseSpecifiedColumnNamesForSingleEntityModifyingOperations() {
 
 		UserToken userToken = new UserToken();
@@ -771,10 +753,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		assertThat(loadAfterDelete).isNull();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-206">DATACASS-206</a>
-	 */
-	@Test
+	@Test // DATACASS-206
 	public void shouldUseSpecifiedColumnNamesForMultiEntityModifyingOperations() {
 
 		UserToken userToken = new UserToken();

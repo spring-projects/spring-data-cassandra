@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,7 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 
 	@Autowired ApplicationContext applicationContext;
 
-	/**
-	 * @see DATACASS-271
-	 */
-	@Test
+	@Test // DATACASS-271
 	public void clusterShouldHaveCompressionSet() {
 
 		Cluster cluster = applicationContext.getBean(Cluster.class);
@@ -58,10 +55,7 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 		assertThat(configuration.getProtocolOptions().getCompression()).isEqualTo(Compression.SNAPPY);
 	}
 
-	/**
-	 * @see DATACASS-271
-	 */
-	@Test
+	@Test // DATACASS-271
 	public void clusterShouldHavePoolingOptionsConfigured() {
 
 		Cluster cluster = applicationContext.getBean(Cluster.class);
@@ -77,10 +71,7 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.REMOTE)).isEqualTo(2);
 	}
 
-	/**
-	 * @see DATACASS-271
-	 */
-	@Test
+	@Test // DATACASS-271
 	public void clusterShouldHaveSocketOptionsConfigured() {
 
 		Cluster cluster = applicationContext.getBean(Cluster.class);
@@ -95,15 +86,13 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 		assertThat(socketOptions.getSendBufferSize()).isEqualTo(65536);
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void mappingContextShouldHaveUserTypeResolverConfigured() {
 
 		BasicCassandraMappingContext mappingContext = applicationContext.getBean(BasicCassandraMappingContext.class);
 
-		SimpleUserTypeResolver userTypeResolver = (SimpleUserTypeResolver) ReflectionTestUtils.getField(mappingContext, "userTypeResolver");
+		SimpleUserTypeResolver userTypeResolver = (SimpleUserTypeResolver) ReflectionTestUtils.getField(mappingContext,
+				"userTypeResolver");
 
 		assertThat(userTypeResolver).isNotNull();
 	}

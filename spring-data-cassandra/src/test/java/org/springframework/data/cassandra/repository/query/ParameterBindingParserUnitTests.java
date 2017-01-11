@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,7 @@ import org.springframework.data.cassandra.repository.query.StringBasedCassandraQ
  */
 public class ParameterBindingParserUnitTests {
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void parseWithoutParameters() {
 
 		String query = "SELECT * FROM hello_world";
@@ -47,10 +44,7 @@ public class ParameterBindingParserUnitTests {
 		assertThat(bindings).isEmpty();
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void parseWithStaticParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = 1 AND b = {'list'} AND c = {'key':'value'}";
@@ -62,10 +56,7 @@ public class ParameterBindingParserUnitTests {
 		assertThat(bindings).isEmpty();
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void parseWithPositionalParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = ?0 and b = ?13";
@@ -80,10 +71,7 @@ public class ParameterBindingParserUnitTests {
 		assertThat(bindings.get(1).getParameterIndex()).isEqualTo(13);
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void parseWithNamedParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = :hello and b = :world";
@@ -95,10 +83,7 @@ public class ParameterBindingParserUnitTests {
 		assertThat(bindings).hasSize(2);
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void parseWithIndexExpressionParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = ?#{[0]} and b = ?#{[2]}";
@@ -110,10 +95,7 @@ public class ParameterBindingParserUnitTests {
 		assertThat(bindings).hasSize(2);
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void parseWithNameExpressionParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = :#{#a} and b = :#{#b}";
@@ -125,10 +107,7 @@ public class ParameterBindingParserUnitTests {
 		assertThat(bindings).hasSize(2);
 	}
 
-	/**
-	 * @see DATACASS-117
-	 */
-	@Test
+	@Test // DATACASS-117
 	public void parseWithMixedParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE (a = ?1 and b = :name) and c = (:#{#a}) and (d = ?#{[1]})";

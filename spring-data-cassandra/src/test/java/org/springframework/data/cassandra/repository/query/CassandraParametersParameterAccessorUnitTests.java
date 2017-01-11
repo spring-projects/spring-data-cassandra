@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,10 +50,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PossibleRepository.class);
 	CassandraMappingContext context = new BasicCassandraMappingContext();
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void returnsCassandraSimpleType() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByFirstname", String.class);
@@ -63,10 +60,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.varchar());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldReturnNoTypeForComplexTypes() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByBpLocalDateTime", LocalDateTime.class);
@@ -76,10 +70,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		assertThat(accessor.getDataType(0)).isNull();
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void returnTypeForAnnotatedParameter() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedBpLocalDateTime", LocalDateTime.class);
@@ -89,10 +80,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void returnTypeForAnnotatedParameterWhenUsingStringValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);
@@ -102,10 +90,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void returnTypeForAnnotatedParameterWhenUsingNullValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);

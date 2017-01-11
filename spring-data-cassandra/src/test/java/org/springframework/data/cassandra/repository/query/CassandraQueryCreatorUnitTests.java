@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,10 +63,7 @@ public class CassandraQueryCreatorUnitTests {
 		converter = new MappingCassandraConverter(context);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsQueryCorrectly() {
 
 		String query = createQuery("findByFirstname", Person.class, "Walter");
@@ -74,10 +71,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsQueryWithSortCorrectly() {
 
 		String query = createQuery("findByFirstnameOrderByLastname", Person.class, "Walter");
@@ -85,10 +79,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='Walter' ORDER BY lastname ASC;");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsAndQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameAndLastname", Person.class, "Walter", "White");
@@ -96,26 +87,17 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='Walter' AND lastname='White';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test(expected = InvalidDataAccessApiUsageException.class)
+	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACASS-7
 	public void rejectsNegatingQuery() {
 		createQuery("findByFirstnameNot", Person.class, "Walter");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test(expected = InvalidDataAccessApiUsageException.class)
+	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACASS-7
 	public void rejectsOrQuery() {
 		createQuery("findByFirstnameOrLastname", Person.class, "Walter", "White");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsGreaterThanQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameGreaterThan", Person.class, "Walter");
@@ -123,10 +105,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname>'Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsGreaterThanEqualQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameGreaterThanEqual", Person.class, "Walter");
@@ -134,10 +113,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname>='Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsLessThanQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameLessThan", Person.class, "Walter");
@@ -145,10 +121,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname<'Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsLessThanEqualQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameLessThanEqual", Person.class, "Walter");
@@ -156,10 +129,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname<='Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsInQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameIn", Person.class, "Walter");
@@ -167,10 +137,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Walter');");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsInQueryWithListCorrectly() {
 
 		String query = createQuery("findByFirstnameIn", Person.class, Arrays.asList("Walter", "Gus"));
@@ -178,10 +145,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Walter','Gus');");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsInQueryWithArrayCorrectly() {
 
 		String query = createQuery("findByFirstnameInAndLastname", Person.class, new String[] { "Walter", "Gus" }, "Fring");
@@ -189,10 +153,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Walter','Gus') AND lastname='Fring';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsLikeQueryCorrectly() {
 
 		assertThat(createQuery("findByFirstnameLike", Person.class, "Wal%ter"))
@@ -202,10 +163,7 @@ public class CassandraQueryCreatorUnitTests {
 				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsStartsWithQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameStartsWith", Person.class, "Walter");
@@ -213,10 +171,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter%';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsEndsWithQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameEndsWith", Person.class, "Walter");
@@ -224,10 +179,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsContainsQueryOnSimplePropertyCorrectly() {
 
 		String query = createQuery("findByFirstnameContains", Person.class, "Walter");
@@ -235,10 +187,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter%';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsContainsQueryOnSetPropertyCorrectly() {
 
 		String query = createQuery("findByMysetContains", TypeWithSet.class, "Walter");
@@ -246,10 +195,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM typewithset WHERE myset CONTAINS 'Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsContainsQueryOnListPropertyCorrectly() {
 
 		String query = createQuery("findByMylistContains", TypeWithList.class, "Walter");
@@ -257,10 +203,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM typewithlist WHERE mylist CONTAINS 'Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsContainsQueryOnMapPropertyCorrectly() {
 
 		String query = createQuery("findByMymapContains", TypeWithMap.class, "Walter");
@@ -268,10 +211,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM typewithmap WHERE mymap CONTAINS 'Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsIsTrueQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameIsTrue", Person.class, "Walter");
@@ -279,10 +219,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname=true;");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsIsFalseQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameIsFalse", Person.class, "Walter");
@@ -290,10 +227,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname=false;");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsQueryUsingQuotingCorrectly() {
 
 		String query = createQuery("findByIdAndSet", QuotedType.class, "Walter", "White");
@@ -301,10 +235,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM \"myTable\" WHERE \"my_id\"='Walter' AND \"set\"='White';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsFindByPrimaryKeyPartCorrectly() {
 
 		String query = createQuery("findByKeyFirstname", TypeWithCompositeId.class, "Walter");
@@ -312,10 +243,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM typewithcompositeid WHERE firstname='Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsFindByPrimaryKeyPartWithSortCorrectly() {
 
 		String query = createQuery("findByKeyFirstnameOrderByKeyLastnameAsc", TypeWithCompositeId.class, "Walter");
@@ -323,10 +251,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM typewithcompositeid WHERE firstname='Walter' ORDER BY lastname ASC;");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test
+	@Test // DATACASS-7
 	public void createsFindByPrimaryKeyPartOfPrimaryKeyClassCorrectly() {
 
 		String query = createQuery("findByFirstname", Key.class, "Walter");
@@ -335,10 +260,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM key WHERE firstname='Walter';");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-7">DATACASS-7</a>
-	 */
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class) // DATACASS-7
 	public void createsFindByPrimaryKey2PartCorrectly() {
 		createQuery("findByKey", TypeWithCompositeId.class, new Key());
 	}

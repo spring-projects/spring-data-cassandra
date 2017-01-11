@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2016 the original author or authors
+ *  Copyright 2013-2017 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,10 +36,7 @@ public class ParsingUtilsUnitTests {
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addOptionalReferencePropertyUsesDefault() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
@@ -51,10 +48,7 @@ public class ParsingUtilsUnitTests {
 		assertThat(propertyValue.getBeanName()).isEqualTo("defaultBeanReference");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addOptionalReferencePropertyWithNoValueDoesReturnsWithoutAdding() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
@@ -66,10 +60,7 @@ public class ParsingUtilsUnitTests {
 		assertThat(beanDefinition.getPropertyValues().isEmpty()).isTrue();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addOptionalValuePropertyUsesDefault() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
@@ -80,10 +71,7 @@ public class ParsingUtilsUnitTests {
 		assertThat(propertyValue).isEqualTo("defaultValue");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addOptionalValuePropertyWithNoValueDoesReturnsWithoutAdding() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
@@ -95,10 +83,7 @@ public class ParsingUtilsUnitTests {
 		assertThat(beanDefinition.getPropertyValues().isEmpty()).isTrue();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addRequiredReferencePropertyIsSuccessful() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
@@ -110,10 +95,7 @@ public class ParsingUtilsUnitTests {
 		assertThat(propertyValue.getBeanName()).isEqualTo("reference");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addRequiredReferencePropertyWithNoReferenceFails() {
 
 		exception.expect(IllegalArgumentException.class);
@@ -123,10 +105,7 @@ public class ParsingUtilsUnitTests {
 				"defaultReference", true, true);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addRequiredValuePropertyIsSuccessful() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
@@ -137,10 +116,7 @@ public class ParsingUtilsUnitTests {
 		assertThat(propertyValue).isEqualTo("value");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addRequiredValuePropertyWithNoValueFails() {
 
 		exception.expect(IllegalArgumentException.class);
@@ -150,10 +126,7 @@ public class ParsingUtilsUnitTests {
 				false);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addPropertyThrowsIllegalArgumentExceptionForNullBuilder() {
 
 		exception.expect(IllegalArgumentException.class);
@@ -162,10 +135,7 @@ public class ParsingUtilsUnitTests {
 		ParsingUtils.addProperty(null, "propertyName", "value", "defaultValue", false, false);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void addPropertyThrowsIllegalArgumentExceptionForNullPropertyName() {
 
 		exception.expect(IllegalArgumentException.class);

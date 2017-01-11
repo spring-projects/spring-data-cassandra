@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,7 @@ import com.datastax.driver.core.DataType;
  */
 public class AlterTableCqlGeneratorUnitTests {
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAlterColumnType() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
@@ -49,10 +46,7 @@ public class AlterTableCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE uuid;");
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAlterListColumnType() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
@@ -61,10 +55,7 @@ public class AlterTableCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE list<ascii>;");
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAddColumn() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").add("gravesite",
@@ -73,10 +64,7 @@ public class AlterTableCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ADD gravesite varchar;");
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAddListColumn() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("users").add("top_places",
@@ -85,10 +73,7 @@ public class AlterTableCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE users ADD top_places list<ascii>;");
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableDropColumn() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").drop("gender");
@@ -96,10 +81,7 @@ public class AlterTableCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily DROP gender;");
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableRenameColumn() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").rename("firstname", "lastname");
@@ -107,10 +89,7 @@ public class AlterTableCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily RENAME firstname TO lastname;");
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAddCommentAndTableOption() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
@@ -120,10 +99,7 @@ public class AlterTableCqlGeneratorUnitTests {
 				"ALTER TABLE addamsfamily WITH read_repair_chance = 0.2 AND comment = 'A most excellent and useful table';");
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAddColumnAndComment() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
@@ -134,10 +110,7 @@ public class AlterTableCqlGeneratorUnitTests {
 				"ALTER TABLE addamsfamily ADD top_places list<ascii> ADD other list<ascii> WITH comment = 'A most excellent and useful table';");
 	}
 
-	/**
-	 * @see DATACASS-192
-	 */
-	@Test
+	@Test // DATACASS-192
 	public void alterTableAddCaching() {
 
 		Map<Object, Object> cachingMap = new LinkedHashMap<Object, Object>();

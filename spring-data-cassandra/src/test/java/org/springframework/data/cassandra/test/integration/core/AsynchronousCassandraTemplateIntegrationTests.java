@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@ package org.springframework.data.cassandra.test.integration.core;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -42,10 +46,6 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.integration.support.TestListener;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Integration tests for asynchronous {@link CassandraTemplate} operations.
@@ -201,10 +201,7 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractKeysp
 		fail("should've thrown CancellationException");
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-287">DATACASS-287</a>
-	 */
-	@Test(timeout = 10000)
+	@Test(timeout = 10000) // DATACASS-287
 	public void shouldSelectOneAsynchronously() throws Exception {
 
 		Person person = Person.random();
@@ -220,10 +217,7 @@ public class AsynchronousCassandraTemplateIntegrationTests extends AbstractKeysp
 		assertThat(objectListener.getResult().id).isEqualTo(person.id);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-287">DATACASS-287</a>
-	 */
-	@Test(timeout = 10000)
+	@Test(timeout = 10000) // DATACASS-287
 	public void shouldSelectOneAsynchronouslyIfObjectIsAbsent() throws Exception {
 
 		ObjectListener<Person> objectListener = ObjectListener.create();

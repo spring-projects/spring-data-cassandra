@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,7 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 
 	@Autowired ContactStringQueryRepository contactRepository;
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldFindByConvertedParameter() {
 
 		List<Contact> contacts = contactRepository.findByAddress(walter.getAddress());
@@ -53,10 +50,7 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 		assertThat(contacts).contains(walter, flynn);
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldFindByStringParameter() {
 
 		String parameter = AddressWriteConverter.INSTANCE.convert(walter.getAddress());
@@ -65,28 +59,19 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 		assertThat(contacts).contains(walter, flynn);
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void findByAddressesIn() {
 
 		assertThat(contactRepository.findByAddressesContains(flynn.address)).contains(flynn, walter);
 		assertThat(contactRepository.findByAddressesContains(walter.addresses.get(1))).contains(walter);
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void findByMainPhone() {
 		assertThat(contactRepository.findByMainPhone(walter.getMainPhone())).contains(walter);
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void findByMainPhoneUdtValue() {
 
 		KeyspaceMetadata keyspace = adminOperations.getKeyspaceMetadata();
@@ -96,20 +81,14 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 		assertThat(contactRepository.findByMainPhone(udtValue)).contains(walter);
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void findByAlternativePhones() {
 
 		Phone phone = walter.getAlternativePhones().get(0);
 		assertThat(contactRepository.findByAlternativePhonesContains(phone)).contains(walter);
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void findByAlternativePhonesUdtValue() {
 
 		Phone phone = walter.getAlternativePhones().get(0);

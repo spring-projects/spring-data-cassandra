@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.convert.WritingConverter;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
 
 import com.datastax.driver.core.DataType;
@@ -83,10 +82,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(mappingContext.contains(Y.class)).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void primaryKeyOnPropertyShouldWork() {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(PrimaryKeyOnProperty.class);
@@ -116,10 +112,7 @@ public class BasicCassandraMappingContextUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void primaryKeyColumnsOnPropertyShouldWork() {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext
@@ -166,10 +159,7 @@ public class BasicCassandraMappingContextUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATACASS-248
-	 */
-	@Test
+	@Test // DATACASS-248
 	public void primaryKeyClassWithPrimaryKeyColumnsOnPropertyShouldWork() {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext
@@ -199,10 +189,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(lastname.getColumnName().toCql()).isEqualTo("mylastname");
 	}
 
-	/**
-	 * @see DATACASS-340
-	 */
-	@Test
+	@Test // DATACASS-340
 	public void createdTableSpecificationShouldConsiderClusterColumnOrdering() {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext
@@ -226,10 +213,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(kind.getOrdering()).isEqualTo(Ordering.ASCENDING);
 	}
 
-	/**
-	 * @see DATACASS-340
-	 */
-	@Test
+	@Test // DATACASS-340
 	public void createdTableSpecificationShouldConsiderPrimaryKeyClassClusterColumnOrdering() {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext
@@ -317,20 +301,14 @@ public class BasicCassandraMappingContextUnitTests {
 		@PrimaryKey PrimaryKeyWithOrderedClusteredColumns key;
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldCreatePersistentEntityIfNoConversionRegistered() {
 
 		mappingContext.setCustomConversions(new CustomConversions(Collections.EMPTY_LIST));
 		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class))).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-296
-	 */
-	@Test
+	@Test // DATACASS-296
 	public void shouldNotCreateEntitiesForCustomConvertedTypes() {
 
 		mappingContext
@@ -339,10 +317,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class))).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-349
-	 */
-	@Test
+	@Test // DATACASS-349
 	public void propertyTypeShouldConsiderRegisteredConverterForPropertyType() {
 
 		mappingContext
@@ -358,10 +333,7 @@ public class BasicCassandraMappingContextUnitTests {
 				.isEqualTo(DataType.ascii());
 	}
 
-	/**
-	 * @see DATACASS-349
-	 */
-	@Test
+	@Test // DATACASS-349
 	public void propertyTypeShouldConsiderRegisteredConverterForCollectionComponentType() {
 
 		mappingContext
@@ -373,10 +345,7 @@ public class BasicCassandraMappingContextUnitTests {
 				.isEqualTo(DataType.list(DataType.varchar()));
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldRegisterUdtTypes() {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(MappedUdt.class);
@@ -384,10 +353,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(persistentEntity.isUserDefinedType()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void getNonPrimaryKeyEntitiesShouldNotContainUdt() {
 
 		CassandraPersistentEntity<?> existingPersistentEntity = mappingContext.getPersistentEntity(MappedUdt.class);
@@ -395,10 +361,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(mappingContext.getTableEntities()).doesNotContain(existingPersistentEntity);
 	}
 
-	/**
-	 * @see DATACASS-172, DATACASS-359
-	 */
-	@Test
+	@Test // DATACASS-172, DATACASS-359
 	public void getPersistentEntitiesShouldContainUdt() {
 
 		CassandraPersistentEntity<?> existingPersistentEntity = mappingContext.getPersistentEntity(MappedUdt.class);
@@ -409,10 +372,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(mappingContext.getTableEntities()).doesNotContain(existingPersistentEntity);
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void usesTypeShouldNotReportTypeUsage() {
 
 		UserType myTypeMock = mock(UserType.class, "mappedudt");
@@ -421,10 +381,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(mappingContext.usesUserType(myTypeMock)).isFalse();
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void usesTypeShouldReportTypeUsageInMappedUdt() {
 
 		final UserType myTypeMock = mock(UserType.class, "mappedudt");
@@ -443,10 +400,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(mappingContext.usesUserType(myTypeMock)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void usesTypeShouldReportTypeUsageInColumn() {
 
 		final UserType myTypeMock = mock(UserType.class, "mappedudt");
@@ -465,10 +419,7 @@ public class BasicCassandraMappingContextUnitTests {
 		assertThat(mappingContext.usesUserType(myTypeMock)).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void createTableForComplexPrimaryKeyShouldFail() {
 
 		try {

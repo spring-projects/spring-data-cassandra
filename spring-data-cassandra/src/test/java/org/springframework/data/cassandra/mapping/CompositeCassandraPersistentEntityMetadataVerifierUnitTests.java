@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,42 +40,27 @@ public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 		context.setVerifier(verifier);
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldAllowInterfaceTypes() {
 		verifier.verify(getEntity(MyInterface.class));
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void testPrimaryKeyClass() {
 		verifier.verify(getEntity(Animal.class));
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void testNonPrimaryKeyClass() {
 		verifier.verify(getEntity(Person.class));
 	}
 
-	/**
-	 * @see DATACASS-258, DATACASS-359
-	 */
-	@Test
+	@Test // DATACASS-258, DATACASS-359
 	public void shouldNotFailWithNonPersistentClasses() {
 		verifier.verify(getEntity(NonPersistentClass.class));
 	}
 
-	/**
-	 * @see DATACASS-258
-	 */
-	@Test
+	@Test // DATACASS-258
 	public void shouldFailWithPersistentAndPrimaryKeyClassAnnotations() {
 
 		try {

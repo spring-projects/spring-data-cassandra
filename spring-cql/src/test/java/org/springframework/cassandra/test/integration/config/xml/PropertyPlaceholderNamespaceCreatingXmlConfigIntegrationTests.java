@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,10 +57,7 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		assertThat(ops).isNotNull();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void localAndRemotePoolingOptionsWereConfiguredProperly() {
 
 		PoolingOptions poolingOptions = cassandraCluster.getConfiguration().getPoolingOptions();
@@ -78,10 +75,7 @@ public class PropertyPlaceholderNamespaceCreatingXmlConfigIntegrationTests
 		assertThat(poolingOptions.getNewConnectionThreshold(HostDistance.REMOTE)).isEqualTo(5);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-298">DATACASS-298</a>
-	 */
-	@Test
+	@Test // DATACASS-298
 	public void socketOptionsWereConfiguredProperly() {
 
 		SocketOptions socketOptions = cassandraCluster.getConfiguration().getSocketOptions();

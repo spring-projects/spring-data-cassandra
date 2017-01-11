@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,10 +41,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 	@Mock CassandraMappingContext mappingContextMock;
 	@Mock UserTypeResolver userTypeResolverMock;
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void isUserDefinedTypeShouldReportTrue() {
 
 		CassandraUserTypePersistentEntity<MappedUdt> type = getEntity(MappedUdt.class);
@@ -52,10 +49,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 		assertThat(type.isUserDefinedType()).isTrue();
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void getTableNameShouldReturnDefaultName() {
 
 		CassandraUserTypePersistentEntity<MappedUdt> type = getEntity(MappedUdt.class);
@@ -64,10 +58,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.cqlId("Mappedudt"));
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void getTableNameShouldReturnDefinedName() {
 
 		CassandraUserTypePersistentEntity<WithName> type = getEntity(WithName.class);
@@ -76,10 +67,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.cqlId("Withname"));
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void getTableNameShouldReturnDefinedNameUsingForceQuote() {
 
 		CassandraUserTypePersistentEntity<WithForceQuote> type = getEntity(WithForceQuote.class);
@@ -88,10 +76,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.cqlId("UpperCase", true));
 	}
 
-	/**
-	 * @see DATACASS-259
-	 */
-	@Test
+	@Test // DATACASS-259
 	public void shouldConsiderComposedUserDefinedTypeAnnotation() {
 
 		CassandraUserTypePersistentEntity<TypeWithComposedAnnotation> type = getEntity(TypeWithComposedAnnotation.class);

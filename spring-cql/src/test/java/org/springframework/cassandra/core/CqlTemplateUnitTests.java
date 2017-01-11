@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016 the original author or authors
+ *  Copyright 2016-2017 the original author or authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -97,10 +97,7 @@ public class CqlTemplateUnitTests {
 		verify(mockSession, times(1)).execute(eq("test"));
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-304">DATACASS-304</a>
-	 */
-	@Test
+	@Test // DATACASS-304
 	public void doExecuteInSessionCallbackTranslatesToCassandraException() {
 		exception.expect(CassandraReadTimeoutException.class);
 		exception.expectCause(org.hamcrest.Matchers.isA(ReadTimeoutException.class));
@@ -113,10 +110,7 @@ public class CqlTemplateUnitTests {
 		});
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-304">DATACASS-304</a>
-	 */
-	@Test
+	@Test // DATACASS-304
 	public void doExecuteInSessionCallbackTranslatesToCassandraUncategorizedException() {
 
 		try {
@@ -132,10 +126,7 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-304">DATACASS-304</a>
-	 */
-	@Test
+	@Test // DATACASS-304
 	public void doExecuteInSessionCallbackTranslatesToCassandraUncategorizedDataAccessException() {
 
 		try {
@@ -191,10 +182,7 @@ public class CqlTemplateUnitTests {
 		verifyZeroInteractions(mockResultSet);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void firstColumnToObjectReturnsColumnValue() {
 
 		final Row mockRow = mock(Row.class);
@@ -226,10 +214,7 @@ public class CqlTemplateUnitTests {
 		verifyZeroInteractions(mockColumnDefinition);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void firstColumnToObjectReturnsNull() {
 
 		Row mockRow = mock(Row.class);
@@ -248,10 +233,7 @@ public class CqlTemplateUnitTests {
 		verify(mockIterator, never()).next();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void processOneIsSuccessful() {
 
 		ResultSet mockResultSet = mock(ResultSet.class);
@@ -270,10 +252,7 @@ public class CqlTemplateUnitTests {
 		verifyZeroInteractions(mockRow);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void processOneThrowsIncorrectResultSetSizeDataAccessExceptionWhenNoRowsFound() {
 
 		ResultSet mockResultSet = mock(ResultSet.class);
@@ -294,10 +273,7 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void processOneThrowsIncorrectResultSetSizeDataAccessExceptionWhenTooManyRowsFound() {
 
 		ResultSet mockResultSet = mock(ResultSet.class);
@@ -320,10 +296,7 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void processOnePassingNullResultSetThrowsIllegalArgumentException() {
 
 		RowMapper mockRowMapper = mock(RowMapper.class);
@@ -336,10 +309,7 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void processOneWithRequiredTypeIsSuccessful() {
 
 		ResultSet mockResultSet = mock(ResultSet.class);
@@ -365,10 +335,7 @@ public class CqlTemplateUnitTests {
 		verifyZeroInteractions(mockRow);
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void processOneWithRequiredTypeThrowsIncorrectResultSetSizeDataAccessExceptionWhenNoRowsFound() {
 
 		ResultSet mockResultSet = mock(ResultSet.class);
@@ -386,10 +353,7 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void processOneWithRequiredTypeThrowsIncorrectResultSetSizeDataAccessExceptionWhenTooManyRowsFound() {
 
 		ResultSet mockResultSet = mock(ResultSet.class);
@@ -411,20 +375,14 @@ public class CqlTemplateUnitTests {
 		}
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-286">DATACASS-286</a>
-	 */
-	@Test
+	@Test // DATACASS-286
 	public void processOneWithRequiredTypePassingNullResultSetThrowsIllegalArgumentException() {
 		exception.expect(IllegalArgumentException.class);
 
 		template.processOne(null, String.class);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
@@ -438,10 +396,7 @@ public class CqlTemplateUnitTests {
 		verify(mockPreparedStatement).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addPreparedStatementOptionsShouldAddOurQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(RetryPolicy.FALLTHROUGH).build();
@@ -454,10 +409,7 @@ public class CqlTemplateUnitTests {
 		verify(mockPreparedStatement).setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldAddDriverQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(ConsistencyLevel.EACH_QUORUM) //
@@ -470,10 +422,7 @@ public class CqlTemplateUnitTests {
 		verify(mockStatement).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldAddOurQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(RetryPolicy.FALLTHROUGH).build();
@@ -486,10 +435,7 @@ public class CqlTemplateUnitTests {
 		verify(mockStatement).setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldNotAddOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().build();
@@ -499,10 +445,7 @@ public class CqlTemplateUnitTests {
 		verifyZeroInteractions(mockStatement);
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldAddGenericQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
@@ -518,10 +461,7 @@ public class CqlTemplateUnitTests {
 		verify(mockStatement).enableTracing();
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addInsertWriteOptionsShouldAddDriverQueryOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder() //
@@ -539,10 +479,7 @@ public class CqlTemplateUnitTests {
 		verify(mockInsert).using(Mockito.any(Using.class));
 	}
 
-	/**
-	 * @see DATACASS-202
-	 */
-	@Test
+	@Test // DATACASS-202
 	public void addUpdateWriteOptionsShouldAddDriverQueryOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder() //

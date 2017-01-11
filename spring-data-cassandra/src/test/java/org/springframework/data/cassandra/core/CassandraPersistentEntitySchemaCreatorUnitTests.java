@@ -62,10 +62,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATACASS-172
-	 */
-	@Test
+	@Test // DATACASS-172
 	public void shouldCreateTypesInOrder() {
 
 		context.getPersistentEntity(MoonType.class);

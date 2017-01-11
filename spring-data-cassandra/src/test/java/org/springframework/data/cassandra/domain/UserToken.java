@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.domain;
 
+import lombok.Data;
+
 import java.util.UUID;
 
 import org.springframework.cassandra.core.PrimaryKeyType;
@@ -24,8 +26,6 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
 
 import com.datastax.driver.core.DataType.Name;
-
-import lombok.Data;
 
 /**
  * @author Mark Paluch
