@@ -17,12 +17,6 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Map;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
@@ -31,10 +25,15 @@ import org.springframework.cassandra.core.cql.generator.DropUserTypeCqlGenerator
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.cassandra.core.keyspace.DropUserTypeSpecification;
+import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
+
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TableMetadata;
 
 /**
  * Default implementation of {@link CassandraAdminOperations}.
@@ -45,16 +44,24 @@ import org.springframework.util.Assert;
  */
 public class CassandraAdminTemplate extends CassandraTemplate implements CassandraAdminOperations {
 
-	private static final Logger log = LoggerFactory.getLogger(CassandraAdminTemplate.class);
-
 	/**
-	 * Constructor used for a basic template configuration
+	 * Constructor used for a basic template configuration.
 	 *
 	 * @param session must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 */
 	public CassandraAdminTemplate(Session session, CassandraConverter converter) {
 		super(session, converter);
+	}
+
+	/**
+	 * Constructor used for a basic template configuration.
+	 *
+	 * @param sessionFactory must not be {@literal null}.
+	 * @param converter must not be {@literal null}.
+	 */
+	public CassandraAdminTemplate(SessionFactory sessionFactory, CassandraConverter converter) {
+		super(sessionFactory, converter);
 	}
 
 	/*

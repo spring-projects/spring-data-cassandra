@@ -41,7 +41,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * Creates a {@link ReactiveSession} object. This wraps a {@link com.datastax.driver.core.Session} to expose Cassandra
 	 * access in a reactive style.
 	 *
-	 * @return
+	 * @return the {@link ReactiveSession}.
 	 * @see #session()
 	 * @see DefaultBridgedReactiveSession
 	 */
@@ -51,10 +51,10 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	}
 
 	/**
-	 * Creates a {@link ReactiveSessionFactory} to be used by the {@link ReactiveCassandraTemplate}. Will use the
+	 * Creates a {@link ReactiveSessionFactory} to be used by the {@link ReactiveCassandraTemplate}. Uses the
 	 * {@link ReactiveSession} instance configured in {@link #reactiveSession()}.
 	 *
-	 * @return
+	 * @return the {@link ReactiveSessionFactory}.
 	 * @see #reactiveSession()
 	 * @see #reactiveCassandraTemplate()
 	 */
