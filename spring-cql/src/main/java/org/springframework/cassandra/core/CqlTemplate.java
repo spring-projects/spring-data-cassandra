@@ -80,8 +80,8 @@ import com.datastax.driver.core.exceptions.DriverException;
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
-	 * Constructs a new, uninitialized {@link CqlTemplate}. Note: The {@link Session} has to be set before using the
-	 * instance.
+	 * Constructs a new, uninitialized {@link CqlTemplate}. Note: The {@link SessionFactory} has to be set before using
+	 * the instance.
 	 *
 	 * @see #setSessionFactory(SessionFactory)
 	 */

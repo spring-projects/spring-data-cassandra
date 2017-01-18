@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
