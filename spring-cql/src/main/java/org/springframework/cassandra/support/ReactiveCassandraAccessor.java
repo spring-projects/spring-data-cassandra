@@ -18,7 +18,8 @@ package org.springframework.cassandra.support;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cassandra.core.ReactiveSessionFactory;
+import org.springframework.cassandra.core.session.ReactiveSession;
+import org.springframework.cassandra.core.session.ReactiveSessionFactory;
 import org.springframework.cassandra.core.support.CQLExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
@@ -27,15 +28,14 @@ import com.datastax.driver.core.exceptions.DriverException;
 
 /**
  * Base class for {@link org.springframework.cassandra.core.ReactiveCqlTemplate} and other CQL-accessing DAO helpers,
- * defining common properties such as {@link org.springframework.cassandra.core.ReactiveSessionFactory} and exception
- * translator.
+ * defining common properties such as {@link ReactiveSessionFactory} and exception translator.
  * <p>
  * Not intended to be used directly.
  *
  * @author Mark Paluch
  * @since 2.0
  * @see InitializingBean
- * @see org.springframework.cassandra.core.ReactiveSession
+ * @see ReactiveSession
  * @see org.springframework.cassandra.core.ReactiveCqlTemplate
  */
 public abstract class ReactiveCassandraAccessor implements InitializingBean {

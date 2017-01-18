@@ -40,7 +40,7 @@ import com.datastax.driver.core.Statement;
 public interface AsyncCassandraOperations {
 
 	/**
-	 * Expose the underlying {@link AsyncCqlOperationsOperations} to allow asynchronous CQL operations.
+	 * Expose the underlying {@link AsyncCqlOperations} to allow asynchronous CQL operations.
 	 *
 	 * @return the underlying {@link AsyncCqlOperations}.
 	 * @see AsyncCqlOperations

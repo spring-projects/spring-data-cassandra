@@ -1,5 +1,5 @@
 /**
- * Provides utility classes for simple {@link com.datastax.driver.core.Session} access and various simple DataSource
+ * Provides utility classes for simple {@link com.datastax.driver.core.Session} access and various session
  * implementations.
  * 
  * @author Mark Paluch

@@ -64,21 +64,22 @@ public class CassandraAccessor implements InitializingBean {
 	 */
 	private final static Statement DEFAULTS = QueryBuilder.select().from("DEFAULT");
 
+	/** Logger available to subclasses */
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+	protected CassandraExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+
 	/**
 	 * If this variable is set to a non-negative value, it will be used for setting the {@code fetchSize} property on
 	 * statements used for query processing.
 	 */
 	private int fetchSize = -1;
 
-	protected CassandraExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
-
 	/**
 	 * If this variable is set to a value, it will be used for setting the {@code consistencyLevel} property on statements
 	 * used for query processing.
 	 */
 	private com.datastax.driver.core.ConsistencyLevel consistencyLevel;
-
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * If this variable is set to a value, it will be used for setting the {@code retryPolicy} property on statements used
@@ -438,8 +439,8 @@ public class CassandraAccessor implements InitializingBean {
 			this.rowCallbackHandler = rowCallbackHandler;
 		}
 
-		/**
-		 * @inheritDoc
+		/* (non-Javadoc)
+		 * @see org.springframework.cassandra.core.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
 		 */
 		@Override
 		public Object extractData(ResultSet resultSet) {

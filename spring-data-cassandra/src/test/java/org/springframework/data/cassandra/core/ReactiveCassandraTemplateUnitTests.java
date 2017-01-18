@@ -33,8 +33,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.cassandra.core.ReactiveResultSet;
-import org.springframework.cassandra.core.ReactiveSession;
+import org.springframework.cassandra.core.session.ReactiveResultSet;
+import org.springframework.cassandra.core.session.ReactiveSession;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.domain.Person;
 

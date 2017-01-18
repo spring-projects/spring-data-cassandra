@@ -15,6 +15,30 @@
  */
 package org.springframework.data.cassandra.core;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import org.reactivestreams.Publisher;
+import org.springframework.cassandra.core.CqlProvider;
+import org.springframework.cassandra.core.QueryOptions;
+import org.springframework.cassandra.core.ReactiveCqlOperations;
+import org.springframework.cassandra.core.ReactiveCqlTemplate;
+import org.springframework.cassandra.core.ReactiveSessionCallback;
+import org.springframework.cassandra.core.WriteOptions;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.cassandra.core.session.DefaultReactiveSessionFactory;
+import org.springframework.cassandra.core.session.ReactiveResultSet;
+import org.springframework.cassandra.core.session.ReactiveSession;
+import org.springframework.cassandra.core.session.ReactiveSessionFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
@@ -25,30 +49,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Truncate;
 import com.datastax.driver.core.querybuilder.Update;
-
-import org.reactivestreams.Publisher;
-import org.springframework.cassandra.core.CqlProvider;
-import org.springframework.cassandra.core.DefaultReactiveSessionFactory;
-import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.ReactiveCqlOperations;
-import org.springframework.cassandra.core.ReactiveCqlTemplate;
-import org.springframework.cassandra.core.ReactiveResultSet;
-import org.springframework.cassandra.core.ReactiveSession;
-import org.springframework.cassandra.core.ReactiveSessionCallback;
-import org.springframework.cassandra.core.ReactiveSessionFactory;
-import org.springframework.cassandra.core.WriteOptions;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Primary implementation of {@link ReactiveCassandraOperations}. It simplifies the use of Reactive Cassandra usage and
@@ -68,7 +68,9 @@ import reactor.core.publisher.Mono;
 public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	private final CassandraConverter converter;
+
 	private final CassandraMappingContext mappingContext;
+
 	private final ReactiveCqlOperations cqlOperations;
 
 	/**

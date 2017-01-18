@@ -69,7 +69,9 @@ import com.datastax.driver.core.querybuilder.Update;
 public class CassandraTemplate implements CassandraOperations {
 
 	private final CassandraConverter converter;
+
 	private final CassandraMappingContext mappingContext;
+
 	private final CqlOperations cqlOperations;
 
 	/**

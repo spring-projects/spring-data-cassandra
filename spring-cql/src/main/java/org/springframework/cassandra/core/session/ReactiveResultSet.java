@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cassandra.core;
+package org.springframework.cassandra.core.session;
+
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
-
-import reactor.core.publisher.Flux;
 
 /**
  * The reactive result of a query.
  * <p>
  * The retrieval of the rows of a {@link ReactiveResultSet} is generally paged (a first page of result is fetched and
  * the next one is only fetched once all the results of the first one has been consumed). The size of the pages can be
- * configured either globally through {@link QueryOptions#setFetchSize} or per-statement with
- * {@link Statement#setFetchSize}.
+ * configured either globally through {@link com.datastax.driver.core.QueryOptions#setFetchSize} or per-statement with
+ * {@link com.datastax.driver.core.Statement#setFetchSize}.
  * <p>
  * Please note however that this {@link ReactiveResultSet} paging is not available with the version 1 of the native
  * protocol (i.e. with Cassandra 1.2 or if version 1 has been explicitly requested through

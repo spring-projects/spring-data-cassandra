@@ -22,6 +22,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
+import org.springframework.cassandra.core.session.DefaultReactiveSessionFactory;
+import org.springframework.cassandra.core.session.ReactiveResultSet;
+import org.springframework.cassandra.core.session.ReactiveSession;
+import org.springframework.cassandra.core.session.ReactiveSessionFactory;
 import org.springframework.cassandra.support.ReactiveCassandraAccessor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;

@@ -80,8 +80,8 @@ import com.google.common.util.concurrent.Futures;
 public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOperations {
 
 	/**
-	 * Constructs a new, uninitialized {@link AsyncCqlTemplate}. Note: The {@link Session} has to be set before using the
-	 * instance.
+	 * Constructs a new, uninitialized {@link AsyncCqlTemplate}. Note: The {@link SessionFactory} has to be set before
+	 * using the instance.
 	 *
 	 * @see #setSessionFactory(SessionFactory)
 	 */

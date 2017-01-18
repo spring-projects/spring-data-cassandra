@@ -22,8 +22,8 @@ import reactor.core.scheduler.Schedulers;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.cassandra.core.DefaultBridgedReactiveSession;
 import org.springframework.cassandra.core.ReactiveCqlTemplate;
+import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.Person;
