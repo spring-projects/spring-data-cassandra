@@ -28,6 +28,8 @@ import org.springframework.cassandra.core.GuavaListenableFutureAdapter;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.cassandra.core.session.DefaultSessionFactory;
+import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.cassandra.core.support.CQLExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -100,17 +102,21 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 * @see Session
 	 */
 	public AsyncCassandraTemplate(Session session, CassandraConverter converter) {
+		this(new DefaultSessionFactory(session), converter);
+	}
 
-		Assert.notNull(session, "Session must not be null");
-		Assert.notNull(converter, "CassandraConverter must not be null");
-
-		this.converter = converter;
-		this.mappingContext = converter.getMappingContext();
-
-		AsyncCqlTemplate asyncCqlTemplate = new AsyncCqlTemplate(session);
-
-		this.cqlOperations = asyncCqlTemplate;
-		this.exceptionTranslator = asyncCqlTemplate.getExceptionTranslator();
+	/**
+	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link SessionFactory} and
+	 * {@link CassandraConverter}.
+	 *
+	 * @param sessionFactory {@link SessionFactory} used to interact with Cassandra; must not be {@literal null}.
+	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
+	 *          {@literal null}.
+	 * @see CassandraConverter
+	 * @see Session
+	 */
+	public AsyncCassandraTemplate(SessionFactory sessionFactory, CassandraConverter converter) {
+		this(new AsyncCqlTemplate(sessionFactory), converter);
 	}
 
 	/**
@@ -226,7 +232,9 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return cqlOperations.query(statement, (row) -> { entityConsumer.accept(converter.read(entityClass, row)); });
+		return cqlOperations.query(statement, (row) -> {
+			entityConsumer.accept(converter.read(entityClass, row));
+		});
 	}
 
 	/*
@@ -237,7 +245,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	public <T> ListenableFuture<T> selectOne(Statement statement, Class<T> entityClass) {
 
 		return new MappingListenableFutureAdapter<>(select(statement, entityClass),
-			list -> list.isEmpty() ? null : list.get(0));
+				list -> list.isEmpty() ? null : list.get(0));
 	}
 
 	// -------------------------------------------------------------------------
@@ -275,7 +283,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		converter.write(id, select.where(), entity);
 
 		return new MappingListenableFutureAdapter<>(cqlOperations.queryForResultSet(select),
-			resultSet -> resultSet.iterator().hasNext());
+				resultSet -> resultSet.iterator().hasNext());
 	}
 
 	/*
@@ -446,10 +454,10 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		@Override
 		public ListenableFuture<ResultSet> doInSession(Session session) throws DriverException, DataAccessException {
-			return new GuavaListenableFutureAdapter<>(session.executeAsync(statement), e -> (e instanceof DriverException
-				? exceptionTranslator.translate("AsyncStatementCallback", getCql(), (DriverException) e)
-				: exceptionTranslator.translateExceptionIfPossible(e))
-			);
+			return new GuavaListenableFutureAdapter<>(session.executeAsync(statement),
+					e -> (e instanceof DriverException
+							? exceptionTranslator.translate("AsyncStatementCallback", getCql(), (DriverException) e)
+							: exceptionTranslator.translateExceptionIfPossible(e)));
 		}
 
 		@Override
