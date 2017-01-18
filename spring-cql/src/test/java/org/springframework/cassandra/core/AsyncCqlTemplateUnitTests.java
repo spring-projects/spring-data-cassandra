@@ -481,8 +481,7 @@ public class AsyncCqlTemplateUnitTests {
 		doTestStrings(null, null, null, asyncCqlTemplate -> {
 
 			ListenableFuture<ResultSetFuture> futureOfFuture = asyncCqlTemplate.execute("SELECT * from USERS",
-					(PreparedStatementCallback<ResultSetFuture>) (ps) -> asyncCqlTemplate.getSession()
-							.executeAsync(ps.bind("A")));
+					(session, ps) -> session.executeAsync(ps.bind("A")));
 
 			try {
 				assertThat(getUninterruptibly(futureOfFuture).get()).hasSize(3);
@@ -515,7 +514,7 @@ public class AsyncCqlTemplateUnitTests {
 		try {
 			template.execute(session -> {
 				throw new NoHostAvailableException(Collections.emptyMap());
-			}, (ps) -> session.executeAsync(boundStatement));
+			}, (session, ps) -> session.executeAsync(boundStatement));
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
 			assertThat(e).hasMessageContaining("tried for query");
@@ -523,7 +522,7 @@ public class AsyncCqlTemplateUnitTests {
 
 		ListenableFuture<ResultSetFuture> future = template.execute(
 				session -> AsyncResult.forExecutionException(new NoHostAvailableException(Collections.emptyMap())),
-				(ps) -> session.executeAsync(boundStatement));
+				(session, ps) -> session.executeAsync(boundStatement));
 
 		try {
 			future.get();
@@ -542,7 +541,7 @@ public class AsyncCqlTemplateUnitTests {
 		when(resultSet.wasApplied()).thenReturn(true);
 
 		ListenableFuture<ResultSetFuture> future = template.execute(session -> new AsyncResult<>(preparedStatement),
-				(ps) -> {
+				(session, ps) -> {
 					throw new NoHostAvailableException(Collections.emptyMap());
 				});
 

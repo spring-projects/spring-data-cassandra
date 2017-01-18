@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,6 @@ package org.springframework.cassandra.support;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.DriverException;
-import com.datastax.driver.core.policies.RetryPolicy;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -39,15 +30,26 @@ import org.springframework.cassandra.core.RowCallbackHandler;
 import org.springframework.cassandra.core.RowMapper;
 import org.springframework.cassandra.core.RowMapperResultSetExtractor;
 import org.springframework.cassandra.core.SingleColumnRowMapper;
+import org.springframework.cassandra.core.session.DefaultSessionFactory;
+import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.policies.RetryPolicy;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+
 /**
- * {@link CassandraAccessor} provides access to a Cassandra {@link Session} and the {@link CassandraExceptionTranslator}
- * .
+ * {@link CassandraAccessor} provides access to a Cassandra {@link SessionFactory} and the
+ * {@link CassandraExceptionTranslator}.
  * <p>
  * Classes providing a higher abstraction level usually extend {@link CassandraAccessor} to provide a richer set of
- * functionality on top of a {@link Session}.
+ * functionality on top of a {@link SessionFactory} using {@link Session}.
  *
  * @author David Webb
  * @author Mark Paluch
@@ -84,29 +86,20 @@ public class CassandraAccessor implements InitializingBean {
 	 */
 	private com.datastax.driver.core.policies.RetryPolicy retryPolicy;
 
-	private Session session;
+	private SessionFactory sessionFactory;
 
 	/**
 	 * Ensures the Cassandra {@link Session} and exception translator has been propertly set.
 	 */
 	@Override
 	public void afterPropertiesSet() {
-		Assert.state(session != null, "Session must not be null");
-	}
-
-	/* (non-Javadoc) */
-	@SuppressWarnings("unused")
-	protected void logDebug(String logMessage, Object... array) {
-		if (logger.isDebugEnabled()) {
-			logger.debug(logMessage, array);
-		}
+		Assert.state(sessionFactory != null, "SessionFactory must not be null");
 	}
 
 	/**
-	 * Set the consistency level for this template. Consistency level defines the number of nodes
-	 * involved into query processing. Relaxed consistency level settings use fewer nodes but eventual consistency is more
-	 * likely to occur while a higher consistency level involves more nodes to obtain results with a higher consistency
-	 * guarantee.
+	 * Set the consistency level for this template. Consistency level defines the number of nodes involved into query
+	 * processing. Relaxed consistency level settings use fewer nodes but eventual consistency is more likely to occur
+	 * while a higher consistency level involves more nodes to obtain results with a higher consistency guarantee.
 	 *
 	 * @see Statement#setConsistencyLevel(ConsistencyLevel)
 	 * @see RetryPolicy
@@ -147,10 +140,10 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Set the fetch size for this template. This is important for processing large result sets: Setting this
-	 * higher than the default value will increase processing speed at the cost of memory consumption; setting this lower
-	 * can avoid transferring row data that will never be read by the application. Default is -1, indicating to use the
-	 * CQL driver's default configuration (i.e. to not pass a specific fetch size setting on to the driver).
+	 * Set the fetch size for this template. This is important for processing large result sets: Setting this higher than
+	 * the default value will increase processing speed at the cost of memory consumption; setting this lower can avoid
+	 * transferring row data that will never be read by the application. Default is -1, indicating to use the CQL driver's
+	 * default configuration (i.e. to not pass a specific fetch size setting on to the driver).
 	 *
 	 * @see Statement#setFetchSize(int)
 	 */
@@ -166,8 +159,7 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Set the retry policy for this template. This is important for defining behavior when a request
-	 * fails.
+	 * Set the retry policy for this template. This is important for defining behavior when a request fails.
 	 *
 	 * @see Statement#setRetryPolicy(RetryPolicy)
 	 * @see RetryPolicy
@@ -184,25 +176,60 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Sets the Cassandra {@link Session} used by this template to perform Cassandra data access operations.
+	 * Sets the Cassandra {@link Session} used by this template to perform Cassandra data access operations. The
+	 * {@code session} will replace the current {@link #getSessionFactory()} with {@link DefaultSessionFactory}.
 	 *
-	 * @param session Cassandra {@link Session} used by this template. Must not be{@literal null}.
+	 * @param session Cassandra {@link Session} used by this template, must not be{@literal null}.
 	 * @see com.datastax.driver.core.Session
+	 * @see DefaultSessionFactory
 	 */
 	public void setSession(Session session) {
+
 		Assert.notNull(session, "Session must not be null");
-		this.session = session;
+
+		setSessionFactory(new DefaultSessionFactory(session));
 	}
 
 	/**
-	 * Returns the Cassandra {@link Session} used by this template to perform Cassandra data access operations.
+	 * Returns the Cassandra {@link Session} from {@link SessionFactory} used by this template to perform Cassandra data
+	 * access operations.
 	 *
 	 * @return the Cassandra {@link Session} used by this template.
 	 * @see com.datastax.driver.core.Session
+	 * @deprecated since 2.0. This class uses a {@link SessionFactory} to dispatch CQL calls amongst different
+	 *             {@link Session}s during its lifecycle.
 	 */
+	@Deprecated
 	public Session getSession() {
-		Assert.state(this.session != null, "Session was not properly initialized");
-		return this.session;
+
+		Assert.state(getSessionFactory() != null, "SessionFactory was not properly initialized");
+
+		return getSessionFactory().getSession();
+	}
+
+	/**
+	 * Sets the Cassandra {@link SessionFactory} used by this template to perform Cassandra data access operations.
+	 *
+	 * @param sessionFactory Cassandra {@link Session} used by this template. Must not be{@literal null}.
+	 * @since 2.0
+	 * @see com.datastax.driver.core.Session
+	 */
+	public void setSessionFactory(SessionFactory sessionFactory) {
+
+		Assert.notNull(sessionFactory, "SessionFactory must not be null");
+
+		this.sessionFactory = sessionFactory;
+	}
+
+	/**
+	 * Returns the Cassandra {@link SessionFactory} used by this template to perform Cassandra data access operations.
+	 *
+	 * @return the Cassandra {@link SessionFactory} used by this template.
+	 * @since 2.0
+	 * @see SessionFactory
+	 */
+	public SessionFactory getSessionFactory() {
+		return this.sessionFactory;
 	}
 
 	/**
@@ -274,8 +301,8 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting
-	 * the given {@link RowCallbackHandler}.
+	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
+	 * {@link RowCallbackHandler}.
 	 *
 	 * @param rowCallbackHandler {@link RowCallbackHandler} to adapt as a {@link ResultSetExtractor}.
 	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowCallbackHandler}.
@@ -288,8 +315,8 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting
-	 * the given {@link RowMapper}.
+	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
+	 * {@link RowMapper}.
 	 *
 	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
 	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.
@@ -302,8 +329,8 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting
-	 * the given {@link RowMapper}.
+	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
+	 * {@link RowMapper}.
 	 *
 	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
 	 * @param rowsExpected number of expected rows in the {@link ResultSet}.
@@ -346,6 +373,12 @@ public class CassandraAccessor implements InitializingBean {
 	 */
 	protected static String toCql(Object cqlProvider) {
 		return (cqlProvider instanceof CqlProvider ? ((CqlProvider) cqlProvider).getCql() : null);
+	}
+
+	protected void logDebug(String logMessage, Object... array) {
+		if (logger.isDebugEnabled()) {
+			logger.debug(logMessage, array);
+		}
 	}
 
 	/**

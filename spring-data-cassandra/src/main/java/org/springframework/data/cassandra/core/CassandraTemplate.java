@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,25 @@ import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.cassandra.core.CqlProvider;
+import org.springframework.cassandra.core.CqlTemplate;
+import org.springframework.cassandra.core.QueryOptions;
+import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.core.WriteOptions;
+import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.cassandra.core.session.DefaultSessionFactory;
+import org.springframework.cassandra.core.session.SessionFactory;
+import org.springframework.cassandra.core.util.CollectionUtils;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
@@ -30,23 +49,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Truncate;
 import com.datastax.driver.core.querybuilder.Update;
-
-import org.springframework.cassandra.core.CqlOperations;
-import org.springframework.cassandra.core.CqlProvider;
-import org.springframework.cassandra.core.CqlTemplate;
-import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.SessionCallback;
-import org.springframework.cassandra.core.WriteOptions;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.cassandra.core.util.CollectionUtils;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * Primary implementation of {@link CassandraOperations}. It simplifies the use of Cassandra usage and helps to avoid
@@ -93,13 +95,21 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see Session
 	 */
 	public CassandraTemplate(Session session, CassandraConverter converter) {
+		this(new DefaultSessionFactory(session), converter);
+	}
 
-		Assert.notNull(session, "Session must not be null");
-		Assert.notNull(converter, "CassandraConverter must not be null");
-
-		this.converter = converter;
-		this.mappingContext = converter.getMappingContext();
-		this.cqlOperations = new CqlTemplate(session);
+	/**
+	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link SessionFactory} and
+	 * {@link CassandraConverter}.
+	 *
+	 * @param sessionFactory {@link SessionFactory} used to interact with Cassandra; must not be {@literal null}.
+	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
+	 *          {@literal null}.
+	 * @see CassandraConverter
+	 * @see SessionFactory
+	 */
+	public CassandraTemplate(SessionFactory sessionFactory, CassandraConverter converter) {
+		this(new CqlTemplate(sessionFactory), converter);
 	}
 
 	/**
@@ -311,8 +321,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Insert insert = QueryUtils.createInsertQuery(getTableName(entity.getClass()).toCql(),
-			entity, options, converter);
+		Insert insert = QueryUtils.createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
 
 		return cqlOperations.execute(new StatementCallback<>(insert, entity));
 	}
@@ -335,8 +344,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Update update = QueryUtils.createUpdateQuery(getTableName(entity.getClass()).toCql(),
-			entity, options, converter);
+		Update update = QueryUtils.createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
 
 		return cqlOperations.execute(new StatementCallback<>(update, entity));
 	}
@@ -359,8 +367,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity.getClass()).toCql(),
-			entity, options, converter);
+		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
 
 		return cqlOperations.execute(new StatementCallback<>(delete, entity));
 	}
@@ -428,7 +435,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		if (entity == null) {
 			throw new InvalidDataAccessApiUsageException(
-				String.format("No Persistent Entity information found for the class [%s]", entityClass.getName()));
+					String.format("No Persistent Entity information found for the class [%s]", entityClass.getName()));
 		}
 
 		return entity;
