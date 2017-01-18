@@ -16,6 +16,8 @@
 package org.springframework.cassandra.config.java;
 
 import org.springframework.cassandra.config.CassandraCqlSessionFactoryBean;
+import org.springframework.cassandra.core.session.DefaultSessionFactory;
+import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -50,6 +52,18 @@ public abstract class AbstractSessionConfiguration extends AbstractClusterConfig
 		bean.setKeyspaceName(getKeyspaceName());
 
 		return bean;
+	}
+
+	/**
+	 * Creates a {@link DefaultSessionFactory} using the configured {@link #session()} to be used with
+	 * {@link org.springframework.cassandra.core.CqlTemplate}.
+	 *
+	 * @return {@link SessionFactory} used to initialize the Template API.
+	 * @since 2.0
+	 */
+	@Bean
+	public SessionFactory sessionFactory() {
+		return new DefaultSessionFactory(session().getObject());
 	}
 
 	/**

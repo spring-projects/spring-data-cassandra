@@ -19,6 +19,8 @@ import java.util.Collections;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
+import org.springframework.cassandra.core.session.DefaultSessionFactory;
+import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -48,13 +50,13 @@ import org.springframework.data.mapping.context.MappingContext;
 public abstract class AbstractCassandraConfiguration extends AbstractClusterConfiguration
 		implements BeanClassLoaderAware {
 
-	protected ClassLoader beanClassLoader;
+	private ClassLoader beanClassLoader;
 
 	/**
 	 * Creates a {@link CassandraSessionFactoryBean} that provides a Cassandra {@link com.datastax.driver.core.Session}.
 	 * The lifecycle of {@link CassandraSessionFactoryBean} initializes the {@link #getSchemaAction() schema} in the
 	 * {@link #getKeyspaceName() configured keyspace}.
-	 * 
+	 *
 	 * @return the {@link CassandraSessionFactoryBean}.
 	 * @throws ClassNotFoundException if an error occurs initializing the initial entity set, see
 	 *           {@link #cassandraMapping()}
@@ -78,6 +80,20 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 		session.setShutdownScripts(getShutdownScripts());
 
 		return session;
+	}
+
+	/**
+	 * Creates a {@link DefaultSessionFactory} using the configured {@link #session()} to be used with
+	 * {@link org.springframework.data.cassandra.core.CassandraTemplate}.
+	 *
+	 * @return {@link SessionFactory} used to initialize the Template API.
+	 * @throws ClassNotFoundException if an error occurs initializing the initial entity set, see
+	 *           {@link #cassandraMapping()}
+	 * @since 2.0
+	 */
+	@Bean
+	public SessionFactory sessionFactory() throws ClassNotFoundException {
+		return new DefaultSessionFactory(session().getObject());
 	}
 
 	/**
@@ -144,7 +160,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 */
 	@Bean
 	public CassandraAdminOperations cassandraTemplate() throws Exception {
-		return new CassandraAdminTemplate(session().getObject(), cassandraConverter());
+		return new CassandraAdminTemplate(sessionFactory(), cassandraConverter());
 	}
 
 	@Override

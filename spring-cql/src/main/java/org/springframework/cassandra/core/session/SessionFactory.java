@@ -37,7 +37,7 @@ public interface SessionFactory {
 	/**
 	 * Attempts to establish a {@link Session} with the connection infrastructure that this {@link SessionFactory} object
 	 * represents.
-	 * 
+	 *
 	 * @return a {@link Session} to Apache Cassandra.
 	 */
 	Session getSession();
