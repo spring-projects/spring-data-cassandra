@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.cassandra.test.integration;
 
 import static org.springframework.cassandra.test.integration.CassandraRule.InvocationMode.*;
@@ -28,7 +27,7 @@ import org.junit.rules.ExternalResource;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
 import org.springframework.cassandra.test.integration.support.CqlDataSet;
-import org.springframework.cassandra.test.integration.support.FastShutdownNettyOptions;
+import org.springframework.cassandra.test.integration.support.IntegrationTestNettyOptions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
@@ -332,7 +331,7 @@ public class CassandraRule extends ExternalResource {
 						.withQueryOptions(queryOptions) //
 						.withMaxSchemaAgreementWaitSeconds(3) //
 						.withSocketOptions(socketOptions) //
-						.withNettyOptions(FastShutdownNettyOptions.INSTANCE) //
+						.withNettyOptions(IntegrationTestNettyOptions.INSTANCE) //
 						.build();
 
 				if (properties.getBoolean("build.cassandra.reuse-cluster")) {

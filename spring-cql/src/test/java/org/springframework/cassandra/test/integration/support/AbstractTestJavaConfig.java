@@ -39,7 +39,7 @@ public abstract class AbstractTestJavaConfig extends AbstractSessionConfiguratio
 
 	@Override
 	protected NettyOptions getNettyOptions() {
-		return FastShutdownNettyOptions.INSTANCE;
+		return IntegrationTestNettyOptions.INSTANCE;
 	}
 
 	@Override

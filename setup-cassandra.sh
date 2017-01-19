@@ -47,8 +47,8 @@ rm -Rf data
 mkdir -p data
 
 echo "[INFO] Starting Apache Cassandra ${CASSANDRA_VERSION}"
-export MAX_HEAP_SIZE=1G
-export HEAP_NEWSIZE=100M
+export MAX_HEAP_SIZE=1500M
+export HEAP_NEWSIZE=300M
 bin/cassandra
 
 for start in {1..20}

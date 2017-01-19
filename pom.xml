@@ -294,7 +294,7 @@
 				<version>${failsafe.version}</version>
 				<configuration>
 					<forkCount>1</forkCount>
-					<argLine>-Xms1g -Xmx1g -Xss256k</argLine>
+					<argLine>-Xms1g -Xmx1500m -Xss256k</argLine>
 					<reuseForks>true</reuseForks>
 					<useFile>false</useFile>
 					<includes>

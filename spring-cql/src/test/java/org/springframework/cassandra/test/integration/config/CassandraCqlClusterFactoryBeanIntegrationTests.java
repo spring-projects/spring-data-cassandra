@@ -21,7 +21,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.config.CassandraCqlClusterFactoryBean;
-import org.springframework.cassandra.test.integration.support.FastShutdownNettyOptions;
+import org.springframework.cassandra.test.integration.support.IntegrationTestNettyOptions;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.ProtocolVersion;
@@ -49,7 +49,7 @@ public class CassandraCqlClusterFactoryBeanIntegrationTests {
 	@Test
 	public void configuredProtocolVersionShouldBeSet() throws Exception {
 
-		cassandraCqlClusterFactoryBean.setNettyOptions(FastShutdownNettyOptions.INSTANCE);
+		cassandraCqlClusterFactoryBean.setNettyOptions(IntegrationTestNettyOptions.INSTANCE);
 		cassandraCqlClusterFactoryBean.setProtocolVersion(ProtocolVersion.V2);
 		cassandraCqlClusterFactoryBean.afterPropertiesSet();
 
