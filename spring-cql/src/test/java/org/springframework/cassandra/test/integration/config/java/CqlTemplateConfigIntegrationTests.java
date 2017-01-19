@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.springframework.cassandra.config.java.AbstractCqlTemplateConfiguration;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.cassandra.test.integration.support.FastShutdownNettyOptions;
+import org.springframework.cassandra.test.integration.support.IntegrationTestNettyOptions;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -55,7 +55,7 @@ public class CqlTemplateConfigIntegrationTests extends AbstractEmbeddedCassandra
 
 		@Override
 		protected NettyOptions getNettyOptions() {
-			return FastShutdownNettyOptions.INSTANCE;
+			return IntegrationTestNettyOptions.INSTANCE;
 		}
 	}
 

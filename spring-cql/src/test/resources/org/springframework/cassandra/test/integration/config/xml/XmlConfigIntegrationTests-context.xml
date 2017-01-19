@@ -23,7 +23,7 @@
 
 	<bean name="testTimestampGenerator" class="com.datastax.driver.core.AtomicMonotonicTimestampGenerator"/>
 
-	<bean id="nettyOptions" class="org.springframework.cassandra.test.integration.support.FastShutdownNettyOptions" />
+	<bean id="nettyOptions" class="org.springframework.cassandra.test.integration.support.IntegrationTestNettyOptions"/>
 
 	<cassandra:cluster
 		cluster-name="skynet" contact-points="localhost" port="${build.cassandra.native_transport_port}"

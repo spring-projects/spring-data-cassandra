@@ -12,6 +12,8 @@
 	<context:property-placeholder
 		location="classpath:/org/springframework/cassandra/test/integration/config/xml/ppncxct.properties"/>
 
+	<bean id="nettyOptions" class="org.springframework.cassandra.test.integration.support.IntegrationTestNettyOptions"/>
+
 	<bean id="authProvider" class="com.datastax.driver.core.PlainTextAuthProvider">
 		<constructor-arg index="0" value="foo" />
 		<constructor-arg index="1" value="bar" />
@@ -44,7 +46,7 @@
 			pool-timeout-milliseconds="${cluster.poolingoptions.pooltimeoutmilliseconds}"
 			reconnection-policy-ref="reconnectionPolicy"
 			retry-policy-ref="retryPolicy"
-			username="${auth.username}" password="${auth.password}">
+					   username="${auth.username}" password="${auth.password}" netty-options-ref="nettyOptions">
 		<cassandra:local-pooling-options
 			core-connections="${local.core.connections}"
 			max-connections="${local.max.connections}"

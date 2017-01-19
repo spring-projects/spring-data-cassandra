@@ -24,7 +24,7 @@ import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.support.RandomKeySpaceName;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
-import org.springframework.cassandra.test.integration.support.FastShutdownNettyOptions;
+import org.springframework.cassandra.test.integration.support.IntegrationTestNettyOptions;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.config.java.AbstractReactiveCassandraConfiguration;
@@ -64,7 +64,7 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 
 	@Override
 	protected NettyOptions getNettyOptions() {
-		return FastShutdownNettyOptions.INSTANCE;
+		return IntegrationTestNettyOptions.INSTANCE;
 	}
 
 	@Override

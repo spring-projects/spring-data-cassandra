@@ -4,6 +4,8 @@ jdk:
   - oraclejdk8
 
 env:
+  global:
+    - CASSANDRA_VERSION=3.9
   matrix:
     - PROFILE=ci
     - PROFILE=ci CASSANDRA_DRIVER_VERSION=3.0.3
@@ -11,10 +13,10 @@ env:
     - PROFILE=spring43
     - PROFILE=spring43-next
     - PROFILE=spring5-next
-    - PROFILE=external-cassandra CASSANDRA_VERSION=2.2.8
-    - PROFILE=external-cassandra CASSANDRA_VERSION=3.0.10
-    - PROFILE=external-cassandra CASSANDRA_VERSION=3.2.1
-    - PROFILE=external-cassandra CASSANDRA_VERSION=3.9
+    - CASSANDRA_VERSION=2.2.8
+    - CASSANDRA_VERSION=3.0.10
+    - CASSANDRA_VERSION=3.2.1
+    - CASSANDRA_VERSION=3.9
 
 addons:
   apt:
@@ -36,7 +38,7 @@ install: if [ ! -z ${CASSANDRA_VERSION+x} ]; then ./setup-cassandra.sh; fi;
 script:
   - |
     if [ ! -z ${CASSANDRA_DRIVER_VERSION+x} ]; then
-      mvn clean install -P${PROFILE} -Dcassandra-driver.version=${CASSANDRA_DRIVER_VERSION} -Dmaven.javadoc.skip=true
+      mvn clean install -P${PROFILE},external-cassandra -Dcassandra-driver.version=${CASSANDRA_DRIVER_VERSION} -Dmaven.javadoc.skip=true
     else
-      mvn clean install -P${PROFILE} -Dmaven.javadoc.skip=true
+      mvn clean install -P${PROFILE},external-cassandra -Dmaven.javadoc.skip=true
     fi
