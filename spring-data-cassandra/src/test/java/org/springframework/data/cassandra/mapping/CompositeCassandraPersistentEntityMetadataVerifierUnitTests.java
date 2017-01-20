@@ -42,37 +42,33 @@ public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 
 	@Test // DATACASS-258
 	public void shouldAllowInterfaceTypes() {
-		verifier.verify(getEntity(MyInterface.class));
+		verifier.verify(context.getRequiredPersistentEntity(MyInterface.class));
 	}
 
 	@Test // DATACASS-258
 	public void testPrimaryKeyClass() {
-		verifier.verify(getEntity(Animal.class));
+		verifier.verify(context.getRequiredPersistentEntity(Animal.class));
 	}
 
 	@Test // DATACASS-258
 	public void testNonPrimaryKeyClass() {
-		verifier.verify(getEntity(Person.class));
+		verifier.verify(context.getRequiredPersistentEntity(Person.class));
 	}
 
 	@Test // DATACASS-258, DATACASS-359
 	public void shouldNotFailWithNonPersistentClasses() {
-		verifier.verify(getEntity(NonPersistentClass.class));
+		verifier.verify(context.getRequiredPersistentEntity(NonPersistentClass.class));
 	}
 
 	@Test // DATACASS-258
 	public void shouldFailWithPersistentAndPrimaryKeyClassAnnotations() {
 
 		try {
-			verifier.verify(getEntity(TooManyAnnotations.class));
+			verifier.verify(context.getRequiredPersistentEntity(TooManyAnnotations.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining("Entity cannot be of type @Table and @PrimaryKeyClass");
 		}
-	}
-
-	private CassandraPersistentEntity<?> getEntity(Class<?> entityClass) {
-		return context.getPersistentEntity(entityClass);
 	}
 
 	interface MyInterface {}

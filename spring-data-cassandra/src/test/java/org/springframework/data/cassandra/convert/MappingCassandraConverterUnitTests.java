@@ -674,7 +674,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Delete delete = QueryBuilder.delete().from("table");
 
-		mappingCassandraConverter.write("42", delete.where(), mappingContext.getPersistentEntity(Person.class));
+		mappingCassandraConverter.write("42", delete.where(), mappingContext.getRequiredPersistentEntity(Person.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("id", "42");
 	}
@@ -687,7 +687,7 @@ public class MappingCassandraConverterUnitTests {
 		Person person = new Person();
 		person.setId("42");
 
-		mappingCassandraConverter.write(person, delete.where(), mappingContext.getPersistentEntity(Person.class));
+		mappingCassandraConverter.write(person, delete.where(), mappingContext.getRequiredPersistentEntity(Person.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("id", "42");
 	}
@@ -697,7 +697,8 @@ public class MappingCassandraConverterUnitTests {
 
 		Delete delete = QueryBuilder.delete().from("table");
 
-		mappingCassandraConverter.write(new Person(), delete.where(), mappingContext.getPersistentEntity(Person.class));
+		mappingCassandraConverter.write(new Person(), delete.where(),
+				mappingContext.getRequiredPersistentEntity(Person.class));
 	}
 
 	@Test // DATACASS-308
@@ -705,7 +706,8 @@ public class MappingCassandraConverterUnitTests {
 
 		Delete delete = QueryBuilder.delete().from("table");
 
-		mappingCassandraConverter.write(id("id", "42"), delete.where(), mappingContext.getPersistentEntity(Person.class));
+		mappingCassandraConverter.write(id("id", "42"), delete.where(),
+				mappingContext.getRequiredPersistentEntity(Person.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("id", "42");
 	}
@@ -720,7 +722,7 @@ public class MappingCassandraConverterUnitTests {
 		entity.setLastname("White");
 
 		mappingCassandraConverter.write(entity, delete.where(),
-				mappingContext.getPersistentEntity(TypeWithCompositeKey.class));
+				mappingContext.getRequiredPersistentEntity(TypeWithCompositeKey.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
@@ -732,7 +734,7 @@ public class MappingCassandraConverterUnitTests {
 		Delete delete = QueryBuilder.delete().from("table");
 
 		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), delete.where(),
-				mappingContext.getPersistentEntity(TypeWithCompositeKey.class));
+				mappingContext.getRequiredPersistentEntity(TypeWithCompositeKey.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
@@ -747,7 +749,8 @@ public class MappingCassandraConverterUnitTests {
 		entity.setFirstname("Walter");
 		entity.setLastname("White");
 
-		mappingCassandraConverter.write(entity, delete.where(), mappingContext.getPersistentEntity(TypeWithMapId.class));
+		mappingCassandraConverter.write(entity, delete.where(),
+				mappingContext.getRequiredPersistentEntity(TypeWithMapId.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
@@ -759,7 +762,7 @@ public class MappingCassandraConverterUnitTests {
 		Delete delete = QueryBuilder.delete().from("table");
 
 		mappingCassandraConverter.write(Condition.MINT, delete.where(),
-				mappingContext.getPersistentEntity(EnumPrimaryKey.class));
+				mappingContext.getRequiredPersistentEntity(EnumPrimaryKey.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("condition", "MINT");
 	}
@@ -770,7 +773,7 @@ public class MappingCassandraConverterUnitTests {
 		Delete delete = QueryBuilder.delete().from("table");
 
 		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), delete.where(),
-				mappingContext.getPersistentEntity(TypeWithMapId.class));
+				mappingContext.getRequiredPersistentEntity(TypeWithMapId.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
@@ -788,7 +791,8 @@ public class MappingCassandraConverterUnitTests {
 		TypeWithKeyClass entity = new TypeWithKeyClass();
 		entity.setKey(key);
 
-		mappingCassandraConverter.write(entity, delete.where(), mappingContext.getPersistentEntity(TypeWithKeyClass.class));
+		mappingCassandraConverter.write(entity, delete.where(),
+				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
@@ -800,7 +804,7 @@ public class MappingCassandraConverterUnitTests {
 		Delete delete = QueryBuilder.delete().from("table");
 
 		mappingCassandraConverter.write(new TypeWithKeyClass(), delete.where(),
-				mappingContext.getPersistentEntity(TypeWithKeyClass.class));
+				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 	}
 
 	@Test // DATACASS-308
@@ -812,7 +816,8 @@ public class MappingCassandraConverterUnitTests {
 		key.setFirstname("Walter");
 		key.setLastname("White");
 
-		mappingCassandraConverter.write(key, delete.where(), mappingContext.getPersistentEntity(TypeWithKeyClass.class));
+		mappingCassandraConverter.write(key, delete.where(),
+				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
@@ -824,7 +829,7 @@ public class MappingCassandraConverterUnitTests {
 		Delete delete = QueryBuilder.delete().from("table");
 
 		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), delete.where(),
-				mappingContext.getPersistentEntity(TypeWithKeyClass.class));
+				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
@@ -836,7 +841,7 @@ public class MappingCassandraConverterUnitTests {
 		Delete delete = QueryBuilder.delete().from("table");
 
 		mappingCassandraConverter.write(id("unknown", "Walter"), delete.where(),
-				mappingContext.getPersistentEntity(TypeWithMapId.class));
+				mappingContext.getRequiredPersistentEntity(TypeWithMapId.class));
 	}
 
 	@SuppressWarnings("unchecked")

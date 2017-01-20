@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.cassandra.convert.CassandraConverter;
@@ -25,6 +26,7 @@ import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
@@ -74,7 +76,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 * @see org.springframework.data.repository.query.ParameterAccessor#getDynamicProjection()
 	 */
 	@Override
-	public Class<?> getDynamicProjection() {
+	public Optional<Class<?>> getDynamicProjection() {
 		return delegate.getDynamicProjection();
 	}
 
@@ -83,7 +85,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public Object getBindableValue(int index) {
-		return potentiallyConvert(index, delegate.getBindableValue(index), null);
+		return potentiallyConvert(index, Optional.ofNullable(delegate.getBindableValue(index)));
 	}
 
 	/* (non-Javadoc)
@@ -137,14 +139,24 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Object potentiallyConvert(int index, Object bindableValue, CassandraPersistentProperty property) {
+	private Object potentiallyConvert(int index, Optional<Object> bindableValue) {
 
-		return (bindableValue == null ? null
-				: converter.convertToCassandraColumn(bindableValue, findTypeInformation(index, bindableValue, property)));
+		return bindableValue
+				.flatMap(
+						v -> converter.convertToCassandraColumn(bindableValue, findTypeInformation(index, v, Optional.empty())))
+				.orElse(null);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Object potentiallyConvert(int index, Optional<Object> bindableValue, CassandraPersistentProperty property) {
+
+		return bindableValue.flatMap(
+				v -> converter.convertToCassandraColumn(bindableValue, findTypeInformation(index, v, Optional.of(property))))
+				.orElse(null);
 	}
 
 	private TypeInformation<?> findTypeInformation(int index, Object bindableValue,
-			CassandraPersistentProperty property) {
+			Optional<CassandraPersistentProperty> property) {
 
 		if (delegate.findCassandraType(index) != null) {
 			TypeCodec<?> typeCodec = CodecRegistry.DEFAULT_INSTANCE.codecFor(getDataType(index, property));
@@ -156,11 +168,8 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			return ClassTypeInformation.from(typeCodec.getJavaType().getRawType());
 		}
 
-		if (property == null) {
-			return ClassTypeInformation.from(bindableValue.getClass());
-		}
-
-		return property.getTypeInformation();
+		return property.map(PersistentProperty::getTypeInformation)
+				.orElseGet(() -> (TypeInformation) ClassTypeInformation.from(bindableValue.getClass()));
 	}
 
 	/**
@@ -171,7 +180,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 * @param property {@link CassandraPersistentProperty}.
 	 * @return the {@link DataType}
 	 */
-	DataType getDataType(int index, CassandraPersistentProperty property) {
+	DataType getDataType(int index, Optional<CassandraPersistentProperty> optionalProperty) {
 
 		CassandraType cassandraType = delegate.findCassandraType(index);
 
@@ -182,9 +191,13 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		CassandraMappingContext mappingContext = converter.getMappingContext();
 		TypeInformation<?> typeInformation = ClassTypeInformation.from(getParameterType(index));
 
-		if (property == null) {
-			return mappingContext.getDataType(typeInformation.getType());
-		}
+		return optionalProperty.map(property -> getDataType(mappingContext, typeInformation, property))
+				.orElseGet(() -> mappingContext.getDataType(typeInformation.getType()));
+
+	}
+
+	private DataType getDataType(CassandraMappingContext mappingContext, TypeInformation<?> typeInformation,
+			CassandraPersistentProperty property) {
 
 		DataType dataType = mappingContext.getDataType(property);
 
@@ -252,7 +265,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 * @see java.util.Iterator#next()
 		 */
 		public Object next() {
-			return potentiallyConvert(index++, delegate.next(), null);
+			return potentiallyConvert(index++, Optional.ofNullable(delegate.next()));
 		}
 
 		/*
@@ -268,7 +281,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 */
 		@Override
 		public Object nextConverted(CassandraPersistentProperty property) {
-			return potentiallyConvert(index++, delegate.next(), property);
+			return potentiallyConvert(index++, Optional.ofNullable(delegate.next()), property);
 		}
 	}
 

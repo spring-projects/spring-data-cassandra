@@ -18,12 +18,12 @@ package org.springframework.data.cassandra.convert;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,6 @@ import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.CacheValue;
 import org.springframework.util.Assert;
 
 /**
@@ -60,20 +59,19 @@ public class CustomConversions {
 
 	private final Set<ConvertiblePair> readingPairs;
 	private final Set<ConvertiblePair> writingPairs;
-	private final Set<Class<?>> customSimpleTypes;
 	private final CassandraSimpleTypeHolder simpleTypeHolder;
 
 	private final List<Object> converters;
 
-	private final Map<ConvertiblePair, CacheValue<Class<?>>> customReadTargetTypes;
-	private final Map<ConvertiblePair, CacheValue<Class<?>>> customWriteTargetTypes;
-	private final Map<Class<?>, CacheValue<Class<?>>> rawWriteTargetTypes;
+	private final Map<ConvertiblePair, Class<?>> customReadTargetTypes;
+	private final Map<ConvertiblePair, Class<?>> customWriteTargetTypes;
+	private final Map<Class<?>, Class<?>> rawWriteTargetTypes;
 
 	/**
 	 * Creates an empty {@link CustomConversions} object.
 	 */
 	CustomConversions() {
-		this(new ArrayList<Object>());
+		this(new ArrayList<>());
 	}
 
 	/**
@@ -85,12 +83,11 @@ public class CustomConversions {
 
 		Assert.notNull(converters, "List of converters must not be null");
 
-		this.readingPairs = new LinkedHashSet<ConvertiblePair>();
-		this.writingPairs = new LinkedHashSet<ConvertiblePair>();
-		this.customSimpleTypes = new HashSet<Class<?>>();
-		this.customReadTargetTypes = new ConcurrentHashMap<ConvertiblePair, CacheValue<Class<?>>>();
-		this.customWriteTargetTypes = new ConcurrentHashMap<ConvertiblePair, CacheValue<Class<?>>>();
-		this.rawWriteTargetTypes = new ConcurrentHashMap<Class<?>, CacheValue<Class<?>>>();
+		this.readingPairs = new LinkedHashSet<>();
+		this.writingPairs = new LinkedHashSet<>();
+		this.customReadTargetTypes = new ConcurrentHashMap<>();
+		this.customWriteTargetTypes = new ConcurrentHashMap<>();
+		this.rawWriteTargetTypes = new ConcurrentHashMap<>();
 
 		List<Object> toRegister = new ArrayList<Object>();
 
@@ -222,7 +219,6 @@ public class CustomConversions {
 		if (converterRegistration.isWriting()) {
 
 			writingPairs.add(pair);
-			customSimpleTypes.add(pair.getSourceType());
 
 			if (LOG.isWarnEnabled() && !converterRegistration.isSimpleTargetType()) {
 				LOG.warn(String.format(WRITE_CONVERTER_NOT_SIMPLE, pair.getSourceType(), pair.getTargetType()));
@@ -239,7 +235,7 @@ public class CustomConversions {
 	 */
 	public Class<?> getCustomWriteTarget(final Class<?> sourceType) {
 
-		return getOrCreateAndCache(sourceType, rawWriteTargetTypes, new Producer() {
+		return getOrCreateAndCache(sourceType, rawWriteTargetTypes, new Supplier<Class<?>>() {
 
 			@Override
 			public Class<?> get() {
@@ -264,13 +260,7 @@ public class CustomConversions {
 		}
 
 		return getOrCreateAndCache(new ConvertiblePair(sourceType, requestedTargetType), customWriteTargetTypes,
-				new Producer() {
-
-					@Override
-					public Class<?> get() {
-						return getCustomTarget(sourceType, requestedTargetType, writingPairs);
-					}
-				});
+				() -> getCustomTarget(sourceType, requestedTargetType, writingPairs));
 	}
 
 	/**
@@ -322,13 +312,7 @@ public class CustomConversions {
 		}
 
 		return getOrCreateAndCache(new ConvertiblePair(sourceType, requestedTargetType), customReadTargetTypes,
-				new Producer() {
-
-					@Override
-					public Class<?> get() {
-						return getCustomTarget(sourceType, requestedTargetType, readingPairs);
-					}
-				});
+				() -> getCustomTarget(sourceType, requestedTargetType, readingPairs));
 	}
 
 	/**
@@ -350,44 +334,23 @@ public class CustomConversions {
 			return requestedTargetType;
 		}
 
-		for (ConvertiblePair typePair : pairs) {
-			if (typePair.getSourceType().isAssignableFrom(sourceType)) {
-				Class<?> targetType = typePair.getTargetType();
-
-				if (requestedTargetType == null || targetType.isAssignableFrom(requestedTargetType)) {
-					return targetType;
-				}
-			}
-		}
-
-		return null;
+		return pairs.stream() //
+				.filter(typePair -> typePair.getSourceType().isAssignableFrom(sourceType)) //
+				.map(ConvertiblePair::getTargetType) //
+				.filter(targetType -> requestedTargetType == null || targetType.isAssignableFrom(requestedTargetType)) //
+				.findFirst().orElse(null);
 	}
 
 	/**
-	 * Will try to find a value for the given key in the given cache or produce one using the given {@link Producer} and
+	 * Will try to find a value for the given key in the given cache or produce one using the given {@link Supplier} and
 	 * store it in the cache.
 	 *
 	 * @param key the key to lookup a potentially existing value, must not be {@literal null}.
 	 * @param cache the cache to find the value in, must not be {@literal null}.
-	 * @param producer the {@link Producer} to create values to cache, must not be {@literal null}.
+	 * @param producer the {@link Supplier} to create values to cache, must not be {@literal null}.
 	 * @return
 	 */
-	private static <T> Class<?> getOrCreateAndCache(T key, Map<T, CacheValue<Class<?>>> cache, Producer producer) {
-
-		CacheValue<Class<?>> cacheValue = cache.get(key);
-
-		if (cacheValue != null) {
-			return cacheValue.getValue();
-		}
-
-		Class<?> type = producer.get();
-
-		cache.put(key, CacheValue.<Class<?>> ofNullable(type));
-
-		return type;
-	}
-
-	private interface Producer {
-		Class<?> get();
+	private static <T> Class<?> getOrCreateAndCache(T key, Map<T, Class<?>> cache, Supplier<Class<?>> producer) {
+		return cache.computeIfAbsent(key, t -> producer.get());
 	}
 }

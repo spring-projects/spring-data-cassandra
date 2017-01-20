@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.Map;
+import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
@@ -72,7 +75,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
 
-		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
 
 		CreateTableSpecification createTableSpecification = getConverter().getMappingContext()
 				.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists);
@@ -110,13 +113,13 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(java.lang.String, org.springframework.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
-	public TableMetadata getTableMetadata(String keyspace, CqlIdentifier tableName) {
+	public Optional<TableMetadata> getTableMetadata(String keyspace, CqlIdentifier tableName) {
 
 		Assert.hasText(keyspace, "Keyspace name must not be empty");
 		Assert.notNull(tableName, "Table name must not be null");
 
-		return getCqlOperations().execute((SessionCallback<TableMetadata>) session -> session.getCluster().getMetadata()
-				.getKeyspace(keyspace).getTable(tableName.toCql()));
+		return Optional.ofNullable(getCqlOperations().execute((SessionCallback<TableMetadata>) session -> session
+				.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName.toCql())));
 	}
 
 	/*
@@ -126,19 +129,16 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	@Override
 	public KeyspaceMetadata getKeyspaceMetadata() {
 
-		return getCqlOperations().execute(new SessionCallback<KeyspaceMetadata>() {
+		return getCqlOperations().execute((SessionCallback<KeyspaceMetadata>) session -> {
 
-			@Override
-			public KeyspaceMetadata doInSession(Session session) throws DataAccessException {
+			KeyspaceMetadata keyspaceMetadata = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
 
-				KeyspaceMetadata keyspaceMetadata = session.getCluster().getMetadata()
-						.getKeyspace(session.getLoggedKeyspace());
 
-				Assert.state(keyspaceMetadata != null,
-						String.format("Metadata for keyspace [%s] not available", session.getLoggedKeyspace()));
 
-				return keyspaceMetadata;
-			}
+				Assert.state(keyspaceMetadata != null, String.format("Metadata for keyspace [%s] not available",
+					session.getLoggedKeyspace()));
+
+			return keyspaceMetadata;
 		});
 	}
 }

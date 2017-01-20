@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -143,9 +144,9 @@ public class ConvertingParameterAccessorUnitTests {
 	public void shouldProvideTypeBasedOnPropertyType() {
 
 		when(mockProperty.getDataType()).thenReturn(DataType.varchar());
-		when(mockProperty.findAnnotation(CassandraType.class)).thenReturn(mock(CassandraType.class));
+		when(mockProperty.findAnnotation(CassandraType.class)).thenReturn(Optional.of(mock(CassandraType.class)));
 		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) String.class);
 
-		assertThat(convertingParameterAccessor.getDataType(0, mockProperty)).isEqualTo(DataType.varchar());
+		assertThat(convertingParameterAccessor.getDataType(0, Optional.of(mockProperty))).isEqualTo(DataType.varchar());
 	}
 }

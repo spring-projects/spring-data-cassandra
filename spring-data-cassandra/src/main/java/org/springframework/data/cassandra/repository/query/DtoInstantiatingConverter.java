@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.cassandra.repository.query;
+
+import java.util.Optional;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
@@ -38,8 +40,10 @@ import org.springframework.util.Assert;
 class DtoInstantiatingConverter implements Converter<Object, Object> {
 
 	private final Class<?> targetType;
+
 	private final MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> context;
-	private final EntityInstantiator instantiator;
+
+	private final Optional<EntityInstantiator> instantiator;
 
 	/**
 	 * Create a new {@link Converter} to instantiate DTOs.
@@ -58,7 +62,8 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 
 		this.targetType = dtoType;
 		this.context = context;
-		this.instantiator = instantiator.getInstantiatorFor(context.getPersistentEntity(dtoType));
+
+		this.instantiator = context.getPersistentEntity(dtoType).map(instantiator::getInstantiatorFor);
 	}
 
 	/*
@@ -72,35 +77,38 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 			return source;
 		}
 
-		final PersistentEntity<?, ?> sourceEntity = context.getPersistentEntity(source.getClass());
-		final PersistentPropertyAccessor sourceAccessor = sourceEntity.getPropertyAccessor(source);
-		final PersistentEntity<?, ?> targetEntity = context.getPersistentEntity(targetType);
+		PersistentEntity<?, ?> sourceEntity = context.getRequiredPersistentEntity(source.getClass());
+		PersistentPropertyAccessor sourceAccessor = sourceEntity.getPropertyAccessor(source);
+		PersistentEntity<?, ?> targetEntity = context.getRequiredPersistentEntity(targetType);
+
+		EntityInstantiator instantiator = this.instantiator.orElseThrow(
+				() -> new IllegalStateException(String.format("No EntityInstantiator for [%s] available", targetType)));
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		Object dto = instantiator.createInstance(targetEntity, new ParameterValueProvider() {
 
 			@Override
-			public Object getParameterValue(Parameter parameter) {
-				return sourceAccessor.getProperty(sourceEntity.getPersistentProperty(parameter.getName()));
+			public Optional<Object> getParameterValue(Parameter parameter) {
+
+				// TODO: Fix generics
+				return parameter.getName()
+						.flatMap(name -> sourceAccessor.getProperty(sourceEntity.getRequiredPersistentProperty((String) name)));
 			}
 		});
 
 		final PersistentPropertyAccessor targetAccessor = targetEntity.getPropertyAccessor(dto);
-		final PreferredConstructor<?, ? extends PersistentProperty<?>> constructor =
-			targetEntity.getPersistenceConstructor();
 
-		targetEntity.doWithProperties(new SimplePropertyHandler() {
+		Optional<? extends PreferredConstructor<?, ? extends PersistentProperty<?>>> optionalConstructor = targetEntity
+				.getPersistenceConstructor();
 
-			@Override
-			public void doWithPersistentProperty(PersistentProperty<?> property) {
+		targetEntity.doWithProperties((SimplePropertyHandler) property -> {
 
-				if (constructor.isConstructorParameter(property)) {
-					return;
-				}
-
-				targetAccessor.setProperty(property,
-						sourceAccessor.getProperty(sourceEntity.getPersistentProperty(property.getName())));
+			if (!optionalConstructor.filter(c -> c.isConstructorParameter(property)).isPresent()) {
+				return;
 			}
+
+			targetAccessor.setProperty(property,
+					sourceAccessor.getProperty(sourceEntity.getRequiredPersistentProperty(property.getName())));
 		});
 
 		return dto;

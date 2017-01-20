@@ -16,6 +16,9 @@
 
 package org.springframework.data.cassandra.repository.query;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -23,9 +26,6 @@ import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.ClassUtils;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Query executions for Cassandra.

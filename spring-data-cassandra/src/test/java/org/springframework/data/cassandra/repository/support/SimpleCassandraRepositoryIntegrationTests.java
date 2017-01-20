@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -124,17 +125,17 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-396
 	public void findOneShouldReturnObject() {
 
-		Person person = repository.findOne(dave.getId());
+		Optional<Person> person = repository.findOne(dave.getId());
 
-		assertThat(person).isEqualTo(dave);
+		assertThat(person).contains(dave);
 	}
 
 	@Test // DATACASS-396
 	public void findOneShouldCompleteWithoutValueForAbsentObject() {
 
-		Person person = repository.findOne("unknown");
+		Optional<Person> person = repository.findOne("unknown");
 
-		assertThat(person).isNull();
+		assertThat(person).isEmpty();
 	}
 
 	@Test // DATACASS-396, DATACASS-416
@@ -193,10 +194,14 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		assertThat(saved).isEqualTo(saved);
 
-		Person loaded = repository.findOne(dave.getId());
+		Optional<Person> loaded = repository.findOne(dave.getId());
 
-		assertThat(loaded.getFirstname()).isEqualTo(dave.getFirstname());
-		assertThat(loaded.getLastname()).isEqualTo(dave.getLastname());
+		assertThat(loaded).isPresent();
+
+		loaded.ifPresent(actual -> {
+			assertThat(actual.getFirstname()).isEqualTo(dave.getFirstname());
+			assertThat(actual.getLastname()).isEqualTo(dave.getLastname());
+		});
 	}
 
 	@Test // DATACASS-396
@@ -208,9 +213,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		assertThat(saved).isEqualTo(person);
 
-		Person loaded = repository.findOne(person.getId());
+		Optional<Person> loaded = repository.findOne(person.getId());
 
-		assertThat(loaded).isEqualTo(person);
+		assertThat(loaded).contains(person);
 	}
 
 	@Test // DATACASS-396, DATACASS-416
@@ -237,11 +242,11 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		assertThat(saved).hasSize(2);
 
-		Person persistentDave = repository.findOne(dave.getId());
-		assertThat(persistentDave).isEqualTo(dave);
+		Optional<Person> persistentDave = repository.findOne(dave.getId());
+		assertThat(persistentDave).contains(dave);
 
-		Person persistentHomer = repository.findOne(person.getId());
-		assertThat(persistentHomer).isEqualTo(person);
+		Optional<Person> persistentHomer = repository.findOne(person.getId());
+		assertThat(persistentHomer).contains(person);
 	}
 
 	@Test // DATACASS-396, DATACASS-416
@@ -259,9 +264,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.delete(dave.getId());
 
-		Person loaded = repository.findOne(dave.getId());
+		Optional<Person> loaded = repository.findOne(dave.getId());
 
-		assertThat(loaded).isNull();
+		assertThat(loaded).isPresent();
 	}
 
 	@Test // DATACASS-396
@@ -269,9 +274,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.delete(dave);
 
-		Person loaded = repository.findOne(dave.getId());
+		Optional<Person> loaded = repository.findOne(dave.getId());
 
-		assertThat(loaded).isNull();
+		assertThat(loaded).isPresent();
 	}
 
 	@Test // DATACASS-396
@@ -279,9 +284,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.delete(Arrays.asList(dave, boyd));
 
-		Person loaded = repository.findOne(boyd.getId());
+		Optional<Person> loaded = repository.findOne(boyd.getId());
 
-		assertThat(loaded).isNull();
+		assertThat(loaded).isPresent();
 	}
 
 	interface PersonRepostitory extends TypedIdCassandraRepository<Person, String> {}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.data.cassandra.repository.cdi;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -45,11 +46,11 @@ public class CassandraRepositoryBean<T> extends CdiRepositoryBean<T> {
 	 * @param qualifiers must not be {@literal null}.
 	 * @param repositoryType must not be {@literal null}.
 	 * @param beanManager must not be {@literal null}.
-	 * @param detector detector for the custom {@link org.springframework.data.repository.Repository} implementations
-	 *          {@link CustomRepositoryImplementationDetector}, can be {@literal null}.
+	 * @param detector optional detector for the custom {@link org.springframework.data.repository.Repository}
+	 *          implementations {@link CustomRepositoryImplementationDetector}, can be {@literal null}.
 	 */
 	public CassandraRepositoryBean(Bean<CassandraOperations> operations, Set<Annotation> qualifiers,
-			Class<T> repositoryType, BeanManager beanManager, CustomRepositoryImplementationDetector detector) {
+			Class<T> repositoryType, BeanManager beanManager, Optional<CustomRepositoryImplementationDetector> detector) {
 		super(qualifiers, repositoryType, beanManager, detector);
 
 		Assert.notNull(operations, "Cannot create repository with 'null' for CassandraOperations.");
@@ -58,12 +59,19 @@ public class CassandraRepositoryBean<T> extends CdiRepositoryBean<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.cdi.CdiRepositoryBean#create(javax.enterprise.context.spi.CreationalContext, java.lang.Class, java.lang.Object)
+	 * @see org.springframework.data.repository.cdi.CdiRepositoryBean#create(javax.enterprise.context.spi.CreationalContext, java.lang.Class, java.util.Optional)
 	 */
 	@Override
-	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType, Object customImplementation) {
+	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
+			Optional<Object> customImplementation) {
 		CassandraOperations cassandraOperations = getDependencyInstance(cassandraOperationsBean, CassandraOperations.class);
-		return new CassandraRepositoryFactory(cassandraOperations).getRepository(repositoryType, customImplementation);
+
+		if (customImplementation.isPresent()) {
+			return new CassandraRepositoryFactory(cassandraOperations).getRepository(repositoryType,
+					customImplementation.get());
+		}
+
+		return new CassandraRepositoryFactory(cassandraOperations).getRepository(repositoryType);
 	}
 
 	@Override

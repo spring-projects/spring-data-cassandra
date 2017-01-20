@@ -16,11 +16,12 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
-
-import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 /**
  * Operations for managing a Cassandra keyspace.
@@ -61,7 +62,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @param tableName must not be {@literal null}.
 	 * @return the {@link TableMetadata} or {@literal null}.
 	 */
-	TableMetadata getTableMetadata(String keyspace, CqlIdentifier tableName);
+	Optional<TableMetadata> getTableMetadata(String keyspace, CqlIdentifier tableName);
 
 	/**
 	 * Returns {@link KeyspaceMetadata} for the current keyspace.

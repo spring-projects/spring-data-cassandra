@@ -19,16 +19,14 @@ import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.*;
 import static org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder.*;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.BeansException;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -38,11 +36,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -75,12 +76,12 @@ public class BasicCassandraMappingContext
 	protected Mapping mapping = new Mapping();
 
 	// useful caches
-	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<Class<?>, CassandraPersistentEntity<?>>();
-	protected Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<CqlIdentifier, Set<CassandraPersistentEntity<?>>>();
+	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<>();
+	protected Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
 
-	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<CassandraPersistentEntity<?>>();
-	protected Set<CassandraPersistentEntity<?>> userDefinedTypes = new HashSet<CassandraPersistentEntity<?>>();
-	protected Set<CassandraPersistentEntity<?>> tableEntities = new HashSet<CassandraPersistentEntity<?>>();
+	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<>();
+	protected Set<CassandraPersistentEntity<?>> userDefinedTypes = new HashSet<>();
+	protected Set<CassandraPersistentEntity<?>> tableEntities = new HashSet<>();
 
 	private CustomConversions customConversions;
 
@@ -107,33 +108,27 @@ public class BasicCassandraMappingContext
 	@SuppressWarnings("all")
 	protected void processMappingOverrides() {
 
-		if (mapping != null) {
+		mapping.getEntityMappings().stream()//
+				.filter(entityMapping -> entityMapping != null).forEach(entityMapping -> {
+					String entityClassName = entityMapping.getEntityClassName();
 
-			mapping.getEntityMappings().stream() //
-					.filter(entityMapping -> entityMapping != null) //
-					.forEach(entityMapping -> {
+					try {
+						Class<?> entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
 
-						String entityClassName = entityMapping.getEntityClassName();
+						CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
-						try {
-							Class<?> entityClass = ClassUtils.forName(entityClassName, beanClassLoader);
+						String entityTableName = entityMapping.getTableName();
 
-							CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
-
-							Assert.state(entity != null, String.format("Unknown persistent entity class name [%s]", entityClassName));
-
-							String entityTableName = entityMapping.getTableName();
-
-							if (StringUtils.hasText(entityTableName)) {
-								entity.setTableName(cqlId(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
-							}
-
-							processMappingOverrides(entity, entityMapping);
-						} catch (ClassNotFoundException e) {
-							throw new IllegalStateException(String.format("Unknown persistent entity name [%s]", entityClassName), e);
+						if (StringUtils.hasText(entityTableName)) {
+							entity.setTableName(cqlId(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
 						}
-					});
-		}
+
+						processMappingOverrides(entity, entityMapping);
+
+					} catch (ClassNotFoundException e) {
+						throw new IllegalStateException(String.format("Unknown persistent entity name [%s]", entityClassName), e);
+					}
+				});
 	}
 
 	protected void processMappingOverrides(CassandraPersistentEntity<?> entity, EntityMapping entityMapping) {
@@ -143,10 +138,7 @@ public class BasicCassandraMappingContext
 
 	protected void processMappingOverride(CassandraPersistentEntity<?> entity, PropertyMapping mapping) {
 
-		CassandraPersistentProperty property = entity.getPersistentProperty(mapping.getPropertyName());
-
-		Assert.notNull(property, String.format("Entity class [%s] has no persistent property named [%s]",
-				entity.getType().getName(), mapping.getPropertyName()));
+		CassandraPersistentProperty property = entity.getRequiredPersistentProperty(mapping.getPropertyName());
 
 		boolean forceQuote = Boolean.valueOf(mapping.getForceQuote());
 
@@ -287,12 +279,8 @@ public class BasicCassandraMappingContext
 
 		// now do some caching of the entity
 
-		Set<CassandraPersistentEntity<?>> entities = entitySetsByTableName.get(entity.getTableName());
-
-		if (entities == null) {
-			entities = new HashSet<CassandraPersistentEntity<?>>();
-			entitySetsByTableName.put(entity.getTableName(), entities);
-		}
+		Set<CassandraPersistentEntity<?>> entities = entitySetsByTableName.computeIfAbsent(entity.getTableName(),
+				cqlIdentifier -> new HashSet<>());
 
 		entities.add(entity);
 
@@ -301,9 +289,7 @@ public class BasicCassandraMappingContext
 				primaryKeyEntities.add(entity);
 			}
 
-			if (entity.findAnnotation(Table.class) != null) {
-				tableEntities.add(entity);
-			}
+			entity.findAnnotation(Table.class).ifPresent(table -> tableEntities.add(entity));
 		}
 
 		entitiesByType.put(entity.getType(), entity);
@@ -315,14 +301,14 @@ public class BasicCassandraMappingContext
 	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(java.lang.reflect.Field, java.beans.PropertyDescriptor, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
 	 */
 	@Override
-	public CassandraPersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
-			CassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
-		return createPersistentProperty(field, descriptor, owner, (CassandraSimpleTypeHolder) simpleTypeHolder);
+	protected CassandraPersistentProperty createPersistentProperty(Property property, CassandraPersistentEntity<?> owner,
+			SimpleTypeHolder simpleTypeHolder) {
+		return createPersistentProperty(property, owner, (CassandraSimpleTypeHolder) simpleTypeHolder);
 	}
 
-	public CassandraPersistentProperty createPersistentProperty(Field field, PropertyDescriptor descriptor,
-			CassandraPersistentEntity<?> owner, CassandraSimpleTypeHolder simpleTypeHolder) {
-		return new BasicCassandraPersistentProperty(field, descriptor, owner, simpleTypeHolder, userTypeResolver);
+	public CassandraPersistentProperty createPersistentProperty(Property property, CassandraPersistentEntity<?> owner,
+			CassandraSimpleTypeHolder simpleTypeHolder) {
+		return new BasicCassandraPersistentProperty(property, owner, simpleTypeHolder, userTypeResolver);
 	}
 
 	/* (non-Javadoc)
@@ -346,28 +332,15 @@ public class BasicCassandraMappingContext
 
 	private boolean hasReferencedUserType(final CqlIdentifier identifier) {
 
-		final AtomicBoolean foundReference = new AtomicBoolean();
-
-		getPersistentEntities()
-				.forEach(entity -> entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-
-					@Override
-					public void doWithPersistentProperty(CassandraPersistentProperty persistentProperty) {
-
-						CassandraType cassandraType = persistentProperty.findAnnotation(CassandraType.class);
-
-						if (cassandraType == null) {
-							return;
-						}
-
-						if (StringUtils.hasText(cassandraType.userTypeName())
-								&& CqlIdentifier.cqlId(cassandraType.userTypeName()).equals(identifier)) {
-							foundReference.set(true);
-						}
-					}
-				}));
-
-		return foundReference.get();
+		return getPersistentEntities().stream() //
+				.flatMap(PersistentEntity::getPersistentProperties) //
+				.map(it -> it.findAnnotation(CassandraType.class)) //
+				.filter(Optional::isPresent) //
+				.flatMap(Optionals::toStream) //
+				.anyMatch(it -> {
+					return StringUtils.hasText(it.userTypeName()) //
+							&& CqlIdentifier.cqlId(it.userTypeName()).equals(identifier);
+				}); //
 	}
 
 	private boolean hasMappedUserType(CqlIdentifier identifier) {
@@ -391,35 +364,32 @@ public class BasicCassandraMappingContext
 
 		final CreateTableSpecification specification = createTable().name(entity.getTableName());
 
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+		entity.getPersistentProperties().filter(CassandraPersistentProperty::isCompositePrimaryKey).forEach(property -> {
 
-			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty property) {
-				if (property.isCompositePrimaryKey()) {
-					CassandraPersistentEntity<?> primaryKeyEntity = getPersistentEntity(property.getRawType());
+			CassandraPersistentEntity<?> primaryKeyEntity = getRequiredPersistentEntity(property.getRawType());
 
-					primaryKeyEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			primaryKeyEntity.getPersistentProperties().forEach(primaryKeyProperty -> {
 
-						@Override
-						public void doWithPersistentProperty(CassandraPersistentProperty primaryKeyProperty) {
-							if (primaryKeyProperty.isPartitionKeyColumn()) {
-								specification.partitionKeyColumn(primaryKeyProperty.getColumnName(), getDataType(primaryKeyProperty));
-							} else { // it's a cluster column
-								specification.clusteredKeyColumn(primaryKeyProperty.getColumnName(), getDataType(primaryKeyProperty),
-										primaryKeyProperty.getPrimaryKeyOrdering());
-							}
-						}
-					});
-				} else {
-					if (property.isIdProperty() || property.isPartitionKeyColumn()) {
-						specification.partitionKeyColumn(property.getColumnName(), getDataType(property));
-					} else if (property.isClusterKeyColumn()) {
-						specification.clusteredKeyColumn(property.getColumnName(), getDataType(property),
-								property.getPrimaryKeyOrdering());
-					} else {
-						specification.column(property.getColumnName(), getDataType(property));
-					}
+				if (primaryKeyProperty.isPartitionKeyColumn()) {
+					specification.partitionKeyColumn(primaryKeyProperty.getColumnName(), getDataType(primaryKeyProperty));
+				} else { // it's a cluster column
+					specification.clusteredKeyColumn(primaryKeyProperty.getColumnName(), getDataType(primaryKeyProperty),
+							primaryKeyProperty.getPrimaryKeyOrdering());
 				}
+
+			});
+
+		});
+
+		entity.getPersistentProperties().filter((property) -> !property.isCompositePrimaryKey()).forEach(property -> {
+			if (property.isIdProperty() || property.isPartitionKeyColumn()) {
+				specification.partitionKeyColumn(property.getColumnName(), getDataType(property));
+			} else if (property.isClusterKeyColumn()) {
+				specification.clusteredKeyColumn(property.getColumnName(), getDataType(property),
+						property.getPrimaryKeyOrdering());
+			} else {
+				specification.column(property.getColumnName(), getDataType(property));
+
 			}
 		});
 
@@ -472,9 +442,10 @@ public class BasicCassandraMappingContext
 	 * @see org.springframework.data.mapping.context.AbstractMappingContext#addPersistentEntity(org.springframework.data.util.TypeInformation)
 	 */
 	@Override
-	protected CassandraPersistentEntity<?> addPersistentEntity(TypeInformation<?> typeInformation) {
+	protected Optional<CassandraPersistentEntity<?>> addPersistentEntity(TypeInformation<?> typeInformation) {
 		// Prevent conversion types created as CassandraPersistentEntity
-		return (shouldCreatePersistentEntityFor(typeInformation) ? super.addPersistentEntity(typeInformation) : null);
+		return (shouldCreatePersistentEntityFor(typeInformation) ? super.addPersistentEntity(typeInformation)
+				: Optional.empty());
 	}
 
 	/* (non-Javadoc)
@@ -492,19 +463,14 @@ public class BasicCassandraMappingContext
 			return property.getDataType();
 		}
 
-		if (property.findAnnotation(CassandraType.class) != null) {
+		if (property.findAnnotation(CassandraType.class).isPresent()) {
 			return property.getDataType();
 		}
 
-		CassandraPersistentEntity<?> persistentEntity = getPersistentEntity(property.getActualType());
+		Optional<CassandraPersistentEntity<?>> persistentEntity = getPersistentEntity(property.getActualType());
 
-		if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
-
-			DataType elementType = getUserDataType(property, dataTypeProvider, persistentEntity);
-
-			if (elementType != null) {
-				return elementType;
-			}
+		if (persistentEntity.filter(CassandraPersistentEntity::isUserDefinedType).isPresent()) {
+			return persistentEntity.get().getUserType();
 		}
 
 		if (customConversions.hasCustomWriteTarget(property.getType())) {

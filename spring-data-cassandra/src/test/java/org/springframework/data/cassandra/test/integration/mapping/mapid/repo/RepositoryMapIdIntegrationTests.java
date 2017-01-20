@@ -72,7 +72,7 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		// select
 		MapId id = id("key", saved.getKey());
-		SinglePrimaryKeyColumn selected = singlePrimaryKecColumnRepository.findOne(id);
+		SinglePrimaryKeyColumn selected = singlePrimaryKecColumnRepository.findOne(id).get();
 		assertThat(saved).isNotSameAs(selected);
 		assertThat(selected.getKey()).isEqualTo(saved.getKey());
 		assertThat(selected.getValue()).isEqualTo(saved.getValue());
@@ -82,13 +82,13 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 		SinglePrimaryKeyColumn updated = singlePrimaryKecColumnRepository.save(selected);
 		assertThat(selected).isSameAs(updated);
 
-		selected = singlePrimaryKecColumnRepository.findOne(id);
+		selected = singlePrimaryKecColumnRepository.findOne(id).get();
 		assertThat(updated).isNotSameAs(selected);
 		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
 		singlePrimaryKecColumnRepository.delete(selected);
-		assertThat(singlePrimaryKecColumnRepository.findOne(id)).isNull();
+		assertThat(singlePrimaryKecColumnRepository.findOne(id)).isEmpty();
 	}
 
 	@Test
@@ -102,7 +102,7 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		// select
 		MapId id = id("key0", saved.getKey0()).with("key1", saved.getKey1());
-		MultiPrimaryKeyColumns selected = multiPrimaryKeyColumnsRepository.findOne(id);
+		MultiPrimaryKeyColumns selected = multiPrimaryKeyColumnsRepository.findOne(id).get();
 		assertThat(saved).isNotSameAs(selected);
 		assertThat(selected.getKey0()).isEqualTo(saved.getKey0());
 		assertThat(selected.getKey1()).isEqualTo(saved.getKey1());
@@ -113,13 +113,13 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 		MultiPrimaryKeyColumns updated = multiPrimaryKeyColumnsRepository.save(selected);
 		assertThat(selected).isSameAs(updated);
 
-		selected = multiPrimaryKeyColumnsRepository.findOne(id);
+		selected = multiPrimaryKeyColumnsRepository.findOne(id).get();
 		assertThat(updated).isNotSameAs(selected);
 		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
 		template.delete(selected);
-		assertThat(multiPrimaryKeyColumnsRepository.findOne(id)).isNull();
+		assertThat(multiPrimaryKeyColumnsRepository.findOne(id)).isEmpty();
 	}
 
 }

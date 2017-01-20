@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -97,14 +98,16 @@ public class CassandraQueryMethod extends QueryMethod {
 
 			if (ClassUtils.isPrimitiveOrWrapper(returnedObjectType)) {
 				this.entityMetadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) domainClass,
-						mappingContext.getPersistentEntity(domainClass));
+						mappingContext.getRequiredPersistentEntity(domainClass));
 
 			} else {
-				CassandraPersistentEntity<?> returnedEntity = mappingContext.getPersistentEntity(returnedObjectType);
-				CassandraPersistentEntity<?> managedEntity = mappingContext.getPersistentEntity(domainClass);
 
-				returnedEntity = (returnedEntity == null || returnedEntity.getType().isInterface() ? managedEntity
-						: returnedEntity);
+				Optional<CassandraPersistentEntity<?>> optionalReturnedEntity = mappingContext
+						.getPersistentEntity(returnedObjectType);
+				CassandraPersistentEntity<?> managedEntity = mappingContext.getRequiredPersistentEntity(domainClass);
+
+				CassandraPersistentEntity<?> returnedEntity = optionalReturnedEntity.filter(e -> !e.getType().isInterface())
+						.orElse(managedEntity);
 
 				// TODO collectionEntity?
 				CassandraPersistentEntity<?> collectionEntity = domainClass.isAssignableFrom(returnedObjectType)
@@ -112,6 +115,7 @@ public class CassandraQueryMethod extends QueryMethod {
 
 				this.entityMetadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) returnedEntity.getType(),
 						collectionEntity);
+
 			}
 		}
 

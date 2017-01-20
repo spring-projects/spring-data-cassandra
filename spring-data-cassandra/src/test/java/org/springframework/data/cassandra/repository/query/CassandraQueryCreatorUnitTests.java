@@ -275,8 +275,8 @@ public class CassandraQueryCreatorUnitTests {
 
 	@SuppressWarnings("unchecked")
 	private <T> CassandraEntityInformation<T, Serializable> getEntityInformation(final Class<T> entityClass) {
-		return new MappingCassandraEntityInformation<T, Serializable>(
-				(CassandraPersistentEntity) context.getPersistentEntity(entityClass), converter);
+		return new MappingCassandraEntityInformation<>(
+				(CassandraPersistentEntity) context.getRequiredPersistentEntity(entityClass), converter);
 	}
 
 	@Table

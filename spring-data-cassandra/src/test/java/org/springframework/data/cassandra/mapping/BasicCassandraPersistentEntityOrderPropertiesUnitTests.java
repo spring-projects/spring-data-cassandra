@@ -31,6 +31,7 @@ import org.springframework.data.mapping.PropertyHandler;
  * Unit tests for {@link BasicCassandraMappingContext}.
  *
  * @author David Webb
+ * @author Mark Paluch
  */
 public class BasicCassandraPersistentEntityOrderPropertiesUnitTests {
 
@@ -43,12 +44,12 @@ public class BasicCassandraPersistentEntityOrderPropertiesUnitTests {
 	@Test
 	public void testCompositeKeyPropertyOrder() {
 
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(CompositePK.class);
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(CompositePK.class);
 
-		expected = new LinkedList<CassandraPersistentProperty>();
-		expected.add(entity.getPersistentProperty("key0"));
-		expected.add(entity.getPersistentProperty("key1"));
-		expected.add(entity.getPersistentProperty("key2"));
+		expected = new LinkedList<>();
+		expected.add(entity.getRequiredPersistentProperty("key0"));
+		expected.add(entity.getRequiredPersistentProperty("key1"));
+		expected.add(entity.getRequiredPersistentProperty("key2"));
 
 		final List<CassandraPersistentProperty> actual = new LinkedList<CassandraPersistentProperty>();
 
@@ -67,12 +68,12 @@ public class BasicCassandraPersistentEntityOrderPropertiesUnitTests {
 	@Test
 	public void testTablePropertyOrder() {
 
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(CompositeKeyEntity.class);
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(CompositeKeyEntity.class);
 
 		expected = new LinkedList<CassandraPersistentProperty>();
-		expected.add(entity.getPersistentProperty("key"));
-		expected.add(entity.getPersistentProperty("attribute"));
-		expected.add(entity.getPersistentProperty("text"));
+		expected.add(entity.getRequiredPersistentProperty("key"));
+		expected.add(entity.getRequiredPersistentProperty("attribute"));
+		expected.add(entity.getRequiredPersistentProperty("text"));
 
 		final List<CassandraPersistentProperty> actual = new LinkedList<CassandraPersistentProperty>();
 

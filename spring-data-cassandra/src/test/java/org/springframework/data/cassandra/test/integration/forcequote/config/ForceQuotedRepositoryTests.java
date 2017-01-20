@@ -48,7 +48,7 @@ public class ForceQuotedRepositoryTests {
 		Implicit s = implicitRepository.save(entity);
 		assertThat(entity).isSameAs(s);
 
-		Implicit f = implicitRepository.findOne(key);
+		Implicit f = implicitRepository.findOne(key).get();
 		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query("stringvalue", "\"Implicit\"", "primarykey", f.getPrimaryKey());
@@ -56,7 +56,7 @@ public class ForceQuotedRepositoryTests {
 
 		implicitRepository.delete(key);
 
-		assertThat(implicitRepository.findOne(key)).isNull();
+		assertThat(implicitRepository.findOne(key)).isNotPresent();
 	}
 
 	public void testExplicit(String tableName) {
@@ -66,7 +66,7 @@ public class ForceQuotedRepositoryTests {
 		Explicit s = explicitRepository.save(entity);
 		assertThat(entity).isSameAs(s);
 
-		Explicit f = explicitRepository.findOne(key);
+		Explicit f = explicitRepository.findOne(key).get();
 		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query("stringvalue", String.format("\"%s\"", tableName), "primarykey", f.getPrimaryKey());
@@ -74,7 +74,7 @@ public class ForceQuotedRepositoryTests {
 
 		explicitRepository.delete(key);
 
-		assertThat(explicitRepository.findOne(key)).isNull();
+		assertThat(explicitRepository.findOne(key)).isNotPresent();
 	}
 
 	public void testImplicitProperties() {
@@ -84,7 +84,7 @@ public class ForceQuotedRepositoryTests {
 		ImplicitProperties s = implicitPropertiesRepository.save(entity);
 		assertThat(entity).isSameAs(s);
 
-		ImplicitProperties f = implicitPropertiesRepository.findOne(key);
+		ImplicitProperties f = implicitPropertiesRepository.findOne(key).get();
 		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query("\"stringValue\"", "implicitproperties", "\"primaryKey\"", f.getPrimaryKey());
@@ -92,7 +92,7 @@ public class ForceQuotedRepositoryTests {
 
 		implicitPropertiesRepository.delete(key);
 
-		assertThat(implicitPropertiesRepository.findOne(key)).isNull();
+		assertThat(implicitPropertiesRepository.findOne(key)).isNotPresent();
 	}
 
 	public void testExplicitProperties(String stringValueColumnName, String primaryKeyColumnName) {
@@ -102,7 +102,7 @@ public class ForceQuotedRepositoryTests {
 		ExplicitProperties s = explicitPropertiesRepository.save(entity);
 		assertThat(entity).isSameAs(s);
 
-		ExplicitProperties f = explicitPropertiesRepository.findOne(key);
+		ExplicitProperties f = explicitPropertiesRepository.findOne(key).get();
 		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query(String.format("\"%s\"", stringValueColumnName), "explicitproperties",
@@ -111,6 +111,6 @@ public class ForceQuotedRepositoryTests {
 
 		implicitPropertiesRepository.delete(key);
 
-		assertThat(implicitPropertiesRepository.findOne(key)).isNull();
+		assertThat(implicitPropertiesRepository.findOne(key)).isNotPresent();
 	}
 }

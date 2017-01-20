@@ -31,6 +31,7 @@ import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
+import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
@@ -40,6 +41,7 @@ import com.datastax.driver.core.DataType;
  * Unit tests for {@link BasicCassandraPersistentProperty} with a composite primary key class.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraCompositePrimaryKeyUnitTests {
 
@@ -104,15 +106,16 @@ public class CassandraCompositePrimaryKeyUnitTests {
 	@Before
 	public void setup() {
 		context = new BasicCassandraMappingContext();
-		thing = context.getPersistentEntity(ClassTypeInformation.from(Thing.class));
-		key = context.getPersistentEntity(ClassTypeInformation.from(Key.class));
+		thing = context.getRequiredPersistentEntity(ClassTypeInformation.from(Thing.class));
+		key = context.getRequiredPersistentEntity(ClassTypeInformation.from(Key.class));
 	}
 
 	@Test
 	public void validateMappingInfo() {
 
 		Field field = ReflectionUtils.findField(Thing.class, "id");
-		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(field, null, thing, SIMPLE_TYPE_HOLDER);
+		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(Property.of(field), thing,
+				SIMPLE_TYPE_HOLDER);
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();
 

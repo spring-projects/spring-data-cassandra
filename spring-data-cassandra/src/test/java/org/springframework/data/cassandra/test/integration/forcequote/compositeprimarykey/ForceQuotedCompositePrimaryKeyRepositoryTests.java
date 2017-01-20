@@ -52,7 +52,7 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 		assertThat(entity).isSameAs(s);
 
 		// select
-		Implicit f = implicitRepository.findOne(key);
+		Implicit f = implicitRepository.findOne(key).get();
 		assertThat(entity).isNotSameAs(f);
 		String stringValue = query("stringvalue", "\"Implicit\"", "\"keyZero\"", f.getPrimaryKey().getKeyZero(),
 				"\"keyOne\"", f.getPrimaryKey().getKeyOne());
@@ -62,13 +62,13 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 		f.setStringValue(f.getStringValue() + "X");
 		Implicit u = implicitRepository.save(f);
 		assertThat(f).isSameAs(u);
-		f = implicitRepository.findOne(u.getPrimaryKey());
+		f = implicitRepository.findOne(u.getPrimaryKey()).get();
 		assertThat(u).isNotSameAs(f);
 		assertThat(f.getStringValue()).isEqualTo(u.getStringValue());
 
 		// delete
 		implicitRepository.delete(key);
-		assertThat(implicitRepository.findOne(key)).isNull();
+		assertThat(implicitRepository.findOne(key)).isNotPresent();
 	}
 
 	public void testExplicit(String tableName, String stringValueColumnName, String keyZeroColumnName,
@@ -81,7 +81,7 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 		assertThat(entity).isSameAs(s);
 
 		// select
-		Explicit f = explicitRepository.findOne(key);
+		Explicit f = explicitRepository.findOne(key).get();
 		assertThat(entity).isNotSameAs(f);
 		String stringValue = query(stringValueColumnName, tableName, keyZeroColumnName, f.getPrimaryKey().getKeyZero(),
 				keyOneColumnName, f.getPrimaryKey().getKeyOne());
@@ -91,12 +91,12 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 		f.setStringValue(f.getStringValue() + "X");
 		Explicit u = explicitRepository.save(f);
 		assertThat(f).isSameAs(u);
-		f = explicitRepository.findOne(u.getPrimaryKey());
+		f = explicitRepository.findOne(u.getPrimaryKey()).get();
 		assertThat(u).isNotSameAs(f);
 		assertThat(f.getStringValue()).isEqualTo(u.getStringValue());
 
 		// delete
 		explicitRepository.delete(key);
-		assertThat(explicitRepository.findOne(key)).isNull();
+		assertThat(explicitRepository.findOne(key)).isNotPresent();
 	}
 }

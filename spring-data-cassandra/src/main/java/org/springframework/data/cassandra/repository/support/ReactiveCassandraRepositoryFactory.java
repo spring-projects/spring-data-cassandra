@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -25,7 +26,6 @@ import org.springframework.data.cassandra.repository.query.CassandraEntityInform
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.ReactivePartTreeCassandraQuery;
 import org.springframework.data.cassandra.repository.query.ReactiveStringBasedCassandraQuery;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -88,8 +88,9 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key, org.springframework.data.repository.query.EvaluationContextProvider)
 	 */
 	@Override
-	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
-		return new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext);
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
+			EvaluationContextProvider evaluationContextProvider) {
+		return Optional.of(new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext));
 	}
 
 	/* (non-Javadoc)
@@ -97,12 +98,8 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	 */
 	@SuppressWarnings("unchecked")
 	public <T, ID extends Serializable> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(domainClass);
 
-		if (entity == null) {
-			throw new MappingException(
-					String.format("Could not lookup mapping metadata for domain class %s!", domainClass.getName()));
-		}
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(domainClass);
 
 		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity, operations.getConverter());
 	}

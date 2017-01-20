@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.springframework.cassandra.core.session.DefaultSessionFactory;
 import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.cassandra.core.support.CQLExceptionTranslator;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -245,7 +244,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	public <T> ListenableFuture<T> selectOne(Statement statement, Class<T> entityClass) {
 
 		return new MappingListenableFutureAdapter<>(select(statement, entityClass),
-				list -> list.isEmpty() ? null : list.get(0));
+				list -> list.stream().findFirst().orElse(null));
 	}
 
 	// -------------------------------------------------------------------------
@@ -261,7 +260,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Select select = QueryBuilder.select().countAll().from(getPersistentEntity(entityClass).getTableName().toCql());
+		Select select = QueryBuilder.select().countAll()
+				.from(mappingContext.getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
 		return cqlOperations.queryForObject(select, Long.class);
 	}
@@ -276,7 +276,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
 
 		Select select = QueryBuilder.select().from(entity.getTableName().toCql());
 
@@ -296,7 +296,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 
@@ -387,7 +387,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		CassandraPersistentEntity<?> entity = getPersistentEntity(entityClass);
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(entityClass);
 
 		Delete delete = QueryBuilder.delete().from(entity.getTableName().toCql());
 
@@ -405,27 +405,15 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Truncate truncate = QueryBuilder.truncate(getPersistentEntity(entityClass).getTableName().toCql());
+		Truncate truncate = QueryBuilder
+				.truncate(mappingContext.getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
 		return new MappingListenableFutureAdapter<>(cqlOperations.execute(truncate), aBoolean -> null);
 	}
 
-	private <T> CassandraPersistentEntity<?> getPersistentEntity(Class<T> entityClass) {
-
-		Assert.notNull(entityClass, "Entity type must not be null");
-
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
-
-		if (entity == null) {
-			throw new InvalidDataAccessApiUsageException(
-					String.format("No Persistent Entity information found for the class [%s]", entityClass.getName()));
-		}
-
-		return entity;
-	}
-
 	private CqlIdentifier getTableName(Object entity) {
-		return getPersistentEntity(ClassUtils.getUserClass(entity)).getTableName();
+
+		return mappingContext.getRequiredPersistentEntity(ClassUtils.getUserClass(entity)).getTableName();
 	}
 
 	private static class MappingListenableFutureAdapter<T, S>

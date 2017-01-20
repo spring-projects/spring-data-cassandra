@@ -175,8 +175,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 		assertThat(employee.getId()).isEqualTo("employee-id");
 		assertThat(employee.getPeople()).isNotNull();
 
-		Person apu = employee.getPeople().iterator().next();
-		assertThat(apu.getFirstname()).isEqualTo("Apu");
+		assertThat(employee.getPeople()).extracting(Person::getFirstname).contains("Apu");
 	}
 
 	@Test // DATACASS-296

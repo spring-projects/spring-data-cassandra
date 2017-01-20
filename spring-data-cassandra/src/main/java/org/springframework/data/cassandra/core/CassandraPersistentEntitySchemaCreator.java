@@ -32,8 +32,7 @@ import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 
 /**
@@ -123,8 +122,7 @@ public class CassandraPersistentEntitySchemaCreator {
 		List<CreateUserTypeSpecification> specifications = new ArrayList<>();
 
 		Set<CqlIdentifier> created = new HashSet<>();
-
-		for (CassandraPersistentEntity<?> entity : entities) {
+		entities.forEach(entity -> {
 
 			Set<CqlIdentifier> seen = new LinkedHashSet<>();
 
@@ -138,25 +136,22 @@ public class CassandraPersistentEntitySchemaCreator {
 					.filter(created::add).map(identifier -> mappingContext
 							.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
 					.collect(Collectors.toList()));
-		}
+
+		});
 
 		return specifications;
 	}
 
 	private void visitUserTypes(CassandraPersistentEntity<?> entity, final Set<CqlIdentifier> seen) {
 
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-
-			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty persistentProperty) {
-				CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(persistentProperty);
-
-				if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
+		entity.getPersistentProperties() //
+				.map(mappingContext::getPersistentEntity) //
+				.flatMap(Optionals::toStream) //
+				.filter(CassandraPersistentEntity::isUserDefinedType).forEach(persistentEntity -> {
 					if (seen.add(persistentEntity.getTableName())) {
 						visitUserTypes(persistentEntity, seen);
 					}
-				}
-			}
-		});
+				});
+
 	}
 }

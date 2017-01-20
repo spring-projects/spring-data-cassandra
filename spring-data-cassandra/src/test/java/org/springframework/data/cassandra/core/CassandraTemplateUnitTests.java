@@ -49,7 +49,7 @@ import com.datastax.driver.core.querybuilder.Batch;
 
 /**
  * Unit tests for {@link CassandraTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)

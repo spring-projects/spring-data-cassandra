@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.support;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -81,6 +82,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 		for (S entity : entities) {
 
 			S saved;
+
 			if (entityInformation.isNew(entity)) {
 				saved = operations.insert(entity);
 			} else {
@@ -132,11 +134,11 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
 	 */
 	@Override
-	public T findOne(ID id) {
+	public Optional<T> findOne(ID id) {
 
 		Assert.notNull(id, "The given id must not be null");
 
-		return operations.selectOneById(id, entityInformation.getJavaType());
+		return Optional.ofNullable(operations.selectOneById(id, entityInformation.getJavaType()));
 	}
 
 	/* (non-Javadoc)
@@ -199,7 +201,8 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		Assert.notNull(entity, "The given entity must not be null");
 
-		delete(entityInformation.getId(entity));
+		delete(entityInformation.getId(entity)
+				.orElseThrow(() -> new IllegalArgumentException(String.format("Cannot obtain Id from [%s]", entity))));
 	}
 
 	/* (non-Javadoc)

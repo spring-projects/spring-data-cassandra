@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.mapping;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -78,7 +79,7 @@ public interface CassandraPersistentProperty
 	 * The ordering (ascending or descending) for the column. Valid only for primary key columns; returns null for
 	 * non-primary key columns.
 	 */
-	Ordering getPrimaryKeyOrdering();
+	Optional<Ordering> getPrimaryKeyOrdering();
 
 	/**
 	 * The column's data type. Not valid for a composite primary key.

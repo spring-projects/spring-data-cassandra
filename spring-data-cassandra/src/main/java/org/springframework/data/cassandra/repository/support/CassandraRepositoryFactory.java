@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -26,7 +27,6 @@ import org.springframework.data.cassandra.repository.query.CassandraEntityInform
 import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.PartTreeCassandraQuery;
 import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -95,41 +95,34 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	@SuppressWarnings("unchecked")
 	public <T, ID extends Serializable> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
 
-		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(domainClass);
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(domainClass);
 
-		if (entity == null) {
-			throw new MappingException(
-					String.format("Could not lookup mapping metadata for domain class %s", domainClass.getName()));
-		}
+
 
 		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
 				operations.getConverter());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key)
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(Key, EvaluationContextProvider)
 	 */
 	@Override
-	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
-		return getQueryLookupStrategy(key, null);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key, org.springframework.data.repository.query.EvaluationContextProvider)
-	 */
-	@Override
-	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
-		return new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext);
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
+			EvaluationContextProvider evaluationContextProvider) {
+		return Optional.of(new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext));
 	}
 
 	private class CassandraQueryLookupStrategy implements QueryLookupStrategy {
 
 		private final EvaluationContextProvider evaluationContextProvider;
+
 		private final CassandraMappingContext mappingContext;
+
 		private final CassandraOperations operations;
 
-		public CassandraQueryLookupStrategy(CassandraOperations operations,
-				EvaluationContextProvider evaluationContextProvider, CassandraMappingContext mappingContext) {
+		CassandraQueryLookupStrategy(CassandraOperations operations, EvaluationContextProvider evaluationContextProvider,
+				CassandraMappingContext mappingContext) {
 
 			this.operations = operations;
 			this.evaluationContextProvider = evaluationContextProvider;

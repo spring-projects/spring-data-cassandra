@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.Parameter;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -99,14 +100,14 @@ class ExpressionEvaluatingParameterBinder {
 
 	private int getParameterIndex(CassandraParameters parameters, String parameterName) {
 
-		for (CassandraParameters.CassandraParameter parameter : parameters) {
-			if (parameterName.equals(parameter.getName())) {
-				return parameter.getIndex();
-			}
-		}
-
-		throw new IllegalArgumentException(
-				String.format("Invalid parameter name; Cannot resolve parameter [%s]", parameterName));
+		return parameters.stream() //
+				.filter(cassandraParameter -> cassandraParameter //
+						.getName().filter(s -> s.equals(parameterName)) //
+						.isPresent()) //
+				.mapToInt(Parameter::getIndex) //
+				.findFirst() //
+				.orElseThrow(() -> new IllegalArgumentException(
+						String.format("Invalid parameter name; Cannot resolve parameter [%s]", parameterName)));
 	}
 
 	/**
@@ -117,8 +118,7 @@ class ExpressionEvaluatingParameterBinder {
 	 * @param parameterValues must not be {@literal null}.
 	 * @return the value of the {@code expressionString} evaluation.
 	 */
-	private Object evaluateExpression(String expressionString, CassandraParameters parameters,
-			Object[] parameterValues) {
+	private Object evaluateExpression(String expressionString, CassandraParameters parameters, Object[] parameterValues) {
 
 		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, parameterValues);
 		Expression expression = expressionParser.parseExpression(expressionString);
@@ -139,8 +139,8 @@ class ExpressionEvaluatingParameterBinder {
 		 * Creates new {@link BindingContext}.
 		 *
 		 * @param queryMethod {@link CassandraQueryMethod} on which the parameters are evaluated.
-		 * @param bindings {@link List} of {@link ParameterBinding} containing name or position (index)
-		 * information pertaining to the parameter in the referenced {@code queryMethod}.
+		 * @param bindings {@link List} of {@link ParameterBinding} containing name or position (index) information
+		 *          pertaining to the parameter in the referenced {@code queryMethod}.
 		 */
 		public BindingContext(CassandraQueryMethod queryMethod, List<ParameterBinding> bindings) {
 

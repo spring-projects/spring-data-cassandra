@@ -19,14 +19,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.datastax.driver.core.Statement;
-
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+
+import com.datastax.driver.core.Statement;
 
 /**
  * Interface specifying a basic set of Cassandra operations. Implemented by {@link CassandraTemplate}. Not often used

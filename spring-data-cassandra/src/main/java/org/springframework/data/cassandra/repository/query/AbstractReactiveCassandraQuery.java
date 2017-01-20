@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,27 +88,27 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(method, parameters);
 
-		return (getQueryMethod().isCollectionQuery() ?  Flux.defer(() -> (Publisher<Object>) execute(accessor))
+		return (getQueryMethod().isCollectionQuery() ? Flux.defer(() -> (Publisher<Object>) execute(accessor))
 				: Mono.defer(() -> (Mono<Object>) execute(accessor)));
 	}
 
 	private Object execute(CassandraParameterAccessor parameterAccessor) {
 
-		CassandraParameterAccessor convertingParameterAccessor =
-				new ConvertingParameterAccessor(operations.getConverter(), parameterAccessor);
+		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(operations.getConverter(),
+				parameterAccessor);
 
 		String query = createQuery(convertingParameterAccessor);
 
+		// FIXME: Use ResultProcessor#withDynamicProjection(ParameterAccessor) when available
 		ResultProcessor resultProcessor = method.getResultProcessor().withDynamicProjection(convertingParameterAccessor);
 
-		ReactiveCassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(
-				resultProcessor, operations.getConverter().getMappingContext(), instantiators));
+		ReactiveCassandraQueryExecution queryExecution = getExecution(
+				new ResultProcessingConverter(resultProcessor, operations.getConverter().getMappingContext(), instantiators));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				operations.getConverter().getCustomConversions());
 
-		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType()
-				: returnedType.getReturnedType());
+		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
 
 		return queryExecution.execute(query, resultType);
 	}

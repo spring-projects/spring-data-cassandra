@@ -15,12 +15,10 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MappingException;
 
 /**
@@ -46,15 +44,15 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 
-		if (entity.getType().isInterface() || entity.findAnnotation(Table.class) == null) {
+		if (entity.getType().isInterface() || !entity.findAnnotation(Table.class).isPresent()) {
 			return;
 		}
 
-		List<MappingException> exceptions = new ArrayList<MappingException>();
+		List<MappingException> exceptions = new ArrayList<>();
 
-		final List<CassandraPersistentProperty> idProperties = new ArrayList<CassandraPersistentProperty>();
-		final List<CassandraPersistentProperty> partitionKeyColumns = new ArrayList<CassandraPersistentProperty>();
-		final List<CassandraPersistentProperty> primaryKeyColumns = new ArrayList<CassandraPersistentProperty>();
+		final List<CassandraPersistentProperty> idProperties = new ArrayList<>();
+		final List<CassandraPersistentProperty> partitionKeyColumns = new ArrayList<>();
+		final List<CassandraPersistentProperty> primaryKeyColumns = new ArrayList<>();
 
 		// Ensure entity is not both a @Table(@Persistent) and a @PrimaryKeyClass
 		if (entity.isCompositePrimaryKey()) {
@@ -63,24 +61,20 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 		}
 
 		// Parse entity properties
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-
-			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty property) {
-				if (property.isIdProperty()) {
-					idProperties.add(property);
-				} else if (property.isClusterKeyColumn()) {
-					primaryKeyColumns.add(property);
-				} else if (property.isPartitionKeyColumn()) {
-					partitionKeyColumns.add(property);
-					primaryKeyColumns.add(property);
-				}
+		entity.getPersistentProperties().forEach(property -> {
+			if (property.isIdProperty()) {
+				idProperties.add(property);
+			} else if (property.isClusterKeyColumn()) {
+				primaryKeyColumns.add(property);
+			} else if (property.isPartitionKeyColumn()) {
+				partitionKeyColumns.add(property);
+				primaryKeyColumns.add(property);
 			}
 		});
 
 		// Perform rules verification on Table/Persistent
 		// TODO Verify annotation values with CqlIndentifier
-		
+
 		/*
 		 * Perform rules verification on Table/Persistent
 		 */
@@ -89,9 +83,9 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 			// Can only have one PK
 			if (idProperties.size() != 1) {
-				exceptions.add(new MappingException(String.format(
-					"@%s types must have only one primary attribute, if any; Found %s",
-						Table.class.getSimpleName(), idProperties.size())));
+				exceptions
+						.add(new MappingException(String.format("@%s types must have only one primary attribute, if any; Found %s",
+								Table.class.getSimpleName(), idProperties.size())));
 
 				fail(entity, exceptions);
 			}
@@ -108,9 +102,9 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 		// We have no PKs & only PK Column(s); ensure at least one is of type PARTITIONED
 		if (!primaryKeyColumns.isEmpty() && partitionKeyColumns.isEmpty()) {
-			exceptions.add(new MappingException(String.format(
-				"At least one of the @%s annotations must have a type of PARTITIONED",
-					PrimaryKeyColumn.class.getSimpleName())));
+			exceptions
+					.add(new MappingException(String.format("At least one of the @%s annotations must have a type of PARTITIONED",
+							PrimaryKeyColumn.class.getSimpleName())));
 		}
 
 		// Determine whether or not to throw Exception based on errors found

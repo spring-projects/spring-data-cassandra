@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MappingException;
 
 /**
@@ -53,58 +52,56 @@ public class PrimaryKeyClassEntityMetadataVerifier implements CassandraPersisten
 		Class<?> entityType = entity.getType();
 
 		// Ensure entity is not both a @Table(@Persistent) and a @PrimaryKey
-		if (entity.findAnnotation(Table.class) != null) {
+		if (entity.findAnnotation(Table.class).isPresent()) {
 			exceptions.add(new MappingException(String.format("Entity cannot be of type @%s and @%s",
-				Table.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName())));
+					Table.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName())));
 		}
 
 		// Ensure PrimaryKeyClass only extends Object
 		if (!entityType.getSuperclass().equals(Object.class)) {
-			exceptions.add(new MappingException(String.format("@%s must only extend Object",
-				PrimaryKeyClass.class.getSimpleName())));
+			exceptions.add(
+					new MappingException(String.format("@%s must only extend Object", PrimaryKeyClass.class.getSimpleName())));
 		}
 
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-
-			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty property) {
-				if (property.isCompositePrimaryKey()) {
-					compositePrimaryKeys.add(property);
-				} else if (property.isIdProperty()) {
-					idProperties.add(property);
-				} else if (property.isClusterKeyColumn()) {
-					primaryKeyColumns.add(property);
-				} else if (property.isPartitionKeyColumn()) {
-					partitionKeyColumns.add(property);
-					primaryKeyColumns.add(property);
-				}
+		entity.getPersistentProperties().forEach(property -> {
+			if (property.isCompositePrimaryKey()) {
+				compositePrimaryKeys.add(property);
+			} else if (property.isIdProperty()) {
+				idProperties.add(property);
+			} else if (property.isClusterKeyColumn()) {
+				primaryKeyColumns.add(property);
+			} else if (property.isPartitionKeyColumn()) {
+				partitionKeyColumns.add(property);
+				primaryKeyColumns.add(property);
 			}
 		});
 
-		if (!compositePrimaryKeys.isEmpty()) {
-			exceptions.add(new MappingException(
-				"Composite primary keys are not allowed inside of composite primary key classes"));
+		if (!compositePrimaryKeys.isEmpty())
+
+		{
+			exceptions
+					.add(new MappingException("Composite primary keys are not allowed inside of composite primary key classes"));
 		}
 
 		// Must have at least 1 attribute annotated with @PrimaryKeyColumn
 		if (primaryKeyColumns.isEmpty()) {
-			exceptions.add(new MappingException(String.format(
-				"Composite primary key type [%1$s] has no fields annotated with @%2$s",
-					entity.getType().getName(), PrimaryKeyColumn.class.getSimpleName())));
+			exceptions.add(
+					new MappingException(String.format("Composite primary key type [%1$s] has no fields annotated with @%2$s",
+							entity.getType().getName(), PrimaryKeyColumn.class.getSimpleName())));
 		}
 
 		// At least one of the PrimaryKeyColumns must have a type PARTIONED
 		if (partitionKeyColumns.isEmpty()) {
-			exceptions.add(new MappingException(String.format(
-				"At least one of the @%s annotations must have a type of PARTITIONED",
-					PrimaryKeyColumn.class.getSimpleName())));
+			exceptions
+					.add(new MappingException(String.format("At least one of the @%s annotations must have a type of PARTITIONED",
+							PrimaryKeyColumn.class.getSimpleName())));
 		}
 
 		// Cannot have any Id or PrimaryKey Annotations
 		if (!idProperties.isEmpty()) {
-			exceptions.add(new MappingException(String.format(
-				"Annotations @%1$s and @%2$s are invalid for type annotated with @%3$s",
-					Id.class.getSimpleName(), PrimaryKey.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName())));
+			exceptions.add(
+					new MappingException(String.format("Annotations @%1$s and @%2$s are invalid for type annotated with @%3$s",
+							Id.class.getSimpleName(), PrimaryKey.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName())));
 		}
 
 		// Determine whether or not to throw Exception based on errors found

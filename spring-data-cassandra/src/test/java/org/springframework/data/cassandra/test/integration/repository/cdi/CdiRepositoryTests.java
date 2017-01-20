@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.test.integration.repository.cdi;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Optional;
+
 import org.apache.webbeans.cditest.CdiTestContainer;
 import org.apache.webbeans.cditest.CdiTestContainerLoader;
 import org.junit.AfterClass;
@@ -81,21 +83,21 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 
 		assertThat(repository.exists(bean.getUsername())).isTrue();
 
-		User retrieved = repository.findOne(bean.getUsername());
-		assertThat(retrieved).isNotNull();
-		assertThat(retrieved.getUsername()).isEqualTo(bean.getUsername());
-		assertThat(retrieved.getFirstName()).isEqualTo(bean.getFirstName());
-		assertThat(retrieved.getLastName()).isEqualTo(bean.getLastName());
+		Optional<User> retrieved = repository.findOne(bean.getUsername());
+
+		assertThat(retrieved).hasValueSatisfying(actual -> {
+			assertThat(actual.getUsername()).isEqualTo(bean.getUsername());
+			assertThat(actual.getFirstName()).isEqualTo(bean.getFirstName());
+			assertThat(actual.getLastName()).isEqualTo(bean.getLastName());
+		});
 
 		assertThat(repository.count()).isEqualTo(1);
-
 		assertThat(repository.exists(bean.getUsername())).isTrue();
 
 		repository.delete(bean);
 
 		assertThat(repository.count()).isEqualTo(0);
-		retrieved = repository.findOne(bean.getUsername());
-		assertThat(retrieved).isNull();
+		assertThat(repository.findOne(bean.getUsername())).isNotPresent();
 	}
 
 	@Test // DATACASS-249

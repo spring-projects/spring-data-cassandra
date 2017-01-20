@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
@@ -57,7 +58,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-292
 	public void executeShouldRemoveRecords() throws Exception {
 
-		template.execute("DELETE FROM user WHERE id = 'WHITE'").get();
+		getUninterruptibly(template.execute("DELETE FROM user WHERE id = 'WHITE'"));
 
 		assertThat(session.execute("SELECT * FROM user").one()).isNull();
 	}
@@ -66,9 +67,9 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	public void queryShouldInvokeCallback() throws Exception {
 
 		List<String> result = new ArrayList<>();
-		template.query("SELECT id FROM user;", row -> {
+		getUninterruptibly(template.query("SELECT id FROM user;", row -> {
 			result.add(row.getString(0));
-		}).get();
+		}));
 
 		assertThat(result).contains("WHITE");
 	}
@@ -76,7 +77,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-292
 	public void queryForObjectShouldReturnFirstColumn() throws Exception {
 
-		String id = template.queryForObject("SELECT id FROM user;", String.class).get();
+		String id = getUninterruptibly(template.queryForObject("SELECT id FROM user;", String.class));
 
 		assertThat(id).isEqualTo("WHITE");
 	}
@@ -84,7 +85,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-292
 	public void queryForObjectShouldReturnMap() throws Exception {
 
-		Map<String, Object> map = template.queryForMap("SELECT * FROM user;").get();
+		Map<String, Object> map = getUninterruptibly(template.queryForMap("SELECT * FROM user;"));
 
 		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
 	}
@@ -92,7 +93,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-292
 	public void executeStatementShouldRemoveRecords() throws Exception {
 
-		template.execute(QueryBuilder.delete().from("user").where(QueryBuilder.eq("id", "WHITE"))).get();
+		getUninterruptibly(template.execute(QueryBuilder.delete().from("user").where(QueryBuilder.eq("id", "WHITE"))));
 
 		assertThat(session.execute("SELECT * FROM user").one()).isNull();
 	}
@@ -101,9 +102,9 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	public void queryStatementShouldInvokeCallback() throws Exception {
 
 		List<String> result = new ArrayList<>();
-		template.query(QueryBuilder.select("id").from("user"), row -> {
+		getUninterruptibly(template.query(QueryBuilder.select("id").from("user"), row -> {
 			result.add(row.getString(0));
-		}).get();
+		}));
 
 		assertThat(result).contains("WHITE");
 	}
@@ -111,7 +112,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-292
 	public void queryForObjectStatementShouldReturnFirstColumn() throws Exception {
 
-		String id = template.queryForObject(QueryBuilder.select("id").from("user"), String.class).get();
+		String id = getUninterruptibly(template.queryForObject(QueryBuilder.select("id").from("user"), String.class));
 
 		assertThat(id).isEqualTo("WHITE");
 	}
@@ -119,7 +120,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-292
 	public void queryForObjectStatementShouldReturnMap() throws Exception {
 
-		Map<String, Object> map = template.queryForMap(QueryBuilder.select().from("user")).get();
+		Map<String, Object> map = getUninterruptibly(template.queryForMap(QueryBuilder.select().from("user")));
 
 		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
 	}
@@ -127,7 +128,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-292
 	public void executeWithArgsShouldRemoveRecords() throws Exception {
 
-		template.execute("DELETE FROM user WHERE id = ?", "WHITE").get();
+		getUninterruptibly(template.execute("DELETE FROM user WHERE id = ?", "WHITE"));
 
 		assertThat(session.execute("SELECT * FROM user").one()).isNull();
 	}
@@ -136,9 +137,9 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	public void queryPreparedStatementShouldInvokeCallback() throws Exception {
 
 		List<String> result = new ArrayList<>();
-		template.query("SELECT id FROM user WHERE id = ?;", row -> {
+		getUninterruptibly(template.query("SELECT id FROM user WHERE id = ?;", row -> {
 			result.add(row.getString(0));
-		}, "WHITE").get();
+		}, "WHITE"));
 
 		assertThat(result).contains("WHITE");
 	}
@@ -147,12 +148,12 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	public void queryPreparedStatementCreatorShouldInvokeCallback() throws Exception {
 
 		List<String> result = new ArrayList<>();
-		template.query(
+		getUninterruptibly(template.query(
 				session -> new GuavaListenableFutureAdapter<PreparedStatement>(
 						session.prepareAsync("SELECT id FROM user WHERE id = ?;"), template.getExceptionTranslator()),
 				ps -> ps.bind("WHITE"), row -> {
 					result.add(row.getString(0));
-				}).get();
+				}));
 
 		assertThat(result).contains("WHITE");
 	}
@@ -160,7 +161,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-292
 	public void queryForObjectWithArgsShouldReturnFirstColumn() throws Exception {
 
-		String id = template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE").get();
+		String id = getUninterruptibly(template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE"));
 
 		assertThat(id).isEqualTo("WHITE");
 	}
@@ -168,8 +169,17 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-292
 	public void queryForObjectWithArgsShouldReturnMap() throws Exception {
 
-		Map<String, Object> map = template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE").get();
+		Map<String, Object> map = getUninterruptibly(template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE"));
 
 		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+	}
+
+	private static <T> T getUninterruptibly(Future<T> future) {
+
+		try {
+			return future.get();
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
 	}
 }

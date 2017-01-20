@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
@@ -58,17 +59,15 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public ID getId(T entity) {
+	public Optional<ID> getId(T entity) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		CassandraPersistentProperty idProperty = entityMetadata.getIdProperty();
+		Optional<CassandraPersistentProperty> idProperty = entityMetadata.getIdProperty();
 
-		if (idProperty != null) {
-			return (ID) entityMetadata.getIdentifierAccessor(entity).getIdentifier();
-		}
-
-		return (ID) converter.getId(entity, entityMetadata);
+		// FIXME: Cast
+		return idProperty.map(p -> entityMetadata.getIdentifierAccessor(entity).getIdentifier())
+				.orElseGet(() -> Optional.ofNullable(converter.getId(entity, entityMetadata))).map(o -> (ID) o);
 	}
 
 	/* (non-Javadoc)
@@ -77,8 +76,7 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	@SuppressWarnings("unchecked")
 	@Override
 	public Class<ID> getIdType() {
-		return (Class<ID>) (entityMetadata.getIdProperty() == null ? MapId.class
-				: entityMetadata.getIdProperty().getType());
+		return entityMetadata.getIdProperty().map(p -> (Class<ID>) p.getType()).orElse((Class<ID>) MapId.class);
 	}
 
 	/* (non-Javadoc)

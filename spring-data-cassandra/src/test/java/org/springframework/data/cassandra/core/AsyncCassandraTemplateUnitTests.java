@@ -157,7 +157,8 @@ public class AsyncCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		ListenableFuture<Person> future = template.selectOne("SELECT * FROM person WHERE id='myid';", Person.class);
+		ListenableFuture<Person> future = template.selectOne("SELECT * FROM person WHERE id='myid';",
+				Person.class);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(new Person("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());

@@ -143,7 +143,7 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	private CassandraPersistentEntity<?> getEntity(Class<?> entityClass) {
-		return context.getPersistentEntity(entityClass);
+		return context.getRequiredPersistentEntity(entityClass);
 	}
 
 	interface MyInterface {

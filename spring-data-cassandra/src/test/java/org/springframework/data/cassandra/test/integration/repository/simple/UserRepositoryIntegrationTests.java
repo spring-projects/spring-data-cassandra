@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 
@@ -112,8 +113,8 @@ public class UserRepositoryIntegrationTests {
 
 	public void findsUserById() throws Exception {
 
-		User user = repository.findOne(tom.getUsername());
-		assertThat(user).isNotNull().isEqualTo(tom);
+		Optional<User> user = repository.findOne(tom.getUsername());
+		assertThat(user).isNotNull().contains(tom);
 
 	}
 
@@ -172,9 +173,12 @@ public class UserRepositoryIntegrationTests {
 
 		repository.save(tom);
 
-		User loadedTom = repository.findOne(tom.getUsername());
+		Optional<User> loadedTom = repository.findOne(tom.getUsername());
 
-		assertThat(loadedTom.getPassword()).isNull();
-		assertThat(loadedTom.getFriends()).isNull();
+		assertThat(loadedTom).hasValueSatisfying(actual -> {
+
+			assertThat(actual.getPassword()).isNull();
+			assertThat(actual.getFriends()).isNull();
+		});
 	}
 }

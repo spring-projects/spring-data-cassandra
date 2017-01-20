@@ -25,6 +25,7 @@ import java.util.Date;
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
@@ -91,14 +92,14 @@ public class BasicCassandraPersistentPropertyUnitTests {
 				"column");
 
 		assertThat(persistentProperty.getDataType().getName()).isEqualTo(Name.COUNTER);
-		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();
+		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isPresent();
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Class<?> type, String fieldName) {
 
 		Field field = ReflectionUtils.findField(type, fieldName);
 
-		return new BasicCassandraPersistentProperty(field, null, getEntity(type), new CassandraSimpleTypeHolder());
+		return new BasicCassandraPersistentProperty(Property.of(field), getEntity(type), new CassandraSimpleTypeHolder());
 	}
 
 	private <T> BasicCassandraPersistentEntity<T> getEntity(Class<T> type) {

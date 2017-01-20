@@ -18,7 +18,9 @@ package org.springframework.data.cassandra.mapping;
 import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.BeansException;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -30,7 +32,6 @@ import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.data.cassandra.util.SpelUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.TypeInformation;
@@ -53,15 +54,18 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
 
+	private static final Optional<Comparator<CassandraPersistentProperty>> PROPERTY_COMPARATOR = Optional
+			.of(CassandraPersistentPropertyComparator.INSTANCE);
+
 	protected ApplicationContext context;
 
-	protected Boolean forceQuote;
+	protected Optional<Boolean> forceQuote = Optional.empty();
 
 	protected CassandraMappingContext mappingContext;
 
 	protected CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
-	protected CqlIdentifier tableName;
+	protected Optional<CqlIdentifier> tableName = Optional.empty();
 
 	protected StandardEvaluationContext spelContext;
 
@@ -93,7 +97,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext,
 			CassandraPersistentEntityMetadataVerifier verifier) {
 
-		super(typeInformation, CassandraPersistentPropertyComparator.INSTANCE);
+		// FIXME: Constructor with comparator, no optionality here
+		super(typeInformation, PROPERTY_COMPARATOR);
 
 		this.mappingContext = mappingContext;
 
@@ -102,10 +107,11 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	protected CqlIdentifier determineTableName() {
 
-		Table tableAnnotation = findAnnotation(Table.class);
+		Optional<Table> tableAnnotation = findAnnotation(Table.class);
 
-		return (tableAnnotation != null ? determineName(tableAnnotation.value(), tableAnnotation.forceQuote())
-				: determineDefaultName());
+		return tableAnnotation //
+				.map(annotation -> determineName(annotation.value(), annotation.forceQuote())) //
+				.orElseGet(this::determineDefaultName);
 	}
 
 	/* (non-Javadoc)
@@ -129,7 +135,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return (findAnnotation(PrimaryKeyClass.class) != null);
+		return findAnnotation(PrimaryKeyClass.class).isPresent();
 	}
 
 	/* (non-Javadoc)
@@ -151,16 +157,14 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	protected void addCompositePrimaryKeyProperties(CassandraPersistentEntity<?> compositePrimaryKeyEntity,
 			final List<CassandraPersistentProperty> properties) {
 
-		compositePrimaryKeyEntity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+		compositePrimaryKeyEntity.getPersistentProperties().forEach(property -> {
 
-			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty property) {
-				if (property.isCompositePrimaryKey()) {
-					addCompositePrimaryKeyProperties(property.getCompositePrimaryKeyEntity(), properties);
-				} else {
-					properties.add(property);
-				}
+			if (property.isCompositePrimaryKey()) {
+				addCompositePrimaryKeyProperties(property.getCompositePrimaryKeyEntity(), properties);
+			} else {
+				properties.add(property);
 			}
+
 		});
 	}
 
@@ -173,6 +177,10 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		if (verifier != null) {
 			verifier.verify(this);
+		}
+
+		if (!tableName.isPresent()) {
+			setTableName(determineTableName());
 		}
 	}
 
@@ -204,9 +212,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	@Override
 	public void setForceQuote(boolean forceQuote) {
-		if (this.forceQuote == null || this.forceQuote != forceQuote) {
-			this.forceQuote = forceQuote;
-			setTableName(cqlId(tableName.getUnquoted(), forceQuote));
+
+		boolean changed = !this.forceQuote.isPresent() || this.forceQuote.filter(v -> v != forceQuote).isPresent();
+
+		this.forceQuote = Optional.of(forceQuote);
+
+		if (changed) {
+			setTableName(cqlId(getTableName().getUnquoted(), forceQuote));
 		}
 	}
 
@@ -225,7 +237,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	public void setTableName(CqlIdentifier tableName) {
 
 		Assert.notNull(tableName, "CqlIdentifier must not be null");
-		this.tableName = tableName;
+		this.tableName = Optional.of(tableName);
 	}
 
 	/* (non-Javadoc)
@@ -233,8 +245,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	@Override
 	public CqlIdentifier getTableName() {
-		tableName = (tableName != null ? tableName : determineTableName());
-		return tableName;
+		return tableName.orElseGet(this::determineTableName);
 	}
 
 	/**

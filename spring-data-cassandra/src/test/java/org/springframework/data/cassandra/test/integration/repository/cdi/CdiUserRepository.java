@@ -15,14 +15,17 @@
  */
 package org.springframework.data.cassandra.test.integration.repository.cdi;
 
+import java.util.Optional;
+
 import org.springframework.data.cassandra.test.integration.repository.simple.User;
 import org.springframework.data.repository.CrudRepository;
 
 /**
  * @author Mohsin Husen
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public interface CdiUserRepository extends CrudRepository<User, String> {
 
-	User findOne(String id);
+	Optional<User> findOne(String id);
 }

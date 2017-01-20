@@ -13,7 +13,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.springframework.data.cassandra.mapping;
 
 import static org.assertj.core.api.Assertions.*;
@@ -31,6 +30,7 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
  * functionality of the {@link CassandraPersistentPropertyComparator} class.
  *
  * @author John Blum
+ * @author Mark Paluch
  * @since 1.5.0
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -177,11 +177,11 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	public void columnNameComparisonShouldHonorContract() throws Exception {
 
 		BasicCassandraMappingContext context = new BasicCassandraMappingContext();
-		CassandraPersistentEntity<?> persistentEntity = context.getPersistentEntity(TwoColumns.class);
+		CassandraPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(TwoColumns.class);
 
-		CassandraPersistentProperty annotated = persistentEntity.getPersistentProperty("annotated");
-		CassandraPersistentProperty another = persistentEntity.getPersistentProperty("anotherAnnotated");
-		CassandraPersistentProperty plain = persistentEntity.getPersistentProperty("plain");
+		CassandraPersistentProperty annotated = persistentEntity.getRequiredPersistentProperty("annotated");
+		CassandraPersistentProperty another = persistentEntity.getRequiredPersistentProperty("anotherAnnotated");
+		CassandraPersistentProperty plain = persistentEntity.getRequiredPersistentProperty("plain");
 
 		assertThat(INSTANCE.compare(annotated, plain)).isLessThanOrEqualTo(-1);
 		assertThat(INSTANCE.compare(plain, annotated)).isGreaterThanOrEqualTo(1);

@@ -52,13 +52,15 @@ public class CassandraRepositoryFactoryUnitTests {
 
 	@Before
 	public void setUp() {
+
 		when(template.getConverter()).thenReturn(converter);
 		when(converter.getMappingContext()).thenReturn(mappingContext);
 	}
 
 	@Test // DATACASS-7
 	public void usesMappingCassandraEntityInformationIfMappingContextSet() {
-		when(mappingContext.getPersistentEntity(Person.class)).thenReturn(entity);
+
+		when(mappingContext.getRequiredPersistentEntity(Person.class)).thenReturn(entity);
 		when(entity.getType()).thenReturn(Person.class);
 
 		CassandraRepositoryFactory repositoryFactory = new CassandraRepositoryFactory(template);
@@ -71,7 +73,8 @@ public class CassandraRepositoryFactoryUnitTests {
 
 	@Test // DATACASS-7
 	public void createsRepositoryWithIdTypeLong() {
-		when(mappingContext.getPersistentEntity(Person.class)).thenReturn(entity);
+
+		when(mappingContext.getRequiredPersistentEntity(Person.class)).thenReturn(entity);
 		when(entity.getType()).thenReturn(Person.class);
 
 		CassandraRepositoryFactory repositoryFactory = new CassandraRepositoryFactory(template);

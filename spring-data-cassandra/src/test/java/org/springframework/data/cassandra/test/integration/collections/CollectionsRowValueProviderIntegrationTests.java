@@ -84,12 +84,11 @@ public class CollectionsRowValueProviderIntegrationTests extends AbstractKeyspac
 		Select select = QueryBuilder.select().all().from("bookHistory");
 		select.where(QueryBuilder.eq("isbn", "123456-1"));
 
-		BookHistory b = operations.selectOne(select, BookHistory.class);
+		BookHistory result = operations.selectOne(select, BookHistory.class);
 
-		assertThat(b.getCheckOuts()).isNotNull();
-		assertThat("Spring Data Cassandra Guide").isEqualTo(b.getTitle());
-		assertThat("Cassandra Guru").isEqualTo(b.getAuthor());
-
+		assertThat(result.getCheckOuts()).isNotNull();
+		assertThat(result.getTitle()).isEqualTo("Spring Data Cassandra Guide");
+		assertThat(result.getAuthor()).isEqualTo("Cassandra Guru");
 	}
 
 	@Test
@@ -120,12 +119,12 @@ public class CollectionsRowValueProviderIntegrationTests extends AbstractKeyspac
 		Select select = QueryBuilder.select().all().from("bookReference");
 		select.where(QueryBuilder.eq("isbn", "123456-1"));
 
-		BookReference b = operations.selectOne(select, BookReference.class);
+		BookReference result = operations.selectOne(select, BookReference.class);
 
-		assertThat(b.getReferences()).isNotNull();
-		assertThat(b.getBookmarks()).isNotNull();
-		assertThat("Spring Data Cassandra Guide").isEqualTo(b.getTitle());
-		assertThat("Cassandra Guru").isEqualTo(b.getAuthor());
+		assertThat(result.getReferences()).isNotNull();
+		assertThat(result.getBookmarks()).isNotNull();
+		assertThat(result.getTitle()).isEqualTo("Spring Data Cassandra Guide");
+		assertThat(result.getAuthor()).isEqualTo("Cassandra Guru");
 
 	}
 }

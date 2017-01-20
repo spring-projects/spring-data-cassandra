@@ -30,7 +30,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * Integration tests for {@link AsyncCassandraTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
@@ -57,7 +57,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		ListenableFuture<Person> insert = template.insert(person);
 
-		assertThat(getUninterruptibly(insert)).isNotNull().isEqualTo(person);
+		assertThat(getUninterruptibly(insert)).isEqualTo(person);
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isEqualTo(person);
 	}
 
@@ -66,7 +66,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		template.insert(person).get();
+		getUninterruptibly(template.insert(person));
 
 		ListenableFuture<Long> count = template.count(Person.class);
 		assertThat(getUninterruptibly(count)).isEqualTo(1L);
@@ -76,12 +76,12 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	public void updateShouldUpdateEntity() throws Exception {
 
 		Person person = new Person("heisenberg", "Walter", "White");
-		template.insert(person).get();
+		getUninterruptibly(template.insert(person));
 
 		person.setFirstname("Walter Hartwell");
-		Person updated = template.update(person).get();
-		assertThat(updated).isNotNull();
+		Person updated = getUninterruptibly(template.update(person));
 
+		assertThat(updated).isNotNull();
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isEqualTo(person);
 	}
 
@@ -89,11 +89,11 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	public void deleteShouldRemoveEntity() throws Exception {
 
 		Person person = new Person("heisenberg", "Walter", "White");
-		template.insert(person).get();
+		getUninterruptibly(template.insert(person));
 
-		Person deleted = template.delete(person).get();
+		Person deleted = getUninterruptibly(template.delete(person));
+
 		assertThat(deleted).isNotNull();
-
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isNull();
 	}
 
@@ -101,9 +101,9 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	public void deleteByIdShouldRemoveEntity() throws Exception {
 
 		Person person = new Person("heisenberg", "Walter", "White");
-		template.insert(person).get();
+		getUninterruptibly(template.insert(person));
 
-		Boolean deleted = template.deleteById(person.getId(), Person.class).get();
+		Boolean deleted = getUninterruptibly(template.deleteById(person.getId(), Person.class));
 		assertThat(deleted).isTrue();
 
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isNull();

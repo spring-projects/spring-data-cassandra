@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.cassandra.convert;
+
+import java.util.Optional;
 
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
@@ -62,18 +64,17 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@SuppressWarnings("unchecked")
-	public Object getPropertyValue(CassandraPersistentProperty property) {
+	public <T> Optional<T> getPropertyValue(CassandraPersistentProperty property) {
 
-		String expression = property.getSpelExpression();
-
-		if (expression != null) {
-			return evaluator.evaluate(expression);
+		Optional<String> spelExpression = property.getSpelExpression();
+		if (spelExpression.isPresent()) {
+			return spelExpression.flatMap(s -> Optional.ofNullable(evaluator.evaluate(s)));
 		}
 
 		String name = property.getColumnName().toCql();
 		DataType fieldType = udtValue.getType().getFieldType(name);
 
-		return udtValue.get(name, codecRegistry.codecFor(fieldType));
+		return Optional.ofNullable(udtValue.get(name, codecRegistry.codecFor(fieldType)));
 	}
 
 	/* (non-Javadoc)

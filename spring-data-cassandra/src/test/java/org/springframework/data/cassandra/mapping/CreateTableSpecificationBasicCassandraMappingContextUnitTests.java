@@ -71,7 +71,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-296
 	public void customConversionTestShouldCreateCorrectTableDefinition() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getPersistentEntity(Employee.class);
+		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
 
 		CreateTableSpecification specification = ctx.getCreateTableSpecificationFor(persistentEntity);
 
@@ -97,7 +97,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-296
 	public void customConversionTestShouldHonorTypeAnnotationAndCreateCorrectTableDefinition() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getPersistentEntity(Employee.class);
+		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
 
 		CreateTableSpecification specification = ctx.getCreateTableSpecificationFor(persistentEntity);
 
@@ -308,7 +308,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		CustomConversions customConversions = new CustomConversions(Collections.EMPTY_LIST);
 		ctx.setCustomConversions(customConversions);
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getPersistentEntity(persistentEntityClass);
+		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(persistentEntityClass);
 		return ctx.getCreateTableSpecificationFor(persistentEntity);
 	}
 

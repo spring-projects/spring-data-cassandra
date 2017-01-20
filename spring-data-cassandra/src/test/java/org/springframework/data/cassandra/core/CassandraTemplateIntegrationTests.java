@@ -69,7 +69,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		Person inserted = template.insert(person);
 
-		assertThat(inserted).isNotNull().isEqualTo(person);
+		assertThat(inserted).isEqualTo(person);
 		assertThat(template.selectOneById(person.getId(), Person.class)).isEqualTo(person);
 	}
 
@@ -91,9 +91,10 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		template.insert(person);
 
 		person.setFirstname("Walter Hartwell");
-		Person updated = template.update(person);
-		assertThat(updated).isNotNull();
 
+		Person updated = template.update(person);
+
+		assertThat(updated).isNotNull();
 		assertThat(template.selectOneById(person.getId(), Person.class)).isEqualTo(person);
 	}
 
@@ -104,8 +105,8 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		template.insert(person);
 
 		Person deleted = template.delete(person);
-		assertThat(deleted).isNotNull();
 
+		assertThat(deleted).isNotNull();
 		assertThat(template.selectOneById(person.getId(), Person.class)).isNull();
 	}
 
@@ -202,7 +203,6 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		UserToken loaded = template.selectOneById(
 				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()), UserToken.class);
 
-		assertThat(loaded).isNotNull();
 		assertThat(loaded.getUserComment()).isEqualTo("comment");
 
 		template.delete(userToken);

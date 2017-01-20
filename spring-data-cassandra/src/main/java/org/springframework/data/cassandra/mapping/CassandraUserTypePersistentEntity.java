@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.cassandra.mapping;
+
+import java.util.Optional;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.model.MappingException;
@@ -61,8 +63,10 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	 */
 	@Override
 	protected CqlIdentifier determineTableName() {
-		UserDefinedType typeAnnotation = findAnnotation(UserDefinedType.class);
-		return determineName(typeAnnotation.value(), typeAnnotation.forceQuote());
+
+		Optional<UserDefinedType> typeAnnotation = findAnnotation(UserDefinedType.class);
+		return typeAnnotation.map(userDefinedType -> determineName(userDefinedType.value(), userDefinedType.forceQuote()))
+				.orElseGet(super::determineDefaultName);
 	}
 
 	/* (non-Javadoc)

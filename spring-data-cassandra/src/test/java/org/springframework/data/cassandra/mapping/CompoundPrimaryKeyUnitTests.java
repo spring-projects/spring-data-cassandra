@@ -23,6 +23,7 @@ import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
@@ -31,6 +32,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CompoundPrimaryKeyUnitTests {
 
@@ -61,12 +63,12 @@ public class CompoundPrimaryKeyUnitTests {
 	@Test
 	public void checkIdProperty() {
 		Field id = ReflectionUtils.findField(Timeline.class, "id");
-		CassandraPersistentProperty property = getPropertyFor(id);
+		CassandraPersistentProperty property = getPropertyFor(Property.of(id));
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();
 	}
 
-	private CassandraPersistentProperty getPropertyFor(Field field) {
-		return new BasicCassandraPersistentProperty(field, null, entity, new CassandraSimpleTypeHolder());
+	private CassandraPersistentProperty getPropertyFor(Property property) {
+		return new BasicCassandraPersistentProperty(property, entity, new CassandraSimpleTypeHolder());
 	}
 }

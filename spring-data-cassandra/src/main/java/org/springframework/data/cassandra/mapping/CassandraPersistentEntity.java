@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,9 @@ import com.datastax.driver.core.UserType;
  * 
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
+// TODO: Not extend MutablePersistentEntity but rather PersistentEntity.
 public interface CassandraPersistentEntity<T>
 		extends MutablePersistentEntity<T, CassandraPersistentProperty>, ApplicationContextAware {
 
@@ -39,6 +41,7 @@ public interface CassandraPersistentEntity<T>
 	 */
 	boolean isCompositePrimaryKey();
 
+	// TODO: return rather a Stream, rename to "getPrimaryKeyProperties"
 	List<CassandraPersistentProperty> getCompositePrimaryKeyProperties();
 
 	/**
@@ -46,12 +49,18 @@ public interface CassandraPersistentEntity<T>
 	 */
 	CqlIdentifier getTableName();
 
+	/**
+	 * Sets the CQL table name.
+	 * 
+	 * @param tableName must not be {@literal null}.
+	 */
 	void setTableName(CqlIdentifier tableName);
 
-	CassandraMappingContext getMappingContext();
-
-	ApplicationContext getApplicationContext();
-
+	/**
+	 * Sets whether to enforce quoting when using the {@link #getTableName()} in CQL.
+	 * 
+	 * @param forceQuote {@literal true} to enforce quoting; {@literal false} to disable enforced quoting usage.
+	 */
 	void setForceQuote(boolean forceQuote);
 
 	/**
@@ -67,4 +76,9 @@ public interface CassandraPersistentEntity<T>
 	 * @see UserDefinedType
 	 */
 	UserType getUserType();
+
+	// TODO: Review if that's required or it can be handled in a different way
+	CassandraMappingContext getMappingContext();
+
+	ApplicationContext getApplicationContext();
 }

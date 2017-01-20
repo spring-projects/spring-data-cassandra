@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.cassandra.convert;
+
+import java.util.Optional;
 
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
@@ -66,12 +68,12 @@ public interface CassandraConverter
 	/**
 	 * Converts the given object into one Cassandra will be able to store natively in a column.
 	 *
-	 * @param obj {@link Object} to convert; can be {@literal null}.
+	 * @param obj {@link Object} to convert, must not be {@literal null}.
 	 * @param typeInformation {@link TypeInformation} used to describe the object type; must not be {@literal null}.
 	 * @return the result of the conversion.
 	 * @since 1.5
 	 */
-	Object convertToCassandraColumn(Object obj, TypeInformation<?> typeInformation);
+	<T> Optional<Object> convertToCassandraColumn(Optional<T> obj, TypeInformation<?> typeInformation);
 
 	/**
 	 * Returns the {@link CustomConversions} registered in the {@link CassandraConverter}.

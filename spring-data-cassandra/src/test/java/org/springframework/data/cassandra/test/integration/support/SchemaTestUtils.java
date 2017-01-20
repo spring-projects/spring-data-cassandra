@@ -44,7 +44,7 @@ public class SchemaTestUtils {
 	public static void potentiallyCreateTableFor(Class<?> entityClass, CassandraOperations operations) {
 
 		CassandraMappingContext mappingContext = operations.getConverter().getMappingContext();
-		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entityClass);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(entityClass);
 
 		operations.getCqlOperations().execute(new SessionCallback<Object>() {
 			@Override

@@ -22,6 +22,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,15 +84,15 @@ public class BasicCassandraPersistentEntityUnitTests {
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
 				new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
 
-		entitySpy.tableName = CqlIdentifier.cqlId("Messages", false);
+		entitySpy.setTableName(CqlIdentifier.cqlId("Messages", false));
 
-		assertThat(entitySpy.forceQuote).isNull();
+		assertThat(entitySpy.forceQuote).isNotPresent();
 
 		entitySpy.setForceQuote(true);
 
-		assertThat(entitySpy.forceQuote).isTrue();
+		assertThat(entitySpy.forceQuote).contains(true);
 
-		verify(entitySpy, times(1)).setTableName(isA(CqlIdentifier.class));
+		verify(entitySpy, times(2)).setTableName(isA(CqlIdentifier.class));
 	}
 
 	@Test
@@ -99,10 +100,10 @@ public class BasicCassandraPersistentEntityUnitTests {
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
 				new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
 
-		entitySpy.forceQuote = true;
+		entitySpy.forceQuote = Optional.of(true);
 		entitySpy.setForceQuote(true);
 
-		assertThat(entitySpy.forceQuote).isTrue();
+		assertThat(entitySpy.forceQuote).contains(true);
 
 		verify(entitySpy, never()).setTableName(isA(CqlIdentifier.class));
 	}
