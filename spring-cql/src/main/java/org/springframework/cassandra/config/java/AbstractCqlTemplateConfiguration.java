@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Bean;
  * and {@link com.datastax.driver.core.Cluster} creation. This class is usually extended by user configuration classes.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  * @see org.springframework.cassandra.config.java.AbstractClusterConfiguration
  * @see org.springframework.cassandra.config.java.AbstractSessionConfiguration
  * @see com.datastax.driver.core.Session
@@ -31,8 +32,14 @@ import org.springframework.context.annotation.Bean;
  */
 public abstract class AbstractCqlTemplateConfiguration extends AbstractSessionConfiguration {
 
+	/**
+	 * Creates a {@link CqlTemplate} configured with {@link #session()}.
+	 * 
+	 * @return the {@link CqlTemplate}.
+	 * @see #session()
+	 */
 	@Bean
-	public CqlTemplate cqlTemplate() throws Exception {
+	public CqlTemplate cqlTemplate() {
 		return new CqlTemplate(session().getObject());
 	}
 }
