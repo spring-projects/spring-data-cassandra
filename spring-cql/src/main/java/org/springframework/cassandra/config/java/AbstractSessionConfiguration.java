@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,28 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Spring {@link @Configuration} class used to configure a Cassandra client application
- * {@link com.datastax.driver.core.Session} connected to a Cassandra {@link com.datastax.driver.core.Cluster}.
- *
- * Enables a Cassandra Keyspace to be specified along with the ability to execute arbitrary CQL on startup
- * as well as shutdown.
+ * {@link com.datastax.driver.core.Session} connected to a Cassandra {@link com.datastax.driver.core.Cluster}. Enables a
+ * Cassandra Keyspace to be specified along with the ability to execute arbitrary CQL on startup as well as shutdown.
  *
  * @author Matthew T. Adams
  * @author John Blum
+ * @author Mark Paluch
  * @see org.springframework.cassandra.config.java.AbstractClusterConfiguration
  * @see org.springframework.context.annotation.Configuration
  */
 @Configuration
 public abstract class AbstractSessionConfiguration extends AbstractClusterConfiguration {
 
+	/**
+	 * Creates a {@link CassandraCqlSessionFactoryBean} that provides a Cassandra
+	 * {@link com.datastax.driver.core.Session}.
+	 *
+	 * @return the {@link CassandraCqlSessionFactoryBean}.
+	 * @see #cluster()
+	 * @see #getKeyspaceName()
+	 */
 	@Bean
-	public CassandraCqlSessionFactoryBean session() throws Exception {
+	public CassandraCqlSessionFactoryBean session() {
 
 		CassandraCqlSessionFactoryBean bean = new CassandraCqlSessionFactoryBean();
 
@@ -45,6 +52,11 @@ public abstract class AbstractSessionConfiguration extends AbstractClusterConfig
 		return bean;
 	}
 
+	/**
+	 * Return the name of the keyspace to connect to.
+	 *
+	 * @return must not be {@literal null}.
+	 */
 	protected abstract String getKeyspaceName();
 
 }
