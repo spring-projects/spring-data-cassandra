@@ -30,7 +30,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Unit tests for {@link ConsistencyLevelResolver}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(Parameterized.class)
@@ -48,7 +48,7 @@ public class ConsistencyLevelResolverUnitTests {
 	@Parameters(name = "{0}")
 	public static List<Object[]> parameters() {
 
-		Map<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel> expectations = new LinkedHashMap<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel>();
+		Map<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel> expectations = new LinkedHashMap<>();
 
 		expectations.put(ConsistencyLevel.ALL, com.datastax.driver.core.ConsistencyLevel.ALL);
 		expectations.put(ConsistencyLevel.ANY, com.datastax.driver.core.ConsistencyLevel.ANY);
@@ -70,7 +70,7 @@ public class ConsistencyLevelResolverUnitTests {
 		expectations.put(ConsistencyLevel.TWO, com.datastax.driver.core.ConsistencyLevel.TWO);
 		expectations.put(ConsistencyLevel.THREE, com.datastax.driver.core.ConsistencyLevel.THREE);
 
-		List<Object[]> parameters = new ArrayList<Object[]>();
+		List<Object[]> parameters = new ArrayList<>();
 
 		for (Entry<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel> entry : expectations.entrySet()) {
 			parameters.add(new Object[] { entry.getKey(), entry.getValue() });

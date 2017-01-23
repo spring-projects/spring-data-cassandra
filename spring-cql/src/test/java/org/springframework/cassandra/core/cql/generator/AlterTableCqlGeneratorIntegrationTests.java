@@ -140,7 +140,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		session.execute("CREATE TABLE users (user_name varchar PRIMARY KEY);");
 
-		Map<Object, Object> cachingMap = new LinkedHashMap<Object, Object>();
+		Map<Object, Object> cachingMap = new LinkedHashMap<>();
 		cachingMap.put(CachingOption.KEYS, KeyCachingOption.NONE);
 		cachingMap.put(CachingOption.ROWS_PER_PARTITION, "15");
 

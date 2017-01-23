@@ -33,7 +33,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 
@@ -103,13 +102,10 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 
 	@Test
 	public void createWithNoExistingTableCreatesTableFromEntity() {
-		doInSessionWithConfiguration(CreateWithNoExistingTableConfiguration.class, new SessionCallback<Void>() {
-			@Override
-			public Void doInSession(Session session) throws DataAccessException {
-				assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
-						"numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
-				return null;
-			}
+		doInSessionWithConfiguration(CreateWithNoExistingTableConfiguration.class, (SessionCallback<Void>) session -> {
+			assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate", "numberOfChildren",
+					"cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
+			return null;
 		});
 	}
 
@@ -117,12 +113,9 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 	public void createWithExistingTableThrowsErrorWhenCreatingTableFromEntity() {
 
 		try {
-			doInSessionWithConfiguration(CreateWithExistingTableConfiguration.class, new SessionCallback<Object>() {
-				@Override
-				public Object doInSession(Session s) throws DataAccessException {
-					fail(String.format("%s should have failed!", CreateWithExistingTableConfiguration.class.getSimpleName()));
-					return null;
-				}
+			doInSessionWithConfiguration(CreateWithExistingTableConfiguration.class, s -> {
+				fail(String.format("%s should have failed!", CreateWithExistingTableConfiguration.class.getSimpleName()));
+				return null;
 			});
 			fail("Missing BeanCreationException");
 		} catch (BeanCreationException e) {
@@ -132,36 +125,30 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 
 	@Test
 	public void createIfNotExistsWithNoExistingTableCreatesTableFromEntity() {
-		doInSessionWithConfiguration(CreateIfNotExistsWithNoExistingTableConfiguration.class, new SessionCallback<Void>() {
-			@Override
-			public Void doInSession(Session session) throws DataAccessException {
-				assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
-						"numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
-				return null;
-			}
+		doInSessionWithConfiguration(CreateIfNotExistsWithNoExistingTableConfiguration.class,
+				(SessionCallback<Void>) session -> {
+					assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
+							"numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
+					return null;
 		});
 	}
 
 	@Test
 	public void createIfNotExistsWithExistingTableUsesExistingTable() {
-		doInSessionWithConfiguration(CreateIfNotExistsWithExistingTableConfiguration.class, new SessionCallback<Void>() {
-			@Override
-			public Void doInSession(Session session) throws DataAccessException {
-				assertHasTableWithColumns(session, "person", "id", "firstName", "lastName");
-				return null;
-			}
+		doInSessionWithConfiguration(CreateIfNotExistsWithExistingTableConfiguration.class,
+				(SessionCallback<Void>) session -> {
+					assertHasTableWithColumns(session, "person", "id", "firstName", "lastName");
+					return null;
 		});
 	}
 
 	@Test
 	public void recreateTableFromEntityDropsExistingTable() {
-		doInSessionWithConfiguration(RecreateSchemaActionWithExistingTableConfiguration.class, new SessionCallback<Void>() {
-			@Override
-			public Void doInSession(Session session) throws DataAccessException {
-				assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
-						"numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
-				return null;
-			}
+		doInSessionWithConfiguration(RecreateSchemaActionWithExistingTableConfiguration.class,
+				(SessionCallback<Void>) session -> {
+					assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
+							"numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
+					return null;
 		});
 	}
 

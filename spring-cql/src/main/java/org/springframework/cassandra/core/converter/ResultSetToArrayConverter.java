@@ -70,7 +70,7 @@ public class ResultSetToArrayConverter implements Converter<ResultSet, Object[]>
 			return null;
 		}
 
-		List<Object[]> list = new ArrayList<Object[]>();
+		List<Object[]> list = new ArrayList<>();
 		for (Row row : resultSet) {
 			list.add(rowConverter.convert(row));
 		}

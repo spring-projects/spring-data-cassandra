@@ -37,7 +37,7 @@ import com.datastax.driver.core.utils.UUIDs;
 
 /**
  * Integration tests for {@link CassandraTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
@@ -175,7 +175,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		template.insert(bookReference);
 
-		bookReference.setBookmarks(Collections.<Integer> emptyList());
+		bookReference.setBookmarks(Collections.emptyList());
 
 		template.update(bookReference);
 

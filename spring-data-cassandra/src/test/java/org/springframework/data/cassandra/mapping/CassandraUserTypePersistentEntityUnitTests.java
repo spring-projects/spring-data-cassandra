@@ -32,7 +32,7 @@ import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link CassandraUserTypePersistentEntity}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -85,7 +85,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 	}
 
 	private <T> CassandraUserTypePersistentEntity<T> getEntity(Class<T> entityClass) {
-		return new CassandraUserTypePersistentEntity<T>(ClassTypeInformation.from(entityClass), mappingContextMock, null,
+		return new CassandraUserTypePersistentEntity<>(ClassTypeInformation.from(entityClass), mappingContextMock, null,
 				userTypeResolverMock);
 	}
 

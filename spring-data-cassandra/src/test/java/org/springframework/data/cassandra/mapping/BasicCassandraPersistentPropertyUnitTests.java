@@ -103,7 +103,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	private <T> BasicCassandraPersistentEntity<T> getEntity(Class<T> type) {
-		return new BasicCassandraPersistentEntity<T>(ClassTypeInformation.from(type));
+		return new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(type));
 	}
 
 	static class Timeline {

@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2013-2017 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,17 +17,18 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 /**
  * Aggregator of multiple violations for convenience when verifying id interfaces. This allows the framework to
  * communicate all errors at once, rather than one at a time.
- * 
+ *
  * @author Matthew T. Adams
  */
 @SuppressWarnings("serial")
 public class IdInterfaceExceptions extends RuntimeException {
 
-	Collection<IdInterfaceException> exceptions = new LinkedList<IdInterfaceException>();
+	Collection<IdInterfaceException> exceptions = new LinkedList<>();
 	String idInterfaceName;
 
 	public IdInterfaceExceptions(Class<?> idInterface) {
@@ -49,11 +50,7 @@ public class IdInterfaceExceptions extends RuntimeException {
 	 * Returns a list of the {@link IdInterfaceException} messages aggregated within.
 	 */
 	public Collection<String> getMessages() {
-		Collection<String> messages = new LinkedList<String>();
-		for (IdInterfaceException e : exceptions) {
-			messages.add(e.getMessage());
-		}
-		return messages;
+		return exceptions.stream().map(Throwable::getMessage).collect(Collectors.toList());
 	}
 
 	/**

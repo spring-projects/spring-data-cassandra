@@ -43,22 +43,22 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	/**
 	 * List of all columns.
 	 */
-	private List<ColumnSpecification> columns = new ArrayList<ColumnSpecification>();
+	private List<ColumnSpecification> columns = new ArrayList<>();
 
 	/**
 	 * List of only those columns that comprise the partition key.
 	 */
-	private List<ColumnSpecification> partitionKeyColumns = new ArrayList<ColumnSpecification>();
+	private List<ColumnSpecification> partitionKeyColumns = new ArrayList<>();
 
 	/**
 	 * List of only those columns that comprise the primary key that are not also part of the partition key.
 	 */
-	private List<ColumnSpecification> clusteredKeyColumns = new ArrayList<ColumnSpecification>();
+	private List<ColumnSpecification> clusteredKeyColumns = new ArrayList<>();
 
 	/**
 	 * List of only those columns that are not partition or primary key columns.
 	 */
-	private List<ColumnSpecification> nonKeyColumns = new ArrayList<ColumnSpecification>();
+	private List<ColumnSpecification> nonKeyColumns = new ArrayList<>();
 
 	/**
 	 * Adds the given non-key column to the table. Must be specified after all primary key columns.
@@ -280,7 +280,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	@Override
 	public List<ColumnSpecification> getPrimaryKeyColumns() {
 
-		ArrayList<ColumnSpecification> primaryKeyColumns = new ArrayList<ColumnSpecification>();
+		ArrayList<ColumnSpecification> primaryKeyColumns = new ArrayList<>();
 		primaryKeyColumns.addAll(partitionKeyColumns);
 		primaryKeyColumns.addAll(clusteredKeyColumns);
 

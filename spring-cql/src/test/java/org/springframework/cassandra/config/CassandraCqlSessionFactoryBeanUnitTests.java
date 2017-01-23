@@ -253,7 +253,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 	@Test // DATACASS-219
 	public void startupScriptsAreImmutable() {
 
-		List<String> startupScripts = new ArrayList<String>(Collections.singletonList("/path/to/startup.cql"));
+		List<String> startupScripts = new ArrayList<>(Collections.singletonList("/path/to/startup.cql"));
 
 		factoryBean.setStartupScripts(startupScripts);
 
@@ -295,7 +295,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 	@Test // DATACASS-219
 	public void shutdownScriptsAreImmutable() {
 
-		List<String> shutdownScripts = new ArrayList<String>(Collections.singletonList("/path/to/shutdown.cql"));
+		List<String> shutdownScripts = new ArrayList<>(Collections.singletonList("/path/to/shutdown.cql"));
 		factoryBean.setShutdownScripts(shutdownScripts);
 
 		List<String> actualShutdownScripts = factoryBean.getShutdownScripts();

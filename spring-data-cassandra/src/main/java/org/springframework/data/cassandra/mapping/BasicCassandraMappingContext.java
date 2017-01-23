@@ -267,10 +267,10 @@ public class BasicCassandraMappingContext
 		CassandraPersistentEntity<T> entity;
 
 		if (userDefinedType != null) {
-			entity = new CassandraUserTypePersistentEntity<T>(typeInformation, this, verifier, userTypeResolver);
+			entity = new CassandraUserTypePersistentEntity<>(typeInformation, this, verifier, userTypeResolver);
 			userDefinedTypes.add(entity);
 		} else {
-			entity = new BasicCassandraPersistentEntity<T>(typeInformation, this, verifier);
+			entity = new BasicCassandraPersistentEntity<>(typeInformation, this, verifier);
 		}
 
 		if (context != null) {
@@ -344,14 +344,7 @@ public class BasicCassandraMappingContext
 	}
 
 	private boolean hasMappedUserType(CqlIdentifier identifier) {
-
-		for (CassandraPersistentEntity<?> userDefinedType : userDefinedTypes) {
-			if (userDefinedType.getTableName().equals(identifier)) {
-				return true;
-			}
-		}
-
-		return false;
+		return userDefinedTypes.stream().map(CassandraPersistentEntity::getTableName).anyMatch(identifier::equals);
 	}
 
 	/* (non-Javadoc)
@@ -410,16 +403,12 @@ public class BasicCassandraMappingContext
 
 		final CreateUserTypeSpecification specification = CreateUserTypeSpecification.createType(entity.getTableName());
 
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+		entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) property -> {
 
-			@Override
-			public void doWithPersistentProperty(final CassandraPersistentProperty property) {
-
-				// Use frozen literal to not resolve types from Cassandra.
-				// At this stage, they might be not created yet.
-				specification.field(property.getColumnName(),
-						getDataTypeWithUserTypeFactory(property, DataTypeProvider.FrozenLiteral));
-			}
+			// Use frozen literal to not resolve types from Cassandra.
+			// At this stage, they might be not created yet.
+			specification.field(property.getColumnName(),
+					getDataTypeWithUserTypeFactory(property, DataTypeProvider.FrozenLiteral));
 		});
 
 		if (specification.getFields().isEmpty()) {

@@ -16,8 +16,6 @@
 package org.springframework.cassandra.test.integration;
 
 import org.junit.ClassRule;
-import org.springframework.cassandra.core.SessionCallback;
-import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
@@ -68,16 +66,12 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 		this.keyspace = keyspace;
 		this.session = keyspaceRule.getSession();
 
-		cassandraRule.before(new SessionCallback<Object>() {
+		cassandraRule.before(session -> {
 
-			@Override
-			public Object doInSession(Session session) throws DataAccessException {
-
-				if (!keyspace.equals(session.getLoggedKeyspace())) {
-					session.execute(String.format("USE %s;", keyspace));
-				}
-				return null;
+			if (!keyspace.equals(session.getLoggedKeyspace())) {
+				session.execute(String.format("USE %s;", keyspace));
 			}
+			return null;
 		});
 	}
 

@@ -134,10 +134,7 @@ public class CorrelationEntity {
 				return false;
 			if (!type.equals(that.type))
 				return false;
-			if (!value.equals(that.value))
-				return false;
-
-			return true;
+			return value.equals(that.value);
 		}
 
 		@Override
@@ -195,10 +192,7 @@ public class CorrelationEntity {
 
 		if (extra != null ? !extra.equals(that.extra) : that.extra != null)
 			return false;
-		if (!identityEntity.equals(that.identityEntity))
-			return false;
-
-		return true;
+		return identityEntity.equals(that.identityEntity);
 	}
 
 	@Override

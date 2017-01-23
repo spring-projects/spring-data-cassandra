@@ -19,12 +19,9 @@ import java.util.UUID;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.support.CqlDataSet;
-import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
 
 /**
  * Abstract base integration test class that starts an embedded Cassandra instance. Test clients can use the
@@ -47,12 +44,9 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	 * Initiate a Cassandra environment in test scope.
 	 */
 	@Rule public final CassandraRule cassandraRule = cassandraEnvironment.testInstance()
-			.before(new SessionCallback<Object>() {
-				@Override
-				public Object doInSession(Session session) throws DataAccessException {
-					AbstractEmbeddedCassandraIntegrationTest.this.cluster = session.getCluster();
-					return null;
-				}
+			.before(session -> {
+				AbstractEmbeddedCassandraIntegrationTest.this.cluster = session.getCluster();
+				return null;
 			});
 
 	/**

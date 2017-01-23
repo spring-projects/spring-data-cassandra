@@ -30,7 +30,7 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 
 	@Test
 	public void testImplicitTableNameForceQuoted() {
-		BasicCassandraPersistentEntity<ImplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<ImplicitTableNameForceQuoted>(
+		BasicCassandraPersistentEntity<ImplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(ImplicitTableNameForceQuoted.class));
 
 		assertThat(entity.getTableName().toCql())
@@ -45,7 +45,7 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 
 	@Test
 	public void testExplicitTableNameForceQuoted() {
-		BasicCassandraPersistentEntity<ExplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<ExplicitTableNameForceQuoted>(
+		BasicCassandraPersistentEntity<ExplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(ExplicitTableNameForceQuoted.class));
 
 		assertThat(entity.getTableName().toCql()).isEqualTo("\"" + EXPLICIT_TABLE_NAME + "\"");
@@ -57,7 +57,7 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 
 	@Test
 	public void testDefaultTableNameForceQuoted() {
-		BasicCassandraPersistentEntity<DefaultTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<DefaultTableNameForceQuoted>(
+		BasicCassandraPersistentEntity<DefaultTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(DefaultTableNameForceQuoted.class));
 
 		assertThat(entity.getTableName().toCql())

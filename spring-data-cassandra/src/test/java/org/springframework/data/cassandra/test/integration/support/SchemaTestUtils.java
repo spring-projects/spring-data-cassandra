@@ -18,26 +18,23 @@ package org.springframework.data.cassandra.test.integration.support;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.DriverException;
 
 /**
  * {@link SchemaTestUtils} is a collection of reflection-based utility methods for use in unit and integration testing
  * scenarios.
- * 
+ *
  * @author Mark Paluch
  */
 public class SchemaTestUtils {
 
 	/**
 	 * Create a table for {@code entityClass} if it not exists.
-	 * 
+	 *
 	 * @param entityClass must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
 	 */
@@ -46,23 +43,20 @@ public class SchemaTestUtils {
 		CassandraMappingContext mappingContext = operations.getConverter().getMappingContext();
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(entityClass);
 
-		operations.getCqlOperations().execute(new SessionCallback<Object>() {
-			@Override
-			public Object doInSession(Session session) throws DriverException, DataAccessException {
+		operations.getCqlOperations().execute((SessionCallback<Object>) session -> {
 
-				KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-				if (keyspace.getTable(persistentEntity.getTableName().toCql()) == null) {
-					CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
-					operations.getCqlOperations().execute(new CreateTableCqlGenerator(tableSpecification).toCql());
-				}
-				return null;
+			KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
+			if (keyspace.getTable(persistentEntity.getTableName().toCql()) == null) {
+				CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
+				operations.getCqlOperations().execute(new CreateTableCqlGenerator(tableSpecification).toCql());
 			}
+			return null;
 		});
 	}
 
 	/**
 	 * Truncate table for {@code entityClass}.
-	 * 
+	 *
 	 * @param entityClass must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
 	 */

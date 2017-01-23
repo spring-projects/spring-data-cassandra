@@ -46,5 +46,4 @@ public interface RowMapper<T> {
 	 *           to catch {@link DriverException})
 	 */
 	T mapRow(Row row, int rowNum) throws DriverException;
-
 }

@@ -38,6 +38,9 @@ public class ArgumentPreparedStatementBinder implements PreparedStatementBinder 
 		this.args = args;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.PreparedStatementBinder#bindValues(com.datastax.driver.core.PreparedStatement)
+	 */
 	@Override
 	public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
 		return args != null ? ps.bind(args) : ps.bind();

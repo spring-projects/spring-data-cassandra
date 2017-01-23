@@ -16,9 +16,7 @@
 package org.springframework.cassandra.test.integration;
 
 import org.junit.rules.ExternalResource;
-import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.support.RandomKeySpaceName;
-import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Cluster;
@@ -76,12 +74,9 @@ public class KeyspaceRule extends ExternalResource {
 		if (cassandraRule.getCluster() != null) {
 			this.session = cassandraRule.getSession();
 		} else {
-			cassandraRule.before(new SessionCallback<Object>() {
-				@Override
-				public Object doInSession(Session session) throws DataAccessException {
-					KeyspaceRule.this.session = cassandraRule.getSession();
-					return null;
-				}
+			cassandraRule.before(session -> {
+				KeyspaceRule.this.session = cassandraRule.getSession();
+				return null;
 			});
 		}
 

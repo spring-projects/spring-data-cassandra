@@ -15,10 +15,10 @@
  */
 package org.springframework.cassandra.core;
 
+import org.springframework.dao.DataAccessException;
+
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.exceptions.DriverException;
-
-import org.springframework.dao.DataAccessException;
 
 /**
  * Callback interface used by {@link CqlTemplate}'s query methods. Implementations of this interface perform the actual
@@ -35,6 +35,7 @@ import org.springframework.dao.DataAccessException;
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @since April 24, 2003
+ * @see AsyncCqlTemplate
  * @see CqlTemplate
  * @see RowCallbackHandler
  * @see RowMapper

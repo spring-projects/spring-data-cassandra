@@ -95,16 +95,16 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 			}
 		}
 
-		Set<EntityMapping> mappings = new HashSet<EntityMapping>();
+		Set<EntityMapping> mappings = new HashSet<>();
 
-		for (Element entity : DomUtils.getChildElementsByTagName(element, "entity")) {
+		DomUtils.getChildElementsByTagName(element, "entity").forEach(entity -> {
 
 			EntityMapping entityMapping = parseEntity(entity);
 
 			if (entityMapping != null) {
 				mappings.add(entityMapping);
 			}
-		}
+		});
 
 		List<Element> userTypeResolvers = DomUtils.getChildElementsByTagName(element, "user-type-resolver");
 		String userTypeResolverRef = element.getAttribute("user-type-resolver-ref");
@@ -169,7 +169,7 @@ public class CassandraMappingContextParser extends AbstractSingleBeanDefinitionP
 
 	protected Map<String, PropertyMapping> parsePropertyMappings(Element entity) {
 
-		Map<String, PropertyMapping> propertyMappings = new HashMap<String, PropertyMapping>();
+		Map<String, PropertyMapping> propertyMappings = new HashMap<>();
 
 		for (Element property : DomUtils.getChildElementsByTagName(entity, "property")) {
 

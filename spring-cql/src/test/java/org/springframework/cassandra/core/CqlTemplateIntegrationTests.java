@@ -30,7 +30,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 /**
  * Integration tests for {@link CqlTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {

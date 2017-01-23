@@ -60,7 +60,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	@Before
 	public void setUp() throws Exception {
 
-		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(new PersonReadConverter());
 		converters.add(new PersonWriteConverter());
 
@@ -252,23 +252,20 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		final UserType species_udt = mock(UserType.class, "species_udt");
 		final UserType peeps_udt = mock(UserType.class, "peeps_udt");
 
-		ctx.setUserTypeResolver(new UserTypeResolver() {
-			@Override
-			public UserType resolveType(CqlIdentifier typeName) {
+		ctx.setUserTypeResolver(typeName -> {
 
-				if (typeName.toCql().equals(human_udt.toString())) {
-					return human_udt;
-				}
-
-				if (typeName.toCql().equals(species_udt.toString())) {
-					return species_udt;
-				}
-
-				if (typeName.toCql().equals(peeps_udt.toString())) {
-					return peeps_udt;
-				}
-				return null;
+			if (typeName.toCql().equals(human_udt.toString())) {
+				return human_udt;
 			}
+
+			if (typeName.toCql().equals(species_udt.toString())) {
+				return species_udt;
+			}
+
+			if (typeName.toCql().equals(peeps_udt.toString())) {
+				return peeps_udt;
+			}
+			return null;
 		});
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(WithUdtFields.class);
@@ -283,15 +280,12 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		final UserType mappedUdt = mock(UserType.class, "mappedudt");
 
-		ctx.setUserTypeResolver(new UserTypeResolver() {
-			@Override
-			public UserType resolveType(CqlIdentifier typeName) {
+		ctx.setUserTypeResolver(typeName -> {
 
-				if (typeName.toCql().equals(mappedUdt.toString())) {
-					return mappedUdt;
-				}
-				return null;
+			if (typeName.toCql().equals(mappedUdt.toString())) {
+				return mappedUdt;
 			}
+			return null;
 		});
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(WithMappedUdtFields.class);

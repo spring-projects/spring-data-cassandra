@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2013-2017 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,7 @@ package org.springframework.cassandra.core.keyspace;
 
 /**
  * Interface to represent option types.
- * 
+ *
  * @author Matthew T. Adams
  */
 public interface Option {
@@ -65,10 +65,9 @@ public interface Option {
 	/**
 	 * First ensures that the given value is coerceable into the type expected by this option, then returns the result of
 	 * {@link Object#toString()} called on the given value. If this option is escaping quotes ({@link #escapesValue()} is
-	 * <code>true</code>), then single quotes will be escaped, and if this option is quoting values (
-	 * {@link #quotesValue()} is <code>true</code>), then the value will be surrounded by single quotes. Given
-	 * <code>null</code>, returns <code>null</code>.
-	 * 
+	 * {@code true}), then single quotes will be escaped, and if this option is quoting values ( {@link #quotesValue()} is
+	 * {@code true}), then the value will be surrounded by single quotes. Given {@code null}, returns <code>null</code>.
+	 *
 	 * @see #escapesValue()
 	 * @see #quotesValue()
 	 */

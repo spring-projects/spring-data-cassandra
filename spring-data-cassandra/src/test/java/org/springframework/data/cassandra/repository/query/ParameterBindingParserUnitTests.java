@@ -48,7 +48,7 @@ public class ParameterBindingParserUnitTests {
 	public void parseWithStaticParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = 1 AND b = {'list'} AND c = {'key':'value'}";
-		List<ParameterBinding> bindings = new ArrayList<ParameterBinding>();
+		List<ParameterBinding> bindings = new ArrayList<>();
 
 		String transformed = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query,
 				bindings);
@@ -61,7 +61,7 @@ public class ParameterBindingParserUnitTests {
 	public void parseWithPositionalParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = ?0 and b = ?13";
-		List<ParameterBinding> bindings = new ArrayList<ParameterBinding>();
+		List<ParameterBinding> bindings = new ArrayList<>();
 
 		String transformed = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query,
 				bindings);
@@ -77,7 +77,7 @@ public class ParameterBindingParserUnitTests {
 	public void parseWithNamedParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = :hello and b = :world";
-		List<ParameterBinding> bindings = new ArrayList<ParameterBinding>();
+		List<ParameterBinding> bindings = new ArrayList<>();
 
 		String transformed = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query,
 				bindings);
@@ -90,7 +90,7 @@ public class ParameterBindingParserUnitTests {
 	public void parseWithIndexExpressionParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = ?#{[0]} and b = ?#{[2]}";
-		List<ParameterBinding> bindings = new ArrayList<ParameterBinding>();
+		List<ParameterBinding> bindings = new ArrayList<>();
 
 		String transformed = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query,
 				bindings);
@@ -103,7 +103,7 @@ public class ParameterBindingParserUnitTests {
 	public void parseWithNameExpressionParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = :#{#a} and b = :#{#b}";
-		List<ParameterBinding> bindings = new ArrayList<ParameterBinding>();
+		List<ParameterBinding> bindings = new ArrayList<>();
 
 		String transformed = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query,
 				bindings);
@@ -116,7 +116,7 @@ public class ParameterBindingParserUnitTests {
 	public void parseWithMixedParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE (a = ?1 and b = :name) and c = (:#{#a}) and (d = ?#{[1]})";
-		List<ParameterBinding> bindings = new ArrayList<ParameterBinding>();
+		List<ParameterBinding> bindings = new ArrayList<>();
 
 		String transformed = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query,
 				bindings);

@@ -49,7 +49,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test
 	public void subclassInheritsAtDocumentAnnotation() {
 
-		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<Notification>(
+		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(Notification.class));
 		assertThat(entity.getTableName().toCql()).isEqualTo("messages");
 	}
@@ -57,7 +57,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test
 	public void evaluatesSpELExpression() {
 
-		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<Area>(
+		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(Area.class));
 		entity.setApplicationContext(context);
 		assertThat(entity.getTableName().toCql()).isEqualTo("a123");
@@ -72,7 +72,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 		when(context.getBean("tableNameHolderThingy")).thenReturn(bean);
 		when(context.containsBean("tableNameHolderThingy")).thenReturn(true);
 
-		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<UserLine>(
+		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(UserLine.class));
 		entity.setApplicationContext(context);
 
@@ -82,7 +82,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test
 	public void setForceQuoteCallsSetTableName() {
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
-				new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
+				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
 
 		entitySpy.setTableName(CqlIdentifier.cqlId("Messages", false));
 
@@ -98,7 +98,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test
 	public void setForceQuoteDoesNothing() {
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
-				new BasicCassandraPersistentEntity<Message>(ClassTypeInformation.from(Message.class)));
+				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
 
 		entitySpy.forceQuote = Optional.of(true);
 		entitySpy.setForceQuote(true);
@@ -111,7 +111,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test // DATACASS-172
 	public void isUserDefinedTypeShouldReturnFalse() {
 
-		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<UserLine>(
+		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(UserLine.class));
 
 		assertThat(entity.isUserDefinedType()).isFalse();
@@ -120,7 +120,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test // DATACASS-259
 	public void shouldConsiderComposedTableAnnotation() {
 
-		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<TableWithComposedAnnotation>(
+		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(TableWithComposedAnnotation.class));
 
 		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.cqlId("mytable", true));
@@ -129,7 +129,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test // DATACASS-259
 	public void shouldConsiderComposedPrimaryKeyClassAnnotation() {
 
-		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation>(
+		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
 
 		assertThat(entity.isCompositePrimaryKey()).isTrue();

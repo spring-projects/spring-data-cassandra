@@ -119,10 +119,10 @@ public class CassandraCompositePrimaryKeyUnitTests {
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();
 
-		List<CqlIdentifier> expectedColumnNames = Arrays.asList(new CqlIdentifier[] { cqlId("z"), cqlId("a") });
+		List<CqlIdentifier> expectedColumnNames = Arrays.asList(cqlId("z"), cqlId("a"));
 		assertThat(expectedColumnNames.equals(property.getColumnNames())).isTrue();
 
-		List<CqlIdentifier> actualColumnNames = new ArrayList<CqlIdentifier>();
+		List<CqlIdentifier> actualColumnNames = new ArrayList<>();
 		List<CassandraPersistentProperty> properties = property.getCompositePrimaryKeyProperties();
 		for (CassandraPersistentProperty p : properties) {
 			actualColumnNames.addAll(p.getColumnNames());

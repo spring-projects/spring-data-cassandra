@@ -20,19 +20,48 @@ package org.springframework.cassandra.config;
  */
 public class DataCenterReplication {
 
-	public static DataCenterReplication[] dcrs(DataCenterReplication... dcrs) {
-		return dcrs;
-	}
-
-	public static DataCenterReplication dcr(String dataCenter, long replicationFactor) {
+	/**
+	 * Creates a new {@link DataCenterReplication} given {@code dataCenter} and {@code replicationFactor}.
+	 * 
+	 * @param dataCenter must not be {@literal null}.
+	 * @param replicationFactor
+	 * @return
+	 */
+	public static DataCenterReplication of(String dataCenter, long replicationFactor) {
 		return new DataCenterReplication(dataCenter, replicationFactor);
 	}
 
-	public String dataCenter;
-	public long replicationFactor;
+	private final String dataCenter;
+	private final long replicationFactor;
 
-	public DataCenterReplication(String dataCenter, long replicationFactor) {
+	private DataCenterReplication(String dataCenter, long replicationFactor) {
+
 		this.dataCenter = dataCenter;
 		this.replicationFactor = replicationFactor;
+	}
+
+	/**
+	 * @return the data center.
+	 */
+	public String getDataCenter() {
+		return dataCenter;
+	}
+
+	/**
+	 * @return the replication factor.
+	 */
+	public long getReplicationFactor() {
+		return replicationFactor;
+	}
+
+	@Override
+	public String toString() {
+
+		StringBuffer sb = new StringBuffer();
+		sb.append(getClass().getSimpleName());
+		sb.append(" [dataCenter='").append(dataCenter).append('\'');
+		sb.append(", replicationFactor=").append(replicationFactor);
+		sb.append(']');
+		return sb.toString();
 	}
 }

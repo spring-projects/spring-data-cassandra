@@ -51,7 +51,7 @@ public abstract class CassandraJsr310Converters {
 			return Collections.emptySet();
 		}
 
-		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+		List<Converter<?, ?>> converters = new ArrayList<>();
 
 		converters.add(CassandraLocalDateToLocalDateConverter.INSTANCE);
 		converters.add(LocalDateToCassandraLocalDateConverter.INSTANCE);

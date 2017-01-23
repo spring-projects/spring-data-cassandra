@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 
 		String id = super.resolveId(element, definition, parserContext);
 
-		return (StringUtils.hasText(id) ? id : DefaultCqlBeanNames.CLUSTER);
+		return StringUtils.hasText(id) ? id : DefaultCqlBeanNames.CLUSTER;
 	}
 
 	/* (non-Javadoc)
@@ -131,10 +131,10 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 	 */
 	protected void parseChildElements(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		ManagedSet<BeanDefinition> keyspaceActionSpecificationBeanDefinitions = new ManagedSet<BeanDefinition>();
+		ManagedSet<BeanDefinition> keyspaceActionSpecificationBeanDefinitions = new ManagedSet<>();
 
-		List<String> startupScripts = new ArrayList<String>();
-		List<String> shutdownScripts = new ArrayList<String>();
+		List<String> startupScripts = new ArrayList<>();
+		List<String> shutdownScripts = new ArrayList<>();
 
 		BeanDefinitionBuilder poolingOptionsBuilder = BeanDefinitionBuilder
 				.genericBeanDefinition(PoolingOptionsFactoryBean.class);
@@ -184,7 +184,7 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 	 * @param parserContext XML parser context and state.
 	 * @return the {@link BeanDefinition} or {@literal null} if action is not given.
 	 */
-	BeanDefinition newKeyspaceActionSpecificationBeanDefinition(Element element, ParserContext parserContext) {
+	private BeanDefinition newKeyspaceActionSpecificationBeanDefinition(Element element, ParserContext parserContext) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.genericBeanDefinition(KeyspaceActionSpecificationFactoryBean.class);
@@ -210,10 +210,10 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 	 * @param element {@link Element} to parse.
 	 * @param builder The {@link BeanDefinitionBuilder} to add the replication to
 	 */
-	void parseReplication(Element element, BeanDefinitionBuilder builder) {
+	private void parseReplication(Element element, BeanDefinitionBuilder builder) {
 
-		ManagedList<String> networkTopologyDataCenters = new ManagedList<String>();
-		ManagedList<String> networkTopologyReplicationFactors = new ManagedList<String>();
+		ManagedList<String> networkTopologyDataCenters = new ManagedList<>();
+		ManagedList<String> networkTopologyReplicationFactors = new ManagedList<>();
 
 		if (element != null) {
 			addOptionalPropertyValue(builder, "replicationStrategy", element, "class",
@@ -241,12 +241,13 @@ public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 	 * @param keyspaceActionSpecificationBeanDefinitions The List of Definitions to flatten
 	 * @return A single level List of KeyspaceActionSpecifications
 	 */
-	Object newKeyspaceSetFlattenerBeanDefinition(Element element, ParserContext parserContext,
+	private Object newKeyspaceSetFlattenerBeanDefinition(Element element, ParserContext parserContext,
 			ManagedSet<BeanDefinition> keyspaceActionSpecificationBeanDefinitions) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.genericBeanDefinition(MultiLevelSetFlattenerFactoryBean.class);
 
+		// TODO: introduce a typed reference instead of Set of Sets.
 		builder.addPropertyValue("multiLevelSet", keyspaceActionSpecificationBeanDefinitions);
 
 		return getSourceBeanDefinition(builder, parserContext, element);

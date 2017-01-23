@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,17 +41,16 @@ import org.springframework.util.Assert;
  *
  * @author David Webb
  */
-public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<KeyspaceActionSpecification<?>>>,
-		InitializingBean, DisposableBean {
+public class KeyspaceActionSpecificationFactoryBean
+		implements FactoryBean<Set<KeyspaceActionSpecification<?>>>, InitializingBean, DisposableBean {
 
 	private KeyspaceAction action;
 
 	private String name;
 
-	private List<String> networkTopologyDataCenters = new LinkedList<String>();
+	private List<String> networkTopologyDataCenters = new LinkedList<>();
 
-	private List<String> networkTopologyReplicationFactors = new LinkedList<String>();
-
+	private List<String> networkTopologyReplicationFactors = new LinkedList<>();
 	private ReplicationStrategy replicationStrategy;
 
 	private long replicationFactor;
@@ -60,11 +59,13 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 
 	private boolean ifNotExists = false;
 
-	private Set<KeyspaceActionSpecification<?>> specs = new HashSet<KeyspaceActionSpecification<?>>();
+	private Set<KeyspaceActionSpecification<?>> specs = new HashSet<>();
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
 	@Override
-	public void destroy() throws Exception {
-
+	public void destroy() {
 		action = null;
 		name = null;
 		networkTopologyDataCenters = null;
@@ -73,8 +74,11 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 		specs = null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 
 		Assert.hasText(name, "Keyspace Name is required for a Keyspace Action");
 		Assert.notNull(action, "Keyspace Action is required for a Keyspace Action");
@@ -89,7 +93,6 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 			case ALTER:
 				break;
 		}
-
 	}
 
 	/**
@@ -102,7 +105,7 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 		CreateKeyspaceSpecification create = new CreateKeyspaceSpecification();
 		create.name(name).ifNotExists(ifNotExists).with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 
-		Map<Option, Object> replicationStrategyMap = new HashMap<Option, Object>();
+		Map<Option, Object> replicationStrategyMap = new HashMap<>();
 		replicationStrategyMap.put(new DefaultOption("class", String.class, true, false, true),
 				replicationStrategy.getValue());
 
@@ -135,16 +138,25 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Set<K
 		return drop;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
 	@Override
 	public Set<KeyspaceActionSpecification<?>> getObject() throws Exception {
 		return specs;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
 	@Override
 	public Class<?> getObjectType() {
 		return Set.class;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+	 */
 	@Override
 	public boolean isSingleton() {
 		return false;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -361,14 +361,14 @@ class StringBasedQuery {
 
 		private static Matcher findNextBindingOrExpression(String input, int position) {
 
-			List<Matcher> matchers = new ArrayList<Matcher>();
+			List<Matcher> matchers = new ArrayList<>();
 
 			matchers.add(INDEX_PARAMETER_BINDING_PATTERN.matcher(input));
 			matchers.add(NAMED_PARAMETER_BINDING_PATTERN.matcher(input));
 			matchers.add(INDEX_BASED_EXPRESSION_PATTERN.matcher(input));
 			matchers.add(NAME_BASED_EXPRESSION_PATTERN.matcher(input));
 
-			TreeMap<Integer, Matcher> matcherMap = new TreeMap<Integer, Matcher>();
+			TreeMap<Integer, Matcher> matcherMap = new TreeMap<>();
 
 			for (Matcher matcher : matchers) {
 				if (matcher.find(position)) {

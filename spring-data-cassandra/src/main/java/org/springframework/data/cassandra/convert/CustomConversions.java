@@ -89,7 +89,7 @@ public class CustomConversions {
 		this.customWriteTargetTypes = new ConcurrentHashMap<>();
 		this.rawWriteTargetTypes = new ConcurrentHashMap<>();
 
-		List<Object> toRegister = new ArrayList<Object>();
+		List<Object> toRegister = new ArrayList<>();
 
 		// Add user provided converters to make sure they can override the defaults
 		toRegister.addAll(converters);
@@ -103,9 +103,7 @@ public class CustomConversions {
 		toRegister.addAll(Jsr310Converters.getConvertersToRegister());
 		toRegister.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
 
-		for (Object converter : toRegister) {
-			registerConversion(converter);
-		}
+		toRegister.forEach(this::registerConversion);
 
 		Collections.reverse(toRegister);
 

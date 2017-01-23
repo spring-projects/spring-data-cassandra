@@ -32,7 +32,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 /**
  * Integration tests for {@link AsyncCqlTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
@@ -149,7 +149,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 
 		List<String> result = new ArrayList<>();
 		getUninterruptibly(template.query(
-				session -> new GuavaListenableFutureAdapter<PreparedStatement>(
+				session -> new GuavaListenableFutureAdapter<>(
 						session.prepareAsync("SELECT id FROM user WHERE id = ?;"), template.getExceptionTranslator()),
 				ps -> ps.bind("WHITE"), row -> {
 					result.add(row.getString(0));

@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Builder class to construct a <code>CREATE INDEX</code> specification.
+ * Builder class to construct a {@code CREATE INDEX} specification.
  *
  * @author Matthew T. Adams
  * @author David Webb
@@ -61,7 +61,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/**
-	 * Causes the inclusion of an <code>IF NOT EXISTS</code> clause.
+	 * Causes the inclusion of an {@code IF NOT EXISTS} clause.
 	 *
 	 * @return this
 	 */
@@ -70,7 +70,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/**
-	 * Toggles the inclusion of an <code>IF NOT EXISTS</code> clause.
+	 * Toggles the inclusion of an {@code IF NOT EXISTS} clause.
 	 *
 	 * @return this
 	 */

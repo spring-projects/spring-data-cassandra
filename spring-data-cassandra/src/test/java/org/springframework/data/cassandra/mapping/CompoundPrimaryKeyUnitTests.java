@@ -56,8 +56,8 @@ public class CompoundPrimaryKeyUnitTests {
 
 	@Before
 	public void setup() {
-		cpk = new BasicCassandraPersistentEntity<TimelineKey>(ClassTypeInformation.from(TimelineKey.class));
-		entity = new BasicCassandraPersistentEntity<Timeline>(ClassTypeInformation.from(Timeline.class));
+		cpk = new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(TimelineKey.class));
+		entity = new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Timeline.class));
 	}
 
 	@Test

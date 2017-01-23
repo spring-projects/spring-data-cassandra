@@ -19,5 +19,5 @@ package org.springframework.data.cassandra.test.integration.simpletons;
  * @author Mark Paluch
  */
 public enum BookCondition {
-	NEW, USED;
+	NEW, USED
 }

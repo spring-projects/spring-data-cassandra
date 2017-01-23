@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.mapping;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.util.Assert;
@@ -49,7 +50,7 @@ public class VerifierMappingExceptions extends MappingException {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		this.exceptions = Collections.unmodifiableCollection(new LinkedList<MappingException>(exceptions));
+		this.exceptions = Collections.unmodifiableCollection(new LinkedList<>(exceptions));
 		this.className = entity.getType().getName();
 	}
 
@@ -65,7 +66,7 @@ public class VerifierMappingExceptions extends MappingException {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		this.exceptions = new LinkedList<MappingException>();
+		this.exceptions = new LinkedList<>();
 		this.className = entity.getType().getName();
 	}
 
@@ -96,13 +97,7 @@ public class VerifierMappingExceptions extends MappingException {
 	 * @return The Collection of Messages
 	 */
 	public Collection<String> getMessages() {
-		Collection<String> messages = new LinkedList<String>();
-
-		for (MappingException e : exceptions) {
-			messages.add(e.getMessage());
-		}
-
-		return messages;
+		return exceptions.stream().map(Throwable::getMessage).collect(Collectors.toList());
 	}
 
 	/**

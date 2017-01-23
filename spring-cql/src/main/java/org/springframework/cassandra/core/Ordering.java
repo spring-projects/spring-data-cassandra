@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2013-2017 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,7 @@ import java.util.Comparator;
 /**
  * Enum for Cassandra primary key column ordering. Implements {@link Comparator} in that {@link Ordering#ASCENDING} is
  * ordered before {@link Ordering#DESCENDING}.
- * 
+ *
  * @author Matthew T. Adams
  */
 public enum Ordering implements Comparator<Ordering> {
@@ -37,7 +37,7 @@ public enum Ordering implements Comparator<Ordering> {
 
 	private String cql;
 
-	private Ordering(String cql) {
+	Ordering(String cql) {
 		this.cql = cql;
 	}
 
@@ -53,10 +53,10 @@ public enum Ordering implements Comparator<Ordering> {
 		if (l == r) {
 			return 0;
 		}
-		if (l == null && r != null) {
+		if (l == null) {
 			return 1;
 		}
-		if (l != null && r == null) {
+		if (r == null) {
 			return -1;
 		}
 		return (l == ASCENDING && r == DESCENDING) ? 1 : -1;

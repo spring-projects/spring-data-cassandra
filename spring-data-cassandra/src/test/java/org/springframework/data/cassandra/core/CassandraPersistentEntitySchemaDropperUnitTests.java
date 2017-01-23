@@ -33,7 +33,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.mapping.UserDefinedType;
-import org.springframework.data.cassandra.mapping.UserTypeResolver;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -41,7 +40,7 @@ import com.datastax.driver.core.UserType;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaDropper}.
- * 
+ *
  * @author Mark Paluch.
  */
 @SuppressWarnings("unchecked")
@@ -62,12 +61,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 	@Before
 	public void setUp() throws Exception {
 
-		context.setUserTypeResolver(new UserTypeResolver() {
-			@Override
-			public UserType resolveType(CqlIdentifier typeName) {
-				return metadata.getUserType(typeName.toCql());
-			}
-		});
+		context.setUserTypeResolver(typeName -> metadata.getUserType(typeName.toCql()));
 
 		when(operations.getKeyspaceMetadata()).thenReturn(metadata);
 		when(universetype.getTypeName()).thenReturn("universetype");
@@ -80,7 +74,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 	@Test // DATACASS-355
 	public void shouldDropTypes() throws Exception {
 
-		context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(MoonType.class, UniverseType.class)));
+		context.setInitialEntitySet(new HashSet<>(Arrays.asList(MoonType.class, UniverseType.class)));
 		context.afterPropertiesSet();
 
 		when(metadata.getUserTypes()).thenReturn(Arrays.asList(universetype, moontype, planettype));
@@ -100,7 +94,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 	@Test // DATACASS-355
 	public void dropUserTypesShouldRetainUnusedTypes() {
 
-		context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(MoonType.class, UniverseType.class)));
+		context.setInitialEntitySet(new HashSet<>(Arrays.asList(MoonType.class, UniverseType.class)));
 		context.afterPropertiesSet();
 
 		when(metadata.getUserTypes()).thenReturn(Arrays.asList(universetype, moontype, planettype));

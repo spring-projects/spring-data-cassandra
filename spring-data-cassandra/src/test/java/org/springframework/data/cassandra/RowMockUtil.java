@@ -19,8 +19,8 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import java.util.Arrays;
+
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -50,75 +50,43 @@ public class RowMockUtil {
 
 		when(rowMock.getColumnDefinitions()).thenReturn(columnDefinitionsMock);
 
-		when(columnDefinitionsMock.contains(anyString())).thenAnswer(new Answer<Boolean>() {
-			@Override
-			public Boolean answer(InvocationOnMock invocation) throws Throwable {
+		when(columnDefinitionsMock.contains(anyString())).thenAnswer(invocation -> Arrays.stream(columns)
+				.anyMatch(column -> column.name.equalsIgnoreCase((String) invocation.getArguments()[0])));
 
-				for (Column column : columns) {
-					if (column.name.equalsIgnoreCase((String) invocation.getArguments()[0])) {
-						return true;
-					}
+		when(columnDefinitionsMock.getIndexOf(anyString())).thenAnswer(invocation -> {
+
+			int counter = 0;
+			for (Column column : columns) {
+				if (column.name.equalsIgnoreCase((String) invocation.getArguments()[0])) {
+					return counter;
 				}
-
-				return false;
+				counter++;
 			}
-		});
 
-		when(columnDefinitionsMock.getIndexOf(anyString())).thenAnswer(new Answer<Integer>() {
-			@Override
-			public Integer answer(InvocationOnMock invocation) throws Throwable {
-
-				int counter = 0;
-				for (Column column : columns) {
-					if (column.name.equalsIgnoreCase((String) invocation.getArguments()[0])) {
-						return counter;
-					}
-					counter++;
-				}
-
-				return -1;
-			}
+			return -1;
 		});
 
 		when(columnDefinitionsMock.getType(anyString())).thenAnswer(new Answer<DataType>() {
 			@Override
 			public DataType answer(InvocationOnMock invocation) throws Throwable {
 
-				for (Column column : columns) {
-					if (column.name.equalsIgnoreCase((String) invocation.getArguments()[0])) {
-						return column.type;
-					}
-				}
-
-				return null;
+				return Arrays.stream(columns)
+						.filter(column -> column.name.equalsIgnoreCase((String) invocation.getArguments()[0])).findFirst()
+						.map(column -> column.type).orElse(null);
 			}
 		});
 
-		when(columnDefinitionsMock.getType(anyInt())).thenAnswer(new Answer<DataType>() {
-			@Override
-			public DataType answer(InvocationOnMock invocation) throws Throwable {
-				return columns[(Integer) invocation.getArguments()[0]].type;
-			}
-		});
+		when(columnDefinitionsMock.getType(anyInt()))
+				.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].type);
 
-		when(rowMock.getObject(anyInt())).thenAnswer(new Answer<Object>() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				return columns[(Integer) invocation.getArguments()[0]].value;
-			}
-		});
+		when(rowMock.getObject(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
 
 		when(rowMock.getObject(anyString())).thenAnswer(new Answer<Object>() {
 			@Override
 			public Object answer(InvocationOnMock invocation) throws Throwable {
-
-				for (Column column : columns) {
-					if (column.name.equalsIgnoreCase((String) invocation.getArguments()[0])) {
-						return column.value;
-					}
-				}
-
-				return null;
+				return Arrays.stream(columns)
+						.filter(column -> column.name.equalsIgnoreCase((String) invocation.getArguments()[0])).findFirst()
+						.map(column -> column.value).orElse(null);
 			}
 		});
 

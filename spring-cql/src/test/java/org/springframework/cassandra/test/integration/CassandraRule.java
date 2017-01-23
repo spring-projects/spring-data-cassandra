@@ -28,7 +28,6 @@ import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
 import org.springframework.cassandra.test.integration.support.CqlDataSet;
 import org.springframework.cassandra.test.integration.support.IntegrationTestNettyOptions;
-import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 
@@ -63,11 +62,11 @@ public class CassandraRule extends ExternalResource {
 
 	private final long startUpTimeout;
 
-	private List<SessionCallback<Void>> before = new ArrayList<SessionCallback<Void>>();
+	private List<SessionCallback<Void>> before = new ArrayList<>();
 
-	private Map<SessionCallback<?>, InvocationMode> invocationModeMap = new HashMap<SessionCallback<?>, InvocationMode>();
+	private Map<SessionCallback<?>, InvocationMode> invocationModeMap = new HashMap<>();
 
-	private List<SessionCallback<Void>> after = new ArrayList<SessionCallback<Void>>();
+	private List<SessionCallback<Void>> after = new ArrayList<>();
 
 	private Session session;
 
@@ -133,12 +132,9 @@ public class CassandraRule extends ExternalResource {
 
 		Assert.notNull(cqlDataSet, "CQLDataSet must not be null");
 
-		SessionCallback<Void> sessionCallback = new SessionCallback<Void>() {
-			@Override
-			public Void doInSession(Session session) throws DataAccessException {
-				load(session, cqlDataSet);
-				return null;
-			}
+		SessionCallback<Void> sessionCallback = session -> {
+			load(session, cqlDataSet);
+			return null;
 		};
 
 		before(invocationMode, sessionCallback);
@@ -184,12 +180,9 @@ public class CassandraRule extends ExternalResource {
 
 		Assert.notNull(cqlDataSet, "CQLDataSet must not be null");
 
-		after.add(new SessionCallback<Void>() {
-			@Override
-			public Void doInSession(Session session) throws DataAccessException {
-				load(CassandraRule.this.session, cqlDataSet);
-				return null;
-			}
+		after.add(session -> {
+			load(CassandraRule.this.session, cqlDataSet);
+			return null;
 		});
 
 		return this;
@@ -383,9 +376,7 @@ public class CassandraRule extends ExternalResource {
 			session.execute(String.format("USE %s;", cqlDataSet.getKeyspaceName()));
 		}
 
-		for (String statement : cqlDataSet.getCqlStatements()) {
-			session.execute(statement);
-		}
+		cqlDataSet.getCqlStatements().forEach(session::execute);
 	}
 
 	/**

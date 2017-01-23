@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.repository.config;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.cassandra.config.xml.ParsingUtils;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
@@ -46,19 +46,19 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 	private static final String CASSANDRA_TEMPLATE_REF = "cassandra-template-ref";
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModuleName()
+	 */
+	@Override
+	public String getModuleName() {
+		return "Cassandra";
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModulePrefix()
 	 */
 	@Override
 	protected String getModulePrefix() {
 		return "cassandra";
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getModuleName()
-	 */
-	@Override
-	public String getModuleName() {
-		return "Cassandra";
 	}
 
 	/* (non-Javadoc)
@@ -77,8 +77,11 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 
 		Element element = config.getElement();
 
-		ParsingUtils.addOptionalPropertyReference(builder, "cassandraTemplate", element, CASSANDRA_TEMPLATE_REF,
-				DefaultBeanNames.DATA_TEMPLATE);
+		String cassandraTemplateRef = Optional.ofNullable(element.getAttribute(CASSANDRA_TEMPLATE_REF)) //
+				.filter(StringUtils::hasText) //
+				.orElse(DefaultBeanNames.DATA_TEMPLATE);
+
+		builder.addPropertyReference("cassandraTemplate", cassandraTemplateRef);
 	}
 
 	/* (non-Javadoc)
@@ -94,16 +97,16 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 		}
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getIdentifyingAnnotations()
 	 */
 	@Override
 	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
 		return Collections.singleton(Table.class);
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getIdentifyingTypes()
 	 */
 	@Override
 	protected Collection<Class<?>> getIdentifyingTypes() {

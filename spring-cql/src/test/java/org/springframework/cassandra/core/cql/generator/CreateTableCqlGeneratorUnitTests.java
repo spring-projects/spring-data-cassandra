@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -224,9 +225,9 @@ public class CreateTableCqlGeneratorUnitTests {
 		public Boolean replcateOnWrite = Boolean.FALSE;
 		public Long gcGraceSeconds = 600l;
 		public String comment = "This is My Table";
-		public Map<Option, Object> compactionMap = new LinkedHashMap<Option, Object>();
-		public Map<Option, Object> compressionMap = new LinkedHashMap<Option, Object>();
-		public Map<Option, Object> cachingMap = new LinkedHashMap<Option, Object>();
+		public Map<Option, Object> compactionMap = new LinkedHashMap<>();
+		public Map<Option, Object> compressionMap = new LinkedHashMap<>();
+		public Map<Option, Object> cachingMap = new LinkedHashMap<>();
 
 		@Override
 		public CreateTableSpecification specification() {
@@ -277,12 +278,11 @@ public class CreateTableCqlGeneratorUnitTests {
 		public static final List<String> FUNKY_LEGAL_NAMES;
 
 		static {
-			List<String> funkies = new ArrayList<String>(Arrays.asList(new String[] { /* TODO */ }));
+			List<String> funkies = new ArrayList<>(Arrays.asList(new String[]{ /* TODO */}));
 			// TODO: should these work? "a \"\" x", "a\"\"\"\"x", "a b"
-			for (ReservedKeyword funky : ReservedKeyword.values()) {
-				funkies.add(funky.name());
-			}
-			FUNKY_LEGAL_NAMES = Collections.unmodifiableList(funkies);
+			FUNKY_LEGAL_NAMES = Collections.unmodifiableList(Arrays.stream(ReservedKeyword.values()) //
+					.map(Enum::name) //
+					.collect(Collectors.toList()));
 		}
 
 		@Test

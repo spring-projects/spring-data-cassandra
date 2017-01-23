@@ -125,11 +125,7 @@ public class CassandraConnectionProperties extends Properties {
 	 * @return the property value
 	 */
 	public int getInt(String propertyName) {
-		return convert(propertyName, Integer.class, new Converter<String, Integer>() {
-			public Integer convert(String value) {
-				return Integer.parseInt(value);
-			}
-		});
+		return convert(propertyName, Integer.class, Integer::parseInt);
 	}
 
 	/**
@@ -139,11 +135,7 @@ public class CassandraConnectionProperties extends Properties {
 	 * @return the property value
 	 */
 	public long getLong(String propertyName) {
-		return convert(propertyName, Long.class, new Converter<String, Long>() {
-			public Long convert(String value) {
-				return Long.parseLong(value);
-			}
-		});
+		return convert(propertyName, Long.class, Long::parseLong);
 	}
 
 	/**
@@ -153,11 +145,7 @@ public class CassandraConnectionProperties extends Properties {
 	 * @return the property value
 	 */
 	public boolean getBoolean(String propertyName) {
-		return convert(propertyName, Boolean.class, new Converter<String, Boolean>() {
-			public Boolean convert(String value) {
-				return Boolean.parseBoolean(value);
-			}
-		});
+		return convert(propertyName, Boolean.class, Boolean::parseBoolean);
 	}
 
 	private <T> T convert(String propertyName, Class<T> type, Converter<String, T> converter) {

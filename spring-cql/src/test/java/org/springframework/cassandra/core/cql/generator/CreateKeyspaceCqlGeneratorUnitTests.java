@@ -124,7 +124,7 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		public String name = RandomKeySpaceName.create();
 		public Boolean durableWrites = false;
 
-		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
+		public Map<Option, Object> replicationMap = new HashMap<>();
 
 		@Override
 		public CreateKeyspaceSpecification specification() {

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
@@ -15,29 +30,29 @@ public class IdInterfaceValidator {
 	 * <p/>
 	 * Id interfaces are intended to have methods representing setters and getters. Getter methods take the form
 	 * <ul>
-	 * <li><code>PropertyType getPropertyName()</code> or</li>
-	 * <li><code>PropertyType propertyName()</code>.</li>
+	 * <li>{@code PropertyType getPropertyName()} or</li>
+	 * <li>{@code PropertyType propertyName()}.</li>
 	 * </ul>
 	 * Setter methods take the form
 	 * <ul>
-	 * <li><code>void|IdType setPropertyName(PropertyType)</code>,</li>
-	 * <li><code>void|IdType withPropertyName(PropertyType)</code>, or</li>
-	 * <li><code>void|IdType propertyName(PropertyType)</code>;</li>
+	 * <li>{@code void|IdType setPropertyName(PropertyType)},</li>
+	 * <li>{@code void|IdType withPropertyName(PropertyType)}, or</li>
+	 * <li>{@code void|IdType propertyName(PropertyType)};</li>
 	 * </ul>
 	 * setter methods may also declare that they return their id interface type to support method chaining.
 	 * <p/>
 	 * Id interfaces
 	 * <ul>
-	 * <li>must be an <code>interface</code>, not a <code>class</code>,</li>
+	 * <li>must be an {@code interface}, not a <code>class</code>,</li>
 	 * <li>may extend {@link Serializable},</li>
 	 * <li>may extend {@link MapId},</li>
 	 * <li>must have getter methods that only return a {@link Serializable} type,</li>
 	 * <li>must have setter methods that only take a single {@link Serializable} type,</li>
-	 * <li>must have setter methods that only return <code>void</code> or the id interface's type,</li>
+	 * <li>must have setter methods that only return {@code void} or the id interface's type,</li>
 	 * <li>must not define any getter methods with the literal name "get", and</li>
 	 * <li>must not define any setter methods with the literal names "set" or "with".</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param id The candidate interface type
 	 * @throws IdInterfaceExceptions
 	 * @see IdInterfaceExceptions#getExceptions()

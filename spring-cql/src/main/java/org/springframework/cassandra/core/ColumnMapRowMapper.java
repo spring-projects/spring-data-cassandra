@@ -41,6 +41,9 @@ import com.datastax.driver.core.Row;
  */
 public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.RowMapper#mapRow(com.datastax.driver.core.Row, int)
+	 */
 	@Override
 	public Map<String, Object> mapRow(Row rs, int rowNum) {
 
@@ -62,7 +65,8 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 	 * <p>
 	 * By default, a linked case-insensitive Map will be created.
 	 *
-	 * @param columnCount the column count, to be used as initial capacity for the {@link Map}, must not be {@literal null}.
+	 * @param columnCount the column count, to be used as initial capacity for the {@link Map}, must not be
+	 *          {@literal null}.
 	 * @return the new Map instance.
 	 * @see org.springframework.util.LinkedCaseInsensitiveMap
 	 */

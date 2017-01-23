@@ -38,20 +38,30 @@ public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, Ini
 	private Integer receiveBufferSize;
 	private Integer sendBufferSize;
 
-	SocketOptions socketOptions;
+	private SocketOptions socketOptions;
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
 	@Override
 	public SocketOptions getObject() throws Exception {
 		return socketOptions;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
 	@Override
 	public Class<?> getObjectType() {
 		return SocketOptions.class;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
 	@Override
 	public void destroy() throws Exception {
+
 		connectTimeoutMillis = null;
 		keepAlive = null;
 		readTimeoutMillis = null;
@@ -62,6 +72,9 @@ public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, Ini
 		sendBufferSize = null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
@@ -101,6 +114,9 @@ public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, Ini
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+	 */
 	@Override
 	public boolean isSingleton() {
 		return true;

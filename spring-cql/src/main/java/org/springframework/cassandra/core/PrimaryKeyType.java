@@ -41,10 +41,10 @@ public enum PrimaryKeyType implements Comparator<PrimaryKeyType> {
 		if (l == r) {
 			return 0;
 		}
-		if (l == null && r != null) {
+		if (l == null) {
 			return 1;
 		}
-		if (l != null && r == null) {
+		if (r == null) {
 			return -1;
 		}
 		return l == PARTITIONED && r == CLUSTERED ? 1 : -1;

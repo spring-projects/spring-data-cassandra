@@ -169,7 +169,7 @@ public class UserRepositoryIntegrationTests {
 	public void save() {
 
 		tom.setPassword(null);
-		tom.setFriends(Collections.<String> emptySet());
+		tom.setFriends(Collections.emptySet());
 
 		repository.save(tom);
 

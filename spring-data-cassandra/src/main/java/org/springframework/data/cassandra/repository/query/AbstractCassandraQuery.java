@@ -158,11 +158,11 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		Collection<Object> results;
 
 		if (ClassUtils.isAssignable(SortedSet.class, declaredReturnType)) {
-			results = new TreeSet<Object>();
+			results = new TreeSet<>();
 		} else if (ClassUtils.isAssignable(Set.class, declaredReturnType)) {
-			results = new HashSet<Object>();
+			results = new HashSet<>();
 		} else { // List.class, Collection.class, or array
-			results = new ArrayList<Object>();
+			results = new ArrayList<>();
 		}
 
 		CassandraConverter converter = template.getConverter();

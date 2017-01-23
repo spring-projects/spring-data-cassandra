@@ -32,7 +32,7 @@ import org.junit.Test;
 public class BasicMapIdUnitTests {
 	@Test
 	public void testMapConstructor() {
-		Map<String, Serializable> map = new HashMap<String, Serializable>();
+		Map<String, Serializable> map = new HashMap<>();
 		map.put("field1", "value1");
 		map.put("field2", 2);
 

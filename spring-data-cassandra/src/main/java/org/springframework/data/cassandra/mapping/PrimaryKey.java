@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import org.springframework.data.annotation.Id;
 
 /**
  * Identifies the primary key field of the entity, which may be of a basic type or of a type that represents a composite
- * primary key class. This field corresponds to the <code>PRIMARY KEY</code> of the corresponding Cassandra table. Only
- * one field in a given type hierarchy may be annotated with this annotation.
+ * primary key class. This field corresponds to the {@code PRIMARY KEY} of the corresponding Cassandra table. Only one
+ * field in a given type hierarchy may be annotated with this annotation.
  * <p/>
  * Remember, if the Cassandra table has multiple primary key columns, then you must define a class annotated with
  * {@link PrimaryKeyClass} to represent the primary key!

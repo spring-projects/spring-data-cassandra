@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,25 +32,14 @@ import org.springframework.cassandra.core.cql.generator.DropKeyspaceCqlGenerator
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.KeyspaceActionSpecification;
-import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.cassandra.support.CassandraExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.AuthProvider;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.LatencyTracker;
-import com.datastax.driver.core.NettyOptions;
-import com.datastax.driver.core.PoolingOptions;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.QueryOptions;
-import com.datastax.driver.core.SSLOptions;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SocketOptions;
-import com.datastax.driver.core.TimestampGenerator;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.Cluster.Builder;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.policies.AddressTranslator;
@@ -76,8 +65,8 @@ import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
  * @see com.datastax.driver.core.Cluster
  */
 @SuppressWarnings("unused")
-public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, InitializingBean, DisposableBean,
-		BeanNameAware, PersistenceExceptionTranslator {
+public class CassandraCqlClusterFactoryBean
+		implements FactoryBean<Cluster>, InitializingBean, DisposableBean, BeanNameAware, PersistenceExceptionTranslator {
 
 	public static final boolean DEFAULT_JMX_REPORTING_ENABLED = true;
 	public static final boolean DEFAULT_METRICS_ENABLED = true;
@@ -108,12 +97,12 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	private Host.StateListener hostStateListener;
 	private LatencyTracker latencyTracker;
 
-	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<CreateKeyspaceSpecification>();
-	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<DropKeyspaceSpecification>();
-	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<KeyspaceActionSpecification<?>>();
+	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<>();
+	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<>();
+	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<>();
 
-	private List<String> startupScripts = new ArrayList<String>();
-	private List<String> shutdownScripts = new ArrayList<String>();
+	private List<String> startupScripts = new ArrayList<>();
+	private List<String> shutdownScripts = new ArrayList<>();
 
 	private LoadBalancingPolicy loadBalancingPolicy;
 	private NettyOptions nettyOptions;
@@ -307,16 +296,15 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	 */
 	private void generateSpecificationsFromFactoryBeans() {
 
-		for (KeyspaceActionSpecification<?> keyspaceSpecification : keyspaceSpecifications) {
-
-			if (keyspaceSpecification instanceof CreateKeyspaceSpecification) {
-				keyspaceCreations.add((CreateKeyspaceSpecification) keyspaceSpecification);
+		keyspaceSpecifications.forEach(keyspaceActionSpecification -> {
+			if (keyspaceActionSpecification instanceof CreateKeyspaceSpecification) {
+				keyspaceCreations.add((CreateKeyspaceSpecification) keyspaceActionSpecification);
 			}
 
-			if (keyspaceSpecification instanceof DropKeyspaceSpecification) {
-				keyspaceDrops.add((DropKeyspaceSpecification) keyspaceSpecification);
+			if (keyspaceActionSpecification instanceof DropKeyspaceSpecification) {
+				keyspaceDrops.add((DropKeyspaceSpecification) keyspaceActionSpecification);
 			}
-		}
+		});
 	}
 
 	protected void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification<?>> kepspaceActionSpecifications,
@@ -329,13 +317,10 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 			try {
 				CqlTemplate template = new CqlTemplate(session);
 
-				for (KeyspaceActionSpecification<?> keyspaceActionSpecification : kepspaceActionSpecifications) {
-					template.execute(toCql(keyspaceActionSpecification));
-				}
+				kepspaceActionSpecifications
+						.forEach(keyspaceActionSpecification -> template.execute(toCql(keyspaceActionSpecification)));
 
-				for (String script : scripts) {
-					template.execute(script);
-				}
+				scripts.forEach(template::execute);
 			} finally {
 				if (session != null) {
 					session.close();
@@ -347,8 +332,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	private String toCql(KeyspaceActionSpecification<?> keyspaceActionSpecification) {
 
 		return (keyspaceActionSpecification instanceof CreateKeyspaceSpecification
-			? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) keyspaceActionSpecification).toCql()
-			: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) keyspaceActionSpecification).toCql());
+				? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) keyspaceActionSpecification).toCql()
+				: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) keyspaceActionSpecification).toCql());
 	}
 
 	/*
@@ -362,8 +347,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
-	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost};
-	 * see {@link #DEFAULT_CONTACT_POINTS}.
+	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost}; see
+	 * {@link #DEFAULT_CONTACT_POINTS}.
 	 *
 	 * @param contactPoints the contact points used by the new cluster.
 	 */
@@ -528,7 +513,6 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
-	 *
 	 * @return the startup scripts
 	 */
 	public List<String> getStartupScripts() {
@@ -547,7 +531,6 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
-	 *
 	 * @return the shutdown scripts
 	 */
 	public List<String> getShutdownScripts() {
@@ -626,8 +609,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
-	 * Configures the address translator used by the new cluster to translate IP addresses received
-	 * from Cassandra nodes into locally query-able addresses.
+	 * Configures the address translator used by the new cluster to translate IP addresses received from Cassandra nodes
+	 * into locally query-able addresses.
 	 *
 	 * @param addressTranslator {@link AddressTranslator} used by the new cluster.
 	 * @see com.datastax.driver.core.Cluster.Builder#withAddressTranslator(AddressTranslator)
@@ -664,8 +647,8 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	}
 
 	/**
-	 * Sets the maximum time to wait for schema agreement before returning from a DDL query.  The timeout is used
-	 * to wait for all currently up hosts in the cluster to agree on the schema.
+	 * Sets the maximum time to wait for schema agreement before returning from a DDL query. The timeout is used to wait
+	 * for all currently up hosts in the cluster to agree on the schema.
 	 *
 	 * @param seconds max schema agreement wait in seconds.
 	 * @see com.datastax.driver.core.Cluster.Builder#withMaxSchemaAgreementWaitSeconds(int)
@@ -690,8 +673,7 @@ public class CassandraCqlClusterFactoryBean implements FactoryBean<Cluster>, Ini
 	/**
 	 * Configures the generator that will produce the client-side timestamp sent with each query.
 	 *
-	 * @param timestampGenerator {@link TimestampGenerator} used to produce a client-side timestamp
-	 * sent with each query.
+	 * @param timestampGenerator {@link TimestampGenerator} used to produce a client-side timestamp sent with each query.
 	 * @see com.datastax.driver.core.Cluster.Builder#withTimestampGenerator(TimestampGenerator)
 	 * @see com.datastax.driver.core.TimestampGenerator
 	 * @since 1.5

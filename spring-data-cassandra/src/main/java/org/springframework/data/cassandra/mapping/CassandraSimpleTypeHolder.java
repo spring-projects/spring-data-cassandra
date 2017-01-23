@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package org.springframework.data.cassandra.mapping;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -30,7 +30,9 @@ import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.UDTValue;
+import com.google.common.reflect.TypeToken;
 
 /**
  * Simple constant holder for a {@link SimpleTypeHolder} enriched with Cassandra specific simple types.
@@ -51,7 +53,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 
-		Map<Class<?>, Class<?>> primitiveWrappers = new HashMap<Class<?>, Class<?>>(8);
+		Map<Class<?>, Class<?>> primitiveWrappers = new HashMap<>(8);
 		primitiveWrappers.put(Boolean.class, boolean.class);
 		primitiveWrappers.put(Byte.class, byte.class);
 		primitiveWrappers.put(Character.class, char.class);
@@ -78,7 +80,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	private static Map<Name, DataType> nameToDataType() {
 
-		Map<Name, DataType> nameToDataType = new HashMap<Name, DataType>(16);
+		Map<Name, DataType> nameToDataType = new HashMap<>(16);
 
 		for (DataType dataType : DataType.allPrimitiveTypes()) {
 			nameToDataType.put(dataType.getName(), dataType);
@@ -95,7 +97,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	private static Map<Class<?>, DataType> classToDataType(Map<Class<?>, Class<?>> primitiveWrappers,
 			CodecRegistry codecRegistry) {
 
-		Map<Class<?>, DataType> classToDataType = new HashMap<Class<?>, DataType>(16);
+		Map<Class<?>, DataType> classToDataType = new HashMap<>(16);
 
 		for (DataType dataType : DataType.allPrimitiveTypes()) {
 
@@ -128,13 +130,11 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	private static Set<Class<?>> getCassandraPrimitiveTypes(CodecRegistry codecRegistry) {
 
-		Set<Class<?>> simpleTypes = new HashSet<Class<?>>();
-		for (DataType dataType : DataType.allPrimitiveTypes()) {
-
-			Class<?> javaClass = codecRegistry.codecFor(dataType).getJavaType().getRawType();
-			simpleTypes.add(javaClass);
-		}
-		return simpleTypes;
+		return DataType.allPrimitiveTypes().stream() //
+				.map(codecRegistry::codecFor) //
+				.map(TypeCodec::getJavaType) //
+				.map(TypeToken::getRawType) //
+				.collect(Collectors.toSet());
 	}
 
 	/**

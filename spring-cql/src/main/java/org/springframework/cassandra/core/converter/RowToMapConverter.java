@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,9 @@ public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
 
 	public final static RowToMapConverter INSTANCE = new RowToMapConverter();
 
+	/* (non-Javadoc)
+	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+	 */
 	@Override
 	public Map<String, Object> convert(Row row) {
 
@@ -46,14 +49,10 @@ public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
 		}
 
 		ColumnDefinitions cols = row.getColumnDefinitions();
-		Map<String, Object> map = new HashMap<String, Object>(cols.size());
+		Map<String, Object> map = new HashMap<>(cols.size());
 
-		for (Definition def : cols.asList()) {
-
-			String name = def.getName();
-
-			map.put(name, row.isNull(name) ? null : row.getObject(name));
-		}
+		cols.asList().stream().map(Definition::getName)
+				.forEach(name -> map.put(name, row.isNull(name) ? null : row.getObject(name)));
 
 		return map;
 	}

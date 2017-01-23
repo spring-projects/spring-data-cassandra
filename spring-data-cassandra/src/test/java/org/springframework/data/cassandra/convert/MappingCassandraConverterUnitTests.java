@@ -457,7 +457,7 @@ public class MappingCassandraConverterUnitTests {
 		java.time.LocalDate localDate = java.time.LocalDate.of(2010, 7, 4);
 
 		TypeWithLocalDate typeWithLocalDate = new TypeWithLocalDate();
-		typeWithLocalDate.set = new HashSet<java.time.LocalDate>(Arrays.asList(now, localDate));
+		typeWithLocalDate.set = new HashSet<>(Arrays.asList(now, localDate));
 
 		Insert insert = QueryBuilder.insertInto("table");
 
@@ -846,28 +846,16 @@ public class MappingCassandraConverterUnitTests {
 
 	@SuppressWarnings("unchecked")
 	private <T> List<T> getListValue(Insert statement) {
+
 		List<Object> values = getValues(statement);
-
-		for (Object value : values) {
-			if (value instanceof List) {
-				return (List<T>) value;
-			}
-		}
-
-		return null;
+		return (List<T>) values.stream().filter(value -> value instanceof List).findFirst().orElse(null);
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> Set<T> getSetValue(Insert statement) {
+
 		List<Object> values = getValues(statement);
-
-		for (Object value : values) {
-			if (value instanceof Set) {
-				return (Set<T>) value;
-			}
-		}
-
-		return null;
+		return (Set<T>) values.stream().filter(value -> value instanceof Set).findFirst().orElse(null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -883,7 +871,7 @@ public class MappingCassandraConverterUnitTests {
 	@SuppressWarnings("unchecked")
 	private Map<String, Object> getAssignments(Update statement) {
 
-		Map<String, Object> result = new LinkedHashMap<String, Object>();
+		Map<String, Object> result = new LinkedHashMap<>();
 
 		Assignments assignments = (Assignments) ReflectionTestUtils.getField(statement, "assignments");
 
@@ -915,12 +903,12 @@ public class MappingCassandraConverterUnitTests {
 	@SuppressWarnings("unchecked")
 	private Map<String, Object> getWherePredicates(BuiltStatement where) {
 
-		Map<String, Object> result = new LinkedHashMap<String, Object>();
+		Map<String, Object> result = new LinkedHashMap<>();
 
 		List<Clause> clauses = (List<Clause>) ReflectionTestUtils.getField(where, "clauses");
 
 		for (Clause clause : clauses) {
-			result.put((String) ReflectionTestUtils.invokeMethod(clause, "name"),
+			result.put(ReflectionTestUtils.invokeMethod(clause, "name"),
 					ReflectionTestUtils.getField(clause, "value"));
 		}
 
@@ -1030,7 +1018,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	public enum Condition {
-		MINT, USED;
+		MINT, USED
 	}
 
 	@Table

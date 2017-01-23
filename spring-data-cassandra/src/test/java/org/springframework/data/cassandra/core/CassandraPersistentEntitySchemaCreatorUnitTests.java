@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -28,12 +29,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.CqlOperations;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.UserDefinedType;
-import org.springframework.data.cassandra.mapping.UserTypeResolver;
-
-import com.datastax.driver.core.UserType;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaCreator}.
@@ -52,13 +49,10 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 	@Before
 	public void setUp() throws Exception {
 
-		context.setUserTypeResolver(new UserTypeResolver() {
-			@Override
-			public UserType resolveType(CqlIdentifier typeName) {
-				// make sure that calls to this method pop up. Calling UserTypeResolver while resolving
-				// to be created user types isn't a good idea because they do not exist at resolution time.
-				throw new IllegalArgumentException(String.format("Type %s not found", typeName));
-			}
+		context.setUserTypeResolver(typeName -> {
+			// make sure that calls to this method pop up. Calling UserTypeResolver while resolving
+			// to be created user types isn't a good idea because they do not exist at resolution time.
+			throw new IllegalArgumentException(String.format("Type %s not found", typeName));
 		});
 
 		when(adminOperations.getCqlOperations()).thenReturn(operations);

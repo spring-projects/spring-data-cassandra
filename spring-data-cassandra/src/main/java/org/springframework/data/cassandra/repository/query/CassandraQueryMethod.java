@@ -97,7 +97,7 @@ public class CassandraQueryMethod extends QueryMethod {
 			Class<?> domainClass = getDomainClass();
 
 			if (ClassUtils.isPrimitiveOrWrapper(returnedObjectType)) {
-				this.entityMetadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) domainClass,
+				this.entityMetadata = new SimpleCassandraEntityMetadata<>((Class<Object>) domainClass,
 						mappingContext.getRequiredPersistentEntity(domainClass));
 
 			} else {
@@ -113,7 +113,7 @@ public class CassandraQueryMethod extends QueryMethod {
 				CassandraPersistentEntity<?> collectionEntity = domainClass.isAssignableFrom(returnedObjectType)
 						? returnedEntity : managedEntity;
 
-				this.entityMetadata = new SimpleCassandraEntityMetadata<Object>((Class<Object>) returnedEntity.getType(),
+				this.entityMetadata = new SimpleCassandraEntityMetadata<>((Class<Object>) returnedEntity.getType(),
 						collectionEntity);
 
 			}

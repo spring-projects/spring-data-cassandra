@@ -69,7 +69,7 @@ public class PoolingOptionsFactoryBeanUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void getObjectTypeReturnsPoolingOptionsClassWhenNotInitialized() {
-		assertThat((Class<PoolingOptions>) poolingOptionsFactoryBean.getObjectType()).isEqualTo(PoolingOptions.class);
+		assertThat(poolingOptionsFactoryBean.getObjectType()).isEqualTo(PoolingOptions.class);
 	}
 
 	@Test

@@ -99,7 +99,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 
 
-		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
+		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity,
 				operations.getConverter());
 	}
 

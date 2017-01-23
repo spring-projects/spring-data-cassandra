@@ -40,7 +40,7 @@ public class KeyspaceCreatingJavaConfig extends AbstractTestJavaConfig {
 
 	@Override
 	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-		ArrayList<CreateKeyspaceSpecification> list = new ArrayList<CreateKeyspaceSpecification>();
+		ArrayList<CreateKeyspaceSpecification> list = new ArrayList<>();
 
 		CreateKeyspaceSpecification specification = CreateKeyspaceSpecification.createKeyspace().name(getKeyspaceName());
 		specification.with(KeyspaceOption.REPLICATION, KeyspaceAttributes.newSimpleReplication(1L));

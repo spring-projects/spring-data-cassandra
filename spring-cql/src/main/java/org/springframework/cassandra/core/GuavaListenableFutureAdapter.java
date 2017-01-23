@@ -91,8 +91,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		return settableFuture;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.util.concurrent.ListenableFuture#addCallback(org.springframework.util.concurrent.ListenableFutureCallback)
 	 */
 	@Override
@@ -100,8 +99,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		future.addCallback(callback);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.util.concurrent.ListenableFuture#addCallback(org.springframework.util.concurrent.SuccessCallback, org.springframework.util.concurrent.FailureCallback)
 	 */
 	@Override
@@ -109,8 +107,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		future.addCallback(successCallback, failureCallback);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#cancel(boolean)
 	 */
 	@Override
@@ -118,8 +115,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		return adaptee.cancel(mayInterruptIfRunning);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#isCancelled()
 	 */
 	@Override
@@ -127,8 +123,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		return adaptee.isCancelled();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#isDone()
 	 */
 	@Override
@@ -136,8 +131,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		return future.isDone();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#get()
 	 */
 	@Override
@@ -145,8 +139,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 		return future.get();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#get(long, java.util.concurrent.TimeUnit)
 	 */
 	@Override

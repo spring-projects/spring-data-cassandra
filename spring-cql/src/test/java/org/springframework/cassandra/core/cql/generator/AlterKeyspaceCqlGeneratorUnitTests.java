@@ -45,10 +45,7 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 	private static void assertReplicationMap(Map<Option, Object> replicationMap, String cql) {
 		assertThat(cql.contains(" WITH replication = { ")).isTrue();
 
-		for (Map.Entry<Option, Object> entry : replicationMap.entrySet()) {
-			String keyValuePair = "'" + entry.getKey().getName() + "' : '" + entry.getValue().toString() + "'";
-			assertThat(cql.contains(keyValuePair)).isTrue();
-		}
+		replicationMap.entrySet().stream().map(entry -> "'" + entry.getKey().getName() + "' : '" + entry.getValue().toString() + "'").forEach(keyValuePair -> assertThat(cql.contains(keyValuePair)).isTrue());
 	}
 
 	public static void assertDurableWrites(Boolean durableWrites, String cql) {
@@ -66,7 +63,7 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 		public String name = RandomKeySpaceName.create();
 		public Boolean durableWrites = true;
 
-		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
+		public Map<Option, Object> replicationMap = new HashMap<>();
 
 		@Override
 		public AlterKeyspaceSpecification specification() {
@@ -99,7 +96,7 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 		public String name = "mytable";
 		public Boolean durableWrites = true;
 
-		public Map<Option, Object> replicationMap = new HashMap<Option, Object>();
+		public Map<Option, Object> replicationMap = new HashMap<>();
 
 		@Override
 		public AlterKeyspaceSpecification specification() {

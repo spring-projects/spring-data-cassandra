@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2013-2017 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ public enum KeyspaceOption implements Option {
 
 	private Option delegate;
 
-	private KeyspaceOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
+	KeyspaceOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
 		this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
 	}
 
@@ -70,7 +70,7 @@ public enum KeyspaceOption implements Option {
 
 	/**
 	 * Known Replication Strategy options.
-	 * 
+	 *
 	 * @author John McPeek
 	 */
 	public enum ReplicationStrategy {
@@ -78,7 +78,7 @@ public enum KeyspaceOption implements Option {
 
 		private String value;
 
-		private ReplicationStrategy(String value) {
+		ReplicationStrategy(String value) {
 			this.value = value;
 		}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.datastax.driver.core.DataType;
  */
 public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterUserTypeSpecification> {
 
-	private final List<ColumnChangeSpecification> changes = new ArrayList<ColumnChangeSpecification>();
+	private final List<ColumnChangeSpecification> changes = new ArrayList<>();
 
 	/**
 	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API to alter a type. Convenient if imported

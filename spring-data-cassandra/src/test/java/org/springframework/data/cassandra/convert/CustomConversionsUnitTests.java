@@ -73,7 +73,7 @@ public class CustomConversionsUnitTests {
 	@Test // DATACASS-280
 	public void considersTypesWeRegisteredConvertersForAsSimple() {
 
-		CustomConversions conversions = new CustomConversions(Arrays.asList(FormatToStringConverter.INSTANCE));
+		CustomConversions conversions = new CustomConversions(Collections.singletonList(FormatToStringConverter.INSTANCE));
 		assertThat(conversions.isSimpleType(UUID.class)).isTrue();
 	}
 
@@ -82,7 +82,7 @@ public class CustomConversionsUnitTests {
 
 		GenericConversionService conversionService = new DefaultConversionService();
 
-		CustomConversions conversions = new CustomConversions(Arrays.asList(StringToFormatConverter.INSTANCE));
+		CustomConversions conversions = new CustomConversions(Collections.singletonList(StringToFormatConverter.INSTANCE));
 		conversions.registerConvertersIn(conversionService);
 
 		assertThat(conversionService.canConvert(String.class, Format.class)).isTrue();
@@ -91,14 +91,14 @@ public class CustomConversionsUnitTests {
 	@Test // DATACASS-280
 	public void doesNotConsiderTypeSimpleIfOnlyReadConverterIsRegistered() {
 
-		CustomConversions conversions = new CustomConversions(Arrays.asList(StringToFormatConverter.INSTANCE));
+		CustomConversions conversions = new CustomConversions(Collections.singletonList(StringToFormatConverter.INSTANCE));
 		assertThat(conversions.isSimpleType(Format.class)).isFalse();
 	}
 
 	@Test // DATACASS-280
 	public void discoversConvertersForSubtypesOfCassandraTypes() {
 
-		CustomConversions conversions = new CustomConversions(Arrays.asList(StringToIntegerConverter.INSTANCE));
+		CustomConversions conversions = new CustomConversions(Collections.singletonList(StringToIntegerConverter.INSTANCE));
 		assertThat(conversions.hasCustomReadTarget(String.class, Integer.class)).isTrue();
 		assertThat(conversions.hasCustomWriteTarget(String.class, Integer.class)).isTrue();
 	}
@@ -128,14 +128,15 @@ public class CustomConversionsUnitTests {
 	@SuppressWarnings("rawtypes")
 	public void favorsCustomConverterForIndeterminedTargetType() {
 
-		CustomConversions conversions = new CustomConversions(Arrays.asList(DateTimeToStringConverter.INSTANCE));
+		CustomConversions conversions = new CustomConversions(
+				Collections.singletonList(DateTimeToStringConverter.INSTANCE));
 		assertThat(conversions.getCustomWriteTarget(DateTime.class, null)).isEqualTo((Class) String.class);
 	}
 
 	@Test // DATACASS-280
 	public void customConverterOverridesDefault() {
 
-		CustomConversions conversions = new CustomConversions(Arrays.asList(CustomDateTimeConverter.INSTANCE));
+		CustomConversions conversions = new CustomConversions(Collections.singletonList(CustomDateTimeConverter.INSTANCE));
 		GenericConversionService conversionService = new DefaultConversionService();
 		conversions.registerConvertersIn(conversionService);
 
@@ -145,14 +146,15 @@ public class CustomConversionsUnitTests {
 	@Test // DATACASS-280
 	public void shouldSelectPropertCustomWriteTargetForCglibProxiedType() {
 
-		CustomConversions conversions = new CustomConversions(Arrays.asList(FormatToStringConverter.INSTANCE));
+		CustomConversions conversions = new CustomConversions(Collections.singletonList(FormatToStringConverter.INSTANCE));
 		assertThat(conversions.getCustomWriteTarget(createProxyTypeFor(Format.class))).isAssignableFrom(String.class);
 	}
 
 	@Test // DATACASS-280
 	public void shouldSelectPropertyCustomReadTargetForCglibProxiedType() {
 
-		CustomConversions conversions = new CustomConversions(Arrays.asList(CustomObjectToStringConverter.INSTANCE));
+		CustomConversions conversions = new CustomConversions(
+				Collections.singletonList(CustomObjectToStringConverter.INSTANCE));
 		assertThat(conversions.hasCustomReadTarget(createProxyTypeFor(Object.class), String.class)).isTrue();
 	}
 
@@ -269,7 +271,7 @@ public class CustomConversionsUnitTests {
 
 		@Override
 		public <T extends Format> Converter<String, T> getConverter(Class<T> targetType) {
-			return new StringToFormat<T>(targetType);
+			return new StringToFormat<>(targetType);
 		}
 
 		private static final class StringToFormat<T extends Format> implements Converter<String, T> {

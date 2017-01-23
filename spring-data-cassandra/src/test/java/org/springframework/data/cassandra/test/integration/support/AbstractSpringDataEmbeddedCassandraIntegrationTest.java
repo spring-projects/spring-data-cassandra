@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.test.integration.support;
 
+import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +41,9 @@ public abstract class AbstractSpringDataEmbeddedCassandraIntegrationTest
 	 */
 	public void deleteAllEntities() {
 
-		for (CassandraPersistentEntity<?> entity : template.getConverter().getMappingContext().getTableEntities()) {
-			if (entity.getType().isInterface()) {
-				continue;
-			}
+		Stream<CassandraPersistentEntity<?>> stream = template.getConverter().getMappingContext().getTableEntities()
+				.stream();
 
-			template.truncate(entity.getType());
-		}
+		stream.map(CassandraPersistentEntity::getType).filter(type -> !type.isInterface()).forEach(template::truncate);
 	}
 }

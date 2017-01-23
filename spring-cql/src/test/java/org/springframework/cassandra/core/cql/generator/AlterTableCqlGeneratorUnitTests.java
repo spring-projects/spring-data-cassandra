@@ -113,7 +113,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	@Test // DATACASS-192
 	public void alterTableAddCaching() {
 
-		Map<Object, Object> cachingMap = new LinkedHashMap<Object, Object>();
+		Map<Object, Object> cachingMap = new LinkedHashMap<>();
 		cachingMap.put(CachingOption.KEYS, KeyCachingOption.NONE);
 		cachingMap.put(CachingOption.ROWS_PER_PARTITION, "15");
 

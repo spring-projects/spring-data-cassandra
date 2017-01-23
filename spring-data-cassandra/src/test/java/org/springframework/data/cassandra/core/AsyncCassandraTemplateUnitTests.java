@@ -53,7 +53,7 @@ import com.google.common.util.concurrent.AbstractFuture;
 
 /**
  * Unit tests for {@link AsyncCassandraTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -426,7 +426,7 @@ public class AsyncCassandraTemplateUnitTests {
 
 		/**
 		 * Create a completed future that reports a failure given {@link Throwable}.
-		 * 
+		 *
 		 * @param throwable must not be {@literal null}.
 		 * @return the completed/failed {@link TestResultSetFuture}.
 		 */

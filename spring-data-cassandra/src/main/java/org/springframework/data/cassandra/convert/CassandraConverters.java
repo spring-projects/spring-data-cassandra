@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ abstract class CassandraConverters {
 	 */
 	public static Collection<Object> getConvertersToRegister() {
 
-		List<Object> converters = new ArrayList<Object>();
+		List<Object> converters = new ArrayList<>();
 
 		converters.add(RowToCassandraLocalDateConverter.INSTANCE);
 		converters.add(RowToBooleanConverter.INSTANCE);
@@ -130,7 +130,7 @@ abstract class CassandraConverters {
 		public <T extends Number> Converter<Row, T> getConverter(Class<T> targetType) {
 
 			Assert.notNull(targetType, "Target type must not be null");
-			return new RowToNumber<T>(targetType);
+			return new RowToNumber<>(targetType);
 		}
 
 		private static final class RowToNumber<T extends Number> implements Converter<Row, T> {

@@ -43,5 +43,4 @@ public interface PreparedStatementCreator {
 	 *           of this method. The {@link CqlTemplate} class will handle them.
 	 */
 	PreparedStatement createPreparedStatement(Session session) throws DriverException;
-
 }

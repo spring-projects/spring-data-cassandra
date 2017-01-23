@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2014 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ public class CqlStringUtils {
 
 	/**
 	 * Renders the given string as a legal Cassandra string column or table option value, by escaping single quotes and
-	 * encasing the result in single quotes. Given <code>null</code>, returns <code>null</code>.
+	 * encasing the result in single quotes. Given {@code null}, returns <code>null</code>.
 	 */
 	public static String valuize(String candidate) {
 
@@ -44,34 +44,32 @@ public class CqlStringUtils {
 	}
 
 	/**
-	 * Doubles single quote characters (' -&gt; ''). Given <code>null</code>, returns <code>null</code>.
+	 * Doubles single quote characters (' -&gt; ''). Given {@code null}, returns <code>null</code>.
 	 */
 	public static String escapeSingle(Object thing) {
-		return thing == null ? (String) null : thing.toString().replace(SINGLE_QUOTE, DOUBLE_SINGLE_QUOTE);
+		return thing == null ? null : thing.toString().replace(SINGLE_QUOTE, DOUBLE_SINGLE_QUOTE);
 	}
 
 	/**
-	 * Doubles double quote characters (" -&gt; ""). Given <code>null</code>, returns <code>null</code>.
+	 * Doubles double quote characters (" -&gt; ""). Given {@code null}, returns <code>null</code>.
 	 */
 	public static String escapeDouble(Object thing) {
-		return thing == null ? (String) null : thing.toString().replace(DOUBLE_QUOTE, DOUBLE_DOUBLE_QUOTE);
+		return thing == null ? null : thing.toString().replace(DOUBLE_QUOTE, DOUBLE_DOUBLE_QUOTE);
 	}
 
 	/**
-	 * Surrounds given object's {@link Object#toString()} with single quotes. Given <code>null</code>, returns
-	 * <code>null</code>.
+	 * Surrounds given object's {@link Object#toString()} with single quotes. Given {@code null}, returns {@code null}.
 	 */
 	public static String singleQuote(Object thing) {
-		return thing == null ? (String) null : new StringBuilder().append(SINGLE_QUOTE).append(thing).append(SINGLE_QUOTE)
+		return thing == null ? null : new StringBuilder().append(SINGLE_QUOTE).append(thing).append(SINGLE_QUOTE)
 				.toString();
 	}
 
 	/**
-	 * Surrounds given object's {@link Object#toString()} with double quotes. Given <code>null</code>, returns
-	 * <code>null</code>.
+	 * Surrounds given object's {@link Object#toString()} with double quotes. Given {@code null}, returns {@code null}.
 	 */
 	public static String doubleQuote(Object thing) {
-		return thing == null ? (String) null : new StringBuilder().append(DOUBLE_QUOTE).append(thing).append(DOUBLE_QUOTE)
+		return thing == null ? null : new StringBuilder().append(DOUBLE_QUOTE).append(thing).append(DOUBLE_QUOTE)
 				.toString();
 	}
 
@@ -79,12 +77,12 @@ public class CqlStringUtils {
 	 * Removed single quotes from quoted String option values
 	 */
 	public static String removeSingleQuotes(Object thing) {
-		return thing == null ? (String) null : ((String) thing).replaceAll(SINGLE_QUOTE, EMPTY_STRING);
+		return thing == null ? null : ((String) thing).replaceAll(SINGLE_QUOTE, EMPTY_STRING);
 	}
 
 	/**
 	 * Renders the given {@link DataType} as a CQL string.
-	 * 
+	 *
 	 * @param dataType The {@link DataType} to render; must not be null.
 	 */
 	public static String toCql(DataType dataType) {

@@ -15,7 +15,11 @@
  */
 package org.springframework.cassandra.core;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
@@ -257,7 +261,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(cql, rowMapper).buffer(2).flatMap(list ->
-				Mono.just(DataAccessUtils.requiredSingleResult(list))).next();
+				Mono.just(DataAccessUtils.requiredSingleResult(list)))
+				.next();
 	}
 
 	/* (non-Javadoc)
@@ -378,7 +383,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Override
 	public <T> Mono<T> queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(statement, rowMapper).buffer(2).flatMap(list ->
-				Mono.just(DataAccessUtils.requiredSingleResult(list))).next();
+				Mono.just(DataAccessUtils.requiredSingleResult(list)))
+				.next();
 	}
 
 	/* (non-Javadoc)
@@ -568,7 +574,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
 		return query(cql, rowMapper, args).buffer(2).flatMap(list ->
-				Mono.just(DataAccessUtils.requiredSingleResult(list))).next();
+				Mono.just(DataAccessUtils.requiredSingleResult(list)))
+				.next();
 	}
 
 	/* (non-Javadoc)
@@ -638,7 +645,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Override
 	public Mono<Boolean> execute(String cql, PreparedStatementBinder psb) throws DataAccessException {
 		return query(new SimpleReactivePreparedStatementCreator(cql), psb, resultSet ->
-				Mono.just(resultSet.wasApplied())).next();
+				Mono.just(resultSet.wasApplied()))
+				.next();
 	}
 
 	/* (non-Javadoc)
@@ -748,7 +756,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	protected <T> Function<Throwable, Mono<? extends T>> translateException(String task, String cql) {
 
-		return throwable -> Mono.error(
+		return throwable -> Mono
+				.error(
 				throwable instanceof DriverException ? translate(task, cql, (DriverException) throwable) : throwable);
 	}
 
@@ -852,7 +861,11 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	private static String getCql(Object cqlProvider) {
 
-		return (cqlProvider instanceof CqlProvider ? ((CqlProvider) cqlProvider).getCql() : null);
+		return Optional.ofNullable(cqlProvider) //
+				.filter(o -> o instanceof CqlProvider) //
+				.map(o -> (CqlProvider) o) //
+				.map(CqlProvider::getCql) //
+				.orElse(null);
 	}
 
 	private class SimpleReactivePreparedStatementCreator implements ReactivePreparedStatementCreator, CqlProvider {

@@ -53,10 +53,10 @@ public class CompositeKeyCrudIntegrationTests extends AbstractKeyspaceCreatingIn
 		SchemaTestUtils.potentiallyCreateTableFor(CorrelationEntity.class, operations);
 		SchemaTestUtils.truncate(CorrelationEntity.class, operations);
 
-		Map<String, String> map1 = new HashMap<String, String>(2);
+		Map<String, String> map1 = new HashMap<>(2);
 		map1.put("v", "1");
 		map1.put("labels", "1,2,3");
-		Map<String, String> map2 = new HashMap<String, String>(2);
+		Map<String, String> map2 = new HashMap<>(2);
 		map2.put("v", "1");
 		map2.put("labels", "4,5,6");
 

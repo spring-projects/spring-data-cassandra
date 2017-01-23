@@ -75,10 +75,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	@Override
 	public <S extends T> List<S> save(Iterable<S> entities) {
 
-		Assert.notNull(entities, "The given Iterable of entities must not be null");
-
-		List<S> result = new ArrayList<>();
-
+		Assert.notNull(entities, "The given Iterable of entities must not be null");List<S> result = new ArrayList<>();
 		for (S entity : entities) {
 
 			S saved;
@@ -213,9 +210,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		for (T entity : entities) {
-			operations.delete(entity);
-		}
+		entities.forEach(operations::delete);
 	}
 
 	/* (non-Javadoc)

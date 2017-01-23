@@ -19,10 +19,10 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.springframework.util.Assert;
+
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.exceptions.DriverException;
-
-import org.springframework.util.Assert;
 
 /**
  * {@link HostMapper} to to map hosts into {@link RingMember} objects.
@@ -43,6 +43,6 @@ public enum RingMemberHostMapper implements HostMapper<RingMember> {
 
 		Assert.notNull(hosts, "Hosts must not be null");
 
-		return StreamSupport.stream(hosts.spliterator(), false).map(RingMember::new).collect(Collectors.toList());
+		return StreamSupport.stream(hosts.spliterator(), false).map(RingMember::from).collect(Collectors.toList());
 	}
 }

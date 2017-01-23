@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2013-2017 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,16 +28,16 @@ import org.springframework.util.StringUtils;
  * <p/>
  * Easy and succinct to create if methods {@link #ref(CharSequence)} or {@link #val(Object)} are used and imported
  * statically.
- * 
+ *
  * @see BeanDefinitionBuilderArgument#ref(CharSequence)
  * @see BeanDefinitionBuilderArgument#val(Object)
  */
 public class BeanDefinitionBuilderArgument {
 
 	/**
-	 * Returns a {@link BeanDefinitionBuilderArgument} with {@link #reference} equal to <code>true</code>. Convenient if
+	 * Returns a {@link BeanDefinitionBuilderArgument} with {@link #reference} equal to {@code true}. Convenient if
 	 * imported statically.
-	 * 
+	 *
 	 * @param value The name of the bean reference.
 	 */
 	public static BeanDefinitionBuilderArgument ref(CharSequence value) {
@@ -45,9 +45,9 @@ public class BeanDefinitionBuilderArgument {
 	}
 
 	/**
-	 * Returns a {@link BeanDefinitionBuilderArgument} with {@link #reference} equal to <code>false</code>. Convenient if
+	 * Returns a {@link BeanDefinitionBuilderArgument} with {@link #reference} equal to {@code false}. Convenient if
 	 * imported statically.
-	 * 
+	 *
 	 * @param value The constructor argument's value.
 	 */
 	public static BeanDefinitionBuilderArgument val(Object value) {

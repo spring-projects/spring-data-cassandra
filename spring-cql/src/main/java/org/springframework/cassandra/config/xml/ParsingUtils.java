@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.w3c.dom.Element;
  * Utility class for parsing Cassandra XML namespace configuration meta-data.
  *
  * @author John Blum
+ * @author Mark Paluch
  * @see org.springframework.beans.factory.config.BeanDefinition
  * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.beans.factory.xml.ParserContext
@@ -209,26 +210,25 @@ public abstract class ParsingUtils {
 	}
 
 	/**
-	 * Adds the named property and value, or reference to the given {@link BeanDefinitionBuilder} with an optional
-	 * default value if the value has not been specified.
+	 * Adds the named property and value, or reference to the given {@link BeanDefinitionBuilder} with an optional default
+	 * value if the value has not been specified.
 	 * <p/>
-	 * If <code>required</code> is <code>false</code>, <code>value</code> is null or empty,
-	 * and <code>defaultValue</code> is null or empty, then no property is added to the bean definition
-	 * and this method silently returns.
+	 * If {@code required} is <code>false</code>, <code>value</code> is null or empty, and {@code defaultValue} is null or
+	 * empty, then no property is added to the bean definition and this method silently returns.
 	 *
 	 * @param builder {@link BeanDefinitionBuilder} used to build the {@link BeanDefinition}.
 	 * @param propertyName name of the property to add.
 	 * @param value value for the property being added.
 	 * @param defaultValue default value for the property if value is null or empty.
-	 * @param required If <code>true</code>, then <code>value</code> must not be null or empty. If <code>false</code>,
-	 * then <code>value</code> may be null and the <code>defaultValue</code> will be used. If <code>required</code> is
-	 * <code>false</code>, <code>value</code> is null or empty, and <code>defaultValue</code> is null or empty,
-	 * then no property is added to the bean definition and this method silently returns.
-	 * @param reference If <code>true</code>, then the <code>value</code>value for the named property is
-	 * considered a reference to another bean in the Spring context.
+	 * @param required If {@code true}, then <code>value</code> must not be null or empty. If <code>false</code>, then
+	 *          {@code value} may be null and the <code>defaultValue</code> will be used. If <code>required</code> is
+	 *          {@code false}, <code>value</code> is null or empty, and <code>defaultValue</code> is null or empty, then
+	 *          no property is added to the bean definition and this method silently returns.
+	 * @param reference If {@code true}, then the <code>value</code>value for the named property is considered a reference
+	 *          to another bean in the Spring context.
 	 * @return the given {@link BeanDefinitionBuilder}.
-	 * @throws IllegalArgumentException if either the {@link BeanDefinitionBuilder} is null
-	 * or the <code>propertyName</code> has not been specified.
+	 * @throws IllegalArgumentException if either the {@link BeanDefinitionBuilder} is null or the {@code propertyName}
+	 *           has not been specified.
 	 * @see BeanDefinitionBuilder#addPropertyReference(String, String)
 	 * @see BeanDefinitionBuilder#addPropertyValue(String, Object)
 	 */

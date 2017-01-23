@@ -80,7 +80,7 @@ import com.datastax.driver.core.exceptions.DriverException;
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
-	 * Constructs a new, uninitialized {@link CqlTemplate}. Note: The {@link SessionFactory} has to be set before using
+	 * Create a new, uninitialized {@link CqlTemplate}. Note: The {@link SessionFactory} has to be set before using
 	 * the instance.
 	 *
 	 * @see #setSessionFactory(SessionFactory)
@@ -88,7 +88,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	public CqlTemplate() {}
 
 	/**
-	 * Constructs a new {@link CqlTemplate} initialized with the given {@link Session}.
+	 * Create a new {@link CqlTemplate} initialized with the given {@link Session}.
 	 *
 	 * @param session the active Cassandra {@link Session}.
 	 * @throws IllegalStateException if {@link Session} is {@literal null}.

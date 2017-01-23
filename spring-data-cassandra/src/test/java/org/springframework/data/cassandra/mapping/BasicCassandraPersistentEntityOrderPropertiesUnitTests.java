@@ -51,15 +51,9 @@ public class BasicCassandraPersistentEntityOrderPropertiesUnitTests {
 		expected.add(entity.getRequiredPersistentProperty("key1"));
 		expected.add(entity.getRequiredPersistentProperty("key2"));
 
-		final List<CassandraPersistentProperty> actual = new LinkedList<CassandraPersistentProperty>();
+		final List<CassandraPersistentProperty> actual = new LinkedList<>();
 
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-
-			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty persistentProperty) {
-				actual.add(persistentProperty);
-			}
-		});
+		entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) actual::add);
 
 		assertThat(actual).isEqualTo(expected);
 
@@ -70,20 +64,14 @@ public class BasicCassandraPersistentEntityOrderPropertiesUnitTests {
 
 		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(CompositeKeyEntity.class);
 
-		expected = new LinkedList<CassandraPersistentProperty>();
+		expected = new LinkedList<>();
 		expected.add(entity.getRequiredPersistentProperty("key"));
 		expected.add(entity.getRequiredPersistentProperty("attribute"));
 		expected.add(entity.getRequiredPersistentProperty("text"));
 
-		final List<CassandraPersistentProperty> actual = new LinkedList<CassandraPersistentProperty>();
+		final List<CassandraPersistentProperty> actual = new LinkedList<>();
 
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-
-			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty persistentProperty) {
-				actual.add(persistentProperty);
-			}
-		});
+		entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) actual::add);
 
 		assertThat(actual).isEqualTo(expected);
 

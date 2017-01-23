@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.cassandra.core.converter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
@@ -38,6 +39,9 @@ public class RowToListConverter implements Converter<Row, List<Object>> {
 
 	public final static RowToListConverter INSTANCE = new RowToListConverter();
 
+	/* (non-Javadoc)
+	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+	 */
 	@Override
 	public List<Object> convert(Row row) {
 
@@ -46,14 +50,8 @@ public class RowToListConverter implements Converter<Row, List<Object>> {
 		}
 
 		ColumnDefinitions cols = row.getColumnDefinitions();
-		List<Object> list = new ArrayList<Object>(cols.size());
-
-		for (Definition def : cols.asList()) {
-			String name = def.getName();
-
-			list.add(row.isNull(name) ? null : row.getObject(name));
-		}
-
-		return list;
+		return cols.asList().stream() //
+				.map(Definition::getName).map(name -> row.isNull(name) ? null : row.getObject(name)) //
+				.collect(Collectors.toList());
 	}
 }

@@ -17,10 +17,15 @@ package org.springframework.cassandra.core;
 
 import java.io.Serializable;
 
+import org.springframework.util.Assert;
+
 import com.datastax.driver.core.Host;
 
 /**
+ * Domain object representing a Cassandra host.
+ * 
  * @author David Webb
+ * @author Mark Paluch
  */
 public final class RingMember implements Serializable {
 
@@ -29,16 +34,47 @@ public final class RingMember implements Serializable {
 	/*
 	 * Ring attributes
 	 */
-	public String hostName;
-	public String address;
-	public String DC;
-	public String rack;
+	private final String hostName;
 
-	public RingMember(Host h) {
-		this.hostName = h.getAddress().getHostName();
-		this.address = h.getAddress().getHostAddress();
-		this.DC = h.getDatacenter();
-		this.rack = h.getRack();
+	private final String address;
+
+	private final String dc;
+
+	private final String rack;
+
+	/**
+	 * Creates a new {@link RingMember} given {@link Host}.
+	 * 
+	 * @param host
+	 * @return
+	 */
+	public static RingMember from(Host host) {
+		return new RingMember(host);
 	}
 
+	private RingMember(Host host) {
+
+		Assert.notNull(host, "Host must not be null");
+
+		this.hostName = host.getAddress().getHostName();
+		this.address = host.getAddress().getHostAddress();
+		this.dc = host.getDatacenter();
+		this.rack = host.getRack();
+	}
+
+	public String getHostName() {
+		return hostName;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public String getDataCenter() {
+		return dc;
+	}
+
+	public String getRack() {
+		return rack;
+	}
 }

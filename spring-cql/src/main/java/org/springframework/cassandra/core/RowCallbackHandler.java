@@ -50,5 +50,4 @@ public interface RowCallbackHandler {
 	 *           to catch {@link DriverException})
 	 */
 	void processRow(Row row) throws DriverException;
-
 }

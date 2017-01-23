@@ -28,9 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
@@ -72,12 +70,9 @@ public class CassandraSessionFactoryBeanUnitTests {
 	@Test // DATACASS-219
 	public void afterPropertiesSetPerformsSchemaAction() throws Exception {
 
-		doAnswer(new Answer<Void>() {
-			@Override
-			public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
-				assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.RECREATE);
-				return null;
-			}
+		doAnswer(invocationOnMock -> {
+			assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.RECREATE);
+			return null;
 		}).when(factoryBean).performSchemaAction();
 
 		factoryBean.setConverter(mockConverter);
@@ -107,14 +102,11 @@ public class CassandraSessionFactoryBeanUnitTests {
 	private void performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction schemaAction,
 			final boolean dropTables, final boolean dropUnused, final boolean ifNotExists) {
 
-		doAnswer(new Answer<Void>() {
-			@Override
-			public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
-				assertThat(invocationOnMock.getArgumentAt(0, Boolean.class)).isEqualTo(dropTables);
-				assertThat(invocationOnMock.getArgumentAt(1, Boolean.class)).isEqualTo(dropUnused);
-				assertThat(invocationOnMock.getArgumentAt(2, Boolean.class)).isEqualTo(ifNotExists);
-				return null;
-			}
+		doAnswer(invocationOnMock -> {
+			assertThat(invocationOnMock.getArgumentAt(0, Boolean.class)).isEqualTo(dropTables);
+			assertThat(invocationOnMock.getArgumentAt(1, Boolean.class)).isEqualTo(dropUnused);
+			assertThat(invocationOnMock.getArgumentAt(2, Boolean.class)).isEqualTo(ifNotExists);
+			return null;
 		}).when(factoryBean).createTables(anyBoolean(), anyBoolean(), anyBoolean());
 
 		factoryBean.setSchemaAction(schemaAction);

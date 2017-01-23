@@ -97,8 +97,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		future.addCallback(callback);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.util.concurrent.ListenableFuture#addCallback(org.springframework.util.concurrent.SuccessCallback, org.springframework.util.concurrent.FailureCallback)
 	 */
 	@Override
@@ -106,8 +105,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		future.addCallback(successCallback, failureCallback);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#cancel(boolean)
 	 */
 	@Override
@@ -115,8 +113,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		return adaptee.cancel(mayInterruptIfRunning);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#isCancelled()
 	 */
 	@Override
@@ -124,8 +121,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		return adaptee.isCancelled();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#isDone()
 	 */
 	@Override
@@ -133,8 +129,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		return future.isDone();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#get()
 	 */
 	@Override
@@ -142,8 +137,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		return future.get();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#get(long, java.util.concurrent.TimeUnit)
 	 */
 	@Override

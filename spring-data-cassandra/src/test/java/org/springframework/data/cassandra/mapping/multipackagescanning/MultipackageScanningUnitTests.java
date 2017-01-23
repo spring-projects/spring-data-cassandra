@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -53,10 +54,7 @@ public class MultipackageScanningUnitTests {
 
 		Collection<CassandraPersistentEntity<?>> entities = mapping.getPersistentEntities();
 
-		Collection<Class<?>> types = new HashSet<Class<?>>(entities.size());
-		for (CassandraPersistentEntity<?> entity : entities) {
-			types.add(entity.getType());
-		}
+		Collection<Class<?>> types = entities.stream().map(CassandraPersistentEntity::getType).collect(Collectors.toSet());
 
 		assertThat(types.contains(First.class)).isTrue();
 		assertThat(types.contains(Second.class)).isTrue();

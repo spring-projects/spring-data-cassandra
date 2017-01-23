@@ -55,7 +55,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 
 		Method method = PossibleRepository.class.getMethod("findByFirstname", String.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
-				new Object[] { "firstname" });
+				"firstname");
 
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.varchar());
 	}
@@ -65,7 +65,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 
 		Method method = PossibleRepository.class.getMethod("findByBpLocalDateTime", LocalDateTime.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
-				new Object[] { LocalDateTime.of(2000, 10, 11, 12, 13, 14) });
+				LocalDateTime.of(2000, 10, 11, 12, 13, 14));
 
 		assertThat(accessor.getDataType(0)).isNull();
 	}
@@ -75,7 +75,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedBpLocalDateTime", LocalDateTime.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
-				new Object[] { LocalDateTime.of(2000, 10, 11, 12, 13, 14) });
+				LocalDateTime.of(2000, 10, 11, 12, 13, 14));
 
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
@@ -85,7 +85,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
-				new Object[] { "" });
+				"");
 
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
@@ -95,7 +95,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
-				new Object[] { "" });
+				"");
 
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}

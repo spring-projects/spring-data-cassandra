@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.test.integration.support;
 
 import static org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification.*;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
@@ -77,11 +77,11 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 
 	@Override
 	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-		return Arrays.asList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
+		return Collections.singletonList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
 	}
 
 	@Override
 	protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
-		return Arrays.asList(DropKeyspaceSpecification.dropKeyspace().name(getKeyspaceName()));
+		return Collections.singletonList(DropKeyspaceSpecification.dropKeyspace().name(getKeyspaceName()));
 	}
 }

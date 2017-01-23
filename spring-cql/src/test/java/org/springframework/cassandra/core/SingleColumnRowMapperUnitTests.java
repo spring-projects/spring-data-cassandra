@@ -32,7 +32,7 @@ import com.datastax.driver.core.Row;
 
 /**
  * Unit tests for {@link SingleColumnRowMapper}.
- * 
+ *
  * @author Mark Paluch
  * @soundtrack Kos Vs Michael Buffer - Go For It All (Rubberboot Mix)
  */

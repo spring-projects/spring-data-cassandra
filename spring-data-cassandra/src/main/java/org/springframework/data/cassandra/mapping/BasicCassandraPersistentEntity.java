@@ -144,7 +144,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
 
-		List<CassandraPersistentProperty> properties = new ArrayList<CassandraPersistentProperty>();
+		List<CassandraPersistentProperty> properties = new ArrayList<>();
 
 		Assert.state(isCompositePrimaryKey(),
 				String.format("[%s] does not represent a composite primary key class", this.getType().getName()));

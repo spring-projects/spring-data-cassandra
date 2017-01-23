@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
@@ -374,7 +375,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	protected List<CqlIdentifier> determineColumnNames() {
 
-		List<CqlIdentifier> columnNames = new ArrayList<CqlIdentifier>();
+		List<CqlIdentifier> columnNames = new ArrayList<>();
 
 		if (isCompositePrimaryKey()) { // then the id type has @PrimaryKeyClass
 			addCompositePrimaryKeyColumnNames(getCompositePrimaryKeyEntity(), columnNames);
@@ -458,7 +459,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 						columnNames.size()));
 
 		this.columnNames = this.explicitColumnNames = Collections
-				.unmodifiableList(new ArrayList<CqlIdentifier>(columnNames));
+				.unmodifiableList(new ArrayList<>(columnNames));
 	}
 
 	/* (non-Javadoc)
@@ -473,12 +474,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			this.forceQuote = forceQuote;
 		}
 
-		List<CqlIdentifier> columnNames = new ArrayList<CqlIdentifier>(
-				this.columnNames == null ? 0 : this.columnNames.size());
-
-		for (CqlIdentifier columnName : getColumnNames()) {
-			columnNames.add(cqlId(columnName.getUnquoted(), forceQuote));
-		}
+		List<CqlIdentifier> columnNames = getColumnNames() //
+				.stream() //
+				.map(CqlIdentifier::getUnquoted) //
+				.map(name -> cqlId(name, forceQuote)) //
+				.collect(Collectors.toList());
 
 		setColumnNames(columnNames);
 	}
@@ -521,7 +521,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	@Override
 	protected Association<CassandraPersistentProperty> createAssociation() {
-		return new Association<CassandraPersistentProperty>(this, null);
+		return new Association<>(this, null);
 	}
 
 	/* (non-Javadoc)

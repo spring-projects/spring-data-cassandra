@@ -72,7 +72,7 @@ public class CollectionsRowValueProviderIntegrationTests extends AbstractKeyspac
 		b1.setSaleDate(new Date());
 		b1.setInStock(true);
 
-		Map<String, Integer> checkOutMap = new HashMap<String, Integer>();
+		Map<String, Integer> checkOutMap = new HashMap<>();
 		checkOutMap.put("dwebb", 50);
 		checkOutMap.put("madams", 100);
 		checkOutMap.put("jmcpeek", 150);
@@ -102,13 +102,13 @@ public class CollectionsRowValueProviderIntegrationTests extends AbstractKeyspac
 		b1.setSaleDate(new Date());
 		b1.setInStock(true);
 
-		Set<String> refs = new HashSet<String>();
+		Set<String> refs = new HashSet<>();
 		refs.add("Spring Data by O'Reilly");
 		refs.add("Spring by Example");
 		refs.add("Spring Recipies");
 		b1.setReferences(refs);
 
-		List<Integer> marks = new LinkedList<Integer>();
+		List<Integer> marks = new LinkedList<>();
 		marks.add(13);
 		marks.add(52);
 		marks.add(144);

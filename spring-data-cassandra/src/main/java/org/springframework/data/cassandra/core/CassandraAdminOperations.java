@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,8 @@ public interface CassandraAdminOperations extends CassandraOperations {
 
 	/**
 	 * Create a table with the name given and fields corresponding to the given class. If the table already exists and
-	 * parameter <code>ifNotExists</code> is {@literal true}, this is a no-op and {@literal false} is returned. If the
-	 * table doesn't exist, parameter <code>ifNotExists</code> is ignored, the table is created and {@literal true} is
-	 * returned.
+	 * parameter {@code ifNotExists} is {@literal true}, this is a no-op and {@literal false} is returned. If the table
+	 * doesn't exist, parameter {@code ifNotExists} is ignored, the table is created and {@literal true} is returned.
 	 *
 	 * @param ifNotExists If true, will only create the table if it doesn't exist, else the create operation will be
 	 *          ignored and the method will return {@literal false}.

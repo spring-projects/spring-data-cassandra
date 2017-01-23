@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,10 +69,10 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	/**
 	 * Create a new CQL identifier, optionally force-quoting it. Force-quoting can be used to preserve identifier case.
 	 * <ul>
-	 * <li>If the given identifier is a legal quoted identifier or <code>forceQuote</code> is <code>true</code>,
-	 * {@link #isQuoted()} will return <code>true</code> and the identifier will be quoted when rendered.</li>
-	 * <li>If the given identifier is a legal unquoted identifier, {@link #isQuoted()} will return <code>false</code>,
-	 * plus the name will be converted to lower case and rendered as such.</li>
+	 * <li>If the given identifier is a legal quoted identifier or {@code forceQuote} is <code>true</code>,
+	 * {@link #isQuoted()} will return {@code true} and the identifier will be quoted when rendered.</li>
+	 * <li>If the given identifier is a legal unquoted identifier, {@link #isQuoted()} will return {@code false}, plus the
+	 * name will be converted to lower case and rendered as such.</li>
 	 * <li>If the given identifier is illegal, an {@link IllegalArgumentException} is thrown.</li>
 	 * </ul>
 	 *
@@ -111,14 +111,14 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	}
 
 	/**
-	 * Returns <code>true</code> if the given {@link CharSequence} is a legal unquoted identifier.
+	 * Returns {@code true} if the given {@link CharSequence} is a legal unquoted identifier.
 	 */
 	public static boolean isUnquotedIdentifier(CharSequence chars) {
 		return UNQUOTED.matcher(chars).matches() && !ReservedKeyword.isReserved(chars);
 	}
 
 	/**
-	 * Returns <code>true</code> if the given {@link CharSequence} is a legal unquoted identifier.
+	 * Returns {@code true} if the given {@link CharSequence} is a legal unquoted identifier.
 	 */
 	public static boolean isQuotedIdentifier(CharSequence chars) {
 		return QUOTED.matcher(chars).matches() || ReservedKeyword.isReserved(chars);
@@ -149,7 +149,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 	/**
 	 * Returns the identifier <em>without</em> encasing quotes, regardless of the value of {@link #isQuoted()}. For
-	 * example, if {@link #isQuoted()} is <code>true</code>, then this value will be the same as {@link #toCql()} and
+	 * example, if {@link #isQuoted()} is {@code true}, then this value will be the same as {@link #toCql()} and
 	 * {@link #toString()}.
 	 * <p/>
 	 * This is needed, for example, to get the correct {@link TableMetadata} from
@@ -168,8 +168,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 	/**
 	 * Appends the rendering of this identifier to the given {@link StringBuilder}, then returns that
-	 * {@link StringBuilder}. If <code>null</code> is given, a new {@link StringBuilder} is created, appended to, and
-	 * returned.
+	 * {@link StringBuilder}. If {@code null} is given, a new {@link StringBuilder} is created, appended to, and returned.
 	 */
 	public StringBuilder toCql(StringBuilder builder) {
 		return (builder != null ? builder : new StringBuilder()).append(toCql());

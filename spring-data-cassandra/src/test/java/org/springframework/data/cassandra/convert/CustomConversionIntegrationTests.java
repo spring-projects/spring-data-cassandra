@@ -56,7 +56,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Before
 	public void setUp() {
 
-		List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(new PersonReadConverter());
 		converters.add(new PersonWriteConverter());
 		CustomConversions customConversions = new CustomConversions(converters);

@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,8 +50,8 @@ class EmbeddedCassandraServerHelper {
 	public static final long DEFAULT_STARTUP_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(20);
 	public static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
 
-	private final static AtomicReference<Object> sync = new AtomicReference<Object>();
-	private final static AtomicReference<CassandraDaemon> cassandraRef = new AtomicReference<CassandraDaemon>();
+	private final static AtomicReference<Object> sync = new AtomicReference<>();
+	private final static AtomicReference<CassandraDaemon> cassandraRef = new AtomicReference<>();
 
 	private static String launchedYamlFile;
 
@@ -161,12 +162,9 @@ class EmbeddedCassandraServerHelper {
 
 		final CassandraDaemon cassandraDaemon = new CassandraDaemon();
 		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Future<?> future = executor.submit(new Runnable() {
-			@Override
-			public void run() {
-				cassandraDaemon.activate();
-				cassandraRef.compareAndSet(null, cassandraDaemon);
-			}
+		Future<?> future = executor.submit(() -> {
+			cassandraDaemon.activate();
+			cassandraRef.compareAndSet(null, cassandraDaemon);
 		});
 
 		try {
@@ -248,12 +246,6 @@ class EmbeddedCassandraServerHelper {
 	}
 
 	private static void rmdirs(File... fileOrDirectories) throws IOException {
-
-		for (File fileOrDirectory : fileOrDirectories) {
-			if (!fileOrDirectory.exists()) {
-				continue;
-			}
-			FileUtils.deleteRecursive(fileOrDirectory);
-		}
+		Arrays.stream(fileOrDirectories).filter(File::exists).forEach(FileUtils::deleteRecursive);
 	}
 }

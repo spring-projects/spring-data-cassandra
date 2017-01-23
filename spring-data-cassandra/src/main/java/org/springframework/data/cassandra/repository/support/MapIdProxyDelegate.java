@@ -1,18 +1,33 @@
+/*
+ * Copyright 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.util.StringUtils;
 
 /**
  * Delegate class for dynamic proxies of id interfaces; delegates to {@link BasicMapId}.
- * 
+ *
  * @see MapIdFactory#id(Class)
  * @see MapIdFactory#id(Class, ClassLoader)
  * @author Matthew T. Adams
@@ -23,11 +38,9 @@ class MapIdProxyDelegate implements InvocationHandler {
 
 	static {
 		Method[] mapIdMethods = MapId.class.getMethods();
-		MAP_ID_SIGNATURES = new HashMap<Signature, Signature>(mapIdMethods.length);
-		for (Method m : mapIdMethods) {
-			Signature s = new Signature(m, true);
-			MAP_ID_SIGNATURES.put(s, s);
-		}
+		MAP_ID_SIGNATURES = Arrays.stream(mapIdMethods).map(m -> new Signature(m, true))
+				.collect(Collectors.toMap(o -> o, o -> o));
+
 	}
 
 	private MapId delegate = new BasicMapId();
@@ -44,8 +57,8 @@ class MapIdProxyDelegate implements InvocationHandler {
 		}
 
 		if (args != null && args.length > 1) {
-			throw new IllegalArgumentException(String.format("Method [%s] on interface [%s] must take zero or one argument",
-					method, idInterface));
+			throw new IllegalArgumentException(
+					String.format("Method [%s] on interface [%s] must take zero or one argument", method, idInterface));
 		}
 		boolean isSetter = args != null && args.length == 1;
 
@@ -83,10 +96,11 @@ class MapIdProxyDelegate implements InvocationHandler {
 		int length = name.length();
 		if (isSet || isWith) {
 			if (length < minLength) {
-				throw new IllegalArgumentException(String.format("Method [%s] on interface [%s] must be of form "
-						+ "'<IdType|void> set<PropertyName>(<PropertyType>)', "
-						+ "'<IdType|void> with<PropertyName>(<PropertyType>)' or "
-						+ "'<IdType|void> <propertyName>(<PropertyType>)'", name, idInterface));
+				throw new IllegalArgumentException(String.format(
+						"Method [%s] on interface [%s] must be of form " + "'<IdType|void> set<PropertyName>(<PropertyType>)', "
+								+ "'<IdType|void> with<PropertyName>(<PropertyType>)' or "
+								+ "'<IdType|void> <propertyName>(<PropertyType>)'",
+						name, idInterface));
 			}
 			name = StringUtils.uncapitalize(name.substring(minLength - 1));
 		}
@@ -96,8 +110,8 @@ class MapIdProxyDelegate implements InvocationHandler {
 			return;
 		}
 		if (!(value instanceof Serializable)) {
-			throw new IllegalArgumentException(String.format("Given object [%s] must implement %s", value,
-					Serializable.class.getName()));
+			throw new IllegalArgumentException(
+					String.format("Given object [%s] must implement %s", value, Serializable.class.getName()));
 		}
 		delegate.put(name, (Serializable) value);
 	}

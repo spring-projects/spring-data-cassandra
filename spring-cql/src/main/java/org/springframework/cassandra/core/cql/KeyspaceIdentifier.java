@@ -45,7 +45,7 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 	}
 
 	/**
-	 * Returns <code>true</code> if the given {@link CharSequence} is a legal keyspace identifier.
+	 * Returns {@code true} if the given {@link CharSequence} is a legal keyspace identifier.
 	 */
 	public static boolean isIdentifier(CharSequence chars) {
 		return PATTERN.matcher(chars).matches() && !ReservedKeyword.isReserved(chars);
@@ -86,8 +86,7 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 
 	/**
 	 * Appends the rendering of this identifier to the given {@link StringBuilder}, then returns that
-	 * {@link StringBuilder}. If <code>null</code> is given, a new {@link StringBuilder} is created, appended to, and
-	 * returned.
+	 * {@link StringBuilder}. If {@code null} is given, a new {@link StringBuilder} is created, appended to, and returned.
 	 */
 	public StringBuilder toCql(StringBuilder sb) {
 		sb = sb == null ? new StringBuilder() : sb;

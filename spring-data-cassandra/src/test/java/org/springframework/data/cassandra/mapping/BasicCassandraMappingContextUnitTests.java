@@ -389,13 +389,7 @@ public class BasicCassandraMappingContextUnitTests {
 		final UserType myTypeMock = mock(UserType.class, "mappedudt");
 		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
 
-		mappingContext.setUserTypeResolver(new UserTypeResolver() {
-
-			@Override
-			public UserType resolveType(CqlIdentifier typeName) {
-				return myTypeMock;
-			}
-		});
+		mappingContext.setUserTypeResolver(typeName -> myTypeMock);
 
 		mappingContext.getRequiredPersistentEntity(WithUdt.class);
 
@@ -408,13 +402,7 @@ public class BasicCassandraMappingContextUnitTests {
 		final UserType myTypeMock = mock(UserType.class, "mappedudt");
 		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
 
-		mappingContext.setUserTypeResolver(new UserTypeResolver() {
-
-			@Override
-			public UserType resolveType(CqlIdentifier typeName) {
-				return myTypeMock;
-			}
-		});
+		mappingContext.setUserTypeResolver(typeName -> myTypeMock);
 
 		mappingContext.getRequiredPersistentEntity(MappedUdt.class);
 

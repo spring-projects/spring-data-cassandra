@@ -16,6 +16,7 @@
 package org.springframework.cassandra.support;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -377,7 +378,11 @@ public class CassandraAccessor implements InitializingBean {
 	 * @see CqlProvider
 	 */
 	protected static String toCql(Object cqlProvider) {
-		return (cqlProvider instanceof CqlProvider ? ((CqlProvider) cqlProvider).getCql() : null);
+		return Optional.ofNullable(cqlProvider) //
+				.filter(o -> o instanceof CqlProvider) //
+				.map(o -> (CqlProvider) o) //
+				.map(CqlProvider::getCql) //
+				.orElse(null);
 	}
 
 	protected void logDebug(String logMessage, Object... array) {
@@ -444,7 +449,8 @@ public class CassandraAccessor implements InitializingBean {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.cassandra.core.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
+		 *
+		  @see org.springframework.cassandra.core.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
 		 */
 		@Override
 		public Object extractData(ResultSet resultSet) {

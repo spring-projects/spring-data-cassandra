@@ -79,7 +79,7 @@ public class ResultSetToListConverter implements Converter<ResultSet, List<Map<S
 			return null;
 		}
 
-		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> list = new ArrayList<>();
 		for (Row row : resultSet) {
 			list.add(rowConverter.convert(row));
 		}

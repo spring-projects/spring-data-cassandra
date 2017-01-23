@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2013-2017 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,8 +38,8 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 /**
- * Factory for creating and configuring a Cassandra {@link Session}, which is a thread-safe singleton.
- * As such, it is sufficient to have one {@link Session} per application and keyspace.
+ * Factory for creating and configuring a Cassandra {@link Session}, which is a thread-safe singleton. As such, it is
+ * sufficient to have one {@link Session} per application and keyspace.
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
@@ -53,80 +53,98 @@ import com.datastax.driver.core.Session;
  * @see com.datastax.driver.core.Cluster
  * @see com.datastax.driver.core.Session
  */
-@SuppressWarnings("unused")
-public class CassandraCqlSessionFactoryBean implements FactoryBean<Session>, InitializingBean, DisposableBean,
-		PersistenceExceptionTranslator {
+public class CassandraCqlSessionFactoryBean
+		implements FactoryBean<Session>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
+
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	protected final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	private Cluster cluster;
 
 	private List<String> startupScripts = Collections.emptyList();
+
 	private List<String> shutdownScripts = Collections.emptyList();
-
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
-
-	protected final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	private Session session;
 
 	private String keyspaceName;
 
-	/* (non-Javadoc) */
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
 	@Override
 	public Session getObject() {
 		return this.session;
 	}
 
-	/* (non-Javadoc) */
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
 	@Override
 	public Class<? extends Session> getObjectType() {
 		return (this.session != null ? this.session.getClass() : Session.class);
 	}
 
-	/* (non-Javadoc) */
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
+	 */
 	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
-	/* (non-Javadoc) */
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
+
 		this.session = connect(getKeyspaceName());
 		executeScripts(getStartupScripts());
 	}
 
-	/* (non-Javadoc) */
 	Session connect(String keyspaceName) {
+
 		return (StringUtils.hasText(keyspaceName) ? getCluster().connect(keyspaceName) : getCluster().connect());
 	}
 
-	/* (non-Javadoc) */
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
 	@Override
 	public void destroy() throws Exception {
+
 		executeScripts(getShutdownScripts());
 		getSession().close();
 	}
 
 	/**
-	 * Executes the given Cassandra CQL scripts.  The {@link Session} must be connected when this method is called.
+	 * Executes the given Cassandra CQL scripts. The {@link Session} must be connected when this method is called.
 	 */
 	protected void executeScripts(List<String> scripts) {
+
 		if (!CollectionUtils.isEmpty(scripts)) {
+
 			CqlOperations template = newCqlOperations(getSession());
 
-			for (String script : scripts) {
+			scripts.forEach(script -> {
 				logger.info("executing raw CQL [{}]", script);
 				template.execute(script);
-			}
+			});
 		}
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * @param session
+	 * @return
+	 */
 	CqlOperations newCqlOperations(Session session) {
 		return new CqlTemplate(session);
 	}
 
-	/* (non-Javadoc) */
+	/* (non-Javadoc)
+	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
+	 */
 	@Override
 	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
 		return this.exceptionTranslator.translateExceptionIfPossible(e);
@@ -140,6 +158,7 @@ public class CassandraCqlSessionFactoryBean implements FactoryBean<Session>, Ini
 	 * @see #getObject()
 	 */
 	public boolean isConnected() {
+
 		Session session = getObject();
 		return !(session == null || session.isClosed());
 	}
@@ -153,6 +172,7 @@ public class CassandraCqlSessionFactoryBean implements FactoryBean<Session>, Ini
 	 * @see #getCluster()
 	 */
 	public void setCluster(Cluster cluster) {
+
 		Assert.notNull(cluster, "Cluster must not be null");
 		this.cluster = cluster;
 	}
@@ -166,13 +186,14 @@ public class CassandraCqlSessionFactoryBean implements FactoryBean<Session>, Ini
 	 * @see #setCluster(Cluster)
 	 */
 	protected Cluster getCluster() {
+
 		Assert.state(this.cluster != null, "Cluster was not properly initialized");
 		return this.cluster;
 	}
 
 	/**
-	 * Sets the name of the Cassandra Keyspace to connect to.  Passing <code>null</code>, an empty String,
-	 * or whitespace will cause the Cassandra System Keyspace to be used.
+	 * Sets the name of the Cassandra Keyspace to connect to. Passing {@code null}, an empty String, or whitespace will
+	 * cause the Cassandra System Keyspace to be used.
 	 *
 	 * @param keyspaceName a String indicating the name of the Keyspace in which to connect.
 	 * @see #getKeyspaceName()
@@ -199,6 +220,7 @@ public class CassandraCqlSessionFactoryBean implements FactoryBean<Session>, Ini
 	 * @see com.datastax.driver.core.Session
 	 */
 	protected Session getSession() {
+
 		Session session = getObject();
 		Assert.state(session != null, "Session was not properly initialized");
 		return session;
@@ -208,7 +230,7 @@ public class CassandraCqlSessionFactoryBean implements FactoryBean<Session>, Ini
 	 * Sets CQL scripts to be executed immediately after the session is connected.
 	 */
 	public void setStartupScripts(List<String> scripts) {
-		this.startupScripts = (scripts != null ? new ArrayList<String>(scripts) : Collections.<String>emptyList());
+		this.startupScripts = (scripts != null ? new ArrayList<>(scripts) : Collections.emptyList());
 	}
 
 	/**
@@ -222,7 +244,7 @@ public class CassandraCqlSessionFactoryBean implements FactoryBean<Session>, Ini
 	 * Sets CQL scripts to be executed immediately before the session is shutdown.
 	 */
 	public void setShutdownScripts(List<String> scripts) {
-		this.shutdownScripts = (scripts != null ? new ArrayList<String>(scripts) : Collections.<String>emptyList());
+		this.shutdownScripts = (scripts != null ? new ArrayList<>(scripts) : Collections.emptyList());
 	}
 
 	/**

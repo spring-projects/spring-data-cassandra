@@ -254,7 +254,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			PropertyValueProvider<CassandraPersistentProperty> propertyProvider) {
 
 		return instantiators.getInstantiatorFor(entity).createInstance(entity,
-				new PersistentEntityParameterValueProvider<>(entity, propertyProvider, Optional.empty()));
+				new PersistentEntityParameterValueProvider<>(entity, propertyProvider,
+						Optional.empty()));
 	}
 
 	/* (non-Javadoc)
@@ -681,9 +682,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			Collection<Object> original = (Collection<Object>) value;
 			Collection<Object> converted = CollectionFactory.createCollection(getCollectionType(type), original.size());
 
-			for (Object element : original) {
-				converted.add(convertToCassandraColumn(Optional.ofNullable(element), actualType).orElse(null));
-			}
+			original.stream() //
+					.map(element -> convertToCassandraColumn(Optional.ofNullable(element), actualType).orElse(null))
+					.forEach(converted::add);
 
 			return Optional.of((O) converted);
 		}

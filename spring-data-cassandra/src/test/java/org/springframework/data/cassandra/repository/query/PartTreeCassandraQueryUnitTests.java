@@ -76,7 +76,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		when(mockCassandraOperations.getConverter()).thenReturn(converter);
 		when(udtValueMock.getType()).thenReturn(userTypeMock);
-		when(userTypeMock.iterator()).thenReturn(Collections.<UserType.Field> emptyIterator());
+		when(userTypeMock.iterator()).thenReturn(Collections.emptyIterator());
 	}
 
 	@Test // DATACASS-7

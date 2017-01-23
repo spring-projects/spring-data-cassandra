@@ -34,24 +34,24 @@ import org.springframework.util.StringUtils;
  */
 public class ReactiveCassandraRepositoryConfigurationExtension extends CassandraRepositoryConfigurationExtension {
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension#getModuleName()
 	 */
 	@Override
 	public String getModuleName() {
 		return "Reactive Cassandra";
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension#getRepositoryFactoryClassName()
 	 */
 	@Override
 	public String getRepositoryFactoryClassName() {
 		return ReactiveCassandraRepositoryFactoryBean.class.getName();
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource)
 	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
@@ -63,8 +63,8 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Cassandra
 		}
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension#getIdentifyingTypes()
 	 */
 	@Override
 	protected Collection<Class<?>> getIdentifyingTypes() {

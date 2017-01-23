@@ -31,8 +31,8 @@ import com.datastax.driver.core.DataType;
  * Builder class to specify columns.
  * <p/>
  * Use {@link #name(String)} and {@link #type(String)} to set the name and type of the column, respectively. To specify
- * a clustered <code>PRIMARY KEY</code> column, use {@link #clustered()} or {@link #clustered(Ordering)}. To specify
- * that the <code>PRIMARY KEY</code> column is or is part of the partition key, use {@link #partitioned()} instead of
+ * a clustered {@code PRIMARY KEY} column, use {@link #clustered()} or {@link #clustered(Ordering)}. To specify that the
+ * {@code PRIMARY KEY} column is or is part of the partition key, use {@link #partitioned()} instead of
  * {@link #clustered()} or {@link #clustered(Ordering)}.
  *
  * @author Matthew T. Adams
@@ -81,7 +81,7 @@ public class ColumnSpecification {
 
 	/**
 	 * Identifies this column as a primary key column that is also part of a partition key. Sets the column's
-	 * {@link #keyType} to {@link PrimaryKeyType#PARTITIONED} and its {@link #ordering} to <code>null</code>.
+	 * {@link #keyType} to {@link PrimaryKeyType#PARTITIONED} and its {@link #ordering} to {@code null}.
 	 *
 	 * @return this
 	 */
@@ -91,8 +91,8 @@ public class ColumnSpecification {
 
 	/**
 	 * Toggles the identification of this column as a primary key column that also is or is part of a partition key. Sets
-	 * {@link #ordering} to <code>null</code> and, if the given boolean is <code>true</code>, then sets the column's
-	 * {@link #keyType} to {@link PrimaryKeyType#PARTITIONED}, else sets it to <code>null</code>.
+	 * {@link #ordering} to {@code null} and, if the given boolean is <code>true</code>, then sets the column's
+	 * {@link #keyType} to {@link PrimaryKeyType#PARTITIONED}, else sets it to {@code null}.
 	 *
 	 * @return this
 	 */
@@ -123,9 +123,9 @@ public class ColumnSpecification {
 	}
 
 	/**
-	 * Toggles the identification of this column as a clustered key column. If the given boolean is <code>true</code>,
-	 * then sets the column's {@link #keyType} to {@link PrimaryKeyType#PARTITIONED} and {@link #ordering} to the given
-	 * {@link Ordering} , else sets both {@link #keyType} and {@link #ordering} to <code>null</code>.
+	 * Toggles the identification of this column as a clustered key column. If the given boolean is {@code true}, then
+	 * sets the column's {@link #keyType} to {@link PrimaryKeyType#PARTITIONED} and {@link #ordering} to the given
+	 * {@link Ordering} , else sets both {@link #keyType} and {@link #ordering} to {@code null}.
 	 *
 	 * @return this
 	 */

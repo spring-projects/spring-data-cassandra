@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2013-2017 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Scans packages for Cassandra entities.
- * 
+ *
  * @author Matthew T. Adams
  */
 public class CassandraEntityClassScanner {
@@ -55,8 +55,8 @@ public class CassandraEntityClassScanner {
 		return new CassandraEntityClassScanner(entityBasePackages, entityBasePackageClasses).scanForEntityClasses();
 	}
 
-	protected Set<String> entityBasePackages = new HashSet<String>();
-	protected Set<Class<?>> entityBasePackageClasses = new HashSet<Class<?>>();
+	protected Set<String> entityBasePackages = new HashSet<>();
+	protected Set<Class<?>> entityBasePackageClasses = new HashSet<>();
 	protected ClassLoader beanClassLoader;
 
 	public CassandraEntityClassScanner() {}
@@ -85,7 +85,7 @@ public class CassandraEntityClassScanner {
 	}
 
 	public void setEntityBasePackages(Collection<String> entityBasePackages) {
-		this.entityBasePackages = entityBasePackages == null ? new HashSet<String>() : new HashSet<String>(
+		this.entityBasePackages = entityBasePackages == null ? new HashSet<>() : new HashSet<>(
 				entityBasePackages);
 	}
 
@@ -94,7 +94,7 @@ public class CassandraEntityClassScanner {
 	}
 
 	public void setEntityBasePackageClasses(Collection<Class<?>> entityBasePackageClasses) {
-		this.entityBasePackageClasses = entityBasePackageClasses == null ? new HashSet<Class<?>>() : new HashSet<Class<?>>(
+		this.entityBasePackageClasses = entityBasePackageClasses == null ? new HashSet<>() : new HashSet<>(
 				entityBasePackageClasses);
 	}
 
@@ -104,14 +104,14 @@ public class CassandraEntityClassScanner {
 
 	/**
 	 * Scans the mapping base package for entity classes annotated with {@link Table} or {@link Persistent}.
-	 * 
+	 *
 	 * @see #getEntityBasePackages()
-	 * @return <code>Set&lt;Class&lt;?&gt;&gt;</code> representing the annotated entity classes found.
+	 * @return {@code Set<Class<?>>} representing the annotated entity classes found.
 	 * @throws ClassNotFoundException
 	 */
 	public Set<Class<?>> scanForEntityClasses() throws ClassNotFoundException {
 
-		Set<Class<?>> classes = new HashSet<Class<?>>();
+		Set<Class<?>> classes = new HashSet<>();
 
 		for (String basePackage : getEntityBasePackages()) {
 			classes.addAll(scanBasePackageForEntities(basePackage));
@@ -126,7 +126,7 @@ public class CassandraEntityClassScanner {
 
 	protected Set<Class<?>> scanBasePackageForEntities(String basePackage) throws ClassNotFoundException {
 
-		HashSet<Class<?>> classes = new HashSet<Class<?>>();
+		HashSet<Class<?>> classes = new HashSet<>();
 
 		if (StringUtils.hasText(basePackage)) {
 			ClassPathScanningCandidateComponentProvider componentProvider = new ClassPathScanningCandidateComponentProvider(

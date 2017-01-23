@@ -35,12 +35,12 @@ import org.springframework.data.repository.cdi.CdiRepositoryExtensionSupport;
 
 /**
  * A portable CDI extension which registers beans for Spring Data Cassandra repositories.
- * 
+ *
  * @author Mark Paluch
  */
 public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport {
 
-	private final Map<Set<Annotation>, Bean<CassandraOperations>> cassandraOperationsMap = new HashMap<Set<Annotation>, Bean<CassandraOperations>>();
+	private final Map<Set<Annotation>, Bean<CassandraOperations>> cassandraOperationsMap = new HashMap<>();
 
 	/**
 	 * Implementation of a an observer which checks for CassandraOperations beans and stores them in
@@ -52,11 +52,9 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 	@SuppressWarnings("unchecked")
 	<T> void processBean(@Observes ProcessBean<T> processBean) {
 		Bean<T> bean = processBean.getBean();
-		for (Type type : bean.getTypes()) {
-			if (type instanceof Class<?> && CassandraOperations.class.isAssignableFrom((Class<?>) type)) {
-				cassandraOperationsMap.put(bean.getQualifiers(), ((Bean<CassandraOperations>) bean));
-			}
-		}
+		bean.getTypes().stream() //
+				.filter(type -> type instanceof Class<?> && CassandraOperations.class.isAssignableFrom((Class<?>) type)) //
+				.forEach(type -> cassandraOperationsMap.put(bean.getQualifiers(), ((Bean<CassandraOperations>) bean)));
 	}
 
 	/**
@@ -94,7 +92,7 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 		Bean<CassandraOperations> cassandraOperationsBean = Optional.ofNullable(this.cassandraOperationsMap.get(qualifiers)).orElseThrow(() -> new UnsatisfiedResolutionException(String.format("Unable to resolve a bean for '%s' with qualifiers %s.",
 				CassandraOperations.class.getName(), qualifiers)));
 
-		return new CassandraRepositoryBean<T>(cassandraOperationsBean, qualifiers, repositoryType, beanManager,
+		return new CassandraRepositoryBean<>(cassandraOperationsBean, qualifiers, repositoryType, beanManager,
 				Optional.of(getCustomImplementationDetector()));
 	}
 

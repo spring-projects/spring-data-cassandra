@@ -34,6 +34,10 @@ import com.datastax.driver.core.exceptions.DriverException;
  *
  * @author Mark Paluch
  * @since 2.0
+ * @see AsyncCqlTemplate#queryForList(String, Class)
+ * @see AsyncCqlTemplate#queryForObject(String, Class)
+ * @see CqlTemplate#queryForList(String, Class)
+ * @see CqlTemplate#queryForObject(String, Class)
  * @see ReactiveCqlTemplate#queryForFlux(String, Class)
  * @see ReactiveCqlTemplate#queryForObject(String, Class)
  */

@@ -135,7 +135,7 @@ public interface CassandraPersistentProperty
 
 	/**
 	 * Sets this property's column names to the collection given. The given collection must have the same size as this
-	 * property's current list of column names, and must contain no <code>null</code> elements.
+	 * property's current list of column names, and must contain no {@code null} elements.
 	 *
 	 * @param columnName
 	 */

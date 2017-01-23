@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public interface ReactiveResultSet {
 	 *
 	 * @return the columns returned in this ResultSet.
 	 */
-	public ColumnDefinitions getColumnDefinitions();
+	ColumnDefinitions getColumnDefinitions();
 
 	/**
 	 * If the query that produced this ResultSet was a conditional update, return whether it was successfully applied.
@@ -79,7 +79,7 @@ public interface ReactiveResultSet {
 	 * @return if the query was a conditional update, whether it was applied. {@code true} for other types of queries.
 	 * @see <a href="https://issues.apache.org/jira/browse/CASSANDRA-7337">CASSANDRA-7337</a>
 	 */
-	public boolean wasApplied();
+	boolean wasApplied();
 
 	/**
 	 * Returns information on the execution of the last query made for this result set.

@@ -44,7 +44,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Integration tests for {@link SimpleReactiveCassandraRepository}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -382,5 +382,5 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		verificationSubscriber.await().assertComplete().assertNoValues();
 	}
 
-	static interface PersonRepostitory extends ReactiveCassandraRepository<Person, String> {}
+	interface PersonRepostitory extends ReactiveCassandraRepository<Person, String> {}
 }

@@ -208,7 +208,7 @@ public class StringBasedCassandraQueryUnitTests {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastNameIn", Collection.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
-				cassandraQuery.getQueryMethod(), new HashSet<String>(Arrays.asList("White", "Heisenberg")));
+				cassandraQuery.getQueryMethod(), new HashSet<>(Arrays.asList("White", "Heisenberg")));
 
 		String actual = cassandraQuery.createQuery(accessor);
 
