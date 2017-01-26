@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.4.7.RELEASE (2017-01-26)
+---------------------------------------------
+* DATACASS-372 - Release 1.4.7 (Hopper SR7).
+* DATACASS-352 - CassandraPersistentPropertyComparator violates comparison method contract.
+
+
 Changes in version 1.4.6.RELEASE (2016-12-21)
 ---------------------------------------------
 * DATACASS-353 - Release 1.4.6 (Hopper SR6).
