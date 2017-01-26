@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 package org.springframework.cassandra.core;
 
+import org.springframework.dao.DataAccessException;
+
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
-
-import org.springframework.dao.DataAccessException;
 
 /**
  * Generic callback interface for code that operates on a {@link PreparedStatement}. Allows to execute any number of
@@ -40,13 +40,16 @@ import org.springframework.dao.DataAccessException;
 public interface PreparedStatementCallback<T> {
 
 	/**
-	 * Gets called by {@link CqlTemplate#execute(String, PreparedStatementCallback)} with a {@link PreparedStatement}.
+	 * Gets called by {@link CqlTemplate#execute(String, PreparedStatementCallback)} with an active CQL session and
+	 * {@link PreparedStatement}. Does not need to care about closing the session: this will all be handled by Spring's
+	 * {@link CqlTemplate}.
 	 * <p>
 	 * Allows for returning a result object created within the callback, i.e. a domain object or a collection of domain
 	 * objects. Note that there's special support for single step actions: see
 	 * {@link CqlTemplate#queryForObject(String, Class, Object...)} etc. A thrown RuntimeException is treated as
 	 * application exception, it gets propagated to the caller of the template.
 	 *
+	 * @param session active Cassandra session, must not be {@literal null}.
 	 * @param preparedStatement the {@link PreparedStatement}, must not be {@literal null}.
 	 * @return a result object publisher.
 	 * @throws DriverException if thrown by a session method, to be auto-converted to a DataAccessException.
@@ -54,6 +57,7 @@ public interface PreparedStatementCallback<T> {
 	 * @see CqlTemplate#queryForObject(String, Class, Object...)
 	 * @see CqlTemplate#queryForList(String, Object...)
 	 */
-	T doInPreparedStatement(PreparedStatement preparedStatement) throws DriverException, DataAccessException;
+	T doInPreparedStatement(Session session, PreparedStatement preparedStatement)
+			throws DriverException, DataAccessException;
 
 }

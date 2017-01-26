@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cassandra.core;
+package org.springframework.cassandra.core.session;
+
+import reactor.core.publisher.Mono;
 
 import java.io.Closeable;
 import java.util.Map;
@@ -26,8 +28,6 @@ import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.exceptions.QueryExecutionException;
 import com.datastax.driver.core.exceptions.QueryValidationException;
 import com.datastax.driver.core.exceptions.UnsupportedFeatureException;
-
-import reactor.core.publisher.Mono;
 
 /**
  * A session holds connections to a Cassandra cluster, allowing it to be queried. {@link ReactiveSession} executes

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.springframework.cassandra.core.session.SessionFactory;
+import org.springframework.cassandra.support.CassandraAccessor;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.util.Assert;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
@@ -30,11 +36,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
-
-import org.springframework.cassandra.support.CassandraAccessor;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.util.Assert;
 
 /**
  * <b>This is the central class in the CQL core package.</b> It simplifies the use of CQL and helps to avoid common
@@ -79,11 +80,10 @@ import org.springframework.util.Assert;
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
-	 * Constructs a new, uninitialized {@link CqlTemplate}.
+	 * Constructs a new, uninitialized {@link CqlTemplate}. Note: The {@link SessionFactory} has to be set before using
+	 * the instance.
 	 *
-	 * Note: The {@link Session} has to be set before using the instance.
-	 *
-	 * @see #setSession(Session)
+	 * @see #setSessionFactory(SessionFactory)
 	 */
 	public CqlTemplate() {}
 
@@ -101,6 +101,19 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		setSession(session);
 	}
 
+	/**
+	 * Constructs a new {@link CqlTemplate} with the given {@link SessionFactory}.
+	 *
+	 * @param sessionFactory the active Cassandra {@link SessionFactory}, must not be {@literal null}.
+	 * @see SessionFactory
+	 */
+	public CqlTemplate(SessionFactory sessionFactory) {
+
+		Assert.notNull(sessionFactory, "SessionFactory must not be null");
+
+		setSessionFactory(sessionFactory);
+	}
+
 	// -------------------------------------------------------------------------
 	// Methods dealing with a plain com.datastax.driver.core.Session
 	// -------------------------------------------------------------------------
@@ -115,7 +128,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		Assert.notNull(action, "Callback object must not be null");
 
 		try {
-			return action.doInSession(getSession());
+			return action.doInSession(getCurrentSession());
 		} catch (DriverException e) {
 			throw translateException("SessionCallback", toCql(action), e);
 		}
@@ -154,7 +167,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 			SimpleStatement statement = applyStatementSettings(new SimpleStatement(cql));
 
-			ResultSet results = getSession().execute(statement);
+			ResultSet results = getCurrentSession().execute(statement);
 
 			return resultSetExtractor.extractData(results);
 		} catch (DriverException e) {
@@ -274,7 +287,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				logger.debug("Executing CQL Statement [{}]", statement);
 			}
 
-			return resultSetExtractor.extractData(getSession().execute(applyStatementSettings(statement)));
+			return resultSetExtractor.extractData(getCurrentSession().execute(applyStatementSettings(statement)));
 		} catch (DriverException e) {
 			throw translateException("Query", statement.toString(), e);
 		}
@@ -417,8 +430,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				logger.debug("Preparing statement [{}] using {}", toCql(preparedStatementCreator), preparedStatementCreator);
 			}
 
-			return action.doInPreparedStatement(applyStatementSettings(
-				preparedStatementCreator.createPreparedStatement(getSession())));
+			Session session = getCurrentSession();
+			return action.doInPreparedStatement(session,
+					applyStatementSettings(preparedStatementCreator.createPreparedStatement(session)));
 
 		} catch (DriverException e) {
 			throw translateException("PreparedStatementCallback", toCql(preparedStatementCreator), e);
@@ -430,7 +444,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.ResultSetExtractor)
 	 */
 	@Override
-	public <T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
+	public <T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor)
+			throws DataAccessException {
 		return query(preparedStatementCreator, null, resultSetExtractor);
 	}
 
@@ -439,7 +454,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowCallbackHandler)
 	 */
 	@Override
-	public void query(PreparedStatementCreator preparedStatementCreator, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
+	public void query(PreparedStatementCreator preparedStatementCreator, RowCallbackHandler rowCallbackHandler)
+			throws DataAccessException {
 		query(preparedStatementCreator, null, newResultSetExtractor(rowCallbackHandler));
 	}
 
@@ -448,7 +464,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowMapper)
 	 */
 	@Override
-	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
+			throws DataAccessException {
 		return query(preparedStatementCreator, null, newResultSetExtractor(rowMapper));
 	}
 
@@ -468,7 +485,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 				logger.debug("Preparing statement [{}] using {}", toCql(preparedStatementCreator), preparedStatementCreator);
 			}
 
-			Session session = getSession();
+			Session session = getCurrentSession();
 
 			PreparedStatement preparedStatement = preparedStatementCreator.createPreparedStatement(session);
 
@@ -477,7 +494,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			}
 
 			BoundStatement boundStatement = applyStatementSettings(preparedStatementBinder != null
-				? preparedStatementBinder.bindValues(preparedStatement) : preparedStatement.bind());
+					? preparedStatementBinder.bindValues(preparedStatement) : preparedStatement.bind());
 
 			ResultSet results = session.execute(boundStatement);
 
@@ -504,8 +521,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
 	 */
 	@Override
-	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
-			RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator,
+			PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper) throws DataAccessException {
 
 		return query(preparedStatementCreator, preparedStatementBinder, newResultSetExtractor(rowMapper));
 	}
@@ -525,7 +542,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public void query(String cql, RowCallbackHandler rowCallbackHandler, Object... args) throws DataAccessException {
-		query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newResultSetExtractor(rowCallbackHandler));
+		query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args),
+				newResultSetExtractor(rowCallbackHandler));
 	}
 
 	/*
@@ -542,8 +560,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor)
 	 */
 	@Override
-	public <T> T query(String cql, PreparedStatementBinder preparedStatementBinder, ResultSetExtractor<T> resultSetExtractor)
-			throws DataAccessException {
+	public <T> T query(String cql, PreparedStatementBinder preparedStatementBinder,
+			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 
 		return query(newPreparedStatementCreator(cql), preparedStatementBinder, resultSetExtractor);
 	}
@@ -577,7 +595,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public List<Map<String, Object>> queryForList(String cql, Object... args) throws DataAccessException {
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args),
-			newResultSetExtractor(newColumnMapRowMapper()));
+				newResultSetExtractor(newColumnMapRowMapper()));
 	}
 
 	/*
@@ -587,7 +605,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public <T> List<T> queryForList(String cql, Class<T> elementType, Object... args) throws DataAccessException {
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args),
-			newResultSetExtractor(newSingleColumnRowMapper(elementType)));
+				newResultSetExtractor(newSingleColumnRowMapper(elementType)));
 	}
 
 	/*
@@ -614,8 +632,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
-		return DataAccessUtils.requiredSingleResult(query(newPreparedStatementCreator(cql),
-			newPreparedStatementBinder(args), newResultSetExtractor(rowMapper, 1)));
+		return DataAccessUtils.requiredSingleResult(
+				query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newResultSetExtractor(rowMapper, 1)));
 	}
 
 	/*
@@ -659,7 +677,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/* (non-Javadoc) */
 	private Set<Host> getHosts() {
-		return getSession().getCluster().getMetadata().getAllHosts();
+		return getCurrentSession().getCluster().getMetadata().getAllHosts();
 	}
 
 	/* (non-Javadoc) */
@@ -683,6 +701,10 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 	protected DataAccessException translateException(String task, String cql, DriverException driverException) {
 		return translate(task, cql, driverException);
+	}
+
+	private Session getCurrentSession() {
+		return getSessionFactory().getSession();
 	}
 
 	private class SimplePreparedStatementCreator implements PreparedStatementCreator, CqlProvider {

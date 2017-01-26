@@ -49,14 +49,14 @@ public class CassandraAccessorUnitTests {
 		cassandraAccessor = new CassandraAccessor();
 	}
 
-	@Test // DATACASS-286
+	@Test // DATACASS-286, DATACASS-330
 	public void afterPropertiesSetWithUnitializedSessionThrowsIllegalStateException() {
 
 		try {
 			cassandraAccessor.afterPropertiesSet();
 			fail("Missing IllegalStateException");
 		} catch (IllegalStateException e) {
-			assertThat(e).hasMessageContaining("Session must not be null");
+			assertThat(e).hasMessageContaining("SessionFactory must not be null");
 		}
 	}
 
@@ -101,14 +101,14 @@ public class CassandraAccessorUnitTests {
 		}
 	}
 
-	@Test // DATACASS-286
+	@Test // DATACASS-286, DATACASS-330
 	public void getUninitializedSessionThrowsIllegalStateException() {
 
 		try {
 			cassandraAccessor.getSession();
 			fail("Missing IllegalStateException");
 		} catch (IllegalStateException e) {
-			assertThat(e).hasMessageContaining("Session was not properly initialized");
+			assertThat(e).hasMessageContaining("SessionFactory was not properly initialized");
 		}
 	}
 }

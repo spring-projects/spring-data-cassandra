@@ -15,18 +15,18 @@
  */
 package org.springframework.data.cassandra.config.java;
 
-import org.springframework.cassandra.core.DefaultBridgedReactiveSession;
-import org.springframework.cassandra.core.DefaultReactiveSessionFactory;
+import reactor.core.scheduler.Schedulers;
+
 import org.springframework.cassandra.core.ReactiveCqlOperations;
 import org.springframework.cassandra.core.ReactiveCqlTemplate;
-import org.springframework.cassandra.core.ReactiveSession;
-import org.springframework.cassandra.core.ReactiveSessionFactory;
+import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
+import org.springframework.cassandra.core.session.DefaultReactiveSessionFactory;
+import org.springframework.cassandra.core.session.ReactiveSession;
+import org.springframework.cassandra.core.session.ReactiveSessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
-
-import reactor.core.scheduler.Schedulers;
 
 /**
  * Extension to {@link AbstractCassandraConfiguration} providing Spring Data Cassandra configuration for Spring Data's
@@ -41,7 +41,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * Creates a {@link ReactiveSession} object. This wraps a {@link com.datastax.driver.core.Session} to expose Cassandra
 	 * access in a reactive style.
 	 *
-	 * @return
+	 * @return the {@link ReactiveSession}.
 	 * @see #session()
 	 * @see DefaultBridgedReactiveSession
 	 */
@@ -51,10 +51,10 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	}
 
 	/**
-	 * Creates a {@link ReactiveSessionFactory} to be used by the {@link ReactiveCassandraTemplate}. Will use the
+	 * Creates a {@link ReactiveSessionFactory} to be used by the {@link ReactiveCassandraTemplate}. Uses the
 	 * {@link ReactiveSession} instance configured in {@link #reactiveSession()}.
 	 *
-	 * @return
+	 * @return the {@link ReactiveSessionFactory}.
 	 * @see #reactiveSession()
 	 * @see #reactiveCassandraTemplate()
 	 */

@@ -442,7 +442,7 @@ public class CqlTemplateUnitTests {
 		doTestStrings(null, null, null, cqlTemplate -> {
 
 			ResultSet resultSet = cqlTemplate.execute("SELECT * from USERS",
-					(PreparedStatementCallback<ResultSet>) (ps) -> cqlTemplate.getSession().execute(ps.bind("A")));
+					(session, ps) -> session.execute(ps.bind("A")));
 
 			try {
 				assertThat(resultSet).hasSize(3);
@@ -475,7 +475,7 @@ public class CqlTemplateUnitTests {
 		try {
 			template.execute(session -> {
 				throw new NoHostAvailableException(Collections.emptyMap());
-			}, (ps) -> session.execute(boundStatement));
+			}, (session, ps) -> session.execute(boundStatement));
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
@@ -490,7 +490,7 @@ public class CqlTemplateUnitTests {
 		when(resultSet.wasApplied()).thenReturn(true);
 
 		try {
-			template.execute(session -> preparedStatement, (ps) -> {
+			template.execute(session -> preparedStatement, (session, ps) -> {
 				throw new NoHostAvailableException(Collections.emptyMap());
 			});
 

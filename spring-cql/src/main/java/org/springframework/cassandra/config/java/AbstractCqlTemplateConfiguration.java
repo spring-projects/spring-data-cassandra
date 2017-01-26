@@ -33,13 +33,13 @@ import org.springframework.context.annotation.Bean;
 public abstract class AbstractCqlTemplateConfiguration extends AbstractSessionConfiguration {
 
 	/**
-	 * Creates a {@link CqlTemplate} configured with {@link #session()}.
-	 * 
+	 * Creates a {@link CqlTemplate} configured with {@link #sessionFactory()}.
+	 *
 	 * @return the {@link CqlTemplate}.
-	 * @see #session()
+	 * @see #sessionFactory()
 	 */
 	@Bean
 	public CqlTemplate cqlTemplate() {
-		return new CqlTemplate(session().getObject());
+		return new CqlTemplate(sessionFactory());
 	}
 }
