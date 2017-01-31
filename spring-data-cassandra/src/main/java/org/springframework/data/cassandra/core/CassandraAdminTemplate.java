@@ -112,7 +112,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 		CassandraPersistentEntity<?> entity = getCassandraMappingContext().getPersistentEntity(entityClass);
 
-		Assert.notNull(entity);
+		Assert.notNull(entity, "Entity must not be null!");
 
 		final TableMetadata tableMetadata = getTableMetadata(keyspace, tableName);
 		final List<String> queryList = CqlUtils.alterTable(tableName.toCql(), entity, tableMetadata);

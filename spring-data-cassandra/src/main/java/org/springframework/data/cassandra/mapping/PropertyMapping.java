@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,8 @@ public class PropertyMapping {
 	}
 
 	public void setColumnName(String columnName) {
-		Assert.notNull(columnName);
+
+		Assert.notNull(columnName, "Column name must not be null");
 		this.columnName = columnName;
 	}
 
@@ -66,7 +67,8 @@ public class PropertyMapping {
 	}
 
 	public void setPropertyName(String propertyName) {
-		Assert.notNull(propertyName);
+
+		Assert.notNull(propertyName, "Property name must not be null");
 		this.propertyName = propertyName;
 	}
 
@@ -86,8 +88,8 @@ public class PropertyMapping {
 		PropertyMapping that = (PropertyMapping) obj;
 
 		return ObjectUtils.nullSafeEquals(this.getPropertyName(), that.getPropertyName())
-			&& ObjectUtils.nullSafeEquals(this.getColumnName(), that.getColumnName())
-			&& ObjectUtils.nullSafeEquals(this.getForceQuote(), that.getForceQuote());
+				&& ObjectUtils.nullSafeEquals(this.getColumnName(), that.getColumnName())
+				&& ObjectUtils.nullSafeEquals(this.getForceQuote(), that.getForceQuote());
 	}
 
 	/**
@@ -108,6 +110,6 @@ public class PropertyMapping {
 	@Override
 	public String toString() {
 		return String.format("{ @type = %1$s, propertyName = %2$s, columnName = %3$s, forceQuote = %4$s }",
-			getClass().getName(), getPropertyName(), getColumnName(), getForceQuote());
+				getClass().getName(), getPropertyName(), getColumnName(), getForceQuote());
 	}
 }

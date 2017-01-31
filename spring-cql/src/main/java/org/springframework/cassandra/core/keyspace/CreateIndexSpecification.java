@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2013-2017 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
@@ -23,12 +23,12 @@ import org.springframework.util.StringUtils;
 
 /**
  * Builder class to construct a <code>CREATE INDEX</code> specification.
- * 
+ *
  * @author Matthew T. Adams
  * @author David Webb
  */
-public class CreateIndexSpecification extends IndexNameSpecification<CreateIndexSpecification> implements
-		IndexDescriptor {
+public class CreateIndexSpecification extends IndexNameSpecification<CreateIndexSpecification>
+		implements IndexDescriptor {
 
 	/**
 	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
@@ -62,7 +62,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 	/**
 	 * Causes the inclusion of an <code>IF NOT EXISTS</code> clause.
-	 * 
+	 *
 	 * @return this
 	 */
 	public CreateIndexSpecification ifNotExists() {
@@ -71,7 +71,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 	/**
 	 * Toggles the inclusion of an <code>IF NOT EXISTS</code> clause.
-	 * 
+	 *
 	 * @return this
 	 */
 	public CreateIndexSpecification ifNotExists(boolean ifNotExists) {
@@ -113,7 +113,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 	/**
 	 * Sets the table name.
-	 * 
+	 *
 	 * @return this
 	 */
 	public CreateIndexSpecification tableName(String tableName) {
@@ -121,7 +121,9 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	public CreateIndexSpecification tableName(CqlIdentifier tableName) {
-		Assert.notNull(tableName);
+
+		Assert.notNull(tableName, "CqlIdentifier must not be null");
+
 		this.tableName = tableName;
 		return this;
 	}
@@ -136,7 +138,9 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	public CreateIndexSpecification columnName(CqlIdentifier columnName) {
-		Assert.notNull(columnName);
+
+		Assert.notNull(columnName, "CqlIdentifier must not be null");
+
 		this.columnName = columnName;
 		return this;
 	}

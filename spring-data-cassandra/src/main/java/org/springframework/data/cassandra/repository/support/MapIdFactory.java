@@ -1,3 +1,18 @@
+/*
+ * Copyright 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
@@ -9,9 +24,10 @@ import org.springframework.util.Assert;
 /**
  * Factory class for producing implementations of given id interfaces. For restrictions on id interfaces definitions,
  * see {@link IdInterfaceValidator#validate(Class)}.
- * 
+ *
  * @see IdInterfaceValidator#validate(Class)
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @SuppressWarnings("unchecked")
 public class MapIdFactory {
@@ -20,13 +36,14 @@ public class MapIdFactory {
 	 * Produces an implementation of the given id interface type using the type's class loader. For restrictions on id
 	 * interfaces definitions, see {@link IdInterfaceValidator#validate(Class)}. Returns an implementation of the given
 	 * interface that also implements {@link MapId} and {@link Serializable}, so it can be cast as such if necessary.
-	 * 
+	 *
 	 * @param idInterface The type of the id interface.
 	 * @return An implementation of the given interface that also implements {@link MapId} and {@link Serializable}.
 	 * @see IdInterfaceValidator#validate(Class)
 	 */
 	public static <T> T id(Class<T> idInterface) {
-		Assert.notNull(idInterface);
+
+		Assert.notNull(idInterface, "Interface class must not be null");
 		return id(idInterface, idInterface.getClassLoader());
 	}
 
@@ -34,7 +51,7 @@ public class MapIdFactory {
 	 * Produces an implementation of the given class loader. For restrictions on id interfaces definitions, see
 	 * {@link IdInterfaceValidator#validate(Class)}. Returns an implementation of the given interface that also implements
 	 * {@link MapId} and {@link Serializable}, so it can be cast as such if necessary.
-	 * 
+	 *
 	 * @param idInterface The type of the id interface.
 	 * @return An implementation of the given interface that also implements {@link MapId} and {@link Serializable}.
 	 * @see IdInterfaceValidator#validate(Class)

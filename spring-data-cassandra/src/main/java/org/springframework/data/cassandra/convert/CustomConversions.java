@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class CustomConversions {
 	 */
 	public CustomConversions(List<?> converters) {
 
-		Assert.notNull(converters);
+		Assert.notNull(converters, "List of converters must not be null");
 
 		this.readingPairs = new LinkedHashSet<ConvertiblePair>();
 		this.writingPairs = new LinkedHashSet<ConvertiblePair>();
@@ -249,9 +249,9 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns the target type we can inject of the given source type to. The returned type might
-	 * be a subclass of the given expected type though. If {@code expectedTargetType} is {@literal null} we will simply
-	 * return the first target type matching or {@literal null} if no conversion can be found.
+	 * Returns the target type we can inject of the given source type to. The returned type might be a subclass of the
+	 * given expected type though. If {@code expectedTargetType} is {@literal null} we will simply return the first target
+	 * type matching or {@literal null} if no conversion can be found.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param requestedTargetType
@@ -274,8 +274,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered into a Cassandra native type. The
-	 * returned type might be a subclass of the given expected type though.
+	 * Returns whether we have a custom conversion registered into a Cassandra native type. The returned type might be a
+	 * subclass of the given expected type though.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @return
@@ -285,8 +285,8 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to an object of the given source type
-	 * into an object of the given Cassandra native target type.
+	 * Returns whether we have a custom conversion registered to an object of the given source type into an object of the
+	 * given Cassandra native target type.
 	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @param requestedTargetType
@@ -297,8 +297,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Returns whether we have a custom conversion registered to the given source into the given target
-	 * type.
+	 * Returns whether we have a custom conversion registered to the given source into the given target type.
 	 *
 	 * @param sourceType must not be {@literal null}
 	 * @param requestedTargetType must not be {@literal null}
@@ -344,8 +343,8 @@ public class CustomConversions {
 	private static Class<?> getCustomTarget(Class<?> sourceType, Class<?> requestedTargetType,
 			Collection<ConvertiblePair> pairs) {
 
-		Assert.notNull(sourceType);
-		Assert.notNull(pairs);
+		Assert.notNull(sourceType, "Source Class must not be null");
+		Assert.notNull(pairs, "Collection of ConvertiblePair must not be null");
 
 		if (requestedTargetType != null && pairs.contains(new ConvertiblePair(sourceType, requestedTargetType))) {
 			return requestedTargetType;
@@ -383,7 +382,7 @@ public class CustomConversions {
 
 		Class<?> type = producer.get();
 
-		cache.put(key, CacheValue.<Class<?>>ofNullable(type));
+		cache.put(key, CacheValue.<Class<?>> ofNullable(type));
 
 		return type;
 	}

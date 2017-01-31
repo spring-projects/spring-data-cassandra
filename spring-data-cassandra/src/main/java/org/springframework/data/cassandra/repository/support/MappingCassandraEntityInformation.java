@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2013-2017 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
  * {@link CassandraEntityInformation} implementation using a {@link CassandraPersistentEntity} instance to lookup the
  * necessary information. Can be configured with a custom collection to be returned which will trump the one returned by
  * the {@link CassandraPersistentEntity} if given.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
@@ -42,7 +42,7 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 
 	/**
 	 * Creates a new {@link MappingCassandraEntityInformation} for the given {@link CassandraPersistentEntity}.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 */
 	public MappingCassandraEntityInformation(CassandraPersistentEntity<T> entity, CassandraConverter converter) {
@@ -57,7 +57,7 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	@Override
 	public ID getId(T entity) {
 
-		Assert.notNull(entity);
+		Assert.notNull(entity, "Entity must not be null");
 
 		CassandraPersistentProperty idProperty = entityMetadata.getIdProperty();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -122,7 +122,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public void setApplicationContext(ApplicationContext context) {
 
-		Assert.notNull(context);
+		Assert.notNull(context, "ApplicationContext must not be null");
 
 		this.context = context;
 		spelContext = new StandardEvaluationContext();
@@ -297,7 +297,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
 					"Only primitive types are allowed inside Collections for property [%1$s] of type [%2$s] in entity [%3$s]",
-							getName(), getType(), getOwner().getName()));
+					getName(), getType(), getOwner().getName()));
 		}
 
 		return dataType;
@@ -316,7 +316,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
 					"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
-							getName(), getType(), getOwner().getName()));
+					getName(), getType(), getOwner().getName()));
 		}
 
 		return dataType;
@@ -410,18 +410,19 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public void setColumnNames(List<CqlIdentifier> columnNames) {
 
-		Assert.notNull(columnNames);
+		Assert.notNull(columnNames, "List of column names must not be null");
 
 		// force calculation of columnNames if not known yet
 		getColumnNames();
 
-		Assert.state(this.columnNames.size() == columnNames.size(), String.format(
-			"Property [%s] of entity [%s] is mapped to [%s] column%s, but given column name list has size [%s]",
-					getName(), getOwner().getType().getName(), this.columnNames.size(), this.columnNames.size() == 1 ? "" : "s",
-							columnNames.size()));
+		Assert.state(this.columnNames.size() == columnNames.size(),
+				String.format(
+						"Property [%s] of entity [%s] is mapped to [%s] column%s, but given column name list has size [%s]",
+						getName(), getOwner().getType().getName(), this.columnNames.size(), this.columnNames.size() == 1 ? "" : "s",
+						columnNames.size()));
 
-		this.columnNames = this.explicitColumnNames =
-				Collections.unmodifiableList(new ArrayList<CqlIdentifier>(columnNames));
+		this.columnNames = this.explicitColumnNames = Collections
+				.unmodifiableList(new ArrayList<CqlIdentifier>(columnNames));
 	}
 
 	@Override
