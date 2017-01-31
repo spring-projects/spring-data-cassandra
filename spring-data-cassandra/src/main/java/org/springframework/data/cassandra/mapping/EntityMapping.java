@@ -99,8 +99,8 @@ public class EntityMapping {
 		this.tableName = tableName;
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -119,11 +119,12 @@ public class EntityMapping {
 				&& ObjectUtils.nullSafeEquals(this.getTableName(), that.getTableName());
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
+
 		int hashValue = 17;
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getEntityClassName());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getForceQuote());
@@ -131,8 +132,8 @@ public class EntityMapping {
 		return hashValue;
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
@@ -141,7 +142,6 @@ public class EntityMapping {
 				getClass().getName(), getEntityClassName(), getTableName(), getForceQuote(), toString(getPropertyMappings()));
 	}
 
-	/* (non-Javadoc) */
 	private String toString(Map<?, ?> map) {
 		StringBuilder builder = new StringBuilder("[");
 		int count = 0;

@@ -21,10 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -43,6 +39,10 @@ import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+
 /**
  * Custom query creator to create Cassandra criteria.
  *
@@ -53,16 +53,20 @@ import org.springframework.util.Assert;
 class CassandraQueryCreator extends AbstractQueryCreator<Select, Clause> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CassandraQueryCreator.class);
+
 	private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("\\p{Punct}");
 
 	private final CassandraMappingContext mappingContext;
+
 	private final CassandraPersistentEntity<?> entity;
+
 	private final CqlIdentifier tableName;
+
 	private final WhereBuilder whereBuilder = new WhereBuilder();
 
 	/**
-	 * Creates a new {@link CassandraQueryCreator} from the given {@link PartTree}, {@link ConvertingParameterAccessor}
-	 * and {@link MappingContext}.
+	 * Create a new {@link CassandraQueryCreator} from the given {@link PartTree}, {@link ConvertingParameterAccessor} and
+	 * {@link MappingContext}.
 	 *
 	 * @param tree must not be {@literal null}.
 	 * @param accessor must not be {@literal null}.

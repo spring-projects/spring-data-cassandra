@@ -84,7 +84,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	private final UserTypeResolver userTypeResolver;
 
 	/**
-	 * Creates a new {@link BasicCassandraPersistentProperty}.
+	 * Create a new {@link BasicCassandraPersistentProperty}.
 	 *
 	 * @param field the actual {@link Field} in the domain entity corresponding to this persistent entity.
 	 * @param propertyDescriptor a {@link PropertyDescriptor} for the corresponding property in the domain entity.
@@ -98,7 +98,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	/**
-	 * Creates a new {@link BasicCassandraPersistentProperty}.
+	 * Create a new {@link BasicCassandraPersistentProperty}.
 	 *
 	 * @param field the actual {@link Field} in the domain entity corresponding to this persistent entity.
 	 * @param propertyDescriptor a {@link PropertyDescriptor} for the corresponding property in the domain entity.
@@ -119,6 +119,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 */
 	@Override
 	public void setApplicationContext(ApplicationContext context) {
 
@@ -131,25 +134,40 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		spelContext.setRootObject(context);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getOwner()
+	 */
 	@Override
 	public CassandraPersistentEntity<?> getOwner() {
 		return (CassandraPersistentEntity<?>) super.getOwner();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isCompositePrimaryKey()
+	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
 		return (AnnotatedElementUtils.findMergedAnnotation(getType(), PrimaryKeyClass.class) != null);
 	}
 
+	/**
+	 * @return
+	 */
 	public Class<?> getCompositePrimaryKeyType() {
 		return (isCompositePrimaryKey() ? getType() : null);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getCompositePrimaryKeyTypeInformation()
+	 */
 	@Override
 	public TypeInformation<?> getCompositePrimaryKeyTypeInformation() {
 		return (isCompositePrimaryKey() ? ClassTypeInformation.from(getCompositePrimaryKeyType()) : null);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getColumnName()
+	 */
 	@Override
 	public CqlIdentifier getColumnName() {
 
@@ -160,6 +178,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return columnNames.get(0);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getPrimaryKeyOrdering()
+	 */
 	@Override
 	public Ordering getPrimaryKeyOrdering() {
 
@@ -168,6 +189,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return (primaryKeyColumn != null ? primaryKeyColumn.ordering() : null);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getDataType()
+	 */
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getDataType()
 	 */
@@ -264,11 +288,17 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return userType;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isIndexed()
+	 */
 	@Override
 	public boolean isIndexed() {
 		return isAnnotationPresent(Indexed.class);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isClusterKeyColumn()
+	 */
 	@Override
 	public boolean isClusterKeyColumn() {
 
@@ -277,6 +307,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return (primaryKeyColumn != null && PrimaryKeyType.CLUSTERED.equals(primaryKeyColumn.type()));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isPartitionKeyColumn()
+	 */
 	@Override
 	public boolean isPartitionKeyColumn() {
 
@@ -285,6 +318,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return (primaryKeyColumn != null && PrimaryKeyType.PARTITIONED.equals(primaryKeyColumn.type()));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isPrimaryKeyColumn()
+	 */
 	@Override
 	public boolean isPrimaryKeyColumn() {
 		return isAnnotationPresent(PrimaryKeyColumn.class);
@@ -330,6 +366,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getColumnNames()
+	 */
 	@Override
 	public List<CqlIdentifier> getColumnNames() {
 
@@ -399,6 +438,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#setColumnName(org.springframework.cassandra.core.cql.CqlIdentifier)
+	 */
 	@Override
 	public void setColumnName(CqlIdentifier columnName) {
 
@@ -407,6 +449,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		setColumnNames(Collections.singletonList(columnName));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#setColumnNames(java.util.List)
+	 */
 	@Override
 	public void setColumnNames(List<CqlIdentifier> columnNames) {
 
@@ -425,6 +470,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 				.unmodifiableList(new ArrayList<CqlIdentifier>(columnNames));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#setForceQuote(boolean)
+	 */
 	@Override
 	public void setForceQuote(boolean forceQuote) {
 
@@ -444,6 +492,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		setColumnNames(columnNames);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getCompositePrimaryKeyProperties()
+	 */
 	@Override
 	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
 
@@ -453,6 +504,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return getCompositePrimaryKeyEntity().getCompositePrimaryKeyProperties();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getCompositePrimaryKeyEntity()
+	 */
 	@Override
 	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
 
@@ -463,16 +517,25 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return mappingContext.getPersistentEntity(getCompositePrimaryKeyTypeInformation());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getAssociation()
+	 */
 	@Override
 	public Association<CassandraPersistentProperty> getAssociation() {
 		throw new UnsupportedOperationException("Cassandra does not support associations");
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#createAssociation()
+	 */
 	@Override
 	protected Association<CassandraPersistentProperty> createAssociation() {
 		return new Association<CassandraPersistentProperty>(this, null);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isMapLike()
+	 */
 	@Override
 	public boolean isMapLike() {
 		return ClassUtils.isAssignable(Map.class, getType());

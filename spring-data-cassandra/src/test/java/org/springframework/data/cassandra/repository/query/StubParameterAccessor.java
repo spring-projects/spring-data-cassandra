@@ -29,7 +29,7 @@ import com.datastax.driver.core.DataType;
 
 /**
  * Simple {@link ParameterAccessor} that returns the given parameters unfiltered.
- * 
+ *
  * @author Mark Paluch
  */
 class StubParameterAccessor implements CassandraParameterAccessor {
@@ -37,7 +37,7 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	private final Object[] values;
 
 	/**
-	 * Creates a new {@link ConvertingParameterAccessor} backed by a {@link StubParameterAccessor} simply returning the
+	 * Create a new {@link ConvertingParameterAccessor} backed by a {@link StubParameterAccessor} simply returning the
 	 * given parameters converted but unfiltered.
 	 *
 	 * @param converter

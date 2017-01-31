@@ -35,7 +35,7 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 	private final Cluster cluster;
 
 	/**
-	 * Creates a new {@link SimpleUserTypeResolver}.
+	 * Create a new {@link SimpleUserTypeResolver}.
 	 *
 	 * @param cluster must not be {@literal null}.
 	 * @param keyspaceName must not be empty or {@literal null}.

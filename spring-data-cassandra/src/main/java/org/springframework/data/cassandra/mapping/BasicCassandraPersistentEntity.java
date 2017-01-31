@@ -65,12 +65,17 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	protected StandardEvaluationContext spelContext;
 
+	/**
+	 * Create a new {@link BasicCassandraPersistentEntity} given {@link TypeInformation}.
+	 *
+	 * @param typeInformation must not be {@literal null}.
+	 */
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
 		this(typeInformation, null, DEFAULT_VERIFIER);
 	}
 
 	/**
-	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
+	 * Create a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
 	 * name to the entity's simple type name.
 	 *
 	 * @param typeInformation
@@ -80,7 +85,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/**
-	 * Creates a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
+	 * Create a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
 	 * name to the entity's simple type name.
 	 *
 	 * @param typeInformation
@@ -103,21 +108,33 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 				: determineDefaultName());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.BasicPersistentEntity#addAssociation(org.springframework.data.mapping.Association)
+	 */
 	@Override
 	public void addAssociation(Association<CassandraPersistentProperty> association) {
 		throw new UnsupportedCassandraOperationException("Cassandra does not support associations");
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.BasicPersistentEntity#doWithAssociations(org.springframework.data.mapping.AssociationHandler)
+	 */
 	@Override
 	public void doWithAssociations(AssociationHandler<CassandraPersistentProperty> handler) {
 		throw new UnsupportedCassandraOperationException("Cassandra does not support associations");
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#isCompositePrimaryKey()
+	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
 		return (findAnnotation(PrimaryKeyClass.class) != null);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getCompositePrimaryKeyProperties()
+	 */
 	@Override
 	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
 
@@ -147,6 +164,9 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.model.BasicPersistentEntity#verify()
+	 */
 	@Override
 	public void verify() throws MappingException {
 		super.verify();
@@ -156,6 +176,9 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 */
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 
@@ -168,11 +191,17 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		spelContext.setRootObject(context);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getApplicationContext()
+	 */
 	@Override
 	public ApplicationContext getApplicationContext() {
 		return context;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#setForceQuote(boolean)
+	 */
 	@Override
 	public void setForceQuote(boolean forceQuote) {
 		if (this.forceQuote == null || this.forceQuote != forceQuote) {
@@ -181,11 +210,17 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getMappingContext()
+	 */
 	@Override
 	public CassandraMappingContext getMappingContext() {
 		return mappingContext;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#setTableName(org.springframework.cassandra.core.cql.CqlIdentifier)
+	 */
 	@Override
 	public void setTableName(CqlIdentifier tableName) {
 
@@ -193,6 +228,9 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		this.tableName = tableName;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getTableName()
+	 */
 	@Override
 	public CqlIdentifier getTableName() {
 		tableName = (tableName != null ? tableName : determineTableName());
@@ -207,7 +245,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/**
-	 * @return Returns the verifier.
+	 * @return the verifier.
 	 */
 	public CassandraPersistentEntityMetadataVerifier getVerifier() {
 		return verifier;

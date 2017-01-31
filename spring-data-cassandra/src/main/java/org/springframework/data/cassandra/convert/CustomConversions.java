@@ -77,7 +77,7 @@ public class CustomConversions {
 	}
 
 	/**
-	 * Creates a new {@link CustomConversions} instance registering the given converters.
+	 * Create a new {@link CustomConversions} instance registering the given converters.
 	 *
 	 * @param converters
 	 */

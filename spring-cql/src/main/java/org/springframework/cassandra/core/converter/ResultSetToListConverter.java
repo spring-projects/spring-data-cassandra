@@ -16,7 +16,6 @@
 package org.springframework.cassandra.core.converter;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -33,18 +32,36 @@ import com.datastax.driver.core.Row;
  */
 public class ResultSetToListConverter implements Converter<ResultSet, List<Map<String, Object>>> {
 
-	protected Converter<Row, Map<String, Object>> rowConverter = new RowToMapConverter();
+	private Converter<Row, Map<String, Object>> rowConverter;
 
-	public ResultSetToListConverter() {}
+	/**
+	 * Create a new {@link ResultSetToListConverter} using a default {@link RowToMapConverter}.
+	 */
+	public ResultSetToListConverter() {
+		this(new RowToMapConverter());
+	}
 
+	/**
+	 * Create a new {@link ResultSetToListConverter} given a row to map {@link Converter}.
+	 *
+	 * @param rowConverter must not be {@literal null}.
+	 */
 	public ResultSetToListConverter(Converter<Row, Map<String, Object>> rowConverter) {
 		setRowConverter(rowConverter);
 	}
 
+	/**
+	 * @return the row to map {@link Converter}.
+	 */
 	public Converter<Row, Map<String, Object>> getRowConverter() {
 		return rowConverter;
 	}
 
+	/**
+	 * Set the the row to map {@link Converter}.
+	 *
+	 * @param rowConverter must not be {@literal null}.
+	 */
 	public void setRowConverter(Converter<Row, Map<String, Object>> rowConverter) {
 
 		Assert.notNull(rowConverter, "Converter must not be null");
@@ -52,6 +69,9 @@ public class ResultSetToListConverter implements Converter<ResultSet, List<Map<S
 		this.rowConverter = rowConverter;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+	 */
 	@Override
 	public List<Map<String, Object>> convert(ResultSet resultSet) {
 
@@ -60,9 +80,8 @@ public class ResultSetToListConverter implements Converter<ResultSet, List<Map<S
 		}
 
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-		Iterator<Row> i = resultSet.iterator();
-		while (i.hasNext()) {
-			list.add(rowConverter.convert(i.next()));
+		for (Row row : resultSet) {
+			list.add(rowConverter.convert(row));
 		}
 
 		return list;

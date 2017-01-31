@@ -32,15 +32,15 @@ public abstract class CallbackSynchronizationSupport {
 	private final CountDownLatch latch;
 
 	/**
-	 * Creates a new {@link CallbackSynchronizationSupport}
+	 * Create a new {@link CallbackSynchronizationSupport}
 	 */
 	protected CallbackSynchronizationSupport() {
 		this(1);
 	}
 
 	/**
-	 * Creates a new {@link CallbackSynchronizationSupport} for a given {@code latchCount} of callbacks.
-	 * 
+	 * Create a new {@link CallbackSynchronizationSupport} for a given {@code latchCount} of callbacks.
+	 *
 	 * @param latchCount {@link CallbackSynchronizationSupport} for a given {@code latchCount} of callbacks
 	 */
 	protected CallbackSynchronizationSupport(int latchCount) {
@@ -49,7 +49,7 @@ public abstract class CallbackSynchronizationSupport {
 
 	/**
 	 * Await results without a timeout.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 */
 	public final void await() throws InterruptedException {
@@ -58,7 +58,7 @@ public abstract class CallbackSynchronizationSupport {
 
 	/**
 	 * Await the results with a timeout.
-	 * 
+	 *
 	 * @param timeout must be greater or equal to 0
 	 * @param timeUnit must not be {@literal null}.
 	 * @throws InterruptedException

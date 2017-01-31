@@ -57,7 +57,7 @@ public class WriteOptions extends QueryOptions {
 	}
 
 	/**
-	 * Creates a new {@link WriteOptionsBuilder}.
+	 * Create a new {@link WriteOptionsBuilder}.
 	 *
 	 * @return a new {@link WriteOptionsBuilder}.
 	 * @since 1.5

@@ -38,10 +38,11 @@ import com.datastax.driver.core.querybuilder.Select;
 public class SimpleCassandraRepository<T, ID extends Serializable> implements TypedIdCassandraRepository<T, ID> {
 
 	private CassandraOperations operations;
+
 	private CassandraEntityInformation<T, ID> entityInformation;
 
 	/**
-	 * Creates a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
+	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
 	 * {@link CassandraTemplate}.
 	 *
 	 * @param metadata must not be {@literal null}.
@@ -56,51 +57,81 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 		this.operations = operations;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#save(S)
+	 */
 	@Override
 	public <S extends T> S save(S entity) {
 		return operations.insert(entity);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
+	 */
 	@Override
 	public <S extends T> List<S> save(Iterable<S> entities) {
 		return operations.insert(CollectionUtils.toList(entities));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
+	 */
 	@Override
 	public T findOne(ID id) {
 		return operations.selectOneById(id, entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
+	 */
 	@Override
 	public boolean exists(ID id) {
 		return operations.exists(id, entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#count()
+	 */
 	@Override
 	public long count() {
 		return operations.count(entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.Serializable)
+	 */
 	@Override
 	public void delete(ID id) {
 		operations.deleteById(id, entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
+	 */
 	@Override
 	public void delete(T entity) {
 		delete(entityInformation.getId(entity));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
+	 */
 	@Override
 	public void delete(Iterable<? extends T> entities) {
 		operations.delete(CollectionUtils.toList(entities));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
+	 */
 	@Override
 	public void deleteAll() {
 		operations.truncate(entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll()
+	 */
 	@Override
 	public List<T> findAll() {
 
@@ -109,6 +140,9 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 		return operations.select(select, entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
+	 */
 	@Override
 	public Iterable<T> findAll(Iterable<ID> ids) {
 		return operations.selectBySimpleIds(ids, entityInformation.getJavaType());

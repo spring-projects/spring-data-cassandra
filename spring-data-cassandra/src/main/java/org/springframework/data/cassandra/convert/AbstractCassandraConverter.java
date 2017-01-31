@@ -38,7 +38,7 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 	protected EntityInstantiators instantiators = new EntityInstantiators();
 
 	/**
-	 * Creates a new {@link AbstractCassandraConverter} using the given {@link ConversionService}.
+	 * Create a new {@link AbstractCassandraConverter} using the given {@link ConversionService}.
 	 */
 	public AbstractCassandraConverter(ConversionService conversionService) {
 		this.conversionService = conversionService == null ? new DefaultConversionService() : conversionService;

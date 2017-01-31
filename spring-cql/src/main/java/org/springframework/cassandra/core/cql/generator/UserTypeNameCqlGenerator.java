@@ -34,8 +34,8 @@ public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecificati
 	private UserTypeNameSpecification<T> specification;
 
 	/**
-	 * Creates a new {@link UserTypeNameCqlGenerator}.
-	 * 
+	 * Create a new {@link UserTypeNameCqlGenerator}.
+	 *
 	 * @param specification must not be {@literal null}.
 	 */
 	public UserTypeNameCqlGenerator(UserTypeNameSpecification<T> specification) {
@@ -44,7 +44,7 @@ public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecificati
 
 	/**
 	 * Sets the {@link UserTypeNameSpecification}.
-	 * 
+	 *
 	 * @param specification must not be {@literal null}.
 	 */
 	protected final void setSpecification(UserTypeNameSpecification<T> specification) {

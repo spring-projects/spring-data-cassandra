@@ -33,10 +33,10 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  */
 class CassandraBatchTemplate implements CassandraBatchOperations {
 
-	static final Object[] EMPTY_ARRAY = new Object[0];
-
 	private AtomicBoolean executed = new AtomicBoolean();
+
 	private final Batch batch;
+
 	private final CassandraOperations operations;
 
 	/* (non-Javadoc) */
@@ -51,7 +51,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	}
 
 	/**
-	 * Creates a new {@link CassandraBatchTemplate} given {@link CassandraOperations}.
+	 * Create a new {@link CassandraBatchTemplate} given {@link CassandraOperations}.
 	 *
 	 * @param operations must not be {@literal null}.
 	 */

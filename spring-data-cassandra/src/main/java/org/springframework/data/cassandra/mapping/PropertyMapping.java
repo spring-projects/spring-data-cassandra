@@ -27,7 +27,9 @@ import org.springframework.util.ObjectUtils;
 public class PropertyMapping {
 
 	private String columnName;
+
 	private String forceQuote;
+
 	private String propertyName;
 
 	public PropertyMapping(String propertyName) {
@@ -72,8 +74,8 @@ public class PropertyMapping {
 		this.propertyName = propertyName;
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -92,11 +94,12 @@ public class PropertyMapping {
 				&& ObjectUtils.nullSafeEquals(this.getForceQuote(), that.getForceQuote());
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
+
 		int hashValue = 17;
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getPropertyName());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getColumnName());
@@ -104,8 +107,8 @@ public class PropertyMapping {
 		return hashValue;
 	}
 
-	/**
-	 * @inheritDoc
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {

@@ -28,11 +28,13 @@ import org.springframework.util.Assert;
 class ConverterRegistration {
 
 	private final ConvertiblePair convertiblePair;
+
 	private final boolean reading;
+
 	private final boolean writing;
 
 	/**
-	 * Creates a new {@link ConverterRegistration}.
+	 * Create a new {@link ConverterRegistration}.
 	 *
 	 * @param convertiblePair must not be {@literal null}.
 	 * @param isReading whether to force to consider the converter for reading.
@@ -48,7 +50,7 @@ class ConverterRegistration {
 	}
 
 	/**
-	 * Creates a new {@link ConverterRegistration} from the given source and target type and read/write flags.
+	 * Create a new {@link ConverterRegistration} from the given source and target type and read/write flags.
 	 *
 	 * @param source the source type to be converted from, must not be {@literal null}.
 	 * @param target the target type to be converted to, must not be {@literal null}.

@@ -40,7 +40,7 @@ import org.springframework.util.Assert;
 public class CassandraParameters extends Parameters<CassandraParameters, CassandraParameter> {
 
 	/**
-	 * Creates a new {@link CassandraParameters} instance from the given {@link Method}
+	 * Create a new {@link CassandraParameters} instance from the given {@link Method}
 	 *
 	 * @param method must not be {@literal null}.
 	 */

@@ -29,15 +29,15 @@ import com.datastax.driver.core.Row;
 
 /**
  * Utility to mock a Cassandra {@link Row}.
- * 
+ *
  * @author Mark Paluch
  */
 public class RowMockUtil {
 
 	/**
-	 * Creates a new {@link Row} mock using the given {@code columns}. Each column carries a name, value and data type so
+	 * Create a new {@link Row} mock using the given {@code columns}. Each column carries a name, value and data type so
 	 * users of {@link Row} can use most of the methods.
-	 * 
+	 *
 	 * @param columns
 	 * @return
 	 */
@@ -126,8 +126,8 @@ public class RowMockUtil {
 	}
 
 	/**
-	 * Creates a new {@link Column} to be used with {@link RowMockUtil#newRowMock(Column...)}.
-	 * 
+	 * Create a new {@link Column} to be used with {@link RowMockUtil#newRowMock(Column...)}.
+	 *
 	 * @param name must not be empty or {@link null}.
 	 * @param value can be {@literal null}.
 	 * @param type must not be {@literal null}.

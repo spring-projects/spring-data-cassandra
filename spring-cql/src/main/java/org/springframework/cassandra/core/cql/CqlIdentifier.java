@@ -26,8 +26,8 @@ import com.datastax.driver.core.TableMetadata;
 
 /**
  * This encapsulates the logic for CQL quoted and unquoted identifiers.
- *
- * <p>CQL identifiers, when unquoted, are converted to lower case. When quoted, they are returned as-is with no lower
+ * <p>
+ * CQL identifiers, when unquoted, are converted to lower case. When quoted, they are returned as-is with no lower
  * casing and encased in double quotes. To render, use any of the methods {@link #toCql()},
  * {@link #toCql(StringBuilder)}, or {@link #toString()}.
  *
@@ -44,10 +44,44 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	private static final long serialVersionUID = -974441606330912437L;
 
 	public static final String UNQUOTED_REGEX = "(?i)[a-z][\\w]*";
+
 	public static final Pattern UNQUOTED = Pattern.compile(UNQUOTED_REGEX);
 
 	public static final String QUOTED_REGEX = "(?i)[a-z]([\\w]*(\"\")+[\\w]*)+";
+
 	public static final Pattern QUOTED = Pattern.compile(QUOTED_REGEX);
+
+	private String identifier;
+
+	private String unquoted;
+
+	private boolean quoted;
+
+	/**
+	 * Create a new {@link CqlIdentifier} without force-quoting it. It may end up quoted, depending on its value.
+	 *
+	 * @see #cqlId(CharSequence)
+	 */
+	public CqlIdentifier(CharSequence identifier) {
+		this(identifier, false);
+	}
+
+	/**
+	 * Create a new CQL identifier, optionally force-quoting it. Force-quoting can be used to preserve identifier case.
+	 * <ul>
+	 * <li>If the given identifier is a legal quoted identifier or <code>forceQuote</code> is <code>true</code>,
+	 * {@link #isQuoted()} will return <code>true</code> and the identifier will be quoted when rendered.</li>
+	 * <li>If the given identifier is a legal unquoted identifier, {@link #isQuoted()} will return <code>false</code>,
+	 * plus the name will be converted to lower case and rendered as such.</li>
+	 * <li>If the given identifier is illegal, an {@link IllegalArgumentException} is thrown.</li>
+	 * </ul>
+	 *
+	 * @see #cqlId(CharSequence, boolean)
+	 * @see #quotedCqlId(CharSequence)
+	 */
+	public CqlIdentifier(CharSequence identifier, boolean forceQuote) {
+		setIdentifier(identifier, forceQuote);
+	}
 
 	/**
 	 * Factory method for {@link CqlIdentifier}. Convenient if imported statically.
@@ -90,36 +124,6 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 		return QUOTED.matcher(chars).matches() || ReservedKeyword.isReserved(chars);
 	}
 
-	private String identifier;
-	private String unquoted;
-	private boolean quoted;
-
-	/**
-	 * Creates a new {@link CqlIdentifier} without force-quoting it. It may end up quoted, depending on its value.
-	 *
-	 * @see #cqlId(CharSequence)
-	 */
-	public CqlIdentifier(CharSequence identifier) {
-		this(identifier, false);
-	}
-
-	/**
-	 * Creates a new CQL identifier, optionally force-quoting it. Force-quoting can be used to preserve identifier case.
-	 * <ul>
-	 * <li>If the given identifier is a legal quoted identifier or <code>forceQuote</code> is <code>true</code>,
-	 * {@link #isQuoted()} will return <code>true</code> and the identifier will be quoted when rendered.</li>
-	 * <li>If the given identifier is a legal unquoted identifier, {@link #isQuoted()} will return <code>false</code>,
-	 * plus the name will be converted to lower case and rendered as such.</li>
-	 * <li>If the given identifier is illegal, an {@link IllegalArgumentException} is thrown.</li>
-	 * </ul>
-	 *
-	 * @see #cqlId(CharSequence, boolean)
-	 * @see #quotedCqlId(CharSequence)
-	 */
-	public CqlIdentifier(CharSequence identifier, boolean forceQuote) {
-		setIdentifier(identifier, forceQuote);
-	}
-
 	/**
 	 * Tests & sets the given identifier.
 	 */
@@ -138,8 +142,8 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 		} else if (isUnquotedIdentifier(string)) {
 			this.identifier = this.unquoted = string.toLowerCase();
 		} else {
-			throw new IllegalArgumentException(String.format(
-					"given string [%s] is not a valid quoted or unquoted identifier", identifier));
+			throw new IllegalArgumentException(
+					String.format("given string [%s] is not a valid quoted or unquoted identifier", identifier));
 		}
 	}
 
@@ -194,27 +198,33 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * Compares this {@link CqlIdentifier} to the given object. Note that if a {@link CharSequence} is given, a new
 	 * {@link CqlIdentifier} is created from it and compared, such that a {@link CharSequence} can be effectively equal to
 	 * a {@link CqlIdentifier}.
+	 *
+	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object o) {
 
-		if (this == obj) {
+		if (this == o)
 			return true;
-		}
-
-		if (!(obj instanceof CqlIdentifier || obj instanceof CharSequence)) {
+		if (!(o instanceof CqlIdentifier))
 			return false;
-		}
 
-		CqlIdentifier that = (obj instanceof CqlIdentifier) ? (CqlIdentifier) obj : cqlId((CharSequence) obj);
+		CqlIdentifier that = (CqlIdentifier) o;
 
-		return (this.quoted == that.quoted && this.identifier.equals(that.identifier));
+		if (quoted != that.quoted)
+			return false;
+		return identifier != null ? identifier.equals(that.identifier) : that.identifier == null;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
-	// TODO hmmm, re-evaluate this since it is not a proper hash code matching equals!
 	public int hashCode() {
-		return ((Boolean) quoted).hashCode() ^ identifier.hashCode();
+
+		int result = identifier != null ? identifier.hashCode() : 0;
+		result = 31 * result + (quoted ? 1 : 0);
+		return result;
 	}
 
 	/**

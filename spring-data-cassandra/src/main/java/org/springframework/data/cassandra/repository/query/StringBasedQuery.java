@@ -47,7 +47,7 @@ class StringBasedQuery {
 	private final String query;
 
 	/**
-	 * Creates a new {@link StringBasedQuery} given {@code query}, {@link ExpressionEvaluatingParameterBinder} and
+	 * Create a new {@link StringBasedQuery} given {@code query}, {@link ExpressionEvaluatingParameterBinder} and
 	 * {@link CodecRegistry}.
 	 *
 	 * @param query must not be empty.

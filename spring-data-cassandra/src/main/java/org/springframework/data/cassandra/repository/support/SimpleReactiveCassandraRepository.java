@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.io.Serializable;
 
 import org.reactivestreams.Publisher;
@@ -25,9 +28,6 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Reactive repository base implementation for Cassandra.
@@ -42,7 +42,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	protected CassandraEntityInformation<T, ID> entityInformation;
 
 	/**
-	 * Creates a new {@link SimpleReactiveCassandraRepository} for the given {@link CassandraEntityInformation} and
+	 * Create a new {@link SimpleReactiveCassandraRepository} for the given {@link CassandraEntityInformation} and
 	 * {@link ReactiveCassandraOperations}.
 	 *
 	 * @param metadata must not be {@literal null}.

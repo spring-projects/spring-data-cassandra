@@ -29,7 +29,7 @@ import com.datastax.driver.core.DataType;
 public class AddColumnSpecification extends ColumnTypeChangeSpecification {
 
 	/**
-	 * Creates a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
+	 * Create a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
 	 *
 	 * @param name must not be empty or {@literal null}.
 	 * @param type must not be {@literal null}.
@@ -39,7 +39,7 @@ public class AddColumnSpecification extends ColumnTypeChangeSpecification {
 	}
 
 	/**
-	 * Creates a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
+	 * Create a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
 	 *
 	 * @param name must not be {@literal null}.
 	 * @param type must not be {@literal null}.

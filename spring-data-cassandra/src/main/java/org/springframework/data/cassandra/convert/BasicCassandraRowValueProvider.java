@@ -33,10 +33,11 @@ import com.datastax.driver.core.Row;
 public class BasicCassandraRowValueProvider implements CassandraRowValueProvider {
 
 	private final ColumnReader reader;
+
 	private final SpELExpressionEvaluator evaluator;
 
 	/**
-	 * Creates a new {@link BasicCassandraRowValueProvider} with the given {@link Row} and
+	 * Create a new {@link BasicCassandraRowValueProvider} with the given {@link Row} and
 	 * {@link DefaultSpELExpressionEvaluator}.
 	 *
 	 * @param source must not be {@literal null}.

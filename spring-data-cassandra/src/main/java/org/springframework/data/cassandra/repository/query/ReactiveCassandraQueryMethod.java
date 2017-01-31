@@ -35,7 +35,7 @@ public class ReactiveCassandraQueryMethod extends CassandraQueryMethod {
 	private final Method method;
 
 	/**
-	 * Creates a new {@link ReactiveCassandraQueryMethod} from the given {@link Method}.
+	 * Create a new {@link ReactiveCassandraQueryMethod} from the given {@link Method}.
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.

@@ -49,7 +49,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 	}
 
 	/**
-	 * Creates a new {@literal {@link AlterTableCqlGenerator}.
+	 * Create a new {@literal {@link AlterTableCqlGenerator}.
 	 *
 	 * @param specification must not be {@literal null}.
 	 */

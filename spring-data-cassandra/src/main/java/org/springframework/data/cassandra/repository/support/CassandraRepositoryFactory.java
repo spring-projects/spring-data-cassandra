@@ -53,10 +53,11 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	private static final SpelExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
 
 	private final CassandraMappingContext mappingContext;
+
 	private final CassandraOperations operations;
 
 	/**
-	 * Creates a new {@link CassandraRepositoryFactory} with the given {@link CassandraOperations}.
+	 * Create a new {@link CassandraRepositoryFactory} with the given {@link CassandraOperations}.
 	 *
 	 * @param operations must not be {@literal null}
 	 */

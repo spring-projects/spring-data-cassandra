@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.createTable;
-import static org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder.getDataTypeFor;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.*;
+import static org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -29,10 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.UserType;
 
 import org.springframework.beans.BeansException;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -51,6 +47,10 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
+
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.UserType;
 
 /**
  * Default implementation of a {@link MappingContext} for Cassandra using {@link CassandraPersistentEntity} and
@@ -87,7 +87,7 @@ public class BasicCassandraMappingContext
 	private UserTypeResolver userTypeResolver;
 
 	/**
-	 * Creates a new {@link BasicCassandraMappingContext}.
+	 * Create a new {@link BasicCassandraMappingContext}.
 	 */
 	public BasicCassandraMappingContext() {
 		setCustomConversions(new CustomConversions(Collections.EMPTY_LIST));

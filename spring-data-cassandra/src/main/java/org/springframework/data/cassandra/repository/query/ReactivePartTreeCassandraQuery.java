@@ -33,7 +33,7 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	private final PartTree tree;
 
 	/**
-	 * Creates a new {@link ReactivePartTreeCassandraQuery} from the given {@link ReactiveCassandraQueryMethod} and
+	 * Create a new {@link ReactivePartTreeCassandraQuery} from the given {@link ReactiveCassandraQueryMethod} and
 	 * {@link ReactiveCassandraOperations}.
 	 *
 	 * @param queryMethod must not be {@literal null}.

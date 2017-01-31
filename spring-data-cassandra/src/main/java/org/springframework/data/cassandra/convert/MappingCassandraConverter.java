@@ -22,19 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.UDTValue;
-import com.datastax.driver.core.UserType;
-import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -66,6 +53,19 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.TypeCodec;
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
+
 /**
  * {@link CassandraConverter} that uses a {@link MappingContext} to do sophisticated mapping of domain objects to
  * {@link Row}.
@@ -94,14 +94,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	/**
-	 * Creates a new {@link MappingCassandraConverter} with a {@link BasicCassandraMappingContext}.
+	 * Create a new {@link MappingCassandraConverter} with a {@link BasicCassandraMappingContext}.
 	 */
 	public MappingCassandraConverter() {
 		this(new BasicCassandraMappingContext());
 	}
 
 	/**
-	 * Creates a new {@link MappingCassandraConverter} with the given {@link CassandraMappingContext}.
+	 * Create a new {@link MappingCassandraConverter} with the given {@link CassandraMappingContext}.
 	 *
 	 * @param mappingContext must not be {@literal null}.
 	 */
@@ -598,7 +598,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	/**
-	 * Creates a new {@link ConvertingPropertyAccessor} for the given source and entity.
+	 * Create a new {@link ConvertingPropertyAccessor} for the given source and entity.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param entity must not be {@literal null}.

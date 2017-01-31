@@ -38,10 +38,10 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID e
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
 	private CassandraTemplate cassandraTemplate;
-	
+
 	/**
-	 * Creates a new {@link CassandraRepositoryFactoryBean} for the given repository interface.
-	 * 
+	 * Create a new {@link CassandraRepositoryFactoryBean} for the given repository interface.
+	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
 	public CassandraRepositoryFactoryBean(Class<? extends T> repositoryInterface) {

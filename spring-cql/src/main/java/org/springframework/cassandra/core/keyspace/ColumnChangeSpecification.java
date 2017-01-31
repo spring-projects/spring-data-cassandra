@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
 
 /**
  * Base value object class for column change specifications.
- * 
+ *
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
@@ -31,8 +31,8 @@ public abstract class ColumnChangeSpecification {
 	protected CqlIdentifier name;
 
 	/**
-	 * Creates a new {@link ColumnChangeSpecification}.
-	 * 
+	 * Create a new {@link ColumnChangeSpecification}.
+	 *
 	 * @param name must not be empty or {@literal null}.
 	 */
 	protected ColumnChangeSpecification(String name) {
@@ -40,8 +40,8 @@ public abstract class ColumnChangeSpecification {
 	}
 
 	/**
-	 * Creates a new {@link ColumnChangeSpecification}.
-	 * 
+	 * Create a new {@link ColumnChangeSpecification}.
+	 *
 	 * @param name must not be {@literal null}.
 	 */
 	protected ColumnChangeSpecification(CqlIdentifier name) {
@@ -50,7 +50,7 @@ public abstract class ColumnChangeSpecification {
 
 	/**
 	 * Sets the column name.
-	 * 
+	 *
 	 * @param name must not be {@literal null}.
 	 */
 	protected void setName(CqlIdentifier name) {

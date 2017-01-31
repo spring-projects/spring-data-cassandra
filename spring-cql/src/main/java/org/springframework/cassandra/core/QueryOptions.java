@@ -59,7 +59,7 @@ public class QueryOptions {
 	}
 
 	/**
-	 * Creates a new {@link QueryOptionsBuilder}.
+	 * Create a new {@link QueryOptionsBuilder}.
 	 *
 	 * @return a new {@link QueryOptionsBuilder}.
 	 * @since 1.5

@@ -30,6 +30,12 @@ import org.springframework.util.StringUtils;
 public class CreateIndexSpecification extends IndexNameSpecification<CreateIndexSpecification>
 		implements IndexDescriptor {
 
+	private boolean ifNotExists = false;
+	private boolean custom = false;
+	private CqlIdentifier tableName;
+	private CqlIdentifier columnName;
+	private String using;
+
 	/**
 	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
 	 * statically.
@@ -54,12 +60,6 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		return new CreateIndexSpecification().name(name);
 	}
 
-	private boolean ifNotExists = false;
-	private boolean custom = false;
-	private CqlIdentifier tableName;
-	private CqlIdentifier columnName;
-	private String using;
-
 	/**
 	 * Causes the inclusion of an <code>IF NOT EXISTS</code> clause.
 	 *
@@ -83,6 +83,9 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		return ifNotExists;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.IndexDescriptor#isCustom()
+	 */
 	@Override
 	public boolean isCustom() {
 		return custom;
@@ -101,11 +104,17 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		return this;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.IndexDescriptor#getUsing()
+	 */
 	@Override
 	public String getUsing() {
 		return using;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.IndexDescriptor#getColumnName()
+	 */
 	@Override
 	public CqlIdentifier getColumnName() {
 		return columnName;
@@ -128,6 +137,9 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		return this;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.IndexDescriptor#getTableName()
+	 */
 	@Override
 	public CqlIdentifier getTableName() {
 		return tableName;

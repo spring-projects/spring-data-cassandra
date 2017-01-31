@@ -37,7 +37,7 @@ public class VerifierMappingExceptions extends MappingException {
 	private final String className;
 
 	/**
-	 * Creates a new {@link VerifierMappingExceptions} for the given {@code entity} and message.
+	 * Create a new {@link VerifierMappingExceptions} for the given {@code entity} and message.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param exceptions must not be {@literal null}.
@@ -54,7 +54,7 @@ public class VerifierMappingExceptions extends MappingException {
 	}
 
 	/**
-	 * Creates a new {@link VerifierMappingExceptions} for the given {@code entity} and message.
+	 * Create a new {@link VerifierMappingExceptions} for the given {@code entity} and message.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param message

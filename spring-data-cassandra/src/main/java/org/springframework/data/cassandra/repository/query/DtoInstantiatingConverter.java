@@ -42,7 +42,7 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 	private final EntityInstantiator instantiator;
 
 	/**
-	 * Creates a new {@link Converter} to instantiate DTOs.
+	 * Create a new {@link Converter} to instantiate DTOs.
 	 *
 	 * @param dtoType must not be {@literal null}.
 	 * @param context must not be {@literal null}.

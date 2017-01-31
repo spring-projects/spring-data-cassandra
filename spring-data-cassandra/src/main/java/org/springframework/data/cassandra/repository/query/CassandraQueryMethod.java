@@ -17,8 +17,6 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.lang.reflect.Method;
 
-import com.datastax.driver.core.ResultSet;
-
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -33,6 +31,8 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
+
+import com.datastax.driver.core.ResultSet;
 
 /**
  * Cassandra specific implementation of {@link QueryMethod}.
@@ -51,7 +51,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	private final Method method;
 
 	/**
-	 * Creates a new {@link CassandraQueryMethod} from the given {@link Method}.
+	 * Create a new {@link CassandraQueryMethod} from the given {@link Method}.
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param repositoryMetadata must not be {@literal null}.
@@ -83,7 +83,7 @@ public class CassandraQueryMethod extends QueryMethod {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.QueryMethod#getEntityInformation()
 	 */

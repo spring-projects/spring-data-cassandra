@@ -28,18 +28,25 @@ import org.springframework.util.Assert;
  * A default implementation of {@link Option}.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class DefaultOption implements Option {
 
 	private String name;
+
 	private Class<?> type;
+
 	private boolean requiresValue;
+
 	private boolean escapesValue;
+
 	private boolean quotesValue;
 
 	public DefaultOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
+
 		setName(name);
 		setType(type);
+
 		this.requiresValue = requiresValue;
 		this.escapesValue = escapesValue;
 		this.quotesValue = quotesValue;
@@ -100,30 +107,51 @@ public class DefaultOption implements Option {
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.Option#getType()
+	 */
 	public Class<?> getType() {
 		return type;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.Option#getName()
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.Option#takesValue()
+	 */
 	public boolean takesValue() {
 		return type != null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.Option#requiresValue()
+	 */
 	public boolean requiresValue() {
 		return this.requiresValue;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.Option#escapesValue()
+	 */
 	public boolean escapesValue() {
 		return this.escapesValue;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.Option#quotesValue()
+	 */
 	public boolean quotesValue() {
 		return this.quotesValue;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.keyspace.Option#checkValue(java.lang.Object)
+	 */
 	public void checkValue(Object value) {
 		if (takesValue()) {
 			if (value == null) {
@@ -158,6 +186,9 @@ public class DefaultOption implements Option {
 		return string;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "[name=" + name + ", type=" + type.getName() + ", requiresValue=" + requiresValue + ", escapesValue="

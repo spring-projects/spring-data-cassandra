@@ -18,11 +18,6 @@ package org.springframework.data.cassandra.repository.query;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.CollectionType;
-import com.datastax.driver.core.TypeCodec;
-
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -32,6 +27,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+
+import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.DataType.CollectionType;
+import com.datastax.driver.core.TypeCodec;
 
 /**
  * Custom {@link org.springframework.data.repository.query.ParameterAccessor} that uses a {@link CassandraConverter} to
@@ -45,9 +45,11 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	private final static TypeInformation<Set> SET = ClassTypeInformation.from(Set.class);
 
 	private final CassandraConverter converter;
+
 	private final CassandraParameterAccessor delegate;
 
 	ConvertingParameterAccessor(CassandraConverter converter, CassandraParameterAccessor delegate) {
+
 		this.converter = converter;
 		this.delegate = delegate;
 	}
@@ -225,10 +227,11 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	private class ConvertingIterator implements PotentiallyConvertingIterator {
 
 		private final Iterator<Object> delegate;
+
 		private int index = 0;
 
 		/**
-		 * Creates a new {@link ConvertingIterator} for the given delegate.
+		 * Create a new {@link ConvertingIterator} for the given delegate.
 		 *
 		 * @param delegate must not be {@literal null}.
 		 */

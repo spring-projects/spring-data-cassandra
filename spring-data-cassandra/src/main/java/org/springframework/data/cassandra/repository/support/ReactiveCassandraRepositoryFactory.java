@@ -52,7 +52,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	private final CassandraMappingContext mappingContext;
 
 	/**
-	 * Creates a new {@link ReactiveCassandraRepositoryFactory} with the given {@link ReactiveCassandraOperations}.
+	 * Create a new {@link ReactiveCassandraRepositoryFactory} with the given {@link ReactiveCassandraOperations}.
 	 *
 	 * @param cassandraOperations must not be {@literal null}.
 	 */

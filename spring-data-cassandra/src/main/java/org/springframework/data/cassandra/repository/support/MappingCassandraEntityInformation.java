@@ -41,7 +41,7 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	private CassandraConverter converter;
 
 	/**
-	 * Creates a new {@link MappingCassandraEntityInformation} for the given {@link CassandraPersistentEntity}.
+	 * Create a new {@link MappingCassandraEntityInformation} for the given {@link CassandraPersistentEntity}.
 	 *
 	 * @param entity must not be {@literal null}.
 	 */
@@ -53,6 +53,9 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 		this.converter = converter;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public ID getId(T entity) {
@@ -68,6 +71,9 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 		return (ID) converter.getId(entity, entityMetadata);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Class<ID> getIdType() {
@@ -75,6 +81,9 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 				: entityMetadata.getIdProperty().getType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraEntityMetadata#getTableName()
+	 */
 	@Override
 	public CqlIdentifier getTableName() {
 		return entityMetadata.getTableName();

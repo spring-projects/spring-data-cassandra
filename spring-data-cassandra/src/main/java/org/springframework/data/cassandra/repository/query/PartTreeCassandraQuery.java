@@ -35,7 +35,7 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	private final PartTree tree;
 
 	/**
-	 * Creates a new {@link PartTreeCassandraQuery} from the given {@link QueryMethod} and {@link CassandraTemplate}.
+	 * Create a new {@link PartTreeCassandraQuery} from the given {@link QueryMethod} and {@link CassandraTemplate}.
 	 *
 	 * @param queryMethod must not be {@literal null}.
 	 * @param operations must not be {@literal null}.

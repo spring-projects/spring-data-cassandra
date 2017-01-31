@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import reactor.core.publisher.Flux;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.ReactiveSessionCallback;
@@ -26,8 +28,6 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.CodecRegistry;
-
-import reactor.core.publisher.Flux;
 
 /**
  * String-based {@link AbstractCassandraQuery} implementation.
@@ -47,7 +47,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	private final StringBasedQuery stringBasedQuery;
 
 	/**
-	 * Creates a new {@link ReactiveStringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
+	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
 	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
 	 *
 	 * @param queryMethod {@link ReactiveCassandraQueryMethod} on which this query is based.
@@ -64,7 +64,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	}
 
 	/**
-	 * Creates a new {@link ReactiveStringBasedCassandraQuery} for the given {@code query}, {@link CassandraQueryMethod},
+	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@code query}, {@link CassandraQueryMethod},
 	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
 	 *
 	 * @param queryMethod {@link ReactiveCassandraQueryMethod} on which this query is based.

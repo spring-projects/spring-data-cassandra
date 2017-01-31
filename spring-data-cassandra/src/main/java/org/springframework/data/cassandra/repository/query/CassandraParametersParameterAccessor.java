@@ -39,7 +39,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	private final List<Object> values;
 
 	/**
-	 * Creates a new {@link CassandraParametersParameterAccessor}.
+	 * Create a new {@link CassandraParametersParameterAccessor}.
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param values must not be {@literal null}.

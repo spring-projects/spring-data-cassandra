@@ -16,7 +16,6 @@
 package org.springframework.cassandra.core.converter;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
@@ -34,20 +33,36 @@ public class ResultSetToArrayConverter implements Converter<ResultSet, Object[]>
 
 	protected Converter<Row, Object[]> rowConverter;
 
+	/**
+	 * Create a new {@link ResultSetToArrayConverter} given a row {@link Converter}.
+	 *
+	 * @param rowConverter must not be {@literal null}.
+	 */
 	public ResultSetToArrayConverter(Converter<Row, Object[]> rowConverter) {
 		setRowConverter(rowConverter);
 	}
 
+	/**
+	 * @return the row {@link Converter}.
+	 */
 	public Converter<Row, Object[]> getRowConverter() {
 		return rowConverter;
 	}
 
+	/**
+	 * Set the row {@link Converter}.
+	 *
+	 * @param rowConverter must not be {@literal null}.
+	 */
 	public void setRowConverter(Converter<Row, Object[]> rowConverter) {
 
 		Assert.notNull(rowConverter, "Converter must not be null");
 		this.rowConverter = rowConverter;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+	 */
 	@Override
 	public Object[] convert(ResultSet resultSet) {
 
@@ -56,9 +71,8 @@ public class ResultSetToArrayConverter implements Converter<ResultSet, Object[]>
 		}
 
 		List<Object[]> list = new ArrayList<Object[]>();
-		Iterator<Row> i = resultSet.iterator();
-		while (i.hasNext()) {
-			list.add(rowConverter.convert(i.next()));
+		for (Row row : resultSet) {
+			list.add(rowConverter.convert(row));
 		}
 
 		return list.toArray();

@@ -49,10 +49,11 @@ import org.springframework.util.Assert;
 public class CassandraPersistentEntitySchemaCreator {
 
 	private final CassandraAdminOperations cassandraAdminOperations;
+
 	private final CassandraMappingContext mappingContext;
 
 	/**
-	 * Creates a new {@link CassandraPersistentEntitySchemaCreator} for the given {@link CassandraMappingContext} and
+	 * Create a new {@link CassandraPersistentEntitySchemaCreator} for the given {@link CassandraMappingContext} and
 	 * {@link CassandraAdminOperations}.
 	 *
 	 * @param mappingContext must not be {@literal null}.

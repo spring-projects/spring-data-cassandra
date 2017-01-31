@@ -55,7 +55,7 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 	protected final String keyspace;
 
 	/**
-	 * Creates a new {@link AbstractKeyspaceCreatingIntegrationTest}.
+	 * Create a new {@link AbstractKeyspaceCreatingIntegrationTest}.
 	 */
 	public AbstractKeyspaceCreatingIntegrationTest() {
 		this(keyspaceRule.getKeyspaceName());

@@ -54,7 +54,7 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 	private String identifier;
 
 	/**
-	 * Creates a new {@link KeyspaceIdentifier}.
+	 * Create a new {@link KeyspaceIdentifier}.
 	 */
 	public KeyspaceIdentifier(CharSequence identifier) {
 		setIdentifier(identifier);
@@ -130,6 +130,9 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 		return this.identifier.equals(other.identifier);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compareTo(KeyspaceIdentifier that) {
 		return this.identifier.compareTo(that.identifier);

@@ -34,9 +34,11 @@ import com.google.common.io.Resources;
 public class CqlDataSet {
 
 	private URL location = null;
+
 	private String keyspaceName = null;
 
 	private CqlDataSet(URL location, String keyspaceName) {
+
 		this.location = location;
 		this.keyspaceName = keyspaceName;
 	}
@@ -65,7 +67,7 @@ public class CqlDataSet {
 	}
 
 	/**
-	 * Bind the {@link CqlDataSet} to a particular keyspace. Creates a new instance of the {@link CqlDataSet} with the
+	 * Bind the {@link CqlDataSet} to a particular keyspace. Create a new instance of the {@link CqlDataSet} with the
 	 * keyspace name set.
 	 *
 	 * @param keyspaceName

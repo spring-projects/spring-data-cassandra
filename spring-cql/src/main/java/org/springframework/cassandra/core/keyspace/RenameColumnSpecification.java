@@ -32,7 +32,7 @@ public class RenameColumnSpecification extends ColumnChangeSpecification {
 	private final CqlIdentifier targetName;
 
 	/**
-	 * Creates a new {@link ColumnChangeSpecification}.
+	 * Create a new {@link ColumnChangeSpecification}.
 	 *
 	 * @param from must not be empty or {@literal null}.
 	 * @param to must not be empty or {@literal null}.
@@ -42,7 +42,7 @@ public class RenameColumnSpecification extends ColumnChangeSpecification {
 	}
 
 	/**
-	 * Creates a new {@link ColumnChangeSpecification}.
+	 * Create a new {@link ColumnChangeSpecification}.
 	 *
 	 * @param from must not be {@literal null}.
 	 * @param to must not be {@literal null}.

@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
 
 import org.springframework.cassandra.core.keyspace.CreateUserTypeSpecification;
 import org.springframework.cassandra.core.keyspace.FieldSpecification;
@@ -36,7 +36,7 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 	}
 
 	/**
-	 * Creates a new {@link CreateUserTypeCqlGenerator} for a given {@link CreateUserTypeSpecification}.
+	 * Create a new {@link CreateUserTypeCqlGenerator} for a given {@link CreateUserTypeSpecification}.
 	 *
 	 * @param specification must not be {@literal null}.
 	 */

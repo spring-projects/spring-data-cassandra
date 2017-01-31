@@ -74,7 +74,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  * @see RowMapper
  * @see org.springframework.dao.support.PersistenceExceptionTranslator
  */
-@SuppressWarnings("WeakerAccess")
 public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements ReactiveCqlOperations {
 
 	/**
@@ -253,8 +252,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(cql, rowMapper).buffer(2).flatMap(
-				list -> Mono.just(DataAccessUtils.requiredSingleResult(list))).next();
+		return query(cql, rowMapper).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
+				.next();
 	}
 
 	/* (non-Javadoc)
@@ -374,8 +373,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(statement, rowMapper).buffer(2).flatMap(
-				list -> Mono.just(DataAccessUtils.requiredSingleResult(list))).next();
+		return query(statement, rowMapper).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
+				.next();
 	}
 
 	/* (non-Javadoc)
@@ -470,8 +469,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * Query using a prepared statement, reading the {@link ReactiveResultSet} with a {@link ReactiveResultSetExtractor}.
 	 *
 	 * @param psc object that can create a {@link PreparedStatement} given a {@link ReactiveSession}
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
-	 *          be assumed to contain no bind parameters.
+	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
+	 *          {@literal null}, the CQL will be assumed to contain no bind parameters.
 	 * @param rse object that will extract results
 	 * @return an arbitrary result object, as returned by the {@link ReactiveResultSetExtractor}
 	 * @throws DataAccessException if there is any problem
@@ -488,8 +487,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 				logger.debug("Executing Prepared CQL Statement [{}]", ps.getQueryString());
 			}
 
-			BoundStatement boundStatement = (preparedStatementBinder != null
-					? preparedStatementBinder.bindValues(ps) : ps.bind());
+			BoundStatement boundStatement = (preparedStatementBinder != null ? preparedStatementBinder.bindValues(ps)
+					: ps.bind());
 
 			applyStatementSettings(boundStatement);
 
@@ -564,8 +563,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
-		return query(cql, rowMapper, args).buffer(2).flatMap(
-				list -> Mono.just(DataAccessUtils.requiredSingleResult(list))).next();
+		return query(cql, rowMapper, args).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
+				.next();
 	}
 
 	/* (non-Javadoc)
@@ -634,8 +633,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public Mono<Boolean> execute(String cql, PreparedStatementBinder psb) throws DataAccessException {
-		return query(new SimpleReactivePreparedStatementCreator(cql), psb,
-				resultSet -> Mono.just(resultSet.wasApplied())).next();
+		return query(new SimpleReactivePreparedStatementCreator(cql), psb, resultSet -> Mono.just(resultSet.wasApplied()))
+				.next();
 	}
 
 	/* (non-Javadoc)
@@ -728,11 +727,10 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 *
 	 * @return the exception translation {@link Function}
 	 */
-	@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 	protected <T> Function<Throwable, Mono<? extends T>> translateException() {
 
-		return throwable -> Mono.error(throwable instanceof DriverException
-				? translateExceptionIfPossible((DriverException) throwable) : throwable);
+		return throwable -> Mono.error(
+				throwable instanceof DriverException ? translateExceptionIfPossible((DriverException) throwable) : throwable);
 	}
 
 	/**
@@ -743,11 +741,10 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @return the exception translation {@link Function}
 	 * @see CqlProvider
 	 */
-	@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 	protected <T> Function<Throwable, Mono<? extends T>> translateException(String task, String cql) {
 
-		return throwable -> Mono.error(throwable instanceof DriverException
-				? translate(task, cql, (DriverException) throwable) : throwable);
+		return throwable -> Mono
+				.error(throwable instanceof DriverException ? translate(task, cql, (DriverException) throwable) : throwable);
 	}
 
 	/**

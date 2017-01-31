@@ -33,7 +33,7 @@ public class CassandraConnectionProperties extends Properties {
 	protected String resourceName = null;
 
 	/**
-	 * Creates a new {@link CassandraConnectionProperties} using properties from
+	 * Create a new {@link CassandraConnectionProperties} using properties from
 	 * {@code config/cassandra-connection.properties}.
 	 */
 	public CassandraConnectionProperties() {

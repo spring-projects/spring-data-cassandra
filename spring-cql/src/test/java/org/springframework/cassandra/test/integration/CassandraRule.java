@@ -58,20 +58,27 @@ public class CassandraRule extends ExternalResource {
 	private static ResourceHolder resourceHolder;
 
 	private final CassandraConnectionProperties properties = new CassandraConnectionProperties();
+
 	private final String configurationFileName;
+
 	private final long startUpTimeout;
 
 	private List<SessionCallback<Void>> before = new ArrayList<SessionCallback<Void>>();
+
 	private Map<SessionCallback<?>, InvocationMode> invocationModeMap = new HashMap<SessionCallback<?>, InvocationMode>();
+
 	private List<SessionCallback<Void>> after = new ArrayList<SessionCallback<Void>>();
 
 	private Session session;
+
 	private Cluster cluster;
+
 	private CassandraRule parent;
+
 	private Integer cassandraPort;
 
 	/**
-	 * Creates a new {@link CassandraRule} and allows the use of a config file.
+	 * Create a new {@link CassandraRule} and allows the use of a config file.
 	 *
 	 * @param yamlConfigurationResource name of the configuration resource, must not be {@literal null} and not empty
 	 */
@@ -80,7 +87,7 @@ public class CassandraRule extends ExternalResource {
 	}
 
 	/**
-	 * Creates a new {@link CassandraRule}, allows the use of a config file and to provide a startup timeout.
+	 * Create a new {@link CassandraRule}, allows the use of a config file and to provide a startup timeout.
 	 *
 	 * @param yamlConfigurationResource name of the configuration resource, must not be {@literal null} and not empty
 	 * @param startUpTimeout the startup timeout
@@ -94,7 +101,7 @@ public class CassandraRule extends ExternalResource {
 	}
 
 	/**
-	 * Creates a new {@link CassandraRule} using a parent {@link CassandraRule} to preserve cluster/connection facilities.
+	 * Create a new {@link CassandraRule} using a parent {@link CassandraRule} to preserve cluster/connection facilities.
 	 *
 	 * @param parent the parent instance
 	 */

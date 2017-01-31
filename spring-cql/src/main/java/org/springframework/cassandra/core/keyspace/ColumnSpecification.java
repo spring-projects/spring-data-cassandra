@@ -46,8 +46,11 @@ public class ColumnSpecification {
 	public static final Ordering DEFAULT_ORDERING = ASCENDING;
 
 	private CqlIdentifier name;
+
 	private DataType type; // TODO: determining if we should be coupling this to Datastax Java Driver type?
+
 	private PrimaryKeyType keyType;
+
 	private Ordering ordering;
 
 	/**
@@ -173,9 +176,12 @@ public class ColumnSpecification {
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return (cql = noNull(cql)).append(name).append(" ").append(type);
+		return noNull(cql).append(name).append(" ").append(type);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return toCql(null).append(" /* keyType=").append(keyType).append(", ordering=").append(ordering).append(" */ ")

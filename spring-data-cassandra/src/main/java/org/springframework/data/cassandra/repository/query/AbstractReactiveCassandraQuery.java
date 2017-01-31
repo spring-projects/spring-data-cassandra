@@ -41,11 +41,13 @@ import org.springframework.util.Assert;
 public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery {
 
 	private final EntityInstantiators instantiators;
+
 	private final ReactiveCassandraOperations operations;
+
 	private final ReactiveCassandraQueryMethod method;
 
 	/**
-	 * Creates a new {@link AbstractReactiveCassandraQuery} from the given {@link CassandraQueryMethod} and
+	 * Create a new {@link AbstractReactiveCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
 	 *
 	 * @param method must not be {@literal null}.

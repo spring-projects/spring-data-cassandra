@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -23,9 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,8 @@ import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import lombok.RequiredArgsConstructor;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 
 /**
  * Base class for {@link RepositoryQuery} implementations for Cassandra.
@@ -61,11 +61,13 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	protected static Logger log = LoggerFactory.getLogger(AbstractCassandraQuery.class);
 
 	private final CassandraOperations template;
+
 	private final CassandraQueryMethod queryMethod;
+
 	private final EntityInstantiators instantiators;
 
 	/**
-	 * Creates a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
+	 * Create a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
 	 *
 	 * @param queryMethod must not be {@literal null}.

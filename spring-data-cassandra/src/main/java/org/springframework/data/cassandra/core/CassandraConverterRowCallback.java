@@ -27,12 +27,21 @@ import com.datastax.driver.core.Row;
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraConverterRowCallback<T> implements RowCallback<T> {
 
 	private final CassandraConverter reader;
+
 	private final Class<T> type;
 
+	/**
+	 * Create a new {@link CassandraConverterRowCallback} instance given {@link CassandraConverter} and a target
+	 * {@link Class type}.
+	 *
+	 * @param reader must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
 	public CassandraConverterRowCallback(CassandraConverter reader, Class<T> type) {
 
 		Assert.notNull(reader, "CassandraConverter must not be null");
@@ -42,6 +51,9 @@ public class CassandraConverterRowCallback<T> implements RowCallback<T> {
 		this.type = type;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.cassandra.core.RowCallback#doWith(com.datastax.driver.core.Row)
+	 */
 	@Override
 	public T doWith(Row row) {
 		return reader.read(type, row);

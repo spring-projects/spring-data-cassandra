@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
 
 import org.springframework.cassandra.core.keyspace.AddColumnSpecification;
 import org.springframework.cassandra.core.keyspace.AlterColumnSpecification;
@@ -42,7 +42,7 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 	}
 
 	/**
-	 * Creates a new {@link AlterUserTypeCqlGenerator} for a {@link AlterUserTypeSpecification}.
+	 * Create a new {@link AlterUserTypeCqlGenerator} for a {@link AlterUserTypeSpecification}.
 	 *
 	 * @param specification must not be {@literal null}.
 	 */

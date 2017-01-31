@@ -34,7 +34,7 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 	private Collection<CassandraPersistentEntityMetadataVerifier> verifiers;
 
 	/**
-	 * Creates a new {@link CompositeCassandraPersistentEntityMetadataVerifier} using default entity and primary key
+	 * Create a new {@link CompositeCassandraPersistentEntityMetadataVerifier} using default entity and primary key
 	 * verifiers.
 	 *
 	 * @see BasicCassandraPersistentEntityMetadataVerifier
@@ -46,7 +46,7 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 	}
 
 	/**
-	 * Creates a new {@link CompositeCassandraPersistentEntityMetadataVerifier} for the given {@code verifiers}
+	 * Create a new {@link CompositeCassandraPersistentEntityMetadataVerifier} for the given {@code verifiers}
 	 *
 	 * @param verifiers must not be {@literal null}.
 	 */

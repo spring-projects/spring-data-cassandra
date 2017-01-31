@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 
 /**
  * A bean which represents a Cassandra repository.
- * 
+ *
  * @author Mark Paluch
  */
 public class CassandraRepositoryBean<T> extends CdiRepositoryBean<T> {
@@ -39,7 +39,7 @@ public class CassandraRepositoryBean<T> extends CdiRepositoryBean<T> {
 	private final Bean<CassandraOperations> cassandraOperationsBean;
 
 	/**
-	 * Creates a new {@link CassandraRepositoryBean}.
+	 * Create a new {@link CassandraRepositoryBean}.
 	 *
 	 * @param operations must not be {@literal null}.
 	 * @param qualifiers must not be {@literal null}.

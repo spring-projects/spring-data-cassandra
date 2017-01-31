@@ -33,7 +33,7 @@ public abstract class ColumnTypeChangeSpecification extends ColumnChangeSpecific
 	private final DataType type;
 
 	/**
-	 * Creates a new {@link ColumnTypeChangeSpecification} for the given {@code name} and {@link type}
+	 * Create a new {@link ColumnTypeChangeSpecification} for the given {@code name} and {@link type}
 	 *
 	 * @param name must not be empty or {@literal null}.
 	 * @param type must not be {@literal null}.
@@ -43,7 +43,7 @@ public abstract class ColumnTypeChangeSpecification extends ColumnChangeSpecific
 	}
 
 	/**
-	 * Creates a new {@link ColumnTypeChangeSpecification} for the given {@code name} and {@link type}
+	 * Create a new {@link ColumnTypeChangeSpecification} for the given {@code name} and {@link type}
 	 *
 	 * @param name must not be {@literal null}.
 	 * @param type must not be {@literal null}.

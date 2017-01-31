@@ -62,28 +62,33 @@ public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecif
 	}
 
 	/**
-	 * Determine the KeyspaceActionSpecifications are the same if they have the same "name" and same class.
+	 * Equality incorporates the exact type to distinguish between instances based on this type.
 	 *
-	 * @param that The object to compare this to.
-	 * @return Are this and that the same?
+	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object that) {
-		if (this == that) {
+	public boolean equals(Object o) {
+
+		if (this == o)
 			return true;
-		}
-		if (that == null) {
+		if (!(o instanceof KeyspaceActionSpecification) || !getClass().equals(o.getClass()))
 			return false;
-		}
-		if (!(that instanceof KeyspaceActionSpecification)) {
-			return false;
-		}
-		KeyspaceActionSpecification<?> other = (KeyspaceActionSpecification<?>) that;
-		return this.name.equals(other.name) && this.getClass().equals(that.getClass());
+
+		KeyspaceActionSpecification<?> that = (KeyspaceActionSpecification<?>) o;
+
+		return name != null ? name.equals(that.name) : that.name == null;
 	}
 
+	/**
+	 * Hash code incorporates the exact type to distinguish between instances based on this type.
+	 *
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
-		return name.hashCode() ^ getClass().hashCode();
+
+		int result = name != null ? name.hashCode() : 0;
+		result = 31 * result + (getClass().hashCode());
+		return result;
 	}
 }

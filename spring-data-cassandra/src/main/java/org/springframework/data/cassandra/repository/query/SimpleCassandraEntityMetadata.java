@@ -32,7 +32,7 @@ class SimpleCassandraEntityMetadata<T> implements CassandraEntityMetadata<T> {
 	private final Class<T> type;
 
 	/**
-	 * Creates a new {@link SimpleCassandraEntityMetadata} using the given type and {@link CassandraPersistentEntity} to
+	 * Create a new {@link SimpleCassandraEntityMetadata} using the given type and {@link CassandraPersistentEntity} to
 	 * use for table lookups.
 	 *
 	 * @param type must not be {@literal null}.

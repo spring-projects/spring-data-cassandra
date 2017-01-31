@@ -33,12 +33,13 @@ import com.datastax.driver.core.UserType;
 public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersistentEntity<T> {
 
 	private final UserTypeResolver resolver;
+
 	private final Object lock = new Object();
 
 	private volatile UserType userType;
 
 	/**
-	 * Creates a new {@link CassandraUserTypePersistentEntity}.
+	 * Create a new {@link CassandraUserTypePersistentEntity}.
 	 *
 	 * @param typeInformation must not be {@literal null}.
 	 * @param mappingContext must not be {@literal null}.
