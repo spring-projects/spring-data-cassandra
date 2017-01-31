@@ -20,8 +20,6 @@ import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.datastax.driver.core.UserType;
-
 import org.springframework.beans.BeansException;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.support.exception.UnsupportedCassandraOperationException;
@@ -40,6 +38,8 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.UserType;
+
 /**
  * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific metadata.
  *
@@ -51,8 +51,7 @@ import org.springframework.util.StringUtils;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty>
 		implements CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER =
-		new CompositeCassandraPersistentEntityMetadataVerifier();
+	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
 
 	protected ApplicationContext context;
 
@@ -124,8 +123,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		List<CassandraPersistentProperty> properties = new ArrayList<CassandraPersistentProperty>();
 
-		Assert.state(isCompositePrimaryKey(), String.format("[%s] does not represent a composite primary key class",
-			this.getType().getName()));
+		Assert.state(isCompositePrimaryKey(),
+				String.format("[%s] does not represent a composite primary key class", this.getType().getName()));
 
 		addCompositePrimaryKeyProperties(this, properties);
 
@@ -189,7 +188,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	@Override
 	public void setTableName(CqlIdentifier tableName) {
-		Assert.notNull(tableName);
+
+		Assert.notNull(tableName, "CqlIdentifier must not be null");
 		this.tableName = tableName;
 	}
 

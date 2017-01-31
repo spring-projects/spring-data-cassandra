@@ -40,7 +40,7 @@ public class Comment {
 	}
 
 	public Comment(CommentKey pk) {
-		Assert.notNull(pk);
+		Assert.notNull(pk, "CommentKey must not be null");
 		this.pk = pk;
 	}
 

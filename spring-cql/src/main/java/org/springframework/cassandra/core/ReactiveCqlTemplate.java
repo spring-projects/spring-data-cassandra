@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 package org.springframework.cassandra.core;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -33,9 +36,6 @@ import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.policies.RetryPolicy;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * <b>This is the central class in the CQL core package for reactive Cassandra data access.</b> It simplifies the use of
@@ -682,7 +682,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	protected <T> Flux<T> createFlux(Statement statement, ReactiveStatementCallback<T> callback) {
 
-		Assert.notNull(callback);
+		Assert.notNull(callback, "ReactiveStatementCallback must not be null");
 
 		applyStatementSettings(statement);
 
@@ -699,7 +699,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	protected <T> Mono<T> createMono(Statement statement, ReactiveStatementCallback<T> callback) {
 
-		Assert.notNull(callback);
+		Assert.notNull(callback, "ReactiveStatementCallback must not be null");
 
 		applyStatementSettings(statement);
 
@@ -716,7 +716,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	protected <T> Flux<T> createFlux(ReactiveSessionCallback<T> callback) {
 
-		Assert.notNull(callback);
+		Assert.notNull(callback, "ReactiveStatementCallback must not be null");
 
 		ReactiveSession session = getSession();
 

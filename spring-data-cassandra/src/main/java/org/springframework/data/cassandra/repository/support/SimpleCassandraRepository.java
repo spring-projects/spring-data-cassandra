@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@ package org.springframework.data.cassandra.repository.support;
 import java.io.Serializable;
 import java.util.List;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-
 import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
+
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * Repository base implementation for Cassandra.
@@ -49,8 +49,8 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 */
 	public SimpleCassandraRepository(CassandraEntityInformation<T, ID> metadata, CassandraOperations operations) {
 
-		Assert.notNull(operations);
-		Assert.notNull(metadata);
+		Assert.notNull(metadata, "CassandraEntityInformation must not be null");
+		Assert.notNull(operations, "CassandraOperations must not be null");
 
 		this.entityInformation = metadata;
 		this.operations = operations;

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.cassandra.core.cql;
 
 import java.util.regex.Pattern;
@@ -10,7 +25,7 @@ import org.springframework.util.Assert;
  * <p/>
  * Keyspace identifiers are converted to lower case. To render, use any of the methods {@link #toCql()},
  * {@link #toCql(StringBuilder)}, or {@link #toString()}.
- * 
+ *
  * @see #KeyspaceIdentifier(String)
  * @see #toCql()
  * @see #toCql(StringBuilder)
@@ -50,14 +65,14 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 	 */
 	private void setIdentifier(CharSequence identifier) {
 
-		Assert.notNull(identifier);
+		Assert.notNull(identifier, "Identifier must not be null");
 
 		String string = identifier.toString();
-		Assert.hasText(string);
+		Assert.hasText(string, "Identifier must not be empty");
 
 		if (!isIdentifier(string)) {
-			throw new IllegalArgumentException(String.format("given string [%s] is not a valid keyspace identifier",
-					identifier));
+			throw new IllegalArgumentException(
+					String.format("given string [%s] is not a valid keyspace identifier", identifier));
 		}
 		this.identifier = string.toLowerCase();
 	}
