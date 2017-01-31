@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 */
 	public SimpleCassandraRepository(CassandraEntityInformation<T, ID> metadata, CassandraOperations operations) {
 
-		Assert.notNull(operations);
-		Assert.notNull(metadata);
+		Assert.notNull(metadata, "CassandraEntityInformation must not be null");
+		Assert.notNull(operations, "CassandraOperations must not be null");
 
 		this.entityInformation = metadata;
 		this.operations = operations;

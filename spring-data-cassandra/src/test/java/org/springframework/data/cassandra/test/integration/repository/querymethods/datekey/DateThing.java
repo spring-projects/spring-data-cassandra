@@ -41,7 +41,8 @@ public class DateThing {
 	}
 
 	public void setDate(Date date) {
-		Assert.notNull(date);
+
+		Assert.notNull(date, "Date must not be null");
 		this.date = new Date(date.getTime());
 	}
 }

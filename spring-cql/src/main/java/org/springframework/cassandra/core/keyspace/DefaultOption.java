@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2013-2017 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +15,7 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.escapeSingle;
-import static org.springframework.cassandra.core.cql.CqlStringUtils.singleQuote;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -27,7 +26,7 @@ import org.springframework.util.Assert;
 
 /**
  * A default implementation of {@link Option}.
- * 
+ *
  * @author Matthew T. Adams
  */
 public class DefaultOption implements Option {
@@ -48,7 +47,8 @@ public class DefaultOption implements Option {
 	}
 
 	protected void setName(String name) {
-		Assert.hasLength(name);
+
+		Assert.hasText(name, "Name must not be null or empty");
 		this.name = name;
 	}
 
@@ -137,8 +137,8 @@ public class DefaultOption implements Option {
 				return;
 			}
 			// else value is not coerceable into the expected type
-			throw new IllegalArgumentException("Option [" + getName() + "] takes value coerceable to type ["
-					+ getType().getName() + "]");
+			throw new IllegalArgumentException(
+					"Option [" + getName() + "] takes value coerceable to type [" + getType().getName() + "]");
 		}
 		// else this option doesn't take a value
 		if (value != null) {

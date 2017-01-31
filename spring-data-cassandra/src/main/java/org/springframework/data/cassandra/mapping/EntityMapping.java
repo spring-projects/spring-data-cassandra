@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,8 @@ public class EntityMapping {
 	}
 
 	public void setEntityClassName(String entityClassName) {
-		Assert.hasText(entityClassName);
+
+		Assert.hasText(entityClassName, "Entity class name must not be null or empty");
 		this.entityClassName = entityClassName;
 	}
 
@@ -74,7 +75,8 @@ public class EntityMapping {
 	}
 
 	public void setForceQuote(String forceQuote) {
-		Assert.notNull(forceQuote);
+
+		Assert.notNull(forceQuote, "Force quote must not be null or empty");
 		this.forceQuote = forceQuote;
 	}
 
@@ -84,7 +86,7 @@ public class EntityMapping {
 
 	public void setPropertyMappings(Map<String, PropertyMapping> propertyMappings) {
 		this.propertyMappings = (propertyMappings != null ? new HashMap<String, PropertyMapping>(propertyMappings)
-			: Collections.<String, PropertyMapping>emptyMap());
+				: Collections.<String, PropertyMapping> emptyMap());
 	}
 
 	public String getTableName() {
@@ -92,7 +94,8 @@ public class EntityMapping {
 	}
 
 	public void setTableName(String tableName) {
-		Assert.notNull(tableName);
+
+		Assert.notNull(tableName, "Table name must not be null or empty");
 		this.tableName = tableName;
 	}
 
@@ -112,8 +115,8 @@ public class EntityMapping {
 		EntityMapping that = (EntityMapping) obj;
 
 		return ObjectUtils.nullSafeEquals(this.getEntityClassName(), that.getEntityClassName())
-			&& ObjectUtils.nullSafeEquals(this.getForceQuote(), that.getForceQuote())
-			&& ObjectUtils.nullSafeEquals(this.getTableName(), that.getTableName());
+				&& ObjectUtils.nullSafeEquals(this.getForceQuote(), that.getForceQuote())
+				&& ObjectUtils.nullSafeEquals(this.getTableName(), that.getTableName());
 	}
 
 	/**
@@ -134,9 +137,8 @@ public class EntityMapping {
 	@Override
 	public String toString() {
 		return String.format(
-			"{ @type = %1$s, entityClassName = %2$s, tableName = %3$s, forceQuote = %4$s, propertyMappings = %5$s }",
-				getClass().getName(), getEntityClassName(), getTableName(), getForceQuote(),
-					toString(getPropertyMappings()));
+				"{ @type = %1$s, entityClassName = %2$s, tableName = %3$s, forceQuote = %4$s, propertyMappings = %5$s }",
+				getClass().getName(), getEntityClassName(), getTableName(), getForceQuote(), toString(getPropertyMappings()));
 	}
 
 	/* (non-Javadoc) */
