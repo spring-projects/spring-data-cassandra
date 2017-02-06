@@ -8,7 +8,7 @@
 
 	<cass:cluster/>
 
-	<bean class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorTests.MockSessionFactory"/>
+	<bean class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorUnitTests.MockSessionFactory"/>
 
 	<cass:mapping/>
 	<cass:converter/>
