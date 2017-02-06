@@ -749,6 +749,13 @@ Defines a CassandraConverter for getting rich mapping functionality.
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:attribute name="id" type="xsd:ID" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+	The name of the converter ; default is "cassandraConverter".
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 			<xsd:attribute name="mapping-ref" type="mappingContextRef" use="optional">
 				<xsd:annotation>
 					<xsd:documentation

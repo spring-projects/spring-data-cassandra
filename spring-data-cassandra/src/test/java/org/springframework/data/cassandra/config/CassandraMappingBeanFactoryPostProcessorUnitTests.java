@@ -36,7 +36,7 @@ import com.datastax.driver.core.Session;
  * 
  * @author Mark Paluch
  */
-public class CassandraMappingBeanFactoryPostProcessorTests {
+public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
@@ -47,7 +47,7 @@ public class CassandraMappingBeanFactoryPostProcessorTests {
 	public void clusterRegistrationTriggersDefaultBeanRegistration() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorTests.class, "cluster-and-mock-session.xml");
+		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "cluster-and-mock-session.xml");
 		context.refresh();
 
 		assertThat(context.getBeanNamesForType(CassandraOperations.class), hasItemInArray("cqlTemplate"));
@@ -62,7 +62,7 @@ public class CassandraMappingBeanFactoryPostProcessorTests {
 	public void MappingAndConverterRegistrationTriggersDefaultBeanRegistration() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorTests.class, "mock-session-mapping-converter.xml");
+		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "mock-session-mapping-converter.xml");
 		context.refresh();
 
 		assertThat(context.getBeanNamesForType(CassandraOperations.class), hasItemInArray("cqlTemplate"));
@@ -78,7 +78,7 @@ public class CassandraMappingBeanFactoryPostProcessorTests {
 		expectedException.expectMessage(containsString("No bean named 'cassandraMapping'"));
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorTests.class, "mock-session-converter.xml");
+		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "mock-session-converter.xml");
 		context.refresh();
 	}
 
@@ -92,7 +92,7 @@ public class CassandraMappingBeanFactoryPostProcessorTests {
 		expectedException.expectMessage(allOf(containsString("found 2 beans of type"), containsString("Session")));
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorTests.class, "multiple-sessions.xml");
+		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "multiple-sessions.xml");
 		context.refresh();
 	}
 
@@ -106,7 +106,7 @@ public class CassandraMappingBeanFactoryPostProcessorTests {
 		expectedException.expectMessage(allOf(containsString("found 2 beans of type"), containsString("Session")));
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorTests.class, "multiple-session-factories.xml");
+		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "multiple-session-factories.xml");
 		context.refresh();
 	}
 
@@ -121,7 +121,7 @@ public class CassandraMappingBeanFactoryPostProcessorTests {
 				.expectMessage(allOf(containsString("found 2 beans of type"), containsString("CassandraMappingContext")));
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorTests.class, "multiple-mapping-contexts.xml");
+		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "multiple-mapping-contexts.xml");
 		context.refresh();
 	}
 
@@ -136,7 +136,7 @@ public class CassandraMappingBeanFactoryPostProcessorTests {
 				.expectMessage(allOf(containsString("found 2 beans of type"), containsString("CassandraConverter")));
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorTests.class, "multiple-converters.xml");
+		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "multiple-converters.xml");
 		context.refresh();
 	}
 
@@ -147,7 +147,7 @@ public class CassandraMappingBeanFactoryPostProcessorTests {
 	public void shouldAllowTwoKeyspaces() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorTests.class, "two-keyspaces-namespace.xml");
+		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "two-keyspaces-namespace.xml");
 		context.refresh();
 
 		assertThat(context.getBeanNamesForType(CassandraOperations.class), arrayContaining("c-1", "c-2"));
