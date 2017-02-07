@@ -16,8 +16,8 @@
 package org.springframework.cassandra.core.session.lookup;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.util.Assert;
@@ -34,7 +34,7 @@ import org.springframework.util.Assert;
  */
 public class MapSessionFactoryLookup implements SessionFactoryLookup {
 
-	private final Map<String, SessionFactory> sessionFactories = new HashMap<>(4);
+	private final Map<String, SessionFactory> sessionFactories = new ConcurrentHashMap<>(4);
 
 	/**
 	 * Create a new instance of {@link MapSessionFactoryLookup}.
@@ -110,6 +110,7 @@ public class MapSessionFactoryLookup implements SessionFactoryLookup {
 		Assert.notNull(sessionFactoryName, "SessionFactory name must not be null");
 
 		SessionFactory sessionFactory = this.sessionFactories.get(sessionFactoryName);
+
 		if (sessionFactory == null) {
 			throw new SessionFactoryLookupFailureException(
 					String.format("No SessionFactory with name [%s] registered", sessionFactoryName));

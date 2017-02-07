@@ -75,8 +75,8 @@ public class CassandraTemplate implements CassandraOperations {
 	private final CqlOperations cqlOperations;
 
 	/**
-	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link Session} and a default
-	 * {@link MappingCassandraConverter}.
+	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link Session}
+	 * and a default {@link MappingCassandraConverter}.
 	 *
 	 * @param session {@link Session} used to interact with Cassandra; must not be {@literal null}.
 	 * @see CassandraConverter
@@ -87,12 +87,12 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/**
-	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link Session} and
-	 * {@link CassandraConverter}.
+	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link Session}
+	 * and {@link CassandraConverter}.
 	 *
 	 * @param session {@link Session} used to interact with Cassandra; must not be {@literal null}.
-	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
-	 *          {@literal null}.
+	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types;
+	 * must not be {@literal null}.
 	 * @see CassandraConverter
 	 * @see Session
 	 */
@@ -101,12 +101,12 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/**
-	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link SessionFactory} and
-	 * {@link CassandraConverter}.
+	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link SessionFactory}
+	 * and {@link CassandraConverter}.
 	 *
 	 * @param sessionFactory {@link SessionFactory} used to interact with Cassandra; must not be {@literal null}.
-	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
-	 *          {@literal null}.
+	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types;
+	 * must not be {@literal null}.
 	 * @see CassandraConverter
 	 * @see SessionFactory
 	 */
@@ -115,12 +115,12 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/**
-	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link CqlOperations} and
-	 * {@link CassandraConverter}.
+	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link CqlOperations}
+	 * and {@link CassandraConverter}.
 	 *
 	 * @param cqlOperations {@link CqlOperations} used to interact with Cassandra; must not be {@literal null}.
-	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
-	 *          {@literal null}.
+	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types;
+	 * must not be {@literal null}.
 	 * @see CassandraConverter
 	 * @see Session
 	 */
@@ -137,6 +137,7 @@ public class CassandraTemplate implements CassandraOperations {
 	private static MappingCassandraConverter newConverter() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
+
 		converter.afterPropertiesSet();
 
 		return converter;
@@ -323,7 +324,8 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Insert insert = QueryUtils.createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
+		Insert insert = QueryUtils.createInsertQuery(getTableName(entity.getClass()).toCql(),
+				entity, options, converter);
 
 		return cqlOperations.execute(new StatementCallback<>(insert, entity));
 	}
@@ -346,7 +348,8 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Update update = QueryUtils.createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
+		Update update = QueryUtils.createUpdateQuery(getTableName(entity.getClass()).toCql(),
+				entity, options, converter);
 
 		return cqlOperations.execute(new StatementCallback<>(update, entity));
 	}
@@ -369,7 +372,8 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
+		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity.getClass()).toCql(),
+				entity, options, converter);
 
 		return cqlOperations.execute(new StatementCallback<>(delete, entity));
 	}

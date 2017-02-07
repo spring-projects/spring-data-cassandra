@@ -15,14 +15,14 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyInt;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
@@ -38,6 +38,9 @@ import org.springframework.cassandra.core.session.ReactiveSession;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.domain.Person;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
@@ -46,7 +49,7 @@ import com.datastax.driver.core.exceptions.NoHostAvailableException;
 
 /**
  * Unit tests for {@link ReactiveCassandraTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -64,6 +67,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	public void setUp() {
 
 		template = new ReactiveCassandraTemplate(session);
+
 		when(session.execute(anyString())).thenReturn(Mono.just(reactiveResultSet));
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.getColumnDefinitions()).thenReturn(columnDefinitions);

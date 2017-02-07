@@ -15,9 +15,7 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-
-import reactor.core.scheduler.Schedulers;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,11 +27,13 @@ import org.springframework.cassandra.core.session.DefaultReactiveSessionFactory;
 import org.springframework.cassandra.core.session.ReactiveSession;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 
+import reactor.core.scheduler.Schedulers;
+
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 /**
  * Integration tests for {@link ReactiveCqlTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {

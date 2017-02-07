@@ -15,8 +15,9 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 
@@ -99,6 +100,7 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 
 		String table = Person.class.getSimpleName().toLowerCase();
 		Select expected = QueryBuilder.select().all().from(table);
+
 		expected.setForceNoValues(true);
 		expected.where(QueryBuilder.eq("lastname", "White"));
 
@@ -110,6 +112,7 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
 		ReactiveCassandraQueryMethod queryMethod = new ReactiveCassandraQueryMethod(method, metadata, factory,
 				converter.getMappingContext());
+
 		return new ReactiveStringBasedCassandraQuery(queryMethod, operations, PARSER,
 				new ExtensionAwareEvaluationContextProvider());
 	}

@@ -136,7 +136,9 @@ public class CassandraAccessor implements InitializingBean {
 	 * @see org.springframework.cassandra.support.CassandraExceptionTranslator
 	 */
 	public CassandraExceptionTranslator getExceptionTranslator() {
-		Assert.state(this.exceptionTranslator != null, "CassandraExceptionTranslator was not properly initialized");
+		Assert.state(this.exceptionTranslator != null,
+			"CassandraExceptionTranslator was not properly initialized");
+
 		return this.exceptionTranslator;
 	}
 

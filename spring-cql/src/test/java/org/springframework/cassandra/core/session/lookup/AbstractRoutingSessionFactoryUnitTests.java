@@ -15,7 +15,8 @@
  */
 package org.springframework.cassandra.core.session.lookup;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.Map;
@@ -46,7 +47,6 @@ public class AbstractRoutingSessionFactoryUnitTests {
 	public void before() throws Exception {
 
 		sut = new StubbedRoutingSessionFactory();
-
 		sut.setDefaultTargetSessionFactory(new DefaultSessionFactory(defaultSession));
 	}
 
@@ -55,7 +55,6 @@ public class AbstractRoutingSessionFactoryUnitTests {
 
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new DefaultSessionFactory(routedSession)));
 		sut.afterPropertiesSet();
-
 		sut.setLookupKey("key");
 
 		assertThat(sut.getSession()).isSameAs(routedSession);
@@ -66,7 +65,6 @@ public class AbstractRoutingSessionFactoryUnitTests {
 
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new DefaultSessionFactory(routedSession)));
 		sut.afterPropertiesSet();
-
 		sut.setLookupKey("unknown");
 
 		assertThat(sut.getSession()).isSameAs(defaultSession);
@@ -76,6 +74,7 @@ public class AbstractRoutingSessionFactoryUnitTests {
 	public void initializationShouldFailUnsupportedLookupKey() {
 
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new Object()));
+
 		try {
 			sut.afterPropertiesSet();
 			fail("Missing IllegalArgumentException");
@@ -98,19 +97,14 @@ public class AbstractRoutingSessionFactoryUnitTests {
 		}
 	}
 
-	@Test // DATACASS-330
+	@Test(expected = IllegalStateException.class) // DATACASS-330
 	public void unresolvableSessionRetrievalShouldFail() {
 
 		sut.setLenientFallback(false);
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new DefaultSessionFactory(routedSession)));
 		sut.afterPropertiesSet();
-
 		sut.setLookupKey("unknown");
-
-		try {
-			sut.getSession();
-			fail("Missing IllegalStateException");
-		} catch (RuntimeException e) {}
+		sut.getSession();
 	}
 
 	@Test // DATACASS-330
@@ -118,7 +112,6 @@ public class AbstractRoutingSessionFactoryUnitTests {
 
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new DefaultSessionFactory(routedSession)));
 		sut.afterPropertiesSet();
-
 		sut.setLookupKey(null);
 
 		assertThat(sut.getSession()).isSameAs(defaultSession);
@@ -147,7 +140,6 @@ public class AbstractRoutingSessionFactoryUnitTests {
 		sut.setSessionFactoryLookup(lookup);
 		sut.setTargetSessionFactories((Map) lookup.getSessionFactories());
 		sut.afterPropertiesSet();
-
 		sut.setLookupKey("lookup-key");
 
 		assertThat(sut.getSession()).isSameAs(defaultSession);

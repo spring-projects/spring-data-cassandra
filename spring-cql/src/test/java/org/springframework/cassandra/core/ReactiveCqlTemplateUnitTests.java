@@ -15,11 +15,16 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +44,9 @@ import org.springframework.cassandra.support.exception.CassandraConnectionFailur
 import org.springframework.cassandra.support.exception.CassandraInvalidQueryException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ConsistencyLevel;
@@ -52,7 +60,7 @@ import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 
 /**
  * Unit tests for {@link ReactiveCqlTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)

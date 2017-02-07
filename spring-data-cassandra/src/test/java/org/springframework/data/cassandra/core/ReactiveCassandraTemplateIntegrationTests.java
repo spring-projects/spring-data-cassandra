@@ -15,10 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +25,9 @@ import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIn
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * Integration tests for {@link ReactiveCassandraTemplate}.
@@ -42,9 +42,9 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	public void setUp() throws Exception {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
-		CassandraTemplate cassandraTemplate = new CassandraTemplate(session, converter);
-
+		CassandraTemplate cassandraTemplate = new CassandraTemplate(this.session, converter);
 		DefaultBridgedReactiveSession session = new DefaultBridgedReactiveSession(this.session, Schedulers.elastic());
+
 		template = new ReactiveCassandraTemplate(new ReactiveCqlTemplate(session), converter);
 
 		SchemaTestUtils.potentiallyCreateTableFor(Person.class, cassandraTemplate);
@@ -57,11 +57,12 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		Person person = new Person("heisenberg", "Walter", "White");
 
 		Mono<Person> insert = template.insert(person);
-
 		Mono<Person> oneById = template.selectOneById(person.getId(), Person.class);
+
 		assertThat(oneById.hasElement().block()).isFalse();
 
 		Person saved = insert.block();
+
 		assertThat(saved).isNotNull().isEqualTo(person);
 		assertThat(oneById.block()).isNotNull().isEqualTo(saved);
 	}
@@ -74,6 +75,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		template.insert(person).block();
 
 		Mono<Long> count = template.count(Person.class);
+
 		assertThat(count.block()).isEqualTo(1L);
 	}
 
@@ -81,13 +83,17 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	public void updateShouldUpdateEntity() {
 
 		Person person = new Person("heisenberg", "Walter", "White");
+
 		template.insert(person).block();
 
 		person.setFirstname("Walter Hartwell");
+
 		Person updated = template.update(person).block();
+
 		assertThat(updated).isNotNull();
 
 		Mono<Person> oneById = template.selectOneById(person.getId(), Person.class);
+
 		assertThat(oneById.block()).isEqualTo(person);
 	}
 
@@ -95,12 +101,15 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	public void deleteShouldRemoveEntity() {
 
 		Person person = new Person("heisenberg", "Walter", "White");
+
 		template.insert(person).block();
 
 		Person deleted = template.delete(person).block();
+
 		assertThat(deleted).isNotNull();
 
 		Mono<Person> oneById = template.selectOneById(person.getId(), Person.class);
+
 		assertThat(oneById.block()).isNull();
 	}
 
@@ -108,12 +117,15 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	public void deleteByIdShouldRemoveEntity() {
 
 		Person person = new Person("heisenberg", "Walter", "White");
+
 		template.insert(person).block();
 
 		Boolean deleted = template.deleteById(person.getId(), Person.class).block();
+
 		assertThat(deleted).isTrue();
 
 		Mono<Person> oneById = template.selectOneById(person.getId(), Person.class);
+
 		assertThat(oneById.block()).isNull();
 	}
 }

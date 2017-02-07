@@ -132,10 +132,10 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 			public KeyspaceMetadata doInSession(Session session) throws DataAccessException {
 
 				KeyspaceMetadata keyspaceMetadata = session.getCluster().getMetadata()
-					.getKeyspace(session.getLoggedKeyspace());
+						.getKeyspace(session.getLoggedKeyspace());
 
-				Assert.state(keyspaceMetadata != null, String.format("Metadata for keyspace [%s] not available",
-					session.getLoggedKeyspace()));
+				Assert.state(keyspaceMetadata != null,
+						String.format("Metadata for keyspace [%s] not available", session.getLoggedKeyspace()));
 
 				return keyspaceMetadata;
 			}

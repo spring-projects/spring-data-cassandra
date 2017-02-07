@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.config;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,11 +54,11 @@ public class ReactiveCassandraRepositoriesRegistrarUnitTests {
 		}
 	}
 
-	@Autowired ReactivePersonRepository personRepository;
 	@Autowired ApplicationContext context;
+	@Autowired ReactivePersonRepository personRepository;
 
 	@Test // DATACASS-335
 	public void testConfiguration() {}
 
-	static interface ReactivePersonRepository extends ReactiveCassandraRepository<Person, String> {}
+	interface ReactivePersonRepository extends ReactiveCassandraRepository<Person, String> {}
 }

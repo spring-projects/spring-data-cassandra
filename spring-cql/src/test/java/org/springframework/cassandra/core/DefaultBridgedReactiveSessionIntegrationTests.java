@@ -15,16 +15,16 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
 import org.springframework.cassandra.core.session.ReactiveResultSet;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.PreparedStatement;
@@ -33,7 +33,7 @@ import com.datastax.driver.core.exceptions.SyntaxError;
 
 /**
  * Integration tests for {@link DefaultBridgedReactiveSession}.
- * 
+ *
  * @author Mark Paluch
  */
 public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
@@ -51,29 +51,26 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 	@Test // DATACASS-335
 	public void executeShouldExecuteDeferred() throws Exception {
 
-		Mono<ReactiveResultSet> execution = reactiveSession
-				.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
+		String query = "CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");";
+
+		Mono<ReactiveResultSet> execution = reactiveSession.execute(query);
 
 		KeyspaceMetadata keyspace = getKeyspaceMetadata();
 
 		assertThat(keyspace.getTable("users")).isNull();
 
 		ReactiveResultSet resultSet = execution.block();
+
 		assertThat(resultSet.wasApplied()).isTrue();
 		assertThat(keyspace.getTable("users")).isNotNull();
 	}
 
-	@Test // DATACASS-335
+	@Test(expected = SyntaxError.class) // DATACASS-335
 	public void executeShouldTransportExceptionsInMono() throws Exception {
 
 		Mono<ReactiveResultSet> execution = reactiveSession.execute("INSERT INTO dummy;");
 
-		try {
-			execution.block();
-			fail("Missing SyntaxError");
-		} catch (SyntaxError e) {
-			assertThat(e).isInstanceOf(SyntaxError.class);
-		}
+		execution.block();
 	}
 
 	@Test // DATACASS-335
@@ -95,8 +92,8 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 
-		Mono<PreparedStatement> execution = reactiveSession
-				.prepare("INSERT INTO users (userid, first_name) VALUES (?, ?);");
+		Mono<PreparedStatement> execution = reactiveSession.prepare(
+				"INSERT INTO users (userid, first_name) VALUES (?, ?);");
 		PreparedStatement preparedStatement = execution.block();
 
 		assertThat(preparedStatement).isNotNull();

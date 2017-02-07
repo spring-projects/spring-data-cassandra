@@ -15,10 +15,10 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import reactor.core.scheduler.Schedulers;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
@@ -31,6 +31,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
 
+import reactor.core.scheduler.Schedulers;
+
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
@@ -38,7 +40,7 @@ import com.datastax.driver.core.Statement;
 
 /**
  * Unit tests for {@link DefaultBridgedReactiveSession}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -57,6 +59,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	public void executeStatementShouldForwardStatementToSession() throws Exception {
 
 		SimpleStatement statement = new SimpleStatement("SELECT *");
+
 		reactiveSession.execute(statement).subscribe();
 
 		verify(sessionMock).executeAsync(statement);
@@ -83,8 +86,8 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		reactiveSession.execute("SELECT * WHERE a = ?", Collections.singletonMap("a", "value")).subscribe();
 
-		verify(sessionMock)
-				.executeAsync(eq(new SimpleStatement("SELECT * WHERE a = ?", Collections.singletonMap("a", "value"))));
+		verify(sessionMock).executeAsync(eq(new SimpleStatement("SELECT * WHERE a = ?",
+				Collections.singletonMap("a", "value"))));
 	}
 
 	@Test // DATACASS-335

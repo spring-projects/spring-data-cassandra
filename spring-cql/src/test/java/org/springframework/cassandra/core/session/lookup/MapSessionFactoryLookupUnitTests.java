@@ -15,7 +15,8 @@
  */
 package org.springframework.cassandra.core.session.lookup;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Collections;
 
@@ -51,7 +52,9 @@ public class MapSessionFactoryLookupUnitTests {
 	@Test // DATACASS-330
 	public void shouldResolveSessionFactoryCorrectly() {
 
-		MapSessionFactoryLookup sessionFactoryLookup = new MapSessionFactoryLookup("factory", sessionFactory);
+		MapSessionFactoryLookup sessionFactoryLookup =
+				new MapSessionFactoryLookup("factory", sessionFactory);
+
 		assertThat(sessionFactoryLookup.getSessionFactory("factory")).isSameAs(sessionFactory);
 	}
 
@@ -60,6 +63,7 @@ public class MapSessionFactoryLookupUnitTests {
 
 		MapSessionFactoryLookup sessionFactoryLookup = new MapSessionFactoryLookup(
 				Collections.singletonMap("factory", sessionFactory));
+
 		assertThat(sessionFactoryLookup.getSessionFactory("factory")).isSameAs(sessionFactory);
 	}
 

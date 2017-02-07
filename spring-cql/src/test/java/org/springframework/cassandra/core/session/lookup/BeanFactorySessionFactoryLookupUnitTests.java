@@ -48,6 +48,7 @@ public class BeanFactorySessionFactoryLookupUnitTests {
 		when(beanFactory.getBean("factory", SessionFactory.class)).thenReturn(sessionFactory);
 
 		BeanFactorySessionFactoryLookup lookup = new BeanFactorySessionFactoryLookup();
+
 		lookup.setBeanFactory(beanFactory);
 
 		SessionFactory result = lookup.getSessionFactory("factory");
@@ -61,6 +62,7 @@ public class BeanFactorySessionFactoryLookupUnitTests {
 		when(beanFactory.getBean("factory", SessionFactory.class)).thenThrow(new NoSuchBeanDefinitionException("factory"));
 
 		BeanFactorySessionFactoryLookup lookup = new BeanFactorySessionFactoryLookup();
+
 		lookup.setBeanFactory(beanFactory);
 
 		try {
