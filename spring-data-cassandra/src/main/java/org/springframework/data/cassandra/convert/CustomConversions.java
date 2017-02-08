@@ -21,9 +21,9 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,9 +63,9 @@ public class CustomConversions {
 
 	private final List<Object> converters;
 
-	private final Map<ConvertiblePair, Class<?>> customReadTargetTypes;
-	private final Map<ConvertiblePair, Class<?>> customWriteTargetTypes;
-	private final Map<Class<?>, Class<?>> rawWriteTargetTypes;
+	private final Map<ConvertiblePair, Optional<Class<?>>> customReadTargetTypes;
+	private final Map<ConvertiblePair, Optional<Class<?>>> customWriteTargetTypes;
+	private final Map<Class<?>, Optional<Class<?>>> rawWriteTargetTypes;
 
 	/**
 	 * Creates an empty {@link CustomConversions} object.
@@ -233,13 +233,8 @@ public class CustomConversions {
 	 */
 	public Class<?> getCustomWriteTarget(final Class<?> sourceType) {
 
-		return getOrCreateAndCache(sourceType, rawWriteTargetTypes, new Supplier<Class<?>>() {
-
-			@Override
-			public Class<?> get() {
-				return getCustomTarget(sourceType, null, writingPairs);
-			}
-		});
+		return rawWriteTargetTypes.computeIfAbsent(sourceType, it -> getCustomTarget(sourceType, null, writingPairs))
+				.orElse(null);
 	}
 
 	/**
@@ -257,8 +252,8 @@ public class CustomConversions {
 			return getCustomWriteTarget(sourceType);
 		}
 
-		return getOrCreateAndCache(new ConvertiblePair(sourceType, requestedTargetType), customWriteTargetTypes,
-				() -> getCustomTarget(sourceType, requestedTargetType, writingPairs));
+		return customWriteTargetTypes.computeIfAbsent(new ConvertiblePair(sourceType, requestedTargetType),
+				it -> getCustomTarget(sourceType, requestedTargetType, writingPairs)).orElse(null);
 	}
 
 	/**
@@ -309,8 +304,9 @@ public class CustomConversions {
 			return null;
 		}
 
-		return getOrCreateAndCache(new ConvertiblePair(sourceType, requestedTargetType), customReadTargetTypes,
-				() -> getCustomTarget(sourceType, requestedTargetType, readingPairs));
+		return customReadTargetTypes.computeIfAbsent(new ConvertiblePair(sourceType, requestedTargetType),
+				it -> getCustomTarget(sourceType, requestedTargetType, readingPairs)).orElse(null);
+
 	}
 
 	/**
@@ -322,33 +318,25 @@ public class CustomConversions {
 	 * @param pairs must not be {@literal null}.
 	 * @return
 	 */
-	private static Class<?> getCustomTarget(Class<?> sourceType, Class<?> requestedTargetType,
+	private static Optional<Class<?>> getCustomTarget(Class<?> sourceType, Class<?> requestedTargetType,
 			Collection<ConvertiblePair> pairs) {
 
 		Assert.notNull(sourceType, "Source Class must not be null");
 		Assert.notNull(pairs, "Collection of ConvertiblePair must not be null");
 
 		if (requestedTargetType != null && pairs.contains(new ConvertiblePair(sourceType, requestedTargetType))) {
-			return requestedTargetType;
+			return Optional.of(requestedTargetType);
 		}
 
-		return pairs.stream() //
-				.filter(typePair -> typePair.getSourceType().isAssignableFrom(sourceType)) //
-				.map(ConvertiblePair::getTargetType) //
-				.filter(targetType -> requestedTargetType == null || targetType.isAssignableFrom(requestedTargetType)) //
-				.findFirst().orElse(null);
-	}
+		for (ConvertiblePair typePair : pairs) {
+			if (typePair.getSourceType().isAssignableFrom(sourceType)) {
+				Class<?> targetType = typePair.getTargetType();
+				if (requestedTargetType == null || targetType.isAssignableFrom(requestedTargetType)) {
+					return Optional.of(targetType);
+				}
+			}
+		}
 
-	/**
-	 * Will try to find a value for the given key in the given cache or produce one using the given {@link Supplier} and
-	 * store it in the cache.
-	 *
-	 * @param key the key to lookup a potentially existing value, must not be {@literal null}.
-	 * @param cache the cache to find the value in, must not be {@literal null}.
-	 * @param producer the {@link Supplier} to create values to cache, must not be {@literal null}.
-	 * @return
-	 */
-	private static <T> Class<?> getOrCreateAndCache(T key, Map<T, Class<?>> cache, Supplier<Class<?>> producer) {
-		return cache.computeIfAbsent(key, t -> producer.get());
+		return Optional.empty();
 	}
 }
