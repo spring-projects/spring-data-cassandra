@@ -82,6 +82,7 @@
 		<module>spring-cql</module>
 		<module>spring-data-cassandra</module>
 		<module>spring-data-cassandra-distribution</module>
+		<module>spring-data-cassandra-benchmarks</module>
 	</modules>
 
 	<properties>
