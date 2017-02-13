@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.cassandra.config.xml.DefaultCqlBeanNames;
 import org.springframework.cassandra.config.xml.ParsingUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
@@ -78,9 +77,8 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 
 		Element element = config.getElement();
 
-		// TODO: XML-based configuration uses a different bean name than Java config
 		ParsingUtils.addOptionalPropertyReference(builder, "cassandraTemplate", element, CASSANDRA_TEMPLATE_REF,
-				DefaultCqlBeanNames.TEMPLATE);
+				DefaultBeanNames.DATA_TEMPLATE);
 	}
 
 	/* (non-Javadoc)

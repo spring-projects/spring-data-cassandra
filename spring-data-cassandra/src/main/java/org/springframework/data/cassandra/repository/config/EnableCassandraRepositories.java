@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
 import org.springframework.data.repository.config.DefaultRepositoryBaseClass;
@@ -120,7 +121,7 @@ public @interface EnableCassandraRepositories {
 
 	/**
 	 * Configures the name of the {@link CassandraTemplate} bean to be used with the repositories detected.
-	 * 
+	 * Defaults to {@link DefaultBeanNames#DATA_TEMPLATE}
 	 * @return
 	 */
 	String cassandraTemplateRef() default "cassandraTemplate";

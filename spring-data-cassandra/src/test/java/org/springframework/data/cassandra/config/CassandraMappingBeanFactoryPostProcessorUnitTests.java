@@ -47,9 +47,9 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "cluster-and-mock-session.xml");
 		context.refresh();
 
-		assertThat(context.getBeanNamesForType(CassandraOperations.class), hasItemInArray("cqlTemplate"));
-		assertThat(context.getBeanNamesForType(CassandraMappingContext.class), hasItemInArray("cassandraMapping"));
-		assertThat(context.getBeanNamesForType(CassandraConverter.class), hasItemInArray("cassandraConverter"));
+		assertThat(context.getBeanNamesForType(CassandraOperations.class), hasItemInArray(DefaultBeanNames.DATA_TEMPLATE));
+		assertThat(context.getBeanNamesForType(CassandraMappingContext.class), hasItemInArray(DefaultBeanNames.CONTEXT));
+		assertThat(context.getBeanNamesForType(CassandraConverter.class), hasItemInArray(DefaultBeanNames.CONVERTER));
 	}
 
 	@Test // DATACASS-290
@@ -59,7 +59,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "mock-session-mapping-converter.xml");
 		context.refresh();
 
-		assertThat(context.getBeanNamesForType(CassandraOperations.class), hasItemInArray("cqlTemplate"));
+		assertThat(context.getBeanNamesForType(CassandraOperations.class), hasItemInArray(DefaultBeanNames.DATA_TEMPLATE));
 	}
 
 	@Test // DATACASS-290
