@@ -48,11 +48,8 @@ public class CassandraTemplateParser extends CassandraCqlTemplateParser {
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
 
-		// TODO: super.resolveId resolves always to a non-empty id because its fallback is DefaultCqlBeanNames.TEMPLATE.
-		// This also means that CassandraTemplate is exposed as bean named cqlTemplate. This should change with 2.0
-		// because 2.0 breaks up inheritance.
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : DefaultBeanNames.DATA_TEMPLATE;
+		return StringUtils.hasText(id) && !DefaultBeanNames.TEMPLATE.equals(id) ? id : DefaultBeanNames.DATA_TEMPLATE;
 	}
 
 	/* (non-Javadoc)

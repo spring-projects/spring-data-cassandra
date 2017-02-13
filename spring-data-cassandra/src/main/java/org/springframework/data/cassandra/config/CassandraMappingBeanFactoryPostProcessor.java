@@ -181,7 +181,7 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanFactoryPost
 				.addConstructorArgReference(converterBeanName) //
 				.getBeanDefinition();
 
-		BeanDefinitionHolder template = new BeanDefinitionHolder(beanDefinition, DefaultBeanNames.TEMPLATE);
+		BeanDefinitionHolder template = new BeanDefinitionHolder(beanDefinition, DefaultBeanNames.DATA_TEMPLATE);
 		registry.registerBeanDefinition(template.getBeanName(), template.getBeanDefinition());
 
 		return template;
