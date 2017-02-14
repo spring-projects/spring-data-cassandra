@@ -15,11 +15,13 @@
  */
 package org.springframework.data.cassandra.config.xml;
 
+import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.cassandra.config.xml.CassandraCqlTemplateParser;
 import org.springframework.data.cassandra.config.CassandraTemplateFactoryBean;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.util.StringUtils;
@@ -31,7 +33,7 @@ import org.w3c.dom.Element;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class CassandraTemplateParser extends CassandraCqlTemplateParser {
+public class CassandraTemplateParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.config.xml.CassandraCqlTemplateParser#getBeanClass(org.w3c.dom.Element)
@@ -49,7 +51,7 @@ public class CassandraTemplateParser extends CassandraCqlTemplateParser {
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) && !DefaultBeanNames.TEMPLATE.equals(id) ? id : DefaultBeanNames.DATA_TEMPLATE;
+		return StringUtils.hasText(id) ? id : DefaultBeanNames.DATA_TEMPLATE;
 	}
 
 	/* (non-Javadoc)
@@ -62,14 +64,7 @@ public class CassandraTemplateParser extends CassandraCqlTemplateParser {
 
 		super.doParse(element, parserContext, builder);
 
-		parseConverterAttribute(element, parserContext, builder);
-	}
-
-	protected void parseConverterAttribute(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		String converterRef = element.getAttribute("cassandra-converter-ref");
-		if (!StringUtils.hasText(converterRef)) {
-			converterRef = DefaultBeanNames.CONVERTER;
-		}
-		builder.addPropertyReference("converter", converterRef);
+		addOptionalPropertyReference(builder, "converter", element, "cassandra-converter-ref", DefaultBeanNames.CONVERTER);
+		addOptionalPropertyReference(builder, "session", element, "session-ref", DefaultBeanNames.SESSION);
 	}
 }
