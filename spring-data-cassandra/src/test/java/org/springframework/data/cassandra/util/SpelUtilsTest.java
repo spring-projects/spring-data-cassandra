@@ -16,6 +16,10 @@
 
 package org.springframework.data.cassandra.util;
 
+import static org.junit.Assert.*;
+
+import javax.swing.text.Segment;
+
 import org.junit.Test;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
@@ -23,11 +27,6 @@ import org.springframework.expression.spel.SpelCompilerMode;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-
-import javax.swing.text.Segment;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Unit tests for class {@link SpelUtils org.springframework.data.cassandra.util.SpelUtils}.
@@ -39,89 +38,80 @@ import static org.junit.Assert.assertFalse;
 public class SpelUtilsTest {
 
 
-    @Test
-    public void testOne() throws Exception {
+	@Test
+	public void testOne() throws Exception {
 
-        SpelExpressionParser spelExpressionParser = SpelUtils.DEFAULT_PARSER;
-        String string = SpelUtils.evaluate((CharSequence) "cellEditor", (EvaluationContext) null, (ExpressionParser) spelExpressionParser);
+		SpelExpressionParser spelExpressionParser = SpelUtils.DEFAULT_PARSER;
+		String string = SpelUtils.evaluate((CharSequence) "cellEditor", (EvaluationContext) null, (ExpressionParser) spelExpressionParser);
 
-        assertEquals("cellEditor", string);
-
-    }
-
-
-    @Test
-    public void testTwo() throws Exception {
-
-        SpelExpressionParser spelExpressionParser = new SpelExpressionParser();
-        String string = SpelUtils.evaluate((CharSequence) "", (EvaluationContext) null, (ExpressionParser) spelExpressionParser);
-
-        assertEquals("", string);
-
-    }
+		assertEquals("cellEditor", string);
+	}
 
 
-    @Test
-    public void testThree() throws Exception {
+	@Test
+	public void testTwo() throws Exception {
 
-        Class<String> clasz = String.class;
-        SpelParserConfiguration spelParserConfiguration = new SpelParserConfiguration(false, false);
-        SpelExpressionParser spelExpressionParser = new SpelExpressionParser(spelParserConfiguration);
-        String string = SpelUtils.evaluate((CharSequence) "+18:00", (EvaluationContext) null, clasz, (ExpressionParser) spelExpressionParser);
+		SpelExpressionParser spelExpressionParser = new SpelExpressionParser();
+		String string = SpelUtils.evaluate((CharSequence) "", (EvaluationContext) null, (ExpressionParser) spelExpressionParser);
 
-        assertFalse(spelParserConfiguration.isAutoGrowNullReferences());
-        assertFalse(spelParserConfiguration.isAutoGrowCollections());
-
-        assertEquals(SpelCompilerMode.OFF, spelParserConfiguration.getCompilerMode());
-        assertEquals(2147483647, spelParserConfiguration.getMaximumAutoGrowSize());
-
-        assertEquals("+18:00", string);
-
-    }
+		assertEquals("", string);
+	}
 
 
-    @Test
-    public void testFour() throws Exception {
+	@Test
+	public void testThree() throws Exception {
 
-        Class<Object> clasz = Object.class;
-        String string = (String) SpelUtils.evaluate((CharSequence) "caret-begin-word", (EvaluationContext) null, clasz);
+		Class<String> clasz = String.class;
+		SpelParserConfiguration spelParserConfiguration = new SpelParserConfiguration(false, false);
+		SpelExpressionParser spelExpressionParser = new SpelExpressionParser(spelParserConfiguration);
+		String string = SpelUtils.evaluate((CharSequence) "+18:00", (EvaluationContext) null, clasz, (ExpressionParser) spelExpressionParser);
 
-        assertEquals("caret-begin-word", string);
+		assertFalse(spelParserConfiguration.isAutoGrowNullReferences());
+		assertFalse(spelParserConfiguration.isAutoGrowCollections());
 
-    }
+		assertEquals(SpelCompilerMode.OFF, spelParserConfiguration.getCompilerMode());
+		assertEquals(2147483647, spelParserConfiguration.getMaximumAutoGrowSize());
 
-
-    @Test
-    public void testFive() throws Exception {
-
-        String string = SpelUtils.evaluate((CharSequence) "", (EvaluationContext) null);
-
-        assertEquals("", string);
-
-    }
+		assertEquals("+18:00", string);
+	}
 
 
-    @Test
-    public void testSix() throws Exception {
+	@Test
+	public void testFour() throws Exception {
 
-        String string = SpelUtils.evaluate((CharSequence) "caret-begin-word", (EvaluationContext) null);
+		Class<Object> clasz = Object.class;
+		String string = (String) SpelUtils.evaluate((CharSequence) "caret-begin-word", (EvaluationContext) null, clasz);
 
-        assertEquals("caret-begin-word", string);
-
-    }
-
-
-    @Test(expected = StringIndexOutOfBoundsException.class)
-    public void testSevenRaisesStringIndexOutOfBoundsException() throws Exception {
-
-        char[] charArray = new char[2];
-        Segment segment = new Segment(charArray, (-2826), 0);
-        StandardEvaluationContext standardEvaluationContext = new StandardEvaluationContext((Object) charArray);
-        Class<Object> clasz = Object.class;
-
-        SpelUtils.evaluate((CharSequence) segment, (EvaluationContext) standardEvaluationContext, clasz);
-
-    }
+		assertEquals("caret-begin-word", string);
+	}
 
 
+	@Test
+	public void testFive() throws Exception {
+
+		String string = SpelUtils.evaluate((CharSequence) "", (EvaluationContext) null);
+
+		assertEquals("", string);
+	}
+
+
+	@Test
+	public void testSix() throws Exception {
+
+		String string = SpelUtils.evaluate((CharSequence) "caret-begin-word", (EvaluationContext) null);
+
+		assertEquals("caret-begin-word", string);
+	}
+
+
+	@Test(expected = StringIndexOutOfBoundsException.class)
+	public void testSevenRaisesStringIndexOutOfBoundsException() throws Exception {
+
+		char[] charArray = new char[2];
+		Segment segment = new Segment(charArray, (-2826), 0);
+		StandardEvaluationContext standardEvaluationContext = new StandardEvaluationContext((Object) charArray);
+		Class<Object> clasz = Object.class;
+
+		SpelUtils.evaluate((CharSequence) segment, (EvaluationContext) standardEvaluationContext, clasz);
+	}
 }
