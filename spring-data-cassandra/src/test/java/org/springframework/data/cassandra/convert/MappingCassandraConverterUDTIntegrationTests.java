@@ -17,7 +17,9 @@ package org.springframework.data.cassandra.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -291,11 +293,10 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(addressBook.getOtherCurrencies()).hasSize(1).contains(Currency.getInstance("EUR"));
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-400
 	public void shouldWriteUdtWithCustomConversion() {
 
-		Bank bank = new Bank();
-		bank.setCurrency(Currency.getInstance("EUR"));
+		Bank bank = new Bank(null, Currency.getInstance("EUR"), null);
 
 		Insert insert = QueryBuilder.insertInto("bank");
 		converter.write(bank, insert);
@@ -316,12 +317,10 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(update.toString()).isEqualTo("UPDATE money WHERE currency={currency:'EUR'};");
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-400
 	public void shouldWriteUdtUpdateAssignmentsWithCustomConversion() {
 
-		MoneyTransfer money = new MoneyTransfer();
-		money.setId("1");
-		money.setCurrency(Currency.getInstance("EUR"));
+		MoneyTransfer money = new MoneyTransfer("1", Currency.getInstance("EUR"));
 
 		Update update = QueryBuilder.update("money");
 		converter.write(money, update);
@@ -353,11 +352,10 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(delete.toString()).isEqualTo("DELETE FROM money WHERE currency={currency:'EUR'};");
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-400
 	public void shouldWriteUdtListWithCustomConversion() {
 
-		Bank bank = new Bank();
-		bank.setOtherCurrencies(Collections.singletonList(Currency.getInstance("EUR")));
+		Bank bank = new Bank(null, null, Collections.singletonList(Currency.getInstance("EUR")));
 
 		Insert insert = QueryBuilder.insertInto("bank");
 		converter.write(bank, insert);
@@ -379,20 +377,14 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(car.getEngine().getManufacturer().getName()).isEqualTo("a good one");
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-400
 	public void shouldWriteNestedUdt() {
 
 		session.execute("INSERT INTO car (id, engine)  VALUES ('1',  {manufacturer: {name:'a good one'}});");
 
-		Manufacturer manufacturer = new Manufacturer();
-		manufacturer.setName("a good one");
+		Engine engine = new Engine(new Manufacturer("a good one"));
 
-		Engine engine = new Engine();
-		engine.setManufacturer(manufacturer);
-
-		Car car = new Car();
-		car.setId("1");
-		car.setEngine(engine);
+		Car car = new Car("1", engine);
 
 		Insert insert = QueryBuilder.insertInto("car");
 		converter.write(car, insert);
@@ -402,7 +394,8 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Table
-	@Data
+	@Getter
+	@AllArgsConstructor
 	private static class Bank {
 
 		@Id String id;
@@ -416,8 +409,9 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		@Id private Currency currency;
 	}
 
-	@Data
 	@Table
+	@AllArgsConstructor
+	@Getter
 	public static class MoneyTransfer {
 
 		@Id String id;
@@ -426,7 +420,8 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Table
-	@Data
+	@Getter
+	@AllArgsConstructor
 	private static class Car {
 
 		@Id String id;
@@ -434,13 +429,15 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@UserDefinedType
-	@Data
+	@Getter
+	@AllArgsConstructor
 	private static class Engine {
 		Manufacturer manufacturer;
 	}
 
 	@UserDefinedType
-	@Data
+	@Getter
+	@AllArgsConstructor
 	private static class Manufacturer {
 		String name;
 	}
