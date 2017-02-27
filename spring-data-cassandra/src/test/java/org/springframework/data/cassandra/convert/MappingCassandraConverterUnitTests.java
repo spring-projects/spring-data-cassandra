@@ -21,6 +21,8 @@ import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.RowMockUtil.*;
 import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
+import lombok.AllArgsConstructor;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -482,11 +484,11 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(result.localDate.getDayOfMonth()).isEqualTo(4);
 	}
 
-	@Test // DATACASS-296
+	@Test // DATACASS-296, DATACASS-400
 	public void shouldCreateInsertWithLocalDateUsingCassandraDateCorrectly() {
 
-		TypeWithLocalDateMappedToDate typeWithLocalDate = new TypeWithLocalDateMappedToDate();
-		typeWithLocalDate.localDate = java.time.LocalDate.of(2010, 7, 4);
+		TypeWithLocalDateMappedToDate typeWithLocalDate = new TypeWithLocalDateMappedToDate(null,
+				java.time.LocalDate.of(2010, 7, 4));
 
 		Insert insert = QueryBuilder.insertInto("table");
 
@@ -498,8 +500,8 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-296
 	public void shouldCreateUpdateWithLocalDateUsingCassandraDateCorrectly() {
 
-		TypeWithLocalDateMappedToDate typeWithLocalDate = new TypeWithLocalDateMappedToDate();
-		typeWithLocalDate.localDate = java.time.LocalDate.of(2010, 7, 4);
+		TypeWithLocalDateMappedToDate typeWithLocalDate = new TypeWithLocalDateMappedToDate(null,
+				java.time.LocalDate.of(2010, 7, 4));
 
 		Update update = QueryBuilder.update("table");
 
@@ -1042,6 +1044,7 @@ public class MappingCassandraConverterUnitTests {
 	 * Uses Cassandra's {@link Name#DATE} which maps by default to {@link LocalDate}
 	 */
 	@Table
+	@AllArgsConstructor
 	public static class TypeWithLocalDateMappedToDate {
 
 		@PrimaryKey private String id;

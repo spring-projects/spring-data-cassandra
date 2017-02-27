@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,13 @@ package org.springframework.data.cassandra.convert;
 
 import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
+import lombok.AllArgsConstructor;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.UDTValue;
-import com.datastax.driver.core.UserType;
-import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +55,19 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
+
+import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.TypeCodec;
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * {@link CassandraConverter} that uses a {@link MappingContext} to do sophisticated mapping of domain objects to
@@ -136,8 +139,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return getConversionService().convert(row, type);
 		}
 
-		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>)
-				getMappingContext().getPersistentEntity(typeInfo);
+		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>) getMappingContext()
+				.getPersistentEntity(typeInfo);
 
 		if (persistentEntity == null) {
 			throw new MappingException(String.format("No mapping metadata found for %s", rawType.getName()));
@@ -160,8 +163,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		DefaultSpELExpressionEvaluator expressionEvaluator = new DefaultSpELExpressionEvaluator(row, spELContext);
 		BasicCassandraRowValueProvider rowValueProvider = new BasicCassandraRowValueProvider(row, expressionEvaluator);
 
-		CassandraPersistentEntityParameterValueProvider parameterProvider =
-			new CassandraPersistentEntityParameterValueProvider(entity, rowValueProvider, null);
+		CassandraPersistentEntityParameterValueProvider parameterProvider = new CassandraPersistentEntityParameterValueProvider(
+				entity, new MappingAndConvertingValueProvider(rowValueProvider), null);
 
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 		S instance = instantiator.createInstance(entity, parameterProvider);
@@ -175,11 +178,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		DefaultSpELExpressionEvaluator expressionEvaluator = new DefaultSpELExpressionEvaluator(udtValue, spELContext);
 
-		CassandraUDTValueProvider valueProvider = new CassandraUDTValueProvider(
-				udtValue, CodecRegistry.DEFAULT_INSTANCE, expressionEvaluator);
+		CassandraUDTValueProvider valueProvider = new CassandraUDTValueProvider(udtValue, CodecRegistry.DEFAULT_INSTANCE,
+				expressionEvaluator);
 
-		CassandraPersistentEntityParameterValueProvider parameterProvider =
-				new CassandraPersistentEntityParameterValueProvider(entity, valueProvider, null);
+		CassandraPersistentEntityParameterValueProvider parameterProvider = new CassandraPersistentEntityParameterValueProvider(
+				entity, new MappingAndConvertingValueProvider(valueProvider), null);
 
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
 		S instance = instantiator.createInstance(entity, parameterProvider);
@@ -832,5 +835,41 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private TypeCodec<Object> getCodec(CassandraPersistentProperty property) {
 		return CodecRegistry.DEFAULT_INSTANCE.codecFor(mappingContext.getDataType(property));
+	}
+
+	/**
+	 * {@link CassandraRowValueProvider} that delegates reads to {@link CassandraValueProvider} applying mapping and
+	 * custom conversion from {@link MappingCassandraConverter}.
+	 *
+	 * @author Mark Paluch
+	 * @since 1.5.1
+	 */
+	@AllArgsConstructor
+	class MappingAndConvertingValueProvider implements CassandraValueProvider {
+
+		private final CassandraValueProvider parent;
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.mapping.CassandraPersistentProperty)
+		 */
+		@Override
+		public boolean hasProperty(CassandraPersistentProperty property) {
+			return parent.hasProperty(property);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
+		 */
+		@Override
+		public Object getPropertyValue(CassandraPersistentProperty property) {
+
+			Object readValue = getReadValue(parent, property);
+
+			if(readValue == null || property.getType().isAssignableFrom(readValue.getClass())){
+				return readValue;
+			}
+
+			return conversionService.convert(readValue, property.getType());
+		}
 	}
 }
