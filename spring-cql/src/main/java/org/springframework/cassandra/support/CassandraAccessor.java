@@ -32,6 +32,7 @@ import org.springframework.cassandra.core.RowMapperResultSetExtractor;
 import org.springframework.cassandra.core.SingleColumnRowMapper;
 import org.springframework.cassandra.core.session.DefaultSessionFactory;
 import org.springframework.cassandra.core.session.SessionFactory;
+import org.springframework.cassandra.core.support.CQLExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 
@@ -67,7 +68,7 @@ public class CassandraAccessor implements InitializingBean {
 	/** Logger available to subclasses */
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	protected CassandraExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+	protected CQLExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	/**
 	 * If this variable is set to a non-negative value, it will be used for setting the {@code fetchSize} property on
@@ -121,10 +122,11 @@ public class CassandraAccessor implements InitializingBean {
 	 * Exception Hierarchy.
 	 *
 	 * @param exceptionTranslator exception translator to set; must not be {@literal null}.
-	 * @see org.springframework.cassandra.support.CassandraExceptionTranslator
+	 * @see CQLExceptionTranslator
 	 */
-	public void setExceptionTranslator(CassandraExceptionTranslator exceptionTranslator) {
-		Assert.notNull(exceptionTranslator, "CassandraExceptionTranslator must not be null");
+	public void setExceptionTranslator(CQLExceptionTranslator exceptionTranslator) {
+
+		Assert.notNull(exceptionTranslator, "CQLExceptionTranslator must not be null");
 		this.exceptionTranslator = exceptionTranslator;
 	}
 
@@ -133,11 +135,11 @@ public class CassandraAccessor implements InitializingBean {
 	 * Exception Hierarchy.
 	 *
 	 * @return the Cassandra exception translator.
-	 * @see org.springframework.cassandra.support.CassandraExceptionTranslator
+	 * @see CQLExceptionTranslator
 	 */
-	public CassandraExceptionTranslator getExceptionTranslator() {
-		Assert.state(this.exceptionTranslator != null,
-			"CassandraExceptionTranslator was not properly initialized");
+	public CQLExceptionTranslator getExceptionTranslator() {
+
+		Assert.state(this.exceptionTranslator != null, "CQLExceptionTranslator was not properly initialized");
 
 		return this.exceptionTranslator;
 	}

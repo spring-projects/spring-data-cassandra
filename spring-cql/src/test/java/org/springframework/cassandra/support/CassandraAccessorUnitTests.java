@@ -32,6 +32,7 @@ import com.datastax.driver.core.Session;
  * {@link CassandraAccessor} class.
  *
  * @author John Blum
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraAccessorUnitTests {
@@ -74,7 +75,7 @@ public class CassandraAccessorUnitTests {
 			cassandraAccessor.setExceptionTranslator(null);
 			fail("Missing IllegalArgumentException");
 		} catch (IllegalArgumentException e) {
-			assertThat(e).hasMessageContaining("CassandraExceptionTranslator must not be null");
+			assertThat(e).hasMessageContaining("must not be null");
 		}
 	}
 
