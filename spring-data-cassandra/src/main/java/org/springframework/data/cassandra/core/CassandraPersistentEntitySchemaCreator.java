@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
  * This class generates CQL to create user types (UDT) and tables.
  *
  * @author Mark Paluch
+ * @author Jens Schauder
  * @since 1.5
  * @see org.springframework.data.cassandra.mapping.Table
  * @see org.springframework.data.cassandra.mapping.UserDefinedType
@@ -127,12 +128,7 @@ public class CassandraPersistentEntitySchemaCreator {
 		Collection<? extends CassandraPersistentEntity<?>> entities = new ArrayList<CassandraPersistentEntity<?>>(
 				mappingContext.getUserDefinedTypeEntities());
 
-		// TODO simplify by using Java 8 Streams API in 2.0.x
-		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName = new HashMap<CqlIdentifier, CassandraPersistentEntity<?>>();
-
-		for (CassandraPersistentEntity<?> entity : entities) {
-			byTableName.put(entity.getTableName(), entity);
-		}
+		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName = getEntitiesByTableName(entities);
 
 		List<CreateUserTypeSpecification> specifications = new ArrayList<CreateUserTypeSpecification>();
 
@@ -140,6 +136,7 @@ public class CassandraPersistentEntitySchemaCreator {
 		Set<CqlIdentifier> created = new HashSet<CqlIdentifier>();
 
 		for (CassandraPersistentEntity<?> entity : entities) {
+
 			Set<CqlIdentifier> seen = new LinkedHashSet<CqlIdentifier>();
 
 			seen.add(entity.getTableName());
@@ -156,6 +153,16 @@ public class CassandraPersistentEntitySchemaCreator {
 			}
 		}
 		return specifications;
+	}
+
+	private Map<CqlIdentifier, CassandraPersistentEntity<?>> getEntitiesByTableName(Collection<? extends CassandraPersistentEntity<?>> entities) {
+		// TODO simplify by using Java 8 Streams API in 2.0.x
+		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName = new HashMap<CqlIdentifier, CassandraPersistentEntity<?>>();
+
+		for (CassandraPersistentEntity<?> entity : entities) {
+			byTableName.put(entity.getTableName(), entity);
+		}
+		return byTableName;
 	}
 
 	private void visitUserTypes(CassandraPersistentEntity<?> entity, final Set<CqlIdentifier> seen) {
