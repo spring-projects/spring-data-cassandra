@@ -2,15 +2,15 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xmlns:cass="http://www.springframework.org/schema/data/cassandra"
-	   xsi:schemaLocation="http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.0.xsd
+	   xsi:schemaLocation="http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra-1.5.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<cass:cluster/>
 
 	<bean id="keyspace-1"
-		  class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorTests.MockSessionFactory"/>
+		  class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorUnitTests.MockSessionFactory"/>
 	<bean id="keyspace-2"
-		  class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorTests.MockSessionFactory"/>
+		  class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorUnitTests.MockSessionFactory"/>
 
 	<cass:mapping id="mapping-1"/>
 	<cass:mapping id="mapping-2"/>
