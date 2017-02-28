@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,17 +33,14 @@ import com.datastax.driver.core.Session;
 
 /**
  * Unit tests for {@link CassandraMappingBeanFactoryPostProcessor}.
- * 
+ *
  * @author Mark Paluch
  */
 public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
-	/**
-	 * @see DATACASS-290
-	 */
-	@Test
+	@Test // DATACASS-290
 	public void clusterRegistrationTriggersDefaultBeanRegistration() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
@@ -55,10 +52,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		assertThat(context.getBeanNamesForType(CassandraConverter.class), hasItemInArray("cassandraConverter"));
 	}
 
-	/**
-	 * @see DATACASS-290
-	 */
-	@Test
+	@Test // DATACASS-290
 	public void MappingAndConverterRegistrationTriggersDefaultBeanRegistration() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
@@ -68,10 +62,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		assertThat(context.getBeanNamesForType(CassandraOperations.class), hasItemInArray("cqlTemplate"));
 	}
 
-	/**
-	 * @see DATACASS-290
-	 */
-	@Test
+	@Test // DATACASS-290
 	public void converterRegistrationFailsDueToMissingCassandraMapping() {
 
 		expectedException.expect(BeanCreationException.class);
@@ -82,10 +73,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		context.refresh();
 	}
 
-	/**
-	 * @see DATACASS-290
-	 */
-	@Test
+	@Test // DATACASS-290
 	public void defaultBeanRegistrationShouldFailWithMultipleSessions() {
 
 		expectedException.expect(IllegalStateException.class);
@@ -96,10 +84,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		context.refresh();
 	}
 
-	/**
-	 * @see DATACASS-290
-	 */
-	@Test
+	@Test // DATACASS-290
 	public void defaultBeanRegistrationShouldFailWithMultipleSessionFactories() {
 
 		expectedException.expect(IllegalStateException.class);
@@ -110,10 +95,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		context.refresh();
 	}
 
-	/**
-	 * @see DATACASS-290
-	 */
-	@Test
+	@Test // DATACASS-290
 	public void defaultBeanRegistrationShouldFailWithMultipleMappingContexts() {
 
 		expectedException.expect(IllegalStateException.class);
@@ -125,10 +107,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		context.refresh();
 	}
 
-	/**
-	 * @see DATACASS-290
-	 */
-	@Test
+	@Test // DATACASS-290
 	public void defaultBeanRegistrationShouldFailWithMultipleConvertersContexts() {
 
 		expectedException.expect(IllegalStateException.class);
@@ -140,10 +119,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		context.refresh();
 	}
 
-	/**
-	 * @see DATACASS-290
-	 */
-	@Test
+	@Test // DATACASS-290
 	public void shouldAllowTwoKeyspaces() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
