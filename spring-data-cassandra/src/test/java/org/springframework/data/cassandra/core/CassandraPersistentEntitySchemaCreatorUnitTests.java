@@ -17,8 +17,6 @@ package org.springframework.data.cassandra.core;
 
 import static org.mockito.Mockito.*;
 
-import lombok.Data;
-
 import java.util.List;
 import java.util.Set;
 
@@ -34,12 +32,11 @@ import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.UserDefinedType;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.UserType;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaCreator}.
- * 
+ *
  * @author Mark Paluch
  * @author Jens Schauder
  */
@@ -47,9 +44,6 @@ import com.datastax.driver.core.UserType;
 public class CassandraPersistentEntitySchemaCreatorUnitTests {
 
 	@Mock CassandraAdminOperations operations;
-	@Mock KeyspaceMetadata metadata;
-	@Mock UserType universetype;
-	@Mock UserType moontype;
 
 	BasicCassandraMappingContext context = new BasicCassandraMappingContext();
 
@@ -59,82 +53,71 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		context.setUserTypeResolver(new UserTypeResolver() {
 			@Override
 			public UserType resolveType(CqlIdentifier typeName) {
-				return metadata.getUserType(typeName.toCql());
+				// make sure that calls to this method pop up. Calling UserTypeResolver while resolving
+				// to be created user types isn't a good idea because they do not exist at resolution time.
+				throw new IllegalArgumentException(String.format("Type %s not found", typeName));
 			}
 		});
 	}
 
-	@Test
-	public void createsCorrectTypeForSimpleTypes(){
+	@Test // DATACASS-172, DATACASS-406
+	public void createsCorrectTypeForSimpleTypes() {
 
 		context.getPersistentEntity(MoonType.class);
+		context.getPersistentEntity(PlanetType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(context, operations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				operations);
 
 		schemaCreator.createUserTypes(false);
 
-		verifyTypesGetCreatedInOrderFor(
-				"universetype",
-				"moontype"
-		);
+		verifyTypesGetCreatedInOrderFor("universetype", "moontype", "planettype");
 	}
 
-	@Test
-	public void createsCorrectTypeForSets(){
+	@Test // DATACASS-406
+	public void createsCorrectTypeForSets() {
 
 		context.getPersistentEntity(PlanetType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(context, operations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				operations);
 
 		schemaCreator.createUserTypes(false);
 
 		verify(operations).execute(matches("CREATE TYPE planettype .* set<.*moontype>.*"));
 
-		verifyTypesGetCreatedInOrderFor(
-				"universetype",
-				"moontype",
-				"planettype"
-		);
+		verifyTypesGetCreatedInOrderFor("universetype", "moontype", "planettype");
 	}
 
-	@Test
-	public void createsCorrectTypeForLists(){
+	@Test // DATACASS-406
+	public void createsCorrectTypeForLists() {
+
 		context.getPersistentEntity(SpaceAgencyType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(context, operations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				operations);
 
 		schemaCreator.createUserTypes(false);
 
 		verify(operations).execute(matches("CREATE TYPE spaceagencytype .* list<.*astronauttype>.*"));
 
-		verifyTypesGetCreatedInOrderFor(
-				"astronauttype",
-				"spaceagencytype"
-		);
-
+		verifyTypesGetCreatedInOrderFor("astronauttype", "spaceagencytype");
 	}
 
-	@Test
-	public void createsCorrectTypesForNestedTypes(){
+	@Test // DATACASS-406
+	public void createsCorrectTypesForNestedTypes() {
 
 		context.getPersistentEntity(PlanetType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(context, operations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				operations);
 
 		schemaCreator.createUserTypes(false);
 
-		verifyTypesGetCreatedInOrderFor(
-				"universetype",
-				"moontype",
-				"planettype"
-		);
+		verifyTypesGetCreatedInOrderFor("universetype", "moontype", "planettype");
 	}
 
-	private void verifyTypesGetCreatedInOrderFor(String ... typenames) {
+	private void verifyTypesGetCreatedInOrderFor(String... typenames) {
 
 		InOrder inOrder = Mockito.inOrder(operations);
 		for (String typename : typenames) {
@@ -149,7 +132,6 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 
 	@UserDefinedType
 	static class MoonType {
-
 		UniverseType universeType;
 	}
 
