@@ -132,7 +132,6 @@ public class CassandraPersistentEntitySchemaCreator {
 
 		List<CreateUserTypeSpecification> specifications = new ArrayList<CreateUserTypeSpecification>();
 
-		// TODO is this Set really needed?
 		Set<CqlIdentifier> created = new HashSet<CqlIdentifier>();
 
 		for (CassandraPersistentEntity<?> entity : entities) {
@@ -155,13 +154,16 @@ public class CassandraPersistentEntitySchemaCreator {
 		return specifications;
 	}
 
-	private Map<CqlIdentifier, CassandraPersistentEntity<?>> getEntitiesByTableName(Collection<? extends CassandraPersistentEntity<?>> entities) {
+	private Map<CqlIdentifier, CassandraPersistentEntity<?>> getEntitiesByTableName(
+			Collection<? extends CassandraPersistentEntity<?>> entities) {
+
 		// TODO simplify by using Java 8 Streams API in 2.0.x
 		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName = new HashMap<CqlIdentifier, CassandraPersistentEntity<?>>();
 
 		for (CassandraPersistentEntity<?> entity : entities) {
 			byTableName.put(entity.getTableName(), entity);
 		}
+
 		return byTableName;
 	}
 
