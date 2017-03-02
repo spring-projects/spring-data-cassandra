@@ -1,6 +1,17 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.5.1.RELEASE (2017-03-02)
+---------------------------------------------
+* DATACASS-406 - Support nested @UserDefinedType for schema creation.
+* DATACASS-404 - Link to Jira site in readme.md is wrong.
+* DATACASS-402 - OperationTimedOutException translated to CassandraUncategorizedException.
+* DATACASS-400 - Cannot instantiate domain objects referencing a mapped UDT in the constructor.
+* DATACASS-397 - Missed failing test due to wrong UT class name.
+* DATACASS-393 - Remove references to Assert single-arg methods.
+* DATACASS-392 - Release 1.5.1 (Ingalls SR1).
+
+
 Changes in version 1.5.0.RELEASE (2017-01-26)
 ---------------------------------------------
 * DATACASS-390 - Upgrade to Cassandra Driver 3.1.3.
