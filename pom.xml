@@ -12,7 +12,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-cassandra-parent</artifactId>
-	<version>1.6.0.BUILD-SNAPSHOT</version>
+	<version>1.6.0.DATACASS-406-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data for Apache Cassandra</name>
