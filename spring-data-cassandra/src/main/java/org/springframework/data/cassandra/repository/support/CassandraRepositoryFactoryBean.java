@@ -57,23 +57,21 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID e
 	 * Configures the {@link CassandraTemplate} used for Cassandra data access operations.
 	 *
 	 * @param cassandraTemplate {@link CassandraTemplate} used to perform CRUD, Query and general data access operations
-	 * on Apache Cassandra.
+	 *          on Apache Cassandra.
 	 */
 	public void setCassandraTemplate(CassandraTemplate cassandraTemplate) {
 		this.cassandraTemplate = cassandraTemplate;
 		setMappingContext(cassandraTemplate.getConverter().getMappingContext());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * org.springframework.data.repository.support.RepositoryFactoryBeanSupport
-	 * #afterPropertiesSet()
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() {
+
 		super.afterPropertiesSet();
+
 		Assert.notNull(cassandraTemplate, "CassandraTemplate must not be null!");
 	}
 }

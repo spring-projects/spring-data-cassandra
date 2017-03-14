@@ -69,8 +69,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		this.mappingContext = operations.getConverter().getMappingContext();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
 	 */
 	@Override
@@ -78,21 +77,18 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		return SimpleCassandraRepository.class;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryInformation)
 	 */
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 
-		CassandraEntityInformation<?, Serializable> entityInformation =
-			getEntityInformation(information.getDomainType());
+		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
 
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
 	 */
 	@Override
@@ -102,26 +98,24 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(domainClass);
 
 		if (entity == null) {
-			throw new MappingException(String.format("Could not lookup mapping metadata for domain class %s",
-				domainClass.getName()));
+			throw new MappingException(
+					String.format("Could not lookup mapping metadata for domain class %s", domainClass.getName()));
 		}
 
 		return new MappingCassandraEntityInformation<T, ID>((CassandraPersistentEntity<T>) entity,
 				operations.getConverter());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(Key)
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key)
 	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key) {
 		return getQueryLookupStrategy(key, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(Key, EvaluationContextProvider)
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key, org.springframework.data.repository.query.EvaluationContextProvider)
 	 */
 	@Override
 	protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider evaluationContextProvider) {
@@ -142,8 +136,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 			this.mappingContext = mappingContext;
 		}
 
-		/*
-		 * (non-Javadoc)
+		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.query.QueryLookupStrategy#resolveQuery(java.lang.reflect.Method, org.springframework.data.repository.core.RepositoryMetadata, org.springframework.data.projection.ProjectionFactory, org.springframework.data.repository.core.NamedQueries)
 		 */
 		@Override
@@ -158,8 +151,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 				return new StringBasedCassandraQuery(namedQuery, queryMethod, operations, EXPRESSION_PARSER,
 						evaluationContextProvider);
 			} else if (queryMethod.hasAnnotatedQuery()) {
-				return new StringBasedCassandraQuery(queryMethod, operations, EXPRESSION_PARSER,
-						evaluationContextProvider);
+				return new StringBasedCassandraQuery(queryMethod, operations, EXPRESSION_PARSER, evaluationContextProvider);
 			} else {
 				return new PartTreeCassandraQuery(queryMethod, operations);
 			}

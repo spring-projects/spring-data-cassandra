@@ -49,6 +49,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	private static final SpelExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
 
 	private final ReactiveCassandraOperations operations;
+
 	private final CassandraMappingContext mappingContext;
 
 	/**
@@ -64,8 +65,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
 	 */
 	@Override
@@ -73,8 +73,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 		return SimpleReactiveCassandraRepository.class;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryInformation)
 	 */
 	@Override
@@ -85,8 +84,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key, org.springframework.data.repository.query.EvaluationContextProvider)
 	 */
 	@Override
@@ -94,8 +92,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 		return new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
 	 */
 	@SuppressWarnings("unchecked")
@@ -130,8 +127,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 			this.mappingContext = mappingContext;
 		}
 
-		/*
-		 * (non-Javadoc)
+		/* (non-Javadoc)
 		 * @see org.springframework.data.repository.query.QueryLookupStrategy#resolveQuery(java.lang.reflect.Method, org.springframework.data.repository.core.RepositoryMetadata, org.springframework.data.projection.ProjectionFactory, org.springframework.data.repository.core.NamedQueries)
 		 */
 		@Override

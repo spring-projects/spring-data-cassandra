@@ -58,6 +58,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		this.operations = operations;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#save(S)
+	 */
 	@Override
 	public <S extends T> Mono<S> save(S entity) {
 
@@ -71,6 +74,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#save(java.lang.Iterable)
+	 */
 	@Override
 	public <S extends T> Flux<S> save(Iterable<S> entities) {
 
@@ -79,6 +85,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return save(Flux.fromIterable(entities));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#save(org.reactivestreams.Publisher)
+	 */
 	@Override
 	public <S extends T> Flux<S> save(Publisher<S> entityStream) {
 
@@ -94,6 +103,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.ReactiveCassandraRepository#insert(java.lang.Object)
+	 */
 	@Override
 	public <S extends T> Mono<S> insert(S entity) {
 
@@ -102,6 +114,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.insert(entity);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.ReactiveCassandraRepository#insert(java.lang.Iterable)
+	 */
 	@Override
 	public <S extends T> Flux<S> insert(Iterable<S> entities) {
 
@@ -110,6 +125,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.insert(Flux.fromIterable(entities));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.ReactiveCassandraRepository#insert(org.reactivestreams.Publisher)
+	 */
 	@Override
 	public <S extends T> Flux<S> insert(Publisher<S> entityStream) {
 
@@ -118,6 +136,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.insert(entityStream);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findOne(java.io.Serializable)
+	 */
 	@Override
 	public Mono<T> findOne(ID id) {
 
@@ -126,6 +147,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.selectOneById(id, entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findOne(reactor.core.publisher.Mono)
+	 */
 	@Override
 	public Mono<T> findOne(Mono<ID> mono) {
 
@@ -134,6 +158,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return mono.then(id -> operations.selectOneById(id, entityInformation.getJavaType()));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#exists(java.io.Serializable)
+	 */
 	@Override
 	public Mono<Boolean> exists(ID id) {
 
@@ -142,6 +169,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.exists(id, entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#exists(reactor.core.publisher.Mono)
+	 */
 	@Override
 	public Mono<Boolean> exists(Mono<ID> mono) {
 
@@ -150,6 +180,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return mono.then(id -> operations.exists(id, entityInformation.getJavaType()));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll()
+	 */
 	@Override
 	public Flux<T> findAll() {
 
@@ -157,6 +190,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.select(select, entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll(java.lang.Iterable)
+	 */
 	@Override
 	public Flux<T> findAll(Iterable<ID> iterable) {
 
@@ -165,6 +201,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return findAll(Flux.fromIterable(iterable));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll(org.reactivestreams.Publisher)
+	 */
 	@Override
 	public Flux<T> findAll(Publisher<ID> idStream) {
 
@@ -173,11 +212,17 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return Flux.from(idStream).flatMap(id -> operations.selectOneById(id, entityInformation.getJavaType()));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#count()
+	 */
 	@Override
 	public Mono<Long> count() {
 		return operations.count(entityInformation.getJavaType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(java.io.Serializable)
+	 */
 	@Override
 	public Mono<Void> delete(ID id) {
 
@@ -186,6 +231,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.deleteById(id, entityInformation.getJavaType()).then();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(java.lang.Object)
+	 */
 	@Override
 	public Mono<Void> delete(T entity) {
 
@@ -194,6 +242,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.delete(entity).then();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(java.lang.Iterable)
+	 */
 	@Override
 	public Mono<Void> delete(Iterable<? extends T> entities) {
 
@@ -202,6 +253,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.delete(Flux.fromIterable(entities)).then();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(org.reactivestreams.Publisher)
+	 */
 	@Override
 	public Mono<Void> delete(Publisher<? extends T> entityStream) {
 
@@ -210,6 +264,9 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		return operations.delete(entityStream).then();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#deleteAll()
+	 */
 	@Override
 	public Mono<Void> deleteAll() {
 		return operations.truncate(entityInformation.getJavaType());

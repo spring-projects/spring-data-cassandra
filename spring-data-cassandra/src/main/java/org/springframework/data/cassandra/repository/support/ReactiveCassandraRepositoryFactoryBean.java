@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
@@ -31,8 +30,8 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  * @since 2.0
- * @see org.springframework.data.repository.reactive.ReactivePagingAndSortingRepository
- * @see org.springframework.data.repository.reactive.RxJavaPagingAndSortingRepository
+ * @see org.springframework.data.repository.reactive.ReactiveSortingRepository
+ * @see org.springframework.data.repository.reactive.RxJava1SortingRepository
  */
 public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
@@ -53,15 +52,14 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 	/**
 	 * Configures the {@link ReactiveCassandraOperations} used for Cassandra data access operations.
 	 *
-	 * @param operations {@link ReactiveCassandraOperations} used to perform CRUD, Query and general data access operations
-	 * on Apache Cassandra.
+	 * @param operations {@link ReactiveCassandraOperations} used to perform CRUD, Query and general data access
+	 *          operations on Apache Cassandra.
 	 */
 	public void setReactiveCassandraOperations(ReactiveCassandraOperations operations) {
 		this.operations = operations;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#setMappingContext(org.springframework.data.mapping.context.MappingContext)
 	 */
 	@Override
@@ -72,12 +70,8 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 		this.mappingContextConfigured = true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * org.springframework.data.repository.support.RepositoryFactoryBeanSupport
-	 * #createRepositoryFactory()
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#createRepositoryFactory()
 	 */
 	@Override
 	protected final RepositoryFactorySupport createRepositoryFactory() {
@@ -94,9 +88,8 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 		return new ReactiveCassandraRepositoryFactory(operations);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryFactoryBeanSupport#afterPropertiesSet()
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() {
