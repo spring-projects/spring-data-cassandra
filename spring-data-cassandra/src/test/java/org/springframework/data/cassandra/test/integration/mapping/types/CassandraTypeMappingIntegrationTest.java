@@ -403,6 +403,30 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getAnEnum()).isEqualTo(entity.getAnEnum());
 	}
 
+	@Test // DATACASS-280
+	public void shouldReadAndWriteListOfEnum() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setListOfEnum(Collections.singletonList(Condition.MINT));
+
+		operations.insert(entity);
+		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getListOfEnum()).contains(Condition.MINT);
+	}
+
+	@Test // DATACASS-280
+	public void shouldReadAndWriteSetOfEnum() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setSetOfEnum(Collections.singleton(Condition.MINT));
+
+		operations.insert(entity);
+		AllPossibleTypes loaded = operations.selectOneById(AllPossibleTypes.class, entity.getId());
+
+		assertThat(loaded.getSetOfEnum()).contains(Condition.MINT);
+	}
+
 	@Test // DATACASS-271
 	public void shouldReadAndWriteTime() {
 

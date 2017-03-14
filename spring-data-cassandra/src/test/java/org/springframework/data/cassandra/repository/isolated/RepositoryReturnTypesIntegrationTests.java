@@ -262,7 +262,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 		allPossibleTypesRepository.save(entity);
 
 		Map<String, Object> result = allPossibleTypesRepository.findEntityAsMapById(entity.getId());
-		assertThat(result).hasSize(41);
+		assertThat(result).hasSize(43);
 		assertThat(result.get("primitiveinteger")).isEqualTo((Object) Integer.valueOf(123));
 		assertThat(result.get("biginteger")).isEqualTo((Object) BigInteger.ONE);
 	}

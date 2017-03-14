@@ -88,6 +88,8 @@ public class AllPossibleTypes {
 	private Map<String, String> mapOfString;
 
 	private Condition anEnum;
+	private Set<Condition> setOfEnum;
+	private List<Condition> listOfEnum;
 
 	// supported by conversion
 	java.time.LocalDate localDate;
