@@ -62,6 +62,9 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 */
 	@Override
 	public <S extends T> S save(S entity) {
+
+		Assert.notNull(entity, "Entity must not be null");
+
 		return operations.insert(entity);
 	}
 
@@ -97,6 +100,9 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 */
 	@Override
 	public T findOne(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
 		return operations.selectOneById(id, entityInformation.getJavaType());
 	}
 
@@ -105,6 +111,9 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 */
 	@Override
 	public boolean exists(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
 		return operations.exists(id, entityInformation.getJavaType());
 	}
 
@@ -117,10 +126,35 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll()
+	 */
+	@Override
+	public List<T> findAll() {
+
+		Select select = QueryBuilder.select().all().from(entityInformation.getTableName().toCql());
+
+		return operations.select(select, entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
+	 */
+	@Override
+	public Iterable<T> findAll(Iterable<ID> iterable) {
+
+		Assert.notNull(iterable, "The given Iterable of id's must not be null");
+
+		return operations.selectBySimpleIds(iterable, entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.Serializable)
 	 */
 	@Override
 	public void delete(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
 		operations.deleteById(id, entityInformation.getJavaType());
 	}
 
@@ -129,6 +163,9 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 */
 	@Override
 	public void delete(T entity) {
+
+		Assert.notNull(entity, "The given entity must not be null");
+
 		delete(entityInformation.getId(entity));
 	}
 
@@ -151,24 +188,5 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	@Override
 	public void deleteAll() {
 		operations.truncate(entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll()
-	 */
-	@Override
-	public List<T> findAll() {
-
-		Select select = QueryBuilder.select().all().from(entityInformation.getTableName().toCql());
-
-		return operations.select(select, entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
-	 */
-	@Override
-	public Iterable<T> findAll(Iterable<ID> ids) {
-		return operations.selectBySimpleIds(ids, entityInformation.getJavaType());
 	}
 }
