@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.support;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -136,18 +137,18 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(person).isNull();
 	}
 
-	@Test // DATACASS-396
+	@Test // DATACASS-396, DATACASS-416
 	public void findAllShouldReturnAllResults() {
 
-		Iterable<Person> persons = repository.findAll();
+		List<Person> persons = repository.findAll();
 
 		assertThat(persons).hasSize(4);
 	}
 
-	@Test // DATACASS-396
+	@Test // DATACASS-396, DATACASS-416
 	public void findAllByIterableOfIdShouldReturnResults() {
 
-		Iterable<Person> persons = repository.findAll(Arrays.asList(dave.getId(), boyd.getId()));
+		List<Person> persons = repository.findAll(Arrays.asList(dave.getId(), boyd.getId()));
 
 		assertThat(persons).hasSize(2);
 	}
@@ -212,19 +213,19 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(loaded).isEqualTo(person);
 	}
 
-	@Test // DATACASS-396
+	@Test // DATACASS-396, DATACASS-416
 	public void saveIterableOfNewEntitiesShouldInsertEntity() {
 
 		repository.deleteAll();
 
-		Iterable<Person> saved = repository.save(Arrays.asList(dave, oliver, boyd));
+		List<Person> saved = repository.save(Arrays.asList(dave, oliver, boyd));
 
 		assertThat(saved).hasSize(3);
 
 		assertThat(repository.count()).isEqualTo(3);
 	}
 
-	@Test // DATACASS-396
+	@Test // DATACASS-396, DATACASS-416
 	public void saveIterableOfMixedEntitiesShouldInsertEntity() {
 
 		Person person = new Person("36", "Homer", "Simpson");
@@ -232,7 +233,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		Iterable<Person> saved = repository.save(Arrays.asList(person, dave));
+		List<Person> saved = repository.save(Arrays.asList(person, dave));
 
 		assertThat(saved).hasSize(2);
 
@@ -243,12 +244,12 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(persistentHomer).isEqualTo(person);
 	}
 
-	@Test // DATACASS-396
+	@Test // DATACASS-396, DATACASS-416
 	public void deleteAllShouldRemoveEntities() {
 
 		repository.deleteAll();
 
-		Iterable<Person> result = repository.findAll();
+		List<Person> result = repository.findAll();
 
 		assertThat(result).isEmpty();
 	}

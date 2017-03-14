@@ -70,6 +70,27 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface TypedIdCassandraRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
+	 */
+	@Override
+	<S extends T> List<S> save(Iterable<S> entites);
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll()
+	 */
+	@Override
+	List<T> findAll();
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
+	 */
+	@Override
+	List<T> findAll(Iterable<ID> ids);
+
 	/**
 	 * Inserts the given entity. Assumes the instance to be new to be able to apply insertion optimizations. Use the
 	 * returned instance for further operations as the save operation might have changed the entity instance completely.
@@ -91,5 +112,4 @@ public interface TypedIdCassandraRepository<T, ID extends Serializable> extends 
 	 * @since 2.0
 	 */
 	<S extends T> List<S> insert(Iterable<S> entities);
-
 }
