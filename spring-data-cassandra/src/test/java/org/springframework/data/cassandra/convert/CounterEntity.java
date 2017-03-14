@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.mapping.types;
+package org.springframework.data.cassandra.convert;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,8 +33,8 @@ import com.datastax.driver.core.DataType.Name;
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
-public class TimeEntity {
+public class CounterEntity {
 
 	@PrimaryKey @NonNull private String id;
-	@CassandraType(type = Name.TIME) private long time;
+	@CassandraType(type = Name.COUNTER) private long count;
 }

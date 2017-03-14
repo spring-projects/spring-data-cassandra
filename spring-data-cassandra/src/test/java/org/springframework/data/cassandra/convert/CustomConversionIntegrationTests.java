@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.mapping.customconversion;
+package org.springframework.data.cassandra.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -34,8 +34,6 @@ import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.convert.CustomConversions;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.Table;
@@ -46,12 +44,12 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 /**
- * Test suite for applying {@link CustomConversions} to
- * {@link org.springframework.data.cassandra.mapping.BasicCassandraMappingContext}.
- * 
+ * Test suite for applying {@link CustomConversions} to {@link MappingCassandraConverter} and
+ * {@link BasicCassandraMappingContext}.
+ *
  * @author Mark Paluch
  */
-public class CustomConversionTests extends AbstractKeyspaceCreatingIntegrationTest {
+public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraTemplate cassandraOperations;
 
