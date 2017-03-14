@@ -96,6 +96,39 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.TypedIdCassandraRepository#insert(java.lang.Object)
+	 */
+	@Override
+	public <S extends T> S insert(S entity) {
+
+		Assert.notNull(entity, "Entity must not be null");
+
+		return operations.insert(entity);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.TypedIdCassandraRepository#insert(java.lang.Iterable)
+	 */
+	@Override
+	public <S extends T> List<S> insert(Iterable<S> entities) {
+
+		Assert.notNull(entities, "The given Iterable of entities must not be null");
+
+		List<S> result = new ArrayList<>();
+
+		for (S entity : entities) {
+
+			S saved = operations.insert(entity);
+
+			if (saved != null) {
+				result.add(saved);
+			}
+		}
+
+		return result;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
 	 */
 	@Override
@@ -140,11 +173,11 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
 	 */
 	@Override
-	public Iterable<T> findAll(Iterable<ID> iterable) {
+	public List<T> findAll(Iterable<ID> ids) {
 
-		Assert.notNull(iterable, "The given Iterable of id's must not be null");
+		Assert.notNull(ids, "The given Iterable of id's must not be null");
 
-		return operations.selectBySimpleIds(iterable, entityInformation.getJavaType());
+		return operations.selectBySimpleIds(ids, entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)

@@ -160,6 +160,28 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(count).isEqualTo(4);
 	}
 
+	@Test // DATACASS-415
+	public void insertEntityShouldInsertEntity() {
+
+		repository.deleteAll();
+
+		Person person = new Person("36", "Homer", "Simpson");
+
+		repository.insert(person);
+
+		assertThat(repository.count()).isEqualTo(1);
+	}
+
+	@Test // DATACASS-415
+	public void insertIterableOfEntitiesShouldInsertEntity() {
+
+		repository.deleteAll();
+
+		repository.insert(Arrays.asList(dave, oliver, boyd));
+
+		assertThat(repository.count()).isEqualTo(3);
+	}
+
 	@Test // DATACASS-396
 	public void saveEntityShouldUpdateExistingEntity() {
 
