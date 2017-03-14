@@ -16,9 +16,9 @@
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.cassandra.core.util.CollectionUtils;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
@@ -70,7 +70,26 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 */
 	@Override
 	public <S extends T> List<S> save(Iterable<S> entities) {
-		return operations.insert(CollectionUtils.toList(entities));
+
+		Assert.notNull(entities, "The given Iterable of entities not be null!");
+
+		List<S> result = new ArrayList<>();
+
+		for (S entity : entities) {
+
+			S saved;
+			if (entityInformation.isNew(entity)) {
+				saved = operations.insert(entity);
+			} else {
+				saved = operations.update(entity);
+			}
+
+			if (saved != null) {
+				result.add(saved);
+			}
+		}
+
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -118,7 +137,12 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 */
 	@Override
 	public void delete(Iterable<? extends T> entities) {
-		operations.delete(CollectionUtils.toList(entities));
+
+		Assert.notNull(entities, "The given Iterable of entities not be null!");
+
+		for (T entity : entities) {
+			operations.delete(entity);
+		}
 	}
 
 	/* (non-Javadoc)
