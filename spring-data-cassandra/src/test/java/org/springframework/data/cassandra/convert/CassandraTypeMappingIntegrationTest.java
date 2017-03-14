@@ -10,10 +10,10 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * see the License for the specific language governing permissions and
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.test.integration.mapping.types;
+package org.springframework.data.cassandra.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -399,7 +400,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		operations.insert(entity);
 		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
-		assertThat(loaded.getAnEnum()).isEqualTo(entity.getAnEnum());
+		Assertions.assertThat(loaded.getAnEnum()).isEqualTo(entity.getAnEnum());
 	}
 
 	@Test // DATACASS-280
