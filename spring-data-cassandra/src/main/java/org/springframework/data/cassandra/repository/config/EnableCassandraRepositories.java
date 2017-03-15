@@ -120,8 +120,9 @@ public @interface EnableCassandraRepositories {
 	Class<?> repositoryBaseClass() default DefaultRepositoryBaseClass.class;
 
 	/**
-	 * Configures the name of the {@link CassandraTemplate} bean to be used with the repositories detected.
-	 * Defaults to {@link DefaultBeanNames#DATA_TEMPLATE}
+	 * Configures the name of the {@link CassandraTemplate} bean to be used with the repositories detected. Defaults to
+	 * {@link DefaultBeanNames#DATA_TEMPLATE}
+	 * 
 	 * @return
 	 */
 	String cassandraTemplateRef() default "cassandraTemplate";

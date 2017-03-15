@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.config.xml;
 
-import static org.springframework.cassandra.config.xml.ParsingUtils.addOptionalPropertyReference;
+import static org.springframework.cassandra.config.xml.ParsingUtils.*;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -32,6 +32,7 @@ import org.w3c.dom.Element;
  * 
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author Mateusz Szymczak
  */
 public class CassandraTemplateParser extends AbstractSingleBeanDefinitionParser {
 

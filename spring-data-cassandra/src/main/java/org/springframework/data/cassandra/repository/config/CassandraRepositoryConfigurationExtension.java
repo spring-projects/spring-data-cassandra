@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Collections;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.cassandra.config.xml.ParsingUtils;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
@@ -40,6 +39,7 @@ import org.w3c.dom.Element;
  * @author Alex Shvid
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Mateusz Szymczak
  */
 public class CassandraRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 

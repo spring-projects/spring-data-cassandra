@@ -35,12 +35,13 @@ import com.datastax.driver.core.Session;
  * Unit tests for {@link CassandraMappingBeanFactoryPostProcessor}.
  *
  * @author Mark Paluch
+ * @author Mateusz Szymczak
  */
 public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
-	@Test // DATACASS-290
+	@Test // DATACASS-290, DATACASS-401
 	public void clusterRegistrationTriggersDefaultBeanRegistration() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
@@ -52,7 +53,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 		assertThat(context.getBeanNamesForType(CassandraConverter.class), hasItemInArray(DefaultBeanNames.CONVERTER));
 	}
 
-	@Test // DATACASS-290
+	@Test // DATACASS-290, DATACASS-401
 	public void MappingAndConverterRegistrationTriggersDefaultBeanRegistration() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
