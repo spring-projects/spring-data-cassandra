@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
@@ -95,5 +97,14 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 				"userTypeResolver");
 
 		assertThat(userTypeResolver).isNotNull();
+	}
+
+	@Test // DATACASS-417
+	public void mappingContextShouldCassandraTemplateConfigured() {
+
+		CassandraTemplate cassandraTemplate = applicationContext.getBean(CassandraTemplate.class);
+		CqlTemplate cqlTemplate = applicationContext.getBean(CqlTemplate.class);
+
+		assertThat(cassandraTemplate.getCqlOperations()).isSameAs(cqlTemplate);
 	}
 }

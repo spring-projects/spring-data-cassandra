@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2017 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,9 @@ package org.springframework.data.cassandra.config;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cassandra.core.CqlOperations;
+import org.springframework.cassandra.core.session.DefaultSessionFactory;
+import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.util.Assert;
@@ -31,31 +34,41 @@ import com.datastax.driver.core.Session;
  */
 public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTemplate>, InitializingBean {
 
-	protected Session session;
+	protected SessionFactory sessionFactory;
+
+	protected CqlOperations cqlOperations;
 
 	protected CassandraConverter converter;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		Assert.notNull(session, "Session must not be null");
+		if (cqlOperations == null && sessionFactory == null) {
+			throw new IllegalArgumentException("Either Session/SessionFactory or CqlOperations must be set");
+		}
+
 		Assert.notNull(converter, "Converter must not be null");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
 	@Override
 	public CassandraTemplate getObject() throws Exception {
-		return new CassandraTemplate(session, converter);
+
+		if (cqlOperations != null) {
+			return new CassandraTemplate(cqlOperations, converter);
+		}
+
+		return new CassandraTemplate(sessionFactory, converter);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
@@ -64,7 +77,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 		return CassandraTemplate.class;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
 	 */
@@ -75,21 +88,49 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 
 	/**
 	 * Sets the Cassandra {@link Session} to use. The {@link CassandraTemplate} will use the logged keyspace of the
-	 * underlying {@link Session}. Don't change the keyspace using CQL but use multiple {@link Session} and
-	 * {@link CassandraTemplate} beans.
-	 * 
+	 * underlying {@link Session}. Don't change the keyspace using CQL but use a
+	 * {@link org.springframework.cassandra.core.session.SessionFactory}.
+	 *
 	 * @param session must not be {@literal null}.
 	 */
 	public void setSession(Session session) {
 
 		Assert.notNull(session, "Session must not be null");
 
-		this.session = session;
+		setSessionFactory(new DefaultSessionFactory(session));
+	}
+
+	/**
+	 * Sets the Cassandra {@link SessionFactory} to use. The {@link CassandraTemplate} will use the logged keyspace of the
+	 * underlying {@link Session}. Don't change the keyspace using CQL.
+	 *
+	 * @param sessionFactory must not be {@literal null}.
+	 * @since 2.0
+	 */
+	public void setSessionFactory(SessionFactory sessionFactory) {
+
+		Assert.notNull(sessionFactory, "SessionFactory must not be null");
+
+		this.sessionFactory = sessionFactory;
+	}
+
+	/**
+	 * Sets the Cassandra {@link CqlOperations} to use. The {@link CassandraTemplate} will use the logged keyspace of the
+	 * underlying {@link Session}. Don't change the keyspace using CQL but use {@link #setSessionFactory(SessionFactory)}.
+	 *
+	 * @param cqlOperations must not be {@literal null}.
+	 * @since 2.0
+	 */
+	public void setCqlOperations(CqlOperations cqlOperations) {
+
+		Assert.notNull(cqlOperations, "CqlOperations must not be null");
+
+		this.cqlOperations = cqlOperations;
 	}
 
 	/**
 	 * Set the {@link CassandraConverter} to use.
-	 * 
+	 *
 	 * @param converter must not be {@literal null}.
 	 */
 	public void setConverter(CassandraConverter converter) {
