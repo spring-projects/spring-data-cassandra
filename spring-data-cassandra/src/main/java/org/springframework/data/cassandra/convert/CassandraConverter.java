@@ -69,7 +69,7 @@ public interface CassandraConverter
 	 * Converts the given object into one Cassandra will be able to store natively in a column.
 	 *
 	 * @param obj {@link Object} to convert, must not be {@literal null}.
-	 * @param typeInformation {@link TypeInformation} used to describe the object type; must not be {@literal null}.
+	 * @param typeInformation {@link TypeInformation} used to describe the object type; may be {@literal null}.
 	 * @return the result of the conversion.
 	 * @since 1.5
 	 */

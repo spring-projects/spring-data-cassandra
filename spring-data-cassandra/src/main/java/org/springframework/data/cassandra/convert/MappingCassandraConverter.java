@@ -677,6 +677,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 					(Class<O>) getCustomConversions().getCustomWriteTarget(value.getClass())));
 		}
 
+		if (getCustomConversions().isSimpleType(value.getClass())) {
+			// Doesn't need conversion
+			return getPotentiallyConvertedSimpleValue(value, typeInformation != null ? typeInformation.getType() : null);
+		}
+
 		TypeInformation<?> type = (typeInformation != null ? typeInformation : ClassTypeInformation.from(value.getClass()));
 		TypeInformation<?> actualType = type.getActualType();
 
