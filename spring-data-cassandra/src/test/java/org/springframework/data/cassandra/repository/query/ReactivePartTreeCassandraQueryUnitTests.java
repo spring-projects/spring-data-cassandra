@@ -95,6 +95,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	private String deriveQueryFromMethod(String method, Object... args) {
+
 		Class<?>[] types = new Class<?>[args.length];
 
 		for (int i = 0; i < args.length; i++) {
@@ -106,7 +107,8 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
 				args);
 
-		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
+		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor))
+				.toString();
 	}
 
 	private ReactivePartTreeCassandraQuery createQueryForMethod(String methodName, Class<?>... paramTypes) {

@@ -32,6 +32,8 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.Statement;
+
 /**
  * Base class for reactive {@link RepositoryQuery} implementations for Cassandra.
  *
@@ -40,11 +42,11 @@ import org.springframework.util.Assert;
  */
 public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery {
 
-	private final EntityInstantiators instantiators;
+	private final ReactiveCassandraQueryMethod method;
 
 	private final ReactiveCassandraOperations operations;
 
-	private final ReactiveCassandraQueryMethod method;
+	private final EntityInstantiators instantiators;
 
 	/**
 	 * Create a new {@link AbstractReactiveCassandraQuery} from the given {@link CassandraQueryMethod} and
@@ -97,7 +99,7 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(operations.getConverter(),
 				parameterAccessor);
 
-		String query = createQuery(convertingParameterAccessor);
+		Statement statement = createQuery(convertingParameterAccessor);
 
 		ResultProcessor resultProcessor = method.getResultProcessor().withDynamicProjection(convertingParameterAccessor);
 
@@ -109,7 +111,7 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 
 		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
 
-		return queryExecution.execute(query, resultType);
+		return queryExecution.execute(statement, resultType);
 	}
 
 	/**
@@ -117,7 +119,7 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 	 *
 	 * @param accessor must not be {@literal null}.
 	 */
-	protected abstract String createQuery(CassandraParameterAccessor accessor);
+	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
 
 	/**
 	 * Returns the execution instance to use.

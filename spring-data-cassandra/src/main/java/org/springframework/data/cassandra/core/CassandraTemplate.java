@@ -34,6 +34,9 @@ import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.convert.QueryMapper;
+import org.springframework.data.cassandra.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -75,6 +78,8 @@ public class CassandraTemplate implements CassandraOperations {
 	private final CassandraMappingContext mappingContext;
 
 	private final CqlOperations cqlOperations;
+
+	private final StatementFactory statementFactory;
 
 	/**
 	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link Session} and a default
@@ -132,8 +137,9 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(converter, "CassandraConverter must not be null");
 
 		this.converter = converter;
-		this.mappingContext = converter.getMappingContext();
 		this.cqlOperations = cqlOperations;
+		this.mappingContext = converter.getMappingContext();
+		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
 	}
 
 	private static MappingCassandraConverter newConverter() {
@@ -226,6 +232,73 @@ public class CassandraTemplate implements CassandraOperations {
 		List<T> result = select(statement, entityClass);
 
 		return result.stream().findFirst().orElse(null);
+	}
+
+	// -------------------------------------------------------------------------
+	// Methods dealing with org.springframework.data.cassandra.core.query.Query
+	// -------------------------------------------------------------------------
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public <T> List<T> select(Query query, Class<T> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return select(statementFactory.select(query, mappingContext.getRequiredPersistentEntity(entityClass)), entityClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#stream(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public <T> Stream<T> stream(Query query, Class<T> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return stream(statementFactory.select(query, mappingContext.getRequiredPersistentEntity(entityClass)), entityClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public <T> T selectOne(Query query, Class<T> entityClass) throws DataAccessException {
+
+		List<T> result = select(query, entityClass);
+
+		return (result.isEmpty() ? null : result.get(0));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(org.springframework.data.cassandra.core.query.Query, org.springframework.data.cassandra.core.query.Update, java.lang.Class)
+	 */
+	@Override
+	public boolean update(Query query, org.springframework.data.cassandra.core.query.Update update, Class<?> entityClass)
+			throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(update, "Update must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return cqlOperations
+				.execute(statementFactory.update(query, update, mappingContext.getRequiredPersistentEntity(entityClass)));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public boolean delete(Query query, Class<?> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return cqlOperations
+				.execute(statementFactory.delete(query, mappingContext.getRequiredPersistentEntity(entityClass)));
 	}
 
 	// -------------------------------------------------------------------------

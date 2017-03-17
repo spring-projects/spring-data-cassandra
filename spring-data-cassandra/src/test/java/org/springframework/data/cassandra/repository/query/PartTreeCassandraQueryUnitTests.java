@@ -34,6 +34,7 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.CassandraRepository;
@@ -45,6 +46,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.util.ClassUtils;
 
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
 
@@ -109,8 +111,9 @@ public class PartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-357
 	public void shouldDeriveFieldInCollectionQuery() {
-		String query = deriveQueryFromMethod("findByFirstnameIn", new Class[] { Collection.class },
-				Arrays.asList("Hank", "Walter"));
+
+		String query = deriveQueryFromMethod(Repo.class, "findByFirstnameIn", new Class[] { Collection.class },
+				Arrays.asList("Hank", "Walter")).toString();
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Hank','Walter');");
 	}
@@ -137,10 +140,19 @@ public class PartTreeCassandraQueryUnitTests {
 	@Test // DATACASS-357
 	public void shouldDeriveUdtInCollectionQuery() {
 
-		String query = deriveQueryFromMethod("findByMainAddressIn", new Class[] { Collection.class },
-				Collections.singleton(udtValueMock));
+		String query = deriveQueryFromMethod(Repo.class, "findByMainAddressIn", new Class[] { Collection.class },
+				Collections.singleton(udtValueMock)).toString();
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress IN ({});");
+	}
+
+	@Test // DATACASS-343
+	public void shouldRenderMappedColumnNamesForCompositePrimaryKey() {
+
+		Statement query = deriveQueryFromMethod(GroupRepository.class, "findByIdHashPrefix", new Class[] { String.class },
+				"foo");
+
+		assertThat(query.toString()).isEqualTo("SELECT * FROM group WHERE hash_prefix='foo';");
 	}
 
 	private String deriveQueryFromMethod(String method, Object... args) {
@@ -151,12 +163,13 @@ public class PartTreeCassandraQueryUnitTests {
 			types[i] = ClassUtils.getUserClass(args[i].getClass());
 		}
 
-		return deriveQueryFromMethod(method, types, args);
+		return deriveQueryFromMethod(Repo.class, method, types, args).toString();
 	}
 
-	private String deriveQueryFromMethod(String method, Class<?>[] types, Object... args) {
+	private Statement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,
+			Object... args) {
 
-		PartTreeCassandraQuery partTreeQuery = createQueryForMethod(method, types);
+		PartTreeCassandraQuery partTreeQuery = createQueryForMethod(repositoryInterface, method, types);
 
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
 				args);
@@ -164,17 +177,14 @@ public class PartTreeCassandraQueryUnitTests {
 		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
 	}
 
-	private PartTreeCassandraQuery createQueryForMethod(String methodName, Class<?>... paramTypes) {
-
-		Class<?>[] userTypes = Arrays.stream(paramTypes)//
+	private PartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface,String methodName, Class<?>... paramTypes) {Class<?>[] userTypes = Arrays.stream(paramTypes)//
 				.map(it -> it.getName().contains("Mockito") ? it.getSuperclass() : it)//
 				.toArray(size -> new Class<?>[size]);
-
 		try {
-			Method method = Repo.class.getMethod(methodName, userTypes);
+			Method method = repositoryInterface.getMethod(methodName, userTypes);
 			ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, new DefaultRepositoryMetadata(Repo.class),
-					factory, mappingContext);
+			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method,
+					new DefaultRepositoryMetadata(repositoryInterface), factory, mappingContext);
 
 			return new PartTreeCassandraQuery(queryMethod, mockCassandraOperations);
 		} catch (NoSuchMethodException e) {
@@ -182,6 +192,12 @@ public class PartTreeCassandraQueryUnitTests {
 		} catch (SecurityException e) {
 			throw new IllegalArgumentException(e.getMessage(), e);
 		}
+	}
+
+	@SuppressWarnings("unused")
+	interface GroupRepository extends CassandraRepository<Group> {
+
+		Group findByIdHashPrefix(String hashPrefix);
 	}
 
 	@SuppressWarnings("unused")
