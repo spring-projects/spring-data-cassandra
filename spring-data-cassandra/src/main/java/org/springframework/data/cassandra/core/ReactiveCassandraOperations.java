@@ -24,6 +24,7 @@ import org.springframework.cassandra.core.ReactiveCqlOperations;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.query.Query;
 
 import com.datastax.driver.core.Statement;
 
@@ -86,6 +87,40 @@ public interface ReactiveCassandraOperations {
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
 	<T> Mono<T> selectOne(Statement statement, Class<T> entityClass) throws DataAccessException;
+
+	// -------------------------------------------------------------------------
+	// Methods dealing with org.springframework.data.cassandra.core.query.Query
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Execute a {@code SELECT} query and convert the resulting items to a stream of entities.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the result objects returned by the action.
+	 * @throws DataAccessException if there is any problem issuing the execution.
+	 */
+	<T> Flux<T> select(Query query, Class<T> entityClass) throws DataAccessException;
+
+	/**
+	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the result object returned by the action or {@link Mono#empty()}
+	 * @throws DataAccessException if there is any problem issuing the execution.
+	 */
+	<T> Mono<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException;
+
+	/**
+	 * Remove objects (rows)/columns from the table by {@link Query}.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return {@literal true} if the deletion was applied.
+	 * @throws DataAccessException if there is any problem issuing the execution.
+	 */
+	Mono<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with entities

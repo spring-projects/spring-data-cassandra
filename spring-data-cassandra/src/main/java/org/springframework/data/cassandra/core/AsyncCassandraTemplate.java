@@ -34,6 +34,8 @@ import org.springframework.cassandra.core.support.CQLExceptionTranslator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.convert.QueryMapper;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
@@ -77,6 +79,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	private final CassandraMappingContext mappingContext;
 
 	private final CQLExceptionTranslator exceptionTranslator;
+
+	private final StatementFactory statementFactory;
 
 	/**
 	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link Session} and a default
@@ -137,6 +141,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		this.mappingContext = converter.getMappingContext();
 		this.cqlOperations = asyncCqlTemplate;
 		this.exceptionTranslator = asyncCqlTemplate.getExceptionTranslator();
+		this.statementFactory = new StatementFactory(new QueryMapper(converter));
 	}
 
 	/*
@@ -245,6 +250,60 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		return new MappingListenableFutureAdapter<>(select(statement, entityClass),
 				list -> list.stream().findFirst().orElse(null));
+	}
+
+	// -------------------------------------------------------------------------
+	// Methods dealing with org.springframework.data.cassandra.core.query.Query
+	// -------------------------------------------------------------------------
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public <T> ListenableFuture<List<T>> select(Query query, Class<T> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return select(statementFactory.select(query, getPersistentEntity(entityClass)), entityClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(org.springframework.data.cassandra.core.query.Query, java.util.function.Consumer, java.lang.Class)
+	 */
+	@Override
+	public <T> ListenableFuture<Void> select(Query query, Consumer<T> entityConsumer, Class<T> entityClass)
+			throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return select(statementFactory.select(query, getPersistentEntity(entityClass)), entityConsumer, entityClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#selectOne(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public <T> ListenableFuture<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return selectOne(statementFactory.select(query, getPersistentEntity(entityClass)), entityClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#delete(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public ListenableFuture<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return cqlOperations.execute(statementFactory.delete(query, getPersistentEntity(entityClass)));
 	}
 
 	// -------------------------------------------------------------------------

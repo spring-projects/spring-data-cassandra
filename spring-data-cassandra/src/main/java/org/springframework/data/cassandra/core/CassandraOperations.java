@@ -25,6 +25,9 @@ import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.query.Query;
+
+import com.datastax.driver.core.Statement;
 
 import com.datastax.driver.core.Statement;
 
@@ -148,6 +151,54 @@ public interface CassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> T selectOne(Statement statement, Class<T> entityClass) throws DataAccessException;
+
+	// -------------------------------------------------------------------------
+	// Methods dealing with org.springframework.data.cassandra.core.query.Query
+	// -------------------------------------------------------------------------
+	/**
+	 * Execute a {@code SELECT} query and convert the resulting items to a {@link List} of entities.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the converted results
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 2.0
+	 */
+	<T> List<T> select(Query query, Class<T> entityClass) throws DataAccessException;
+
+	/**
+	 * Execute a {@code SELECT} query and convert the resulting items to a {@link Iterator} of entities.
+	 * <p>
+	 * Returns a {@link Iterator} that wraps the Cassandra {@link com.datastax.driver.core.ResultSet}.
+	 *
+	 * @param <T> element return type.
+	 * @param query query to execute. Must not be empty or {@literal null}.
+	 * @param entityClass Class type of the elements in the {@link Iterator} stream. Must not be {@literal null}.
+	 * @return an {@link Iterator} (stream) over the elements in the query result set.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 2.0
+	 */
+	<T> Stream<T> stream(Query query, Class<T> entityClass) throws DataAccessException;
+
+	/**
+	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the converted object or {@literal null}.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 2.0
+	 */
+	<T> T selectOne(Query query, Class<T> entityClass) throws DataAccessException;
+
+	/**
+	 * Remove objects (rows)/columns from the table by {@link Query}.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	boolean delete(Query query, Class<?> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with entities

@@ -33,6 +33,8 @@ import org.springframework.cassandra.core.session.ReactiveSessionFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.convert.QueryMapper;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
@@ -71,6 +73,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	private final CassandraMappingContext mappingContext;
 
 	private final ReactiveCqlOperations cqlOperations;
+
+	private final StatementFactory statementFactory;
 
 	/**
 	 * Creates an instance of {@link ReactiveCassandraTemplate} initialized with the given {@link ReactiveSession} and a
@@ -116,6 +120,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		this.converter = converter;
 		this.mappingContext = this.converter.getMappingContext();
 		this.cqlOperations = new ReactiveCqlTemplate(sessionFactory);
+		this.statementFactory = new StatementFactory(new QueryMapper(converter));
 	}
 
 	/**
@@ -137,6 +142,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		this.converter = converter;
 		this.mappingContext = this.converter.getMappingContext();
 		this.cqlOperations = reactiveCqlOperations;
+		this.statementFactory = new StatementFactory(new QueryMapper(converter));
 	}
 
 	private static MappingCassandraConverter newConverter() {
@@ -197,6 +203,46 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	@Override
 	public <T> Mono<T> selectOne(Statement statement, Class<T> entityClass) {
 		return select(statement, entityClass).next();
+	}
+
+	// -------------------------------------------------------------------------
+	// Methods dealing with org.springframework.data.cassandra.core.query.Query
+	// -------------------------------------------------------------------------
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#select(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public <T> Flux<T> select(Query query, Class<T> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return select(statementFactory.select(query, getPersistentEntity(entityClass)), entityClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#selectOne(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public <T> Mono<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return selectOne(statementFactory.select(query, getPersistentEntity(entityClass)), entityClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public Mono<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return cqlOperations.execute(statementFactory.delete(query, getPersistentEntity(entityClass)));
 	}
 
 	// -------------------------------------------------------------------------

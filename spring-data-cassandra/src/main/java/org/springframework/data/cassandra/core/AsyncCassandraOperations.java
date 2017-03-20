@@ -23,6 +23,7 @@ import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.driver.core.Statement;
@@ -127,6 +128,53 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> ListenableFuture<T> selectOne(Statement statement, Class<T> entityClass) throws DataAccessException;
+
+	// -------------------------------------------------------------------------
+	// Methods dealing with org.springframework.data.cassandra.core.query.Query
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Execute a {@code SELECT} query and convert the resulting items to a {@link List} of entities.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the converted results
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	<T> ListenableFuture<List<T>> select(Query query, Class<T> entityClass) throws DataAccessException;
+
+	/**
+	 * Execute a {@code SELECT} query and convert the resulting items notifying {@link Consumer} for each entity.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityConsumer object that will be notified on each entity, one object at a time, must not be
+	 *          {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the completion handle
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	<T> ListenableFuture<Void> select(Query query, Consumer<T> entityConsumer, Class<T> entityClass)
+			throws DataAccessException;
+
+	/**
+	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the converted object or {@literal null}.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	<T> ListenableFuture<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException;
+
+	/**
+	 * Remove objects (rows)/columns from the table by {@link Query}.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return {@literal true} if the deletion was applied.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	ListenableFuture<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with entities

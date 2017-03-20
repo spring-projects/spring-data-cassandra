@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,11 +28,16 @@ import org.junit.Test;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.query.ChainedCriteria;
+import org.springframework.data.cassandra.core.query.Columns;
+import org.springframework.data.cassandra.core.query.Criteria;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.cassandra.test.integration.simpletons.BookReference;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
+import org.springframework.data.domain.Sort;
 
 import com.datastax.driver.core.utils.UUIDs;
 
@@ -58,6 +64,62 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		SchemaTestUtils.truncate(Person.class, template);
 		SchemaTestUtils.truncate(UserToken.class, template);
 		SchemaTestUtils.truncate(BookReference.class, template);
+	}
+
+	@Test // DATACASS-343
+	public void shouldSelectByQueryWithAllowFiltering() {
+
+		UserToken userToken = new UserToken();
+		userToken.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+		userToken.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		userToken.setUserComment("cook");
+
+		template.insert(userToken);
+
+		Query query = Query.from(ChainedCriteria.where("userId").is(userToken.getUserId()).and("userComment").is("cook"))
+				.withAllowFiltering();
+		UserToken loaded = template.selectOne(query, UserToken.class);
+
+		assertThat(loaded).isNotNull();
+		assertThat(loaded.getUserComment()).isEqualTo("cook");
+	}
+
+	@Test // DATACASS-343
+	public void shouldSelectByQueryWithSorting() {
+
+		UserToken token1 = new UserToken();
+		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserComment("foo");
+
+		UserToken token2 = new UserToken();
+		token2.setUserId(token1.getUserId());
+		token2.setToken(UUIDs.endOf(System.currentTimeMillis() + 100));
+		token2.setUserComment("bar");
+
+		template.insert(token1);
+		template.insert(token2);
+
+		Query query = Query.from(ChainedCriteria.where("userId").is(token1.getUserId())).with(new Sort("token"));
+		List<UserToken> loaded = template.select(query, UserToken.class);
+
+		assertThat(loaded).containsSequence(token1, token2);
+	}
+
+	@Test // DATACASS-343
+	public void shouldSelectOneByQuery() {
+
+		UserToken token1 = new UserToken();
+		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserComment("foo");
+
+		template.insert(token1);
+
+		Query query = Query.from(Criteria.where("userId").is(token1.getUserId()));
+		UserToken loaded = template.selectOne(query, UserToken.class);
+
+		assertThat(loaded).isEqualTo(token1);
 	}
 
 	@Test // DATACASS-292
@@ -98,6 +160,34 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assertThat(template.selectOneById(person.getId(), Person.class)).isEqualTo(person);
 	}
 
+	@Test // DATACASS-343
+	public void deleteByQueryShouldRemoveEntity() {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+		template.insert(person);
+
+		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+		assertThat(template.delete(query, Person.class)).isTrue();
+
+		assertThat(template.selectOneById(person.getId(), Person.class)).isNull();
+	}
+
+	@Test // DATACASS-343
+	public void deleteColumnsByQueryShouldRemoveColumn() {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+		template.insert(person);
+
+		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+		query.with(Columns.from("lastname"));
+
+		assertThat(template.delete(query, Person.class)).isTrue();
+
+		Person loaded = template.selectOneById(person.getId(), Person.class);
+		assertThat(loaded.getFirstname()).isEqualTo("Walter");
+		assertThat(loaded.getLastname()).isNull();
+	}
+
 	@Test // DATACASS-292
 	public void deleteShouldRemoveEntity() {
 
@@ -129,6 +219,19 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		template.insert(person);
 
 		Stream<Person> stream = template.stream("SELECT * FROM person", Person.class);
+
+		assertThat(stream.collect(Collectors.toList())).hasSize(1).contains(person);
+	}
+
+	@Test // DATACASS-343
+	public void streamByQuery() {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+		template.insert(person);
+
+		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+
+		Stream<Person> stream = template.stream(query, Person.class);
 
 		assertThat(stream.collect(Collectors.toList())).hasSize(1).contains(person);
 	}

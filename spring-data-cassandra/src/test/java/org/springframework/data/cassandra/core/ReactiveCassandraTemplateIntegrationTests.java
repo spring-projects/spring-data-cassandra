@@ -25,8 +25,16 @@ import org.springframework.cassandra.core.ReactiveCqlTemplate;
 import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.query.ChainedCriteria;
+import org.springframework.data.cassandra.core.query.Columns;
+import org.springframework.data.cassandra.core.query.Criteria;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
+import org.springframework.data.domain.Sort;
+
+import com.datastax.driver.core.utils.UUIDs;
 
 /**
  * Integration tests for {@link ReactiveCassandraTemplate}.
@@ -47,7 +55,9 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		template = new ReactiveCassandraTemplate(new ReactiveCqlTemplate(session), converter);
 
 		SchemaTestUtils.potentiallyCreateTableFor(Person.class, cassandraTemplate);
+		SchemaTestUtils.potentiallyCreateTableFor(UserToken.class, cassandraTemplate);
 		SchemaTestUtils.truncate(Person.class, cassandraTemplate);
+		SchemaTestUtils.truncate(UserToken.class, cassandraTemplate);
 	}
 
 	@Test // DATACASS-335
@@ -87,6 +97,34 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		StepVerifier.create(template.selectOneById(person.getId(), Person.class)).expectNext(person).verifyComplete();
 	}
 
+	@Test // DATACASS-343
+	public void deleteByQueryShouldRemoveEntity() {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+		template.insert(person).block();
+
+		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+		assertThat(template.delete(query, Person.class).block()).isTrue();
+
+		assertThat(template.selectOneById(person.getId(), Person.class).block()).isNull();
+	}
+
+	@Test // DATACASS-343
+	public void deleteColumnsByQueryShouldRemoveColumn() {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+		template.insert(person).block();
+
+		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+		query.with(Columns.from("lastname"));
+
+		assertThat(template.delete(query, Person.class).block()).isTrue();
+
+		Person loaded = template.selectOneById(person.getId(), Person.class).block();
+		assertThat(loaded.getFirstname()).isEqualTo("Walter");
+		assertThat(loaded.getLastname()).isNull();
+	}
+
 	@Test // DATACASS-335
 	public void deleteShouldRemoveEntity() {
 
@@ -109,5 +147,41 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		StepVerifier.create(template.deleteById(person.getId(), Person.class)).expectNext(true).verifyComplete();
 
 		StepVerifier.create(template.selectOneById(person.getId(), Person.class)).verifyComplete();
+	}
+
+	@Test // DATACASS-343
+	public void shouldSelectByQueryWithSorting() {
+
+		UserToken token1 = new UserToken();
+		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserComment("foo");
+
+		UserToken token2 = new UserToken();
+		token2.setUserId(token1.getUserId());
+		token2.setToken(UUIDs.endOf(System.currentTimeMillis() + 100));
+		token2.setUserComment("bar");
+
+		template.insert(token1).block();
+		template.insert(token2).block();
+
+		Query query = Query.from(ChainedCriteria.where("userId").is(token1.getUserId())).with(new Sort("token"));
+
+		assertThat(template.select(query, UserToken.class).collectList().block()).containsSequence(token1, token2);
+	}
+
+	@Test // DATACASS-343
+	public void shouldSelectOneByQuery() {
+
+		UserToken token1 = new UserToken();
+		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserComment("foo");
+
+		template.insert(token1).block();
+
+		Query query = Query.from(Criteria.where("userId").is(token1.getUserId()));
+
+		assertThat(template.selectOne(query, UserToken.class).block()).isEqualTo(token1);
 	}
 }
