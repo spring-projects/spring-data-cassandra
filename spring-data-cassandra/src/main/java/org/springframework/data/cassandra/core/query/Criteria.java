@@ -60,13 +60,13 @@ public class Criteria implements CriteriaDefinition {
 	}
 
 	/**
-	 * Static factory method to create a {@link Criteria} using the provided key
+	 * Static factory method to create a {@link Criteria} using the provided {@code columnName}.
 	 *
-	 * @param key
+	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link ChainedCriteria} for {@code columnName}.
 	 */
-	public static Criteria where(String key) {
-		return new Criteria(ColumnName.from(key));
+	public static Criteria where(String columnName) {
+		return new Criteria(ColumnName.from(columnName));
 	}
 
 	/**

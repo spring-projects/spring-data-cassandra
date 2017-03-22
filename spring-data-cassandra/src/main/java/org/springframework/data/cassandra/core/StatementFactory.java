@@ -17,10 +17,13 @@ package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.cassandra.core.QueryOptionsUtil;
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.QueryMapper;
+import org.springframework.data.cassandra.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.query.Columns.ColumnSelector;
 import org.springframework.data.cassandra.core.query.Columns.FunctionCall;
 import org.springframework.data.cassandra.core.query.Columns.Selector;
@@ -28,6 +31,16 @@ import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition.Predicate;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.data.cassandra.core.query.Update.AddToMapOp;
+import org.springframework.data.cassandra.core.query.Update.AddToOp;
+import org.springframework.data.cassandra.core.query.Update.AddToOp.Mode;
+import org.springframework.data.cassandra.core.query.Update.IncrOp;
+import org.springframework.data.cassandra.core.query.Update.RemoveOp;
+import org.springframework.data.cassandra.core.query.Update.SetAtIndexOp;
+import org.springframework.data.cassandra.core.query.Update.SetAtKeyOp;
+import org.springframework.data.cassandra.core.query.Update.SetOp;
+import org.springframework.data.cassandra.core.query.Update.UpdateOp;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
@@ -35,6 +48,7 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Assignment;
 import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Ordering;
@@ -42,7 +56,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Select.SelectionOrAlias;
-import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * Statement factory to render {@link Statement} from {@link Query} and {@link Update} objects.
@@ -54,16 +67,30 @@ public class StatementFactory {
 
 	private final QueryMapper queryMapper;
 
+	private final UpdateMapper updateMapper;
+
 	/**
-	 * Create {@link StatementFactory} given {@link QueryMapper}.
+	 * Create {@link StatementFactory} given {@link UpdateMapper}.
 	 *
 	 * @param updateMapper must not be {@literal null}.
 	 */
-	public StatementFactory(QueryMapper queryMapper) {
+	public StatementFactory(UpdateMapper updateMapper) {
+		this(updateMapper, updateMapper);
+	}
+
+	/**
+	 * Create {@link StatementFactory} given {@link QueryMapper} and {@link UpdateMapper}.
+	 *
+	 * @param queryMapper must not be {@literal null}.
+	 * @param updateMapper must not be {@literal null}.
+	 */
+	public StatementFactory(QueryMapper queryMapper, UpdateMapper updateMapper) {
 
 		Assert.notNull(queryMapper, "QueryMapper must not be null");
+		Assert.notNull(updateMapper, "UpdateMapper must not be null");
 
 		this.queryMapper = queryMapper;
+		this.updateMapper = updateMapper;
 	}
 
 	/**
@@ -162,6 +189,132 @@ public class StatementFactory {
 		return selection.column(selector.getExpression());
 	}
 
+	/**
+	 * Create an {@literal UPDATE} statement by mapping {@link Query} to {@link Update}.
+	 *
+	 * @param query
+	 * @param entity
+	 * @return
+	 */
+	public RegularStatement update(Query query, Update updateObj, CassandraPersistentEntity<?> entity) {
+
+		Update mappedUpdate = updateMapper.getMappedObject(updateObj, entity);
+		Filter filter = queryMapper.getMappedObject(query, entity);
+
+		com.datastax.driver.core.querybuilder.Update update = update(entity.getTableName(), mappedUpdate, filter);
+
+		query.getQueryOptions().ifPresent(queryOptions -> {
+
+			if (queryOptions instanceof WriteOptions) {
+				QueryOptionsUtil.addWriteOptions(update, (WriteOptions) queryOptions);
+			} else {
+				QueryOptionsUtil.addQueryOptions(update, queryOptions);
+			}
+		});
+
+		query.getPagingState().ifPresent(update::setPagingState);
+
+		return update;
+	}
+
+	private static com.datastax.driver.core.querybuilder.Update update(CqlIdentifier table, Update mappedUpdate,
+			Filter filter) {
+
+		com.datastax.driver.core.querybuilder.Update update = QueryBuilder.update(table.toCql());
+
+		for (UpdateOp updateOp : mappedUpdate.getUpdateOperations()) {
+			update.with(getAssignment(updateOp));
+		}
+
+		for (CriteriaDefinition criteriaDefinition : filter) {
+			update.where(toClause(criteriaDefinition));
+		}
+
+		return update;
+	}
+
+	private static Assignment getAssignment(UpdateOp updateOp) {
+
+		if (updateOp instanceof SetOp) {
+			return getAssignment((SetOp) updateOp);
+		}
+
+		if (updateOp instanceof RemoveOp) {
+			return getAssignment((RemoveOp) updateOp);
+		}
+
+		if (updateOp instanceof IncrOp) {
+			return getAssignment((IncrOp) updateOp);
+		}
+
+		if (updateOp instanceof AddToOp) {
+			return getAssignment((AddToOp) updateOp);
+		}
+
+		if (updateOp instanceof AddToMapOp) {
+			return getAssignment((AddToMapOp) updateOp);
+		}
+
+		throw new IllegalArgumentException(String.format("UpdateOp %s not supported", updateOp));
+	}
+
+	private static Assignment getAssignment(IncrOp incrOp) {
+
+		if (incrOp.getValue() > 0) {
+			return QueryBuilder.incr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue()));
+		}
+
+		return QueryBuilder.decr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue()));
+	}
+
+	private static Assignment getAssignment(SetOp updateOp) {
+
+		if (updateOp instanceof SetAtIndexOp) {
+
+			SetAtIndexOp op = (SetAtIndexOp) updateOp;
+
+			return QueryBuilder.setIdx(op.getColumnName().toCql(), op.getIndex(), op.getValue());
+		}
+
+		if (updateOp instanceof SetAtKeyOp) {
+
+			SetAtKeyOp op = (SetAtKeyOp) updateOp;
+			return QueryBuilder.put(op.getColumnName().toCql(), op.getKey(), op.getValue());
+		}
+
+		return QueryBuilder.set(updateOp.getColumnName().toCql(), updateOp.getValue());
+	}
+
+	private static Assignment getAssignment(RemoveOp updateOp) {
+
+		if (updateOp.getValue() instanceof Set) {
+			return QueryBuilder.removeAll(updateOp.getColumnName().toCql(), (Set) updateOp.getValue());
+		}
+
+		if (updateOp.getValue() instanceof List) {
+			return QueryBuilder.discardAll(updateOp.getColumnName().toCql(), (List) updateOp.getValue());
+		}
+
+		return QueryBuilder.remove(updateOp.getColumnName().toCql(), updateOp.getValue());
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Assignment getAssignment(AddToOp updateOp) {
+
+		if (updateOp.getValue() instanceof Set) {
+			return QueryBuilder.addAll(updateOp.getColumnName().toCql(), (Set) updateOp.getValue());
+		}
+
+		if (updateOp.getMode() == Mode.PREPEND) {
+			return QueryBuilder.prependAll(updateOp.getColumnName().toCql(), (List) updateOp.getValue());
+		}
+
+		return QueryBuilder.appendAll(updateOp.getColumnName().toCql(), (List) updateOp.getValue());
+	}
+
+	private static Assignment getAssignment(AddToMapOp updateOp) {
+		return QueryBuilder.putAll(updateOp.getColumnName().toCql(), updateOp.getValue());
+	}
 
 	/**
 	 * Create a {@literal DELETE} statement by mapping {@link Query} to {@link Delete}.

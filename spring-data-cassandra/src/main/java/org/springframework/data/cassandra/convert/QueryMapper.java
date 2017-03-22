@@ -48,7 +48,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
- * Map {@link org.springframework.data.cassandra.core.query.Query} to CQL.
+ * Map {@link org.springframework.data.cassandra.core.query.Query} to CQL-specific data types.
  *
  * @author Mark Paluch
  * @since 2.0
@@ -89,7 +89,7 @@ public class QueryMapper {
 
 		for (CriteriaDefinition criteriaDefinition : filter) {
 
-			Field field = createPropertyField(entity, criteriaDefinition.getColumnName(), mappingContext);
+			Field field = createPropertyField(entity, criteriaDefinition.getColumnName());
 
 			Predicate predicate = criteriaDefinition.getPredicate();
 
@@ -129,7 +129,7 @@ public class QueryMapper {
 
 		for (ColumnName column : columns) {
 
-			Field field = createPropertyField(entity, column, mappingContext);
+			Field field = createPropertyField(entity, column);
 
 			if (field.getProperty() != null) {
 				seen.add(field.getProperty());
@@ -224,7 +224,7 @@ public class QueryMapper {
 
 		for (ColumnName column : columns) {
 
-			Field field = createPropertyField(entity, column, mappingContext);
+			Field field = createPropertyField(entity, column);
 
 			if (field.getProperty() != null) {
 				seen.add(field.getProperty());
@@ -275,7 +275,7 @@ public class QueryMapper {
 		for (Order order : sort) {
 
 			ColumnName columnName = ColumnName.from(order.getProperty());
-			Field field = createPropertyField(entity, columnName, mappingContext);
+			Field field = createPropertyField(entity, columnName);
 
 			Order mappedOrder = getCqlIdentifier(columnName, field)
 					.map(cqlIdentifier -> new Order(order.getDirection(), cqlIdentifier.toCql())).orElse(order);
@@ -307,11 +307,9 @@ public class QueryMapper {
 	/**
 	 * @param entity
 	 * @param key
-	 * @param mappingContext
 	 * @return
 	 */
-	protected Field createPropertyField(CassandraPersistentEntity<?> entity, ColumnName key,
-			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+	protected Field createPropertyField(CassandraPersistentEntity<?> entity, ColumnName key) {
 		return entity == null ? new Field(key) : new MetadataBackedField(key, entity, mappingContext);
 	}
 
@@ -402,8 +400,8 @@ public class QueryMapper {
 		}
 
 		/**
-		 * Creates a new {@link MetadataBackedField} with the given name, {@link MongoPersistentEntity} and
-		 * {@link MappingContext} with the given {@link MongoPersistentProperty}.
+		 * Creates a new {@link MetadataBackedField} with the given name, {@link CassandraPersistentProperty} and
+		 * {@link MappingContext} with the given {@link CassandraPersistentProperty}.
 		 *
 		 * @param name must not be {@literal null} or empty.
 		 * @param entity must not be {@literal null}.

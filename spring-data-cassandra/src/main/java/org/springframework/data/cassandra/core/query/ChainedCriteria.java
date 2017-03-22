@@ -62,13 +62,13 @@ public class ChainedCriteria extends Criteria implements Filter {
 	}
 
 	/**
-	 * Static factory method to create a {@link ChainedCriteria} using the provided key
+	 * Static factory method to create a {@link ChainedCriteria} using the provided {@code columnName}.
 	 *
-	 * @param key
+	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link ChainedCriteria} for {@code columnName}.
 	 */
-	public static ChainedCriteria where(String key) {
-		return new ChainedCriteria(ColumnName.from(key));
+	public static ChainedCriteria where(String columnName) {
+		return new ChainedCriteria(ColumnName.from(columnName));
 	}
 
 	/**

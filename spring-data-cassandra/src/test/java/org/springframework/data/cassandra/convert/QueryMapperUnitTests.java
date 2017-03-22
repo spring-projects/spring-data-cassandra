@@ -33,7 +33,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.query.ColumnName;
 import org.springframework.data.cassandra.core.query.Columns;
@@ -44,6 +43,7 @@ import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.TypeWithKeyClass;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.UserDefinedType;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
@@ -65,6 +65,7 @@ import com.datastax.driver.core.UserType;
 public class QueryMapperUnitTests {
 
 	BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+	CassandraPersistentEntity<?> persistentEntity;
 	MappingCassandraConverter cassandraConverter;
 	QueryMapper queryMapper;
 
@@ -96,7 +97,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("foo_name").is("bar"));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -109,7 +110,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("foo_name").is(State.Active));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -121,7 +122,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("number").is(State.Inactive));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -133,7 +134,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("number").in(State.Inactive));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -146,7 +147,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("foo_name").is(Currency.getInstance("EUR")));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -159,7 +160,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("foo_name").in(Currency.getInstance("EUR")));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -172,7 +173,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("address").is(new Address("21 Jump-Street")));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -186,7 +187,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("address").in(new Address("21 Jump-Street")));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -200,7 +201,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("addresses").in(new Address("21 Jump-Street")));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -214,7 +215,7 @@ public class QueryMapperUnitTests {
 
 		Query query = Query.from(Criteria.where("firstName").is("bar"));
 
-		Filter mappedObject = queryMapper.getMappedObject(query, mappingContext.getPersistentEntity(Person.class));
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
@@ -225,8 +226,7 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSelectExpression() {
 
-		List<Selector> selectors = queryMapper.getMappedSelectors(Columns.empty(),
-				mappingContext.getPersistentEntity(Person.class));
+		List<Selector> selectors = queryMapper.getMappedSelectors(Columns.empty(), persistentEntity);
 
 		assertThat(selectors).isEmpty();
 	}
@@ -235,7 +235,7 @@ public class QueryMapperUnitTests {
 	public void shouldCreateSelectExpressionWithExclusion() {
 
 		List<String> selectors = queryMapper.getMappedColumnNames(Columns.empty().exclude("id").exclude("number"),
-				mappingContext.getPersistentEntity(Person.class));
+				persistentEntity);
 
 		assertThat(selectors).contains("address").contains("first_name").doesNotContain("id").doesNotContain("number");
 	}
@@ -255,7 +255,7 @@ public class QueryMapperUnitTests {
 	public void shouldIncludeColumnsSelectExpressionWithTTL() {
 
 		List<String> selectors = queryMapper.getMappedColumnNames(Columns.from("number", "foo").ttl("firstName"),
-				mappingContext.getPersistentEntity(Person.class));
+				persistentEntity);
 
 		assertThat(selectors).contains("number").contains("foo").hasSize(2);
 	}
@@ -320,15 +320,6 @@ public class QueryMapperUnitTests {
 	static class Address {
 
 		String street;
-	}
-
-	enum CurrencyConverter implements Converter<Currency, String> {
-		INSTANCE;
-
-		@Override
-		public String convert(Currency source) {
-			return source.getDisplayName(Locale.ENGLISH);
-		}
 	}
 
 	enum State {

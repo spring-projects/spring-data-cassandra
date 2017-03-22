@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.query;
 import java.util.Optional;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.util.Assert;
 
 /**
  * Value object representing a column name. Column names can be expressed either through {@link CqlIdentifier} or a
@@ -41,6 +42,9 @@ public abstract class ColumnName {
 	 * @see CqlIdentifier
 	 */
 	public static ColumnName from(CqlIdentifier cqlIdentifier) {
+
+		Assert.notNull(cqlIdentifier, "Column name must not be null");
+
 		return new CqlIdentifierColumnName(cqlIdentifier);
 	}
 
@@ -48,10 +52,14 @@ public abstract class ColumnName {
 	 * Create a {@link ColumnName} given a string {@code columnName}. The resulting instance uses String rules to identify
 	 * column names (case-sensitivity).
 	 *
-	 * @param columnName must not be {@literal null}.
+	 * @param columnName must not be {@literal null} or empty.
 	 * @return the {@link ColumnName} for {@link CqlIdentifier}
 	 */
 	public static ColumnName from(String columnName) {
+
+		Assert.notNull(columnName, "Column name must not be null");
+		Assert.hasText(columnName, "Column name must not be empty");
+
 		return new StringColumnName(columnName);
 	}
 
