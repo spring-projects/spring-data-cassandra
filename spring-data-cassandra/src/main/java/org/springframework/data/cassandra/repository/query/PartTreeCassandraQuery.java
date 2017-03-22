@@ -37,9 +37,9 @@ import com.datastax.driver.core.Statement;
  */
 public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 
-	private final CassandraMappingContext mappingContext;
-
 	private final PartTree tree;
+
+	private final CassandraMappingContext mappingContext;
 
 	private final StatementFactory statementFactory;
 

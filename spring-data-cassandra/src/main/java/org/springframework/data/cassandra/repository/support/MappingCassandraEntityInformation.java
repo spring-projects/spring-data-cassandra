@@ -31,8 +31,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link CassandraEntityInformation} implementation using a {@link CassandraPersistentEntity} instance to lookup the
- * necessary information. Can be configured with a custom collection to be returned which will trump the one returned by
- * the {@link CassandraPersistentEntity} if given.
+ * necessary information.
  *
  * @author Alex Shvid
  * @author Matthew T. Adams

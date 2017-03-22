@@ -61,9 +61,9 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 	protected static Logger log = LoggerFactory.getLogger(AbstractCassandraQuery.class);
 
-	private final CassandraOperations template;
-
 	private final CassandraQueryMethod queryMethod;
+
+	private final CassandraOperations operations;
 
 	private final EntityInstantiators instantiators;
 
@@ -80,7 +80,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		Assert.notNull(operations, "CassandraOperations must not be null");
 
 		this.queryMethod = queryMethod;
-		this.template = operations;
+		this.operations = operations;
 		this.instantiators = new EntityInstantiators();
 	}
 
@@ -98,7 +98,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 
-		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(template.getConverter(),
+		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(operations.getConverter(),
 				new CassandraParametersParameterAccessor(queryMethod, parameters));
 
 		ResultProcessor resultProcessor = queryMethod.getResultProcessor().withDynamicProjection(parameterAccessor);
@@ -106,10 +106,10 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		Statement statement = createQuery(parameterAccessor);
 
 		CassandraQueryExecution queryExecution = getExecution(
-				new ResultProcessingConverter(resultProcessor, template.getConverter().getMappingContext(), instantiators));
+				new ResultProcessingConverter(resultProcessor, operations.getConverter().getMappingContext(), instantiators));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
-				template.getConverter().getCustomConversions());
+				operations.getConverter().getCustomConversions());
 
 		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
 
@@ -128,13 +128,13 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	private CassandraQueryExecution getExecutionToWrap(Converter<Object, Object> resultProcessing) {
 
 		if (queryMethod.isCollectionQuery()) {
-			return new CollectionExecution(template);
+			return new CollectionExecution(operations);
 		} else if (queryMethod.isResultSetQuery()) {
-			return new ResultSetQuery(template);
+			return new ResultSetQuery(operations);
 		} else if (queryMethod.isStreamQuery()) {
-			return new StreamExecution(template, resultProcessing);
+			return new StreamExecution(operations, resultProcessing);
 		} else {
-			return new SingleEntityExecution(template);
+			return new SingleEntityExecution(operations);
 		}
 	}
 
@@ -160,7 +160,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 			results = new ArrayList<>();
 		}
 
-		CassandraConverter converter = template.getConverter();
+		CassandraConverter converter = operations.getConverter();
 
 		for (Row row : resultSet) {
 			results.add(converter.read(returnedUnwrappedObjectType, row));
@@ -179,7 +179,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	@Deprecated
 	public Object getSingleEntity(ResultSet resultSet, Class<?> type) {
 
-		Object result = (resultSet.isExhausted() ? null : template.getConverter().read(type, resultSet.one()));
+		Object result = (resultSet.isExhausted() ? null : operations.getConverter().read(type, resultSet.one()));
 
 		warnIfMoreResults(resultSet);
 
@@ -230,7 +230,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 */
 	@Deprecated
 	public ConversionService getConversionService() {
-		return template.getConverter().getConversionService();
+		return operations.getConverter().getConversionService();
 	}
 
 	/**
