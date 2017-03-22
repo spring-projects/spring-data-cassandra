@@ -166,6 +166,11 @@ public class CassandraQueryMethod extends QueryMethod {
 		return AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
 	}
 
+	@Override
+	protected Class<?> getDomainClass() {
+		return super.getDomainClass();
+	}
+
 	/**
 	 * @return the return type for this {@link QueryMethod}.
 	 */

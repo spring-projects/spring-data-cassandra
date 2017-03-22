@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,7 @@ import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
 
 /**
  * String-based {@link AbstractCassandraQuery} implementation.
@@ -74,22 +72,19 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 			SpelExpressionParser expressionParser, EvaluationContextProvider evaluationContextProvider) {
 
 		super(queryMethod, operations);
-
-		Cluster cluster = operations.getCqlOperations().execute(Session::getCluster);
-
-		CodecRegistry codecRegistry = cluster.getConfiguration().getCodecRegistry();
-
 		this.stringBasedQuery = new StringBasedQuery(query,
-				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider), codecRegistry);
+				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor)
 	 */
 	@Override
-	public String createQuery(CassandraParameterAccessor parameterAccessor) {
+	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
+
 		try {
-			String boundQuery = stringBasedQuery.bindQuery(parameterAccessor, getQueryMethod());
+
+			SimpleStatement boundQuery = stringBasedQuery.bindQuery(parameterAccessor, getQueryMethod());
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(String.format("Created query [%s].", boundQuery));

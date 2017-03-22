@@ -49,6 +49,7 @@ import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Statement;
 
 /**
  * Base class for {@link RepositoryQuery} implementations for Cassandra.
@@ -102,9 +103,9 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 		ResultProcessor resultProcessor = queryMethod.getResultProcessor().withDynamicProjection(parameterAccessor);
 
-		String query = createQuery(parameterAccessor);
+		Statement statement = createQuery(parameterAccessor);
 
-		CassandraQueryExecution queryExecution = getExecution(query, parameterAccessor,
+		CassandraQueryExecution queryExecution = getExecution(
 				new ResultProcessingConverter(resultProcessor, template.getConverter().getMappingContext(), instantiators));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
@@ -112,24 +113,19 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
 
-		return queryExecution.execute(query, resultType);
+		return queryExecution.execute(statement, resultType);
 	}
 
 	/**
 	 * Returns the execution instance to use.
 	 *
-	 * @param query must not be {@literal null}.
-	 * @param accessor must not be {@literal null}.
 	 * @param resultProcessing must not be {@literal null}. @return
 	 */
-	private CassandraQueryExecution getExecution(String query, CassandraParameterAccessor accessor,
-			Converter<Object, Object> resultProcessing) {
-
-		return new ResultProcessingExecution(getExecutionToWrap(accessor, resultProcessing), resultProcessing);
+	private CassandraQueryExecution getExecution(Converter<Object, Object> resultProcessing) {
+		return new ResultProcessingExecution(getExecutionToWrap(resultProcessing), resultProcessing);
 	}
 
-	private CassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor accessor,
-			Converter<Object, Object> resultProcessing) {
+	private CassandraQueryExecution getExecutionToWrap(Converter<Object, Object> resultProcessing) {
 
 		if (queryMethod.isCollectionQuery()) {
 			return new CollectionExecution(template);
@@ -238,11 +234,11 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	}
 
 	/**
-	 * Creates a string query using the given {@link ParameterAccessor}
+	 * Creates a {@link Statement} using the given {@link ParameterAccessor}
 	 *
 	 * @param accessor must not be {@literal null}.
 	 */
-	protected abstract String createQuery(CassandraParameterAccessor accessor);
+	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
 
 	@RequiredArgsConstructor
 	private class CassandraReturnedType {

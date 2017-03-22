@@ -16,8 +16,6 @@
 package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 
@@ -27,7 +25,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.ReactiveCqlOperations;
-import org.springframework.cassandra.core.ReactiveSessionCallback;
 import org.springframework.cassandra.core.session.ReactiveSession;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
@@ -44,11 +41,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Configuration;
 import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * Unit tests for {@link StringBasedCassandraQuery}.
@@ -74,13 +68,6 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	@SuppressWarnings("unchecked")
 	public void setUp() {
 
-		when(operations.getReactiveCqlOperations()).thenReturn(cqlOperations);
-		when(cqlOperations.execute(any(ReactiveSessionCallback.class))).thenAnswer(
-				invocation -> ((ReactiveSessionCallback) invocation.getArguments()[0]).doInSession(reactiveSession));
-		when(reactiveSession.getCluster()).thenReturn(cluster);
-		when(cluster.getConfiguration()).thenReturn(configuration);
-		when(configuration.getCodecRegistry()).thenReturn(CodecRegistry.DEFAULT_INSTANCE);
-
 		this.metadata = AbstractRepositoryMetadata.getMetadata(SampleRepository.class);
 		this.converter = new MappingCassandraConverter(new BasicCassandraMappingContext());
 		this.factory = new SpelAwareProxyProjectionFactory();
@@ -95,16 +82,10 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
 				cassandraQuery.getQueryMethod(), "White");
 
-		String stringQuery = cassandraQuery.createQuery(accessor);
-		SimpleStatement actual = new SimpleStatement(stringQuery);
+		SimpleStatement stringQuery = cassandraQuery.createQuery(accessor);
 
-		String table = Person.class.getSimpleName().toLowerCase();
-		Select expected = QueryBuilder.select().all().from(table);
-
-		expected.setForceNoValues(true);
-		expected.where(QueryBuilder.eq("lastname", "White"));
-
-		assertThat(actual.getQueryString()).isEqualTo(expected.getQueryString());
+		assertThat(stringQuery.toString()).isEqualTo("SELECT * FROM person WHERE lastname=?;");
+		assertThat(stringQuery.getObject(0)).isEqualTo("White");
 	}
 
 	private ReactiveStringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
