@@ -35,6 +35,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.convert.QueryMapper;
+import org.springframework.data.cassandra.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
@@ -141,7 +142,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		this.mappingContext = converter.getMappingContext();
 		this.cqlOperations = asyncCqlTemplate;
 		this.exceptionTranslator = asyncCqlTemplate.getExceptionTranslator();
-		this.statementFactory = new StatementFactory(new QueryMapper(converter));
+		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
 	}
 
 	/*
@@ -265,7 +266,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(statementFactory.select(query, getPersistentEntity(entityClass)), entityClass);
+		return select(statementFactory.select(query, mappingContext.getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -279,7 +280,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(statementFactory.select(query, getPersistentEntity(entityClass)), entityConsumer, entityClass);
+		return select(statementFactory.select(query, mappingContext.getRequiredPersistentEntity(entityClass)),
+				entityConsumer, entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -291,7 +293,23 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return selectOne(statementFactory.select(query, getPersistentEntity(entityClass)), entityClass);
+		return selectOne(statementFactory.select(query, mappingContext.getRequiredPersistentEntity(entityClass)),
+				entityClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(org.springframework.data.cassandra.core.query.Query, org.springframework.data.cassandra.core.query.Update, java.lang.Class)
+	 */
+	@Override
+	public ListenableFuture<Boolean> update(Query query, org.springframework.data.cassandra.core.query.Update update,
+			Class<?> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(update, "Update must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return cqlOperations
+				.execute(statementFactory.update(query, update, mappingContext.getRequiredPersistentEntity(entityClass)));
 	}
 
 	/* (non-Javadoc)
@@ -303,7 +321,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return cqlOperations.execute(statementFactory.delete(query, getPersistentEntity(entityClass)));
+		return cqlOperations
+				.execute(statementFactory.delete(query, mappingContext.getRequiredPersistentEntity(entityClass)));
 	}
 
 	// -------------------------------------------------------------------------

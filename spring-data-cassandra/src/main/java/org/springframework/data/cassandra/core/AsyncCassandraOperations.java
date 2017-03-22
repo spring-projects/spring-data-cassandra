@@ -24,6 +24,7 @@ import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.driver.core.Statement;
@@ -167,7 +168,17 @@ public interface AsyncCassandraOperations {
 	<T> ListenableFuture<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Remove objects (rows)/columns from the table by {@link Query}.
+	 * Update the queried entities and return {@literal true} if the update was applied.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param update must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 */
+	ListenableFuture<Boolean> update(Query query, Update update, Class<?> entityClass) throws DataAccessException;
+
+	/**
+	 * Remove entities (rows)/columns from the table by {@link Query}.
 	 *
 	 * @param query must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.

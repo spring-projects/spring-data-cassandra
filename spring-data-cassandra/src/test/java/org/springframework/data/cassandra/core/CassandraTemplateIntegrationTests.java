@@ -32,6 +32,7 @@ import org.springframework.data.cassandra.core.query.ChainedCriteria;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
@@ -158,6 +159,19 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		assertThat(updated).isNotNull();
 		assertThat(template.selectOneById(person.getId(), Person.class)).isEqualTo(person);
+	}
+
+	@Test // DATACASS-343
+	public void updateShouldUpdateEntityByQuery() {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+		template.insert(person);
+
+		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+		boolean result = template.update(query, new Update().set("firstname", "Walter Hartwell"), Person.class);
+		assertThat(result).isTrue();
+
+		assertThat(template.selectOneById(person.getId(), Person.class).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343

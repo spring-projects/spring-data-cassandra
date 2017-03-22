@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
+import static org.assertj.core.api.Assertions.*;
+
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
@@ -29,6 +31,7 @@ import org.springframework.data.cassandra.core.query.ChainedCriteria;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
@@ -95,6 +98,21 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		StepVerifier.create(template.insert(person)).expectNextCount(1).verifyComplete();
 
 		StepVerifier.create(template.selectOneById(person.getId(), Person.class)).expectNext(person).verifyComplete();
+	}
+
+	@Test // DATACASS-343
+	public void updateShouldUpdateEntityByQuery() {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+
+		template.insert(person).block();
+
+		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+		boolean result = template.update(query, new Update().set("firstname", "Walter Hartwell"), Person.class).block();
+		assertThat(result).isTrue();
+
+		assertThat(template.selectOneById(person.getId(), Person.class).block().getFirstname())
+				.isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343
