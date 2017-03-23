@@ -266,7 +266,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		Optional<Person> loaded = repository.findOne(dave.getId());
 
-		assertThat(loaded).isPresent();
+		assertThat(loaded).isEmpty();
 	}
 
 	@Test // DATACASS-396
@@ -276,7 +276,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		Optional<Person> loaded = repository.findOne(dave.getId());
 
-		assertThat(loaded).isPresent();
+		assertThat(loaded).isEmpty();
 	}
 
 	@Test // DATACASS-396
@@ -286,7 +286,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		Optional<Person> loaded = repository.findOne(boyd.getId());
 
-		assertThat(loaded).isPresent();
+		assertThat(loaded).isEmpty();
 	}
 
 	interface PersonRepostitory extends TypedIdCassandraRepository<Person, String> {}

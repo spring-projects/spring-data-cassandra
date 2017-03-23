@@ -254,8 +254,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			PropertyValueProvider<CassandraPersistentProperty> propertyProvider) {
 
 		return instantiators.getInstantiatorFor(entity).createInstance(entity,
-				new PersistentEntityParameterValueProvider<>(entity, propertyProvider,
-						Optional.empty()));
+				new PersistentEntityParameterValueProvider<>(entity, propertyProvider, Optional.empty()));
 	}
 
 	/* (non-Javadoc)
@@ -837,8 +836,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				.getPersistentEntity(property.getActualType()).filter(CassandraPersistentEntity::isUserDefinedType);
 
 		if (persistentEntity.isPresent() && obj.filter(it -> it instanceof UDTValue).isPresent()) {
-			persistentEntity
-					.map(cassandraPersistentEntity -> obj.map(it -> readEntityFromUdt(cassandraPersistentEntity, (UDTValue) it)));
+			return persistentEntity.flatMap(
+					cassandraPersistentEntity -> obj.map(it -> (T) readEntityFromUdt(cassandraPersistentEntity, (UDTValue) it)));
 		}
 
 		return obj.flatMap(it -> Optional.of((T) getPotentiallyConvertedSimpleRead(it, property.getType())));

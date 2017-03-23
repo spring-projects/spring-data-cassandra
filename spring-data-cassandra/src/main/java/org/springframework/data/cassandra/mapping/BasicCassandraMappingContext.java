@@ -459,7 +459,12 @@ public class BasicCassandraMappingContext
 		Optional<CassandraPersistentEntity<?>> persistentEntity = getPersistentEntity(property.getActualType());
 
 		if (persistentEntity.filter(CassandraPersistentEntity::isUserDefinedType).isPresent()) {
-			return persistentEntity.get().getUserType();
+
+			Optional<DataType> dataType = persistentEntity.map(it -> getUserDataType(property, dataTypeProvider, it));
+
+			if (dataType.isPresent()) {
+				return dataType.get();
+			}
 		}
 
 		if (customConversions.hasCustomWriteTarget(property.getType())) {

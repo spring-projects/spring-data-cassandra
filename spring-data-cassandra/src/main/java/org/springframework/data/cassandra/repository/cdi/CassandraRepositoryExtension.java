@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.repository.cdi;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -51,6 +50,7 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 	 */
 	@SuppressWarnings("unchecked")
 	<T> void processBean(@Observes ProcessBean<T> processBean) {
+
 		Bean<T> bean = processBean.getBean();
 		bean.getTypes().stream() //
 				.filter(type -> type instanceof Class<?> && CassandraOperations.class.isAssignableFrom((Class<?>) type)) //
@@ -88,12 +88,12 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 	private <T> CdiRepositoryBean<T> createRepositoryBean(Class<T> repositoryType, Set<Annotation> qualifiers,
 			BeanManager beanManager) {
 
-
-		Bean<CassandraOperations> cassandraOperationsBean = Optional.ofNullable(this.cassandraOperationsMap.get(qualifiers)).orElseThrow(() -> new UnsatisfiedResolutionException(String.format("Unable to resolve a bean for '%s' with qualifiers %s.",
-				CassandraOperations.class.getName(), qualifiers)));
+		Bean<CassandraOperations> cassandraOperationsBean = Optional.ofNullable(this.cassandraOperationsMap.get(qualifiers))
+				.orElseThrow(() -> new UnsatisfiedResolutionException(String.format(
+						"Unable to resolve a bean for '%s' with qualifiers %s.", CassandraOperations.class.getName(), qualifiers)));
 
 		return new CassandraRepositoryBean<>(cassandraOperationsBean, qualifiers, repositoryType, beanManager,
-				Optional.of(getCustomImplementationDetector()));
+				getCustomImplementationDetector());
 	}
 
 }

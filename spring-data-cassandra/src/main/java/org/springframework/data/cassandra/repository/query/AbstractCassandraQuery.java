@@ -100,7 +100,6 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(template.getConverter(),
 				new CassandraParametersParameterAccessor(queryMethod, parameters));
 
-		// FIXME: Use ResultProcessor#withDynamicProjection(ParameterAccessor) when available
 		ResultProcessor resultProcessor = queryMethod.getResultProcessor().withDynamicProjection(parameterAccessor);
 
 		String query = createQuery(parameterAccessor);

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.repository.cdi;
 
 import java.lang.annotation.Annotation;
@@ -50,8 +49,8 @@ public class CassandraRepositoryBean<T> extends CdiRepositoryBean<T> {
 	 *          implementations {@link CustomRepositoryImplementationDetector}, can be {@literal null}.
 	 */
 	public CassandraRepositoryBean(Bean<CassandraOperations> operations, Set<Annotation> qualifiers,
-			Class<T> repositoryType, BeanManager beanManager, Optional<CustomRepositoryImplementationDetector> detector) {
-		super(qualifiers, repositoryType, beanManager, detector);
+			Class<T> repositoryType, BeanManager beanManager, CustomRepositoryImplementationDetector detector) {
+		super(qualifiers, repositoryType, beanManager, Optional.of(detector));
 
 		Assert.notNull(operations, "Cannot create repository with 'null' for CassandraOperations.");
 		this.cassandraOperationsBean = operations;
@@ -64,14 +63,14 @@ public class CassandraRepositoryBean<T> extends CdiRepositoryBean<T> {
 	@Override
 	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
 			Optional<Object> customImplementation) {
+
 		CassandraOperations cassandraOperations = getDependencyInstance(cassandraOperationsBean, CassandraOperations.class);
 
-		if (customImplementation.isPresent()) {
-			return new CassandraRepositoryFactory(cassandraOperations).getRepository(repositoryType,
-					customImplementation.get());
-		}
+		CassandraRepositoryFactory factory = new CassandraRepositoryFactory(cassandraOperations);
 
-		return new CassandraRepositoryFactory(cassandraOperations).getRepository(repositoryType);
+		return customImplementation //
+				.map(o -> factory.getRepository(repositoryType, o)) //
+				.orElseGet(() -> factory.getRepository(repositoryType));
 	}
 
 	@Override

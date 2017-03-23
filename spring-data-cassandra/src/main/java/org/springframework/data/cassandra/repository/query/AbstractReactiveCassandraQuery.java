@@ -99,7 +99,6 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 
 		String query = createQuery(convertingParameterAccessor);
 
-		// FIXME: Use ResultProcessor#withDynamicProjection(ParameterAccessor) when available
 		ResultProcessor resultProcessor = method.getResultProcessor().withDynamicProjection(convertingParameterAccessor);
 
 		ReactiveCassandraQueryExecution queryExecution = getExecution(
