@@ -17,11 +17,8 @@ package org.springframework.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.same;
 import static org.springframework.util.ReflectionUtils.*;
 
 import java.lang.reflect.Method;
@@ -32,9 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.driver.core.HostDistance;
@@ -315,12 +310,7 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		final PoolingOptionsFactoryBean.HostDistancePoolingOptions mockHostDistancePoolingOptions = mock(
 				PoolingOptionsFactoryBean.HostDistancePoolingOptions.class);
 
-		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(new Answer<PoolingOptions>() {
-			@Override
-			public PoolingOptions answer(InvocationOnMock invocationOnMock) throws Throwable {
-				return invocationOnMock.getArgumentAt(0, PoolingOptions.class);
-			}
-		});
+		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
 		poolingOptionsFactoryBean = new PoolingOptionsFactoryBean() {
 			@Override
@@ -341,12 +331,7 @@ public class PoolingOptionsFactoryBeanUnitTests {
 		final PoolingOptionsFactoryBean.HostDistancePoolingOptions mockHostDistancePoolingOptions = mock(
 				PoolingOptionsFactoryBean.HostDistancePoolingOptions.class);
 
-		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(new Answer<PoolingOptions>() {
-			@Override
-			public PoolingOptions answer(InvocationOnMock invocationOnMock) throws Throwable {
-				return invocationOnMock.getArgumentAt(0, PoolingOptions.class);
-			}
-		});
+		when(mockHostDistancePoolingOptions.configure(any(PoolingOptions.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
 		poolingOptionsFactoryBean = new PoolingOptionsFactoryBean() {
 			@Override

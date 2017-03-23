@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.mapping.multipackagescanning;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.junit.Before;

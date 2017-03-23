@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
@@ -129,9 +129,6 @@ public class PartTreeCassandraQueryUnitTests {
 	@Test // DATACASS-172
 	public void shouldDeriveSimpleQueryWithUDTValue() {
 
-		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);
-		when(userTypeMock.newValue()).thenReturn(udtValueMock);
-
 		String query = deriveQueryFromMethod("findByMainAddress", udtValueMock);
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={};");
@@ -139,9 +136,6 @@ public class PartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-357
 	public void shouldDeriveUdtInCollectionQuery() {
-
-		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);
-		when(userTypeMock.newValue()).thenReturn(udtValueMock);
 
 		String query = deriveQueryFromMethod("findByMainAddressIn", new Class[] { Collection.class },
 				Collections.singleton(udtValueMock));
@@ -171,8 +165,13 @@ public class PartTreeCassandraQueryUnitTests {
 	}
 
 	private PartTreeCassandraQuery createQueryForMethod(String methodName, Class<?>... paramTypes) {
+
+		Class<?>[] userTypes = Arrays.stream(paramTypes)//
+				.map(it -> it.getName().contains("Mockito") ? it.getSuperclass() : it)//
+				.toArray(size -> new Class<?>[size]);
+
 		try {
-			Method method = Repo.class.getMethod(methodName, paramTypes);
+			Method method = Repo.class.getMethod(methodName, userTypes);
 			ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 			CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, new DefaultRepositoryMetadata(Repo.class),
 					factory, mappingContext);

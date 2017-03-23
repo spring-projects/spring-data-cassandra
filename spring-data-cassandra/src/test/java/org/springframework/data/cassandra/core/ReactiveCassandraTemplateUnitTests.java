@@ -15,14 +15,14 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 
@@ -32,14 +32,11 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.session.ReactiveResultSet;
 import org.springframework.cassandra.core.session.ReactiveSession;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.domain.Person;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
@@ -59,18 +56,17 @@ public class ReactiveCassandraTemplateUnitTests {
 	@Mock ReactiveResultSet reactiveResultSet;
 	@Mock Row row;
 	@Mock ColumnDefinitions columnDefinitions;
+
 	@Captor ArgumentCaptor<Statement> statementCaptor;
 
-	private ReactiveCassandraTemplate template;
+	ReactiveCassandraTemplate template;
 
 	@Before
 	public void setUp() {
 
 		template = new ReactiveCassandraTemplate(session);
 
-		when(session.execute(anyString())).thenReturn(Mono.just(reactiveResultSet));
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
-		when(reactiveResultSet.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 	}
 
@@ -138,8 +134,6 @@ public class ReactiveCassandraTemplateUnitTests {
 	public void existsShouldReturnExistingElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
-		when(columnDefinitions.contains(anyString())).thenReturn(true);
-		when(columnDefinitions.getType(anyInt())).thenReturn(DataType.ascii());
 
 		Mono<Boolean> mono = template.exists("myid", Person.class);
 

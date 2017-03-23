@@ -17,8 +17,8 @@
 package org.springframework.data.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.*;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
@@ -57,7 +57,6 @@ public class CassandraSessionFactoryBeanUnitTests {
 	public void setup() {
 
 		when(mockCluster.connect()).thenReturn(mockSession);
-		when(mockSession.getCluster()).thenReturn(mockCluster);
 
 		factoryBean = spy(new CassandraSessionFactoryBean());
 		factoryBean.setCluster(mockCluster);
@@ -103,9 +102,9 @@ public class CassandraSessionFactoryBeanUnitTests {
 			final boolean dropTables, final boolean dropUnused, final boolean ifNotExists) {
 
 		doAnswer(invocationOnMock -> {
-			assertThat(invocationOnMock.getArgumentAt(0, Boolean.class)).isEqualTo(dropTables);
-			assertThat(invocationOnMock.getArgumentAt(1, Boolean.class)).isEqualTo(dropUnused);
-			assertThat(invocationOnMock.getArgumentAt(2, Boolean.class)).isEqualTo(ifNotExists);
+			assertThat(invocationOnMock.<Boolean> getArgument(0)).isEqualTo(dropTables);
+			assertThat(invocationOnMock.<Boolean> getArgument(1)).isEqualTo(dropUnused);
+			assertThat(invocationOnMock.<Boolean> getArgument(2)).isEqualTo(ifNotExists);
 			return null;
 		}).when(factoryBean).createTables(anyBoolean(), anyBoolean(), anyBoolean());
 
@@ -142,14 +141,6 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 	@Test // DATACASS-219
 	public void performsSchemaActionDoesNotCallCreateTablesWhenSchemaActionIsNone() {
-
-		doAnswer(new Answer<Void>() {
-			@Override
-			public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
-				fail("'createTables(..)' should not have been called");
-				return null;
-			}
-		}).when(factoryBean).createTables(anyBoolean(), anyBoolean(), anyBoolean());
 
 		factoryBean.setSchemaAction(SchemaAction.NONE);
 

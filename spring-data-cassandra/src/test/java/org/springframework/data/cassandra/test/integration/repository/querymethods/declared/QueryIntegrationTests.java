@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.junit.Before;
@@ -307,6 +306,8 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 	@Test // DATACASS-297
 	public void streamShouldReturnEntities() {
+		
+		long before = personRepository.count();
 
 		for (int i = 0; i < 100; i++) {
 			Person person = new Person();
@@ -320,13 +321,8 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 		Stream<Person> allPeople = personRepository.findAllPeople();
 
-		long count = allPeople.peek(new Consumer<Person>() {
-			@Override
-			public void accept(Person person) {
-				assertThat(person).isInstanceOf(Person.class);
-			}
-		}).count();
+		long count = allPeople.peek(person -> assertThat(person).isInstanceOf(Person.class)).count();
 
-		assertThat(count).isEqualTo(100L);
+		assertThat(count).isEqualTo(before + 100L);
 	}
 }

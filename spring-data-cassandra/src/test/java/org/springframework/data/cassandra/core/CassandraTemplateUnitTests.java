@@ -16,10 +16,10 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.anyInt;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +32,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.Person;
@@ -59,17 +59,16 @@ public class CassandraTemplateUnitTests {
 	@Mock ResultSet resultSet;
 	@Mock Row row;
 	@Mock ColumnDefinitions columnDefinitions;
+
 	@Captor ArgumentCaptor<Statement> statementCaptor;
 
-	private CassandraTemplate template;
+	CassandraTemplate template;
 
 	@Before
 	public void setUp() {
 
 		template = new CassandraTemplate(session, new MappingCassandraConverter());
-		when(session.execute(anyString())).thenReturn(resultSet);
 		when(session.execute(any(Statement.class))).thenReturn(resultSet);
-		when(resultSet.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 	}
 
@@ -157,8 +156,6 @@ public class CassandraTemplateUnitTests {
 	public void existsShouldReturnExistingElement() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
-		when(columnDefinitions.contains(anyString())).thenReturn(true);
-		when(columnDefinitions.getType(anyInt())).thenReturn(DataType.ascii());
 
 		boolean exists = template.exists("myid", Person.class);
 

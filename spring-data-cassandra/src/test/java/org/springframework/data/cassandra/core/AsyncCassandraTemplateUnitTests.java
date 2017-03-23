@@ -16,13 +16,12 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.anyInt;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -36,7 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -63,17 +62,16 @@ public class AsyncCassandraTemplateUnitTests {
 	@Mock ResultSet resultSet;
 	@Mock Row row;
 	@Mock ColumnDefinitions columnDefinitions;
+
 	@Captor ArgumentCaptor<Statement> statementCaptor;
 
-	private AsyncCassandraTemplate template;
+	AsyncCassandraTemplate template;
 
 	@Before
 	public void setUp() {
 
 		template = new AsyncCassandraTemplate(session);
-		when(session.executeAsync(anyString())).thenReturn(new TestResultSetFuture(resultSet));
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 	}
 
@@ -102,8 +100,7 @@ public class AsyncCassandraTemplateUnitTests {
 	@Test // DATACASS-292
 	public void selectUsingCqlShouldInvokeCallbackWithMappedResults() {
 
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
-		when(resultSet.spliterator()).thenReturn(Arrays.asList(row).spliterator());
+		when(resultSet.spliterator()).thenReturn(Collections.singletonList(row).spliterator());
 		when(columnDefinitions.contains(anyString())).thenReturn(true);
 		when(columnDefinitions.getType(anyInt())).thenReturn(DataType.ascii());
 
@@ -157,8 +154,7 @@ public class AsyncCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		ListenableFuture<Person> future = template.selectOne("SELECT * FROM person WHERE id='myid';",
-				Person.class);
+		ListenableFuture<Person> future = template.selectOne("SELECT * FROM person WHERE id='myid';", Person.class);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(new Person("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());
@@ -191,8 +187,6 @@ public class AsyncCassandraTemplateUnitTests {
 	public void existsShouldReturnExistingElement() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
-		when(columnDefinitions.contains(anyString())).thenReturn(true);
-		when(columnDefinitions.getType(anyInt())).thenReturn(DataType.ascii());
 
 		ListenableFuture<Boolean> future = template.exists("myid", Person.class);
 

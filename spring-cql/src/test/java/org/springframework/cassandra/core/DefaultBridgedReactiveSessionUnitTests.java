@@ -15,23 +15,20 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import reactor.core.scheduler.Schedulers;
 
 import java.util.Collections;
 
-import org.hamcrest.core.IsEqual;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
-
-import reactor.core.scheduler.Schedulers;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -139,17 +136,8 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 	private static <T extends Statement> T eq(T value) {
 
-		return Matchers.argThat(new IsEqual<T>(value) {
-
-			@Override
-			public boolean matches(Object actualValue) {
-
-				if (actualValue instanceof Statement) {
-					return value.toString().equals(actualValue.toString());
-				}
-
-				return super.matches(actualValue);
-			}
-		});
+		return ArgumentMatchers.argThat(argument -> argument instanceof Statement //
+					? value.toString().equals(argument.toString()) //
+							: value.equals(argument));
 	}
 }

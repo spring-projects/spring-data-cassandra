@@ -16,6 +16,8 @@
 package org.springframework.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -29,7 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.cassandra.support.exception.CassandraInvalidQueryException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -50,7 +52,7 @@ import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 
 /**
  * Unit tests for {@link CqlTemplate}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -469,9 +471,6 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executePreparedStatementCreatorShouldTranslateStatementCreationExceptions() {
 
-		when(session.execute(boundStatement)).thenReturn(resultSet);
-		when(resultSet.wasApplied()).thenReturn(true);
-
 		try {
 			template.execute(session -> {
 				throw new NoHostAvailableException(Collections.emptyMap());
@@ -485,9 +484,6 @@ public class CqlTemplateUnitTests {
 
 	@Test // DATACASS-292
 	public void executePreparedStatementCreatorShouldTranslateStatementCallbackExceptions() {
-
-		when(session.execute(boundStatement)).thenReturn(resultSet);
-		when(resultSet.wasApplied()).thenReturn(true);
 
 		try {
 			template.execute(session -> preparedStatement, (session, ps) -> {
@@ -503,7 +499,6 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorShouldReturnResult() {
 
-		when(session.prepare(anyString())).thenReturn(preparedStatement);
 		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -517,7 +512,6 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldReturnResult() {
 
-		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 
@@ -532,8 +526,6 @@ public class CqlTemplateUnitTests {
 
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslatePrepareStatementExceptions() {
-
-		when(preparedStatement.bind()).thenReturn(boundStatement);
 
 		try {
 			template.query(session -> {
@@ -552,8 +544,6 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslateBindExceptions() {
 
-		when(preparedStatement.bind()).thenReturn(boundStatement);
-
 		try {
 			template.query(session -> preparedStatement, ps -> {
 				throw new NoHostAvailableException(Collections.emptyMap());
@@ -568,7 +558,6 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslateExecutionExceptions() {
 
-		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
 		try {
@@ -586,7 +575,6 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderAndMapperShouldReturnResult() {
 
-		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 
@@ -695,7 +683,7 @@ public class CqlTemplateUnitTests {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
-		when(this.session.execute(any(Statement.class))).thenReturn(resultSet);
+		when(this.session.execute((Statement) any())).thenReturn(resultSet);
 		when(this.resultSet.iterator()).thenReturn(Arrays.asList(row, row, row).iterator());
 
 		when(this.row.getString(0)).thenReturn(results[0], results[1], results[2]);

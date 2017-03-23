@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -66,29 +66,10 @@ public class RowMockUtil {
 			return -1;
 		});
 
-		when(columnDefinitionsMock.getType(anyString())).thenAnswer(new Answer<DataType>() {
-			@Override
-			public DataType answer(InvocationOnMock invocation) throws Throwable {
-
-				return Arrays.stream(columns)
-						.filter(column -> column.name.equalsIgnoreCase((String) invocation.getArguments()[0])).findFirst()
-						.map(column -> column.type).orElse(null);
-			}
-		});
-
 		when(columnDefinitionsMock.getType(anyInt()))
 				.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].type);
 
 		when(rowMock.getObject(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
-
-		when(rowMock.getObject(anyString())).thenAnswer(new Answer<Object>() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				return Arrays.stream(columns)
-						.filter(column -> column.name.equalsIgnoreCase((String) invocation.getArguments()[0])).findFirst()
-						.map(column -> column.value).orElse(null);
-			}
-		});
 
 		return rowMock;
 	}

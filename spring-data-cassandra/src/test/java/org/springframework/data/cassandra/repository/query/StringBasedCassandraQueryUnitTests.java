@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
@@ -32,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -91,12 +92,12 @@ public class StringBasedCassandraQueryUnitTests {
 	ProjectionFactory factory;
 
 	@Before
+	@SuppressWarnings("unchecked")
 	public void setUp() {
 
 		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
 		mappingContext.setUserTypeResolver(userTypeResolver);
 
-		when(operations.getConverter()).thenReturn(converter);
 		when(operations.getCqlOperations()).thenReturn(cqlOperations);
 		when(cqlOperations.execute(any(SessionCallback.class)))
 				.thenAnswer(invocation -> ((SessionCallback) invocation.getArguments()[0]).doInSession(session));
@@ -318,7 +319,6 @@ public class StringBasedCassandraQueryUnitTests {
 		UserType addressType = createUserType("address", Arrays.asList(city, country));
 
 		when(userTypeResolver.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(addressType);
-		when(udtValue.getType()).thenReturn(addressType);
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", Address.class);
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,

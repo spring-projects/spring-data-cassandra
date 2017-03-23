@@ -15,7 +15,9 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+
+import reactor.core.scheduler.Schedulers;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,8 +28,6 @@ import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
 import org.springframework.cassandra.core.session.DefaultReactiveSessionFactory;
 import org.springframework.cassandra.core.session.ReactiveSession;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-
-import reactor.core.scheduler.Schedulers;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 

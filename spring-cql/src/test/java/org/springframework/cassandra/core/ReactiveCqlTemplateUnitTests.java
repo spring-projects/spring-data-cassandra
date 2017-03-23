@@ -15,16 +15,13 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.atMost;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.session.DefaultReactiveSessionFactory;
 import org.springframework.cassandra.core.session.ReactiveResultSet;
 import org.springframework.cassandra.core.session.ReactiveSession;
@@ -43,9 +40,6 @@ import org.springframework.cassandra.core.session.ReactiveSessionFactory;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.cassandra.support.exception.CassandraInvalidQueryException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
@@ -66,15 +60,15 @@ import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 @RunWith(MockitoJUnitRunner.class)
 public class ReactiveCqlTemplateUnitTests {
 
-	@Mock private ReactiveSession session;
-	@Mock private ReactiveResultSet reactiveResultSet;
-	@Mock private Row row;
-	@Mock private PreparedStatement preparedStatement;
-	@Mock private BoundStatement boundStatement;
-	@Mock private ColumnDefinitions columnDefinitions;
+	@Mock ReactiveSession session;
+	@Mock ReactiveResultSet reactiveResultSet;
+	@Mock Row row;
+	@Mock PreparedStatement preparedStatement;
+	@Mock BoundStatement boundStatement;
+	@Mock ColumnDefinitions columnDefinitions;
 
-	private ReactiveCqlTemplate template;
-	private ReactiveSessionFactory sessionFactory;
+	ReactiveCqlTemplate template;
+	ReactiveSessionFactory sessionFactory;
 
 	@Before
 	public void setup() throws Exception {
@@ -588,7 +582,6 @@ public class ReactiveCqlTemplateUnitTests {
 		when(session.prepare(anyString())).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
-		when(reactiveResultSet.wasApplied()).thenReturn(true);
 
 		Flux<ReactiveResultSet> flux = template.execute("UPDATE user SET a = 'b';",
 				(session, ps) -> session.execute(ps.bind()));
@@ -603,7 +596,6 @@ public class ReactiveCqlTemplateUnitTests {
 	public void executePreparedStatementCreatorShouldExecuteDeferred() {
 
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
-		when(reactiveResultSet.wasApplied()).thenReturn(true);
 
 		Flux<ReactiveResultSet> flux = template.execute(session -> Mono.just(preparedStatement),
 				(session, ps) -> session.execute(boundStatement));
@@ -615,9 +607,6 @@ public class ReactiveCqlTemplateUnitTests {
 
 	@Test // DATACASS-335
 	public void executePreparedStatementCreatorShouldTranslateStatementCreationExceptions() {
-
-		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
-		when(reactiveResultSet.wasApplied()).thenReturn(true);
 
 		Flux<ReactiveResultSet> flux = template.execute(session -> {
 			throw new NoHostAvailableException(Collections.emptyMap());
@@ -635,9 +624,6 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executePreparedStatementCreatorShouldTranslateStatementCallbackExceptions() {
 
-		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
-		when(reactiveResultSet.wasApplied()).thenReturn(true);
-
 		Flux<ReactiveResultSet> flux = template.execute(session -> Mono.just(preparedStatement), (session, ps) -> {
 			throw new NoHostAvailableException(Collections.emptyMap());
 		});
@@ -654,7 +640,6 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryPreparedStatementCreatorShouldReturnResult() {
 
-		when(session.prepare(anyString())).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -669,8 +654,6 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryPreparedStatementCreatorAndBinderShouldReturnResult() {
 
-		when(session.prepare(anyString())).thenReturn(Mono.just(preparedStatement));
-		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -687,8 +670,6 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryPreparedStatementCreatorAndBinderAndMapperShouldReturnResult() {
 
-		when(session.prepare(anyString())).thenReturn(Mono.just(preparedStatement));
-		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -827,7 +808,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
-		when(this.session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
+		when(this.session.execute((Statement) any())).thenReturn(Mono.just(reactiveResultSet));
 		when(this.reactiveResultSet.rows()).thenReturn(Flux.just(row, row, row));
 
 		when(this.row.getString(0)).thenReturn(results[0], results[1], results[2]);

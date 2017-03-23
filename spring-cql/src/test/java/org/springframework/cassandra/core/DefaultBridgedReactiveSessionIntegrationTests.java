@@ -15,16 +15,16 @@
  */
 package org.springframework.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
 import org.springframework.cassandra.core.session.ReactiveResultSet;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.PreparedStatement;

@@ -15,7 +15,8 @@
  */
 package org.springframework.cassandra.test.integration.core.cql.generator;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import java.util.Map;
 

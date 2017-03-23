@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 
@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.ReactiveCqlOperations;
 import org.springframework.cassandra.core.ReactiveSessionCallback;
 import org.springframework.cassandra.core.session.ReactiveSession;
@@ -71,9 +71,9 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	ProjectionFactory factory;
 
 	@Before
+	@SuppressWarnings("unchecked")
 	public void setUp() {
 
-		when(operations.getConverter()).thenReturn(converter);
 		when(operations.getReactiveCqlOperations()).thenReturn(cqlOperations);
 		when(cqlOperations.execute(any(ReactiveSessionCallback.class))).thenAnswer(
 				invocation -> ((ReactiveSessionCallback) invocation.getArguments()[0]).doInSession(reactiveSession));

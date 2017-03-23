@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 /**

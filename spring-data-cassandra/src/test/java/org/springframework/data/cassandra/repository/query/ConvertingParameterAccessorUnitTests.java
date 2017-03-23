@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
@@ -49,11 +49,9 @@ import com.datastax.driver.core.DataType;
 public class ConvertingParameterAccessorUnitTests {
 
 	@Mock CassandraParameterAccessor mockParameterAccessor;
-
 	@Mock CassandraPersistentProperty mockProperty;
 
 	ConvertingParameterAccessor convertingParameterAccessor;
-
 	MappingCassandraConverter converter;
 
 	@Before
@@ -77,25 +75,18 @@ public class ConvertingParameterAccessorUnitTests {
 	public void shouldReturnNativeBindableValue() {
 
 		when(mockParameterAccessor.getBindableValue(0)).thenReturn("hello");
-		when(mockParameterAccessor.getDataType(0)).thenReturn(DataType.varchar());
-		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) String.class);
 
 		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
-
-		when(mockParameterAccessor.getBindableValue(0)).thenReturn("hello");
-		when(mockParameterAccessor.getDataType(0)).thenReturn(DataType.varchar());
 
 		assertThat(accessor.getBindableValue(0)).isEqualTo((Object) "hello");
 	}
 
 	@Test // DATACASS-296
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldReturnConvertedBindableValue() {
 
 		LocalDate localDate = LocalDate.of(2010, 7, 4);
 
 		when(mockParameterAccessor.getBindableValue(0)).thenReturn(localDate);
-		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) LocalDate.class);
 
 		assertThat(convertingParameterAccessor.getBindableValue(0))
 				.isEqualTo(com.datastax.driver.core.LocalDate.fromYearMonthDay(2010, 7, 4));

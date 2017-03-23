@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.convert;
 
 import static org.assertj.core.api.Assertions.*;
@@ -23,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -33,6 +32,7 @@ import com.datastax.driver.core.Row;
  * Unit tests for {@link ColumnReader}.
  *
  * @author Christopher Batey
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ColumnReaderUnitTests {
@@ -47,14 +47,15 @@ public class ColumnReaderUnitTests {
 
 	@Before
 	public void setup() {
-		given(row.getColumnDefinitions()).willReturn(columnDefinitions);
+
+		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 		underTest = new ColumnReader(row);
 	}
 
 	@Test
 	public void throwsIllegalArgumentExceptionIfColumnDoesNotExistByName() throws Exception {
-		given(columnDefinitions.contains(NON_EXISTENT_COLUMN)).willReturn(false);
-		given(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).willReturn(-1);
+
+		when(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
 		try {
 			underTest.get(NON_EXISTENT_COLUMN);
@@ -66,8 +67,8 @@ public class ColumnReaderUnitTests {
 
 	@Test
 	public void throwsIllegalArgumentExceptionIfColumnDoesNotExistByCqlIdentifier() throws Exception {
-		given(columnDefinitions.contains(NON_EXISTENT_COLUMN)).willReturn(false);
-		given(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).willReturn(-1);
+
+		when(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
 		try {
 			underTest.get(new CqlIdentifier(NON_EXISTENT_COLUMN));
@@ -79,8 +80,8 @@ public class ColumnReaderUnitTests {
 
 	@Test
 	public void throwsIllegalArgumentExceptionIfColumnDoesNotExistByCqlIdentifierAndType() throws Exception {
-		given(columnDefinitions.contains(NON_EXISTENT_COLUMN)).willReturn(false);
-		given(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).willReturn(-1);
+
+		when(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
 		try {
 			underTest.get(new CqlIdentifier(NON_EXISTENT_COLUMN), String.class);

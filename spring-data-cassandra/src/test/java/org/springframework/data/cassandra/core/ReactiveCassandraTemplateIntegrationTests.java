@@ -15,7 +15,10 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,9 +28,6 @@ import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIn
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
-
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 /**
  * Integration tests for {@link ReactiveCassandraTemplate}.

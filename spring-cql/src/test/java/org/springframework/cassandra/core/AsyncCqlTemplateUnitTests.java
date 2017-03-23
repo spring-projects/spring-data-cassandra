@@ -16,6 +16,8 @@
 package org.springframework.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -33,7 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.cassandra.support.exception.CassandraInvalidQueryException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -57,14 +59,14 @@ import com.google.common.util.concurrent.SettableFuture;
 @RunWith(MockitoJUnitRunner.class)
 public class AsyncCqlTemplateUnitTests {
 
-	@Mock private Session session;
-	@Mock private ResultSet resultSet;
-	@Mock private Row row;
-	@Mock private PreparedStatement preparedStatement;
-	@Mock private BoundStatement boundStatement;
-	@Mock private ColumnDefinitions columnDefinitions;
+	@Mock Session session;
+	@Mock ResultSet resultSet;
+	@Mock Row row;
+	@Mock PreparedStatement preparedStatement;
+	@Mock BoundStatement boundStatement;
+	@Mock ColumnDefinitions columnDefinitions;
 
-	private AsyncCqlTemplate template;
+	AsyncCqlTemplate template;
 
 	@Before
 	public void setup() throws Exception {
@@ -508,9 +510,6 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executePreparedStatementCreatorShouldTranslateStatementCreationExceptions() throws Exception {
 
-		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.wasApplied()).thenReturn(true);
-
 		try {
 			template.execute(session -> {
 				throw new NoHostAvailableException(Collections.emptyMap());
@@ -537,9 +536,6 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executePreparedStatementCreatorShouldTranslateStatementCallbackExceptions() throws Exception {
 
-		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.wasApplied()).thenReturn(true);
-
 		ListenableFuture<ResultSetFuture> future = template.execute(session -> new AsyncResult<>(preparedStatement),
 				(session, ps) -> {
 					throw new NoHostAvailableException(Collections.emptyMap());
@@ -558,7 +554,6 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorShouldReturnResult() {
 
-		when(session.prepareAsync(anyString())).thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -573,14 +568,14 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldReturnResult() {
 
-		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 
-		ListenableFuture<ResultSet> future = template.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
-			ps.bind("a", "b");
-			return boundStatement;
-		}, rs -> rs);
+		ListenableFuture<ResultSet> future = template
+				.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
+					ps.bind("a", "b");
+					return boundStatement;
+				}, rs -> rs);
 
 		assertThat(getUninterruptibly(future)).contains(row);
 		verify(preparedStatement).bind("a", "b");
@@ -588,8 +583,6 @@ public class AsyncCqlTemplateUnitTests {
 
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslatePrepareStatementExceptions() throws Exception {
-
-		when(preparedStatement.bind()).thenReturn(boundStatement);
 
 		ListenableFuture<ResultSet> future = template.query(
 				session -> AsyncResult.forExecutionException(new NoHostAvailableException(Collections.emptyMap())), ps -> {
@@ -609,11 +602,10 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslateBindExceptions() throws Exception {
 
-		when(preparedStatement.bind()).thenReturn(boundStatement);
-
-		ListenableFuture<ResultSet> future = template.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
-			throw new NoHostAvailableException(Collections.emptyMap());
-		}, rs -> rs);
+		ListenableFuture<ResultSet> future = template
+				.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
+					throw new NoHostAvailableException(Collections.emptyMap());
+				}, rs -> rs);
 
 		try {
 			future.get();
@@ -626,17 +618,16 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslateExecutionExceptions() throws Exception {
 
-		when(preparedStatement.bind()).thenReturn(boundStatement);
-
 		TestResultSetFuture resultSetFuture = TestResultSetFuture
 				.failed(new NoHostAvailableException(Collections.emptyMap()));
 
 		when(session.executeAsync(boundStatement)).thenReturn(resultSetFuture);
 
-		ListenableFuture<ResultSet> future = template.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
-			ps.bind("a", "b");
-			return boundStatement;
-		}, rs -> rs);
+		ListenableFuture<ResultSet> future = template
+				.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
+					ps.bind("a", "b");
+					return boundStatement;
+				}, rs -> rs);
 
 		try {
 			future.get();
@@ -649,7 +640,6 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderAndMapperShouldReturnResult() {
 
-		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 
@@ -773,7 +763,7 @@ public class AsyncCqlTemplateUnitTests {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
-		when(this.session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
+		when(this.session.executeAsync((Statement) any())).thenReturn(new TestResultSetFuture(resultSet));
 		when(this.resultSet.iterator()).thenReturn(Arrays.asList(row, row, row).iterator());
 
 		when(this.row.getString(0)).thenReturn(results[0], results[1], results[2]);

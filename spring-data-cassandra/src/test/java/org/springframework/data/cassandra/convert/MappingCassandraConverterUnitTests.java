@@ -48,7 +48,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
@@ -97,10 +97,10 @@ public class MappingCassandraConverterUnitTests {
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
-	@Mock private Row rowMock;
+	@Mock Row rowMock;
 
-	private CassandraMappingContext mappingContext;
-	private MappingCassandraConverter mappingCassandraConverter;
+	CassandraMappingContext mappingContext;
+	MappingCassandraConverter mappingCassandraConverter;
 
 	@Before
 	public void setUp() throws Exception {
@@ -908,8 +908,7 @@ public class MappingCassandraConverterUnitTests {
 		List<Clause> clauses = (List<Clause>) ReflectionTestUtils.getField(where, "clauses");
 
 		for (Clause clause : clauses) {
-			result.put(ReflectionTestUtils.invokeMethod(clause, "name"),
-					ReflectionTestUtils.getField(clause, "value"));
+			result.put(ReflectionTestUtils.invokeMethod(clause, "name"), ReflectionTestUtils.getField(clause, "value"));
 		}
 
 		return result;

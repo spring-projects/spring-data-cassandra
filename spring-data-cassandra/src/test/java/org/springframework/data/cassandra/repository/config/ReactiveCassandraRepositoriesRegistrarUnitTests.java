@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.config;
 
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
