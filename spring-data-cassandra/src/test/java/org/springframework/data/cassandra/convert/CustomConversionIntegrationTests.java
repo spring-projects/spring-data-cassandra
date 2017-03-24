@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
@@ -42,6 +41,7 @@ import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Test suite for applying {@link CustomConversions} to {@link MappingCassandraConverter} and

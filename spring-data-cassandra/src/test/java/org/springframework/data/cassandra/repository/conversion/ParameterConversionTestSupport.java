@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -41,10 +40,11 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Test support for query method parameter type conversion.
- * 
+ *
  * @author Mark Paluch
  */
 abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
