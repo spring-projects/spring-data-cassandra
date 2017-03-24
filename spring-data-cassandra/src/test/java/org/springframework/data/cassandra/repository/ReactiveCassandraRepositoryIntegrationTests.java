@@ -15,13 +15,11 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import static org.assertj.core.api.Assertions.*;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -111,47 +109,34 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		repository = factory.getRepository(PersonRepository.class);
 		groupRepostitory = factory.getRepository(GroupRepository.class);
 
-		repository.deleteAll().block();
-		groupRepostitory.deleteAll().block();
+		StepVerifier.create(repository.deleteAll().concatWith(groupRepostitory.deleteAll())).verifyComplete();
 
 		dave = new Person("42", "Dave", "Matthews");
 		oliver = new Person("4", "Oliver August", "Matthews");
 		carter = new Person("49", "Carter", "Beauford");
 		boyd = new Person("45", "Boyd", "Tinsley");
 
-		repository.save(Arrays.asList(oliver, dave, carter, boyd)).last().block();
+		StepVerifier.create(repository.save(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void shouldFindByLastName() {
-
-		List<Person> list = repository.findByLastname("Matthews").collectList().block();
-
-		assertThat(list).hasSize(2).contains(dave, oliver);
+		StepVerifier.create(repository.findByLastname(dave.getLastname())).expectNextCount(2).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void shouldFindOneByLastName() {
-
-		Person carter = repository.findOneByLastname("Beauford").block();
-
-		assertThat(carter.getFirstname()).isEqualTo("Carter");
+		StepVerifier.create(repository.findOneByLastname(carter.getLastname())).expectNext(carter).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void shouldFindOneByPublisherOfLastName() {
-
-		Person carter = repository.findByLastname(Mono.just("Beauford")).block();
-
-		assertThat(carter.getFirstname()).isEqualTo("Carter");
+		StepVerifier.create(repository.findByLastname(Mono.just(carter.getLastname()))).expectNext(carter).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void shouldFindUsingPublishersInStringQuery() {
-
-		List<Person> persons = repository.findStringQuery(Mono.just("Matthews")).collectList().block();
-
-		assertThat(persons).contains(dave);
+		StepVerifier.create(repository.findStringQuery(Mono.just(dave.getLastname()))).expectNextCount(2).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -160,17 +145,20 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		GroupKey key1 = new GroupKey("Simpsons", "hash", "Bart");
 		GroupKey key2 = new GroupKey("Simpsons", "hash", "Homer");
 
-		groupRepostitory.save(Flux.just(new Group(key1), new Group(key2))).blockLast();
+		StepVerifier.create(groupRepostitory.save(Flux.just(new Group(key1), new Group(key2)))).expectNextCount(2)
+				.verifyComplete();
 
-		List<Group> persons = groupRepostitory
-				.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash", new Sort(Direction.ASC, "id.username")).collectList()
-				.block();
-		assertThat(persons).containsSequence(new Group(key1), new Group(key2));
+		StepVerifier
+				.create(groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash",
+						new Sort(Direction.ASC, "id.username"))) //
+				.expectNext(new Group(key1), new Group(key2)) //
+				.verifyComplete();
 
-		List<Group> reversed = groupRepostitory
-				.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash", new Sort(Direction.DESC, "id.username")).collectList()
-				.block();
-		assertThat(reversed).containsSequence(new Group(key2), new Group(key1));
+		StepVerifier
+				.create(groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash",
+						new Sort(Direction.DESC, "id.username"))) //
+				.expectNext(new Group(key2), new Group(key1)) //
+				.verifyComplete();
 	}
 
 	interface PersonRepository extends ReactiveCassandraRepository<Person, String> {

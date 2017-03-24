@@ -54,6 +54,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>io.projectreactor.addons</groupId>
+			<artifactId>reactor-test</artifactId>
+			<version>${reactor}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-core</artifactId>
 		</dependency>

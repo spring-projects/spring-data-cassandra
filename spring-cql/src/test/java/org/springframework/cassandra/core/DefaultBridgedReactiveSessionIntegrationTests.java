@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +28,6 @@ import org.springframework.cassandra.core.session.ReactiveResultSet;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.SyntaxError;
 
 /**
@@ -38,7 +37,7 @@ import com.datastax.driver.core.exceptions.SyntaxError;
  */
 public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	private DefaultBridgedReactiveSession reactiveSession;
+	DefaultBridgedReactiveSession reactiveSession;
 
 	@Before
 	public void before() throws Exception {
@@ -59,18 +58,17 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 		assertThat(keyspace.getTable("users")).isNull();
 
-		ReactiveResultSet resultSet = execution.block();
+		StepVerifier.create(execution).consumeNextWith(actual -> {
 
-		assertThat(resultSet.wasApplied()).isTrue();
+			assertThat(actual.wasApplied()).isTrue();
+		}).verifyComplete();
+
 		assertThat(keyspace.getTable("users")).isNotNull();
 	}
 
-	@Test(expected = SyntaxError.class) // DATACASS-335
-	public void executeShouldTransportExceptionsInMono() throws Exception {
-
-		Mono<ReactiveResultSet> execution = reactiveSession.execute("INSERT INTO dummy;");
-
-		execution.block();
+	@Test // DATACASS-335
+	public void executeShouldTransportExceptionsInMono() {
+		StepVerifier.create(reactiveSession.execute("INSERT INTO dummy;")).expectError(SyntaxError.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -79,12 +77,13 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 		session.execute("INSERT INTO users (userid, first_name) VALUES ('White', 'Walter');");
 
-		Mono<ReactiveResultSet> execution = reactiveSession.execute("SELECT * FROM users;");
-		ReactiveResultSet resultSet = execution.block();
-		Row row = resultSet.rows().blockFirst();
+		StepVerifier.create(reactiveSession.execute("SELECT * FROM users;")).consumeNextWith(actual -> {
 
-		assertThat(row).isNotNull();
-		assertThat(row.getString("userid")).isEqualTo("White");
+			StepVerifier.create(actual.rows()).consumeNextWith(row -> {
+
+				assertThat(row.getString("userid")).isEqualTo("White");
+			}).verifyComplete();
+		}).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -92,12 +91,11 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 
-		Mono<PreparedStatement> execution = reactiveSession
-				.prepare("INSERT INTO users (userid, first_name) VALUES (?, ?);");
-		PreparedStatement preparedStatement = execution.block();
+		StepVerifier.create(reactiveSession.prepare("INSERT INTO users (userid, first_name) VALUES (?, ?);"))
+				.consumeNextWith(actual -> {
 
-		assertThat(preparedStatement).isNotNull();
-		assertThat(preparedStatement.getQueryString()).isEqualTo("INSERT INTO users (userid, first_name) VALUES (?, ?);");
+					assertThat(actual.getQueryString()).isEqualTo("INSERT INTO users (userid, first_name) VALUES (?, ?);");
+				}).verifyComplete();
 	}
 
 	private KeyspaceMetadata getKeyspaceMetadata() {

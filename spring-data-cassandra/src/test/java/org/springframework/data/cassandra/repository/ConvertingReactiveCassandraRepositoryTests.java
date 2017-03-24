@@ -19,11 +19,12 @@ import static org.assertj.core.api.Assertions.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.test.TestSubscriber;
+import reactor.test.StepVerifier;
 import rx.Observable;
 import rx.Single;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.config.EnableReactiveCassandraRepositories;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
@@ -68,7 +68,6 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Autowired Session session;
-	@Autowired ReactiveCassandraTemplate template;
 	@Autowired MixedPersonRepostitory reactiveRepository;
 	@Autowired PersonRepostitory reactivePersonRepostitory;
 	@Autowired RxJava1PersonRepostitory rxJava1PersonRepostitory;
@@ -86,130 +85,114 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 			Thread.sleep(500);
 		}
 
-		reactiveRepository.deleteAll().block();
+		StepVerifier.create(reactiveRepository.deleteAll()).verifyComplete();
 
 		dave = new Person("42", "Dave", "Matthews");
 		oliver = new Person("4", "Oliver August", "Matthews");
 		carter = new Person("49", "Carter", "Beauford");
 		boyd = new Person("45", "Boyd", "Tinsley");
 
-		TestSubscriber<Person> subscriber = TestSubscriber.create();
-
-		reactiveRepository.save(Arrays.asList(oliver, dave, carter, boyd)).subscribe(subscriber);
-
-		subscriber.await().assertComplete().assertNoError();
+		StepVerifier.create(reactiveRepository.save(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4)
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void reactiveStreamsMethodsShouldWork() throws InterruptedException {
-
-		TestSubscriber<Boolean> subscriber = TestSubscriber.subscribe(reactivePersonRepostitory.exists(dave.getId()));
-
-		subscriber.awaitAndAssertNextValueCount(1).assertNoError().assertValues(true);
+	public void reactiveStreamsMethodsShouldWork() {
+		StepVerifier.create(reactivePersonRepostitory.exists(dave.getId())).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void reactiveStreamsQueryMethodsShouldWork() {
-
-		TestSubscriber<Person> subscriber = TestSubscriber
-				.subscribe(reactivePersonRepostitory.findByLastname(boyd.getLastname()));
-
-		subscriber.awaitAndAssertNextValueCount(1).assertValues(boyd);
+		StepVerifier.create(reactivePersonRepostitory.findByLastname(boyd.getLastname())).expectNext(boyd).verifyComplete();
 	}
 
 	@Test // DATACASS-360
 	public void dtoProjectionShouldWork() {
 
-		TestSubscriber<PersonDto> subscriber = TestSubscriber
-				.subscribe(reactivePersonRepostitory.findProjectedByLastname(boyd.getLastname()));
+		StepVerifier.create(reactivePersonRepostitory.findProjectedByLastname(boyd.getLastname()))
+				.consumeNextWith(actual -> {
 
-		subscriber.awaitAndAssertNextValueCount(1).assertValuesWith(personDto -> {
-			assertThat(personDto.firstname).isEqualTo(boyd.getFirstname());
-			assertThat(personDto.lastname).isEqualTo(boyd.getLastname());
-		});
+					assertThat(actual.firstname).isEqualTo(boyd.getFirstname());
+					assertThat(actual.lastname).isEqualTo(boyd.getLastname());
+				}).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void simpleRxJavaMethodsShouldWork() {
-
-		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
-
-		rxJava1PersonRepostitory.exists(dave.getId()).subscribe(subscriber);
-
-		subscriber.awaitTerminalEvent();
-		subscriber.assertCompleted();
-		subscriber.assertNoErrors();
-		subscriber.assertValue(true);
+		rxJava1PersonRepostitory.exists(dave.getId()) //
+				.test() //
+				.awaitTerminalEvent() //
+				.assertResult(true) //
+				.assertCompleted() //
+				.assertNoErrors();
 	}
 
 	@Test // DATACASS-335
 	public void existsWithSingleRxJavaIdMethodsShouldWork() {
 
-		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
-
-		rxJava1PersonRepostitory.exists(Single.just(dave.getId())).subscribe(subscriber);
-
-		subscriber.awaitTerminalEvent();
-		subscriber.assertCompleted();
-		subscriber.assertNoErrors();
-		subscriber.assertValue(true);
+		rxJava1PersonRepostitory.exists(Single.just(dave.getId())) //
+				.test() //
+				.awaitTerminalEvent() //
+				.assertResult(true) //
+				.assertCompleted() //
+				.assertNoErrors();
 	}
 
 	@Test // DATACASS-335
 	public void singleRxJavaQueryMethodShouldWork() {
 
-		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
-
-		rxJava1PersonRepostitory.findManyByLastname(dave.getLastname()).subscribe(subscriber);
-
-		subscriber.awaitTerminalEvent();
-		subscriber.assertNoErrors();
-		subscriber.assertCompleted();
-		subscriber.assertValueCount(2);
+		rxJava1PersonRepostitory.findManyByLastname(dave.getLastname()) //
+				.test() //
+				.awaitTerminalEvent() //
+				.assertValueCount(2) //
+				.assertNoErrors() //
+				.assertCompleted();
 	}
 
 	@Test // DATACASS-335
 	public void singleProjectedRxJavaQueryMethodShouldWork() {
 
-		rx.observers.TestSubscriber<ProjectedPerson> subscriber = new rx.observers.TestSubscriber<>();
+		List<ProjectedPerson> values = rxJava1PersonRepostitory.findProjectedByLastname(carter.getLastname()) //
+				.test() //
+				.awaitTerminalEvent() //
+				.assertValueCount(1) //
+				.assertCompleted() //
+				.assertNoErrors() //
+				.getOnNextEvents();
 
-		rxJava1PersonRepostitory.findProjectedByLastname(carter.getLastname()).subscribe(subscriber);
-
-		subscriber.awaitTerminalEvent();
-		subscriber.assertCompleted();
-		subscriber.assertNoErrors();
-
-		ProjectedPerson projectedPerson = subscriber.getOnNextEvents().get(0);
+		ProjectedPerson projectedPerson = values.get(0);
 		assertThat(projectedPerson.getFirstname()).isEqualTo(carter.getFirstname());
 	}
 
 	@Test // DATACASS-335
 	public void observableRxJavaQueryMethodShouldWork() {
 
-		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
-
-		rxJava1PersonRepostitory.findByLastname(boyd.getLastname()).subscribe(subscriber);
-
-		subscriber.awaitTerminalEvent();
-		subscriber.assertCompleted();
-		subscriber.assertNoErrors();
-		subscriber.assertValue(boyd);
+		rxJava1PersonRepostitory.findByLastname(boyd.getLastname()) //
+				.test() //
+				.awaitTerminalEvent() //
+				.assertValue(boyd) //
+				.assertNoErrors() //
+				.assertCompleted();
 	}
 
 	@Test // DATACASS-335
 	public void mixedRepositoryShouldWork() {
 
-		Person value = reactiveRepository.findByLastname(boyd.getLastname()).toBlocking().value();
-
-		assertThat(value).isEqualTo(boyd);
+		reactiveRepository.findByLastname(boyd.getLastname()) //
+				.test() //
+				.awaitTerminalEvent() //
+				.assertValue(boyd) //
+				.assertCompleted() //
+				.assertNoErrors();
 	}
 
 	@Test // DATACASS-335
 	public void shouldFindOneByPublisherOfLastName() {
 
-		Person carter = reactiveRepository.findByLastname(Single.just(this.carter.getLastname())).block();
+		StepVerifier.create(reactiveRepository.findByLastname(Single.just(this.carter.getLastname()))) //
+				.expectNext(carter) //
+				.verifyComplete();
 
-		assertThat(carter.getFirstname()).isEqualTo(this.carter.getFirstname());
 	}
 
 	@Repository

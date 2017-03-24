@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.Collections;
 
@@ -35,7 +36,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.session.ReactiveResultSet;
 import org.springframework.cassandra.core.session.ReactiveSession;
-import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.domain.Person;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -85,9 +85,10 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		Flux<Person> flux = template.select("SELECT * FROM person", Person.class);
+		StepVerifier.create(template.select("SELECT * FROM person", Person.class)) //
+				.expectNext(new Person("myid", "Walter", "White")) //
+				.verifyComplete();
 
-		assertThat(flux.collectList().block()).hasSize(1).contains(new Person("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person");
 	}
@@ -97,15 +98,10 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(reactiveResultSet.rows()).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
-		Flux<Person> flux = template.select("SELECT * FROM person", Person.class);
-
-		try {
-			flux.last().block();
-
-			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
-		}
+		StepVerifier.create(template.select("SELECT * FROM person", Person.class)) //
+				.consumeErrorWith(e -> {
+					assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
+				}).verify();
 	}
 
 	@Test // DATACASS-335
@@ -123,9 +119,10 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		Mono<Person> mono = template.selectOneById("myid", Person.class);
+		StepVerifier.create(template.selectOneById("myid", Person.class)) //
+				.expectNext(new Person("myid", "Walter", "White")) //
+				.verifyComplete();
 
-		assertThat(mono.block()).isEqualTo(new Person("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
@@ -135,9 +132,8 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
-		Mono<Boolean> mono = template.exists("myid", Person.class);
+		StepVerifier.create(template.exists("myid", Person.class)).expectNext(true).verifyComplete();
 
-		assertThat(mono.block()).isTrue();
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
@@ -147,9 +143,8 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
 
-		Mono<Boolean> mono = template.exists("myid", Person.class);
+		StepVerifier.create(template.exists("myid", Person.class)).expectNext(false).verifyComplete();
 
-		assertThat(mono.block()).isFalse();
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
 	}
@@ -161,9 +156,8 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(row.getLong(0)).thenReturn(42L);
 		when(columnDefinitions.size()).thenReturn(1);
 
-		Mono<Long> mono = template.count(Person.class);
+		StepVerifier.create(template.count(Person.class)).expectNext(42L).verifyComplete();
 
-		assertThat(mono.block()).isEqualTo(42L);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM person;");
 	}
@@ -174,9 +168,8 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-		Mono<Person> mono = template.insert(person);
+		StepVerifier.create(template.insert(person)).expectNext(person).verifyComplete();
 
-		assertThat(mono.block()).isEqualTo(person);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("INSERT INTO person (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
@@ -189,15 +182,11 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(session.execute(any(Statement.class)))
 				.thenReturn(Mono.error(new NoHostAvailableException(Collections.emptyMap())));
 
-		Mono<Person> mono = template.insert(new Person("heisenberg", "Walter", "White"));
+		StepVerifier.create(template.insert(new Person("heisenberg", "Walter", "White"))) //
+				.consumeErrorWith(e -> {
 
-		try {
-			mono.block();
-
-			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
-		}
+					assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
+				}).verify();
 	}
 
 	@Test // DATACASS-335
@@ -206,9 +195,8 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(false);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-		Mono<Person> mono = template.insert(person);
 
-		assertThat(mono.block()).isNull();
+		StepVerifier.create(template.insert(person)).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -217,30 +205,12 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-		Mono<Person> mono = template.update(person);
 
-		assertThat(mono.block()).isEqualTo(person);
+		StepVerifier.create(template.update(person)).expectNext(person).verifyComplete();
+
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("UPDATE person SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
-	}
-
-	@Test // DATACASS-335
-	public void updateShouldTranslateException() {
-
-		reset(session);
-		when(session.execute(any(Statement.class)))
-				.thenReturn(Mono.error(new NoHostAvailableException(Collections.emptyMap())));
-
-		Mono<Person> mono = template.update(new Person("heisenberg", "Walter", "White"));
-
-		try {
-			mono.block();
-
-			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
-		}
 	}
 
 	@Test // DATACASS-335
@@ -249,9 +219,8 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(false);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-		Mono<Person> mono = template.update(person);
 
-		assertThat(mono.block()).isNull();
+		StepVerifier.create(template.update(person)).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -261,29 +230,10 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		Mono<Person> mono = template.delete(person);
+		StepVerifier.create(template.delete(person)).expectNext(person).verifyComplete();
 
-		assertThat(mono.block()).isEqualTo(person);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM person WHERE id='heisenberg';");
-	}
-
-	@Test // DATACASS-335
-	public void deleteShouldTranslateException() {
-
-		reset(session);
-		when(session.execute(any(Statement.class)))
-				.thenReturn(Mono.error(new NoHostAvailableException(Collections.emptyMap())));
-
-		Mono<Person> mono = template.delete(new Person("heisenberg", "Walter", "White"));
-
-		try {
-			mono.block();
-
-			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
-		}
 	}
 
 	@Test // DATACASS-335
@@ -292,15 +242,14 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(false);
 
 		Person person = new Person("heisenberg", "Walter", "White");
-		Mono<Person> mono = template.delete(person);
 
-		assertThat(mono.block()).isNull();
+		StepVerifier.create(template.delete(person)).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void truncateShouldRemoveEntities() {
 
-		template.truncate(Person.class).block();
+		StepVerifier.create(template.truncate(Person.class)).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("TRUNCATE person;");

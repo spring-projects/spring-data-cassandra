@@ -18,8 +18,8 @@ package org.springframework.cassandra.core;
 import static org.assertj.core.api.Assertions.*;
 
 import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
@@ -39,11 +39,12 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	private static final AtomicBoolean initialized = new AtomicBoolean();
-	private ReactiveSession reactiveSession;
-	private ReactiveCqlTemplate template;
+
+	ReactiveSession reactiveSession;
+	ReactiveCqlTemplate template;
 
 	@Before
-	public void before() throws Exception {
+	public void before() {
 
 		reactiveSession = new DefaultBridgedReactiveSession(getSession(), Schedulers.elastic());
 
@@ -59,74 +60,88 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-335
-	public void executeShouldRemoveRecords() throws Exception {
+	public void executeShouldRemoveRecords() {
 
-		template.execute("DELETE FROM user WHERE id = 'WHITE'").block();
-
-		assertThat(getSession().execute("SELECT * FROM user").one()).isNull();
-	}
-
-	@Test // DATACASS-335
-	public void queryForObjectShouldReturnFirstColumn() throws Exception {
-
-		String id = template.queryForObject("SELECT id FROM user;", String.class).block();
-
-		assertThat(id).isEqualTo("WHITE");
-	}
-
-	@Test // DATACASS-335
-	public void queryForObjectShouldReturnMap() throws Exception {
-
-		Map<String, Object> map = template.queryForMap("SELECT * FROM user;").block();
-
-		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
-	}
-
-	@Test // DATACASS-335
-	public void executeStatementShouldRemoveRecords() throws Exception {
-
-		template.execute(QueryBuilder.delete().from("user").where(QueryBuilder.eq("id", "WHITE"))).block();
+		StepVerifier.create(template.execute("DELETE FROM user WHERE id = 'WHITE'")).expectNext(true).verifyComplete();
 
 		assertThat(getSession().execute("SELECT * FROM user").one()).isNull();
 	}
 
 	@Test // DATACASS-335
-	public void queryForObjectStatementShouldReturnFirstColumn() throws Exception {
+	public void queryForObjectShouldReturnFirstColumn() {
 
-		String id = template.queryForObject(QueryBuilder.select("id").from("user"), String.class).block();
-
-		assertThat(id).isEqualTo("WHITE");
+		StepVerifier.create(template.queryForObject("SELECT id FROM user;", String.class)) //
+				.expectNext("WHITE") //
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void queryForObjectStatementShouldReturnMap() throws Exception {
+	public void queryForObjectShouldReturnMap() {
 
-		Map<String, Object> map = template.queryForMap(QueryBuilder.select().from("user")).block();
+		StepVerifier.create(template.queryForMap("SELECT * FROM user;")) //
+				.consumeNextWith(actual -> {
 
-		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+					assertThat(actual).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+				}).verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void executeWithArgsShouldRemoveRecords() throws Exception {
+	public void executeStatementShouldRemoveRecords() {
 
-		template.execute("DELETE FROM user WHERE id = ?", "WHITE").block();
+		StepVerifier
+				.create(template.execute(QueryBuilder.delete() //
+						.from("user") //
+						.where(QueryBuilder.eq("id", "WHITE")))) //
+				.expectNext(true) //
+				.verifyComplete();
 
 		assertThat(getSession().execute("SELECT * FROM user").one()).isNull();
 	}
 
 	@Test // DATACASS-335
-	public void queryForObjectWithArgsShouldReturnFirstColumn() throws Exception {
+	public void queryForObjectStatementShouldReturnFirstColumn() {
 
-		String id = template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE").block();
-
-		assertThat(id).isEqualTo("WHITE");
+		StepVerifier
+				.create(template.queryForObject(QueryBuilder //
+						.select("id") //
+						.from("user"), String.class)) //
+				.expectNext("WHITE") //
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void queryForObjectWithArgsShouldReturnMap() throws Exception {
+	public void queryForObjectStatementShouldReturnMap() {
 
-		Map<String, Object> map = template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE").block();
+		StepVerifier.create(template.queryForMap(QueryBuilder.select().from("user"))) //
+				.consumeNextWith(actual -> {
 
-		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+					assertThat(actual).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+				}).verifyComplete();
+	}
+
+	@Test // DATACASS-335
+	public void executeWithArgsShouldRemoveRecords() {
+
+		StepVerifier.create(template.execute("DELETE FROM user WHERE id = ?", "WHITE")).expectNext(true).verifyComplete();
+
+		assertThat(getSession().execute("SELECT * FROM user").one()).isNull();
+	}
+
+	@Test // DATACASS-335
+	public void queryForObjectWithArgsShouldReturnFirstColumn() {
+
+		StepVerifier.create(template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE")) //
+				.expectNext("WHITE") //
+				.verifyComplete();
+	}
+
+	@Test // DATACASS-335
+	public void queryForObjectWithArgsShouldReturnMap() {
+
+		StepVerifier.create(template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE")) //
+				.consumeNextWith(actual -> {
+
+					assertThat(actual).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+				}).verifyComplete();
 	}
 }

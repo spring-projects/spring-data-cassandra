@@ -19,10 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.test.TestSubscriber;
+import reactor.test.StepVerifier;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -91,166 +90,149 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		repository = factory.getRepository(PersonRepostitory.class);
 
-		repository.deleteAll().block();
+		deleteAll();
 
 		dave = new Person("42", "Dave", "Matthews");
 		oliver = new Person("4", "Oliver August", "Matthews");
 		carter = new Person("49", "Carter", "Beauford");
 		boyd = new Person("45", "Boyd", "Tinsley");
+	}
 
-		repository.save(Arrays.asList(oliver, dave, carter, boyd)).last().block();
+	private void insertTestData() {
+		StepVerifier.create(repository.save(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4).verifyComplete();
+	}
+
+	private void deleteAll() {
+		StepVerifier.create(repository.deleteAll()).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void existsByIdShouldReturnTrueForExistingObject() {
 
-		Boolean exists = repository.exists(dave.getId()).block();
+		insertTestData();
 
-		assertThat(exists).isTrue();
+		StepVerifier.create(repository.exists(dave.getId())).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void existsByIdShouldReturnFalseForAbsentObject() {
-
-		TestSubscriber<Boolean> testSubscriber = TestSubscriber.subscribe(repository.exists("unknown"));
-
-		testSubscriber.await().assertComplete().assertValues(false).assertNoError();
+		StepVerifier.create(repository.exists("unknown")).expectNext(false).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void existsByMonoOfIdShouldReturnTrueForExistingObject() {
 
-		Boolean exists = repository.exists(Mono.just(dave.getId())).block();
-		assertThat(exists).isTrue();
+		insertTestData();
+
+		StepVerifier.create(repository.exists(Mono.just(dave.getId()))).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void existsByEmptyMonoOfIdShouldReturnEmptyMono() {
-
-		TestSubscriber<Boolean> testSubscriber = TestSubscriber.subscribe(repository.exists(Mono.empty()));
-
-		testSubscriber.await().assertComplete().assertNoValues().assertNoError();
+		StepVerifier.create(repository.exists(Mono.empty())).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findOneShouldReturnObject() {
 
-		Person person = repository.findOne(dave.getId()).block();
+		insertTestData();
 
-		assertThat(person).isEqualTo(dave);
+		StepVerifier.create(repository.findOne(dave.getId())).expectNext(dave).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findOneShouldCompleteWithoutValueForAbsentObject() {
-
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.findOne("unknown"));
-
-		testSubscriber.await().assertComplete().assertNoValues().assertNoError();
+		StepVerifier.create(repository.findOne("unknown")).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findOneByMonoOfIdShouldReturnTrueForExistingObject() {
 
-		Person person = repository.findOne(Mono.just(dave.getId())).block();
+		insertTestData();
 
-		assertThat(person).isEqualTo(dave);
+		StepVerifier.create(repository.findOne(Mono.just(dave.getId()))).expectNext(dave).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findOneByEmptyMonoOfIdShouldReturnEmptyMono() {
-
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.findOne(Mono.empty()));
-
-		testSubscriber.await().assertComplete().assertNoValues().assertNoError();
+		StepVerifier.create(repository.findOne(Mono.empty())).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findAllShouldReturnAllResults() {
 
-		List<Person> persons = repository.findAll().collectList().block();
+		insertTestData();
 
-		assertThat(persons).hasSize(4);
+		StepVerifier.create(repository.findAll()).expectNextCount(4).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findAllByIterableOfIdShouldReturnResults() {
 
-		List<Person> persons = repository.findAll(Arrays.asList(dave.getId(), boyd.getId())).collectList().block();
+		insertTestData();
 
-		assertThat(persons).hasSize(2);
+		StepVerifier.create(repository.findAll(Arrays.asList(dave.getId(), boyd.getId()))) //
+				.expectNextCount(2) //
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findAllByPublisherOfIdShouldReturnResults() {
 
-		List<Person> persons = repository.findAll(Flux.just(dave.getId(), boyd.getId())).collectList().block();
+		insertTestData();
 
-		assertThat(persons).hasSize(2);
+		StepVerifier.create(repository.findAll(Flux.just(dave.getId(), boyd.getId()))) //
+				.expectNextCount(2) //
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findAllByEmptyPublisherOfIdShouldReturnResults() {
-
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.findAll(Flux.empty()));
-
-		testSubscriber.await().assertComplete().assertNoValues().assertNoError();
+		StepVerifier.create(repository.findAll(Flux.empty())).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void countShouldReturnNumberOfRecords() {
 
-		TestSubscriber<Long> testSubscriber = TestSubscriber.subscribe(repository.count());
+		insertTestData();
 
-		testSubscriber.await().assertComplete().assertValueCount(1).assertValues(4L).assertNoError();
+		StepVerifier.create(repository.count()).expectNext(4L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void insertEntityShouldInsertEntity() {
 
-		repository.deleteAll().block();
-
 		Person person = new Person("36", "Homer", "Simpson");
 
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.insert(person));
+		StepVerifier.create(repository.insert(person)).expectNext(person).verifyComplete();
 
-		testSubscriber.await().assertComplete().assertValueCount(1).assertValues(person);
-		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(1L);
+		StepVerifier.create(repository.findAll()).expectNextCount(1L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void insertShouldDeferredWrite() {
 
-		repository.deleteAll().block();
-
 		Person person = new Person("36", "Homer", "Simpson");
 
 		repository.insert(person);
 
-		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(0L);
+		StepVerifier.create(repository.findAll()).expectNextCount(0L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void insertIterableOfEntitiesShouldInsertEntity() {
 
-		repository.deleteAll().block();
+		StepVerifier.create(repository.insert(Arrays.asList(dave, oliver, boyd))).expectNextCount(3L).verifyComplete();
 
-		TestSubscriber<Person> testSubscriber = TestSubscriber
-				.subscribe(repository.insert(Arrays.asList(dave, oliver, boyd)));
-
-		testSubscriber.await().assertComplete().assertValueCount(3);
-
-		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(3L);
+		StepVerifier.create(repository.findAll()).expectNextCount(3L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void insertPublisherOfEntitiesShouldInsertEntity() {
 
-		repository.deleteAll().block();
+		StepVerifier.create(repository.insert(Flux.just(dave, oliver, boyd))).expectNextCount(3L).verifyComplete();
 
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.insert(Flux.just(dave, oliver, boyd)));
-
-		testSubscriber.await().assertComplete().assertValueCount(3);
-		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(3L);
+		StepVerifier.create(repository.findAll()).expectNextCount(3L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -259,14 +241,13 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.save(dave));
+		StepVerifier.create(repository.save(dave)).expectNextCount(1).verifyComplete();
 
-		testSubscriber.await().assertComplete().assertValueCount(1).assertValues(dave);
+		StepVerifier.create(repository.findOne(dave.getId())).consumeNextWith(actual -> {
 
-		Person loaded = repository.findOne(dave.getId()).block();
-
-		assertThat(loaded.getFirstname()).isEqualTo(dave.getFirstname());
-		assertThat(loaded.getLastname()).isEqualTo(dave.getLastname());
+			assertThat(actual.getFirstname()).isEqualTo(dave.getFirstname());
+			assertThat(actual.getLastname()).isEqualTo(dave.getLastname());
+		}).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -274,26 +255,17 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		Person person = new Person("36", "Homer", "Simpson");
 
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.save(person));
+		StepVerifier.create(repository.save(person)).expectNextCount(1).verifyComplete();
 
-		testSubscriber.await().assertComplete().assertValueCount(1).assertValues(person);
-
-		Person loaded = repository.findOne(person.getId()).block();
-
-		assertThat(loaded).isEqualTo(person);
+		StepVerifier.create(repository.findOne(person.getId())).expectNext(person).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void saveIterableOfNewEntitiesShouldInsertEntity() {
 
-		repository.deleteAll().block();
+		StepVerifier.create(repository.save(Arrays.asList(dave, oliver, boyd))).expectNextCount(3).verifyComplete();
 
-		TestSubscriber<Person> testSubscriber = TestSubscriber
-				.subscribe(repository.save(Arrays.asList(dave, oliver, boyd)));
-
-		testSubscriber.await().assertComplete().assertValueCount(3);
-
-		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(3L);
+		StepVerifier.create(repository.findAll()).expectNextCount(3L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -304,82 +276,61 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.save(Arrays.asList(person, dave)));
+		StepVerifier.create(repository.save(Arrays.asList(person, dave))).expectNextCount(2).verifyComplete();
 
-		testSubscriber.await().assertComplete().assertValueCount(2);
+		StepVerifier.create(repository.findOne(dave.getId())).expectNext(dave).verifyComplete();
 
-		Person persistentDave = repository.findOne(dave.getId()).block();
-		assertThat(persistentDave).isEqualTo(dave);
-
-		Person persistentHomer = repository.findOne(person.getId()).block();
-		assertThat(persistentHomer).isEqualTo(person);
+		StepVerifier.create(repository.findOne(person.getId())).expectNext(person).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void savePublisherOfEntitiesShouldInsertEntity() {
 
-		repository.deleteAll().block();
+		StepVerifier.create(repository.save(Flux.just(dave, oliver, boyd))).expectNextCount(3).verifyComplete();
 
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.save(Flux.just(dave, oliver, boyd)));
-
-		testSubscriber.await().assertComplete().assertValueCount(3);
-		repository.findAll().count().subscribeWith(TestSubscriber.create()).awaitAndAssertNextValues(3L);
+		StepVerifier.create(repository.findAll()).expectNextCount(3L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void deleteAllShouldRemoveEntities() {
 
-		repository.deleteAll().block();
+		insertTestData();
 
-		TestSubscriber<Person> testSubscriber = TestSubscriber.subscribe(repository.findAll());
+		StepVerifier.create(repository.deleteAll()).verifyComplete();
 
-		testSubscriber.await().assertComplete().assertValueCount(0);
+		StepVerifier.create(repository.findAll()).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void deleteByIdShouldRemoveEntity() {
 
-		TestSubscriber<Void> testSubscriber = TestSubscriber.subscribe(repository.delete(dave.getId()));
+		StepVerifier.create(repository.delete(dave.getId())).verifyComplete();
 
-		testSubscriber.await().assertComplete().assertNoValues();
-
-		TestSubscriber<Person> verificationSubscriber = TestSubscriber.subscribe(repository.findOne(dave.getId()));
-
-		verificationSubscriber.await().assertComplete().assertNoValues();
+		StepVerifier.create(repository.findOne(dave.getId())).expectNextCount(0).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void deleteShouldRemoveEntity() {
 
-		TestSubscriber<Void> testSubscriber = TestSubscriber.subscribe(repository.delete(dave));
+		StepVerifier.create(repository.delete(dave)).verifyComplete();
 
-		testSubscriber.await().assertComplete().assertNoValues();
-
-		TestSubscriber<Person> verificationSubscriber = TestSubscriber.subscribe(repository.findOne(dave.getId()));
-
-		verificationSubscriber.await().assertComplete().assertNoValues();
+		StepVerifier.create(repository.findOne(dave.getId())).expectNextCount(0).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void deleteIterableOfEntitiesShouldRemoveEntities() {
 
-		TestSubscriber<Void> testSubscriber = TestSubscriber.subscribe(repository.delete(Arrays.asList(dave, boyd)));
+		StepVerifier.create(repository.delete(Arrays.asList(dave, boyd))).verifyComplete();
 
-		testSubscriber.await().assertComplete().assertNoValues();
-
-		TestSubscriber<Person> verificationSubscriber = TestSubscriber.subscribe(repository.findOne(boyd.getId()));
-		verificationSubscriber.await().assertComplete().assertNoValues();
+		StepVerifier.create(repository.findOne(boyd.getId())).expectNextCount(0).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void deletePublisherOfEntitiesShouldRemoveEntities() {
 
-		TestSubscriber<Void> testSubscriber = TestSubscriber.subscribe(repository.delete(Flux.just(dave, boyd)));
+		StepVerifier.create(repository.delete(Flux.just(dave, boyd))).verifyComplete();
 
-		testSubscriber.await().assertComplete().assertNoValues();
-
-		TestSubscriber<Person> verificationSubscriber = TestSubscriber.subscribe(repository.findOne(boyd.getId()));
-		verificationSubscriber.await().assertComplete().assertNoValues();
+		StepVerifier.create(repository.findOne(boyd.getId())).expectNextCount(0).verifyComplete();
 	}
 
 	interface PersonRepostitory extends ReactiveCassandraRepository<Person, String> {}

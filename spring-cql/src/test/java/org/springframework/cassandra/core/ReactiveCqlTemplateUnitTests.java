@@ -22,9 +22,9 @@ import static org.mockito.Mockito.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -90,7 +90,8 @@ public class ReactiveCqlTemplateUnitTests {
 		});
 
 		verify(session, never()).close();
-		assertThat(flux.blockLast()).isEqualTo("OK");
+
+		StepVerifier.create(flux).expectNext("OK").verifyComplete();
 		verify(session).close();
 	}
 
@@ -101,13 +102,7 @@ public class ReactiveCqlTemplateUnitTests {
 			throw new InvalidQueryException("wrong query");
 		});
 
-		try {
-			flux.blockLast();
-
-			fail("Missing CassandraInvalidQueryException");
-		} catch (CassandraInvalidQueryException e) {
-			assertThat(e).hasMessageContaining("wrong query");
-		}
+		StepVerifier.create(flux).expectError(CassandraInvalidQueryException.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -118,7 +113,9 @@ public class ReactiveCqlTemplateUnitTests {
 		Mono<Boolean> mono = template.execute("UPDATE user SET a = 'b';");
 
 		verifyZeroInteractions(session);
-		assertThat(mono.block()).isFalse();
+
+		StepVerifier.create(mono).expectNext(false).verifyComplete();
+
 		verify(session).execute(any(Statement.class));
 	}
 
@@ -129,13 +126,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<Boolean> mono = template.execute("UPDATE user SET a = 'b';");
 
-		try {
-			mono.block();
-
-			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query failed");
-		}
+		StepVerifier.create(mono).expectError(CassandraConnectionFailureException.class).verify();
 	}
 
 	// -------------------------------------------------------------------------
@@ -147,7 +138,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
 
-			reactiveCqlTemplate.execute("SELECT * from USERS").block();
+			StepVerifier.create(reactiveCqlTemplate.execute("SELECT * from USERS")).expectNextCount(1).verifyComplete();
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -158,7 +149,9 @@ public class ReactiveCqlTemplateUnitTests {
 
 		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
 
-			reactiveCqlTemplate.execute("SELECT * from USERS").block();
+			StepVerifier.create(reactiveCqlTemplate.execute("SELECT * from USERS")) //
+					.expectNextCount(1) //
+					.verifyComplete();
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -171,9 +164,8 @@ public class ReactiveCqlTemplateUnitTests {
 
 			Mono<ReactiveResultSet> mono = reactiveCqlTemplate.queryForResultSet("SELECT * from USERS");
 
-			List<Row> rows = mono.block().rows().collectList().block();
+			StepVerifier.create(mono.flatMap(ReactiveResultSet::rows)).expectNextCount(3).verifyComplete();
 
-			assertThat(rows).hasSize(3);
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -185,9 +177,8 @@ public class ReactiveCqlTemplateUnitTests {
 
 			Flux<String> flux = reactiveCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
-			List<String> rows = flux.collectList().block();
+			StepVerifier.create(flux).expectNext("Walter", "Hank", " Jesse").verifyComplete();
 
-			assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -199,9 +190,8 @@ public class ReactiveCqlTemplateUnitTests {
 
 			Flux<String> flux = reactiveCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
-			List<String> rows = flux.collectList().block();
+			StepVerifier.create(flux).expectNext("Walter", "Hank", " Jesse").verifyComplete();
 
-			assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -215,7 +205,9 @@ public class ReactiveCqlTemplateUnitTests {
 		Flux<Boolean> flux = template.query("UPDATE user SET a = 'b';", resultSet -> Mono.just(resultSet.wasApplied()));
 
 		verifyZeroInteractions(session);
-		assertThat(flux.collectList().block()).hasSize(1).contains(true);
+
+		StepVerifier.create(flux).expectNext(true).verifyComplete();
+
 		verify(session).execute(any(Statement.class));
 	}
 
@@ -226,13 +218,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Flux<Boolean> flux = template.query("UPDATE user SET a = 'b';", resultSet -> Mono.just(resultSet.wasApplied()));
 
-		try {
-			flux.blockLast();
-
-			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query failed");
-		}
+		StepVerifier.create(flux).expectError(CassandraConnectionFailureException.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -242,7 +228,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
 
 		Mono<String> mono = template.queryForObject("SELECT * FROM user", (row, rowNum) -> "OK");
-		assertThat(mono.hasElement().block()).isFalse();
+
+		StepVerifier.create(mono).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -252,7 +239,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
 		Mono<String> mono = template.queryForObject("SELECT * FROM user", (row, rowNum) -> "OK");
-		assertThat(mono.block()).isEqualTo("OK");
+
+		StepVerifier.create(mono).expectNext("OK").verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -262,7 +250,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
 		Mono<String> mono = template.queryForObject("SELECT * FROM user", (row, rowNum) -> null);
-		assertThat(mono.hasElement().block()).isFalse();
+
+		StepVerifier.create(mono).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -273,13 +262,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<String> mono = template.queryForObject("SELECT * FROM user", (row, rowNum) -> "OK");
 
-		try {
-			mono.block();
-
-			fail("Missing IncorrectResultSizeDataAccessException");
-		} catch (IncorrectResultSizeDataAccessException e) {
-			assertThat(e).hasMessageContaining("expected 1, actual 2");
-		}
+		StepVerifier.create(mono).expectError(IncorrectResultSizeDataAccessException.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -293,7 +276,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<String> mono = template.queryForObject("SELECT * FROM user", String.class);
 
-		assertThat(mono.block()).isEqualTo("OK");
+		StepVerifier.create(mono).expectNext("OK").verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -307,7 +290,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Flux<String> flux = template.queryForFlux("SELECT * FROM user", String.class);
 
-		assertThat(flux.collectList().block()).contains("OK", "NOT OK");
+		StepVerifier.create(flux).expectNext("OK", "NOT OK").verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -318,7 +301,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Flux<Row> flux = template.queryForRows("SELECT * FROM user");
 
-		assertThat(flux.collectList().block()).hasSize(2).contains(row);
+		StepVerifier.create(flux).expectNext(row, row).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -329,7 +312,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<Boolean> mono = template.execute("UPDATE user SET a = 'b';");
 
-		assertThat(mono.block()).isTrue();
+		StepVerifier.create(mono).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -341,7 +324,9 @@ public class ReactiveCqlTemplateUnitTests {
 		Flux<Boolean> flux = template.execute(Flux.just("UPDATE user SET a = 'b';", "UPDATE user SET x = 'y';"));
 
 		verifyZeroInteractions(session);
-		assertThat(flux.collectList().block()).hasSize(2).contains(true, false);
+
+		StepVerifier.create(flux).expectNext(true).expectNext(false).verifyComplete();
+
 		verify(session, times(2)).execute(any(Statement.class));
 	}
 
@@ -354,7 +339,9 @@ public class ReactiveCqlTemplateUnitTests {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
 
-			reactiveCqlTemplate.execute(new SimpleStatement("SELECT * from USERS")).block();
+			StepVerifier.create(reactiveCqlTemplate.execute(new SimpleStatement("SELECT * from USERS"))) //
+					.expectNextCount(1) //
+					.verifyComplete();
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -365,7 +352,9 @@ public class ReactiveCqlTemplateUnitTests {
 
 		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
 
-			reactiveCqlTemplate.execute(new SimpleStatement("SELECT * from USERS")).block();
+			StepVerifier.create(reactiveCqlTemplate.execute(new SimpleStatement("SELECT * from USERS"))) //
+					.expectNextCount(1) //
+					.verifyComplete();
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -376,11 +365,12 @@ public class ReactiveCqlTemplateUnitTests {
 
 		doTestStrings(null, null, null, reactiveCqlTemplate -> {
 
-			Mono<ReactiveResultSet> mono = reactiveCqlTemplate.queryForResultSet(new SimpleStatement("SELECT * from USERS"));
+			StepVerifier
+					.create(reactiveCqlTemplate.queryForResultSet(new SimpleStatement("SELECT * from USERS"))
+							.flatMap(ReactiveResultSet::rows)) //
+					.expectNextCount(3) //
+					.verifyComplete();
 
-			List<Row> rows = mono.block().rows().collectList().block();
-
-			assertThat(rows).hasSize(3);
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -393,9 +383,8 @@ public class ReactiveCqlTemplateUnitTests {
 			Flux<String> flux = reactiveCqlTemplate.query(new SimpleStatement("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
-			List<String> rows = flux.collectList().block();
+			StepVerifier.create(flux).expectNext("Walter", "Hank", " Jesse").verifyComplete();
 
-			assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -408,9 +397,11 @@ public class ReactiveCqlTemplateUnitTests {
 			Flux<String> flux = reactiveCqlTemplate.query(new SimpleStatement("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
-			List<String> rows = flux.collectList().block();
+			StepVerifier.create(flux.collectList()).consumeNextWith(rows -> {
 
-			assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
+				assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
+			}).verifyComplete();
+
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -425,7 +416,7 @@ public class ReactiveCqlTemplateUnitTests {
 				resultSet -> Mono.just(resultSet.wasApplied()));
 
 		verifyZeroInteractions(session);
-		assertThat(flux.collectList().block()).hasSize(1).contains(true);
+		StepVerifier.create(flux).expectNext(true).verifyComplete();
 		verify(session).execute(any(Statement.class));
 	}
 
@@ -437,13 +428,7 @@ public class ReactiveCqlTemplateUnitTests {
 		Flux<Boolean> flux = template.query(new SimpleStatement("UPDATE user SET a = 'b';"),
 				resultSet -> Mono.just(resultSet.wasApplied()));
 
-		try {
-			flux.blockLast();
-
-			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query failed");
-		}
+		StepVerifier.create(flux).expectError(CassandraConnectionFailureException.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -453,7 +438,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
 
 		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> "OK");
-		assertThat(mono.hasElement().block()).isFalse();
+
+		StepVerifier.create(mono).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -463,7 +449,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
 		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> "OK");
-		assertThat(mono.block()).isEqualTo("OK");
+
+		StepVerifier.create(mono).expectNext("OK").verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -473,7 +460,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
 		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> null);
-		assertThat(mono.hasElement().block()).isFalse();
+
+		StepVerifier.create(mono).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -484,13 +472,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> "OK");
 
-		try {
-			mono.block();
-
-			fail("Missing IncorrectResultSizeDataAccessException");
-		} catch (IncorrectResultSizeDataAccessException e) {
-			assertThat(e).hasMessageContaining("expected 1, actual 2");
-		}
+		StepVerifier.create(mono).expectError(IncorrectResultSizeDataAccessException.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -504,7 +486,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), String.class);
 
-		assertThat(mono.block()).isEqualTo("OK");
+		StepVerifier.create(mono).expectNext("OK").verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -518,7 +500,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Flux<String> flux = template.queryForFlux(new SimpleStatement("SELECT * FROM user"), String.class);
 
-		assertThat(flux.collectList().block()).contains("OK", "NOT OK");
+		StepVerifier.create(flux).expectNext("OK", "NOT OK").verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -529,7 +511,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Flux<Row> flux = template.queryForRows(new SimpleStatement("SELECT * FROM user"));
 
-		assertThat(flux.collectList().block()).hasSize(2).contains(row);
+		StepVerifier.create(flux).expectNext(row, row).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -538,9 +520,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 
-		Mono<Boolean> mono = template.execute(new SimpleStatement("UPDATE user SET a = 'b';"));
-
-		assertThat(mono.block()).isTrue();
+		StepVerifier.create(template.execute(new SimpleStatement("UPDATE user SET a = 'b';"))).expectNext(true)
+				.verifyComplete();
 	}
 
 	// -------------------------------------------------------------------------
@@ -557,9 +538,7 @@ public class ReactiveCqlTemplateUnitTests {
 				return session.execute(ps.bind("A")).flatMap(ReactiveResultSet::rows);
 			});
 
-			List<Row> rows = flux.collectList().block();
-
-			assertThat(rows).hasSize(3);
+			StepVerifier.create(flux).expectNextCount(3).verifyComplete();
 		});
 	}
 
@@ -572,7 +551,7 @@ public class ReactiveCqlTemplateUnitTests {
 			when(this.preparedStatement.bind("White")).thenReturn(this.boundStatement);
 			when(this.reactiveResultSet.wasApplied()).thenReturn(true);
 
-			assertThat(applied.block()).isTrue();
+			StepVerifier.create(applied).expectNext(true).verifyComplete();
 		});
 	}
 
@@ -587,7 +566,9 @@ public class ReactiveCqlTemplateUnitTests {
 				(session, ps) -> session.execute(ps.bind()));
 
 		verifyZeroInteractions(session);
-		assertThat(flux.collectList().block()).hasSize(1).contains(reactiveResultSet);
+
+		StepVerifier.create(flux).expectNext(reactiveResultSet).verifyComplete();
+
 		verify(session).prepare(anyString());
 		verify(session).execute(boundStatement);
 	}
@@ -601,7 +582,9 @@ public class ReactiveCqlTemplateUnitTests {
 				(session, ps) -> session.execute(boundStatement));
 
 		verifyZeroInteractions(session);
-		assertThat(flux.collectList().block()).hasSize(1).contains(reactiveResultSet);
+
+		StepVerifier.create(flux).expectNext(reactiveResultSet).verifyComplete();
+
 		verify(session).execute(boundStatement);
 	}
 
@@ -612,13 +595,7 @@ public class ReactiveCqlTemplateUnitTests {
 			throw new NoHostAvailableException(Collections.emptyMap());
 		}, (session, ps) -> session.execute(boundStatement));
 
-		try {
-			flux.blockLast();
-
-			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query");
-		}
+		StepVerifier.create(flux).expectError(CassandraConnectionFailureException.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -628,13 +605,7 @@ public class ReactiveCqlTemplateUnitTests {
 			throw new NoHostAvailableException(Collections.emptyMap());
 		});
 
-		try {
-			flux.blockLast();
-
-			fail("Missing CassandraConnectionFailureException");
-		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query");
-		}
+		StepVerifier.create(flux).expectError(CassandraConnectionFailureException.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -647,7 +618,8 @@ public class ReactiveCqlTemplateUnitTests {
 		Flux<Row> flux = template.query(session -> Mono.just(preparedStatement), ReactiveResultSet::rows);
 
 		verifyZeroInteractions(session);
-		assertThat(flux.collectList().block()).hasSize(1).contains(row);
+
+		StepVerifier.create(flux).expectNext(row).verifyComplete();
 		verify(preparedStatement).bind();
 	}
 
@@ -663,7 +635,9 @@ public class ReactiveCqlTemplateUnitTests {
 		}, ReactiveResultSet::rows);
 
 		verifyZeroInteractions(session);
-		assertThat(flux.collectList().block()).hasSize(1).contains(row);
+
+		StepVerifier.create(flux).expectNext(row).verifyComplete();
+
 		verify(preparedStatement).bind("a", "b");
 	}
 
@@ -679,7 +653,9 @@ public class ReactiveCqlTemplateUnitTests {
 		}, (row, rowNum) -> row);
 
 		verifyZeroInteractions(session);
-		assertThat(flux.collectList().block()).hasSize(1).contains(row);
+
+		StepVerifier.create(flux).expectNext(row).verifyComplete();
+
 		verify(preparedStatement).bind("a", "b");
 	}
 
@@ -693,7 +669,8 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<String> mono = template.queryForObject("SELECT * FROM user WHERE username = ?", (row, rowNum) -> "OK",
 				"Walter");
-		assertThat(mono.hasElement().block()).isFalse();
+
+		StepVerifier.create(mono).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -706,7 +683,8 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<String> mono = template.queryForObject("SELECT * FROM user WHERE username = ?", (row, rowNum) -> "OK",
 				"Walter");
-		assertThat(mono.block()).isEqualTo("OK");
+
+		StepVerifier.create(mono).expectNext("OK").verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -719,13 +697,8 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<String> mono = template.queryForObject("SELECT * FROM user WHERE username = ?", (row, rowNum) -> "OK",
 				"Walter");
-		try {
-			mono.block();
 
-			fail("Missing IncorrectResultSizeDataAccessException");
-		} catch (IncorrectResultSizeDataAccessException e) {
-			assertThat(e).hasMessageContaining("expected 1, actual 2");
-		}
+		StepVerifier.create(mono).expectError(IncorrectResultSizeDataAccessException.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -741,7 +714,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<String> mono = template.queryForObject("SELECT * FROM user WHERE username = ?", String.class, "Walter");
 
-		assertThat(mono.block()).isEqualTo("OK");
+		StepVerifier.create(mono).expectNext("OK").verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -757,7 +730,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Flux<String> flux = template.queryForFlux("SELECT * FROM user WHERE username = ?", String.class, "Walter");
 
-		assertThat(flux.collectList().block()).contains("OK", "NOT OK");
+		StepVerifier.create(flux).expectNext("OK", "NOT OK").verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -770,7 +743,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Flux<Row> flux = template.queryForRows("SELECT * FROM user WHERE username = ?", "Walter");
 
-		assertThat(flux.collectList().block()).hasSize(2).contains(row);
+		StepVerifier.create(flux).expectNextCount(2).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -783,7 +756,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Mono<Boolean> mono = template.execute("UPDATE user SET username = ?", "Walter");
 
-		assertThat(mono.block()).isTrue();
+		StepVerifier.create(mono).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -798,7 +771,8 @@ public class ReactiveCqlTemplateUnitTests {
 		Flux<Boolean> flux = template.execute("UPDATE user SET username = ?",
 				Flux.just(new Object[] { "Walter" }, new Object[] { "Hank" }));
 
-		assertThat(flux.collectList().block()).hasSize(2).contains(true);
+		StepVerifier.create(flux).expectNext(true, true).verifyComplete();
+
 		verify(session, atMost(1)).prepare("UPDATE user SET username = ?");
 		verify(session, times(2)).execute(boundStatement);
 	}

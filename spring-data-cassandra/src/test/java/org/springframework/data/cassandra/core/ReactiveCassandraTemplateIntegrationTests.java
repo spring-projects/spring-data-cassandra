@@ -15,10 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +35,7 @@ import org.springframework.data.cassandra.test.integration.support.SchemaTestUti
  */
 public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	private ReactiveCassandraTemplate template;
+	ReactiveCassandraTemplate template;
 
 	@Before
 	public void setUp() throws Exception {
@@ -57,14 +56,11 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		Person person = new Person("heisenberg", "Walter", "White");
 
 		Mono<Person> insert = template.insert(person);
-		Mono<Person> oneById = template.selectOneById(person.getId(), Person.class);
+		StepVerifier.create(template.selectOneById(person.getId(), Person.class)).verifyComplete();
 
-		assertThat(oneById.hasElement().block()).isFalse();
+		StepVerifier.create(insert).expectNext(person).verifyComplete();
 
-		Person saved = insert.block();
-
-		assertThat(saved).isNotNull().isEqualTo(person);
-		assertThat(oneById.block()).isNotNull().isEqualTo(saved);
+		StepVerifier.create(template.selectOneById(person.getId(), Person.class)).expectNext(person).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -72,11 +68,9 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		template.insert(person).block();
+		StepVerifier.create(template.insert(person)).expectNextCount(1).verifyComplete();
 
-		Mono<Long> count = template.count(Person.class);
-
-		assertThat(count.block()).isEqualTo(1L);
+		StepVerifier.create(template.count(Person.class)).expectNext(1L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -84,17 +78,13 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		template.insert(person).block();
+		StepVerifier.create(template.insert(person)).expectNextCount(1).verifyComplete();
 
 		person.setFirstname("Walter Hartwell");
 
-		Person updated = template.update(person).block();
+		StepVerifier.create(template.insert(person)).expectNextCount(1).verifyComplete();
 
-		assertThat(updated).isNotNull();
-
-		Mono<Person> oneById = template.selectOneById(person.getId(), Person.class);
-
-		assertThat(oneById.block()).isEqualTo(person);
+		StepVerifier.create(template.selectOneById(person.getId(), Person.class)).expectNext(person).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -102,15 +92,11 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		template.insert(person).block();
+		StepVerifier.create(template.insert(person)).expectNextCount(1).verifyComplete();
 
-		Person deleted = template.delete(person).block();
+		StepVerifier.create(template.delete(person)).expectNext(person).verifyComplete();
 
-		assertThat(deleted).isNotNull();
-
-		Mono<Person> oneById = template.selectOneById(person.getId(), Person.class);
-
-		assertThat(oneById.block()).isNull();
+		StepVerifier.create(template.selectOneById(person.getId(), Person.class)).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -118,14 +104,10 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
-		template.insert(person).block();
+		StepVerifier.create(template.insert(person)).expectNextCount(1).verifyComplete();
 
-		Boolean deleted = template.deleteById(person.getId(), Person.class).block();
+		StepVerifier.create(template.deleteById(person.getId(), Person.class)).expectNext(true).verifyComplete();
 
-		assertThat(deleted).isTrue();
-
-		Mono<Person> oneById = template.selectOneById(person.getId(), Person.class);
-
-		assertThat(oneById.block()).isNull();
+		StepVerifier.create(template.selectOneById(person.getId(), Person.class)).verifyComplete();
 	}
 }
