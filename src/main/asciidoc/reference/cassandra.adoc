@@ -1209,7 +1209,7 @@ using Jackson 2 is shown below:
 import org.springframework.core.convert.converter.Converter;
 
 import org.springframework.util.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 static class PersonWriteConverter implements Converter<Person, String> {
 
@@ -1235,7 +1235,7 @@ using Jackson 2 is shown below:
 import org.springframework.core.convert.converter.Converter;
 
 import org.springframework.util.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 static class PersonReadConverter implements Converter<String, Person> {
 

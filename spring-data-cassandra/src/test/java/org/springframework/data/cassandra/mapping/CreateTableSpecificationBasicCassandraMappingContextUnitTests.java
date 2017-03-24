@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
@@ -46,6 +45,7 @@ import com.datastax.driver.core.DataType.CollectionType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Unit tests for {@link BasicCassandraMappingContext} targeted on {@link CreateTableSpecification}.
