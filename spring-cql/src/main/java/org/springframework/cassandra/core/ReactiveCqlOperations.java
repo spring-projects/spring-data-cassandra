@@ -15,6 +15,9 @@
  */
 package org.springframework.cassandra.core;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.Map;
 
 import org.reactivestreams.Publisher;
@@ -25,9 +28,6 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Interface specifying a basic set of CQL operations executed in a reactive fashion. Implemented by

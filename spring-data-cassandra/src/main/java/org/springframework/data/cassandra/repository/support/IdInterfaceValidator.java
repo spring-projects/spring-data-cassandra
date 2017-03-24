@@ -67,8 +67,8 @@ public class IdInterfaceValidator {
 		}
 
 		Class<?>[] interfaces = id.getInterfaces();
-		if (interfaces.length > 2
-				|| ((interfaces.length == 1 && !(interfaces[0].equals(Serializable.class) || interfaces[0].equals(MapId.class))))) {
+		if (interfaces.length > 2 || ((interfaces.length == 1
+				&& !(interfaces[0].equals(Serializable.class) || interfaces[0].equals(MapId.class))))) {
 			x.add(new IdInterfaceException(id, null, "id type may only extend Serializable and/or MapId"));
 		}
 

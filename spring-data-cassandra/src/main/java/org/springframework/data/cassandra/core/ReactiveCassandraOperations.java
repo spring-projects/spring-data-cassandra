@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import org.reactivestreams.Publisher;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.ReactiveCqlOperations;
@@ -23,9 +26,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 
 import com.datastax.driver.core.Statement;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Interface specifying a basic set of reactive Cassandra operations. Implemented by {@link ReactiveCassandraTemplate}.
@@ -246,7 +246,7 @@ public interface ReactiveCassandraOperations {
 
 	/**
 	 * Execute a {@code TRUNCATE} query to remove all entities of a given class.
-	 * 
+	 *
 	 * @param entityClass The entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
@@ -261,7 +261,7 @@ public interface ReactiveCassandraOperations {
 
 	/**
 	 * Expose the underlying {@link ReactiveCqlOperations} to allow CQL operations.
-	 * 
+	 *
 	 * @return the underlying {@link ReactiveCqlOperations}.
 	 * @see ReactiveCqlOperations
 	 */

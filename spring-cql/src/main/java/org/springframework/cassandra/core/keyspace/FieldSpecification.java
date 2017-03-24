@@ -15,8 +15,8 @@
  */
 package org.springframework.cassandra.core.keyspace;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
-import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;

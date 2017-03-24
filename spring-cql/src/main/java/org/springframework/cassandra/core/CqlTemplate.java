@@ -80,8 +80,8 @@ import com.datastax.driver.core.exceptions.DriverException;
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/**
-	 * Create a new, uninitialized {@link CqlTemplate}. Note: The {@link SessionFactory} has to be set before using
-	 * the instance.
+	 * Create a new, uninitialized {@link CqlTemplate}. Note: The {@link SessionFactory} has to be set before using the
+	 * instance.
 	 *
 	 * @see #setSessionFactory(SessionFactory)
 	 */
@@ -486,8 +486,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Preparing statement [{}] using {}", toCql(preparedStatementCreator),
-						preparedStatementCreator);
+				logger.debug("Preparing statement [{}] using {}", toCql(preparedStatementCreator), preparedStatementCreator);
 			}
 
 			Session session = getCurrentSession();
@@ -515,9 +514,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler)
 	 */
 	@Override
-	public void query(PreparedStatementCreator preparedStatementCreator,
-			PreparedStatementBinder preparedStatementBinder, RowCallbackHandler rowCallbackHandler)
-			throws DataAccessException {
+	public void query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
+			RowCallbackHandler rowCallbackHandler) throws DataAccessException {
 
 		query(preparedStatementCreator, preparedStatementBinder, newResultSetExtractor(rowCallbackHandler));
 	}
@@ -538,8 +536,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.ResultSetExtractor, java.lang.Object[])
 	 */
 	@Override
-	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor, Object... args)
-			throws DataAccessException {
+	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor, Object... args) throws DataAccessException {
 
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), resultSetExtractor);
 	}

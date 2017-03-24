@@ -83,8 +83,8 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		reactiveSession.execute("SELECT * WHERE a = ?", Collections.singletonMap("a", "value")).subscribe();
 
-		verify(sessionMock).executeAsync(eq(new SimpleStatement("SELECT * WHERE a = ?",
-				Collections.singletonMap("a", "value"))));
+		verify(sessionMock)
+				.executeAsync(eq(new SimpleStatement("SELECT * WHERE a = ?", Collections.singletonMap("a", "value"))));
 	}
 
 	@Test // DATACASS-335
@@ -137,7 +137,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	private static <T extends Statement> T eq(T value) {
 
 		return ArgumentMatchers.argThat(argument -> argument instanceof Statement //
-					? value.toString().equals(argument.toString()) //
-							: value.equals(argument));
+				? value.toString().equals(argument.toString()) //
+				: value.equals(argument));
 	}
 }

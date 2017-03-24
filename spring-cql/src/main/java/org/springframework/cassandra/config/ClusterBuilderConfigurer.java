@@ -19,8 +19,7 @@ package org.springframework.cassandra.config;
 import com.datastax.driver.core.Cluster;
 
 /**
- * Configuration callback class to allow a user to apply additional configuration logic
- * to the {@link Cluster.Builder}.
+ * Configuration callback class to allow a user to apply additional configuration logic to the {@link Cluster.Builder}.
  *
  * @author John Blum
  * @see com.datastax.driver.core.Cluster

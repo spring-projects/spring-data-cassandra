@@ -15,19 +15,19 @@
  */
 package org.springframework.cassandra.core;
 
+import reactor.core.publisher.Mono;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
-
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
-
-import reactor.core.publisher.Mono;
 
 /**
  * Interface specifying a basic set of CQL operations. Implemented by {@link CqlTemplate}. Not often used directly, but
@@ -196,14 +196,15 @@ public interface CqlOperations {
 	 * Query using a prepared statement, reading the {@link ResultSet} with a {@link ResultSetExtractor}.
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
-	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
-	 *          set fetch size and other performance options.
+	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
+	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
+	 *          parameters, this object may be used to set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem
 	 */
-	<T> T query(String cql, PreparedStatementBinder preparedStatementBinder, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
+	<T> T query(String cql, PreparedStatementBinder preparedStatementBinder, ResultSetExtractor<T> resultSetExtractor)
+			throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a {@link PreparedStatementBinder} implementation that
@@ -211,27 +212,29 @@ public interface CqlOperations {
 	 * {@link RowCallbackHandler}.
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
-	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
-	 *          set fetch size and other performance options.
+	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
+	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
+	 *          parameters, this object may be used to set fetch size and other performance options.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	void query(String cql, PreparedStatementBinder preparedStatementBinder, RowCallbackHandler rowCallbackHandler) throws DataAccessException;
+	void query(String cql, PreparedStatementBinder preparedStatementBinder, RowCallbackHandler rowCallbackHandler)
+			throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a {@link PreparedStatementBinder} implementation that
 	 * knows how to bind values to the query, mapping each row to a Java object via a {@link RowMapper}.
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
-	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
-	 *          set fetch size and other performance options.
+	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
+	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
+	 *          parameters, this object may be used to set fetch size and other performance options.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> query(String cql, PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper) throws DataAccessException;
+	<T> List<T> query(String cql, PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query for a result {@link List}, given static CQL.
@@ -675,56 +678,60 @@ public interface CqlOperations {
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
 	 *
-	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a {@link com.datastax.driver.core.Session},
-	 *          must not be {@literal null}.
+	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem
 	 */
-	<T> T execute(PreparedStatementCreator preparedStatementCreator, PreparedStatementCallback<T> action) throws DataAccessException;
+	<T> T execute(PreparedStatementCreator preparedStatementCreator, PreparedStatementCallback<T> action)
+			throws DataAccessException;
 
 	/**
 	 * Query using a prepared statement, reading the {@link ResultSet} with a {@link ResultSetExtractor}.
 	 *
-	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a {@link com.datastax.driver.core.Session},
-	 *          must not be {@literal null}.
+	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}
 	 * @throws DataAccessException if there is any problem
 	 */
-	<T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
+	<T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor)
+			throws DataAccessException;
 
 	/**
 	 * Query using a prepared statement, reading the {@link ResultSet} on a per-row basis with a
 	 * {@link RowCallbackHandler}.
 	 *
-	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a {@link com.datastax.driver.core.Session},
-	 *          must not be {@literal null}.
+	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	void query(PreparedStatementCreator preparedStatementCreator, RowCallbackHandler rowCallbackHandler) throws DataAccessException;
+	void query(PreparedStatementCreator preparedStatementCreator, RowCallbackHandler rowCallbackHandler)
+			throws DataAccessException;
 
 	/**
 	 * Query using a prepared statement, mapping each row to a Java object via a {@link RowMapper}.
 	 *
-	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a {@link com.datastax.driver.core.Session},
-	 *          must not be {@literal null}.
+	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper) throws DataAccessException;
+	<T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values
 	 * to the query, reading the {@link ResultSet} with a {@link ResultSetExtractor}.
 	 *
-	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a {@link com.datastax.driver.core.Session},
-	 *          must not be {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
-	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
-	 *          set fetch size and other performance options.
+	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
+	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
+	 *          parameters, this object may be used to set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem
@@ -736,11 +743,11 @@ public interface CqlOperations {
 	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values
 	 * to the query, reading the {@link ResultSet} on a per-row basis with a {@link RowCallbackHandler}.
 	 *
-	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a {@link com.datastax.driver.core.Session},
-	 *          must not be {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
-	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
-	 *          set fetch size and other performance options.
+	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
+	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
+	 *          parameters, this object may be used to set fetch size and other performance options.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
@@ -751,11 +758,11 @@ public interface CqlOperations {
 	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values
 	 * to the query, mapping each row to a Java object via a {@link RowMapper}.
 	 *
-	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a {@link com.datastax.driver.core.Session},
-	 *          must not be {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
-	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
-	 *          set fetch size and other performance options.
+	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
+	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
+	 *          parameters, this object may be used to set fetch size and other performance options.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.

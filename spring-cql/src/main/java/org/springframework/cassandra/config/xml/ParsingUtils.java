@@ -167,7 +167,7 @@ public abstract class ParsingUtils {
 	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
 	public static void addRequiredPropertyReference(BeanDefinitionBuilder builder, String propertyName, Element element,
-		String attributeName) {
+			String attributeName) {
 
 		addProperty(builder, propertyName, element.getAttribute(attributeName), null, true, true);
 	}
@@ -232,8 +232,8 @@ public abstract class ParsingUtils {
 	 * @see BeanDefinitionBuilder#addPropertyReference(String, String)
 	 * @see BeanDefinitionBuilder#addPropertyValue(String, Object)
 	 */
-	public static BeanDefinitionBuilder addProperty(BeanDefinitionBuilder builder, String propertyName,
-			String value, String defaultValue, boolean required, boolean reference) {
+	public static BeanDefinitionBuilder addProperty(BeanDefinitionBuilder builder, String propertyName, String value,
+			String defaultValue, boolean required, boolean reference) {
 
 		Assert.notNull(builder, "BeanDefinitionBuilder must not be null");
 		Assert.hasText(propertyName, "Property name must not be null");
@@ -241,9 +241,8 @@ public abstract class ParsingUtils {
 		if (!StringUtils.hasText(value)) {
 			if (required) {
 				throw new IllegalArgumentException(String.format("value required for property %1$s[%2$s] on class [%3$s]",
-					reference ? "reference " : "", propertyName, builder.getRawBeanDefinition().getBeanClassName()));
-			}
-			else {
+						reference ? "reference " : "", propertyName, builder.getRawBeanDefinition().getBeanClassName()));
+			} else {
 				value = defaultValue;
 			}
 		}
@@ -260,13 +259,13 @@ public abstract class ParsingUtils {
 	}
 
 	/**
-	 * Returns a {@link BeanDefinition} built from the given {@link BeanDefinitionBuilder} enriched with
-	 * source meta-data derived from the given {@link Element}.
+	 * Returns a {@link BeanDefinition} built from the given {@link BeanDefinitionBuilder} enriched with source meta-data
+	 * derived from the given {@link Element}.
 	 *
 	 * @param builder {@link BeanDefinitionBuilder} used to build the {@link BeanDefinition}.
 	 * @param parserContext {@link ParserContext} used to track state during the parsing operation.
 	 * @param element DOM {@link Element} defining the meta-data that is the source of the {@link BeanDefinition}s
-	 * configuration.
+	 *          configuration.
 	 * @return the {@link BeanDefinition} built by the given {@link BeanDefinitionBuilder}.
 	 * @throws IllegalArgumentException if the {@link BeanDefinitionBuilder} or {@link ParserContext} are null.
 	 */

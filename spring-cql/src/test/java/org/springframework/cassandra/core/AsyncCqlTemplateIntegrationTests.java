@@ -147,12 +147,11 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	public void queryPreparedStatementCreatorShouldInvokeCallback() throws Exception {
 
 		List<String> result = new ArrayList<>();
-		getUninterruptibly(template.query(
-				session -> new GuavaListenableFutureAdapter<>(
-						session.prepareAsync("SELECT id FROM user WHERE id = ?;"), template.getExceptionTranslator()),
-				ps -> ps.bind("WHITE"), row -> {
-					result.add(row.getString(0));
-				}));
+		getUninterruptibly(template
+				.query(session -> new GuavaListenableFutureAdapter<>(session.prepareAsync("SELECT id FROM user WHERE id = ?;"),
+						template.getExceptionTranslator()), ps -> ps.bind("WHITE"), row -> {
+							result.add(row.getString(0));
+						}));
 
 		assertThat(result).contains("WHITE");
 	}

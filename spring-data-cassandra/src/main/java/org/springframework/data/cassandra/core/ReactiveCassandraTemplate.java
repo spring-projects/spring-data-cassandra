@@ -19,20 +19,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.reactivestreams.Publisher;
-import org.springframework.cassandra.core.*;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import org.reactivestreams.Publisher;
 import org.springframework.cassandra.core.CqlProvider;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.ReactiveCqlOperations;
@@ -45,7 +31,6 @@ import org.springframework.cassandra.core.session.ReactiveResultSet;
 import org.springframework.cassandra.core.session.ReactiveSession;
 import org.springframework.cassandra.core.session.ReactiveSessionFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -265,7 +250,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Select select = QueryBuilder.select().countAll().from(mappingContext.getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Select select = QueryBuilder.select().countAll()
+				.from(mappingContext.getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
 		return cqlOperations.queryForObject(select, Long.class);
 	}
@@ -294,8 +280,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 			@Override
 			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(insert).flatMap(
-					reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+				return session.execute(insert)
+						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
 			}
 
 			@Override
@@ -352,8 +338,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 			@Override
 			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(update).flatMap(
-					reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+				return session.execute(update)
+						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
 			}
 
 			@Override
@@ -429,8 +415,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 			@Override
 			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(delete).flatMap(
-					reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
+				return session.execute(delete)
+						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
 			}
 
 			@Override
@@ -472,7 +458,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Truncate truncate = QueryBuilder.truncate(mappingContext.getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Truncate truncate = QueryBuilder
+				.truncate(mappingContext.getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
 		return cqlOperations.execute(truncate).then();
 	}

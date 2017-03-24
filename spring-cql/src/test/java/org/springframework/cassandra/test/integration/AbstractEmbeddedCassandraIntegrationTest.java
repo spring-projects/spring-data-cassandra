@@ -43,11 +43,10 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	/**
 	 * Initiate a Cassandra environment in test scope.
 	 */
-	@Rule public final CassandraRule cassandraRule = cassandraEnvironment.testInstance()
-			.before(session -> {
-				AbstractEmbeddedCassandraIntegrationTest.this.cluster = session.getCluster();
-				return null;
-			});
+	@Rule public final CassandraRule cassandraRule = cassandraEnvironment.testInstance().before(session -> {
+		AbstractEmbeddedCassandraIntegrationTest.this.cluster = session.getCluster();
+		return null;
+	});
 
 	/**
 	 * The {@link Cluster} that's connected to Cassandra.

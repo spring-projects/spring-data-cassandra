@@ -443,8 +443,7 @@ public class CqlTemplateUnitTests {
 
 		doTestStrings(null, null, null, cqlTemplate -> {
 
-			ResultSet resultSet = cqlTemplate.execute("SELECT * from USERS",
-					(session, ps) -> session.execute(ps.bind("A")));
+			ResultSet resultSet = cqlTemplate.execute("SELECT * from USERS", (session, ps) -> session.execute(ps.bind("A")));
 
 			try {
 				assertThat(resultSet).hasSize(3);

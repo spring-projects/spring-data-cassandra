@@ -50,8 +50,7 @@ public class KeyspaceAttributes {
 	 * replication strategy class "SimpleStrategy" and with a replication factor equal to that given.
 	 */
 	public static Map<Option, Object> newSimpleReplication(long replicationFactor) {
-		return MapBuilder
-				.map(Option.class, Object.class)
+		return MapBuilder.map(Option.class, Object.class)
 				.entry(new DefaultOption("class", String.class, true, false, true),
 						ReplicationStrategy.SIMPLE_STRATEGY.getValue())
 				.entry(new DefaultOption("replication_factor", Long.class, true, false, false), replicationFactor).build();

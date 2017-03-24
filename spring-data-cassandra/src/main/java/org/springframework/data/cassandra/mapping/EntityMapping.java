@@ -85,8 +85,7 @@ public class EntityMapping {
 	}
 
 	public void setPropertyMappings(Map<String, PropertyMapping> propertyMappings) {
-		this.propertyMappings = (propertyMappings != null ? new HashMap<>(propertyMappings)
-			: Collections.emptyMap());
+		this.propertyMappings = (propertyMappings != null ? new HashMap<>(propertyMappings) : Collections.emptyMap());
 	}
 
 	public String getTableName() {

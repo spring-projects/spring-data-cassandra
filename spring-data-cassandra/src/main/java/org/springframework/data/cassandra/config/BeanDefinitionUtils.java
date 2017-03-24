@@ -93,7 +93,8 @@ public class BeanDefinitionUtils {
 	 * @see BeanFactoryUtils#beanNamesForTypeIncludingAncestors(ListableBeanFactory, Class, boolean, boolean)
 	 */
 	public static BeanDefinitionHolder getSingleBeanDefinitionOfType(BeanDefinitionRegistry registry,
-			ListableBeanFactory factory, Class<?> type, boolean includeNonSingletons, boolean allowEagerInit, boolean required) {
+			ListableBeanFactory factory, Class<?> type, boolean includeNonSingletons, boolean allowEagerInit,
+			boolean required) {
 
 		BeanDefinitionHolder[] definitions = getBeanDefinitionsOfType(registry, factory, type, includeNonSingletons,
 				allowEagerInit);

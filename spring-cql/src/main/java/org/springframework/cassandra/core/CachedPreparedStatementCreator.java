@@ -115,8 +115,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 				if (sessionCache.containsKey(cacheKey)) {
 					log.debug("Found cached PreparedStatement");
 					preparedStatement = sessionCache.get(cacheKey);
-				}
-				else {
+				} else {
 					log.debug("No cached PreparedStatement found... creating and caching");
 					preparedStatement = session.prepare(this.cql);
 					sessionCache.put(cacheKey, preparedStatement);

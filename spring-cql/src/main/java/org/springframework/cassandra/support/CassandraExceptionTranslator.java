@@ -28,8 +28,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.util.StringUtils;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.WriteType;
 import com.datastax.driver.core.exceptions.*;
@@ -150,12 +150,10 @@ public class CassandraExceptionTranslator implements CQLExceptionTranslator {
 			return new CassandraTraceRetrievalException(message, exception);
 		}
 
-
-
-				if (exception instanceof NoHostAvailableException) {
-					return new CassandraConnectionFailureException(((NoHostAvailableException) exception).getErrors(),message,
-							 exception);
-				}
+		if (exception instanceof NoHostAvailableException) {
+			return new CassandraConnectionFailureException(((NoHostAvailableException) exception).getErrors(), message,
+					exception);
+		}
 
 		String exceptionType = ClassUtils.getShortName(ClassUtils.getUserClass(exception.getClass()));
 

@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.mapping;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.ElementType;

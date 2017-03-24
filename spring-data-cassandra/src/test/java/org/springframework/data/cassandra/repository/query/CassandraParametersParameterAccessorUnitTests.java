@@ -84,8 +84,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	public void returnTypeForAnnotatedParameterWhenUsingStringValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);
-		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
-				"");
+		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method), "");
 
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
@@ -94,8 +93,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	public void returnTypeForAnnotatedParameterWhenUsingNullValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);
-		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
-				"");
+		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method), "");
 
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}

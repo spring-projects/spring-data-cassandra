@@ -60,9 +60,9 @@ public class BeanDefinitionBuilderArgument {
 	protected BeanDefinitionBuilderArgument(boolean reference, Object value) {
 		this.reference = reference;
 		if (this.reference && (value == null || !(value instanceof CharSequence))) {
-			throw new IllegalArgumentException(String.format(
-					"reference argument must have value of type CharSequence, not [%s]", value == null ? "null" : value
-							.getClass().getName()));
+			throw new IllegalArgumentException(
+					String.format("reference argument must have value of type CharSequence, not [%s]",
+							value == null ? "null" : value.getClass().getName()));
 		}
 		if (!StringUtils.hasText((CharSequence) value)) {
 			throw new IllegalArgumentException("given CharSequence has no text");

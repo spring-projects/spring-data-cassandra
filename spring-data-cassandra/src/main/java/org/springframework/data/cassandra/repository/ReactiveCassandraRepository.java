@@ -15,14 +15,14 @@
  */
 package org.springframework.data.cassandra.repository;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.io.Serializable;
 
 import org.reactivestreams.Publisher;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Cassandra specific {@link org.springframework.data.repository.Repository} interface with reactive support.

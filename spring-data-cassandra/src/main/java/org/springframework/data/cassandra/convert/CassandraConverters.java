@@ -146,8 +146,7 @@ abstract class CassandraConverters {
 
 				Object object = source.getObject(0);
 
-				return (object != null ? NumberUtils.convertNumberToTargetClass((Number) object, this.targetType)
-					: null);
+				return (object != null ? NumberUtils.convertNumberToTargetClass((Number) object, this.targetType) : null);
 			}
 		}
 	}

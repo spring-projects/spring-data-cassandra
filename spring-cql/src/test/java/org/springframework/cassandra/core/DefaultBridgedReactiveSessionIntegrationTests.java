@@ -92,8 +92,8 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 
-		Mono<PreparedStatement> execution = reactiveSession.prepare(
-				"INSERT INTO users (userid, first_name) VALUES (?, ?);");
+		Mono<PreparedStatement> execution = reactiveSession
+				.prepare("INSERT INTO users (userid, first_name) VALUES (?, ?);");
 		PreparedStatement preparedStatement = execution.block();
 
 		assertThat(preparedStatement).isNotNull();

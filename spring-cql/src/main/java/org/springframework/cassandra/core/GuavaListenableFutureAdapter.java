@@ -19,9 +19,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.Assert;
@@ -30,6 +27,9 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.util.concurrent.SettableListenableFuture;
 import org.springframework.util.concurrent.SuccessCallback;
+
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 
 /**
  * Adapter class to adapt Guava's {@link com.google.common.util.concurrent.ListenableFuture} into a Spring
@@ -75,8 +75,8 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 			@Override
 			public void onFailure(Throwable t) {
 				if (t instanceof RuntimeException) {
-					DataAccessException dataAccessException =
-						exceptionTranslator.translateExceptionIfPossible((RuntimeException) t);
+					DataAccessException dataAccessException = exceptionTranslator
+							.translateExceptionIfPossible((RuntimeException) t);
 
 					if (dataAccessException != null) {
 						settableFuture.setException(dataAccessException);

@@ -85,8 +85,7 @@ public class CassandraEntityClassScanner {
 	}
 
 	public void setEntityBasePackages(Collection<String> entityBasePackages) {
-		this.entityBasePackages = entityBasePackages == null ? new HashSet<>() : new HashSet<>(
-				entityBasePackages);
+		this.entityBasePackages = entityBasePackages == null ? new HashSet<>() : new HashSet<>(entityBasePackages);
 	}
 
 	public Set<Class<?>> getEntityBasePackageClasses() {
@@ -94,8 +93,8 @@ public class CassandraEntityClassScanner {
 	}
 
 	public void setEntityBasePackageClasses(Collection<Class<?>> entityBasePackageClasses) {
-		this.entityBasePackageClasses = entityBasePackageClasses == null ? new HashSet<>() : new HashSet<>(
-				entityBasePackageClasses);
+		this.entityBasePackageClasses = entityBasePackageClasses == null ? new HashSet<>()
+				: new HashSet<>(entityBasePackageClasses);
 	}
 
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {

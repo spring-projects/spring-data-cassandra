@@ -17,7 +17,7 @@ package org.springframework.cassandra.core;
 
 import static edu.umd.cs.mtc.TestFramework.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import edu.umd.cs.mtc.MultithreadedTestCase;
@@ -38,7 +38,7 @@ import com.datastax.driver.core.Session;
 
 /**
  * Unit tests for {@link CachedPreparedStatementCreator}.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)

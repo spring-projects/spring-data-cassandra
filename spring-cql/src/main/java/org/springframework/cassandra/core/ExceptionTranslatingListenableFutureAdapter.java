@@ -72,8 +72,8 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 			@Override
 			public void onFailure(Throwable ex) {
 				if (ex instanceof RuntimeException) {
-					DataAccessException dataAccessException =
-						exceptionTranslator.translateExceptionIfPossible((RuntimeException) ex);
+					DataAccessException dataAccessException = exceptionTranslator
+							.translateExceptionIfPossible((RuntimeException) ex);
 
 					if (dataAccessException != null) {
 						settableFuture.setException(dataAccessException);

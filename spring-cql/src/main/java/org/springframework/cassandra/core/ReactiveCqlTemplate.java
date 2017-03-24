@@ -32,9 +32,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.util.Assert;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
@@ -260,8 +257,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(cql, rowMapper).buffer(2).flatMap(list ->
-				Mono.just(DataAccessUtils.requiredSingleResult(list)))
+		return query(cql, rowMapper).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
 				.next();
 	}
 
@@ -382,8 +378,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(statement, rowMapper).buffer(2).flatMap(list ->
-				Mono.just(DataAccessUtils.requiredSingleResult(list)))
+		return query(statement, rowMapper).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
 				.next();
 	}
 
@@ -573,8 +568,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
-		return query(cql, rowMapper, args).buffer(2).flatMap(list ->
-				Mono.just(DataAccessUtils.requiredSingleResult(list)))
+		return query(cql, rowMapper, args).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
 				.next();
 	}
 
@@ -618,8 +612,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.hasText(cql, "CQL must not be empty");
 
-		return query(new SimpleReactivePreparedStatementCreator(cql),
-				newArgPreparedStatementBinder(args), Mono::just).next();
+		return query(new SimpleReactivePreparedStatementCreator(cql), newArgPreparedStatementBinder(args), Mono::just)
+				.next();
 	}
 
 	/* (non-Javadoc)
@@ -644,8 +638,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public Mono<Boolean> execute(String cql, PreparedStatementBinder psb) throws DataAccessException {
-		return query(new SimpleReactivePreparedStatementCreator(cql), psb, resultSet ->
-				Mono.just(resultSet.wasApplied()))
+		return query(new SimpleReactivePreparedStatementCreator(cql), psb, resultSet -> Mono.just(resultSet.wasApplied()))
 				.next();
 	}
 
@@ -757,8 +750,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	protected <T> Function<Throwable, Mono<? extends T>> translateException(String task, String cql) {
 
 		return throwable -> Mono
-				.error(
-				throwable instanceof DriverException ? translate(task, cql, (DriverException) throwable) : throwable);
+				.error(throwable instanceof DriverException ? translate(task, cql, (DriverException) throwable) : throwable);
 	}
 
 	/**

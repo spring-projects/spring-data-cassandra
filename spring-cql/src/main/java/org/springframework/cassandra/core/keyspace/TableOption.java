@@ -132,7 +132,6 @@ public enum TableOption implements Option {
 	 *
 	 * @author David Webb
 	 * @since 1.2.0
-	 *
 	 */
 	public enum KeyCachingOption {
 
@@ -270,8 +269,7 @@ public enum TableOption implements Option {
 
 		private Option delegate;
 
-		CompactionOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue,
-						 boolean quotesValue) {
+		CompactionOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
 			this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
 		}
 
@@ -347,8 +345,7 @@ public enum TableOption implements Option {
 
 		private Option delegate;
 
-		CompressionOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue,
-						  boolean quotesValue) {
+		CompressionOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
 			this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
 		}
 

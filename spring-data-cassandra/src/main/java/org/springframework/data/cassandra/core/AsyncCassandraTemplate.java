@@ -79,8 +79,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	private final CQLExceptionTranslator exceptionTranslator;
 
 	/**
-	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link Session}
-	 * and a default {@link MappingCassandraConverter}.
+	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link Session} and a default
+	 * {@link MappingCassandraConverter}.
 	 *
 	 * @param session {@link Session} used to interact with Cassandra; must not be {@literal null}.
 	 * @see CassandraConverter
@@ -91,12 +91,12 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	}
 
 	/**
-	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link Session}
-	 * and {@link CassandraConverter}.
+	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link Session} and
+	 * {@link CassandraConverter}.
 	 *
 	 * @param session {@link Session} used to interact with Cassandra; must not be {@literal null}.
-	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types;
-	 * must not be {@literal null}.
+	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
+	 *          {@literal null}.
 	 * @see CassandraConverter
 	 * @see Session
 	 */
@@ -105,12 +105,12 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	}
 
 	/**
-	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link SessionFactory}
-	 * and {@link CassandraConverter}.
+	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link SessionFactory} and
+	 * {@link CassandraConverter}.
 	 *
 	 * @param sessionFactory {@link SessionFactory} used to interact with Cassandra; must not be {@literal null}.
-	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types;
-	 * must not be {@literal null}.
+	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
+	 *          {@literal null}.
 	 * @see CassandraConverter
 	 * @see Session
 	 */
@@ -119,12 +119,12 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	}
 
 	/**
-	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link AsyncCqlTemplate}
-	 * and {@link CassandraConverter}.
+	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link AsyncCqlTemplate} and
+	 * {@link CassandraConverter}.
 	 *
 	 * @param asyncCqlTemplate {@link AsyncCqlTemplate} used to interact with Cassandra; must not be {@literal null}.
-	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types;
-	 * must not be {@literal null}.
+	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
+	 *          {@literal null}.
 	 * @see CassandraConverter
 	 * @see Session
 	 */

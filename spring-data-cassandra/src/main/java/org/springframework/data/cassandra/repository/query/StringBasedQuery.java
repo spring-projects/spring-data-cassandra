@@ -344,8 +344,8 @@ class StringBasedQuery {
 							.expression(input.substring(exprStart + 3, currentPosition - 1), true));
 				} else {
 					if (matcher.pattern() == INDEX_PARAMETER_BINDING_PATTERN) {
-						bindings.add(ExpressionEvaluatingParameterBinder.ParameterBinding.indexed(
-								Integer.parseInt(matcher.group(1))));
+						bindings
+								.add(ExpressionEvaluatingParameterBinder.ParameterBinding.indexed(Integer.parseInt(matcher.group(1))));
 					} else {
 						bindings.add(ExpressionEvaluatingParameterBinder.ParameterBinding.named(matcher.group(1)));
 					}

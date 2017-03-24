@@ -86,10 +86,8 @@ public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKey
 	}
 
 	public CreateKeyspaceSpecification withSimpleReplication(long replicationFactor) {
-		return with(
-				KeyspaceOption.REPLICATION,
-				MapBuilder
-						.map(Option.class, Object.class)
+		return with(KeyspaceOption.REPLICATION,
+				MapBuilder.map(Option.class, Object.class)
 						.entry(new DefaultOption("class", String.class, true, false, true),
 								ReplicationStrategy.SIMPLE_STRATEGY.getValue())
 						.entry(new DefaultOption("replication_factor", Long.class, true, false, false), replicationFactor).build());

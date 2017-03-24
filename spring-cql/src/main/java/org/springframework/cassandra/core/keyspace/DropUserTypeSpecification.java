@@ -70,7 +70,7 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification<DropUse
 	 * Sets the inclusion of an {@code IF EXISTS} clause.
 	 *
 	 * @param ifExists {@literal true} to include an {@code IF EXISTS} clause, {@literal false} to omit the
-	 * {@code IF NOT EXISTS} clause.
+	 *          {@code IF NOT EXISTS} clause.
 	 * @return this {@link DropUserTypeSpecification}.
 	 */
 	public DropUserTypeSpecification ifExists(boolean ifExists) {

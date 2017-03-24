@@ -85,11 +85,11 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 			AnnotatedParameter annotatedParameter = new AnnotatedParameter(parameter);
 
 			if (AnnotatedElementUtils.hasAnnotation(annotatedParameter, CassandraType.class)) {
-				CassandraType cassandraType = AnnotatedElementUtils.findMergedAnnotation(
-						annotatedParameter, CassandraType.class);
+				CassandraType cassandraType = AnnotatedElementUtils.findMergedAnnotation(annotatedParameter,
+						CassandraType.class);
 
-				Assert.notNull(cassandraType.type(), String.format(
-						"You must specify the type() when annotating method parameters with @%s",
+				Assert.notNull(cassandraType.type(),
+						String.format("You must specify the type() when annotating method parameters with @%s",
 								CassandraType.class.getSimpleName()));
 
 				this.cassandraType = cassandraType;

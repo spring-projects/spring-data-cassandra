@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.*;
 
 import java.util.List;

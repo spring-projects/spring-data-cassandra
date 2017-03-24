@@ -51,8 +51,7 @@ public class MapSessionFactoryLookupUnitTests {
 	@Test // DATACASS-330
 	public void shouldResolveSessionFactoryCorrectly() {
 
-		MapSessionFactoryLookup sessionFactoryLookup =
-				new MapSessionFactoryLookup("factory", sessionFactory);
+		MapSessionFactoryLookup sessionFactoryLookup = new MapSessionFactoryLookup("factory", sessionFactory);
 
 		assertThat(sessionFactoryLookup.getSessionFactory("factory")).isSameAs(sessionFactory);
 	}

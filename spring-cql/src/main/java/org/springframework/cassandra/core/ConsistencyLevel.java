@@ -30,17 +30,20 @@ public enum ConsistencyLevel {
 	/**
 	 * @deprecated as of 1.5, use {@link #QUORUM}
 	 */
-	@Deprecated QUOROM,
+	@Deprecated
+	QUOROM,
 
 	/**
 	 * @deprecated as of 1.5, use {@link #LOCAL_QUORUM}
 	 */
-	@Deprecated LOCAL_QUOROM,
+	@Deprecated
+	LOCAL_QUOROM,
 
 	/**
 	 * @deprecated as of 1.5, use {@link #EACH_QUORUM}
 	 */
-	@Deprecated EACH_QUOROM,
+	@Deprecated
+	EACH_QUOROM,
 
 	ALL, LOCAL_ONE, SERIAL, LOCAL_SERIAL,
 

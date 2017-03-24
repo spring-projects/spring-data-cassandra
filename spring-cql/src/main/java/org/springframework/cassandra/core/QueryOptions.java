@@ -205,8 +205,8 @@ public class QueryOptions {
 	 * Sets the read timeout in milliseconds. Overrides the default per-host read timeout (
 	 * {@link SocketOptions#getReadTimeoutMillis()}).
 	 *
-	 * @param readTimeout the read timeout in milliseconds. Negative values are not allowed. If it is {@code 0}, the read timeout
-	 *          will be disabled for this statement.
+	 * @param readTimeout the read timeout in milliseconds. Negative values are not allowed. If it is {@code 0}, the read
+	 *          timeout will be disabled for this statement.
 	 * @since 1.5
 	 * @see SocketOptions#getReadTimeoutMillis()
 	 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
@@ -338,8 +338,8 @@ public class QueryOptions {
 		/**
 		 * Sets the read timeout in milliseconds. Overrides the default per-host read timeout.
 		 *
-		 * @param readTimeout the read timeout in milliseconds. Negative values are not allowed. If it is {@code 0}, the read
-		 *          timeout will be disabled for this statement.
+		 * @param readTimeout the read timeout in milliseconds. Negative values are not allowed. If it is {@code 0}, the
+		 *          read timeout will be disabled for this statement.
 		 * @return {@code this} {@link QueryOptionsBuilder}
 		 * @see SocketOptions#getReadTimeoutMillis()
 		 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
@@ -356,8 +356,8 @@ public class QueryOptions {
 		/**
 		 * Sets the read timeout. Overrides the default per-host read timeout.
 		 *
-		 * @param readTimeout the read timeout value. Negative values are not allowed. If it is {@code 0}, the read timeout will be
-		 *          disabled for this statement.
+		 * @param readTimeout the read timeout value. Negative values are not allowed. If it is {@code 0}, the read timeout
+		 *          will be disabled for this statement.
 		 * @param timeUnit the {@link TimeUnit} for the supplied timeout; must not be {@literal null}.
 		 * @return {@code this} {@link QueryOptionsBuilder}
 		 * @see SocketOptions#getReadTimeoutMillis()

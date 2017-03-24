@@ -97,10 +97,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(domainClass);
 
-
-
-		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity,
-				operations.getConverter());
+		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity, operations.getConverter());
 	}
 
 	/*

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.cassandra.core.QueryOptionsUtil;
 import org.springframework.cassandra.core.WriteOptions;
@@ -32,7 +31,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * Simple utility class for working with the QueryBuilder API.
  * <p>
  * Only intended for internal use.
- * 
+ *
  * @author Mark Paluch
  * @since 2.0
  */

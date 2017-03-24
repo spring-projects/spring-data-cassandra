@@ -61,16 +61,16 @@ public class CqlStringUtils {
 	 * Surrounds given object's {@link Object#toString()} with single quotes. Given {@code null}, returns {@code null}.
 	 */
 	public static String singleQuote(Object thing) {
-		return thing == null ? null : new StringBuilder().append(SINGLE_QUOTE).append(thing).append(SINGLE_QUOTE)
-				.toString();
+		return thing == null ? null
+				: new StringBuilder().append(SINGLE_QUOTE).append(thing).append(SINGLE_QUOTE).toString();
 	}
 
 	/**
 	 * Surrounds given object's {@link Object#toString()} with double quotes. Given {@code null}, returns {@code null}.
 	 */
 	public static String doubleQuote(Object thing) {
-		return thing == null ? null : new StringBuilder().append(DOUBLE_QUOTE).append(thing).append(DOUBLE_QUOTE)
-				.toString();
+		return thing == null ? null
+				: new StringBuilder().append(DOUBLE_QUOTE).append(thing).append(DOUBLE_QUOTE).toString();
 	}
 
 	/**

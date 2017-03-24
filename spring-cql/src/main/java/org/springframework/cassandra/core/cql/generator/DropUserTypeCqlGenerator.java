@@ -48,7 +48,7 @@ public class DropUserTypeCqlGenerator extends UserTypeNameCqlGenerator<DropUserT
 	 */
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("DROP TYPE").append(spec().getIfExists() ? " IF EXISTS " : " ")
-				.append(spec().getName()).append(";");
+		return noNull(cql).append("DROP TYPE").append(spec().getIfExists() ? " IF EXISTS " : " ").append(spec().getName())
+				.append(";");
 	}
 }

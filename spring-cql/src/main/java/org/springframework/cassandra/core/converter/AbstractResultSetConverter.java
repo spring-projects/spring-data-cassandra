@@ -101,7 +101,7 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	}
 
 	protected void doThrow(String string) {
-		throw new IllegalArgumentException(String.format("can't convert %s to desired type [%s]", string, getType()
-				.getName()));
+		throw new IllegalArgumentException(
+				String.format("can't convert %s to desired type [%s]", string, getType().getName()));
 	}
 }

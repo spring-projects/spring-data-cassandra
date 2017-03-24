@@ -278,7 +278,7 @@ public class CreateTableCqlGeneratorUnitTests {
 		public static final List<String> FUNKY_LEGAL_NAMES;
 
 		static {
-			List<String> funkies = new ArrayList<>(Arrays.asList(new String[]{ /* TODO */}));
+			List<String> funkies = new ArrayList<>(Arrays.asList(new String[] { /* TODO */ }));
 			// TODO: should these work? "a \"\" x", "a\"\"\"\"x", "a b"
 			FUNKY_LEGAL_NAMES = Collections.unmodifiableList(Arrays.stream(ReservedKeyword.values()) //
 					.map(Enum::name) //

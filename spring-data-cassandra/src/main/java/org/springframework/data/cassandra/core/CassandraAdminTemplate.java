@@ -18,8 +18,6 @@ package org.springframework.data.cassandra.core;
 import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
@@ -29,7 +27,6 @@ import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
 import org.springframework.cassandra.core.keyspace.DropUserTypeSpecification;
 import org.springframework.cassandra.core.session.SessionFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
@@ -133,10 +130,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 			KeyspaceMetadata keyspaceMetadata = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
 
-
-
-				Assert.state(keyspaceMetadata != null, String.format("Metadata for keyspace [%s] not available",
-					session.getLoggedKeyspace()));
+			Assert.state(keyspaceMetadata != null,
+					String.format("Metadata for keyspace [%s] not available", session.getLoggedKeyspace()));
 
 			return keyspaceMetadata;
 		});

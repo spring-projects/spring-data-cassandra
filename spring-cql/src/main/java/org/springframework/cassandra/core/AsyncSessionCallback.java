@@ -15,15 +15,15 @@
  */
 package org.springframework.cassandra.core;
 
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.DriverException;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.concurrent.ListenableFuture;
 
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.DriverException;
+
 /**
- * Generic callback interface for code that operates asynchronously on a Cassandra {@link Session}. Allows to execute any number of
- * operations on a single session, using any type and number of statements.
+ * Generic callback interface for code that operates asynchronously on a Cassandra {@link Session}. Allows to execute
+ * any number of operations on a single session, using any type and number of statements.
  * <p>
  * This is particularly useful for delegating to existing data access code that expects a {@link Session} to work on and
  * throws {@link DriverException}. For newly written code, it is strongly recommended to use {@link CqlTemplate}'s more

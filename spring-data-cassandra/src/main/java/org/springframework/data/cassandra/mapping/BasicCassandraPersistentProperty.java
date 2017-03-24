@@ -458,8 +458,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 						getName(), getOwner().getType().getName(), this.columnNames.size(), this.columnNames.size() == 1 ? "" : "s",
 						columnNames.size()));
 
-		this.columnNames = this.explicitColumnNames = Collections
-				.unmodifiableList(new ArrayList<>(columnNames));
+		this.columnNames = this.explicitColumnNames = Collections.unmodifiableList(new ArrayList<>(columnNames));
 	}
 
 	/* (non-Javadoc)

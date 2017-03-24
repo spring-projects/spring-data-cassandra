@@ -306,7 +306,7 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 	@Test // DATACASS-297
 	public void streamShouldReturnEntities() {
-		
+
 		long before = personRepository.count();
 
 		for (int i = 0; i < 100; i++) {

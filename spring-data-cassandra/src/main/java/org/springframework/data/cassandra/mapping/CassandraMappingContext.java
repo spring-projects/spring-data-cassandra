@@ -17,14 +17,14 @@ package org.springframework.data.cassandra.mapping;
 
 import java.util.Collection;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.UserType;
-
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.mapping.context.MappingContext;
+
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.UserType;
 
 /**
  * A {@link MappingContext} for Cassandra.
@@ -46,8 +46,9 @@ public interface CassandraMappingContext
 	/**
 	 * Returns all persistent entities or only non-primary-key entities.
 	 *
-	 * @param includePrimaryKeyTypesAndUdts If {@literal true}, returns all entities, including entities that represent primary
-	 *          key types and user-defined types. If {@literal false}, returns only entities that don't represent primary key types and no user-defined types.
+	 * @param includePrimaryKeyTypesAndUdts If {@literal true}, returns all entities, including entities that represent
+	 *          primary key types and user-defined types. If {@literal false}, returns only entities that don't represent
+	 *          primary key types and no user-defined types.
 	 */
 	Collection<CassandraPersistentEntity<?>> getPersistentEntities(boolean includePrimaryKeyTypesAndUdts);
 
@@ -62,6 +63,7 @@ public interface CassandraMappingContext
 
 	/**
 	 * Returns only those entities representing primary key types.
+	 *
 	 * @deprecated as of 1.5
 	 */
 	@Deprecated
@@ -146,8 +148,8 @@ public interface CassandraMappingContext
 	DataType getDataType(CassandraPersistentProperty property);
 
 	/**
-	 * Retrieve the data type based on the given {@code type}. Cassandra {@link DataType types} are determined using simple types and
-	 * configured {@link CustomConversions}.
+	 * Retrieve the data type based on the given {@code type}. Cassandra {@link DataType types} are determined using
+	 * simple types and configured {@link CustomConversions}.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return the Cassandra {@link DataType type}.

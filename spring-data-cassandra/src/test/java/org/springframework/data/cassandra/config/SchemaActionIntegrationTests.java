@@ -130,7 +130,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 					assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
 							"numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
 					return null;
-		});
+				});
 	}
 
 	@Test
@@ -139,7 +139,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 				(SessionCallback<Void>) session -> {
 					assertHasTableWithColumns(session, "person", "id", "firstName", "lastName");
 					return null;
-		});
+				});
 	}
 
 	@Test
@@ -149,7 +149,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 					assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
 							"numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
 					return null;
-		});
+				});
 	}
 
 	@Configuration

@@ -18,12 +18,12 @@ package org.springframework.cassandra.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.dao.DataAccessException;
+import org.springframework.util.Assert;
+
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.DriverException;
-
-import org.springframework.dao.DataAccessException;
-import org.springframework.util.Assert;
 
 /**
  * Adapter implementation of the {@link ResultSetExtractor} interface that delegates to a {@link RowMapper} which is

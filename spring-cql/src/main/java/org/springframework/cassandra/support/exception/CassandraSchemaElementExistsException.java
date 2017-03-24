@@ -33,7 +33,8 @@ public class CassandraSchemaElementExistsException extends NonTransientDataAcces
 	private String elementName;
 	private ElementType elementType;
 
-	public CassandraSchemaElementExistsException(String elementName, ElementType elementType, String msg, Throwable cause) {
+	public CassandraSchemaElementExistsException(String elementName, ElementType elementType, String msg,
+			Throwable cause) {
 		super(msg, cause);
 		this.elementName = elementName;
 		this.elementType = elementType;

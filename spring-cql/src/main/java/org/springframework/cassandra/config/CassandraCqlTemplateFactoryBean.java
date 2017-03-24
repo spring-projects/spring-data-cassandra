@@ -70,8 +70,8 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 
 	/**
 	 * Sets the Cassandra {@link Session} to use. The {@link CqlTemplate} will use the logged keyspace of the underlying
-	 * {@link Session}. Don't change the keyspace using CQL but use multiple {@link Session} and
-	 * {@link CqlTemplate} beans.
+	 * {@link Session}. Don't change the keyspace using CQL but use multiple {@link Session} and {@link CqlTemplate}
+	 * beans.
 	 *
 	 * @param session must not be {@literal null}.
 	 */

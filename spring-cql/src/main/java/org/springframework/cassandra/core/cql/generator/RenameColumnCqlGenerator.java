@@ -15,7 +15,7 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
 
 import org.springframework.cassandra.core.keyspace.ColumnChangeSpecification;
 import org.springframework.cassandra.core.keyspace.RenameColumnSpecification;

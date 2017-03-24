@@ -37,8 +37,8 @@ import org.springframework.cassandra.core.cql.CqlStringUtils;
  * @author Matthew T. Adams
  * @param <T> The subtype of the {@link TableOptionsSpecification}.
  */
-public abstract class TableOptionsSpecification<T extends TableOptionsSpecification<T>> extends
-		TableNameSpecification<TableOptionsSpecification<T>> {
+public abstract class TableOptionsSpecification<T extends TableOptionsSpecification<T>>
+		extends TableNameSpecification<TableOptionsSpecification<T>> {
 
 	protected Map<String, Object> options = new LinkedHashMap<>();
 
