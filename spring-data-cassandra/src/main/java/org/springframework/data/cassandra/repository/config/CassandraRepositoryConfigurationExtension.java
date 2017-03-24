@@ -65,7 +65,7 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryFactoryClassName()
 	 */
 	@Override
-	public String getRepositoryFactoryClassName() {
+	public String getRepositoryFactoryBeanClassName() {
 		return CassandraRepositoryFactoryBean.class.getName();
 	}
 

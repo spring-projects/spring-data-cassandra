@@ -46,7 +46,7 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Cassandra
 	 * @see org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension#getRepositoryFactoryClassName()
 	 */
 	@Override
-	public String getRepositoryFactoryClassName() {
+	public String getRepositoryFactoryBeanClassName() {
 		return ReactiveCassandraRepositoryFactoryBean.class.getName();
 	}
 
