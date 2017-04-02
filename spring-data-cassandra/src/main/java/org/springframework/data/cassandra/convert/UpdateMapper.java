@@ -37,7 +37,7 @@ import org.springframework.data.cassandra.core.query.Update.SetOp;
 import org.springframework.data.cassandra.core.query.Update.UpdateOp;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -122,37 +122,52 @@ public class UpdateMapper extends QueryMapper {
 
 	private UpdateOp getMappedUpdateOperation(Field field, SetOp updateOp) {
 
-		TypeInformation<?> typeInformation = field.getProperty() == null ? null : field.getProperty().getTypeInformation();
-
-		if (updateOp instanceof SetAtIndexOp) {
-
-			SetAtIndexOp op = (SetAtIndexOp) updateOp;
-
-			Object mappedValue = converter.convertToCassandraColumn(Optional.ofNullable(op.getValue()), typeInformation);
-			return new SetAtIndexOp(field.getMappedKey(), op.getIndex(), mappedValue);
-		}
+		Optional<Object> value = Optional.ofNullable(updateOp.getValue());
 
 		if (updateOp instanceof SetAtKeyOp) {
 
 			SetAtKeyOp op = (SetAtKeyOp) updateOp;
 
-			TypeInformation<?> keyType = typeInformation == null ? null : typeInformation.getActualType();
-			TypeInformation<?> valueType = typeInformation == null ? null : typeInformation.getMapValueType().orElse(null);
+			Optional<? extends TypeInformation<?>> typeInformation = field.getProperty()
+					.map(PersistentProperty::getTypeInformation);
+			Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getActualType);
+			Optional<TypeInformation<?>> valueType = typeInformation.flatMap(TypeInformation::getMapValueType);
 
-			Object mappedKey = converter.convertToCassandraColumn(Optional.ofNullable(op.getKey()), keyType);
-			Object mappedValue = converter.convertToCassandraColumn(Optional.ofNullable(op.getValue()), valueType);
+			Optional<Object> k = Optional.ofNullable(op.getKey());
+			Optional<Object> v = Optional.ofNullable(op.getValue());
 
-			return new SetAtKeyOp(field.getMappedKey(), mappedKey, mappedValue);
+			Optional<Object> mappedKey = keyType.map(it -> converter.convertToCassandraColumn(k, it))
+					.orElseGet(() -> converter.convertToCassandraColumn(k));
+
+			Optional<Object> mappedValue = valueType.map(it -> converter.convertToCassandraColumn(v, it))
+					.orElseGet(() -> converter.convertToCassandraColumn(v));
+
+			return new SetAtKeyOp(field.getMappedKey(), mappedKey.orElse(null), mappedValue.orElse(null));
 		}
 
-		if (updateOp.getValue() instanceof Collection && typeInformation != null && typeInformation.isCollectionLike()) {
+		TypeInformation<?> typeInformation = getTypeInformation(field, value);
+
+		if (updateOp instanceof SetAtIndexOp) {
+
+			SetAtIndexOp op = (SetAtIndexOp) updateOp;
+
+			Optional<Object> mappedValue = converter.convertToCassandraColumn(Optional.ofNullable(op.getValue()),
+					typeInformation);
+			return new SetAtIndexOp(field.getMappedKey(), op.getIndex(), mappedValue.orElse(null));
+		}
+
+		if (updateOp.getValue() instanceof Collection && typeInformation.isCollectionLike()) {
 
 			Collection<?> collection = (Collection) updateOp.getValue();
 
 			if (collection.isEmpty()) {
 
-				DataType dataType = mappingContext.getDataType(field.getProperty());
-				if (dataType.getName() == Name.SET) {
+				DataType.Name dataType = field.getProperty() //
+						.map(mappingContext::getDataType) //
+						.map(DataType::getName) //
+						.orElse(Name.LIST);
+
+				if (dataType == Name.SET) {
 					return new SetOp(field.getMappedKey(), Collections.emptySet());
 				}
 
@@ -160,30 +175,31 @@ public class UpdateMapper extends QueryMapper {
 			}
 		}
 
-		Object mappedValue = converter.convertToCassandraColumn(Optional.ofNullable(updateOp.getValue()), typeInformation);
-		return new SetOp(field.getMappedKey(), mappedValue);
+		Optional<Object> mappedValue = converter.convertToCassandraColumn(value, typeInformation);
+		return new SetOp(field.getMappedKey(), mappedValue.orElse(null));
 	}
 
 	private UpdateOp getMappedUpdateOperation(Field field, RemoveOp updateOp) {
 
-		TypeInformation<?> typeInformation = field.getProperty() == null ? null : field.getProperty().getTypeInformation();
+		Optional<Object> value = Optional.ofNullable(updateOp.getValue());
+		TypeInformation<?> typeInformation = getTypeInformation(field, value);
 
-		Object mappedValue = converter.convertToCassandraColumn(Optional.ofNullable(updateOp.getValue()), typeInformation);
-		return new RemoveOp(field.getMappedKey(), mappedValue);
+		Optional<Object> mappedValue = converter.convertToCassandraColumn(value, typeInformation);
+		return new RemoveOp(field.getMappedKey(), mappedValue.orElse(null));
 	}
 
 	@SuppressWarnings("unchecked")
 	private UpdateOp getMappedUpdateOperation(Field field, AddToOp updateOp) {
 
-		CassandraPersistentProperty property = field.getProperty();
-		TypeInformation<?> typeInformation = property == null ? null : property.getTypeInformation();
+		Optional<Iterable<Object>> value = Optional.ofNullable(updateOp.getValue());
+		TypeInformation<?> typeInformation = getTypeInformation(field, value);
 
-		Collection<Object> mappedValue = (Collection) converter
-				.convertToCassandraColumn(Optional.ofNullable(updateOp.getValue()), typeInformation).orElse(null);
+		Collection<Object> mappedValue = (Collection) converter.convertToCassandraColumn(value, typeInformation)
+				.orElse(null);
 
-		if (property != null) {
+		if (field.getProperty().isPresent()) {
 
-			DataType dataType = mappingContext.getDataType(property);
+			DataType dataType = mappingContext.getDataType(field.getProperty().get());
 			if (dataType.getName() == Name.SET && !(mappedValue instanceof Set)) {
 
 				Collection<Object> collection = new HashSet<>();
@@ -204,18 +220,25 @@ public class UpdateMapper extends QueryMapper {
 
 	private UpdateOp getMappedUpdateOperation(Field field, AddToMapOp updateOp) {
 
-		TypeInformation<?> typeInformation = field.getProperty() == null ? null : field.getProperty().getTypeInformation();
-		TypeInformation<?> keyType = typeInformation == null ? null : typeInformation.getActualType();
-		TypeInformation<?> valueType = typeInformation == null ? null : typeInformation.getMapValueType().orElse(null);
+		Optional<? extends TypeInformation<?>> typeInformation = field.getProperty()
+				.map(PersistentProperty::getTypeInformation);
+		Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getActualType);
+		Optional<TypeInformation<?>> valueType = typeInformation.flatMap(TypeInformation::getMapValueType);
 
 		Map<Object, Object> result = new LinkedHashMap<>(updateOp.getValue().size(), 1);
 
 		updateOp.getValue().forEach((k, v) -> {
 
-			Object mappedKey = converter.convertToCassandraColumn(Optional.ofNullable(k), keyType);
-			Object mappedValue = converter.convertToCassandraColumn(Optional.ofNullable(v), valueType);
-			result.put(mappedKey, mappedValue);
+			Optional<Object> key = Optional.ofNullable(k);
+			Optional<Object> value = Optional.ofNullable(v);
 
+			Optional<Object> mappedKey = keyType.map(it -> converter.convertToCassandraColumn(key, it))
+					.orElseGet(() -> converter.convertToCassandraColumn(key));
+
+			Optional<Object> mappedValue = valueType.map(it -> converter.convertToCassandraColumn(value, it))
+					.orElseGet(() -> converter.convertToCassandraColumn(value));
+
+			result.put(mappedKey.orElse(null), mappedValue.orElse(null));
 		});
 
 		return new AddToMapOp(field.getMappedKey(), result);

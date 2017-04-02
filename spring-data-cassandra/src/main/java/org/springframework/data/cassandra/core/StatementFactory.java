@@ -102,13 +102,7 @@ public class StatementFactory {
 	 */
 	public RegularStatement select(Query query, CassandraPersistentEntity<?> entity) {
 
-		List<Selector> selectors;
-
-		if (query.getColumns().isEmpty()) {
-			selectors = queryMapper.getColumns(entity);
-		} else {
-			selectors = queryMapper.getMappedSelectors(query.getColumns(), entity);
-		}
+		List<Selector> selectors = queryMapper.getMappedSelectors(query.getColumns(), entity);
 
 		Filter filter = queryMapper.getMappedObject(query, entity);
 		Sort sort = query.getSort() != null ? queryMapper.getMappedSort(query.getSort(), entity) : null;

@@ -48,7 +48,7 @@ public class ColumnsUnitTests {
 
 		Columns columns = Columns.from("asc", "bar");
 
-		assertThat(columns.toString()).isEqualTo("\"asc\", bar");
+		assertThat(columns.toString()).isEqualTo("asc, bar");
 	}
 
 	@Test // DATACASS-343

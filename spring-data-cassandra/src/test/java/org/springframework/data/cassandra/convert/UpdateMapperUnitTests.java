@@ -16,8 +16,6 @@
 package org.springframework.data.cassandra.convert;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.Currency;
@@ -29,8 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
@@ -74,8 +71,6 @@ public class UpdateMapperUnitTests {
 		cassandraConverter.afterPropertiesSet();
 
 		updateMapper = new UpdateMapper(cassandraConverter);
-
-		when(userTypeResolver.resolveType(any(CqlIdentifier.class))).thenReturn(userType);
 
 		persistentEntity = mappingContext.getRequiredPersistentEntity(Person.class);
 	}

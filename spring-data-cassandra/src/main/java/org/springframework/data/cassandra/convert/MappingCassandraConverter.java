@@ -271,6 +271,19 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.convert.CassandraConverter#convertToCassandraColumn(java.util.Optional)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> Optional<Object> convertToCassandraColumn(Optional<T> obj) {
+
+		return convertToCassandraColumn(obj,
+				obj.map(Object::getClass) //
+						.map(ClassTypeInformation::from) //
+						.orElse((ClassTypeInformation) ClassTypeInformation.OBJECT));
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.convert.CassandraConverter#convertToCassandraColumn(java.util.Optional, org.springframework.data.util.TypeInformation)
 	 */
 	@Override
@@ -679,7 +692,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (getCustomConversions().isSimpleType(value.getClass())) {
 			// Doesn't need conversion
-			return getPotentiallyConvertedSimpleValue(value, typeInformation != null ? typeInformation.getType() : null);
+			return getPotentiallyConvertedSimpleValue(optional,
+					typeInformation != null ? (Class<O>) typeInformation.getType() : null);
 		}
 
 		TypeInformation<?> type = (typeInformation != null ? typeInformation : ClassTypeInformation.from(value.getClass()));

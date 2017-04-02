@@ -50,14 +50,14 @@ public class StatementFactoryUnitTests {
 
 	StatementFactory statementFactory = new StatementFactory(updateMapper, updateMapper);
 
-	CassandraPersistentEntity<?> groupEntity = converter.getMappingContext().getPersistentEntity(Group.class);
-	CassandraPersistentEntity<?> personEntity = converter.getMappingContext().getPersistentEntity(Person.class);
+	CassandraPersistentEntity<?> groupEntity = converter.getMappingContext().getRequiredPersistentEntity(Group.class);
+	CassandraPersistentEntity<?> personEntity = converter.getMappingContext().getRequiredPersistentEntity(Person.class);
 
 	@Test // DATACASS-343
 	public void shouldMapSimpleSelectQuery() {
 
 		Statement select = statementFactory.select(new Query(),
-				converter.getMappingContext().getPersistentEntity(Group.class));
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(select.toString()).isEqualTo("SELECT * FROM group;");
 	}
@@ -79,7 +79,8 @@ public class StatementFactoryUnitTests {
 		Query query = new Query();
 		query.with(Columns.empty().ttl("email").exclude("age").exclude("id"));
 
-		Statement select = statementFactory.select(query, converter.getMappingContext().getPersistentEntity(Group.class));
+		Statement select = statementFactory.select(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(select.toString()).isEqualTo("SELECT TTL(email) FROM group;");
 	}
@@ -90,7 +91,8 @@ public class StatementFactoryUnitTests {
 		Query query = new Query();
 		query.with(new Sort("id.hashPrefix")).limit(10).withAllowFiltering();
 
-		Statement select = statementFactory.select(query, converter.getMappingContext().getPersistentEntity(Group.class));
+		Statement select = statementFactory.select(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(select.toString()).isEqualTo("SELECT * FROM group ORDER BY hash_prefix ASC LIMIT 10 ALLOW FILTERING;");
 	}
@@ -101,7 +103,8 @@ public class StatementFactoryUnitTests {
 		Query query = new Query();
 		query.with(Columns.from("age").exclude("id"));
 
-		Statement delete = statementFactory.delete(query, converter.getMappingContext().getPersistentEntity(Group.class));
+		Statement delete = statementFactory.delete(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(delete.toString()).isEqualTo("DELETE age,email FROM group;");
 	}
@@ -111,7 +114,8 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.from(Criteria.where("foo").is("bar"));
 
-		Statement delete = statementFactory.delete(query, converter.getMappingContext().getPersistentEntity(Group.class));
+		Statement delete = statementFactory.delete(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(delete.toString()).isEqualTo("DELETE FROM group WHERE foo='bar';");
 	}

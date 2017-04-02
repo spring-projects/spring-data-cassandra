@@ -93,18 +93,28 @@ public class QueryMapper {
 
 			Predicate predicate = criteriaDefinition.getPredicate();
 
-			TypeInformation<?> typeInformation = field.getProperty() == null ? null
-					: field.getProperty().getTypeInformation();
-
-			Optional<Object> mappedValue = converter.convertToCassandraColumn(Optional.ofNullable(predicate.getValue()),
-					typeInformation);
+			Optional<Object> value = Optional.ofNullable(predicate.getValue());
+			TypeInformation<?> typeInformation = getTypeInformation(field, value);
+			Optional<Object> mappedValue = converter.convertToCassandraColumn(value, typeInformation);
 
 			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue.orElse(null));
-
 			result.add(new Criteria(field.getMappedKey(), mappedPredicate));
 		}
 
 		return Filter.from(result);
+	}
+
+	/**
+	 * Return {@link ColumnSelector}s for all columns of {@link CassandraPersistentEntity}.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @return {@link ColumnSelector}s for all columns of {@link CassandraPersistentEntity}.
+	 */
+	public List<Selector> getColumns(CassandraPersistentEntity<?> entity) {
+
+		return entity.getPersistentProperties() //
+				.flatMap(p -> p.getColumnNames().stream()).map(ColumnSelector::from) //
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -131,9 +141,7 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, column);
 
-			if (field.getProperty() != null) {
-				seen.add(field.getProperty());
-			}
+			field.getProperty().ifPresent(seen::add);
 
 			if (columns.isExcluded(column)) {
 				continue;
@@ -226,9 +234,7 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, column);
 
-			if (field.getProperty() != null) {
-				seen.add(field.getProperty());
-			}
+			field.getProperty().ifPresent(seen::add);
 
 			if (columns.isExcluded(column)) {
 				continue;
@@ -289,8 +295,8 @@ public class QueryMapper {
 
 		try {
 
-			if (field.getProperty() != null) {
-				return Optional.of(field.getProperty().getColumnName());
+			if (field.getProperty().isPresent()) {
+				return field.getProperty().map(CassandraPersistentProperty::getColumnName);
 			}
 
 			if (column.getColumnName().isPresent()) {
@@ -313,10 +319,17 @@ public class QueryMapper {
 		return entity == null ? new Field(key) : new MetadataBackedField(key, entity, mappingContext);
 	}
 
-	public List<Selector> getColumns(CassandraPersistentEntity<?> entity) {
+	@SuppressWarnings("unchecked")
+	TypeInformation<?> getTypeInformation(Field field, Optional<? extends Object> value) {
 
-		// TODO return all columns
-		return null;
+		return field.getProperty().map(CassandraPersistentProperty::getTypeInformation)
+				.orElseGet(() -> {
+
+					return value.map(Object::getClass) //
+							.map(ClassTypeInformation::from) //
+							.orElse((ClassTypeInformation) ClassTypeInformation.OBJECT);
+
+				});
 	}
 
 	/**
@@ -329,7 +342,7 @@ public class QueryMapper {
 		protected final ColumnName name;
 
 		/**
-		 * Creates a new {@link DocumentField} without meta-information but the given name.
+		 * Creates a new {@link Field} without meta-information but the given name.
 		 *
 		 * @param name must not be {@literal null} or empty.
 		 */
@@ -340,7 +353,7 @@ public class QueryMapper {
 		}
 
 		/**
-		 * Returns a new {@link DocumentField} with the given name.
+		 * Returns a new {@link Field} with the given name.
 		 *
 		 * @param name must not be {@literal null} or empty.
 		 * @return
@@ -350,14 +363,14 @@ public class QueryMapper {
 		}
 
 		/**
-		 * Returns the underlying {@link MongoPersistentProperty} backing the field. For path traversals this will be the
-		 * property that represents the value to handle. This means it'll be the leaf property for plain paths or the
+		 * Returns the underlying {@link CassandraPersistentProperty} backing the field. For path traversals this will be
+		 * the property that represents the value to handle. This means it'll be the leaf property for plain paths or the
 		 * association property in case we refer to an association somewhere in the path.
 		 *
 		 * @return
 		 */
-		public CassandraPersistentProperty getProperty() {
-			return null;
+		public Optional<CassandraPersistentProperty> getProperty() {
+			return Optional.empty();
 		}
 
 		/**
@@ -367,10 +380,6 @@ public class QueryMapper {
 		 */
 		public ColumnName getMappedKey() {
 			return name;
-		}
-
-		public TypeInformation<?> getTypeHint() {
-			return ClassTypeInformation.OBJECT;
 		}
 	}
 
@@ -384,7 +393,8 @@ public class QueryMapper {
 		private final CassandraPersistentEntity<?> entity;
 		private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 		private final CassandraPersistentProperty property;
-		private final PersistentPropertyPath<CassandraPersistentProperty> path;
+		private final Optional<CassandraPersistentProperty> optionalProperty;
+		private final Optional<PersistentPropertyPath<CassandraPersistentProperty>> path;
 
 		/**
 		 * Creates a new {@link MetadataBackedField} with the given name, {@link MongoPersistentEntity} and
@@ -420,7 +430,8 @@ public class QueryMapper {
 			this.mappingContext = context;
 			this.path = getPath(
 					name.getColumnName().isPresent() ? name.getColumnName().get() : name.getCqlIdentifier().get().toCql());
-			this.property = property;
+			this.property = path.map(PersistentPropertyPath::getLeafProperty).orElse(property);
+			this.optionalProperty = Optional.of(this.property);
 		}
 
 		/**
@@ -429,16 +440,16 @@ public class QueryMapper {
 		 * @param pathExpression
 		 * @return
 		 */
-		private PersistentPropertyPath<CassandraPersistentProperty> getPath(String pathExpression) {
+		private Optional<PersistentPropertyPath<CassandraPersistentProperty>> getPath(String pathExpression) {
 
 			try {
 				PropertyPath path = PropertyPath.from(pathExpression.replaceAll("\\.\\d", ""), entity.getTypeInformation());
 				PersistentPropertyPath<CassandraPersistentProperty> propertyPath = mappingContext
 						.getPersistentPropertyPath(path);
 
-				return propertyPath;
+				return Optional.of(propertyPath);
 			} catch (PropertyReferenceException e) {
-				return null;
+				return Optional.empty();
 			}
 		}
 
@@ -456,8 +467,8 @@ public class QueryMapper {
 		 * @see org.springframework.data.mongodb.core.convert.QueryMapper.Field#getProperty()
 		 */
 		@Override
-		public CassandraPersistentProperty getProperty() {
-			return path == null ? property : path.getLeafProperty();
+		public Optional<CassandraPersistentProperty> getProperty() {
+			return optionalProperty;
 		}
 
 		/*
@@ -466,7 +477,11 @@ public class QueryMapper {
 		 */
 		@Override
 		public ColumnName getMappedKey() {
-			return path == null ? name : ColumnName.from(path.getLeafProperty().getColumnName());
+
+			return path.map(PersistentPropertyPath::getLeafProperty) //
+					.map(CassandraPersistentProperty::getColumnName) //
+					.map(ColumnName::from) //
+					.orElse(name);
 		}
 	}
 }
