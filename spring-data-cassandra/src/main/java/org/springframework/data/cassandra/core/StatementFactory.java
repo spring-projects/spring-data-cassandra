@@ -21,8 +21,9 @@ import java.util.List;
 import org.springframework.cassandra.core.QueryOptionsUtil;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.QueryMapper;
-import org.springframework.data.cassandra.core.query.Columns.Column;
+import org.springframework.data.cassandra.core.query.Columns.ColumnSelector;
 import org.springframework.data.cassandra.core.query.Columns.FunctionCall;
+import org.springframework.data.cassandra.core.query.Columns.Selector;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition.Predicate;
 import org.springframework.data.cassandra.core.query.Filter;
@@ -74,7 +75,14 @@ public class StatementFactory {
 	 */
 	public RegularStatement select(Query query, CassandraPersistentEntity<?> entity) {
 
-		List<Column> selectors = queryMapper.getMappedSelectors(query.getColumns(), entity);
+		List<Selector> selectors;
+
+		if (query.getColumns().isEmpty()) {
+			selectors = queryMapper.getColumns(entity);
+		} else {
+			selectors = queryMapper.getMappedSelectors(query.getColumns(), entity);
+		}
+
 		Filter filter = queryMapper.getMappedObject(query, entity);
 		Sort sort = query.getSort() != null ? queryMapper.getMappedSort(query.getSort(), entity) : null;
 
@@ -95,36 +103,17 @@ public class StatementFactory {
 		return select;
 	}
 
-	private static Select select(List<Column> selectors, CqlIdentifier from, Filter filter, Sort sort) {
+	private static Select select(List<Selector> selectors, CqlIdentifier from, Filter filter, Sort sort) {
 
 		Select select;
 
 		if (selectors.isEmpty()) {
 			select = QueryBuilder.select().all().from(from.toCql());
 		} else {
+
 			Selection selection = QueryBuilder.select();
 			selectors.forEach(selector -> {
-
-				SelectionOrAlias column;
-
-				if (selector instanceof FunctionCall) {
-
-					Object[] objects = ((FunctionCall) selector).getParameters().stream().map(o -> {
-
-						if (o instanceof Column) {
-							return QueryBuilder.column(((Column) o).getExpression());
-						}
-
-						return o;
-
-					}).toArray();
-
-					column = selection.fcall(selector.getExpression(), objects);
-				} else {
-					column = selection.column(selector.getExpression());
-				}
-
-				selector.getAlias().map(CqlIdentifier::toCql).ifPresent(column::as);
+				selector.getAlias().map(CqlIdentifier::toCql).ifPresent(getSelection(selection, selector)::as);
 			});
 			select = selection.from(from.toCql());
 		}
@@ -152,6 +141,27 @@ public class StatementFactory {
 
 		return select;
 	}
+
+	private static SelectionOrAlias getSelection(Selection selection, Selector selector) {
+
+		if (selector instanceof FunctionCall) {
+
+			Object[] objects = ((FunctionCall) selector).getParameters().stream().map(o -> {
+
+				if (o instanceof ColumnSelector) {
+					return QueryBuilder.column(((ColumnSelector) o).getExpression());
+				}
+
+				return o;
+
+			}).toArray();
+
+			return selection.fcall(selector.getExpression(), objects);
+		}
+
+		return selection.column(selector.getExpression());
+	}
+
 
 	/**
 	 * Create a {@literal DELETE} statement by mapping {@link Query} to {@link Delete}.

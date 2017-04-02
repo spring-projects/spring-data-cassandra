@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import lombok.EqualsAndHashCode;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -70,7 +69,8 @@ public class Columns implements Iterable<ColumnName> {
 
 		Map<ColumnName, Selector> columns = new HashMap<>(columnNames.length, 1);
 
-		Arrays.stream(columnNames).forEach(columnName -> columns.put(ColumnName.from(columnName), Selectors.Include));
+		Arrays.stream(columnNames)
+				.forEach(columnName -> columns.put(ColumnName.from(columnName), ColumnSelector.from(columnName)));
 
 		return new Columns(columns);
 	}
@@ -87,7 +87,7 @@ public class Columns implements Iterable<ColumnName> {
 
 		Map<ColumnName, Selector> columns = new HashMap<>(columnNames.length, 1);
 
-		Arrays.stream(columnNames).forEach(cqlId -> columns.put(ColumnName.from(cqlId), Selectors.Include));
+		Arrays.stream(columnNames).forEach(cqlId -> columns.put(ColumnName.from(cqlId), ColumnSelector.from(cqlId)));
 
 		return new Columns(columns);
 	}
@@ -100,7 +100,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the included {@code columnName}.
 	 */
 	public Columns include(String columnName) {
-		return withColumn(columnName, Selectors.Include);
+		return select(columnName, ColumnSelector.from(columnName));
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the included {@code columnName}.
 	 */
 	public Columns include(CqlIdentifier columnName) {
-		return withColumn(columnName, Selectors.Include);
+		return select(columnName, ColumnSelector.from(columnName));
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
 	 */
 	public Columns ttl(String columnName) {
-		return withColumn(columnName, Selectors.TTL);
+		return select(columnName, FunctionCall.from("TTL", ColumnSelector.from(columnName)));
 	}
 
 	/**
@@ -133,29 +133,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
 	 */
 	public Columns ttl(CqlIdentifier columnName) {
-		return withColumn(columnName, Selectors.TTL);
-	}
-
-	/**
-	 * Include the {@code columnName} as {@link Selector}. Including a column name overrides the exclusion if the column
-	 * was already excluded.
-	 *
-	 * @param columnName must not be {@literal null}.
-	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
-	 */
-	public Columns select(String columnName, Selector selector) {
-		return withColumn(columnName, selector);
-	}
-
-	/**
-	 * Include the {@code columnName} as {@link Selector}. Including a column name overrides the exclusion if the column
-	 * was already excluded.
-	 *
-	 * @param columnName must not be {@literal null}.
-	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
-	 */
-	public Columns select(CqlIdentifier columnName, Selector selector) {
-		return withColumn(columnName, selector);
+		return select(columnName, FunctionCall.from("TTL", ColumnSelector.from(columnName)));
 	}
 
 	/**
@@ -166,7 +144,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the excluded {@code columnName}.
 	 */
 	public Columns exclude(String columnName) {
-		return withColumn(columnName, InternalSelectors.Exclude);
+		return select(columnName, InternalSelectors.Exclude);
 	}
 
 	/**
@@ -177,10 +155,17 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the excluded {@code columnName}.
 	 */
 	public Columns exclude(CqlIdentifier columnName) {
-		return withColumn(columnName, InternalSelectors.Exclude);
+		return select(columnName, InternalSelectors.Exclude);
 	}
 
-	private Columns withColumn(String columnName, Selector selector) {
+	/**
+	 * Include the {@code columnName} as {@link Selector}. Including a column name overrides the exclusion if the column
+	 * was already excluded.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
+	 */
+	public Columns select(String columnName, Selector selector) {
 
 		Assert.notNull(columnName, "Column name must not be null");
 
@@ -190,7 +175,14 @@ public class Columns implements Iterable<ColumnName> {
 		return new Columns(result);
 	}
 
-	private Columns withColumn(CqlIdentifier columnName, Selector selector) {
+	/**
+	 * Include the {@code columnName} as {@link Selector}. Including a column name overrides the exclusion if the column
+	 * was already excluded.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
+	 */
+	public Columns select(CqlIdentifier columnName, Selector selector) {
 
 		Assert.notNull(columnName, "Column name must not be null");
 
@@ -219,7 +211,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * the given ones. Existing {@link ColumnName}s are overwritten if specified within {@code columns}.
 	 *
 	 * @param columns can be {@literal null}.
-	 * @return
+	 * @return a new {@link Columns} with the merged result of the configured and given {@link Columns}.
 	 */
 	public Columns and(Columns columns) {
 
@@ -246,14 +238,14 @@ public class Columns implements Iterable<ColumnName> {
 
 		Assert.notNull(columnName, "ColumnName must not be null");
 
-		return getColumnExpression(columnName).filter(InternalSelectors.Exclude::equals).isPresent();
+		return getSelector(columnName).filter(InternalSelectors.Exclude::equals).isPresent();
 	}
 
 	/**
 	 * @param columnName must not be {@literal null}.
 	 * @return the {@link Optional} {@link Selector} for {@link ColumnName}.
 	 */
-	public Optional<Selector> getColumnExpression(ColumnName columnName) {
+	public Optional<Selector> getSelector(ColumnName columnName) {
 
 		Assert.notNull(columnName, "ColumnName must not be null");
 
@@ -329,9 +321,7 @@ public class Columns implements Iterable<ColumnName> {
 				builder.append(", ");
 			}
 
-			Optional<CqlIdentifier> columnName = getCqlIdentifier(entry.getKey());
-
-			columnName.map(expression::evaluate).ifPresent(builder::append);
+			builder.append(expression.toString());
 		}
 
 		return builder;
@@ -347,19 +337,15 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
-	 * Strategy interface to render a column selector.
+	 * Strategy interface to render a column selection.
 	 *
 	 * @author Mark Paluch
 	 */
 	public interface Selector {
 
-		/**
-		 * Render a column selector given {@link CqlIdentifier}.
-		 *
-		 * @param columnName must not be {@literal null}.
-		 * @return the column selector to be used with CQL.
-		 */
-		Column evaluate(CqlIdentifier columnName);
+		String getExpression();
+
+		Optional<CqlIdentifier> getAlias();
 	}
 
 	/**
@@ -374,84 +360,88 @@ public class Columns implements Iterable<ColumnName> {
 		 */
 		Exclude {
 			@Override
-			public Column evaluate(CqlIdentifier columnName) {
+			public String getExpression() {
 				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public Optional<CqlIdentifier> getAlias() {
+				return Optional.empty();
 			}
 		},
 	}
 
 	/**
-	 * Commonly used {@link Selector}s.
+	 * Column selection.
 	 *
 	 * @author Mark Paluch
 	 */
-	public enum Selectors implements Selector {
-
-		/**
-		 * Plain inclusion.
-		 */
-		Include {
-			@Override
-			public Column evaluate(CqlIdentifier columnName) {
-				return Column.of(columnName.toCql());
-			}
-		},
-
-		/**
-		 * Select the TTL for a column.
-		 */
-		TTL {
-			@Override
-			public FunctionCall evaluate(CqlIdentifier columnName) {
-				return FunctionCall.of("TTL", Column.of(columnName.toCql()));
-			}
-		},
-
-		/**
-		 * Select the WRITETIME for a column.
-		 */
-		WRITETIME {
-			@Override
-			public FunctionCall evaluate(CqlIdentifier columnName) {
-				return FunctionCall.of("WRITETIME", Column.of(columnName.toCql()));
-			}
-		}
-	}
-
-	/**
-	 * Column selector with alias support.
-	 */
 	@EqualsAndHashCode
-	public static class Column {
+	public static class ColumnSelector implements Selector {
 
-		private final String expression;
+		private final ColumnName columnName;
 		private final Optional<CqlIdentifier> alias;
 
-		Column(String expression) {
+		ColumnSelector(ColumnName columnName) {
 
-			this.expression = expression;
+			Assert.notNull(columnName, "ColumnName must not be null");
+
+			this.columnName = columnName;
 			this.alias = Optional.empty();
 		}
 
-		Column(String expression, CqlIdentifier alias) {
-			this.expression = expression;
+		ColumnSelector(ColumnName columnName, CqlIdentifier alias) {
+
+			Assert.notNull(columnName, "ColumnName must not be null");
+			Assert.notNull(alias, "Alias must not be null");
+
+			this.columnName = columnName;
 			this.alias = Optional.of(alias);
 		}
 
-		public static Column of(String expression) {
-			return new Column(expression);
+		/**
+		 * Create a {@link ColumnSelector} given {@link ColumnName}.
+		 */
+		public static ColumnSelector from(ColumnName columnName) {
+			return new ColumnSelector(columnName);
 		}
 
-		public static Column of(String expression, CqlIdentifier alias) {
-			return new Column(expression, alias);
+		/**
+		 * Create a {@link ColumnSelector} given {@link CqlIdentifier}.
+		 */
+		public static ColumnSelector from(CqlIdentifier columnName) {
+			return new ColumnSelector(ColumnName.from(columnName));
 		}
 
-		public Column as(String alias) {
-			return new Column(getExpression(), CqlIdentifier.cqlId(alias));
+		/**
+		 * Create a {@link ColumnSelector} given a plain {@code columnName}.
+		 */
+		public static ColumnSelector from(String columnName) {
+			return new ColumnSelector(ColumnName.from(columnName));
+		}
+
+		/**
+		 * Create a {@link ColumnSelector} for the current {@link #getExpression() expression} aliased as {@code alias}.
+		 *
+		 * @param alias must not be {@literal null} or empty.
+		 * @return the aliased {@link ColumnSelector}.
+		 */
+		public ColumnSelector as(String alias) {
+			return as(CqlIdentifier.cqlId(alias));
+		}
+
+		/**
+		 * Create a {@link ColumnSelector} for the current {@link #getExpression() expression} aliased as {@code alias}.
+		 *
+		 * @param alias must not be {@literal null}.
+		 * @return the aliased {@link ColumnSelector}.
+		 */
+		public ColumnSelector as(CqlIdentifier alias) {
+			return new ColumnSelector(columnName, alias);
 		}
 
 		public String getExpression() {
-			return expression;
+			return columnName.toCql();
 		}
 
 		public Optional<CqlIdentifier> getAlias() {
@@ -463,8 +453,8 @@ public class Columns implements Iterable<ColumnName> {
 		 */
 		@Override
 		public String toString() {
-			return getAlias().map(cqlIdentifier -> String.format("%s AS %s", expression, cqlIdentifier.toCql()))
-					.orElse(expression);
+			return getAlias().map(cqlIdentifier -> String.format("%s AS %s", getExpression(), cqlIdentifier.toCql()))
+					.orElseGet(this::getExpression);
 		}
 	}
 
@@ -472,32 +462,58 @@ public class Columns implements Iterable<ColumnName> {
 	 * Function call selector with alias support.
 	 */
 	@EqualsAndHashCode
-	public static class FunctionCall extends Column {
+	public static class FunctionCall implements Selector {
 
+		private final String expression;
 		private final List<Object> params;
+		private final Optional<CqlIdentifier> alias;
 
 		FunctionCall(String expression, List<Object> params) {
 
-			super(expression);
-
+			this.expression = expression;
 			this.params = params;
+			this.alias = Optional.empty();
 		}
 
-		private FunctionCall(String expression, CqlIdentifier alias, List<Object> params) {
-			super(expression, alias);
+		private FunctionCall(String expression, List<Object> params, CqlIdentifier alias) {
+
+			this.expression = expression;
 			this.params = params;
+			this.alias = Optional.of(alias);
 		}
 
-		public static FunctionCall of(String expression, Object... params) {
+		public static FunctionCall from(String expression, Object... params) {
 			return new FunctionCall(expression, Arrays.asList(params));
 		}
 
-		public static FunctionCall of(String expression, CqlIdentifier alias, List<Object> params) {
-			return new FunctionCall(expression, alias, params);
+		/**
+		 * Create a {@link FunctionCall} for the current {@link #getExpression() expression} aliased as {@code alias}.
+		 *
+		 * @param alias must not be {@literal null} or empty.
+		 * @return the aliased {@link ColumnSelector}.
+		 */
+		public FunctionCall as(String alias) {
+			return as(CqlIdentifier.cqlId(alias));
 		}
 
-		public FunctionCall as(String alias) {
-			return new FunctionCall(getExpression(), CqlIdentifier.cqlId(alias), params);
+		/**
+		 * Create a {@link FunctionCall} for the current {@link #getExpression() expression} aliased as {@code alias}.
+		 *
+		 * @param alias must not be {@literal null}.
+		 * @return the aliased {@link ColumnSelector}.
+		 */
+		public FunctionCall as(CqlIdentifier alias) {
+			return new FunctionCall(expression, params, alias);
+		}
+
+		@Override
+		public String getExpression() {
+			return expression;
+		}
+
+		@Override
+		public Optional<CqlIdentifier> getAlias() {
+			return alias;
 		}
 
 		public List<Object> getParameters() {

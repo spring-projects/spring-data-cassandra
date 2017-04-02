@@ -21,13 +21,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.ColumnName;
 import org.springframework.data.cassandra.core.query.Columns;
-import org.springframework.data.cassandra.core.query.Columns.Column;
-import org.springframework.data.cassandra.core.query.Columns.Selectors;
-import org.springframework.data.cassandra.core.query.Columns.Column;
+import org.springframework.data.cassandra.core.query.Columns.ColumnSelector;
+import org.springframework.data.cassandra.core.query.Columns.FunctionCall;
+import org.springframework.data.cassandra.core.query.Columns.Selector;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition.Predicate;
@@ -107,13 +108,13 @@ public class QueryMapper {
 	}
 
 	/**
-	 * Map {@link Columns} with a {@link CassandraPersistentEntity type hint} to {@link Column}s.
+	 * Map {@link Columns} with a {@link CassandraPersistentEntity type hint} to {@link ColumnSelector}s.
 	 *
 	 * @param columns must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 * @return the mapped {@link Selector}s.
 	 */
-	public List<Column> getMappedSelectors(Columns columns, CassandraPersistentEntity<?> entity) {
+	public List<Selector> getMappedSelectors(Columns columns, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(columns, "Columns must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
@@ -122,7 +123,7 @@ public class QueryMapper {
 			return Collections.emptyList();
 		}
 
-		List<Column> selectors = new ArrayList<>();
+		List<Selector> selectors = new ArrayList<>();
 
 		Set<PersistentProperty<?>> seen = new HashSet<>();
 
@@ -138,9 +139,9 @@ public class QueryMapper {
 				continue;
 			}
 
-			columns.getColumnExpression(column).ifPresent(columnExpression -> {
+			columns.getSelector(column).ifPresent(selector -> {
 				getCqlIdentifier(column, field).ifPresent(cqlIdentifier -> {
-					selectors.add(columnExpression.evaluate(cqlIdentifier));
+					selectors.add(getMappedSelector(selector, cqlIdentifier));
 				});
 			});
 		}
@@ -151,15 +152,52 @@ public class QueryMapper {
 
 				if (property.isCompositePrimaryKey()) {
 					for (CqlIdentifier cqlIdentifier : property.getColumnNames()) {
-						selectors.add(Column.of(cqlIdentifier.toCql()));
+						selectors.add(ColumnSelector.from(cqlIdentifier.toCql()));
 					}
 				} else {
-					selectors.add(Column.of(property.getColumnName().toCql()));
+					selectors.add(ColumnSelector.from(property.getColumnName().toCql()));
 				}
 			}
 		});
 
 		return selectors;
+	}
+
+	private Selector getMappedSelector(Selector selector, CqlIdentifier cqlIdentifier) {
+
+		if (selector instanceof ColumnSelector) {
+
+			ColumnSelector columnSelector = (ColumnSelector) selector;
+
+			return columnSelector.getAlias() //
+					.map(alias -> ColumnSelector.from(cqlIdentifier).as(alias)) //
+					.orElseGet(() -> ColumnSelector.from(cqlIdentifier));
+
+		}
+
+		if (selector instanceof FunctionCall) {
+
+			FunctionCall functionCall = (FunctionCall) selector;
+
+			List<Object> mappedParameters = functionCall.getParameters() //
+					.stream() //
+					.map(o -> {
+
+						if (o instanceof Selector) {
+							return getMappedSelector((Selector) o, cqlIdentifier);
+						}
+
+						return o;
+					}) //
+					.collect(Collectors.toList());
+
+			return functionCall.getAlias() //
+					.map(alias -> FunctionCall.from(functionCall.getExpression(), mappedParameters.toArray()).as(alias)) //
+					.orElseGet(() -> FunctionCall.from(functionCall.getExpression(), mappedParameters.toArray()));
+
+		}
+
+		throw new IllegalArgumentException(String.format("Selector [%s] not supported", selector));
 	}
 
 	/**
@@ -196,16 +234,18 @@ public class QueryMapper {
 				continue;
 			}
 
-			columns.getColumnExpression(column) //
-					.filter(Selectors.Include::equals) //
+			columns.getSelector(column) //
+					.filter(selector -> selector instanceof ColumnSelector) //
 					.ifPresent(columnExpression -> {
-						getCqlIdentifier(column, field).ifPresent(cqlIdentifier -> {
-							columnNames.add(columnExpression.evaluate(cqlIdentifier).getExpression());
-						});
+
+						getCqlIdentifier(column, field) //
+								.map(CqlIdentifier::toCql) //
+								.ifPresent(columnNames::add);
 					});
 		}
 
 		if (columns.hasExclusions()) {
+
 			entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) property -> {
 
 				if (property.isCompositePrimaryKey()) {
@@ -273,6 +313,12 @@ public class QueryMapper {
 	protected Field createPropertyField(CassandraPersistentEntity<?> entity, ColumnName key,
 			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
 		return entity == null ? new Field(key) : new MetadataBackedField(key, entity, mappingContext);
+	}
+
+	public List<Selector> getColumns(CassandraPersistentEntity<?> entity) {
+
+		// TODO return all columns
+		return null;
 	}
 
 	/**
