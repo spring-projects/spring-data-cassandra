@@ -61,7 +61,7 @@ public class Query implements Filter {
 	 * Static factory method to create a {@link Query} using the provided {@link CriteriaDefinition}.
 	 *
 	 * @param criteriaDefinitions must not be {@literal null}.
-	 * @return
+	 * @return the {@link Query} for {@link CriteriaDefinition}s.
 	 */
 	public static Query from(CriteriaDefinition... criteriaDefinitions) {
 
@@ -74,7 +74,7 @@ public class Query implements Filter {
 	 * Static factory method to create a {@link Query} using the provided {@link CriteriaDefinition}.
 	 *
 	 * @param criteriaDefinitions must not be {@literal null}.
-	 * @return
+	 * @return the {@link Query} for {@link CriteriaDefinition}s.
 	 */
 	public static Query from(Iterable<? extends CriteriaDefinition> criteriaDefinitions) {
 
@@ -93,7 +93,7 @@ public class Query implements Filter {
 	 * Add the given {@link CriteriaDefinition} to the current {@link Query}.
 	 *
 	 * @param criteriaDefinition must not be {@literal null}.
-	 * @return
+	 * @return {@literal this} {@link Query}.
 	 */
 	public Query with(CriteriaDefinition criteriaDefinition) {
 
@@ -139,6 +139,9 @@ public class Query implements Filter {
 		return this;
 	}
 
+	/**
+	 * @return the query {@link Columns}.
+	 */
 	public Columns getColumns() {
 		return columns;
 	}
@@ -169,6 +172,9 @@ public class Query implements Filter {
 		return this;
 	}
 
+	/**
+	 * @return the query {@link Sort} object.
+	 */
 	public Sort getSort() {
 		return sort;
 	}

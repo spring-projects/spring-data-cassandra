@@ -20,9 +20,7 @@ import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -34,13 +32,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.cassandra.core.CqlOperations;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.cassandra.support.UserTypeBuilder;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Address;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.projection.ProjectionFactory;
@@ -54,16 +52,10 @@ import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ReflectionUtils;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.Configuration;
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
-import com.datastax.driver.core.UserType.Field;
 
 /**
  * Unit tests for {@link StringBasedCassandraQuery}.
@@ -78,10 +70,6 @@ public class StringBasedCassandraQueryUnitTests {
 	SpelExpressionParser PARSER = new SpelExpressionParser();
 
 	@Mock CassandraOperations operations;
-	@Mock CqlOperations cqlOperations;
-	@Mock Session session;
-	@Mock Cluster cluster;
-	@Mock Configuration configuration;
 	@Mock UserTypeResolver userTypeResolver;
 	@Mock UDTValue udtValue;
 
@@ -319,9 +307,8 @@ public class StringBasedCassandraQueryUnitTests {
 	@Test // DATACASS-172
 	public void bindsMappedUdtPropertyCorrectly() throws Exception {
 
-		Field city = createField("city", DataType.varchar());
-		Field country = createField("country", DataType.varchar());
-		UserType addressType = createUserType("address", Arrays.asList(city, country));
+		UserType addressType = UserTypeBuilder.forName("address").withField("city", DataType.varchar())
+				.withField("country", DataType.varchar()).build();
 
 		when(userTypeResolver.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(addressType);
 
@@ -355,49 +342,6 @@ public class StringBasedCassandraQueryUnitTests {
 				converter.getMappingContext());
 		return new StringBasedCassandraQuery(queryMethod, operations, PARSER,
 				new ExtensionAwareEvaluationContextProvider());
-	}
-
-	private Field createField(String fieldName, DataType dataType) {
-
-		try {
-			Constructor<Field> constructor = Field.class.getDeclaredConstructor(String.class, DataType.class);
-			constructor.setAccessible(true);
-			return constructor.newInstance(fieldName, dataType);
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private UserType createUserType(String typeName, Collection<Field> fields) {
-
-		try {
-
-			Constructor<UserType>[] declaredConstructors = (Constructor[]) UserType.class.getDeclaredConstructors();
-			for (Constructor<UserType> constructor : declaredConstructors) {
-
-				if (Modifier.isPrivate(constructor.getModifiers())) {
-					continue;
-				}
-
-				constructor.setAccessible(true);
-
-				if (constructor.getParameterCount() == 5) {
-					// Cassandra driver 3.0.x - 3.1.x
-					return constructor.newInstance(typeName, typeName, fields, ProtocolVersion.NEWEST_SUPPORTED,
-							CodecRegistry.DEFAULT_INSTANCE);
-				}
-
-				// Cassandra driver 3.2.x
-				return constructor.newInstance(typeName, typeName, false, fields, ProtocolVersion.NEWEST_SUPPORTED,
-						CodecRegistry.DEFAULT_INSTANCE);
-			}
-
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
-		}
-
-		throw new IllegalStateException("No suitable constructor found");
 	}
 
 	private interface SampleRepository extends Repository<Person, String> {

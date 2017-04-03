@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
  * Value object representing a column name. Column names can be expressed either through {@link CqlIdentifier} or a
  * {@link String} literal. Using a String literal preserves case and is suitable to reference properties.
  * <p>
- * Equality and hash code derive from {@link #toCql()}.
+ * Equality and hash code are based on {@link #toCql()} representation.
  * <p>
  * Implementing classes must provide either {@link #getColumnName()} or {@link #getCqlIdentifier()}.
  *

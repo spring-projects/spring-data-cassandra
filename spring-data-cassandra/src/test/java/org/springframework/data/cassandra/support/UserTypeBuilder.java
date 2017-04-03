@@ -72,9 +72,9 @@ public class UserTypeBuilder {
 
 		try {
 			Constructor<UserType> constructor = UserType.class.getDeclaredConstructor(String.class, String.class,
-					Collection.class, ProtocolVersion.class, CodecRegistry.class);
+					Boolean.TYPE, Collection.class, ProtocolVersion.class, CodecRegistry.class);
 			constructor.setAccessible(true);
-			return constructor.newInstance(typeName, typeName, fields, ProtocolVersion.NEWEST_SUPPORTED,
+			return constructor.newInstance(typeName, typeName, false, fields, ProtocolVersion.NEWEST_SUPPORTED,
 					CodecRegistry.DEFAULT_INSTANCE);
 		} catch (Exception e) {
 			throw new IllegalStateException(e);

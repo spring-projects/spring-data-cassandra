@@ -132,8 +132,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#is(java.lang.Object)
 	 */
 	@Override
-	public ChainedCriteria is(Object o) {
-		super.is(o);
+	public ChainedCriteria is(Object value) {
+		super.is(value);
 		return this;
 	}
 
@@ -141,8 +141,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#lt(java.lang.Object)
 	 */
 	@Override
-	public ChainedCriteria lt(Object o) {
-		super.lt(o);
+	public ChainedCriteria lt(Object value) {
+		super.lt(value);
 		return this;
 	}
 
@@ -150,8 +150,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#lte(java.lang.Object)
 	 */
 	@Override
-	public ChainedCriteria lte(Object o) {
-		super.lte(o);
+	public ChainedCriteria lte(Object value) {
+		super.lte(value);
 		return this;
 	}
 
@@ -159,8 +159,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#gt(java.lang.Object)
 	 */
 	@Override
-	public ChainedCriteria gt(Object o) {
-		super.gt(o);
+	public ChainedCriteria gt(Object value) {
+		super.gt(value);
 		return this;
 	}
 
@@ -168,8 +168,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#gte(java.lang.Object)
 	 */
 	@Override
-	public ChainedCriteria gte(Object o) {
-		super.gte(o);
+	public ChainedCriteria gte(Object value) {
+		super.gte(value);
 		return this;
 	}
 
@@ -177,8 +177,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#in(java.lang.Object[])
 	 */
 	@Override
-	public ChainedCriteria in(Object... o) {
-		super.in(o);
+	public ChainedCriteria in(Object... values) {
+		super.in(values);
 		return this;
 	}
 
@@ -186,8 +186,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#in(java.util.Collection)
 	 */
 	@Override
-	public ChainedCriteria in(Collection<?> c) {
-		super.in(c);
+	public ChainedCriteria in(Collection<?> values) {
+		super.in(values);
 		return this;
 	}
 
@@ -195,8 +195,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#like(java.lang.Object)
 	 */
 	@Override
-	public ChainedCriteria like(Object o) {
-		super.like(o);
+	public ChainedCriteria like(Object value) {
+		super.like(value);
 		return this;
 	}
 
@@ -204,8 +204,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#contains(java.lang.Object)
 	 */
 	@Override
-	public ChainedCriteria contains(Object o) {
-		super.contains(o);
+	public ChainedCriteria contains(Object value) {
+		super.contains(value);
 		return this;
 	}
 
@@ -213,8 +213,8 @@ public class ChainedCriteria extends Criteria implements Filter {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#containsKey(java.lang.Object)
 	 */
 	@Override
-	public ChainedCriteria containsKey(Object o) {
-		super.containsKey(o);
+	public ChainedCriteria containsKey(Object key) {
+		super.containsKey(key);
 		return this;
 	}
 

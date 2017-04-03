@@ -28,16 +28,22 @@ class DefaultFilter implements Filter {
 
 	private final Iterable<CriteriaDefinition> criteriaDefinitions;
 
-	@SuppressWarnings("unchecked")
-	public DefaultFilter(Iterable<? extends CriteriaDefinition> criteriaDefinitions) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	DefaultFilter(Iterable<? extends CriteriaDefinition> criteriaDefinitions) {
 		this.criteriaDefinitions = (Iterable) criteriaDefinitions;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.query.Filter#getCriteriaDefinitions()
+	 */
 	@Override
 	public Iterable<CriteriaDefinition> getCriteriaDefinitions() {
 		return criteriaDefinitions;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 

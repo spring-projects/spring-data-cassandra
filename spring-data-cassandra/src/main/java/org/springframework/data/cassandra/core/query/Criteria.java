@@ -36,7 +36,7 @@ public class Criteria implements CriteriaDefinition {
 
 	private ColumnName columnName;
 
-	private CriteriaDefinition.Predicate predicate;
+	private Predicate predicate;
 
 	/**
 	 * Create an empty {@link Criteria}.
@@ -50,7 +50,7 @@ public class Criteria implements CriteriaDefinition {
 		this.columnName = columnName;
 	}
 
-	public Criteria(ColumnName key, CriteriaDefinition.Predicate predicate) {
+	public Criteria(ColumnName key, Predicate predicate) {
 
 		Assert.notNull(key, "Key must not be null");
 		Assert.notNull(predicate, "Predicate must not be null");
@@ -72,141 +72,141 @@ public class Criteria implements CriteriaDefinition {
 	/**
 	 * Create a criterion using equality.
 	 *
-	 * @param o
+	 * @param value the value to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition is(Object o) {
-		this.predicate = new CriteriaDefinition.Predicate("=", o);
+	public CriteriaDefinition is(Object value) {
+		this.predicate = new Predicate("=", value);
 		return this;
 	}
 
 	/**
 	 * Create a criterion using the {@literal >} operator.
 	 *
-	 * @param o
+	 * @param value the value to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition lt(Object o) {
+	public CriteriaDefinition lt(Object value) {
 
-		Assert.notNull(o, "Value must not be null");
+		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new CriteriaDefinition.Predicate("<", o);
+		this.predicate = new Predicate("<", value);
 		return this;
 	}
 
 	/**
 	 * Create a criterion using the {@literal >=} operator.
 	 *
-	 * @param o
+	 * @param value the value to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition lte(Object o) {
+	public CriteriaDefinition lte(Object value) {
 
-		Assert.notNull(o, "Value must not be null");
+		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new CriteriaDefinition.Predicate("<=", o);
+		this.predicate = new Predicate("<=", value);
 		return this;
 	}
 
 	/**
 	 * Create a criterion using the {@literal <} operator.
 	 *
-	 * @param o
+	 * @param value the value to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition gt(Object o) {
+	public CriteriaDefinition gt(Object value) {
 
-		Assert.notNull(o, "Value must not be null");
+		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new CriteriaDefinition.Predicate(">", o);
+		this.predicate = new Predicate(">", value);
 		return this;
 	}
 
 	/**
 	 * Create a criterion using the {@literal <=} operator.
 	 *
-	 * @param o
+	 * @param value the value to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition gte(Object o) {
+	public CriteriaDefinition gte(Object value) {
 
-		Assert.notNull(o, "Value must not be null");
+		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new CriteriaDefinition.Predicate(">=", o);
+		this.predicate = new Predicate(">=", value);
 		return this;
 	}
 
 	/**
 	 * Create a criterion using the {@literal IN} operator.
 	 *
-	 * @param o the values to match against
+	 * @param values the values to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition in(Object... o) {
+	public CriteriaDefinition in(Object... values) {
 
-		Assert.notNull(o, "Value must not be null");
+		Assert.notNull(values, "Value must not be null");
 
-		if (o.length > 1 && o[1] instanceof Collection) {
+		if (values.length > 1 && values[1] instanceof Collection) {
 			throw new InvalidDataAccessApiUsageException(
-					"You can only pass in one argument of type " + o[1].getClass().getName());
+					"You can only pass in one argument of type " + values[1].getClass().getName());
 		}
 
-		return in(Arrays.asList(o));
+		return in(Arrays.asList(values));
 	}
 
 	/**
 	 * Create a criterion using the {@literal IN} operator.
 	 *
-	 * @param c the collection containing the values to match against
+	 * @param values the collection of values to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition in(Collection<?> c) {
+	public CriteriaDefinition in(Collection<?> values) {
 
-		Assert.notNull(c, "Value must not be null");
+		Assert.notNull(values, "Value must not be null");
 
-		this.predicate = new CriteriaDefinition.Predicate("IN", c);
+		this.predicate = new Predicate("IN", values);
 		return this;
 	}
 
 	/**
 	 * Create a criterion using the {@literal LIKE} operator.
 	 *
-	 * @param c the collection containing the values to match against
+	 * @param value the value to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition like(Object o) {
+	public CriteriaDefinition like(Object value) {
 
-		Assert.notNull(o, "Value must not be null");
+		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new CriteriaDefinition.Predicate("LIKE", o);
+		this.predicate = new Predicate("LIKE", value);
 		return this;
 	}
 
 	/**
 	 * Create a criterion using the {@literal CONTAINS} operator.
 	 *
-	 * @param c the collection containing the values to match against
+	 * @param value the value to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition contains(Object o) {
+	public CriteriaDefinition contains(Object value) {
 
-		Assert.notNull(o, "Value must not be null");
+		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new CriteriaDefinition.Predicate("CONTAINS", o);
+		this.predicate = new Predicate("CONTAINS", value);
 		return this;
 	}
 
 	/**
 	 * Create a criterion using the {@literal CONTAINS KEY} operator.
 	 *
-	 * @param c the collection containing the values to match against
+	 * @param key the key to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition containsKey(Object o) {
+	public CriteriaDefinition containsKey(Object key) {
 
-		Assert.notNull(o, "Value must not be null");
+		Assert.notNull(key, "Value must not be null");
 
-		this.predicate = new CriteriaDefinition.Predicate(CONTAINS_KEY, o);
+		this.predicate = new Predicate(CONTAINS_KEY, key);
 		return this;
 	}
 
@@ -220,12 +220,11 @@ public class Criteria implements CriteriaDefinition {
 	/**
 	 * @return the {@link Predicate}.
 	 */
-	public CriteriaDefinition.Predicate getPredicate() {
+	public Predicate getPredicate() {
 		return predicate;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override

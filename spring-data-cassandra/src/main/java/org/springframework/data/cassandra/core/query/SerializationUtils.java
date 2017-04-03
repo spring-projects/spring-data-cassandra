@@ -121,12 +121,6 @@ abstract class SerializationUtils {
 	 * Creates a string representation from the given {@link Iterable} prepending the prefix, applying the given
 	 * {@link Converter} to each element before adding it to the result {@link String}, concatenating each element with
 	 * {@literal ,} and applying the postfix.
-	 *
-	 * @param source
-	 * @param prefix
-	 * @param postfix
-	 * @param transformer
-	 * @return
 	 */
 	private static <T> String iterableToDelimitedString(Iterable<T> source, String prefix, String postfix,
 			Converter<? super T, Object> transformer) {

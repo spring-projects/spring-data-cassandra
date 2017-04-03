@@ -50,8 +50,15 @@ public interface CriteriaDefinition {
 	class Predicate {
 
 		private final String operator;
+
 		private final Object value;
 
+		/**
+		 * Create a new {@link Predicate} given {@code operator} and {@code value}.
+		 *
+		 * @param operator must not be {@literal null} or empty.
+		 * @param value the match value.
+		 */
 		public Predicate(String operator, Object value) {
 
 			Assert.hasText(operator, "Operator must not be null or empty");
@@ -60,10 +67,16 @@ public interface CriteriaDefinition {
 			this.value = value;
 		}
 
+		/**
+		 * @return the operator, such as {@literal =}, {@literal >=}, {@literal LIKE}.
+		 */
 		public String getOperator() {
 			return operator;
 		}
 
+		/**
+		 * @return the match value.
+		 */
 		public Object getValue() {
 			return value;
 		}

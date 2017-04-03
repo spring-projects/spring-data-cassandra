@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
  */
 public class Update {
 
-	private Map<ColumnName, UpdateOp> updateOperations = new LinkedHashMap<>();
+	private Map<ColumnName, AssignmentOp> updateOperations = new LinkedHashMap<>();
 
 	/**
 	 * Create an empty {@link Update} object.
@@ -44,15 +44,15 @@ public class Update {
 	public Update() {}
 
 	/**
-	 * Create a {@link Update} object given a list of {@link UpdateOp}s.
+	 * Create a {@link Update} object given a list of {@link AssignmentOp}s.
 	 *
-	 * @param updateOps must not be {@literal null}.
+	 * @param assignmentOps must not be {@literal null}.
 	 */
-	public Update(List<UpdateOp> updateOps) {
+	public Update(List<AssignmentOp> assignmentOps) {
 
-		Assert.notNull(updateOps, "Update operations must not be null");
+		Assert.notNull(assignmentOps, "Update operations must not be null");
 
-		updateOps.forEach(this::add);
+		assignmentOps.forEach(this::add);
 	}
 
 	/**
@@ -152,13 +152,13 @@ public class Update {
 	/**
 	 * @return {@link Collection} of update operations.
 	 */
-	public Collection<UpdateOp> getUpdateOperations() {
+	public Collection<AssignmentOp> getUpdateOperations() {
 		return Collections.unmodifiableCollection(updateOperations.values());
 	}
 
-	private Update add(UpdateOp updateOp) {
+	private Update add(AssignmentOp assignmentOp) {
 
-		this.updateOperations.put(updateOp.getColumnName(), updateOp);
+		this.updateOperations.put(assignmentOp.getColumnName(), assignmentOp);
 		return this;
 	}
 
@@ -411,14 +411,20 @@ public class Update {
 		}
 	}
 
-	public abstract static class UpdateOp {
+	/**
+	 * Abstract class for an update assignment related to a specific {@link ColumnName}.
+	 */
+	public abstract static class AssignmentOp {
 
 		private final ColumnName columnName;
 
-		protected UpdateOp(ColumnName columnName) {
+		protected AssignmentOp(ColumnName columnName) {
 			this.columnName = columnName;
 		}
 
+		/**
+		 * @return the {@link ColumnName}.
+		 */
 		public ColumnName getColumnName() {
 			return columnName;
 		}
@@ -427,7 +433,7 @@ public class Update {
 	/**
 	 * Add element(s) to collection operation.
 	 */
-	public static class AddToOp extends UpdateOp {
+	public static class AddToOp extends AssignmentOp {
 
 		private final Iterable<Object> value;
 		private final Mode mode;
@@ -456,7 +462,6 @@ public class Update {
 		public String toString() {
 
 			if (mode == Mode.PREPEND) {
-
 				return String.format("%s = %s + %s", getColumnName(), serializeToCqlSafely(value), getColumnName());
 			}
 
@@ -471,7 +476,7 @@ public class Update {
 	/**
 	 * Add element(s) to Map operation.
 	 */
-	public static class AddToMapOp extends UpdateOp {
+	public static class AddToMapOp extends AssignmentOp {
 
 		private final Map<Object, Object> value;
 
@@ -498,7 +503,7 @@ public class Update {
 	/**
 	 * Set operation.
 	 */
-	public static class SetOp extends UpdateOp {
+	public static class SetOp extends AssignmentOp {
 
 		private final Object value;
 
@@ -589,7 +594,7 @@ public class Update {
 	/**
 	 * Increment operation.
 	 */
-	public static class IncrOp extends UpdateOp {
+	public static class IncrOp extends AssignmentOp {
 
 		private final long value;
 
@@ -615,7 +620,7 @@ public class Update {
 	/**
 	 * Remove operation.
 	 */
-	public static class RemoveOp extends UpdateOp {
+	public static class RemoveOp extends AssignmentOp {
 
 		private final Object value;
 

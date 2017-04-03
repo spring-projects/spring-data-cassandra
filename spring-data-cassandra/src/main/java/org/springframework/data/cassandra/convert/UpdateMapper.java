@@ -29,12 +29,12 @@ import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.core.query.Update.AddToMapOp;
 import org.springframework.data.cassandra.core.query.Update.AddToOp;
+import org.springframework.data.cassandra.core.query.Update.AssignmentOp;
 import org.springframework.data.cassandra.core.query.Update.IncrOp;
 import org.springframework.data.cassandra.core.query.Update.RemoveOp;
 import org.springframework.data.cassandra.core.query.Update.SetAtIndexOp;
 import org.springframework.data.cassandra.core.query.Update.SetAtKeyOp;
 import org.springframework.data.cassandra.core.query.Update.SetOp;
-import org.springframework.data.cassandra.core.query.Update.UpdateOp;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -70,8 +70,7 @@ public class UpdateMapper extends QueryMapper {
 
 	/**
 	 * Map a {@link Update} with a {@link CassandraPersistentEntity type hint}. Update mapping translates property names
-	 * to column names and maps {@link org.springframework.data.cassandra.core.query.Update.UpdateOp update operation}
-	 * values to simple Cassandra values.
+	 * to column names and maps {@link AssignmentOp update operation} values to simple Cassandra values.
 	 *
 	 * @param update must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
@@ -82,45 +81,45 @@ public class UpdateMapper extends QueryMapper {
 		Assert.notNull(update, "Update must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		Collection<UpdateOp> updateOperations = update.getUpdateOperations();
-		List<UpdateOp> mapped = new ArrayList<>(updateOperations.size());
+		Collection<AssignmentOp> assignmentOperations = update.getUpdateOperations();
+		List<AssignmentOp> mapped = new ArrayList<>(assignmentOperations.size());
 
-		for (UpdateOp updateOp : updateOperations) {
+		for (AssignmentOp assignmentOp : assignmentOperations) {
 
-			Field field = createPropertyField(entity, updateOp.getColumnName());
+			Field field = createPropertyField(entity, assignmentOp.getColumnName());
 
-			mapped.add(getMappedUpdateOperation(updateOp, field));
+			mapped.add(getMappedUpdateOperation(assignmentOp, field));
 		}
 
 		return new Update(mapped);
 	}
 
-	protected UpdateOp getMappedUpdateOperation(UpdateOp updateOp, Field field) {
+	private AssignmentOp getMappedUpdateOperation(AssignmentOp assignmentOp, Field field) {
 
-		if (updateOp instanceof SetOp) {
-			return getMappedUpdateOperation(field, (SetOp) updateOp);
+		if (assignmentOp instanceof SetOp) {
+			return getMappedUpdateOperation(field, (SetOp) assignmentOp);
 		}
 
-		if (updateOp instanceof RemoveOp) {
-			return getMappedUpdateOperation(field, (RemoveOp) updateOp);
+		if (assignmentOp instanceof RemoveOp) {
+			return getMappedUpdateOperation(field, (RemoveOp) assignmentOp);
 		}
 
-		if (updateOp instanceof IncrOp) {
-			return new IncrOp(field.getMappedKey(), ((IncrOp) updateOp).getValue());
+		if (assignmentOp instanceof IncrOp) {
+			return new IncrOp(field.getMappedKey(), ((IncrOp) assignmentOp).getValue());
 		}
 
-		if (updateOp instanceof AddToOp) {
-			return getMappedUpdateOperation(field, (AddToOp) updateOp);
+		if (assignmentOp instanceof AddToOp) {
+			return getMappedUpdateOperation(field, (AddToOp) assignmentOp);
 		}
 
-		if (updateOp instanceof AddToMapOp) {
-			return getMappedUpdateOperation(field, (AddToMapOp) updateOp);
+		if (assignmentOp instanceof AddToMapOp) {
+			return getMappedUpdateOperation(field, (AddToMapOp) assignmentOp);
 		}
 
-		throw new IllegalArgumentException(String.format("UpdateOp %s not supported", updateOp));
+		throw new IllegalArgumentException(String.format("UpdateOp %s not supported", assignmentOp));
 	}
 
-	private UpdateOp getMappedUpdateOperation(Field field, SetOp updateOp) {
+	private AssignmentOp getMappedUpdateOperation(Field field, SetOp updateOp) {
 
 		Optional<Object> value = Optional.ofNullable(updateOp.getValue());
 
@@ -179,7 +178,7 @@ public class UpdateMapper extends QueryMapper {
 		return new SetOp(field.getMappedKey(), mappedValue.orElse(null));
 	}
 
-	private UpdateOp getMappedUpdateOperation(Field field, RemoveOp updateOp) {
+	private AssignmentOp getMappedUpdateOperation(Field field, RemoveOp updateOp) {
 
 		Optional<Object> value = Optional.ofNullable(updateOp.getValue());
 		TypeInformation<?> typeInformation = getTypeInformation(field, value);
@@ -189,7 +188,7 @@ public class UpdateMapper extends QueryMapper {
 	}
 
 	@SuppressWarnings("unchecked")
-	private UpdateOp getMappedUpdateOperation(Field field, AddToOp updateOp) {
+	private AssignmentOp getMappedUpdateOperation(Field field, AddToOp updateOp) {
 
 		Optional<Iterable<Object>> value = Optional.ofNullable(updateOp.getValue());
 		TypeInformation<?> typeInformation = getTypeInformation(field, value);
@@ -218,7 +217,7 @@ public class UpdateMapper extends QueryMapper {
 		return new AddToOp(field.getMappedKey(), mappedValue, updateOp.getMode());
 	}
 
-	private UpdateOp getMappedUpdateOperation(Field field, AddToMapOp updateOp) {
+	private AssignmentOp getMappedUpdateOperation(Field field, AddToMapOp updateOp) {
 
 		Optional<? extends TypeInformation<?>> typeInformation = field.getProperty()
 				.map(PersistentProperty::getTypeInformation);

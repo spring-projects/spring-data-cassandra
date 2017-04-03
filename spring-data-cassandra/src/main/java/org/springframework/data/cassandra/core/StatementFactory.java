@@ -35,12 +35,12 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.core.query.Update.AddToMapOp;
 import org.springframework.data.cassandra.core.query.Update.AddToOp;
 import org.springframework.data.cassandra.core.query.Update.AddToOp.Mode;
+import org.springframework.data.cassandra.core.query.Update.AssignmentOp;
 import org.springframework.data.cassandra.core.query.Update.IncrOp;
 import org.springframework.data.cassandra.core.query.Update.RemoveOp;
 import org.springframework.data.cassandra.core.query.Update.SetAtIndexOp;
 import org.springframework.data.cassandra.core.query.Update.SetAtKeyOp;
 import org.springframework.data.cassandra.core.query.Update.SetOp;
-import org.springframework.data.cassandra.core.query.Update.UpdateOp;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
@@ -96,11 +96,14 @@ public class StatementFactory {
 	/**
 	 * Create a {@literal SELECT} statement by mapping {@link Query} to {@link Select}.
 	 *
-	 * @param query
-	 * @param entity
-	 * @return
+	 * @param query must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @return the rendered {@link RegularStatement}.
 	 */
 	public RegularStatement select(Query query, CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
 		List<Selector> selectors = queryMapper.getMappedSelectors(query.getColumns(), entity);
 
@@ -186,11 +189,14 @@ public class StatementFactory {
 	/**
 	 * Create an {@literal UPDATE} statement by mapping {@link Query} to {@link Update}.
 	 *
-	 * @param query
-	 * @param entity
-	 * @return
+	 * @param query must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @return the rendered {@link RegularStatement}.
 	 */
 	public RegularStatement update(Query query, Update updateObj, CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
 		Update mappedUpdate = updateMapper.getMappedObject(updateObj, entity);
 		Filter filter = queryMapper.getMappedObject(query, entity);
@@ -216,8 +222,8 @@ public class StatementFactory {
 
 		com.datastax.driver.core.querybuilder.Update update = QueryBuilder.update(table.toCql());
 
-		for (UpdateOp updateOp : mappedUpdate.getUpdateOperations()) {
-			update.with(getAssignment(updateOp));
+		for (AssignmentOp assignmentOp : mappedUpdate.getUpdateOperations()) {
+			update.with(getAssignment(assignmentOp));
 		}
 
 		for (CriteriaDefinition criteriaDefinition : filter) {
@@ -227,29 +233,29 @@ public class StatementFactory {
 		return update;
 	}
 
-	private static Assignment getAssignment(UpdateOp updateOp) {
+	private static Assignment getAssignment(AssignmentOp assignmentOp) {
 
-		if (updateOp instanceof SetOp) {
-			return getAssignment((SetOp) updateOp);
+		if (assignmentOp instanceof SetOp) {
+			return getAssignment((SetOp) assignmentOp);
 		}
 
-		if (updateOp instanceof RemoveOp) {
-			return getAssignment((RemoveOp) updateOp);
+		if (assignmentOp instanceof RemoveOp) {
+			return getAssignment((RemoveOp) assignmentOp);
 		}
 
-		if (updateOp instanceof IncrOp) {
-			return getAssignment((IncrOp) updateOp);
+		if (assignmentOp instanceof IncrOp) {
+			return getAssignment((IncrOp) assignmentOp);
 		}
 
-		if (updateOp instanceof AddToOp) {
-			return getAssignment((AddToOp) updateOp);
+		if (assignmentOp instanceof AddToOp) {
+			return getAssignment((AddToOp) assignmentOp);
 		}
 
-		if (updateOp instanceof AddToMapOp) {
-			return getAssignment((AddToMapOp) updateOp);
+		if (assignmentOp instanceof AddToMapOp) {
+			return getAssignment((AddToMapOp) assignmentOp);
 		}
 
-		throw new IllegalArgumentException(String.format("UpdateOp %s not supported", updateOp));
+		throw new IllegalArgumentException(String.format("UpdateOp %s not supported", assignmentOp));
 	}
 
 	private static Assignment getAssignment(IncrOp incrOp) {
@@ -313,11 +319,14 @@ public class StatementFactory {
 	/**
 	 * Create a {@literal DELETE} statement by mapping {@link Query} to {@link Delete}.
 	 *
-	 * @param query
-	 * @param entity
-	 * @return
+	 * @param query must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @return the rendered {@link RegularStatement}.
 	 */
 	public RegularStatement delete(Query query, CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
 		List<String> columnNames = queryMapper.getMappedColumnNames(query.getColumns(), entity);
 		Filter filter = queryMapper.getMappedObject(query, entity);
@@ -356,6 +365,7 @@ public class StatementFactory {
 		String columnName = criteriaDefinition.getColumnName().toCql();
 
 		switch (predicate.getOperator()) {
+
 			case "=":
 				return QueryBuilder.eq(columnName, predicate.getValue());
 

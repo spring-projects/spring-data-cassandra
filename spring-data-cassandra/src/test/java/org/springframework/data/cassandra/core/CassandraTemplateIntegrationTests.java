@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.CqlTemplate;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.test.integration.support.CassandraVersion;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.query.ChainedCriteria;
 import org.springframework.data.cassandra.core.query.Columns;
@@ -39,6 +41,7 @@ import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.cassandra.test.integration.simpletons.BookReference;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Version;
 
 import com.datastax.driver.core.utils.UUIDs;
 
@@ -49,13 +52,19 @@ import com.datastax.driver.core.utils.UUIDs;
  */
 public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	private CassandraTemplate template;
+	final static Version CASSANDRA_3 = Version.parse("3.0");
+
+	Version cassandraVersion;
+
+	CassandraTemplate template;
 
 	@Before
 	public void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
 		converter.afterPropertiesSet();
+
+		cassandraVersion = CassandraVersion.get(session);
 
 		template = new CassandraTemplate(new CqlTemplate(session), converter);
 
@@ -69,6 +78,8 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 	@Test // DATACASS-343
 	public void shouldSelectByQueryWithAllowFiltering() {
+
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_3));
 
 		UserToken userToken = new UserToken();
 		userToken.setUserId(UUIDs.endOf(System.currentTimeMillis()));
