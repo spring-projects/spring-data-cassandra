@@ -232,15 +232,6 @@ public class QueryMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateSelectExpressionWithExclusion() {
-
-		List<String> selectors = queryMapper.getMappedColumnNames(Columns.empty().exclude("id").exclude("number"),
-				persistentEntity);
-
-		assertThat(selectors).contains("address").contains("first_name").doesNotContain("id").doesNotContain("number");
-	}
-
-	@Test // DATACASS-343
 	public void shouldCreateSelectExpressionWithTTL() {
 
 		List<String> selectors = queryMapper

@@ -34,11 +34,15 @@ import org.springframework.util.StringUtils;
 
 /**
  * Value object to abstract column names involved in a CQL query. Columns can be constructed from an array of names and
- * included/excluded.
+ * included using a {@link Selector}.
  *
  * @author Mark Paluch
  * @since 2.0
  * @see CqlIdentifier
+ * @see ColumnName
+ * @see Selector
+ * @see ColumnSelector
+ * @see FunctionCall
  */
 public class Columns implements Iterable<ColumnName> {
 
@@ -93,8 +97,8 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
-	 * Include a {@code columnName} in the selection. Including a column name overrides the exclusion if the column was
-	 * already excluded.
+	 * Include column {@code columnName} to the selection. Column inclusion overrides an existing selection for the column
+	 * name.
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the included {@code columnName}.
@@ -104,8 +108,8 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
-	 * Include a {@code columnName} in the selection. Including a column name overrides the exclusion if the column was
-	 * already excluded.
+	 * Include column {@code columnName} to the selection. Column inclusion overrides an existing selection for the column
+	 * name.
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the included {@code columnName}.
@@ -115,8 +119,8 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
-	 * Include the {@code columnName} as TTL value in the selection. Including a column name overrides the exclusion if
-	 * the column was already excluded.
+	 * Include column {@code columnName} as TTL value in the selection. This column selection overrides an existing
+	 * selection for the column name.
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
@@ -126,8 +130,8 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
-	 * Include the {@code columnName} as TTL value in the selection. Including a column name overrides the exclusion if
-	 * the column was already excluded.
+	 * Include column {@code columnName} as TTL value in the selection. This column selection overrides an existing
+	 * selection for the column name.
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
@@ -137,30 +141,8 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
-	 * Exclude a {@code columnName} from the selection. Excluding a column name overrides the inclusion if the column was
-	 * already included.
-	 *
-	 * @param columnName must not be {@literal null}.
-	 * @return a new {@link Columns} object containing all column definitions and the excluded {@code columnName}.
-	 */
-	public Columns exclude(String columnName) {
-		return select(columnName, InternalSelectors.Exclude);
-	}
-
-	/**
-	 * Exclude a {@code columnName} from the selection. Excluding a column name overrides the inclusion if the column was
-	 * already included.
-	 *
-	 * @param columnName must not be {@literal null}.
-	 * @return a new {@link Columns} object containing all column definitions and the excluded {@code columnName}.
-	 */
-	public Columns exclude(CqlIdentifier columnName) {
-		return select(columnName, InternalSelectors.Exclude);
-	}
-
-	/**
-	 * Include the {@code columnName} as {@link Selector}. Including a column name overrides the exclusion if the column
-	 * was already excluded.
+	 * Include column {@code columnName} with {@link Selector}. This column selection overrides an existing selection for
+	 * the column name.
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
@@ -176,8 +158,8 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
-	 * Include the {@code columnName} as {@link Selector}. Including a column name overrides the exclusion if the column
-	 * was already excluded.
+	 * Include column {@code columnName} with {@link Selector}. This column selection overrides an existing selection for
+	 * the column name.
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
@@ -197,13 +179,6 @@ public class Columns implements Iterable<ColumnName> {
 	 */
 	public boolean isEmpty() {
 		return this.columns.isEmpty();
-	}
-
-	/**
-	 * @return {@literal true} if this {@link Columns} object contains excluded columns.
-	 */
-	public boolean hasExclusions() {
-		return columns.values().stream().anyMatch(InternalSelectors.Exclude::equals);
 	}
 
 	/**
@@ -228,17 +203,6 @@ public class Columns implements Iterable<ColumnName> {
 	@Override
 	public Iterator<ColumnName> iterator() {
 		return this.columns.keySet().iterator();
-	}
-
-	/**
-	 * @param columnName must not be {@literal null}.
-	 * @return {@literal true} if the {@link ColumnName} is excluded.
-	 */
-	public boolean isExcluded(ColumnName columnName) {
-
-		Assert.notNull(columnName, "ColumnName must not be null");
-
-		return getSelector(columnName).filter(InternalSelectors.Exclude::equals).isPresent();
 	}
 
 	/**
@@ -311,10 +275,6 @@ public class Columns implements Iterable<ColumnName> {
 
 			Selector expression = entry.getValue();
 
-			if (expression == InternalSelectors.Exclude) {
-				continue;
-			}
-
 			if (first) {
 				first = false;
 			} else {
@@ -327,15 +287,6 @@ public class Columns implements Iterable<ColumnName> {
 		return builder;
 	}
 
-	private Optional<CqlIdentifier> getCqlIdentifier(ColumnName columnName) {
-
-		if (columnName.getCqlIdentifier().isPresent()) {
-			return columnName.getCqlIdentifier();
-		}
-
-		return columnName.getColumnName().map(CqlIdentifier::cqlId);
-	}
-
 	/**
 	 * Strategy interface to render a column selection.
 	 *
@@ -346,29 +297,6 @@ public class Columns implements Iterable<ColumnName> {
 		String getExpression();
 
 		Optional<CqlIdentifier> getAlias();
-	}
-
-	/**
-	 * Internal set of {@link Selector}.
-	 *
-	 * @author Mark Paluch
-	 */
-	enum InternalSelectors implements Selector {
-
-		/**
-		 * Exclude column from selection.
-		 */
-		Exclude {
-			@Override
-			public String getExpression() {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public Optional<CqlIdentifier> getAlias() {
-				return Optional.empty();
-			}
-		},
 	}
 
 	/**

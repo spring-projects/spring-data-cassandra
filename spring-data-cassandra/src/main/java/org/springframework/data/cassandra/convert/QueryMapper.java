@@ -135,17 +135,9 @@ public class QueryMapper {
 
 		List<Selector> selectors = new ArrayList<>();
 
-		Set<PersistentProperty<?>> seen = new HashSet<>();
-
 		for (ColumnName column : columns) {
 
 			Field field = createPropertyField(entity, column);
-
-			field.getProperty().ifPresent(seen::add);
-
-			if (columns.isExcluded(column)) {
-				continue;
-			}
 
 			columns.getSelector(column).ifPresent(selector -> {
 				getCqlIdentifier(column, field).ifPresent(cqlIdentifier -> {
@@ -154,9 +146,9 @@ public class QueryMapper {
 			});
 		}
 
-		entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) property -> {
+		if (columns.isEmpty()) {
 
-			if (seen.add(property)) {
+			entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) property -> {
 
 				if (property.isCompositePrimaryKey()) {
 					for (CqlIdentifier cqlIdentifier : property.getColumnNames()) {
@@ -165,8 +157,8 @@ public class QueryMapper {
 				} else {
 					selectors.add(ColumnSelector.from(property.getColumnName().toCql()));
 				}
-			}
-		});
+			});
+		}
 
 		return selectors;
 	}
@@ -177,10 +169,11 @@ public class QueryMapper {
 
 			ColumnSelector columnSelector = (ColumnSelector) selector;
 
-			return columnSelector.getAlias() //
-					.map(alias -> ColumnSelector.from(cqlIdentifier).as(alias)) //
-					.orElseGet(() -> ColumnSelector.from(cqlIdentifier));
+			ColumnSelector mappedColumnSelector = ColumnSelector.from(cqlIdentifier);
 
+			return columnSelector.getAlias() //
+					.map(mappedColumnSelector::as) //
+					.orElse(mappedColumnSelector);
 		}
 
 		if (selector instanceof FunctionCall) {
@@ -199,10 +192,11 @@ public class QueryMapper {
 					}) //
 					.collect(Collectors.toList());
 
-			return functionCall.getAlias() //
-					.map(alias -> FunctionCall.from(functionCall.getExpression(), mappedParameters.toArray()).as(alias)) //
-					.orElseGet(() -> FunctionCall.from(functionCall.getExpression(), mappedParameters.toArray()));
+			FunctionCall mappedCall = FunctionCall.from(functionCall.getExpression(), mappedParameters.toArray());
 
+			return functionCall.getAlias() //
+					.map(mappedCall::as) //
+					.orElse(mappedCall);
 		}
 
 		throw new IllegalArgumentException(String.format("Selector [%s] not supported", selector));
@@ -236,10 +230,6 @@ public class QueryMapper {
 
 			field.getProperty().ifPresent(seen::add);
 
-			if (columns.isExcluded(column)) {
-				continue;
-			}
-
 			columns.getSelector(column) //
 					.filter(selector -> selector instanceof ColumnSelector) //
 					.ifPresent(columnExpression -> {
@@ -250,7 +240,7 @@ public class QueryMapper {
 					});
 		}
 
-		if (columns.hasExclusions()) {
+		if (columns.isEmpty()) {
 
 			entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) property -> {
 
@@ -322,14 +312,13 @@ public class QueryMapper {
 	@SuppressWarnings("unchecked")
 	TypeInformation<?> getTypeInformation(Field field, Optional<? extends Object> value) {
 
-		return field.getProperty().map(CassandraPersistentProperty::getTypeInformation)
-				.orElseGet(() -> {
+		return field.getProperty().map(CassandraPersistentProperty::getTypeInformation).orElseGet(() -> {
 
-					return value.map(Object::getClass) //
-							.map(ClassTypeInformation::from) //
-							.orElse((ClassTypeInformation) ClassTypeInformation.OBJECT);
+			return value.map(Object::getClass) //
+					.map(ClassTypeInformation::from) //
+					.orElse((ClassTypeInformation) ClassTypeInformation.OBJECT);
 
-				});
+		});
 	}
 
 	/**
@@ -384,7 +373,7 @@ public class QueryMapper {
 	}
 
 	/**
-	 * Extension of {@link DocumentField} to be backed with mapping metadata.
+	 * Extension of {@link Field} to be backed with mapping metadata.
 	 *
 	 * @author Mark Paluch
 	 */
@@ -392,9 +381,9 @@ public class QueryMapper {
 
 		private final CassandraPersistentEntity<?> entity;
 		private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+		private final Optional<PersistentPropertyPath<CassandraPersistentProperty>> path;
 		private final CassandraPersistentProperty property;
 		private final Optional<CassandraPersistentProperty> optionalProperty;
-		private final Optional<PersistentPropertyPath<CassandraPersistentProperty>> path;
 
 		/**
 		 * Creates a new {@link MetadataBackedField} with the given name, {@link MongoPersistentEntity} and
@@ -428,10 +417,9 @@ public class QueryMapper {
 
 			this.entity = entity;
 			this.mappingContext = context;
-			this.path = getPath(
-					name.getColumnName().isPresent() ? name.getColumnName().get() : name.getCqlIdentifier().get().toCql());
+			this.path = getPath(name.toCql());
 			this.property = path.map(PersistentPropertyPath::getLeafProperty).orElse(property);
-			this.optionalProperty = Optional.of(this.property);
+			this.optionalProperty = Optional.ofNullable(this.property);
 		}
 
 		/**

@@ -66,18 +66,18 @@ public class StatementFactoryUnitTests {
 	public void shouldMapSelectQueryWithColumnsAndCriteria() {
 
 		Query query = Query.from(Criteria.where("foo").is("bar"));
-		query.with(Columns.from("age").exclude("id"));
+		query.with(Columns.from("age"));
 
 		Statement select = statementFactory.select(query, groupEntity);
 
-		assertThat(select.toString()).isEqualTo("SELECT age,email FROM group WHERE foo='bar';");
+		assertThat(select.toString()).isEqualTo("SELECT age FROM group WHERE foo='bar';");
 	}
 
 	@Test // DATACASS-343
 	public void shouldMapSelectQueryWithTtlColumns() {
 
 		Query query = new Query();
-		query.with(Columns.empty().ttl("email").exclude("age").exclude("id"));
+		query.with(Columns.empty().ttl("email"));
 
 		Statement select = statementFactory.select(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
@@ -101,12 +101,12 @@ public class StatementFactoryUnitTests {
 	public void shouldMapDeleteQueryWithColumns() {
 
 		Query query = new Query();
-		query.with(Columns.from("age").exclude("id"));
+		query.with(Columns.from("age"));
 
 		Statement delete = statementFactory.delete(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
-		assertThat(delete.toString()).isEqualTo("DELETE age,email FROM group;");
+		assertThat(delete.toString()).isEqualTo("DELETE age FROM group;");
 	}
 
 	@Test // DATACASS-343
