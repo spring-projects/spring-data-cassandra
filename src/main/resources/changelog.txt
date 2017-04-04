@@ -1,6 +1,57 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.0.M2 (2017-04-04)
+----------------------------------------
+* DATACASS-422 - Fix the CassandraRepositoryConfigurationExtension class which does not correctly override the renamed SDC RepositoryConfigurationExtenstionSupport.getRepositoryFactoryBeanClassName() method.
+* DATACASS-421 - Remove relative path to Spring Data Build parent POM.
+* DATACASS-419 - Remove unused dependency declarations.
+* DATACASS-418 - Remove Jackson 1 usage.
+* DATACASS-417 - Allow configuration of cql-template-ref for cassandra:template elements.
+* DATACASS-416 - Add overrides on TypedIdCassandraRepository for methods returning Lists.
+* DATACASS-415 - Provide insert methods on TypedIdCassandraRepository.
+* DATACASS-413 - Reading Enum collections creates collections containing String values.
+* DATACASS-412 - Remove formatting config from the repository.
+* DATACASS-406 - Support nested @UserDefinedType for schema creation.
+* DATACASS-404 - Link to Jira site in readme.md is wrong.
+* DATACASS-402 - OperationTimedOutException translated to CassandraUncategorizedException.
+* DATACASS-401 - CassandraTemplate bean name defaults to cqlTempate using XML configuration.
+* DATACASS-400 - Cannot instantiate domain objects referencing a mapped UDT in the constructor.
+* DATACASS-399 - Create JMH benchmarks.
+* DATACASS-398 - Support RxJava 2 repositories.
+* DATACASS-397 - Missed failing test due to wrong UT class name.
+* DATACASS-396 - CrudRepository.save(Iterable) saves the collection but not the contents.
+* DATACASS-393 - Remove references to Assert single-arg methods.
+* DATACASS-390 - Upgrade to Cassandra Driver 3.1.3.
+* DATACASS-389 - Java 8 code cleanup.
+* DATACASS-388 - Improve JavaDoc for configuration classes.
+* DATACASS-386 - Update project documentation with the CLA tool integration.
+* DATACASS-385 - Migrate ticket references in test code to Spring Framework style.
+* DATACASS-381 - Investigate why the TravisCI build fails regularly.
+* DATACASS-380 - Upgrade to Cassandra Driver 3.1.2.
+* DATACASS-379 - Document stable packages (JavaDoc).
+* DATACASS-370 - Upgrade to a newer JDK version on TravisCI.
+* DATACASS-369 - Adapt API in RepositoryFactoryBeanSupport implementation.
+* DATACASS-368 - Migrate reactive tests from TestSubscriber to StepVerifier.
+* DATACASS-364 - Register repository factory in spring.factories for multi-store support.
+* DATACASS-363 - Add import order config file.
+* DATACASS-360 - Do not require @Table annotation.
+* DATACASS-359 - Support DTO projections.
+* DATACASS-358 - Release 2.0 M2 (Kay).
+* DATACASS-357 - IN query converts collection arguments to singular value.
+* DATACASS-355 - User types are dropped before tables using built-in schema creation.
+* DATACASS-352 - CassandraPersistentPropertyComparator violates comparison method contract.
+* DATACASS-351 - Revert Spring Data Cassandra 1.5 changes in 1.0 schema files.
+* DATACASS-330 - Add routing capabilities to support per tenant keyspace.
+* DATACASS-292 - Separate asynchronous and synchronous operations in CqlOperations and CassandraOperations into dedicated interfaces and templates.
+* DATACASS-290 - Allow multiple keyspaces in one Spring context.
+* DATACASS-272 - Review and Edit the Spring Data Cassandra Reference Guide.
+* DATACASS-259 - Allow usage of Spring 4.2 @AliasFor for Cassandra annotations.
+* DATACASS-225 - VerifierMappingException thrown when saving entity with Set of User-Defined Types.
+* DATACASS-191 - async* method signatures returning Cancelable Vs AsyncResult.
+* DATACASS-181 - cassandraTemplate.select() method doesnt take Statement as an argument.
+
+
 Changes in version 1.4.7.RELEASE (2017-01-26)
 ---------------------------------------------
 * DATACASS-372 - Release 1.4.7 (Hopper SR7).
