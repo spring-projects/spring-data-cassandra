@@ -63,6 +63,40 @@ Changes in version 1.4.6.RELEASE (2016-12-21)
 * DATACASS-353 - Release 1.4.6 (Hopper SR6).
 
 
+Changes in version 1.5.0.RC1 (2016-12-21)
+-----------------------------------------
+* DATACASS-370 - Upgrade to a newer JDK version on TravisCI.
+* DATACASS-369 - Adapt API in RepositoryFactoryBeanSupport implementation.
+* DATACASS-364 - Register repository factory in spring.factories for multi-store support.
+* DATACASS-363 - Add import order config file.
+* DATACASS-360 - Do not require @Table annotation.
+* DATACASS-359 - Support DTO projections.
+* DATACASS-357 - IN query converts collection arguments to singular value.
+* DATACASS-351 - Revert Spring Data Cassandra 1.5 changes in 1.0 schema files.
+* DATACASS-350 - Deprecate CassandraTemplate methods accepting collections of entities.
+* DATACASS-349 - Custom WritingConverter not used.
+* DATACASS-348 - Reuse Cluster instance in tests as much as possible.
+* DATACASS-347 - Support NettyOptions configuration in XML-based configuration.
+* DATACASS-346 - Upgrade embedded Cassandra to 3.9.
+* DATACASS-344 - Upgrade Cassandra Driver to 3.1.1.
+* DATACASS-340 - Cannot clustered columns cannot be ordering in desc.
+* DATACASS-339 - Rename Spring Data Cassandra to Spring Data for Apache Cassandra.
+* DATACASS-334 - Upgrade embedded Cassandra to 3.7.
+* DATACASS-333 - Switch tests to AssertJ.
+* DATACASS-332 - Assert compatibility with Cassandra driver 3.1.0.
+* DATACASS-331 - Include netty as transient dependency of cassandra-driver.
+* DATACASS-327 - Release 1.5 RC1 (Ingalls).
+* DATACASS-326 - Assert compatibility with Spring 5.
+* DATACASS-276 - Use Row.getObject(…) instead of deserialization with CodecRegistry and ProtocolVersion.
+* DATACASS-272 - Review and Edit the Spring Data Cassandra Reference Guide.
+* DATACASS-259 - Allow usage of Spring 4.2 @AliasFor for Cassandra annotations.
+* DATACASS-240 - @Query annotation | String type parameters are mishandled | Implementation does not work for IN where clause.
+* DATACASS-217 - Add support for LZ4 compression.
+* DATACASS-216 - BasicCassandraPersistentProperty.isCompositePrimaryKey produces NPE when getField() returns null.
+* DATACASS-172 - Add support for User-defined types.
+* DATACASS-122 - @Query annotation does not support collection types as parameters.
+
+
 Changes in version 2.0.0.M1 (2016-11-23)
 ----------------------------------------
 * DATACASS-354 - Release 2.0 M1 (Kay).
