@@ -52,6 +52,11 @@ Changes in version 2.0.0.M2 (2017-04-04)
 * DATACASS-181 - cassandraTemplate.select() method doesnt take Statement as an argument.
 
 
+Changes in version 1.4.8.RELEASE (2017-03-02)
+---------------------------------------------
+* DATACASS-391 - Release 1.4.8 (Hopper SR8).
+
+
 Changes in version 1.5.1.RELEASE (2017-03-02)
 ---------------------------------------------
 * DATACASS-406 - Support nested @UserDefinedType for schema creation.
