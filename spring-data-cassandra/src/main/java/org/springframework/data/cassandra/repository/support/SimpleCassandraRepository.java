@@ -55,6 +55,9 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 		this.operations = operations;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#save(S)
+	 */
 	@Override
 	public <S extends T> S save(S entity) {
 
@@ -67,8 +70,14 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 		return operations.update(entity);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
+	 */
 	@Override
 	public <S extends T> List<S> save(Iterable<S> entities) {
+
+		Assert.notNull(entities, "The given Iterable of entities must not be null");
+
 		return operations.insert(CollectionUtils.toList(entities));
 	}
 
@@ -83,41 +92,80 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 		return operations.insert(entity);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
+	 */
 	@Override
 	public T findOne(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
 		return operations.selectOneById(entityInformation.getJavaType(), id);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
+	 */
 	@Override
 	public boolean exists(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
 		return operations.exists(entityInformation.getJavaType(), id);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#count()
+	 */
 	@Override
 	public long count() {
 		return operations.count(entityInformation.getTableName());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.Serializable)
+	 */
 	@Override
 	public void delete(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
 		operations.deleteById(entityInformation.getJavaType(), id);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
+	 */
 	@Override
 	public void delete(T entity) {
+
+		Assert.notNull(entity, "The given entity must not be null");
+
 		delete(entityInformation.getId(entity));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
+	 */
 	@Override
 	public void delete(Iterable<? extends T> entities) {
+
+		Assert.notNull(entities, "The given Iterable of entities must not be null");
+
 		operations.delete(CollectionUtils.toList(entities));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
+	 */
 	@Override
 	public void deleteAll() {
 		operations.truncate(entityInformation.getTableName());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll()
+	 */
 	@Override
 	public List<T> findAll() {
 		return operations.selectAll(entityInformation.getJavaType());
