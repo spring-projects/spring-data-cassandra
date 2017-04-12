@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
@@ -24,6 +25,7 @@ import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
 import org.springframework.util.Assert;
 
@@ -34,12 +36,14 @@ import org.springframework.util.Assert;
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class MappingCassandraEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID>
 		implements CassandraEntityInformation<T, ID> {
 
 	private final CassandraPersistentEntity<T> entityMetadata;
-	private CassandraConverter converter;
+	private final CassandraConverter converter;
+	private final boolean isPrimaryKeyEntity;
 
 	/**
 	 * Create a new {@link MappingCassandraEntityInformation} for the given {@link CassandraPersistentEntity}.
@@ -52,6 +56,7 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 
 		this.entityMetadata = entity;
 		this.converter = converter;
+		this.isPrimaryKeyEntity = hasNonIdProperties(entity);
 	}
 
 	/* (non-Javadoc)
@@ -85,5 +90,29 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 	@Override
 	public CqlIdentifier getTableName() {
 		return entityMetadata.getTableName();
+	}
+
+	@Override
+	public boolean isPrimaryKeyEntity() {
+		return isPrimaryKeyEntity;
+	}
+
+	private static boolean hasNonIdProperties(CassandraPersistentEntity<?> entity) {
+
+		final AtomicReference<Boolean> hasPrimaryKeyOnlyProperties = new AtomicReference<Boolean>(true);
+
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+			@Override
+			public void doWithPersistentProperty(CassandraPersistentProperty property) {
+
+				if (property.isCompositePrimaryKey() || property.isPrimaryKeyColumn() || property.isIdProperty()) {
+					return;
+				}
+
+				hasPrimaryKeyOnlyProperties.set(false);
+			}
+		});
+
+		return hasPrimaryKeyOnlyProperties.get();
 	}
 }

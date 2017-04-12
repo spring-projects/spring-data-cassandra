@@ -38,8 +38,11 @@ import com.datastax.driver.core.querybuilder.Select;
 public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 		implements ReactiveCassandraRepository<T, ID> {
 
-	protected ReactiveCassandraOperations operations;
 	protected CassandraEntityInformation<T, ID> entityInformation;
+
+	protected ReactiveCassandraOperations operations;
+
+	private final boolean isPrimaryKeyEntity;
 
 	/**
 	 * Create a new {@link SimpleReactiveCassandraRepository} for the given {@link CassandraEntityInformation} and
@@ -56,6 +59,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 
 		this.entityInformation = metadata;
 		this.operations = operations;
+		this.isPrimaryKeyEntity = metadata.isPrimaryKeyEntity();
 	}
 
 	/* (non-Javadoc)
@@ -66,7 +70,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		if (entityInformation.isNew(entity)) {
+		if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
 			return operations.insert(entity);
 		}
 
@@ -95,7 +99,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 
 		return Flux.from(entityStream).flatMap(entity -> {
 
-			if (entityInformation.isNew(entity)) {
+			if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
 				return operations.insert(entity);
 			}
 

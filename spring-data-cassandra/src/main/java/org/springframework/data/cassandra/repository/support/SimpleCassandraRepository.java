@@ -38,9 +38,11 @@ import com.datastax.driver.core.querybuilder.Select;
  */
 public class SimpleCassandraRepository<T, ID extends Serializable> implements TypedIdCassandraRepository<T, ID> {
 
+	private CassandraEntityInformation<T, ID> entityInformation;
+
 	private CassandraOperations operations;
 
-	private CassandraEntityInformation<T, ID> entityInformation;
+	private final boolean isPrimaryKeyEntity;
 
 	/**
 	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
@@ -56,6 +58,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		this.entityInformation = metadata;
 		this.operations = operations;
+		this.isPrimaryKeyEntity = metadata.isPrimaryKeyEntity();
 	}
 
 	/* (non-Javadoc)
@@ -66,7 +69,11 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		return operations.insert(entity);
+		if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
+			return operations.insert(entity);
+		}
+
+		return operations.update(entity);
 	}
 
 	/* (non-Javadoc)
@@ -81,7 +88,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 			S saved;
 
-			if (entityInformation.isNew(entity)) {
+			if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
 				saved = operations.insert(entity);
 			} else {
 				saved = operations.update(entity);

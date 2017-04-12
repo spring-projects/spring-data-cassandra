@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,18 @@ import org.springframework.data.repository.core.EntityInformation;
  * Cassandra specific {@link EntityInformation}.
  *
  * @author Alex Shvid
+ * @author Mark Paluch
  */
 public interface CassandraEntityInformation<T, ID extends Serializable>
 		extends EntityInformation<T, ID>, CassandraEntityMetadata<T> {
 
+	/**
+	 * Return {@literal true} if the persistent entity consists entirely of primary key properties (a single Id property,
+	 * composite primary key).
+	 *
+	 * @return {@literal true} if the persistent entity consists entirely of primary key properties (a single Id property,
+	 *         composite primary key).
+	 * @since 2.0
+	 */
+	boolean isPrimaryKeyEntity();
 }

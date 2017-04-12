@@ -351,6 +351,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				return;
 			}
 
+			if (!value.isPresent()) {
+				return;
+			}
+
 			if (log.isDebugEnabled()) {
 				log.debug("Adding insert.value [{}] - [{}]", property.getColumnName().toCql(), value);
 			}

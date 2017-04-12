@@ -149,8 +149,8 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assertThat(loaded.getId()).isEqualTo("heisenberg");
 	}
 
-	@Test // DATACASS-182
-	public void insertShouldRemoveFields() {
+	@Test // DATACASS-182, DATACASS-420
+	public void insertShouldNotRemoveFields() {
 
 		Person person = new Person("heisenberg", "Walter", "White");
 
@@ -161,7 +161,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		Person loaded = template.selectOneById(person.getId(), Person.class);
 
-		assertThat(loaded.getFirstname()).isNull();
+		assertThat(loaded.getFirstname()).isEqualTo("Walter");
 		assertThat(loaded.getId()).isEqualTo("heisenberg");
 	}
 
@@ -185,10 +185,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assertThat(loaded.getBookmarks()).isNull();
 	}
 
-	/**
-	 * @see <a href="https://jira.spring.io/browse/DATACASS-206">DATACASS-206</a>
-	 */
-	@Test
+	@Test // DATACASS-206
 	public void shouldUseSpecifiedColumnNamesForSingleEntityModifyingOperations() {
 
 		UserToken userToken = new UserToken();
