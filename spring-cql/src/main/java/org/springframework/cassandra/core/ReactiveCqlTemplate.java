@@ -240,7 +240,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 				logger.debug("Executing CQL Statement [{}]", cql);
 			}
 
-			return session.execute(stmt).flatMap(resultSetExtractor::extractData);
+			return session.execute(stmt).flatMapMany(resultSetExtractor::extractData);
 		}).onErrorResumeWith(translateException("Query", cql));
 	}
 
@@ -316,7 +316,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public Flux<Row> queryForRows(String cql) throws DataAccessException {
-		return queryForResultSet(cql).flatMap(ReactiveResultSet::rows)
+		return queryForResultSet(cql).flatMapMany(ReactiveResultSet::rows)
 				.onErrorResumeWith(translateException("QueryForRows", cql));
 	}
 
@@ -361,7 +361,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 				logger.debug("Executing CQL Statement [{}]", statement);
 			}
 
-			return session.execute(stmt).flatMap(rse::extractData);
+			return session.execute(stmt).flatMapMany(rse::extractData);
 		}).onErrorResumeWith(translateException("Query", statement.toString()));
 	}
 
@@ -435,7 +435,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 	@Override
 	public Flux<Row> queryForRows(Statement statement) throws DataAccessException {
-		return queryForResultSet(statement).flatMap(ReactiveResultSet::rows)
+		return queryForResultSet(statement).flatMapMany(ReactiveResultSet::rows)
 				.onErrorResumeWith(translateException("QueryForRows", statement.toString()));
 	}
 
@@ -458,7 +458,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 			logger.debug("Preparing statement [{}] using {}", getCql(psc), psc);
 
 			return psc.createPreparedStatement(session).doOnNext(this::applyStatementSettings)
-					.flatMap(ps -> action.doInPreparedStatement(session, ps));
+					.flatMapMany(ps -> action.doInPreparedStatement(session, ps));
 		}).onErrorResumeWith(translateException("ReactivePreparedStatementCallback", getCql(psc)));
 	}
 
@@ -486,7 +486,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		Assert.notNull(psc, "ReactivePreparedStatementCreator must not be null");
 		Assert.notNull(rse, "ReactiveResultSetExtractor object must not be null");
 
-		return execute(psc, (session, ps) -> Mono.just(ps).flatMap(pps -> {
+		return execute(psc, (session, ps) -> Mono.just(ps).flatMapMany(pps -> {
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("Executing Prepared CQL Statement [{}]", ps.getQueryString());
@@ -621,7 +621,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public Flux<Row> queryForRows(String cql, Object... args) throws DataAccessException {
-		return queryForResultSet(cql, args).flatMap(ReactiveResultSet::rows)
+		return queryForResultSet(cql, args).flatMapMany(ReactiveResultSet::rows)
 				.onErrorResumeWith(translateException("QueryForRows", cql));
 	}
 

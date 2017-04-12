@@ -164,7 +164,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 			Mono<ReactiveResultSet> mono = reactiveCqlTemplate.queryForResultSet("SELECT * from USERS");
 
-			StepVerifier.create(mono.flatMap(ReactiveResultSet::rows)).expectNextCount(3).verifyComplete();
+			StepVerifier.create(mono.flatMapMany(ReactiveResultSet::rows)).expectNextCount(3).verifyComplete();
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -367,7 +367,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 			StepVerifier
 					.create(reactiveCqlTemplate.queryForResultSet(new SimpleStatement("SELECT * from USERS"))
-							.flatMap(ReactiveResultSet::rows)) //
+							.flatMapMany(ReactiveResultSet::rows)) //
 					.expectNextCount(3) //
 					.verifyComplete();
 
@@ -535,7 +535,7 @@ public class ReactiveCqlTemplateUnitTests {
 
 			Flux<Row> flux = reactiveCqlTemplate.execute("SELECT * from USERS", (session, ps) -> {
 
-				return session.execute(ps.bind("A")).flatMap(ReactiveResultSet::rows);
+				return session.execute(ps.bind("A")).flatMapMany(ReactiveResultSet::rows);
 			});
 
 			StepVerifier.create(flux).expectNextCount(3).verifyComplete();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,7 +155,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 
 		Assert.notNull(mono, "The given id must not be null");
 
-		return mono.then(id -> operations.selectOneById(id, entityInformation.getJavaType()));
+		return mono.flatMap(id -> operations.selectOneById(id, entityInformation.getJavaType()));
 	}
 
 	/* (non-Javadoc)
@@ -177,7 +177,7 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 
 		Assert.notNull(mono, "The given id must not be null");
 
-		return mono.then(id -> operations.exists(id, entityInformation.getJavaType()));
+		return mono.flatMap(id -> operations.exists(id, entityInformation.getJavaType()));
 	}
 
 	/* (non-Javadoc)
