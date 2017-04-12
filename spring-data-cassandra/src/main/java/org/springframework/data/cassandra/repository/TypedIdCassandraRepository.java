@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors
- * 
+ * Copyright 2013-2017 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,8 +48,8 @@ import org.springframework.data.repository.NoRepositoryBean;
  * <li>Define your repository interface to be a subinterface of <em>this</em> interface, including your entity type and
  * your primary key class type.</li>
  * </ul>
- * <li>
- * <em>Strategy: embed identity fields or properties directly in your entity and use {@link CassandraRepository}</em></li>
+ * <li><em>Strategy: embed identity fields or properties directly in your entity and use
+ * {@link CassandraRepository}</em></li>
  * <ul>
  * <li>Define your entity, including a field or property for each column, including those for partition and (optional)
  * cluster columns.</li>
@@ -61,9 +61,21 @@ import org.springframework.data.repository.NoRepositoryBean;
  * construct an id.</li>
  * </ul>
  * </ul>
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
 @NoRepositoryBean
-public interface TypedIdCassandraRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {}
+public interface TypedIdCassandraRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
+
+	/**
+	 * Inserts the given entity. Assumes the instance to be new to be able to apply insertion optimizations. Use the
+	 * returned instance for further operations as the save operation might have changed the entity instance completely.
+	 * Prefer using {@link #save(Object)} instead to avoid the usage of store-specific API.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @return the saved entity
+	 * @since 1.5.2
+	 */
+	<S extends T> S insert(S entity);
+}
