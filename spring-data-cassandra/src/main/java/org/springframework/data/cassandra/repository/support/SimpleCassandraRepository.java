@@ -39,6 +39,8 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	protected CassandraOperations operations;
 	protected CassandraEntityInformation<T, ID> entityInformation;
 
+	private final boolean isPrimaryKeyEntity;
+
 	/**
 	 * Creates a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
 	 * {@link CassandraTemplate}.
@@ -53,6 +55,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		this.entityInformation = metadata;
 		this.operations = operations;
+		this.isPrimaryKeyEntity = metadata.isPrimaryKeyEntity();
 	}
 
 	/* (non-Javadoc)
@@ -63,7 +66,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		if (entityInformation.isNew(entity)) {
+		if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
 			return operations.insert(entity);
 		}
 

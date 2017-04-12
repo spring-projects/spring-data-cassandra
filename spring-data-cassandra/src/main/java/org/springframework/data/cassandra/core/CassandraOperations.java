@@ -42,7 +42,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * <p>
  * {@link CassandraOperations} mixes synchronous and asynchronous methods so asynchronous methods are subject to be
  * moved into an asynchronous Cassandra template.
- * 
+ *
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew Adams
@@ -197,7 +197,7 @@ public interface CassandraOperations extends CqlOperations {
 	long count(Class<?> entityClass);
 
 	/**
-	 * Insert the given entity.
+	 * Insert the given entity without inserting {@literal null} values.
 	 *
 	 * @param entity The entity to insert
 	 * @return The entity given
@@ -205,7 +205,7 @@ public interface CassandraOperations extends CqlOperations {
 	<T> T insert(T entity);
 
 	/**
-	 * Insert the given entity.
+	 * Insert the given entity without inserting {@literal null} values.
 	 *
 	 * @param entity The entity to insert
 	 * @param options The {@link WriteOptions} to use.
@@ -525,7 +525,7 @@ public interface CassandraOperations extends CqlOperations {
 
 	/**
 	 * Deletes all entities of a given class.
-	 * 
+	 *
 	 * @param entityClass The entity type must not be {@literal null}.
 	 */
 	<T> void deleteAll(Class<T> entityClass);

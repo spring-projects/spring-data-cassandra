@@ -156,8 +156,8 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		Insert insert = QueryBuilder.insertInto("addressbook");
 		converter.write(addressBook, insert);
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO addressbook (alternate,currentaddress,id,previousaddresses) "
-				+ "VALUES (null,{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1',null);");
+		assertThat(insert.toString()).isEqualTo("INSERT INTO addressbook (currentaddress,id) "
+				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1');");
 	}
 
 	@Test // DATACASS-172
@@ -193,8 +193,8 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		Insert insert = QueryBuilder.insertInto("addressbook");
 		converter.write(addressBook, insert);
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO addressbook (alternate,currentaddress,id,previousaddresses) "
-				+ "VALUES (null,null,'1',[{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']}]);");
+		assertThat(insert.toString()).isEqualTo("INSERT INTO addressbook (id,previousaddresses) "
+				+ "VALUES ('1',[{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']}]);");
 	}
 
 	@Test // DATACASS-172
@@ -228,8 +228,8 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		Insert insert = QueryBuilder.insertInto("addressbook");
 		converter.write(addressBook, insert);
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO addressbook (alternate,currentaddress,id,previousaddresses) "
-				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},null,'1',null);");
+		assertThat(insert.toString()).isEqualTo("INSERT INTO addressbook (alternate,id) "
+				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1');");
 	}
 
 	@Test // DATACASS-172
@@ -302,7 +302,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		converter.write(bank, insert);
 
 		assertThat(insert.toString())
-				.isEqualTo("INSERT INTO bank (currency,id,othercurrencies) VALUES ({currency:'EUR'},null,null);");
+				.isEqualTo("INSERT INTO bank (currency) VALUES ({currency:'EUR'});");
 	}
 
 	@Test // DATACASS-172
@@ -361,7 +361,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		converter.write(bank, insert);
 
 		assertThat(insert.toString())
-				.isEqualTo("INSERT INTO bank (currency,id,othercurrencies) VALUES (null,null,[{currency:'EUR'}]);");
+				.isEqualTo("INSERT INTO bank (othercurrencies) VALUES ([{currency:'EUR'}]);");
 	}
 
 	@Test // DATACASS-172

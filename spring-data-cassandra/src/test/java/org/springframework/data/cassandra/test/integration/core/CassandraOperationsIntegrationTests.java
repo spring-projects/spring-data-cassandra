@@ -627,27 +627,8 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		assertThat(template.count(Book.class)).isEqualTo(count);
 	}
 
-	@Test // DATACASS-182
-	public void updateShouldRemoveFields() {
-
-		Book book = new Book();
-		book.setIsbn("isbn");
-		book.setTitle("title");
-		book.setAuthor("author");
-
-		template.insert(book);
-
-		book.setTitle(null);
-		template.update(book);
-
-		Book loaded = template.selectOneById(Book.class, book.getIsbn());
-
-		assertThat(loaded.getTitle()).isNull();
-		assertThat(loaded.getAuthor()).isEqualTo("author");
-	}
-
-	@Test // DATACASS-182
-	public void insertShouldRemoveFields() {
+	@Test // DATACASS-182, DATACASS-420
+	public void insertShouldNotRemoveFields() {
 
 		Book book = new Book();
 		book.setIsbn("isbn");
@@ -662,7 +643,7 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 
 		Book loaded = template.selectOneById(Book.class, book.getIsbn());
 
-		assertThat(loaded.getTitle()).isNull();
+		assertThat(loaded.getTitle()).isEqualTo("title");
 		assertThat(loaded.getAuthor()).isEqualTo("author");
 	}
 
@@ -681,6 +662,26 @@ public class CassandraOperationsIntegrationTests extends AbstractKeyspaceCreatin
 		assertThat(loaded).isNotNull();
 		assertThat(loaded.getAuthor()).isEqualTo("author");
 		assertThat(loaded.getTitle()).isEqualTo("title");
+	}
+
+	@Test // DATACASS-182, DATACASS-420
+	public void updateShouldRemoveFields() {
+
+		Book book = new Book();
+		book.setIsbn("isbn");
+		book.setTitle("title");
+		book.setAuthor("author");
+
+		template.insert(book);
+
+		book.setTitle(null);
+
+		template.update(book);
+
+		Book loaded = template.selectOneById(Book.class, book.getIsbn());
+
+		assertThat(loaded.getTitle()).isNull();
+		assertThat(loaded.getAuthor()).isEqualTo("author");
 	}
 
 	@Test // DATACASS-182
