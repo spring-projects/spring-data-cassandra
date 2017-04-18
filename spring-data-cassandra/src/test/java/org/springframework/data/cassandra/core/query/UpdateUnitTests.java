@@ -30,7 +30,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSimpleUpdate() {
 
-		Update update = new Update().set("foo", "bar");
+		Update update = Update.update("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo = 'bar'");
@@ -39,7 +39,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSetAtIndexUpdate() {
 
-		Update update = new Update().set("foo").atIndex(10).to("bar");
+		Update update = Update.empty().set("foo").atIndex(10).to("bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo[10] = 'bar'");
@@ -48,7 +48,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSetAtKeyUpdate() {
 
-		Update update = new Update().set("foo").atKey("baz").to("bar");
+		Update update = Update.empty().set("foo").atKey("baz").to("bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo['baz'] = 'bar'");
@@ -57,7 +57,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldAddToMap() {
 
-		Update update = new Update().addTo("foo").entry("foo", "bar");
+		Update update = Update.empty().addTo("foo").entry("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo = foo + {'foo':'bar'}");
@@ -66,7 +66,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldPrependAllToList() {
 
-		Update update = new Update().addTo("foo").prependAll("foo", "bar");
+		Update update = Update.empty().addTo("foo").prependAll("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo = ['foo','bar'] + foo");
@@ -75,7 +75,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldAppendAllToList() {
 
-		Update update = new Update().addTo("foo").appendAll("foo", "bar");
+		Update update = Update.empty().addTo("foo").appendAll("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo = foo + ['foo','bar']");
@@ -84,7 +84,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldRemoveFromList() {
 
-		Update update = new Update().remove("foo", "bar");
+		Update update = Update.empty().remove("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo = foo - ['bar']");
@@ -93,7 +93,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldClearCollection() {
 
-		Update update = new Update().clear("foo");
+		Update update = Update.empty().clear("foo");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo = []");
@@ -102,7 +102,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateIncrementUpdate() {
 
-		Update update = new Update().increment("foo");
+		Update update = Update.empty().increment("foo");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo = foo + 1");
@@ -111,7 +111,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateDecrementUpdate() {
 
-		Update update = new Update().decrement("foo");
+		Update update = Update.empty().decrement("foo");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("foo = foo - 1");
@@ -120,7 +120,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateUpdateForTwoColumns() {
 
-		Update update = new Update().increment("foo").decrement("bar");
+		Update update = Update.empty().increment("foo").decrement("bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(2);
 		assertThat(update.toString()).isEqualTo("foo = foo + 1, bar = bar - 1");
@@ -129,7 +129,7 @@ public class UpdateUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSingleUpdateForTheSameColumn() {
 
-		Update update = new Update().set("foo", "bar").decrement("foo");
+		Update update = Update.empty().set("foo", "bar").decrement("foo");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.getUpdateOperations().iterator().next()).isInstanceOf(IncrOp.class);

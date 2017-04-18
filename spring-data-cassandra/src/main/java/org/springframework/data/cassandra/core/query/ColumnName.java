@@ -85,6 +85,7 @@ public abstract class ColumnName {
 	 */
 	@Override
 	public boolean equals(Object o) {
+
 		if (this == o)
 			return true;
 		if (!(o instanceof ColumnName))

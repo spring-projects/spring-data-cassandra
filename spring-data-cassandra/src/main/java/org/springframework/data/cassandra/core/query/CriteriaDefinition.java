@@ -49,19 +49,19 @@ public interface CriteriaDefinition {
 	@EqualsAndHashCode
 	class Predicate {
 
-		private final String operator;
+		private final Operator operator;
 
 		private final Object value;
 
 		/**
 		 * Create a new {@link Predicate} given {@code operator} and {@code value}.
 		 *
-		 * @param operator must not be {@literal null} or empty.
+		 * @param operator must not be {@literal null}.
 		 * @param value the match value.
 		 */
-		public Predicate(String operator, Object value) {
+		public Predicate(Operator operator, Object value) {
 
-			Assert.hasText(operator, "Operator must not be null or empty");
+			Assert.notNull(operator, "Operator must not be null");
 
 			this.operator = operator;
 			this.value = value;
@@ -70,7 +70,7 @@ public interface CriteriaDefinition {
 		/**
 		 * @return the operator, such as {@literal =}, {@literal >=}, {@literal LIKE}.
 		 */
-		public String getOperator() {
+		public Operator getOperator() {
 			return operator;
 		}
 
@@ -79,6 +79,37 @@ public interface CriteriaDefinition {
 		 */
 		public Object getValue() {
 			return value;
+		}
+	}
+
+	/**
+	 * Strategy interface to represent a CQL predicate operator.
+	 */
+	interface Operator {
+
+		/**
+		 * @return the String representation of the operator.
+		 */
+		String toString();
+	}
+
+	/**
+	 * Commonly used CQL operators.
+	 */
+	enum Operators implements Operator {
+
+		EQ("="), GT(">"), GTE(">="), LT("<"), LTE("<="), IN("IN"), CONTAINS("CONTAINS"), CONTAINS_KEY("CONTAINS KEY"), LIKE(
+				"LIKE");
+
+		private final String operator;
+
+		Operators(String operator) {
+			this.operator = operator;
+		}
+
+		@Override
+		public String toString() {
+			return operator;
 		}
 	}
 }

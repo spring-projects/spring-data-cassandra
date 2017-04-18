@@ -34,40 +34,48 @@ import com.datastax.driver.core.PagingState;
 
 /**
  * Query object representing {@link CriteriaDefinition}s, {@link Columns}, {@link Sort}, {@link PagingState} and
- * {@link QueryOptions} for a CQL query.
+ * {@link QueryOptions} for a CQL query. {@link Query} is created with a fluent API creating immutable objects.
  *
  * @author Mark Paluch
  * @since 2.0
  */
 public class Query implements Filter {
 
-	private final List<CriteriaDefinition> criteriaDefinitions = new ArrayList<>();
+	private final List<CriteriaDefinition> criteriaDefinitions;
 
-	private Columns columns = Columns.empty();
+	private final Columns columns;
 
-	private Sort sort;
+	private final Sort sort;
 
-	private PagingState pagingState;
+	private final Optional<PagingState> pagingState;
 
-	private QueryOptions queryOptions;
+	private final Optional<QueryOptions> queryOptions;
 
-	private int limit;
+	private final Optional<Long> limit;
 
-	private boolean allowFiltering;
+	private final boolean allowFiltering;
 
-	public Query() {}
+	private Query(List<CriteriaDefinition> criteriaDefinitions, Columns columns, Sort sort,
+			Optional<PagingState> pagingState, Optional<QueryOptions> queryOptions, Optional<Long> limit,
+			boolean allowFiltering) {
+
+		this.criteriaDefinitions = criteriaDefinitions;
+		this.columns = columns;
+		this.sort = sort;
+		this.pagingState = pagingState;
+		this.queryOptions = queryOptions;
+		this.limit = limit;
+		this.allowFiltering = allowFiltering;
+	}
 
 	/**
-	 * Static factory method to create a {@link Query} using the provided {@link CriteriaDefinition}.
+	 * Static factory method to create an empty {@link Query}
 	 *
-	 * @param criteriaDefinitions must not be {@literal null}.
-	 * @return the {@link Query} for {@link CriteriaDefinition}s.
+	 * @return the new {@link Query}.
 	 */
-	public static Query from(CriteriaDefinition... criteriaDefinitions) {
-
-		Assert.notNull(criteriaDefinitions, "CriteriaDefinitions must not be null");
-
-		return from(Arrays.asList(criteriaDefinitions));
+	public static Query empty() {
+		return new Query(Collections.emptyList(), Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(),
+				Optional.empty(), false);
 	}
 
 	/**
@@ -76,43 +84,48 @@ public class Query implements Filter {
 	 * @param criteriaDefinitions must not be {@literal null}.
 	 * @return the {@link Query} for {@link CriteriaDefinition}s.
 	 */
-	public static Query from(Iterable<? extends CriteriaDefinition> criteriaDefinitions) {
+	public static Query query(CriteriaDefinition... criteriaDefinitions) {
 
 		Assert.notNull(criteriaDefinitions, "CriteriaDefinitions must not be null");
 
-		Query query = new Query();
+		return query(Arrays.asList(criteriaDefinitions));
+	}
 
-		for (CriteriaDefinition criteriaDefinition : criteriaDefinitions) {
-			query.with(criteriaDefinition);
-		}
+	/**
+	 * Static factory method to create a {@link Query} using the provided {@link CriteriaDefinition}.
+	 *
+	 * @param criteriaDefinitions must not be {@literal null}.
+	 * @return the {@link Query} for {@link CriteriaDefinition}s.
+	 */
+	public static Query query(Iterable<? extends CriteriaDefinition> criteriaDefinitions) {
 
-		return query;
+		Assert.notNull(criteriaDefinitions, "CriteriaDefinitions must not be null");
+
+		List<CriteriaDefinition> collect = StreamSupport.stream(criteriaDefinitions.spliterator(), false)
+				.collect(Collectors.toList());
+
+		return new Query(collect, Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(), Optional.empty(),
+				false);
 	}
 
 	/**
 	 * Add the given {@link CriteriaDefinition} to the current {@link Query}.
 	 *
 	 * @param criteriaDefinition must not be {@literal null}.
-	 * @return {@literal this} {@link Query}.
+	 * @return a new {@link Query} object containing the former settings with {@link CriteriaDefinition} applied.
 	 */
-	public Query with(CriteriaDefinition criteriaDefinition) {
+	public Query and(CriteriaDefinition criteriaDefinition) {
 
 		Assert.notNull(criteriaDefinition, "Criteria must not be null");
 
-		if (criteriaDefinition instanceof ChainedCriteria) {
+		List<CriteriaDefinition> criteriaDefinitions = new ArrayList<>(this.criteriaDefinitions.size() + 1);
+		criteriaDefinitions.addAll(this.criteriaDefinitions);
 
-			for (CriteriaDefinition definition : (ChainedCriteria) criteriaDefinition) {
-				if (!this.criteriaDefinitions.contains(definition)) {
-					this.criteriaDefinitions.add(definition);
-				}
-			}
+		if (!criteriaDefinitions.contains(criteriaDefinition)) {
+			criteriaDefinitions.add(criteriaDefinition);
 		}
 
-		if (!this.criteriaDefinitions.contains(criteriaDefinition)) {
-			this.criteriaDefinitions.add(criteriaDefinition);
-		}
-
-		return this;
+		return new Query(criteriaDefinitions, columns, sort, pagingState, queryOptions, limit, allowFiltering);
 	}
 
 	/* (non-Javadoc)
@@ -128,15 +141,14 @@ public class Query implements Filter {
 	 * {@link ColumnName}s in {@code columns}.
 	 *
 	 * @param columns must not be {@literal null}.
-	 * @return {@code this} {@link Query}.
+	 * @return a new {@link Query} object containing the former settings with {@link Columns} applied.
 	 */
-	public Query with(Columns columns) {
+	public Query columns(Columns columns) {
 
 		Assert.notNull(columns, "Columns must not be null");
 
-		this.columns = this.columns.and(columns);
-
-		return this;
+		return new Query(criteriaDefinitions, this.columns.and(columns), sort, pagingState, queryOptions, limit,
+				allowFiltering);
 	}
 
 	/**
@@ -150,9 +162,9 @@ public class Query implements Filter {
 	 * Add a {@link Sort} to the {@link Query} instance.
 	 *
 	 * @param sort must not be {@literal null}.
-	 * @return {@code this} {@link Query}.
+	 * @return a new {@link Query} object containing the former settings with {@link Sort} applied.
 	 */
-	public Query with(Sort sort) {
+	public Query sort(Sort sort) {
 
 		Assert.notNull(sort, "Sort must not be null");
 
@@ -163,13 +175,8 @@ public class Query implements Filter {
 			}
 		}
 
-		if (this.sort == null) {
-			this.sort = sort;
-		} else {
-			this.sort = this.sort.and(sort);
-		}
-
-		return this;
+		return new Query(criteriaDefinitions, columns, this.sort.and(sort), pagingState, queryOptions, limit,
+				allowFiltering);
 	}
 
 	/**
@@ -183,72 +190,67 @@ public class Query implements Filter {
 	 * Set the {@link PagingState} to skip rows.
 	 *
 	 * @param pagingState must not be {@literal null}.
-	 * @return {@code this} {@link Query}.
+	 * @return a new {@link Query} object containing the former settings with {@link PagingState} applied.
 	 */
-	public Query with(PagingState pagingState) {
+	public Query pagingState(PagingState pagingState) {
 
 		Assert.notNull(pagingState, "PagingState must not be null");
 
-		this.pagingState = pagingState;
-		return this;
+		return new Query(criteriaDefinitions, columns, sort, Optional.of(pagingState), queryOptions, limit, allowFiltering);
 	}
 
 	/**
 	 * @return the optional {@link PagingState}.
 	 */
 	public Optional<PagingState> getPagingState() {
-		return Optional.ofNullable(pagingState);
+		return pagingState;
 	}
 
 	/**
 	 * Set the {@link QueryOptions}.
 	 *
 	 * @param queryOptions must not be {@literal null}.
-	 * @return {@code this} {@link Query}.
+	 * @return a new {@link Query} object containing the former settings with {@link QueryOptions} applied.
 	 */
-	public Query with(QueryOptions queryOptions) {
+	public Query queryOptions(QueryOptions queryOptions) {
 
 		Assert.notNull(queryOptions, "QueryOptions must not be null");
 
-		this.queryOptions = queryOptions;
-		return this;
+		return new Query(criteriaDefinitions, columns, sort, pagingState, Optional.of(queryOptions), limit, allowFiltering);
 	}
 
 	/**
 	 * @return the optional {@link QueryOptions}.
 	 */
 	public Optional<QueryOptions> getQueryOptions() {
-		return Optional.ofNullable(queryOptions);
+		return queryOptions;
 	}
 
 	/**
 	 * Limit the number of returned rows to {@code limit}.
 	 *
 	 * @param limit
-	 * @return {@code this} {@link Query}.
+	 * @return a new {@link Query} object containing the former settings with {@code limit} applied.
 	 */
-	public Query limit(int limit) {
-
-		this.limit = limit;
-		return this;
+	public Query limit(long limit) {
+		return new Query(criteriaDefinitions, columns, sort, pagingState, queryOptions, Optional.of(limit), allowFiltering);
 	}
 
 	/**
 	 * @return the maximum number of rows to be returned.
 	 */
-	public int getLimit() {
-		return this.limit;
+	public long getLimit() {
+		return this.limit.orElse(0L);
 	}
 
 	/**
 	 * Allow filtering with {@code this} {@link Query}.
 	 *
-	 * @return {@code this} {@link Query}.
+	 * @return a new {@link Query} object containing the former settings with {@code allowFiltering} applied.
 	 */
 	public Query withAllowFiltering() {
 
-		this.allowFiltering = true;
-		return this;
+		return new Query(criteriaDefinitions, columns, sort, pagingState, queryOptions, limit, true);
 	}
 
 	/**
@@ -308,7 +310,7 @@ public class Query implements Filter {
 		result += 31 * nullSafeHashCode(sort);
 		result += 31 * nullSafeHashCode(pagingState);
 		result += 31 * nullSafeHashCode(queryOptions);
-		result += 31 * limit;
+		result += 31 * nullSafeHashCode(limit);
 		result += (allowFiltering ? 0 : 1);
 
 		return result;

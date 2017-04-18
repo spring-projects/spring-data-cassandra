@@ -30,7 +30,7 @@ public class QueryUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateFromChainedCriteria() {
 
-		Query query = Query.from(ChainedCriteria.where("userId").is("foo").and("userComment").is("bar"));
+		Query query = Query.query(Criteria.where("userId").is("foo")).and(Criteria.where("userComment").is("bar"));
 
 		assertThat(query).hasSize(2);
 		assertThat(query.getCriteriaDefinitions()).contains(Criteria.where("userId").is("foo"));
@@ -40,10 +40,10 @@ public class QueryUnitTests {
 	@Test // DATACASS-343
 	public void shouldRepresentQueryToString() {
 
-		Query query = Query.from(ChainedCriteria.where("userId").is("foo").and("userComment").is("bar"))
-				.with(new Sort("foo", "bar"));
-		query.with(Columns.from("foo").ttl("bar"));
-		query.limit(5);
+		Query query = Query.query(Criteria.where("userId").is("foo")).and(Criteria.where("userComment").is("bar"))
+				.sort(Sort.by("foo", "bar")) //
+				.columns(Columns.from("foo").ttl("bar")) //
+				.limit(5);
 
 		assertThat(query.toString()).isEqualTo(
 				"Query: userId = 'foo' AND userComment = 'bar', Columns: foo, TTL(bar), Sort: foo: ASC,bar: ASC, Limit: 5");
@@ -52,11 +52,11 @@ public class QueryUnitTests {
 	@Test // DATACASS-343
 	public void shouldConfigureQueryObject() {
 
-		Query query = Query.from(Criteria.where("foo").is("bar"));
-		Sort sort = new Sort("a", "b");
+		Query query = Query.query(Criteria.where("foo").is("bar"));
+		Sort sort = Sort.by("a", "b");
 		Columns columns = Columns.from("a", "b");
 
-		query.with(sort).with(columns).limit(10).withAllowFiltering();
+		query = query.sort(sort).columns(columns).limit(10).withAllowFiltering();
 
 		assertThat(query).hasSize(1);
 		assertThat(query.getColumns()).isEqualTo(columns);

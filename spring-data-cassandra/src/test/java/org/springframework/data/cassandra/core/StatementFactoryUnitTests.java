@@ -56,7 +56,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapSimpleSelectQuery() {
 
-		Statement select = statementFactory.select(new Query(),
+		Statement select = statementFactory.select(Query.empty(),
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(select.toString()).isEqualTo("SELECT * FROM group;");
@@ -65,8 +65,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapSelectQueryWithColumnsAndCriteria() {
 
-		Query query = Query.from(Criteria.where("foo").is("bar"));
-		query.with(Columns.from("age"));
+		Query query = Query.query(Criteria.where("foo").is("bar")).columns(Columns.from("age"));
 
 		Statement select = statementFactory.select(query, groupEntity);
 
@@ -76,8 +75,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapSelectQueryWithTtlColumns() {
 
-		Query query = new Query();
-		query.with(Columns.empty().ttl("email"));
+		Query query = Query.empty().columns(Columns.empty().ttl("email"));
 
 		Statement select = statementFactory.select(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
@@ -88,8 +86,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapSelectQueryWithSortLimitAndAllowFiltering() {
 
-		Query query = new Query();
-		query.with(new Sort("id.hashPrefix")).limit(10).withAllowFiltering();
+		Query query = Query.empty().sort(Sort.by("id.hashPrefix")).limit(10).withAllowFiltering();
 
 		Statement select = statementFactory.select(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
@@ -100,8 +97,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapDeleteQueryWithColumns() {
 
-		Query query = new Query();
-		query.with(Columns.from("age"));
+		Query query = Query.empty().columns(Columns.from("age"));
 
 		Statement delete = statementFactory.delete(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
@@ -112,7 +108,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapDeleteQueryWithTtlColumns() {
 
-		Query query = Query.from(Criteria.where("foo").is("bar"));
+		Query query = Query.query(Criteria.where("foo").is("bar"));
 
 		Statement delete = statementFactory.delete(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
@@ -123,9 +119,9 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSetUpdate() {
 
-		Query query = Query.from(Criteria.where("foo").is("bar"));
+		Query query = Query.query(Criteria.where("foo").is("bar"));
 
-		Statement update = statementFactory.update(query, new Update().set("firstName", "baz").set("boo", "baa"),
+		Statement update = statementFactory.update(query, Update.empty().set("firstName", "baz").set("boo", "baa"),
 				personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET first_name='baz',boo='baa' WHERE foo='bar';");
@@ -134,7 +130,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSetAtIndexUpdate() {
 
-		Statement update = statementFactory.update(new Query(), new Update().set("list").atIndex(10).to("Euro"),
+		Statement update = statementFactory.update(Query.empty(), Update.empty().set("list").atIndex(10).to("Euro"),
 				personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET list[10]='Euro';");
@@ -143,7 +139,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSetAtKeyUpdate() {
 
-		Statement update = statementFactory.update(new Query(), new Update().set("map").atKey("baz").to("Euro"),
+		Statement update = statementFactory.update(Query.empty(), Update.empty().set("map").atKey("baz").to("Euro"),
 				personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET map['baz']='Euro';");
@@ -152,7 +148,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldAddToMap() {
 
-		Statement update = statementFactory.update(new Query(), new Update().addTo("map").entry("foo", "Euro"),
+		Statement update = statementFactory.update(Query.empty(), Update.empty().addTo("map").entry("foo", "Euro"),
 				personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET map=map+{'foo':'Euro'};");
@@ -161,7 +157,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldPrependAllToList() {
 
-		Statement update = statementFactory.update(new Query(), new Update().addTo("list").prependAll("foo", "Euro"),
+		Statement update = statementFactory.update(Query.empty(), Update.empty().addTo("list").prependAll("foo", "Euro"),
 				personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET list=['foo','Euro']+list;");
@@ -170,7 +166,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldAppendAllToList() {
 
-		Statement update = statementFactory.update(new Query(), new Update().addTo("list").appendAll("foo", "Euro"),
+		Statement update = statementFactory.update(Query.empty(), Update.empty().addTo("list").appendAll("foo", "Euro"),
 				personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET list=list+['foo','Euro'];");
@@ -179,7 +175,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldRemoveFromList() {
 
-		Statement update = statementFactory.update(new Query(), new Update().remove("list", "Euro"), personEntity);
+		Statement update = statementFactory.update(Query.empty(), Update.empty().remove("list", "Euro"), personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET list=list-['Euro'];");
 	}
@@ -187,7 +183,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldClearList() {
 
-		Statement update = statementFactory.update(new Query(), new Update().clear("list"), personEntity);
+		Statement update = statementFactory.update(Query.empty(), Update.empty().clear("list"), personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET list=[];");
 	}
@@ -195,7 +191,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldAddAllToSet() {
 
-		Statement update = statementFactory.update(new Query(), new Update().addTo("set").appendAll("foo", "Euro"),
+		Statement update = statementFactory.update(Query.empty(), Update.empty().addTo("set").appendAll("foo", "Euro"),
 				personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET set_col=set_col+{'foo','Euro'};");
@@ -204,7 +200,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldRemoveFromSet() {
 
-		Statement update = statementFactory.update(new Query(), new Update().remove("set", "Euro"), personEntity);
+		Statement update = statementFactory.update(Query.empty(), Update.empty().remove("set", "Euro"), personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET set_col=set_col-{'Euro'};");
 	}
@@ -212,7 +208,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldClearSet() {
 
-		Statement update = statementFactory.update(new Query(), new Update().clear("set"), personEntity);
+		Statement update = statementFactory.update(Query.empty(), Update.empty().clear("set"), personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET set_col={};");
 	}
@@ -220,7 +216,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateIncrementUpdate() {
 
-		Statement update = statementFactory.update(new Query(), new Update().increment("number"), personEntity);
+		Statement update = statementFactory.update(Query.empty(), Update.empty().increment("number"), personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number+1;");
 	}
@@ -228,7 +224,7 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateDecrementUpdate() {
 
-		Statement update = statementFactory.update(new Query(), new Update().decrement("number"), personEntity);
+		Statement update = statementFactory.update(Query.empty(), Update.empty().decrement("number"), personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number-1;");
 	}

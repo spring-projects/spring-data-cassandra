@@ -456,11 +456,9 @@ public class Columns implements Iterable<ColumnName> {
 
 			String params = StringUtils.collectionToDelimitedString(getParameters(), ", ");
 
-			return getAlias().map(cqlIdentifier -> {
-				return String.format("%s(%s) AS %s", getExpression(), params, cqlIdentifier.toCql());
-			}).orElseGet(() -> {
-				return String.format("%s(%s)", getExpression(), params);
-			});
+			return getAlias()
+					.map(cqlIdentifier -> String.format("%s(%s) AS %s", getExpression(), params, cqlIdentifier.toCql()))
+					.orElseGet(() -> String.format("%s(%s)", getExpression(), params));
 		}
 	}
 }

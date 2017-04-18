@@ -39,6 +39,7 @@ import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Columns.Selector;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
+import org.springframework.data.cassandra.core.query.CriteriaDefinition.Operators;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.TypeWithKeyClass;
@@ -95,20 +96,20 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapSimpleQuery() {
 
-		Query query = Query.from(Criteria.where("foo_name").is("bar"));
+		Query query = Query.query(Criteria.where("foo_name").is("bar"));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
-		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo("=");
+		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.EQ);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isEqualTo("bar");
 	}
 
 	@Test // DATACASS-343
 	public void shouldMapEnumToString() {
 
-		Query query = Query.from(Criteria.where("foo_name").is(State.Active));
+		Query query = Query.query(Criteria.where("foo_name").is(State.Active));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
@@ -120,7 +121,7 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapEnumToNumber() {
 
-		Query query = Query.from(Criteria.where("number").is(State.Inactive));
+		Query query = Query.query(Criteria.where("number").is(State.Inactive));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
@@ -132,7 +133,7 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapEnumToNumberIn() {
 
-		Query query = Query.from(Criteria.where("number").in(State.Inactive));
+		Query query = Query.query(Criteria.where("number").in(State.Inactive));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
@@ -145,39 +146,39 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapApplyingCustomConversion() {
 
-		Query query = Query.from(Criteria.where("foo_name").is(Currency.getInstance("EUR")));
+		Query query = Query.query(Criteria.where("foo_name").is(Currency.getInstance("EUR")));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
-		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo("=");
+		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.EQ);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isEqualTo("Euro");
 	}
 
 	@Test // DATACASS-343
 	public void shouldMapApplyingCustomConversionInCollection() {
 
-		Query query = Query.from(Criteria.where("foo_name").in(Currency.getInstance("EUR")));
+		Query query = Query.query(Criteria.where("foo_name").in(Currency.getInstance("EUR")));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
-		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo("IN");
+		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.IN);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isEqualTo(Collections.singletonList("Euro"));
 	}
 
 	@Test // DATACASS-343
 	public void shouldMapApplyingUdtValueConversion() {
 
-		Query query = Query.from(Criteria.where("address").is(new Address("21 Jump-Street")));
+		Query query = Query.query(Criteria.where("address").is(new Address("21 Jump-Street")));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
-		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo("=");
+		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.EQ);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UDTValue.class);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("{street:'21 Jump-Street'}");
 	}
@@ -185,13 +186,13 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapApplyingUdtValueCollectionConversion() {
 
-		Query query = Query.from(Criteria.where("address").in(new Address("21 Jump-Street")));
+		Query query = Query.query(Criteria.where("address").in(new Address("21 Jump-Street")));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
-		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo("IN");
+		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.IN);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(Collection.class);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("[{street:'21 Jump-Street'}]");
 	}
@@ -199,13 +200,13 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapCollectionApplyingUdtValueCollectionConversion() {
 
-		Query query = Query.from(Criteria.where("addresses").in(new Address("21 Jump-Street")));
+		Query query = Query.query(Criteria.where("addresses").in(new Address("21 Jump-Street")));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
-		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo("IN");
+		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.IN);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(Collection.class);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("[{street:'21 Jump-Street'}]");
 	}
@@ -213,7 +214,7 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapPropertyToColumnName() {
 
-		Query query = Query.from(Criteria.where("firstName").is("bar"));
+		Query query = Query.query(Criteria.where("firstName").is("bar"));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
@@ -265,7 +266,7 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapSortWithCompositePrimaryKeyClass() {
 
-		Sort sort = new Sort("key.firstname");
+		Sort sort = Sort.by("key.firstname");
 
 		Sort mappedObject = queryMapper.getMappedSort(sort,
 				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
@@ -276,7 +277,7 @@ public class QueryMapperUnitTests {
 	@Test(expected = IllegalArgumentException.class) // DATACASS-343
 	public void shouldFailMappingSortByCompositePrimaryKeyClass() {
 
-		Sort sort = new Sort("key");
+		Sort sort = Sort.by("key");
 
 		queryMapper.getMappedSort(sort, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 	}

@@ -91,7 +91,7 @@ public class UpdateMapper extends QueryMapper {
 			mapped.add(getMappedUpdateOperation(assignmentOp, field));
 		}
 
-		return new Update(mapped);
+		return Update.of(mapped);
 	}
 
 	private AssignmentOp getMappedUpdateOperation(AssignmentOp assignmentOp, Field field) {

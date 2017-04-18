@@ -27,7 +27,6 @@ import org.springframework.cassandra.core.ReactiveCqlTemplate;
 import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.query.ChainedCriteria;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
@@ -107,8 +106,8 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		template.insert(person).block();
 
-		Query query = Query.from(Criteria.where("id").is("heisenberg"));
-		boolean result = template.update(query, new Update().set("firstname", "Walter Hartwell"), Person.class).block();
+		Query query = Query.query(Criteria.where("id").is("heisenberg"));
+		boolean result = template.update(query, Update.empty().set("firstname", "Walter Hartwell"), Person.class).block();
 		assertThat(result).isTrue();
 
 		assertThat(template.selectOneById(person.getId(), Person.class).block().getFirstname())
@@ -121,7 +120,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		Person person = new Person("heisenberg", "Walter", "White");
 		template.insert(person).block();
 
-		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+		Query query = Query.query(Criteria.where("id").is("heisenberg"));
 		assertThat(template.delete(query, Person.class).block()).isTrue();
 
 		assertThat(template.selectOneById(person.getId(), Person.class).block()).isNull();
@@ -133,8 +132,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		Person person = new Person("heisenberg", "Walter", "White");
 		template.insert(person).block();
 
-		Query query = Query.from(Criteria.where("id").is("heisenberg"));
-		query.with(Columns.from("lastname"));
+		Query query = Query.query(Criteria.where("id").is("heisenberg")).columns(Columns.from("lastname"));
 
 		assertThat(template.delete(query, Person.class).block()).isTrue();
 
@@ -183,7 +181,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		template.insert(token1).block();
 		template.insert(token2).block();
 
-		Query query = Query.from(ChainedCriteria.where("userId").is(token1.getUserId())).with(new Sort("token"));
+		Query query = Query.query(Criteria.where("userId").is(token1.getUserId())).sort(Sort.by("token"));
 
 		assertThat(template.select(query, UserToken.class).collectList().block()).containsSequence(token1, token2);
 	}
@@ -198,7 +196,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		template.insert(token1).block();
 
-		Query query = Query.from(Criteria.where("userId").is(token1.getUserId()));
+		Query query = Query.query(Criteria.where("userId").is(token1.getUserId()));
 
 		assertThat(template.selectOne(query, UserToken.class).block()).isEqualTo(token1);
 	}

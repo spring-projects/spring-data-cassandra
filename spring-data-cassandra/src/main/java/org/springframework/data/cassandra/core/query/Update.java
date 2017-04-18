@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.query.Update.AddToOp.Mode;
@@ -29,30 +28,57 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Update object representing representing a set of update operations.
+ * Update object representing representing a set of update operations. {@link Update} objects can be created in a fluent
+ * style. Each construction operation creates a new immutable {@link Update} object.
+ *
+ * <pre class="code">
+ * Update update = Update.empty().set("foo", "bar").addTo("baz").prependAll(listOfValues);
+ * </pre>
  *
  * @author Mark Paluch
  * @since 2.0
  */
 public class Update {
 
-	private Map<ColumnName, AssignmentOp> updateOperations = new LinkedHashMap<>();
+	private final Map<ColumnName, AssignmentOp> updateOperations;
+
+	private Update(Map<ColumnName, AssignmentOp> updateOperations) {
+		this.updateOperations = updateOperations;
+	}
 
 	/**
 	 * Create an empty {@link Update} object.
+	 *
+	 * @return a new {@link Update}.
 	 */
-	public Update() {}
+	public static Update empty() {
+		return new Update(Collections.emptyMap());
+	}
+
+	/**
+	 * Set the {@code columnName} to {@code value}.
+	 *
+	 * @return a new {@link Update}.
+	 */
+	public static Update update(String columnName, Object value) {
+		return empty().set(columnName, value);
+	}
 
 	/**
 	 * Create a {@link Update} object given a list of {@link AssignmentOp}s.
 	 *
 	 * @param assignmentOps must not be {@literal null}.
 	 */
-	public Update(List<AssignmentOp> assignmentOps) {
+	public static Update of(Iterable<AssignmentOp> assignmentOps) {
 
 		Assert.notNull(assignmentOps, "Update operations must not be null");
 
-		assignmentOps.forEach(this::add);
+		Map<ColumnName, AssignmentOp> updateOperations = assignmentOps instanceof Collection<?>
+				? new LinkedHashMap<>(((Collection<?>) assignmentOps).size()) : new LinkedHashMap<>();
+
+		assignmentOps.forEach(assignmentOp -> updateOperations.put(assignmentOp.getColumnName(), assignmentOp));
+
+		return new Update(updateOperations);
 	}
 
 	/**
@@ -60,7 +86,8 @@ public class Update {
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @param value
-	 * @return {@code this} {@link Update} object.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
 	 */
 	public Update set(String columnName, Object value) {
 		return add(new SetOp(ColumnName.from(columnName), value));
@@ -70,7 +97,7 @@ public class Update {
 	 * Create a new {@link SetBuilder} to set a collection item for {@code columnName} in a fluent style.
 	 *
 	 * @param columnName must not be {@literal null}.
-	 * @return {@code this} {@link Update} object.
+	 * @return a new {@link AddToBuilder} to build an set assignment.
 	 */
 	public SetBuilder set(String columnName) {
 		return new DefaultSetBuilder(ColumnName.from(columnName));
@@ -80,7 +107,7 @@ public class Update {
 	 * Create a new {@link AddToBuilder} to add items to a collection for {@code columnName} in a fluent style.
 	 *
 	 * @param columnName must not be {@literal null}.
-	 * @return {@code this} {@link Update} object.
+	 * @return a new {@link AddToBuilder} to build an add-to assignment.
 	 */
 	public AddToBuilder addTo(String columnName) {
 		return new DefaultAddToBuilder(ColumnName.from(columnName));
@@ -91,7 +118,8 @@ public class Update {
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @param value must not be {@literal null}.
-	 * @return {@code this} {@link Update} object.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
 	 */
 	public Update remove(String columnName, Object value) {
 		return add(new RemoveOp(ColumnName.from(columnName), Collections.singletonList(value)));
@@ -101,7 +129,8 @@ public class Update {
 	 * Cleat the collection at {@code columnName}.
 	 *
 	 * @param columnName must not be {@literal null}.
-	 * @return {@code this} {@link Update} object.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
 	 */
 	public Update clear(String columnName) {
 		return add(new SetOp(ColumnName.from(columnName), Collections.emptyList()));
@@ -111,7 +140,8 @@ public class Update {
 	 * Increment the value at {@code columnName} by {@literal 1}.
 	 *
 	 * @param columnName must not be {@literal null}.
-	 * @return {@code this} {@link Update} object.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
 	 */
 	public Update increment(String columnName) {
 		return increment(columnName, 1);
@@ -122,9 +152,10 @@ public class Update {
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @param delta increment value.
-	 * @return {@code this} {@link Update} object.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
 	 */
-	public Update increment(String columnName, int delta) {
+	public Update increment(String columnName, Number delta) {
 		return add(new IncrOp(ColumnName.from(columnName), delta));
 	}
 
@@ -132,7 +163,8 @@ public class Update {
 	 * Decrement the value at {@code columnName} by {@literal 1}.
 	 *
 	 * @param columnName must not be {@literal null}.
-	 * @return {@code this} {@link Update} object.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
 	 */
 	public Update decrement(String columnName) {
 		return decrement(columnName, 1);
@@ -143,10 +175,16 @@ public class Update {
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @param delta decrement value.
-	 * @return {@code this} {@link Update} object.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
 	 */
-	public Update decrement(String columnName, int delta) {
-		return add(new IncrOp(ColumnName.from(columnName), -Math.abs(delta)));
+	public Update decrement(String columnName, Number delta) {
+
+		if (delta.doubleValue() > 0) {
+			return add(new IncrOp(ColumnName.from(columnName), -Math.abs(delta.doubleValue())));
+		}
+
+		return add(new IncrOp(ColumnName.from(columnName), delta.doubleValue()));
 	}
 
 	/**
@@ -158,8 +196,12 @@ public class Update {
 
 	private Update add(AssignmentOp assignmentOp) {
 
-		this.updateOperations.put(assignmentOp.getColumnName(), assignmentOp);
-		return this;
+		Map<ColumnName, AssignmentOp> map = new LinkedHashMap<>(this.updateOperations.size() + 1);
+
+		map.putAll(this.updateOperations);
+		map.put(assignmentOp.getColumnName(), assignmentOp);
+
+		return new Update(map);
 	}
 
 	/* (non-Javadoc)
@@ -180,8 +222,9 @@ public class Update {
 		/**
 		 * Prepend the {@code value} to the collection.
 		 *
-		 * @param object must not be {@literal null}.
-		 * @return the {@link Update} object.
+		 * @param value must not be {@literal null}.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
 		 */
 		Update prepend(Object value);
 
@@ -189,7 +232,8 @@ public class Update {
 		 * Prepend all {@code values} to the collection.
 		 *
 		 * @param values must not be {@literal null}.
-		 * @return the {@link Update} object.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
 		 */
 		Update prependAll(Object... values);
 
@@ -197,15 +241,17 @@ public class Update {
 		 * Prepend all {@code values} to the collection.
 		 *
 		 * @param values must not be {@literal null}.
-		 * @return the {@link Update} object.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
 		 */
 		Update prependAll(Iterable<? extends Object> values);
 
 		/**
 		 * Append the {@code value} to the collection.
 		 *
-		 * @param object must not be {@literal null}.
-		 * @return the {@link Update} object.
+		 * @param value must not be {@literal null}.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
 		 */
 		Update append(Object value);
 
@@ -213,7 +259,8 @@ public class Update {
 		 * Append all {@code values} to the collection.
 		 *
 		 * @param values must not be {@literal null}.
-		 * @return the {@link Update} object.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
 		 */
 		Update appendAll(Object... values);
 
@@ -221,7 +268,8 @@ public class Update {
 		 * Append all {@code values} to the collection.
 		 *
 		 * @param values must not be {@literal null}.
-		 * @return the {@link Update} object.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
 		 */
 		Update appendAll(Iterable<? extends Object> values);
 
@@ -230,7 +278,8 @@ public class Update {
 		 *
 		 * @param key must not be {@literal null}.
 		 * @param value must not be {@literal null}.
-		 * @return the {@link Update} object.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
 		 */
 		Update entry(Object key, Object value);
 
@@ -238,7 +287,8 @@ public class Update {
 		 * Associate all entries of the specified {@code map} with the map at {@link ColumnName}.
 		 *
 		 * @param map must not be {@literal null}.
-		 * @return the {@link Update} object.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
 		 */
 		Update addAll(Map<? extends Object, ? extends Object> map);
 	}
@@ -596,15 +646,15 @@ public class Update {
 	 */
 	public static class IncrOp extends AssignmentOp {
 
-		private final long value;
+		private final Number value;
 
-		public IncrOp(ColumnName columnName, long value) {
+		public IncrOp(ColumnName columnName, Number value) {
 
 			super(columnName);
 			this.value = value;
 		}
 
-		public long getValue() {
+		public Number getValue() {
 			return value;
 		}
 
@@ -613,7 +663,8 @@ public class Update {
 		 */
 		@Override
 		public String toString() {
-			return String.format("%s = %s %s %d", getColumnName(), getColumnName(), value > 0 ? "+" : "-", Math.abs(value));
+			return String.format("%s = %s %s %d", getColumnName(), getColumnName(), value.doubleValue() > 0 ? "+" : "-",
+					Math.abs(value.intValue()));
 		}
 	}
 

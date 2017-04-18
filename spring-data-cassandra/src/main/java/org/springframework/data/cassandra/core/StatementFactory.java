@@ -56,6 +56,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Select.SelectionOrAlias;
+import com.google.common.primitives.Ints;
 
 /**
  * Statement factory to render {@link Statement} from {@link Query} and {@link Update} objects.
@@ -115,7 +116,7 @@ public class StatementFactory {
 		query.getQueryOptions().ifPresent(queryOptions -> QueryOptionsUtil.addQueryOptions(select, queryOptions));
 
 		if (query.getLimit() > 0) {
-			select.limit(query.getLimit());
+			select.limit(Ints.checkedCast(query.getLimit()));
 		}
 
 		if (query.isAllowFiltering()) {
@@ -260,11 +261,11 @@ public class StatementFactory {
 
 	private static Assignment getAssignment(IncrOp incrOp) {
 
-		if (incrOp.getValue() > 0) {
-			return QueryBuilder.incr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue()));
+		if (incrOp.getValue().intValue() > 0) {
+			return QueryBuilder.incr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().intValue()));
 		}
 
-		return QueryBuilder.decr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue()));
+		return QueryBuilder.decr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().intValue()));
 	}
 
 	private static Assignment getAssignment(SetOp updateOp) {
@@ -364,7 +365,7 @@ public class StatementFactory {
 		Predicate predicate = criteriaDefinition.getPredicate();
 		String columnName = criteriaDefinition.getColumnName().toCql();
 
-		switch (predicate.getOperator()) {
+		switch (predicate.getOperator().toString()) {
 
 			case "=":
 				return QueryBuilder.eq(columnName, predicate.getValue());

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.cassandra.core.query.CriteriaDefinition.Operator;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.TypeCodec;
@@ -94,7 +95,7 @@ abstract class SerializationUtils {
 		return codec.format(value);
 	}
 
-	private static StringBuilder serialize(ColumnName key, String operator) {
+	private static StringBuilder serialize(ColumnName key, Operator operator) {
 
 		StringBuilder builder = new StringBuilder(16);
 

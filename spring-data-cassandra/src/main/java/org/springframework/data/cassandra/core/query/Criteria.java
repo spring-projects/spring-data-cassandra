@@ -24,49 +24,59 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.Assert;
 
 /**
- * Basic class for creating queries. It follows a fluent API style so that you can easily chain together multiple
- * criteria. Static import of the 'Criteria.where' method will improve readability.
+ * Basic class for creating queries. It follows a fluent API style so that you can easily create a
+ * {@link CriteriaDefinition}. Static import of the 'Criteria.where' method will improve readability.
  *
  * @author Mark Paluch
  * @since 2.0
  */
 public class Criteria implements CriteriaDefinition {
 
-	private static final String CONTAINS_KEY = "CONTAINS KEY";
-
-	private ColumnName columnName;
+	private final ColumnName columnName;
 
 	private Predicate predicate;
 
-	/**
-	 * Create an empty {@link Criteria}.
-	 */
-	protected Criteria() {}
+	private Criteria(ColumnName columnName, Predicate predicate) {
 
-	/**
-	 * Create an empty {@link Criteria}.
-	 */
-	protected Criteria(ColumnName columnName) {
-		this.columnName = columnName;
-	}
+		this(columnName);
 
-	public Criteria(ColumnName key, Predicate predicate) {
-
-		Assert.notNull(key, "Key must not be null");
 		Assert.notNull(predicate, "Predicate must not be null");
 
-		this.columnName = key;
 		this.predicate = predicate;
+	}
+
+	/**
+	 * Create an empty {@link Criteria} given a {@link ColumnName}.
+	 */
+	protected Criteria(ColumnName columnName) {
+
+		Assert.notNull(columnName, "ColumnName must not be null");
+
+		this.columnName = columnName;
 	}
 
 	/**
 	 * Static factory method to create a {@link Criteria} using the provided {@code columnName}.
 	 *
 	 * @param columnName must not be {@literal null}.
-	 * @return a new {@link ChainedCriteria} for {@code columnName}.
+	 * @return a new {@link Criteria} for {@code columnName}.
 	 */
 	public static Criteria where(String columnName) {
 		return new Criteria(ColumnName.from(columnName));
+	}
+
+	/**
+	 * Static factory method to create a {@link Criteria} using the provided {@code columnName}.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return a new {@link Criteria} for {@code columnName}.
+	 */
+	public static Criteria of(ColumnName columnName, Predicate predicate) {
+
+		Assert.notNull(columnName, "ColumnName must not be null");
+		Assert.notNull(predicate, "Predicate must not be null");
+
+		return new Criteria(columnName, predicate);
 	}
 
 	/**
@@ -76,7 +86,8 @@ public class Criteria implements CriteriaDefinition {
 	 * @return {@literal this} {@link Criteria} object.
 	 */
 	public CriteriaDefinition is(Object value) {
-		this.predicate = new Predicate("=", value);
+
+		this.predicate = new Predicate(Operators.EQ, value);
 		return this;
 	}
 
@@ -90,7 +101,7 @@ public class Criteria implements CriteriaDefinition {
 
 		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new Predicate("<", value);
+		this.predicate = new Predicate(Operators.LT, value);
 		return this;
 	}
 
@@ -104,7 +115,7 @@ public class Criteria implements CriteriaDefinition {
 
 		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new Predicate("<=", value);
+		this.predicate = new Predicate(Operators.LTE, value);
 		return this;
 	}
 
@@ -118,7 +129,7 @@ public class Criteria implements CriteriaDefinition {
 
 		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new Predicate(">", value);
+		this.predicate = new Predicate(Operators.GT, value);
 		return this;
 	}
 
@@ -132,7 +143,7 @@ public class Criteria implements CriteriaDefinition {
 
 		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new Predicate(">=", value);
+		this.predicate = new Predicate(Operators.GTE, value);
 		return this;
 	}
 
@@ -164,7 +175,7 @@ public class Criteria implements CriteriaDefinition {
 
 		Assert.notNull(values, "Value must not be null");
 
-		this.predicate = new Predicate("IN", values);
+		this.predicate = new Predicate(Operators.IN, values);
 		return this;
 	}
 
@@ -178,7 +189,7 @@ public class Criteria implements CriteriaDefinition {
 
 		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new Predicate("LIKE", value);
+		this.predicate = new Predicate(Operators.LIKE, value);
 		return this;
 	}
 
@@ -192,7 +203,7 @@ public class Criteria implements CriteriaDefinition {
 
 		Assert.notNull(value, "Value must not be null");
 
-		this.predicate = new Predicate("CONTAINS", value);
+		this.predicate = new Predicate(Operators.CONTAINS, value);
 		return this;
 	}
 
@@ -206,7 +217,7 @@ public class Criteria implements CriteriaDefinition {
 
 		Assert.notNull(key, "Value must not be null");
 
-		this.predicate = new Predicate(CONTAINS_KEY, key);
+		this.predicate = new Predicate(Operators.CONTAINS_KEY, key);
 		return this;
 	}
 

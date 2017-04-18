@@ -98,7 +98,7 @@ public class QueryMapper {
 			Optional<Object> mappedValue = converter.convertToCassandraColumn(value, typeInformation);
 
 			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue.orElse(null));
-			result.add(new Criteria(field.getMappedKey(), mappedPredicate));
+			result.add(Criteria.of(field.getMappedKey(), mappedPredicate));
 		}
 
 		return Filter.from(result);

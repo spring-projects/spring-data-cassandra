@@ -34,10 +34,6 @@ import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
-import org.springframework.data.cassandra.support.UserTypeBuilder;
-
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.UserType;
 
 /**
  * Unit tests for {@link UpdateMapper}.
@@ -53,8 +49,6 @@ public class UpdateMapperUnitTests {
 	UpdateMapper updateMapper;
 
 	@Mock UserTypeResolver userTypeResolver;
-
-	UserType userType = UserTypeBuilder.forName("address").withField("street", DataType.varchar()).build();
 
 	Currency currency = Currency.getInstance("EUR");
 
@@ -78,7 +72,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSimpleUpdate() {
 
-		Update update = updateMapper.getMappedObject(new Update().set("firstName", "foo"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().set("firstName", "foo"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("first_name = 'foo'");
@@ -87,7 +81,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSetAtIndexUpdate() {
 
-		Update update = updateMapper.getMappedObject(new Update().set("list").atIndex(10).to(currency), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().set("list").atIndex(10).to(currency), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("list[10] = 'Euro'");
@@ -96,7 +90,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateSetAtKeyUpdate() {
 
-		Update update = updateMapper.getMappedObject(new Update().set("map").atKey("baz").to(currency), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().set("map").atKey("baz").to(currency), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("map['baz'] = 'Euro'");
@@ -105,7 +99,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldAddToMap() {
 
-		Update update = updateMapper.getMappedObject(new Update().addTo("map").entry("foo", currency), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("map").entry("foo", currency), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("map = map + {'foo':'Euro'}");
@@ -114,7 +108,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldPrependAllToList() {
 
-		Update update = updateMapper.getMappedObject(new Update().addTo("list").prependAll("foo", currency),
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").prependAll("foo", currency),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
@@ -124,7 +118,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldAppendAllToList() {
 
-		Update update = updateMapper.getMappedObject(new Update().addTo("list").appendAll("foo", currency),
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").appendAll("foo", currency),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
@@ -134,7 +128,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldRemoveFromList() {
 
-		Update update = updateMapper.getMappedObject(new Update().remove("list", currency), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().remove("list", currency), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("list = list - ['Euro']");
@@ -143,7 +137,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldClearList() {
 
-		Update update = updateMapper.getMappedObject(new Update().clear("list"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().clear("list"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("list = []");
@@ -152,7 +146,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldClearSet() {
 
-		Update update = updateMapper.getMappedObject(new Update().clear("set"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().clear("set"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("set_col = {}");
@@ -161,7 +155,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateIncrementUpdate() {
 
-		Update update = updateMapper.getMappedObject(new Update().increment("number"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().increment("number"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("number = number + 1");
@@ -170,7 +164,7 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateDecrementUpdate() {
 
-		Update update = updateMapper.getMappedObject(new Update().decrement("number"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().decrement("number"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("number = number - 1");

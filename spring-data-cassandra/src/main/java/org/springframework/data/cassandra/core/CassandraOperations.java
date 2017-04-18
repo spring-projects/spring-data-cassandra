@@ -30,8 +30,6 @@ import org.springframework.data.cassandra.core.query.Update;
 
 import com.datastax.driver.core.Statement;
 
-import com.datastax.driver.core.Statement;
-
 /**
  * Interface specifying a basic set of Cassandra operations. Implemented by {@link CassandraTemplate}. Not often used
  * directly, but a useful option to enhance testability, as it can easily be mocked or stubbed.

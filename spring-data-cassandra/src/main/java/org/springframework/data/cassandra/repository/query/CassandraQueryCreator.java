@@ -226,13 +226,9 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 
 		Query create(Sort sort) {
 
-			Query query = Query. from (criterias);
+			Query query = Query.query(criterias);
 
-			if (sort != null) {
-				query.with(sort);
-			}
-
-			return query;
+			return query.sort(sort);
 		}
 	}
 }

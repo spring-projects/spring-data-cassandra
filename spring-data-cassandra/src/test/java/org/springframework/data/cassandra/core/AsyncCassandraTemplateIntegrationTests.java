@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.springframework.cassandra.core.AsyncCqlTemplate;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.query.ChainedCriteria;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
@@ -75,7 +74,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		getUninterruptibly(template.insert(token1));
 		getUninterruptibly(template.insert(token2));
 
-		Query query = Query.from(ChainedCriteria.where("userId").is(token1.getUserId())).with(new Sort("token"));
+		Query query = Query.query(Criteria.where("userId").is(token1.getUserId())).sort(Sort.by("token"));
 
 		assertThat(getUninterruptibly(template.select(query, UserToken.class))).containsSequence(token1, token2);
 	}
@@ -90,7 +89,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		getUninterruptibly(template.insert(token1));
 
-		Query query = Query.from(Criteria.where("userId").is(token1.getUserId()));
+		Query query = Query.query(Criteria.where("userId").is(token1.getUserId()));
 
 		assertThat(getUninterruptibly(template.selectOne(query, UserToken.class))).isEqualTo(token1);
 	}
@@ -138,9 +137,9 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		Person person = new Person("heisenberg", "Walter", "White");
 		template.insert(person).get();
 
-		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+		Query query = Query.query(Criteria.where("id").is("heisenberg"));
 		boolean result = getUninterruptibly(
-				template.update(query, new Update().set("firstname", "Walter Hartwell"), Person.class));
+				template.update(query, Update.empty().set("firstname", "Walter Hartwell"), Person.class));
 		assertThat(result).isTrue();
 
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class)).getFirstname())
@@ -153,7 +152,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		Person person = new Person("heisenberg", "Walter", "White");
 		template.insert(person).get();
 
-		Query query = Query.from(Criteria.where("id").is("heisenberg"));
+		Query query = Query.query(Criteria.where("id").is("heisenberg"));
 		assertThat(getUninterruptibly(template.delete(query, Person.class))).isTrue();
 
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isNull();
@@ -165,8 +164,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		Person person = new Person("heisenberg", "Walter", "White");
 		template.insert(person).get();
 
-		Query query = Query.from(Criteria.where("id").is("heisenberg"));
-		query.with(Columns.from("lastname"));
+		Query query = Query.query(Criteria.where("id").is("heisenberg")).columns(Columns.from("lastname"));
 
 		assertThat(getUninterruptibly(template.delete(query, Person.class))).isTrue();
 
