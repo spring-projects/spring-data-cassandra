@@ -5,8 +5,8 @@ The Cassandra support contains a wide range of features which are summarized bel
 
 * Spring configuration support using Java-based `@Configuration` classes or the XML namespace to create
 a Cassandra instance with replica sets using the driver.
-* CassandraTemplate helper class that increases productivity by handling common Cassandra operations properly.
-Includes integrated object mapping between CQL Tables and POJOs.
+* `CqlTemplate` helper class that increases productivity by handling common Cassandra operations properly.
+* `CassandraTemplate` helper class providing object mapping between CQL Tables and POJOs.
 * Exception translation into Spring's portable http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[Data Access Exception Hierarchy].
 * Feature rich object mapping integrated with Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#core-convert[Conversion Service].
 * Annotation-based mapping metadata but extensible to support other metadata formats.
@@ -15,12 +15,11 @@ Includes integrated object mapping between CQL Tables and POJOs.
 * Automatic implementation of `Repository` interfaces including support for custom finder methods.
 
 For most data oriented tasks you will use the `CassandraTemplate` or the `Repository` support, which leverage the
-rich mapping functionality. `CassandraTemplate` is commonly used to increment counters or perform ad-hoc CRUD
-operations. `CassandraTemplate` also provides callback methods making it easy to get a hold of low-level API objects
+rich mapping functionality. `CqlTemplate` is commonly used to increment counters or perform ad-hoc CRUD
+operations. `CqlTemplate` also provides callback methods making it easy to get a hold of low-level API objects
 such as `com.datastax.driver.core.Session` allowing you to communicate directly with Cassandra. Spring Data for Apache Cassandra
 uses consistent naming conventions on objects in various APIs to those found in the DataStax Java Driver so that they
-are familiar and so you can  map your existing knowledge onto the Spring APIs.
-
+are familiar and so you can map your existing knowledge onto the Spring APIs.
 
 [[cassandra.modules]]
 == Spring CQL and Spring Data for Apache Cassandra modules
@@ -83,14 +82,13 @@ You can choose among several approaches to form the basis for your Cassandra dat
 for Apache Cassandra comes in different flavors. Once you start using one of these approaches, you can still mix
 and match to include a feature from a different approach.
 
-* __CqlTemplate__ is the classic Spring CQL approach and the most popular. This is the "lowest level" approach
+* <<cql-template,__CqlTemplate__>> is the classic Spring CQL approach and the most popular. This is the "lowest level" approach
 and all others use a `CqlTemplate` under the covers.
-* __CassandraTemplate__ wraps a `CqlTemplate` to provide query result to object mapping and the use of SELECT, INSERT,
-UPDATE and DELETE methods instead of writing CQL statements. This approach provides better documentation and ease of use.
+* <<cassandra-template,__CassandraTemplate__>> wraps a `CqlTemplate` to provide query result to object mapping and the use of `SELECT`, `INSERT`,
+`UPDATE` and `DELETE` methods instead of writing CQL statements. This approach provides better documentation and ease of use.
 * __Repository Abstraction__  allows you to create Repository declarations in your data access layer. The goal of
 Spring Data's Repository abstraction is to significantly reduce the amount of boilerplate code required to implement
 data access layers for various persistence stores.
-
 
 [[cassandra.getting-started]]
 == Getting Started
@@ -111,8 +109,6 @@ Then add the following to pom.xml dependencies section.
 [source,xml,subs="verbatim,attributes"]
 ----
 <dependencies>
-
-  <!-- other dependencies omitted -->
 
   <dependency>
     <groupId>org.springframework.data</groupId>
@@ -714,6 +710,177 @@ public class CassandraConfiguration extends AbstractCassandraConfiguration {
 ----
 ====
 
+[[cql-template]]
+== CqlTemplate
+
+The `CqlTemplate` class is the central class in the CQL core package. It handles the creation and release of resources.
+It performs the basic tasks of the core CQL workflow such as statement creation and execution, leaving application code
+to provide CQL and extract results. The `CqlTemplate` class executes CQL queries and update statements, performs
+iteration over ``ResultSet``s and extraction of returned parameter values. It also catches CQL exceptions and translates
+them to the generic, more informative, exception hierarchy defined in the `org.springframework.dao` package.
+
+When you use the `CqlTemplate` for your code, you only need to implement callback interfaces, giving them a clearly
+defined contract. The `PreparedStatementCreator` callback interface creates a prepared statement given a `Connection`
+provided by this class, providing CQL and any necessary parameters. The `RowCallbackHandler` interface extracts values
+from each row of a `ResultSet`.
+
+The `CqlTemplate` can be used within a DAO implementation through direct instantiation with a `DataSource` reference, or
+be configured in a Spring IoC container and given to DAOs as a bean reference. `CqlTemplate` is a foundational building
+block for <<cassandra-template,`CassandraTemplate`>>.
+
+All CQL issued by this class is logged at the `DEBUG` level under the category corresponding to the fully qualified class
+name of the template instance (typically `CqlTemplate`, but it may be different if you are using a custom subclass of the
+`CqlTemplate` class).
+
+NOTE: `CqlTemplate` comes in different execution model flavors. The basic `CqlTemplate` uses a blocking execution model.
+You can use `AsyncCqlTemplate` for asynchronous execution and synchronization with ``Future``s or
+`ReactiveCqlTemplate` for reactive execution.
+
+[[cql-template.examples]]
+=== Examples of `CqlTemplate` class usage
+
+This section provides some examples of `CqlTemplate` class usage. These examples are not an exhaustive list of all of the
+functionality exposed by the `CqlTemplate`; see the attendant javadocs for that.
+
+[[cql-template.examples.query]]
+==== Querying (SELECT)
+Here is a simple query for getting the number of rows in a relation:
+
+[source,java]
+----
+int rowCount = cqlTemplate.queryForObject("select count(*) from t_actor", Integer.class);
+----
+
+A simple query using a bind variable:
+
+[source,java]
+----
+int countOfActorsNamedJoe = cqlTemplate.queryForObject(
+		"select count(*) from t_actor where first_name = ?", Integer.class, "Joe");
+----
+
+Querying for a `String`:
+
+[source,java]
+----
+String lastName = cqlTemplate.queryForObject(
+		"select last_name from t_actor where id = ?",
+		String.class, 1212L);
+----
+
+Querying and populating a __single__ domain object:
+
+[source,java]
+----
+Actor actor = cqlTemplate.queryForObject(
+		"select first_name, last_name from t_actor where id = ?",
+		new RowMapper<Actor>() {
+			public Actor mapRow(Row row, int rowNum) {
+				Actor actor = new Actor();
+				actor.setFirstName(row.getString("first_name"));
+				actor.setLastName(row.getString("last_name"));
+				return actor;
+			},
+      new Object[]{1212L},
+		});
+----
+
+Querying and populating a number of domain objects:
+
+[source,java]
+----
+List<Actor> actors = cqlTemplate.query(
+		"select first_name, last_name from t_actor",
+		new RowMapper<Actor>() {
+			public Actor mapRow(Row row int rowNum) {
+				Actor actor = new Actor();
+				actor.setFirstName(row.getString("first_name"));
+				actor.setLastName(row.getString("last_name"));
+				return actor;
+			}
+		});
+----
+
+If the last two snippets of code actually existed in the same application, it would make sense to remove the
+duplication present in the two `RowMapper` anonymous inner classes, and extract them out into a single class
+(typically a `static` nested class) that can then be referenced by DAO methods as needed. For example, it may
+be better to write the last code snippet as follows:
+
+[source,java]
+----
+public List<Actor> findAllActors() {
+	return cqlTemplate.query("select first_name, last_name from t_actor", new ActorMapper());
+}
+
+private static final class ActorMapper implements RowMapper<Actor> {
+
+	public Actor mapRow(Row row, int rowNum) {
+		Actor actor = new Actor();
+		actor.setFirstName(row.getString("first_name"));
+		actor.setLastName(row.getString("last_name"));
+		return actor;
+	}
+}
+----
+
+[[cql-template.examples.update]]
+==== Updating (INSERT/UPDATE/DELETE) with CqlTemplate
+
+You use the `update(…)` method to perform insert, update and delete operations. Parameter values are usually
+provided as var args or alternatively as an object array.
+
+[source,java]
+----
+cqlTemplate.execute(
+		"insert into t_actor (first_name, last_name) values (?, ?)",
+		"Leonor", "Watling");
+----
+
+[source,java]
+----
+cqlTemplate.execute(
+		"update t_actor set last_name = ? where id = ?",
+		"Banjo", 5276L);
+----
+
+[source,java]
+----
+cqlTemplate.execute(
+		"delete from actor where id = ?",
+		Long.valueOf(actorId));
+----
+
+[[cql-template.examples.other]]
+==== Other CqlTemplate operations
+
+You can use the `execute(..)` method to execute any arbitrary CQL, and as such the method is often used for DDL statements.
+It is heavily overloaded with variants taking callback interfaces, binding variable arrays, and so on.
+
+This example shows how to create and drop a table, using different API objects, all passed to the `execute()` methods.
+
+[source,java]
+----
+cqlOperations.execute("CREATE TABLE test_table (id uuid primary key, event text)");
+
+DropTableSpecification dropper = DropTableSpecification.dropTable("test_table");
+String cql = DropTableCqlGenerator.toCql(dropper);
+
+cqlTemplate.execute(cql);
+----
+
+[[cassandra.exception]]
+== Exception Translation
+
+The Spring Framework provides exception translation for a wide variety of database and mapping technologies.
+This has traditionally been for JDBC and JPA. The Spring support for Apache Cassandra extends this feature
+to Apache Cassandra by providing an implementation of the `org.springframework.dao.support.PersistenceExceptionTranslator`
+interface.
+
+The motivation behind mapping to Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/html/dao.html#dao-exceptions[consistent data access exception hierarchy]
+is that you are then able to write portable and descriptive exception handling code without resorting to coding
+against Cassandra Exceptions. All of Spring's data access exceptions are inherited from the root, `DataAccessException`
+class so you can be sure that you will be able to catch all database related exception within a single try-catch block.
+
 
 [[cassandra-template]]
 == Introduction to CassandraTemplate
@@ -762,7 +929,7 @@ Now let's look at a examples of how to work with the `CassandraTemplate` in the 
 There are 2 easy ways to get a `CassandraTemplate`, depending on how you load you Spring Application Context.
 
 [float]
-==== AutoWiring
+==== Autowiring
 
 [source,java]
 ----
@@ -1299,50 +1466,3 @@ E.g. a `Converter<String, Long>` is ambiguous although it probably does not make
 instances into `Long` instances when writing. To be generally able to force the infrastructure to register a `Converter`
 for one way only we provide `@ReadingConverter` as well as `@WritingConverter` to be used as the appropriate
 `Converter` implementation.
-
-[[cassandra-template.commands]]
-== Executing Commands
-
-[[cassandra-template.commands.execution]]
-=== Methods for executing commands
-
-The `CassandraTemplate` has many overloads for `execute()` and `executeAsync()`. Pass in the CQL command you wish to
-execute and handle the appropriate response.
-
-This example uses the basic `AsynchronousQueryListener` that comes with Spring Data for Apache Cassandra. Please see
-the API documentation for all the options. There should be nothing you cannot perform in Cassandra with
-the `execute()` and `executeAsync()` methods.
-
-[source,java]
-----
-cassandraOperations.executeAsynchronously("delete from person where id = '123123123'",
-		new AsynchronousQueryListener() {
-
-			public void onQueryComplete(ResultSetFuture rsf) {
-				LOG.info("Async Query Completed");
-			}
-		});
-----
-
-This example shows how to create and drop a table, using different API objects, all passed to the `execute()` methods.
-
-[source]
-----
-cassandraOperations.execute("CREATE TABLE test_table (id uuid primary key, event text)");
-
-DropTableSpecification dropper = DropTableSpecification.dropTable("test_table");
-cassandraOperations.execute(dropper);
-----
-
-[[cassandra.exception]]
-== Exception Translation
-
-The Spring Framework provides exception translation for a wide variety of database and mapping technologies.
-This has traditionally been for JDBC and JPA. The Spring support for Apache Cassandra extends this feature
-to Apache Cassandra by providing an implementation of the `org.springframework.dao.support.PersistenceExceptionTranslator`
-interface.
-
-The motivation behind mapping to Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/html/dao.html#dao-exceptions[consistent data access exception hierarchy]
-is that you are then able to write portable and descriptive exception handling code without resorting to coding
-against Cassandra Exceptions. All of Spring's data access exceptions are inherited from the root, `DataAccessException`
-class so you can be sure that you will be able to catch all database related exception within a single try-catch block.
