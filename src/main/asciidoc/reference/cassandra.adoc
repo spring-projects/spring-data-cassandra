@@ -200,18 +200,17 @@ Next, create the main application to run.
 ----
 package org.spring.data.cassandra.example;
 
-import java.io.Closeable;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.query.Criteria;
+import org.springframework.data.cassandra.core.query.Query;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 
 public class CassandraApplication {
 
@@ -234,12 +233,9 @@ public class CassandraApplication {
 
     Person jonDoe = template.insert(newPerson("Jon Doe", 40));
 
-    Select selectStatement = QueryBuilder.select().from("person");
-    selectStatement.where(QueryBuilder.eq("id", jonDoe.getId()));
+    LOGGER.info(template.selectOne(Query.query(Criteria.where("id").is(jonDoe.getId())), Person.class).getId());
 
-    LOGGER.info(template.queryForObject(selectStatement, Person.class).getId());
-
-    template.truncate("person");
+    template.truncate(Person.class);
     session.close();
     cluster.close();
   }
@@ -318,7 +314,8 @@ public class AppConfig {
   /*
    * Factory bean that creates the com.datastax.driver.core.Session instance
    */
-  public @Bean CassandraCqlClusterFactoryBean cluster() {
+  @Bean
+  public CassandraCqlClusterFactoryBean cluster() {
 
     CassandraCqlClusterFactoryBean cluster = new CassandraCqlClusterFactoryBean();
     cluster.setContactPoints("localhost");
@@ -326,10 +323,11 @@ public class AppConfig {
     return cluster;
   }
 
-  /*
-   * Factory bean that creates the com.datastax.driver.core.Session instance
-   */
-   public @Bean CassandraCqlSessionFactoryBean session() {
+   /*
+    * Factory bean that creates the com.datastax.driver.core.Session instance
+    */
+   @Bean
+   public CassandraCqlSessionFactoryBean session() {
 
     CassandraCqlSessionFactoryBean session = new CassandraCqlSessionFactoryBean();
     session.setCluster(cluster().getObject());
@@ -404,7 +402,7 @@ you also with schema generation based on initial entities, if any are provided. 
 `AbstractCassandraConfiguration` requires you to at least provide the Keyspace name by implementing
 the `getKeyspaceName` method.
 
-.Registering Spring Data for Apache Cassandra beans using AbstractCassandraConfiguration
+.Registering Spring Data for Apache Cassandra beans using `AbstractCassandraConfiguration`
 ====
 [source,java]
 ----
@@ -963,226 +961,223 @@ are added or changed, the Spring Data for Apache Cassandra module will continue 
 See https://docs.datastax.com/en/cql/3.3/cql/cql_reference/cql_data_types_c.html[CQL data types]
 and <<mapping-conversion>> for the current type mapping matrix.
 
-[[cassandra-template.save-insert]]
-=== Methods for saving and inserting rows
 
-==== Single records inserts
+[[cassandra-template.insert-update]]
+=== Methods for inserting and updating rows
 
-To insert one row at a time, there are many options. At this point you should already have a `cassandraTemplate`
-available to you so we will just how the relevant code for each section, omitting the template setup.
+There are several convenient methods on `CassandraTemplate` for saving and inserting your objects. To have more fine-grained control over the conversion process you can register Spring converters with the `MappingCassandraConverter`, for example `Converter<Row, Person>`.
 
-Insert a record with an annotated POJO.
+NOTE: The difference between insert and update operations is that an `INSERT` operation will not insert `null` values.
 
+The simple case of using the insert operation is to save a POJO. In this case the table name will be determined by name (not fully qualified) of the class. The table to store the object can be overridden using mapping metadata.
+
+When inserting or updating, if the Id property is must be set. There are no means to generate an Id by Apache Cassandra.
+
+Here is a basic example of using the save operation and retrieving its contents.
+
+.Inserting and retrieving objects using the `CassandraTemplate`
+====
 [source,java]
 ----
-cassandraOperations.insert(new Person("123123123", "Alison", 39));
-----
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Query.query;
+…
 
-Insert a row using the `QueryBuilder.Insert` object that is part of the DataStax Java Driver.
+Person p = new Person("Bob", 33);
+cassandraTemplate.insert(p);
 
-[source,java]
+Person qp = cassandraTemplate.selectOne(query(where("age").is(33)), Person.class);
 ----
-Insert insert = QueryBuilder.insertInto("person");
-insert.setConsistencyLevel(ConsistencyLevel.ONE);
-insert.value("id", "123123123");
-insert.value("name", "Alison");
-insert.value("age", 39);
+====
 
-cassandraOperations.execute(insert);
-----
+The insert/save operations available to you are listed below.
+
+* `T` *insert* `(T objectToSave)` Insert the object in an Apache Cassandra table.
+* `T` *insert* `(T objectToSave, WriteOptions writeOptions)` Insert the object in an Apache Cassandra table applying `WriteOptions`.
+
+A similar set of update operations is listed below
+
+* `T` *update* `(T objectToSave)` Update the object in an Apache Cassandra table.
+* `T` *update* `(T objectToSave, WriteOptions writeOptions)` Update the object in an Apache Cassandra table applying `WriteOptions`.
 
 Then, there is always the old fashioned way. You can write your own CQL statements.
 
 [source,java]
 ----
-String cql = "insert into person (id, name, age) values ('123123123', 'Alison', 39)";
+String cql = "insert into person (age, name) values (39, 'Bob')";
 
-cassandraOperations.execute(cql);
+cqlOperations.execute(cql);
 ----
 
-==== Multiple inserts for high speed ingestion
+[[cassandra-template.insert-update.table]]
+==== Which table will my rows be inserted into?
 
-`CqlOperations`, which is extended by `CassandraOperations` is a low-level Template that you can use
-for just about anything you need to accomplish with Cassandra. `CqlOperations` includes several overloaded methods
-named `ingest()`.
+There are two ways to manage the collection name that is used for operating on the tables. The default table name that is used is the class name changed to start with a lower-case letter. So a `com.test.Person` class would be stored in the "person" table. You can customize this by providing a different collection name using the `@Table` annotation.
 
-Use these methods to pass a CQL String with Bind Markers, and your preferred flavor of data set
-(`Object[][]` and `List<List<T>>`).
+[[cassandra-template.batch]]
+==== Inserting, updating and deleting individual objects in a batch
 
-The `ingest` method takes advantage of static `PreparedStatements` that are only prepared once for performance.
-Each record in your data set is bound to the same `PreparedStatement`, then executed asynchronously for high performance.
+The Cassandra protocol supports inserting a collection of rows in one operation using a batch. The methods in the `CassandraTemplate` interface that support this functionality are listed below
 
+* *batchOps* Creates a new `CassandraBatchOperations` to populate the batch
+
+`CassandraBatchOperations`
+
+* *insert* Takes a single object, an array (var-args) or an `Iterable` of objects to insert.
+* *update* Takes a single object, an array (var-args) or an `Iterable` of objects to update.
+* *delete* Takes a single object, an array (var-args) or an `Iterable` of objects to delete.
+* *withTimestamp* Applies a TTL to the batch.
+* *execute* Executes the batch.
+
+[[cassandra-template.update]]
+=== Updating rows in a table
+
+For updates we can select to update a number of rows. Here is an example of an update a single account object where we are adding a one-time $50.00 bonus to the balance using the `+` assignment.
+
+.Updating rows using `CasandraTemplate`
+====
 [source,java]
 ----
-String cqlIngest = "insert into person (id, name, age) values (?, ?, ?)";
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.Update;
 
-List<Object> person1 = new ArrayList<Object>();
-person1.add("10000");
-person1.add("David");
-person1.add(40);
+...
 
-List<Object> person2 = new ArrayList<Object>();
-person2.add("10001");
-person2.add("Roger");
-person2.add(65);
+boolean applied = cassandraTemplate.update(Query.query(where("id").is("foo")),
+  Update.create().increment("balance", 50.00), Account.class);
+----
+====
 
-List<List<?>> people = new ArrayList<List<?>>();
-people.add(person1);
-people.add(person2);
+In addition to the `Query` discussed above we provide the update definition using an `Update` object. The `Update` class has methods that match the update assignments available for Apache Cassandra.
 
-cassandraOperations.ingest(cqlIngest, people);
+As you can see most methods return the `Update` object to provide a fluent style for the API.
+
+[[cassandra-template-update.methods]]
+==== Methods for executing updates for rows
+
+* `boolean` *update* `(Query query, Update update, Class<?> entityClass)` Update a selection of objects in the Apache Cassandra table.
+
+[[cassandra-template-update.update]]
+==== Methods for the Update class
+
+The Update class can be used with a little 'syntax sugar' as its methods are meant to be chained together and you can kick-start the creation of a new Update instance via the static method `public static Update update(String key, Object value)` and using static imports.
+
+Here is a listing of methods on the Update class
+
+* `AddToBuilder` *addTo* `(String columnName)` `AddToBuilder` entry-point:
+    * Update `prepend(Object value)` Prepend a collection value to the existing collection using the `+` update assignment.
+    * Update `prependAll(Object... values)` Prepend all collection value to the existing collection using the `+` update assignment.
+    * Update `append(Object value)` Append a collection value to the existing collection using the `+` update assignment.
+    * Update `append(Object... values)` Append all collection value to the existing collection using the `+` update assignment.
+    * Update `entry(Object key, Object value)` Add a map entry using the `+` update assignment.
+    * Update `addAll(Map<? extends Object, ? extends Object> map)` Add all map entries to the map using the `+` update assignment.
+* `Update` *remove* `(String columnName, Object value)` Remove the value from the collection using the `-` update assignment.
+* `Update` *clear* `(String columnName)` Clear the collection
+* `Update` *increment* `(String columnName, Number delta)` Update using the `+` update assignment
+* `Update` *decrement* `(String columnName, Number delta)` Update using the `-` update assignment
+* `Update` *set* `(String columnName, Object value)` Update using the `=` update assignment
+* `SetBuilder` *set* `(String columnName)` `SetBuilder` entry-point:
+    * Update `atIndex(int index).to(Object value)` Set a collection at the given index to a value using the `=` update assignment.
+    * Update `atKey(String object).to(Object value)` Set a map entry at the given key to a value the `=` update assignment.
+
+[source]
+----
+// UPDATE … SET key = 'Spring Data';
+Update.update("key", "Spring Data")
+
+// UPDATE … SET key[5] = 'Spring Data';
+Update.empty().set("key").atIndex(5).to("Spring Data");
+
+// UPDATE … SET key = key + ['Spring', 'DATA'];
+Update.empty().addTo("key").appendAll("Spring", "Data");
 ----
 
-[[cassandra-template-update]]
-=== Updating rows in a CQL table
-
-Much like inserting, there are several flavors of update from which you can choose.
-
-Update a record with an annotated POJO.
-
-[source,java]
-----
-cassandraOperations.update(new Person("123123123", "Alison", 35));
-----
-
-Update a row using the `QueryBuilder.Update` object that is part of the DataStax Java Driver.
-
-[source,java]
-----
-Update update = QueryBuilder.update("person");
-update.setConsistencyLevel(ConsistencyLevel.ONE);
-update.with(QueryBuilder.set("age", 35));
-update.where(QueryBuilder.eq("id", "123123123"));
-
-cassandraOperations.execute(update);
-----
-
-Then, there is always the old fashioned way. You can write your own CQL statements.
-
-[source,java]
-----
-String cql = "update person set age = 35 where id = '123123123'";
-
-cassandraOperations.execute(cql);
-----
+`Update` is immutable once created. Invoking methods will create new immutable (intermediate) `Update` objects.
 
 [[cassandra-template.delete]]
 === Methods for removing rows
 
-Much like inserting, there are several flavors of delete from which you can choose.
+You can use several overloaded methods to remove an object from the database.
 
-Delete a record with an annotated POJO.
+* `boolean` *delete* `(Query query, Class<?> entityClass)` Delete the objects selected by `Query`.
+* `T` *delete* `(T entity)` Delete the given object.
+* `T` *delete* `(T entity, QueryOptions queryOptions)` Delete the given object applying `QueryOptions`.
+* `boolean` *deleteById* `(Object id, Class<?> entityClass)` Delete the object using the given Id.
 
+[[cassandra-template.query]]
+== Querying Rows
+
+You can express your queries using the `Query` and `Criteria` classes which have method names that reflect the native Cassandra predicates operator names such as `lt`, `lte`, `is`, and others. The `Query` and `Criteria` classes follow a fluent API style so that you can easily chain together multiple method criteria and queries while having easy to understand the code. Static imports in Java are used to help creating `Query` and `Criteria` instances so as to improve readability.
+
+
+[[cassandra-template.query.table]]
+=== Querying rows in a table
+
+We saw how to retrieve a single object using the `selectOne` method on `CassandraTemplate` in previous sections which return a single domain object. We can also query for a collection of rows to be returned as a list of domain objects. Assuming that we have a number of Person objects with name and age stored as rows in a table and that each person has an account balance. We can now run a query using the following code.
+
+.Querying for rows using `CassandraTemplate`
+====
 [source,java]
 ----
-cassandraOperations.delete(new Person("123123123", null, 0));
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Query.query;
+
+…
+
+List<Person> result = cassandraTemplate.select(query(where("age").is(50))
+  .and(where("balance").gt(1000.00d)).withAllowFiltering(), Person.class);
 ----
+====
 
-Delete a row using the `QueryBuilder.Delete` object that is part of the DataStax Java Driver.
+`select`, `selectOne` and `stream` methods take a `Query` object as a parameter. This object defines the criteria and options used to perform the query. The criteria is specified using a `Criteria` object that has a static factory method named `where` used to instantiate a new `Criteria` object. We recommend using a static import for `org.springframework.data.cassandra.core.query.Criteria.where` and `Query.query` to make the query more readable.
 
-[source,java]
-----
-Delete delete = QueryBuilder.delete().from("person");
-delete.where(QueryBuilder.eq("id", "123123123"));
+This query should return a list of `Person` objects that meet the specified criteria. The `Criteria` class has the following methods that correspond to the operators provided in Apache Cassandra.
 
-cassandraOperations.execute(delete);
-----
+[[cassandra-template.query.criteria]]
+==== Methods for the Criteria class
 
-Then, there is always the old fashioned way. You can write your own CQL statements.
+* `CriteriaDefinition` *gt* `(Object value)` Creates a criterion using the `>` operator.
+* `CriteriaDefinition` *gte* `(Object value)` Creates a criterion using the `>=` operator.
+* `CriteriaDefinition` *in* `(Object... values)` Creates a criterion using the `IN` operator for a varargs argument.
+* `CriteriaDefinition` *in* `(Collection<?> collection)` Creates a criterion using the `IN` operator using a collection.
+* `CriteriaDefinition` *is* `(Object value)` Creates a criterion using field matching (`column = value`).
+* `CriteriaDefinition` *lt* `(Object value)` Creates a criterion using the `<` operator.
+* `CriteriaDefinition` *lte* `(Object value)` Creates a criterion using the `<=` operator.
+* `CriteriaDefinition` *like* `(Object value)` Creates a criterion using the `LIKE` operator.
+* `CriteriaDefinition` *contains* `(Object value)` Creates a criterion using the `CONTAINS` operator.
+* `CriteriaDefinition` *containsKey* `(Object key)` Creates a criterion using the `CONTAINS KEY` operator.
 
-[source,java]
-----
-String cql = "delete from person where id = '123123123'";
+`Criteria` is immutable once created.
 
-cassandraOperations.execute(cql);
-----
+The `Query` class has some additional methods used to provide options for the query.
 
-=== Methods for truncating tables
+[[cassandra-template.query.query-class]]
+==== Methods for the Query class
 
-Much like inserting, there are several flavors of truncate from which you can choose.
+* `Query` *by* `(CriteriaDefinition... criteria)` used to create a `Query` object.
+* `Query` *and* `(CriteriaDefinition criteria)` used to add additional criteria to the query.
+* `Query` *columns* `(Columns columns)` used to define columns to be included in the query results.
+* `Query` *limit* `(long limit)` used to limit the size of the returned results to the provided limit (used for paging).
+* `Query` *pagingState* `(PagingState pagingState)` used to associate a `PagingState` with the query (used for paging).
+* `Query` *queryOptions* `(QueryOptions queryOptions)` used to associate `QueryOptions` with the query.
+* `Query` *sort* `(Sort sort)` used to provide sort definition for the results.
+* `Query` *withAllowFiltering* `()` used render `ALLOW FILTERING` queries.
 
-Truncate a table using the `truncate()` method.
+`Query` is immutable once created. Invoking methods will create new immutable (intermediate) `Query` objects.
 
-[source,java]
-----
-cassandraOperations.truncate("person");
-----
+[[cassandra-template.query.rows]]
+=== Methods for querying for rows
 
-Truncate a table using the `QueryBuilder.Truncate` object that is part of the DataStax Java Driver.
+The query methods need to specify the target type T that will be returned.
 
-[source,java]
-----
-Truncate truncate = QueryBuilder.truncate("person");
+* `List<T>` *select* `(Query query, Class<T> entityClass)` Query for a list of objects of type T from the table.
+* `T` *selectOne* `(Query query, Class<T> entityClass)` Query for a single object of type T from the table.
+* `Stream<T>` *stream* `(Query query, Class<T> entityClass)` Query for a stream of objects of type T from the table.
 
-cassandraOperations.execute(truncate);
-----
-
-Then, there is always the old fashioned way. You can write your own CQL statements.
-
-[source,java]
-----
-String cql = "truncate person";
-
-cassandraOperations.execute(cql);
-----
-
-[[cassandra.query]]
-== Querying CQL Tables
-
-There are several flavors of select and query from which you can choose. Please see the `CassandraTemplate` API
-documentation for all overloads available.
-
-Query a table for multiple rows and map the results to a POJO.
-
-[source,java]
-----
-String cqlAll = "select * from person";
-
-List<Person> results = cassandraOperations.select(cqlAll, Person.class);
-for (Person p : results) {
-  LOG.info(String.format("Found People with Name [%s] for id [%s]", p.getName(), p.getId()));
-}
-----
-
-Query a table for a single row and map the result to a POJO.
-
-[source,java]
-----
-String cqlOne = "select * from person where id = '123123123'";
-
-Person p = cassandraOperations.selectOne(cqlOne, Person.class);
-LOG.info(String.format("Found Person with Name [%s] for id [%s]", p.getName(), p.getId()));
-----
-
-Query a table using the `QueryBuilder.Select` object that is part of the DataStax Java Driver.
-
-[source,java]
-----
-Select select = QueryBuilder.select().from("person");
-select.where(QueryBuilder.eq("id", "123123123"));
-
-Person p = cassandraOperations.selectOne(select, Person.class);
-LOG.info(String.format("Found Person with Name [%s] for id [%s]", p.getName(), p.getId()));
-----
-
-Then, there is always the old fashioned way. You can write your own CQL statements, and there are several
-callback handlers for mapping the results. The example uses the `RowMapper` interface.
-
-[source,java]
-----
-String cqlAll = "select * from person";
-List<Person> results = cassandraOperations.query(cqlAll, new RowMapper<Person>() {
-
-	public Person mapRow(Row row, int rowNum) throws DriverException {
-		Person p = new Person(row.getString("id"), row.getString("name"), row.getInt("age"));
-		return p;
-	}
-});
-
-for (Person p : results) {
-	LOG.info(String.format("Found People with Name [%s] for id [%s]", p.getName(), p.getId()));
-}
-----
+* `List<T>` *select* `(String cql, Class<T> entityClass)` Ad-hoc query for a list of objects of type T from the table providing a CQL statement.
+* `T` *selectOne* `(String cql, Class<T> entityClass)` Ad-hoc query for a single object of type T from the table providing a CQL statement.
+* `Stream<T>` *stream* `(String cql, Class<T> entityClass)` Ad-hoc query for a stream of objects of type T from the table providing a CQL statement.
 
 [[cassandra.custom-converters]]
 == Overriding default mapping with custom converters
