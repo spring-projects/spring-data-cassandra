@@ -88,7 +88,7 @@ public class CassandraAccessorUnitTests {
 	public void setAndGetSession() {
 
 		cassandraAccessor.setSession(mockSession);
-		assertThat(cassandraAccessor.getSession()).isSameAs(mockSession);
+		assertThat(cassandraAccessor.getSessionFactory().getSession()).isSameAs(mockSession);
 	}
 
 	@Test // DATACASS-286

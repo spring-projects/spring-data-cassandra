@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
 
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.*;
@@ -213,7 +213,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 	@Test // DATACASS-226
 	public void shouldSetSslOptions() throws Exception {
 
-		SSLOptions sslOptions = JdkSSLOptions.builder().build();
+		SSLOptions sslOptions = RemoteEndpointAwareJdkSSLOptions.builder().build();
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
 		bean.setSslEnabled(true);
@@ -272,7 +272,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 
 		final Cluster.Builder mockClusterBuilder = mock(Cluster.Builder.class);
 
-		when(mockClusterBuilder.addContactPoints(Matchers.<String[]> anyVararg())).thenReturn(mockClusterBuilder);
+		when(mockClusterBuilder.addContactPoints(anyString())).thenReturn(mockClusterBuilder);
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean() {
 			@Override
@@ -293,7 +293,7 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 
 		final Cluster.Builder mockClusterBuilder = mock(Cluster.Builder.class);
 
-		when(mockClusterBuilder.addContactPoints(Matchers.<String[]> anyVararg())).thenReturn(mockClusterBuilder);
+		when(mockClusterBuilder.addContactPoints(anyString())).thenReturn(mockClusterBuilder);
 
 		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean() {
 			@Override

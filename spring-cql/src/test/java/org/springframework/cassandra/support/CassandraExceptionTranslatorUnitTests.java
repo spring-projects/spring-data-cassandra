@@ -201,8 +201,8 @@ public class CassandraExceptionTranslatorUnitTests {
 	@Test // DATACASS-402
 	public void shouldTranslateWriteFailureException() {
 
-		DataAccessException result = sut
-				.translateExceptionIfPossible(new WriteFailureException(ConsistencyLevel.ALL, WriteType.BATCH, 1, 5, 1));
+		DataAccessException result = sut.translateExceptionIfPossible(
+				new WriteFailureException(ConsistencyLevel.ALL, WriteType.BATCH, 1, 5, 1, Collections.emptyMap()));
 
 		assertThat(result).isInstanceOf(DataAccessResourceFailureException.class)
 				.hasMessageStartingWith("Cassandra failure during").hasCauseInstanceOf(WriteFailureException.class);
@@ -211,8 +211,8 @@ public class CassandraExceptionTranslatorUnitTests {
 	@Test // DATACASS-402
 	public void shouldTranslateReadFailureException() {
 
-		DataAccessException result = sut
-				.translateExceptionIfPossible(new ReadFailureException(ConsistencyLevel.ALL, 1, 5, 1, true));
+		DataAccessException result = sut.translateExceptionIfPossible(
+				new ReadFailureException(ConsistencyLevel.ALL, 1, 5, 1, Collections.emptyMap(), true));
 
 		assertThat(result).isInstanceOf(DataAccessResourceFailureException.class)
 				.hasMessageStartingWith("Cassandra failure during").hasCauseInstanceOf(ReadFailureException.class);
