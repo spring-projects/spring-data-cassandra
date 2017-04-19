@@ -207,7 +207,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.notNull(action, "Callback object must not be null");
 
-		return createFlux(action).onErrorResumeWith(translateException("ReactiveSessionCallback", getCql(action)));
+		return createFlux(action).onErrorMap(translateException("ReactiveSessionCallback", getCql(action)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -241,7 +241,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 			}
 
 			return session.execute(stmt).flatMapMany(resultSetExtractor::extractData);
-		}).onErrorResumeWith(translateException("Query", cql));
+		}).onErrorMap(translateException("Query", cql));
 	}
 
 	/* (non-Javadoc)
@@ -308,7 +308,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 			}
 			return session.execute(statement);
-		}).otherwise(translateException("QueryForResultSet", cql));
+		}).onErrorMap(translateException("QueryForResultSet", cql));
 	}
 
 	/* (non-Javadoc)
@@ -317,7 +317,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Override
 	public Flux<Row> queryForRows(String cql) throws DataAccessException {
 		return queryForResultSet(cql).flatMapMany(ReactiveResultSet::rows)
-				.onErrorResumeWith(translateException("QueryForRows", cql));
+				.onErrorMap(translateException("QueryForRows", cql));
 	}
 
 	/* (non-Javadoc)
@@ -362,7 +362,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 			}
 
 			return session.execute(stmt).flatMapMany(rse::extractData);
-		}).onErrorResumeWith(translateException("Query", statement.toString()));
+		}).onErrorMap(translateException("Query", statement.toString()));
 	}
 
 	/* (non-Javadoc)
@@ -430,13 +430,13 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 			}
 
 			return session.execute(executedStatement);
-		}).otherwise(translateException("QueryForResultSet", statement.toString()));
+		}).onErrorMap(translateException("QueryForResultSet", statement.toString()));
 	}
 
 	@Override
 	public Flux<Row> queryForRows(Statement statement) throws DataAccessException {
 		return queryForResultSet(statement).flatMapMany(ReactiveResultSet::rows)
-				.onErrorResumeWith(translateException("QueryForRows", statement.toString()));
+				.onErrorMap(translateException("QueryForRows", statement.toString()));
 	}
 
 	// -------------------------------------------------------------------------
@@ -459,7 +459,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 			return psc.createPreparedStatement(session).doOnNext(this::applyStatementSettings)
 					.flatMapMany(ps -> action.doInPreparedStatement(session, ps));
-		}).onErrorResumeWith(translateException("ReactivePreparedStatementCallback", getCql(psc)));
+		}).onErrorMap(translateException("ReactivePreparedStatementCallback", getCql(psc)));
 	}
 
 	/* (non-Javadoc)
@@ -498,7 +498,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 			applyStatementSettings(boundStatement);
 
 			return session.execute(boundStatement);
-		}).flatMap(rse::extractData)).onErrorResumeWith(translateException("Query", getCql(psc)));
+		}).flatMap(rse::extractData)).onErrorMap(translateException("Query", getCql(psc)));
 	}
 
 	/* (non-Javadoc)
@@ -622,7 +622,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Override
 	public Flux<Row> queryForRows(String cql, Object... args) throws DataAccessException {
 		return queryForResultSet(cql, args).flatMapMany(ReactiveResultSet::rows)
-				.onErrorResumeWith(translateException("QueryForRows", cql));
+				.onErrorMap(translateException("QueryForRows", cql));
 	}
 
 	/* (non-Javadoc)
@@ -731,26 +731,14 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	/**
 	 * Exception translation {@link Function} intended for {@link Mono#otherwise(Function)} usage.
 	 *
-	 * @return the exception translation {@link Function}
-	 */
-	protected <T> Function<Throwable, Mono<? extends T>> translateException() {
-
-		return throwable -> Mono.error(
-				throwable instanceof DriverException ? translateExceptionIfPossible((DriverException) throwable) : throwable);
-	}
-
-	/**
-	 * Exception translation {@link Function} intended for {@link Mono#otherwise(Function)} usage.
-	 *
 	 * @param task readable text describing the task being attempted
 	 * @param cql CQL query or update that caused the problem (may be {@code null})
 	 * @return the exception translation {@link Function}
 	 * @see CqlProvider
 	 */
-	protected <T> Function<Throwable, Mono<? extends T>> translateException(String task, String cql) {
-
-		return throwable -> Mono
-				.error(throwable instanceof DriverException ? translate(task, cql, (DriverException) throwable) : throwable);
+	protected Function<Throwable, Throwable> translateException(String task, String cql) {
+		return throwable -> throwable instanceof DriverException ? translate(task, cql, (DriverException) throwable)
+				: throwable;
 	}
 
 	/**
