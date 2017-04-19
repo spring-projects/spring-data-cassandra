@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cassandra.test.integration.support.CassandraVersion;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -37,7 +38,6 @@ import org.springframework.data.cassandra.test.integration.repository.querymetho
 import org.springframework.data.cassandra.test.integration.repository.querymethods.derived.PersonRepository.PersonDto;
 import org.springframework.data.cassandra.test.integration.repository.querymethods.derived.PersonRepository.PersonProjection;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.CassandraVersion;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;

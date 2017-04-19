@@ -15,24 +15,33 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
+import static org.junit.Assume.*;
 import static org.springframework.cassandra.core.cql.generator.AlterUserTypeCqlGenerator.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cassandra.core.keyspace.AlterUserTypeSpecification;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.test.integration.support.CassandraVersion;
+import org.springframework.data.util.Version;
 
 import com.datastax.driver.core.DataType;
 
 /**
  * Integration tests for {@link AlterUserTypeCqlGenerator}.
- * 
+ *
  * @author Mark Paluch
  */
 public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
+	static final Version CASSANDRA_3_10 = Version.parse("3.10");
+
+	Version cassandraVersion;
+
 	@Before
 	public void setUp() throws Exception {
+
+		cassandraVersion = CassandraVersion.get(session);
 
 		session.execute("DROP TYPE IF EXISTS address;");
 		session.execute("CREATE TYPE address (zip text, state text);");
@@ -47,8 +56,10 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 		session.execute(toCql(spec));
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-429
 	public void alterTypeShouldAlterField() {
+
+		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10));
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
 				.alter("zip", DataType.varchar());

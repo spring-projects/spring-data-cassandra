@@ -37,11 +37,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.test.integration.support.CassandraVersion;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
-import org.springframework.data.cassandra.test.integration.support.CassandraVersion;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
 import org.springframework.data.util.Version;
 
@@ -58,7 +58,7 @@ import com.datastax.driver.core.SimpleStatement;
 @SuppressWarnings("Since15")
 public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
 
-	static final Version VERSION_3_1 = Version.parse("3.10");
+	static final Version VERSION_3_10 = Version.parse("3.10");
 
 	CassandraOperations operations;
 	Version cassandraVersion;
@@ -75,7 +75,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		SchemaTestUtils.truncate(AllPossibleTypes.class, operations);
 		SchemaTestUtils.truncate(TimeEntity.class, operations);
 
-		if (cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_1)) {
+		if (cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10)) {
 
 			SchemaTestUtils.potentiallyCreateTableFor(WithDuration.class, operations);
 			SchemaTestUtils.truncate(WithDuration.class, operations);
@@ -633,7 +633,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	@Test // DATACASS-429
 	public void shouldReadAndWriteDuration() {
 
-		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_1));
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
 		WithDuration withDuration = new WithDuration("foo", Duration.from("2h"));
 

@@ -16,6 +16,7 @@
 package org.springframework.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,6 +28,8 @@ import org.springframework.cassandra.core.keyspace.TableOption;
 import org.springframework.cassandra.core.keyspace.TableOption.CachingOption;
 import org.springframework.cassandra.core.keyspace.TableOption.KeyCachingOption;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.test.integration.support.CassandraVersion;
+import org.springframework.data.util.Version;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
@@ -40,15 +43,23 @@ import com.datastax.driver.core.TableMetadata;
  */
 public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
+	static final Version CASSANDRA_3_10 = Version.parse("3.10");
+
+	Version cassandraVersion;
+
 	@Before
 	public void setUp() throws Exception {
+
+		cassandraVersion = CassandraVersion.get(session);
 
 		session.execute("DROP TABLE IF EXISTS addamsFamily;");
 		session.execute("DROP TABLE IF EXISTS users;");
 	}
 
-	@Test // DATACASS-192
+	@Test // DATACASS-192, DATACASS-429
 	public void alterTableAlterColumnType() {
+
+		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10));
 
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation bigint);");
@@ -63,8 +74,10 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(column.getType()).isEqualTo(DataType.varint());
 	}
 
-	@Test // DATACASS-192
+	@Test // DATACASS-192, DATACASS-429
 	public void alterTableAlterListColumnType() {
+
+		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10));
 
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation list<ascii>);");
