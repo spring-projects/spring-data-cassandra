@@ -23,6 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -368,17 +369,36 @@ public class StringBasedCassandraQueryUnitTests {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private UserType createUserType(String typeName, Collection<Field> fields) {
 
 		try {
-			Constructor<UserType> constructor = UserType.class.getDeclaredConstructor(String.class, String.class,
-					Collection.class, ProtocolVersion.class, CodecRegistry.class);
-			constructor.setAccessible(true);
-			return constructor.newInstance(typeName, typeName, fields, ProtocolVersion.NEWEST_SUPPORTED,
-					CodecRegistry.DEFAULT_INSTANCE);
+
+			Constructor<UserType>[] declaredConstructors = (Constructor[]) UserType.class.getDeclaredConstructors();
+			for (Constructor<UserType> constructor : declaredConstructors) {
+
+				if (Modifier.isPrivate(constructor.getModifiers())) {
+					continue;
+				}
+
+				constructor.setAccessible(true);
+
+				if (constructor.getParameterCount() == 5) {
+					// Cassandra driver 3.0.x - 3.1.x
+					return constructor.newInstance(typeName, typeName, fields, ProtocolVersion.NEWEST_SUPPORTED,
+							CodecRegistry.DEFAULT_INSTANCE);
+				}
+
+				// Cassandra driver 3.2.x
+				return constructor.newInstance(typeName, typeName, false, fields, ProtocolVersion.NEWEST_SUPPORTED,
+						CodecRegistry.DEFAULT_INSTANCE);
+			}
+
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
+
+		throw new IllegalStateException("No suitable constructor found");
 	}
 
 	private interface SampleRepository extends Repository<Person, String> {

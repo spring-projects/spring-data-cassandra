@@ -36,6 +36,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.cassandra.mapping.UserTypeUtil.FrozenLiteralDataType;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.context.AbstractMappingContext;
@@ -376,13 +377,13 @@ public class BasicCassandraMappingContext
 
 		entity.getPersistentProperties().filter((property) -> !property.isCompositePrimaryKey()).forEach(property -> {
 			if (property.isIdProperty() || property.isPartitionKeyColumn()) {
-				specification.partitionKeyColumn(property.getColumnName(), getDataType(property));
+				specification.partitionKeyColumn(property.getColumnName(),
+						UserTypeUtil.potentiallyFreeze(getDataType(property)));
 			} else if (property.isClusterKeyColumn()) {
-				specification.clusteredKeyColumn(property.getColumnName(), getDataType(property),
-						property.getPrimaryKeyOrdering());
+				specification.clusteredKeyColumn(property.getColumnName(),
+						UserTypeUtil.potentiallyFreeze(getDataType(property)), property.getPrimaryKeyOrdering());
 			} else {
-				specification.column(property.getColumnName(), getDataType(property));
-
+				specification.column(property.getColumnName(), UserTypeUtil.potentiallyFreeze(getDataType(property)));
 			}
 		});
 
@@ -574,37 +575,5 @@ public class BasicCassandraMappingContext
 		 * @return
 		 */
 		abstract DataType getDataType(CassandraPersistentEntity<?> entity);
-	}
-
-	/**
-	 * @author Jens Schauder
-	 * @since 1.5.1
-	 */
-	static class FrozenLiteralDataType extends DataType {
-
-		private final CqlIdentifier type;
-
-		protected FrozenLiteralDataType(CqlIdentifier type) {
-
-			super(Name.UDT);
-
-			this.type = type;
-		}
-
-		/* (non-Javadoc)
-		 * @see com.datastax.driver.core.DataType#isFrozen()
-		 */
-		@Override
-		public boolean isFrozen() {
-			return true;
-		}
-
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
-		@Override
-		public String toString() {
-			return String.format("frozen<%s>", type.toCql());
-		}
 	}
 }

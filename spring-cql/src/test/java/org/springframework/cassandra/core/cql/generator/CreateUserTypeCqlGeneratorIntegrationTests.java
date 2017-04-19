@@ -71,7 +71,7 @@ public class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspace
 		assertThat(address.getFieldNames()).contains("zip", "city");
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-424
 	public void createNestedUserType() {
 
 		CreateUserTypeSpecification addressSpec = CreateUserTypeSpecification //
@@ -89,6 +89,12 @@ public class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspace
 				.name("person").ifNotExists().field("address", address) //
 				.field("city", DataType.varchar());
 
-		session.execute(toCql(personSpec));
+		// Cassandra driver compatibility code: driver 3.0.x for frozen UDT in UDT types.
+		String cql = toCql(personSpec);
+		if (!cql.contains("frozen<") && !cql.contains(".address>")) {
+			cql = cql.replaceAll("address .*\\.address", "address frozen<address>");
+		}
+
+		session.execute(cql);
 	}
 }
