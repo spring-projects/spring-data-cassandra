@@ -16,6 +16,10 @@
 package org.springframework.data.cassandra.convert;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -33,11 +37,15 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
+import org.springframework.data.cassandra.test.integration.support.CassandraVersion;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
+import org.springframework.data.util.Version;
 
+import com.datastax.driver.core.Duration;
 import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.SimpleStatement;
 
@@ -50,18 +58,28 @@ import com.datastax.driver.core.SimpleStatement;
 @SuppressWarnings("Since15")
 public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
 
+	static final Version VERSION_3_1 = Version.parse("3.10");
+
 	CassandraOperations operations;
+	Version cassandraVersion;
 
 	@Before
 	public void before() {
 
 		operations = new CassandraTemplate(session);
+		cassandraVersion = CassandraVersion.get(session);
 
 		SchemaTestUtils.potentiallyCreateTableFor(AllPossibleTypes.class, operations);
 		SchemaTestUtils.potentiallyCreateTableFor(TimeEntity.class, operations);
 
 		SchemaTestUtils.truncate(AllPossibleTypes.class, operations);
 		SchemaTestUtils.truncate(TimeEntity.class, operations);
+
+		if (cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_1)) {
+
+			SchemaTestUtils.potentiallyCreateTableFor(WithDuration.class, operations);
+			SchemaTestUtils.truncate(WithDuration.class, operations);
+		}
 	}
 
 	@Test // DATACASS-280
@@ -444,7 +462,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteLocalDate() throws Exception {
+	public void shouldReadAndWriteLocalDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setLocalDate(java.time.LocalDate.of(2010, 7, 4));
@@ -456,7 +474,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteLocalDateTime() throws Exception {
+	public void shouldReadAndWriteLocalDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setLocalDateTime(java.time.LocalDateTime.of(2010, 7, 4, 1, 2, 3));
@@ -468,7 +486,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteLocalTime() throws Exception {
+	public void shouldReadAndWriteLocalTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setLocalTime(java.time.LocalTime.of(1, 2, 3));
@@ -480,7 +498,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteInstant() throws Exception {
+	public void shouldReadAndWriteInstant() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setInstant(java.time.Instant.now());
@@ -492,7 +510,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteZoneId() throws Exception {
+	public void shouldReadAndWriteZoneId() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setZoneId(java.time.ZoneId.of("Europe/Paris"));
@@ -504,7 +522,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteJodaLocalDate() throws Exception {
+	public void shouldReadAndWriteJodaLocalDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setJodaLocalDate(new org.joda.time.LocalDate(2010, 7, 4));
@@ -516,7 +534,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteJodaDateMidnight() throws Exception {
+	public void shouldReadAndWriteJodaDateMidnight() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setJodaDateMidnight(new org.joda.time.DateMidnight(2010, 7, 4));
@@ -528,7 +546,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteJodaDateTime() throws Exception {
+	public void shouldReadAndWriteJodaDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setJodaDateTime(new org.joda.time.DateTime(2010, 7, 4, 1, 2, 3));
@@ -540,7 +558,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteBpLocalDate() throws Exception {
+	public void shouldReadAndWriteBpLocalDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBpLocalDate(org.threeten.bp.LocalDate.of(2010, 7, 4));
@@ -552,7 +570,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteBpLocalDateTime() throws Exception {
+	public void shouldReadAndWriteBpLocalDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBpLocalDateTime(org.threeten.bp.LocalDateTime.of(2010, 7, 4, 1, 2, 3));
@@ -564,7 +582,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteBpLocalTime() throws Exception {
+	public void shouldReadAndWriteBpLocalTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBpLocalTime(org.threeten.bp.LocalTime.of(1, 2, 3));
@@ -576,7 +594,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteBpInstant() throws Exception {
+	public void shouldReadAndWriteBpInstant() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBpInstant(org.threeten.bp.Instant.now());
@@ -588,7 +606,7 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteBpZoneId() throws Exception {
+	public void shouldReadAndWriteBpZoneId() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBpZoneId(org.threeten.bp.ZoneId.of("Europe/Paris"));
@@ -612,11 +630,33 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getCount()).isEqualTo(entity.getCount());
 	}
 
+	@Test // DATACASS-429
+	public void shouldReadAndWriteDuration() {
+
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_1));
+
+		WithDuration withDuration = new WithDuration("foo", Duration.from("2h"));
+
+		operations.insert(withDuration);
+
+		WithDuration loaded = operations.selectOneById(withDuration.getId(), WithDuration.class);
+
+		assertThat(loaded.getDuration()).isEqualTo(withDuration.getDuration());
+	}
+
 	private AllPossibleTypes load(AllPossibleTypes entity) {
 		return operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 	}
 
 	public enum Condition {
 		MINT
+	}
+
+	@Data
+	@AllArgsConstructor
+	static class WithDuration {
+
+		@Id String id;
+		Duration duration;
 	}
 }

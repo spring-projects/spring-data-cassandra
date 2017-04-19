@@ -86,15 +86,9 @@ public class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspace
 
 		CreateUserTypeSpecification personSpec = CreateUserTypeSpecification //
 				.createType() //
-				.name("person").ifNotExists().field("address", address) //
+				.name("person").ifNotExists().field("address", address.copy(true)) //
 				.field("city", DataType.varchar());
 
-		// Cassandra driver compatibility code: driver 3.0.x for frozen UDT in UDT types.
-		String cql = toCql(personSpec);
-		if (!cql.contains("frozen<") && !cql.contains(".address>")) {
-			cql = cql.replaceAll("address .*\\.address", "address frozen<address>");
-		}
-
-		session.execute(cql);
+		session.execute(toCql(personSpec));
 	}
 }

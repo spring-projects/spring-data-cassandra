@@ -186,6 +186,7 @@ class EmbeddedCassandraServerHelper {
 
 	private static void cleanupAndRecreateDirectories() throws IOException {
 
+		DatabaseDescriptor.daemonInitialization();
 		createCassandraDirectories();
 		cleanup();
 		createCassandraDirectories();
