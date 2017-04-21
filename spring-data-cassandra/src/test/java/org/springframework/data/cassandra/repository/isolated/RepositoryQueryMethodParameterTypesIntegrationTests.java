@@ -35,7 +35,7 @@ import org.springframework.cassandra.support.exception.CassandraInvalidQueryExce
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.cassandra.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
@@ -44,6 +44,7 @@ import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -109,7 +110,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 	@Test // DATACASS-296
 	public void shouldFindByAnnotatedDateParameter() {
 
-		CustomConversions customConversions = new CustomConversions(
+		CustomConversions customConversions = new CassandraCustomConversions(
 				Collections.singletonList(new DateToLocalDateConverter()));
 
 		mappingContext.setCustomConversions(customConversions);

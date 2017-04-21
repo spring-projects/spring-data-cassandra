@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,19 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.util.Map;
 
-import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.ClassUtils;
 
 /**
  * Represents a {@link ReturnedType} in the context of Spring Data Cassandra.
- * 
+ *
  * @author Mark Paluch
  */
 class CassandraReturnedType {
 
 	private final ReturnedType returnedType;
+
 	private final CustomConversions customConversions;
 
 	CassandraReturnedType(ReturnedType returnedType, CustomConversions customConversions) {

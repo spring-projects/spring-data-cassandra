@@ -36,7 +36,7 @@ import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.cassandra.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.util.StringUtils;
 
@@ -64,7 +64,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		converters.add(new PersonReadConverter());
 		converters.add(new PersonWriteConverter());
 
-		CustomConversions customConversions = new CustomConversions(converters);
+		CassandraCustomConversions customConversions = new CassandraCustomConversions(converters);
 		ctx.setCustomConversions(customConversions);
 	}
 
@@ -299,7 +299,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 	private CreateTableSpecification getCreateTableSpecificationFor(Class<?> persistentEntityClass) {
 
-		CustomConversions customConversions = new CustomConversions(Collections.EMPTY_LIST);
+		CassandraCustomConversions customConversions = new CassandraCustomConversions(Collections.EMPTY_LIST);
 		ctx.setCustomConversions(customConversions);
 
 		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(persistentEntityClass);

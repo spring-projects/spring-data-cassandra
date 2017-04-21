@@ -44,6 +44,7 @@ import org.springframework.data.cassandra.mapping.UserDefinedType;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -83,7 +84,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		@Override
 		public CustomConversions customConversions() {
-			return new CustomConversions(Arrays.asList(new UDTToCurrencyConverter(),
+			return new CassandraCustomConversions(Arrays.asList(new UDTToCurrencyConverter(),
 					new CurrencyToUDTConverter(new SimpleUserTypeResolver(cluster().getObject(), getKeyspaceName()))));
 		}
 	}
@@ -301,8 +302,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		Insert insert = QueryBuilder.insertInto("bank");
 		converter.write(bank, insert);
 
-		assertThat(insert.toString())
-				.isEqualTo("INSERT INTO bank (currency) VALUES ({currency:'EUR'});");
+		assertThat(insert.toString()).isEqualTo("INSERT INTO bank (currency) VALUES ({currency:'EUR'});");
 	}
 
 	@Test // DATACASS-172
@@ -360,8 +360,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		Insert insert = QueryBuilder.insertInto("bank");
 		converter.write(bank, insert);
 
-		assertThat(insert.toString())
-				.isEqualTo("INSERT INTO bank (othercurrencies) VALUES ([{currency:'EUR'}]);");
+		assertThat(insert.toString()).isEqualTo("INSERT INTO bank (othercurrencies) VALUES ([{currency:'EUR'}]);");
 	}
 
 	@Test // DATACASS-172

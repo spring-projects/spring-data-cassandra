@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.cassandra.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
@@ -34,6 +34,7 @@ import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Cluster;
@@ -76,7 +77,7 @@ abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbedded
 
 		@Override
 		public CustomConversions customConversions() {
-			return new CustomConversions(
+			return new CassandraCustomConversions(
 					Arrays.asList(AddressReadConverter.INSTANCE, AddressWriteConverter.INSTANCE, PhoneReadConverter.INSTANCE,
 							new PhoneWriteConverter(new SimpleUserTypeResolver(cluster().getObject(), getKeyspaceName()))));
 		}

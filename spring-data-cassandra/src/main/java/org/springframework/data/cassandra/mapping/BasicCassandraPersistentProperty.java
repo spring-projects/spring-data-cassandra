@@ -39,6 +39,7 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.Property;
+import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -105,7 +106,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 * @param userTypeResolver resolver for user-defined types.
 	 */
 	public BasicCassandraPersistentProperty(Property property, CassandraPersistentEntity<?> owner,
-			CassandraSimpleTypeHolder simpleTypeHolder, UserTypeResolver userTypeResolver) {
+			SimpleTypeHolder simpleTypeHolder, UserTypeResolver userTypeResolver) {
 
 		super(property, owner, simpleTypeHolder);
 

@@ -37,6 +37,7 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Row;
@@ -59,7 +60,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(new PersonReadConverter());
 		converters.add(new PersonWriteConverter());
-		CustomConversions customConversions = new CustomConversions(converters);
+		CustomConversions customConversions = new CassandraCustomConversions(converters);
 
 		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
 		mappingContext.setCustomConversions(customConversions);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,13 @@
  */
 package org.springframework.data.cassandra.convert;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityInstantiators;
 
 /**
@@ -34,7 +37,9 @@ import org.springframework.data.convert.EntityInstantiators;
 public abstract class AbstractCassandraConverter implements CassandraConverter, InitializingBean {
 
 	protected final ConversionService conversionService;
-	protected CustomConversions conversions = new CustomConversions();
+
+	protected CustomConversions conversions = new CassandraCustomConversions(Collections.emptyList());
+
 	protected EntityInstantiators instantiators = new EntityInstantiators();
 
 	/**

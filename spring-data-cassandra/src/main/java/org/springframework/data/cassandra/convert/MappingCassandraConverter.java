@@ -605,21 +605,21 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private Class<?> getTargetType(CassandraPersistentProperty property) {
 
-		if (getCustomConversions().hasCustomWriteTarget(property.getType())) {
-			return getCustomConversions().getCustomWriteTarget(property.getType());
-		}
+		return getCustomConversions().getCustomWriteTarget(property.getType()).orElseGet(() -> {
 
-		if (property.findAnnotation(CassandraType.class).isPresent()) {
+			if (property.findAnnotation(CassandraType.class).isPresent()) {
+				return getPropertyTargetType(property);
+			}
+
+			if (property.isCompositePrimaryKey() || getCustomConversions().isSimpleType(property.getType())
+					|| property.isCollectionLike()) {
+
+				return property.getType();
+			}
+
 			return getPropertyTargetType(property);
-		}
+		});
 
-		if (property.isCompositePrimaryKey() || getCustomConversions().isSimpleType(property.getType())
-				|| property.isCollectionLike()) {
-
-			return property.getType();
-		}
-
-		return getPropertyTargetType(property);
 	}
 
 	private Class<?> getPropertyTargetType(CassandraPersistentProperty property) {
@@ -673,8 +673,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (getCustomConversions().hasCustomWriteTarget(value.getClass())) {
 
-			return Optional.ofNullable(getConversionService().convert(value,
-					(Class<O>) getCustomConversions().getCustomWriteTarget(value.getClass())));
+			return getCustomConversions().getCustomWriteTarget(value.getClass()).map(it -> {
+
+				return getConversionService().convert(value, (Class<O>) it);
+			});
 		}
 
 		TypeInformation<?> type = (typeInformation != null ? typeInformation : ClassTypeInformation.from(value.getClass()));
@@ -726,9 +728,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (optionalValue.isPresent()) {
 
 			Object value = optionalValue.get();
-			if (getCustomConversions().hasCustomWriteTarget(value.getClass(), requestedTargetType)) {
-				return Optional.ofNullable((O) getConversionService().convert(value,
-						getCustomConversions().getCustomWriteTarget(value.getClass(), requestedTargetType)));
+
+			if (getCustomConversions().hasCustomWriteTarget(value.getClass())) {
+
+				return getCustomConversions().getCustomWriteTarget(value.getClass()).map(it -> {
+
+					return getConversionService().convert(value, (Class<O>) it);
+				});
 			}
 
 			// Cassandra has no default enum handling - convert it either to string

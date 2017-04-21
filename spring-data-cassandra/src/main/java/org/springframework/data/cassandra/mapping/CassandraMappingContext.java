@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.CreateUserTypeSpecification;
-import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.mapping.context.MappingContext;
 
 import com.datastax.driver.core.DataType;
@@ -137,11 +136,11 @@ public interface CassandraMappingContext
 
 	/**
 	 * Retrieve the data type of the property. Cassandra {@link DataType types} are determined using simple types and
-	 * configured {@link CustomConversions}.
+	 * configured {@link org.springframework.data.convert.CustomConversions}.
 	 *
 	 * @param property must not be {@literal null}.
 	 * @return the Cassandra {@link DataType type}.
-	 * @see CustomConversions
+	 * @see org.springframework.data.convert.CustomConversions
 	 * @see CassandraSimpleTypeHolder
 	 * @since 1.5
 	 */
@@ -149,11 +148,11 @@ public interface CassandraMappingContext
 
 	/**
 	 * Retrieve the data type based on the given {@code type}. Cassandra {@link DataType types} are determined using
-	 * simple types and configured {@link CustomConversions}.
+	 * simple types and configured {@link org.springframework.data.convert.CustomConversions}.
 	 *
 	 * @param type must not be {@literal null}.
 	 * @return the Cassandra {@link DataType type}.
-	 * @see CustomConversions
+	 * @see org.springframework.data.convert.CustomConversions
 	 * @see CassandraSimpleTypeHolder
 	 * @since 1.5
 	 */

@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingConverter;
@@ -39,6 +38,7 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryExecuti
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultSetQuery;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SingleEntityExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.StreamExecution;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;

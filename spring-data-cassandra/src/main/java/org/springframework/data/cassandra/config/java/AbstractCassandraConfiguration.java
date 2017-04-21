@@ -28,7 +28,7 @@ import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.cassandra.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
@@ -36,6 +36,7 @@ import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.context.MappingContext;
 
 /**
@@ -126,7 +127,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 */
 	@Bean
 	public CustomConversions customConversions() {
-		return new CustomConversions(Collections.emptyList());
+		return new CassandraCustomConversions(Collections.emptyList());
 	}
 
 	/**

@@ -35,7 +35,7 @@ import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.convert.CustomConversions;
+import org.springframework.data.cassandra.convert.CassandraCustomConversions;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -305,15 +305,15 @@ public class BasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-296
 	public void shouldCreatePersistentEntityIfNoConversionRegistered() {
 
-		mappingContext.setCustomConversions(new CustomConversions(Collections.EMPTY_LIST));
+		mappingContext.setCustomConversions(new CassandraCustomConversions(Collections.EMPTY_LIST));
 		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class))).isTrue();
 	}
 
 	@Test // DATACASS-296
 	public void shouldNotCreateEntitiesForCustomConvertedTypes() {
 
-		mappingContext
-				.setCustomConversions(new CustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
+		mappingContext.setCustomConversions(
+				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
 		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class))).isFalse();
 	}
@@ -321,8 +321,8 @@ public class BasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-349
 	public void propertyTypeShouldConsiderRegisteredConverterForPropertyType() {
 
-		mappingContext
-				.setCustomConversions(new CustomConversions(Collections.singletonList(StringMapToStringConverter.INSTANCE)));
+		mappingContext.setCustomConversions(
+				new CassandraCustomConversions(Collections.singletonList(StringMapToStringConverter.INSTANCE)));
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(TypeWithCustomConvertedMap.class);
@@ -337,8 +337,8 @@ public class BasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-349
 	public void propertyTypeShouldConsiderRegisteredConverterForCollectionComponentType() {
 
-		mappingContext
-				.setCustomConversions(new CustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
+		mappingContext.setCustomConversions(
+				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(TypeWithListOfHumans.class);
