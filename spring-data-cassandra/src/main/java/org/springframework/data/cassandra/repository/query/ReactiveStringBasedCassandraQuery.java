@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,18 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import reactor.core.publisher.Flux;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cassandra.core.ReactiveSessionCallback;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.SimpleStatement;
 
 /**
- * String-based {@link AbstractCassandraQuery} implementation.
+ * String-based {@link AbstractReactiveCassandraQuery} implementation.
  * <p>
  * A {@link ReactiveStringBasedCassandraQuery} expects a query method to be annotated with
  * {@link org.springframework.data.cassandra.repository.Query} with a CQL query. String-based queries support named,
@@ -81,24 +77,18 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 
 		Assert.hasText(query, "Query must not be empty");
 
-		// this blocking operation is to retrieve the underlying Cluster and does not include any I/O here.
-		Cluster cluster = operations.getReactiveCqlOperations()
-				.execute((ReactiveSessionCallback<Cluster>) session -> Flux.just(session.getCluster())).blockFirst();
-
-		CodecRegistry codecRegistry = cluster.getConfiguration().getCodecRegistry();
-
 		this.stringBasedQuery = new StringBasedQuery(query,
-				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider), codecRegistry);
+				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor)
 	 */
 	@Override
-	public String createQuery(CassandraParameterAccessor parameterAccessor) {
+	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
 
 		try {
-			String boundQuery = stringBasedQuery.bindQuery(parameterAccessor, getQueryMethod());
+			SimpleStatement boundQuery = stringBasedQuery.bindQuery(parameterAccessor, getQueryMethod());
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(String.format("Created query [%s].", boundQuery));

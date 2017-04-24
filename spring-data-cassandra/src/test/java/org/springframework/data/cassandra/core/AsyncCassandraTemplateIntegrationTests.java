@@ -24,9 +24,17 @@ import org.junit.Test;
 import org.springframework.cassandra.core.AsyncCqlTemplate;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.query.Columns;
+import org.springframework.data.cassandra.core.query.Criteria;
+import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.concurrent.ListenableFuture;
+
+import com.datastax.driver.core.utils.UUIDs;
 
 /**
  * Integration tests for {@link AsyncCassandraTemplate}.
@@ -45,7 +53,45 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		template = new AsyncCassandraTemplate(new AsyncCqlTemplate(session), converter);
 
 		SchemaTestUtils.potentiallyCreateTableFor(Person.class, cassandraTemplate);
+		SchemaTestUtils.potentiallyCreateTableFor(UserToken.class, cassandraTemplate);
 		SchemaTestUtils.truncate(Person.class, cassandraTemplate);
+		SchemaTestUtils.truncate(UserToken.class, cassandraTemplate);
+	}
+
+	@Test // DATACASS-343
+	public void shouldSelectByQueryWithSorting() {
+
+		UserToken token1 = new UserToken();
+		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserComment("foo");
+
+		UserToken token2 = new UserToken();
+		token2.setUserId(token1.getUserId());
+		token2.setToken(UUIDs.endOf(System.currentTimeMillis() + 100));
+		token2.setUserComment("bar");
+
+		getUninterruptibly(template.insert(token1));
+		getUninterruptibly(template.insert(token2));
+
+		Query query = Query.query(Criteria.where("userId").is(token1.getUserId())).sort(Sort.by("token"));
+
+		assertThat(getUninterruptibly(template.select(query, UserToken.class))).containsSequence(token1, token2);
+	}
+
+	@Test // DATACASS-343
+	public void shouldSelectOneByQuery() {
+
+		UserToken token1 = new UserToken();
+		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserComment("foo");
+
+		getUninterruptibly(template.insert(token1));
+
+		Query query = Query.query(Criteria.where("userId").is(token1.getUserId()));
+
+		assertThat(getUninterruptibly(template.selectOne(query, UserToken.class))).isEqualTo(token1);
 	}
 
 	@Test // DATACASS-292
@@ -83,6 +129,48 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		assertThat(updated).isNotNull();
 		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isEqualTo(person);
+	}
+
+	@Test // DATACASS-343
+	public void updateShouldUpdateEntityByQuery() throws Exception {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+		template.insert(person).get();
+
+		Query query = Query.query(Criteria.where("id").is("heisenberg"));
+		boolean result = getUninterruptibly(
+				template.update(query, Update.empty().set("firstname", "Walter Hartwell"), Person.class));
+		assertThat(result).isTrue();
+
+		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class)).getFirstname())
+				.isEqualTo("Walter Hartwell");
+	}
+
+	@Test // DATACASS-343
+	public void deleteByQueryShouldRemoveEntity() throws Exception {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+		template.insert(person).get();
+
+		Query query = Query.query(Criteria.where("id").is("heisenberg"));
+		assertThat(getUninterruptibly(template.delete(query, Person.class))).isTrue();
+
+		assertThat(getUninterruptibly(template.selectOneById(person.getId(), Person.class))).isNull();
+	}
+
+	@Test // DATACASS-343
+	public void deleteColumnsByQueryShouldRemoveColumn() throws Exception {
+
+		Person person = new Person("heisenberg", "Walter", "White");
+		template.insert(person).get();
+
+		Query query = Query.query(Criteria.where("id").is("heisenberg")).columns(Columns.from("lastname"));
+
+		assertThat(getUninterruptibly(template.delete(query, Person.class))).isTrue();
+
+		Person loaded = getUninterruptibly(template.selectOneById(person.getId(), Person.class));
+		assertThat(loaded.getFirstname()).isEqualTo("Walter");
+		assertThat(loaded.getLastname()).isNull();
 	}
 
 	@Test // DATACASS-292

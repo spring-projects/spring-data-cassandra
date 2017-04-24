@@ -33,6 +33,9 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -44,6 +47,8 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.cassandra.repository.support.MappingCassandraEntityInformation;
 import org.springframework.data.repository.query.parser.PartTree;
+
+import com.datastax.driver.core.RegularStatement;
 
 /**
  * Unit tests for {@link CassandraQueryCreator}.
@@ -268,9 +273,13 @@ public class CassandraQueryCreatorUnitTests {
 	private String createQuery(String source, Class<?> entityClass, Object... values) {
 
 		PartTree tree = new PartTree(source, entityClass);
-		CassandraQueryCreator creator = new CassandraQueryCreator(tree, getAccessor(converter, values), context,
-				getEntityInformation(entityClass));
-		return creator.createQuery().toString();
+		CassandraQueryCreator creator = new CassandraQueryCreator(tree, getAccessor(converter, values), context);
+
+		StatementFactory factory = new StatementFactory(new UpdateMapper(converter));
+		Query query = creator.createQuery();
+
+		RegularStatement select = factory.select(query, context.getRequiredPersistentEntity(entityClass));
+		return select.toString();
 	}
 
 	@SuppressWarnings("unchecked")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.repository.query;
 
 import lombok.NonNull;
@@ -27,6 +26,8 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.ClassUtils;
 
+import com.datastax.driver.core.Statement;
+
 /**
  * Query executions for Cassandra.
  *
@@ -35,7 +36,7 @@ import org.springframework.util.ClassUtils;
  */
 interface CassandraQueryExecution {
 
-	Object execute(String query, Class<?> type);
+	Object execute(Statement statement, Class<?> type);
 
 	/**
 	 * {@link CassandraQueryExecution} for a Stream.
@@ -52,8 +53,8 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(String query, Class<?> type) {
-			return operations.stream(query, type).map(resultProcessing::convert);
+		public Object execute(Statement statement, Class<?> type) {
+			return operations.stream(statement, type).map(resultProcessing::convert);
 		}
 	}
 
@@ -71,8 +72,8 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(String query, Class<?> type) {
-			return operations.select(query, type);
+		public Object execute(Statement statement, Class<?> type) {
+			return operations.select(statement, type);
 		}
 	}
 
@@ -90,8 +91,8 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(String query, Class<?> type) {
-			return operations.selectOne(query, type);
+		public Object execute(Statement statement, Class<?> type) {
+			return operations.selectOne(statement, type);
 		}
 	}
 
@@ -109,8 +110,8 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(String query, Class<?> type) {
-			return operations.getCqlOperations().queryForResultSet(query);
+		public Object execute(Statement statement, Class<?> type) {
+			return operations.getCqlOperations().queryForResultSet(statement);
 		}
 	}
 
@@ -129,8 +130,8 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(String query, Class<?> type) {
-			return converter.convert(delegate.execute(query, type));
+		public Object execute(Statement statement, Class<?> type) {
+			return converter.convert(delegate.execute(statement, type));
 		}
 	}
 
