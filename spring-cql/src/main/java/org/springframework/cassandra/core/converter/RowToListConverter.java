@@ -34,9 +34,9 @@ import com.datastax.driver.core.Row;
  * @author Antoine Toulme
  */
 @ReadingConverter
-public class RowToListConverter implements Converter<Row, List<Object>> {
+public enum RowToListConverter implements Converter<Row, List<Object>> {
 
-	public final static RowToListConverter INSTANCE = new RowToListConverter();
+	INSTANCE;
 
 	/* (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)

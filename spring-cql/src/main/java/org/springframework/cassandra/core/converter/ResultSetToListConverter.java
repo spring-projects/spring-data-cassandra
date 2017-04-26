@@ -38,7 +38,7 @@ public class ResultSetToListConverter implements Converter<ResultSet, List<Map<S
 	 * Create a new {@link ResultSetToListConverter} using a default {@link RowToMapConverter}.
 	 */
 	public ResultSetToListConverter() {
-		this(new RowToMapConverter());
+		this(RowToMapConverter.INSTANCE);
 	}
 
 	/**

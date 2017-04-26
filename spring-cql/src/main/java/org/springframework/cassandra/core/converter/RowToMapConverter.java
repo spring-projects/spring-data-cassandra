@@ -34,9 +34,9 @@ import com.datastax.driver.core.Row;
  * @author Antoine Toulme
  */
 @ReadingConverter
-public class RowToMapConverter implements Converter<Row, Map<String, Object>> {
+public enum RowToMapConverter implements Converter<Row, Map<String, Object>> {
 
-	public final static RowToMapConverter INSTANCE = new RowToMapConverter();
+	INSTANCE;
 
 	/* (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)

@@ -21,9 +21,14 @@ import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.driver.core.Row;
 
-public class RowToArrayConverter implements Converter<Row, Object[]> {
+/**
+ * Converter to convert {@link Row} to {@link Object} array.
+ *
+ * @author Mark Paluch
+ */
+public enum RowToArrayConverter implements Converter<Row, Object[]> {
 
-	protected RowToListConverter delegate = new RowToListConverter();
+	INSTANCE;
 
 	/* (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
@@ -31,7 +36,7 @@ public class RowToArrayConverter implements Converter<Row, Object[]> {
 	@Override
 	public Object[] convert(Row row) {
 
-		List<Object> list = delegate.convert(row);
+		List<Object> list = RowToListConverter.INSTANCE.convert(row);
 		return list == null ? null : list.toArray();
 	}
 }
