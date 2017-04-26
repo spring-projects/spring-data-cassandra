@@ -19,7 +19,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.policies.RetryPolicy;
 
 /**
  * Cassandra Query Options for queries. {@link QueryOptions} allow tuning of various query options on a per-request
@@ -31,10 +33,8 @@ import com.datastax.driver.core.SocketOptions;
 public class QueryOptions {
 
 	private ConsistencyLevel consistencyLevel;
-	private com.datastax.driver.core.ConsistencyLevel driverConsistencyLevel;
 
 	private RetryPolicy retryPolicy;
-	private com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy;
 
 	private Boolean tracing;
 
@@ -69,109 +69,42 @@ public class QueryOptions {
 	}
 
 	/**
-	 * Returns the {@link ConsistencyLevel}.
+	 * Sets the driver {@link ConsistencyLevel}. Setting both ({@link ConsistencyLevel} and {@link ConsistencyLevel driver
+	 * ConsistencyLevel}) consistency levels is not supported.
 	 *
-	 * @return the consistencyLevel.
-	 * @deprecated as of 1.5, use {@link #setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel)}
-	 */
-	@Deprecated
-	public ConsistencyLevel getConsistencyLevel() {
-		return consistencyLevel;
-	}
-
-	/**
-	 * Sets the driver {@link ConsistencyLevel}. Setting both ({@link ConsistencyLevel} and
-	 * {@link com.datastax.driver.core.ConsistencyLevel driver ConsistencyLevel}) consistency levels is not supported.
-	 *
-	 * @param consistencyLevel the consistencyLevel to set.
-	 * @throws IllegalStateException if the {@link com.datastax.driver.core.ConsistencyLevel driver ConsistencyLevel} is
-	 *           set
+	 * @param consistencyLevel the driver {@link ConsistencyLevel} to set.
+	 * @since 1.5
 	 */
 	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
-
-		if (this.driverConsistencyLevel != null && consistencyLevel != null) {
-			throw new IllegalStateException(
-					"ConsistencyLevel cannot not be set if the Driver ConsistencyLevel is already set");
-		}
-
 		this.consistencyLevel = consistencyLevel;
 	}
 
 	/**
-	 * Sets the driver {@link com.datastax.driver.core.ConsistencyLevel}. Setting both ({@link ConsistencyLevel} and
-	 * {@link com.datastax.driver.core.ConsistencyLevel driver ConsistencyLevel}) consistency levels is not supported.
-	 *
-	 * @param driverConsistencyLevel the driver {@link com.datastax.driver.core.ConsistencyLevel} to set.
-	 * @since 1.5
-	 * @throws IllegalStateException if the {@link ConsistencyLevel} is set
-	 */
-	public void setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel driverConsistencyLevel) {
-
-		if (this.consistencyLevel != null && driverConsistencyLevel != null) {
-			throw new IllegalStateException(
-					"Driver ConsistencyLevel cannot not be set if the ConsistencyLevel is already set");
-		}
-
-		this.driverConsistencyLevel = driverConsistencyLevel;
-	}
-
-	/**
-	 * @return the the driver {@link com.datastax.driver.core.ConsistencyLevel}
+	 * @return the the driver {@link ConsistencyLevel}
 	 * @since 1.5
 	 */
-	protected com.datastax.driver.core.ConsistencyLevel getDriverConsistencyLevel() {
-		return driverConsistencyLevel;
+	protected ConsistencyLevel getConsistencyLevel() {
+		return consistencyLevel;
 	}
 
 	/**
-	 * Returns the {@link RetryPolicy}.
+	 * Sets the {@link RetryPolicy}. Setting both ({@link RetryPolicy} and {@link RetryPolicy driver RetryPolicy}) retry
+	 * policies is not supported.
 	 *
-	 * @return the retryPolicy or {@literal null} if the {@link RetryPolicy} is not set.
-	 */
-	public RetryPolicy getRetryPolicy() {
-		return retryPolicy;
-	}
-
-	/**
-	 * Sets the {@link RetryPolicy}. Setting both ({@link RetryPolicy} and
-	 * {@link com.datastax.driver.core.policies.RetryPolicy driver RetryPolicy}) retry policies is not supported.
-	 *
-	 * @param retryPolicy the retryPolicy to set.
-	 * @throws IllegalStateException if the {@link com.datastax.driver.core.policies.RetryPolicy driver RetryPolicy} is
-	 *           set
+	 * @param retryPolicy the driver {@link RetryPolicy} to set.
+	 * @since 1.5
+	 * @throws IllegalStateException if the {@link RetryPolicy} is set
 	 */
 	public void setRetryPolicy(RetryPolicy retryPolicy) {
-
-		if (this.driverRetryPolicy != null && retryPolicy != null) {
-			throw new IllegalStateException("RetryPolicy cannot not be set if the Driver RetryPolicy is already set");
-		}
-
 		this.retryPolicy = retryPolicy;
 	}
 
 	/**
-	 * Sets the {@link com.datastax.driver.core.policies.RetryPolicy}. Setting both ({@link RetryPolicy} and
-	 * {@link com.datastax.driver.core.policies.RetryPolicy driver RetryPolicy}) retry policies is not supported.
-	 *
-	 * @param driverRetryPolicy the driver {@link com.datastax.driver.core.policies.RetryPolicy} to set.
-	 * @since 1.5
-	 * @throws IllegalStateException if the {@link RetryPolicy} is set
-	 */
-	public void setRetryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
-
-		if (this.retryPolicy != null && driverRetryPolicy != null) {
-			throw new IllegalStateException("Driver RetryPolicy cannot not be set if the RetryPolicy is already set");
-		}
-
-		this.driverRetryPolicy = driverRetryPolicy;
-	}
-
-	/**
-	 * @return the driver {@link com.datastax.driver.core.policies.RetryPolicy}
+	 * @return the driver {@link RetryPolicy}
 	 * @since 1.5
 	 */
-	protected com.datastax.driver.core.policies.RetryPolicy getDriverRetryPolicy() {
-		return driverRetryPolicy;
+	protected RetryPolicy getRetryPolicy() {
+		return retryPolicy;
 	}
 
 	/**
@@ -250,10 +183,9 @@ public class QueryOptions {
 	 */
 	public static class QueryOptionsBuilder {
 
-		private com.datastax.driver.core.ConsistencyLevel driverConsistencyLevel;
+		private ConsistencyLevel consistencyLevel;
 
 		private RetryPolicy retryPolicy;
-		private com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy;
 
 		private Boolean tracing;
 
@@ -264,53 +196,31 @@ public class QueryOptions {
 		QueryOptionsBuilder() {}
 
 		/**
-		 * Sets the {@link com.datastax.driver.core.ConsistencyLevel} to use.
+		 * Sets the {@link ConsistencyLevel} to use.
 		 *
-		 * @param driverConsistencyLevel must not be {@literal null}.
+		 * @param consistencyLevel must not be {@literal null}.
 		 * @return {@code this} {@link QueryOptionsBuilder}
 		 */
-		public QueryOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel driverConsistencyLevel) {
+		public QueryOptionsBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 
-			Assert.notNull(driverConsistencyLevel, "Driver ConsistencyLevel must not be null");
+			Assert.notNull(consistencyLevel, "ConsistencyLevel must not be null");
 
-			this.driverConsistencyLevel = driverConsistencyLevel;
+			this.consistencyLevel = consistencyLevel;
 			return this;
 		}
 
 		/**
-		 * Sets the {@link RetryPolicy} to use. Setting both ({@link RetryPolicy} and
-		 * {@link com.datastax.driver.core.policies.RetryPolicy driver RetryPolicy}) retry policies is not supported.
+		 * Sets the {@link RetryPolicy driver RetryPolicy} to use. Setting both ( {@link RetryPolicy} and {@link RetryPolicy
+		 * driver RetryPolicy}) retry policies is not supported.
 		 *
 		 * @param retryPolicy must not be {@literal null}.
 		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @throws IllegalStateException if the {@link com.datastax.driver.core.policies.RetryPolicy driver RetryPolicy} is
-		 *           set
 		 */
 		public QueryOptionsBuilder retryPolicy(RetryPolicy retryPolicy) {
 
 			Assert.notNull(retryPolicy, "RetryPolicy must not be null");
-			Assert.state(this.driverRetryPolicy == null,
-					"RetryPolicy cannot not be set if the Driver RetryPolicy is already set");
 
 			this.retryPolicy = retryPolicy;
-			return this;
-		}
-
-		/**
-		 * Sets the {@link com.datastax.driver.core.policies.RetryPolicy driver RetryPolicy} to use. Setting both (
-		 * {@link RetryPolicy} and {@link com.datastax.driver.core.policies.RetryPolicy driver RetryPolicy}) retry policies
-		 * is not supported.
-		 *
-		 * @param driverRetryPolicy must not be {@literal null}.
-		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @throws IllegalStateException if the {@link RetryPolicy} is set
-		 */
-		public QueryOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
-
-			Assert.notNull(driverRetryPolicy, "Driver RetryPolicy must not be null");
-			Assert.state(this.retryPolicy == null, "Driver RetryPolicy cannot not be set if the RetryPolicy is already set");
-
-			this.driverRetryPolicy = driverRetryPolicy;
 			return this;
 		}
 
@@ -405,9 +315,8 @@ public class QueryOptions {
 
 		<T extends QueryOptions> T applyOptions(T queryOptions) {
 
-			queryOptions.setConsistencyLevel(driverConsistencyLevel);
+			queryOptions.setConsistencyLevel(consistencyLevel);
 			queryOptions.setRetryPolicy(retryPolicy);
-			queryOptions.setRetryPolicy(driverRetryPolicy);
 
 			if (fetchSize != null) {
 				queryOptions.setFetchSize(fetchSize);

@@ -79,7 +79,7 @@ public class CompositeKeyCrudIntegrationTests extends AbstractKeyspaceCreatingIn
 		assertThat(correlationEntities).hasSize(2);
 
 		QueryOptions queryOptions = new QueryOptions();
-		queryOptions.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.ONE);
+		queryOptions.setConsistencyLevel(ConsistencyLevel.ONE);
 
 		operations.delete(correlationEntity1, queryOptions);
 		operations.delete(correlationEntity2, queryOptions);

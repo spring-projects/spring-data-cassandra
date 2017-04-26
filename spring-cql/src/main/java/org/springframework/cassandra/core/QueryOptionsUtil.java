@@ -43,16 +43,11 @@ public abstract class QueryOptionsUtil {
 		Assert.notNull(preparedStatement, "PreparedStatement must not be null");
 
 		if (queryOptions != null) {
-			if (queryOptions.getDriverConsistencyLevel() != null) {
-				preparedStatement.setConsistencyLevel(queryOptions.getDriverConsistencyLevel());
-			} else if (queryOptions.getConsistencyLevel() != null) {
-				preparedStatement.setConsistencyLevel(ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
+			if (queryOptions.getConsistencyLevel() != null) {
+				preparedStatement.setConsistencyLevel(queryOptions.getConsistencyLevel());
 			}
-
-			if (queryOptions.getDriverRetryPolicy() != null) {
-				preparedStatement.setRetryPolicy(queryOptions.getDriverRetryPolicy());
-			} else if (queryOptions.getRetryPolicy() != null) {
-				preparedStatement.setRetryPolicy(RetryPolicyResolver.resolve(queryOptions.getRetryPolicy()));
+			if (queryOptions.getRetryPolicy() != null) {
+				preparedStatement.setRetryPolicy(queryOptions.getRetryPolicy());
 			}
 		}
 
@@ -71,16 +66,12 @@ public abstract class QueryOptionsUtil {
 		Assert.notNull(statement, "Statement must not be null");
 
 		if (queryOptions != null) {
-			if (queryOptions.getDriverConsistencyLevel() != null) {
-				statement.setConsistencyLevel(queryOptions.getDriverConsistencyLevel());
-			} else if (queryOptions.getConsistencyLevel() != null) {
-				statement.setConsistencyLevel(ConsistencyLevelResolver.resolve(queryOptions.getConsistencyLevel()));
+			if (queryOptions.getConsistencyLevel() != null) {
+				statement.setConsistencyLevel(queryOptions.getConsistencyLevel());
 			}
 
-			if (queryOptions.getDriverRetryPolicy() != null) {
-				statement.setRetryPolicy(queryOptions.getDriverRetryPolicy());
-			} else if (queryOptions.getRetryPolicy() != null) {
-				statement.setRetryPolicy(RetryPolicyResolver.resolve(queryOptions.getRetryPolicy()));
+			if (queryOptions.getRetryPolicy() != null) {
+				statement.setRetryPolicy(queryOptions.getRetryPolicy());
 			}
 
 			if (queryOptions.getFetchSize() != null) {

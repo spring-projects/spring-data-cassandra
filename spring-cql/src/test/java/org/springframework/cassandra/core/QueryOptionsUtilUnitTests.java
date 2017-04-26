@@ -71,9 +71,9 @@ public class QueryOptionsUtilUnitTests {
 	@Test // DATACASS-202
 	public void addPreparedStatementOptionsShouldAddOurQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(RetryPolicy.FALLTHROUGH).build();
+		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
 
-		queryOptions.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.LOCAL_QUOROM);
+		queryOptions.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 
 		QueryOptionsUtil.addPreparedStatementOptions(mockPreparedStatement, queryOptions);
 
@@ -97,9 +97,9 @@ public class QueryOptionsUtilUnitTests {
 	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldAddOurQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(RetryPolicy.FALLTHROUGH).build();
+		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
 
-		queryOptions.setConsistencyLevel(org.springframework.cassandra.core.ConsistencyLevel.LOCAL_QUOROM);
+		queryOptions.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 
 		QueryOptionsUtil.addQueryOptions(mockStatement, queryOptions);
 

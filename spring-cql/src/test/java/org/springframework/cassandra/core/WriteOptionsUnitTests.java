@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.policies.FallthroughRetryPolicy;
 
 /**
@@ -36,16 +37,15 @@ public class WriteOptionsUnitTests {
 		WriteOptions writeOptions = WriteOptions.builder() //
 				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY) //
 				.ttl(123) //
-				.retryPolicy(RetryPolicy.DEFAULT) //
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
 				.readTimeout(1)//
 				.fetchSize(10)//
 				.withTracing()//
 				.build(); //
 
 		assertThat(writeOptions.getTtl()).isEqualTo(123);
-		assertThat(writeOptions.getRetryPolicy()).isEqualTo(RetryPolicy.DEFAULT);
-		assertThat(writeOptions.getConsistencyLevel()).isNull();
-		assertThat(writeOptions.getDriverConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.ANY);
+		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
+		assertThat(writeOptions.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
 		assertThat(writeOptions.getReadTimeout()).isEqualTo(1);
 		assertThat(writeOptions.getFetchSize()).isEqualTo(10);
 		assertThat(writeOptions.getTracing()).isTrue();
@@ -66,26 +66,14 @@ public class WriteOptionsUnitTests {
 
 		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
 
-		assertThat(writeOptions.getRetryPolicy()).isNull();
-		assertThat(writeOptions.getDriverRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
+		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
 	}
 
 	@Test // DATACASS-202
 	public void buildQueryOptionsWithRetryPolicy() {
 
-		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY).build();
+		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
 
-		assertThat(writeOptions.getRetryPolicy()).isEqualTo(RetryPolicy.DOWNGRADING_CONSISTENCY);
-		assertThat(writeOptions.getDriverRetryPolicy()).isNull();
-	}
-
-	@Test(expected = IllegalStateException.class) // DATACASS-202
-	public void builderShouldRejectSettingOurAndDriverRetryPolicy() {
-		WriteOptions.builder().retryPolicy(RetryPolicy.DEFAULT).retryPolicy(FallthroughRetryPolicy.INSTANCE);
-	}
-
-	@Test(expected = IllegalStateException.class) // DATACASS-202
-	public void builderShouldRejectSettingDriverAndOurRetryPolicy() {
-		WriteOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).retryPolicy(RetryPolicy.DEFAULT);
+		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
 	}
 }

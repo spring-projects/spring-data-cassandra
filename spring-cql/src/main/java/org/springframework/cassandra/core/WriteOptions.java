@@ -17,6 +17,9 @@ package org.springframework.cassandra.core;
 
 import java.util.concurrent.TimeUnit;
 
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.policies.RetryPolicy;
+
 /**
  * Cassandra Write Options are an extension to {@link QueryOptions} for write operations. {@link WriteOptions}allow
  * tuning of various query options on a per-request level. Only options that are set are applied to queries.
@@ -99,8 +102,8 @@ public class WriteOptions extends QueryOptions {
 		 * @see org.springframework.cassandra.core.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
 		 */
 		@Override
-		public WriteOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel driverConsistencyLevel) {
-			return (WriteOptionsBuilder) super.consistencyLevel(driverConsistencyLevel);
+		public WriteOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {
+			return (WriteOptionsBuilder) super.consistencyLevel(consistencyLevel);
 		}
 
 		/*
@@ -110,15 +113,6 @@ public class WriteOptions extends QueryOptions {
 		@Override
 		public WriteOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
 			return (WriteOptionsBuilder) super.retryPolicy(driverRetryPolicy);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.cassandra.core.QueryOptions.QueryOptionsBuilder#retryPolicy(org.springframework.cassandra.core.RetryPolicy)
-		 */
-		@Override
-		public WriteOptionsBuilder retryPolicy(RetryPolicy retryPolicy) {
-			return (WriteOptionsBuilder) super.retryPolicy(retryPolicy);
 		}
 
 		/*
