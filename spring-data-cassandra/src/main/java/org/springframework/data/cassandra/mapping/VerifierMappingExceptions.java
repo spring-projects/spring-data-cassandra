@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class VerifierMappingExceptions extends MappingException {
 
-	final Collection<MappingException> exceptions;
+	private final Collection<MappingException> exceptions;
 
 	private final String className;
 
@@ -52,6 +52,8 @@ public class VerifierMappingExceptions extends MappingException {
 
 		this.exceptions = Collections.unmodifiableCollection(new LinkedList<>(exceptions));
 		this.className = entity.getType().getName();
+
+		this.exceptions.forEach(this::addSuppressed);
 	}
 
 	/**
@@ -66,56 +68,37 @@ public class VerifierMappingExceptions extends MappingException {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		this.exceptions = new LinkedList<>();
+		this.exceptions = Collections.emptyList();
 		this.className = entity.getType().getName();
 	}
 
 	/**
-	 * @param mappingException must not be {@literal null}.
-	 * @deprecated Exceptions should be immutable so this method is subject to be removed in future versions
-	 */
-	@Deprecated
-	public void add(MappingException mappingException) {
-
-		Assert.notNull(mappingException, "MappingException must not be null");
-
-		exceptions.add(mappingException);
-	}
-
-	/**
-	 * Returns a list of the MappingExceptions aggregated within.
+	 * Returns a list of the {@link MappingException}s aggregated within.
 	 *
-	 * @return The Collection of MappingException
+	 * @return collection of {@link MappingException}.
 	 */
 	public Collection<MappingException> getMappingExceptions() {
-		return Collections.unmodifiableCollection(exceptions);
+		return exceptions;
 	}
 
 	/**
-	 * Returns a list of the MappingException messages aggregated within.
+	 * Returns a list of the {@link MappingException} messages aggregated within.
 	 *
-	 * @return The Collection of Messages
+	 * @return collection of messages.
 	 */
 	public Collection<String> getMessages() {
 		return exceptions.stream().map(Throwable::getMessage).collect(Collectors.toList());
 	}
 
-	/**
-	 * Returns the number of errors that have been added to this Exception Class.
-	 *
-	 * @return Number of Errors present
+	/* (non-Javadoc)
+	 * @see java.lang.Throwable#getMessage()
 	 */
-	public int getCount() {
-		return exceptions.size();
-	}
-
 	@Override
 	public String getMessage() {
+
 		StringBuilder builder = new StringBuilder(className).append(":\n");
 
-		for (MappingException e : exceptions) {
-			builder.append(" - ").append(e.getMessage()).append("\n");
-		}
+		exceptions.forEach(e -> builder.append(" - ").append(e.getMessage()).append("\n"));
 
 		return builder.toString();
 	}

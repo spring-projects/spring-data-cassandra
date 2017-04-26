@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,6 @@ import org.springframework.data.mapping.model.MappingException;
  */
 public class BasicCassandraPersistentEntityMetadataVerifier implements CassandraPersistentEntityMetadataVerifier {
 
-	@Deprecated protected boolean strict = false;
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntityMetadataVerifier#verify(org.springframework.data.cassandra.mapping.CassandraPersistentEntity)
@@ -71,9 +69,6 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 				primaryKeyColumns.add(property);
 			}
 		});
-
-		// Perform rules verification on Table/Persistent
-		// TODO Verify annotation values with CqlIndentifier
 
 		/*
 		 * Perform rules verification on Table/Persistent
@@ -111,26 +106,6 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 		if (!exceptions.isEmpty()) {
 			fail(entity, exceptions);
 		}
-	}
-
-	/**
-	 * @return the setting for strict.
-	 * @deprecated Will be removed in future versions.
-	 */
-	@Deprecated
-	@SuppressWarnings("unused")
-	public boolean isStrict() {
-		return strict;
-	}
-
-	/**
-	 * @param strict boolean setting for strict.
-	 * @deprecated Will be removed in future versions.
-	 */
-	@Deprecated
-	@SuppressWarnings("unused")
-	public void setStrict(boolean strict) {
-		this.strict = strict;
 	}
 
 	private static void fail(CassandraPersistentEntity<?> entity, List<MappingException> exceptions) {
