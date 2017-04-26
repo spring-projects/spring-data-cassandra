@@ -203,17 +203,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				property -> MappingCassandraConverter.this.readProperty(entity, property, valueProvider, propertyAccessor));
 	}
 
-	/**
-	 * @deprecated Use
-	 *             {@link #readProperty(CassandraPersistentEntity, CassandraPersistentProperty, CassandraValueProvider, PersistentPropertyAccessor)}
-	 */
-	@Deprecated
-	protected void readPropertyFromRow(CassandraPersistentEntity<?> entity, CassandraPersistentProperty property,
-			CassandraRowValueProvider valueProvider, PersistentPropertyAccessor propertyAccessor) {
-
-		readProperty(entity, property, valueProvider, propertyAccessor);
-	}
-
 	protected void readProperty(CassandraPersistentEntity<?> entity, CassandraPersistentProperty property,
 			CassandraValueProvider valueProvider, PersistentPropertyAccessor propertyAccessor) {
 
