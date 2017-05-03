@@ -19,7 +19,6 @@ import static org.springframework.data.cassandra.repository.support.BasicMapId.*
 
 import lombok.AllArgsConstructor;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -540,7 +539,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		entity.getPersistentProperties() //
 				.filter(CassandraPersistentProperty::isPrimaryKeyColumn) //
 				.forEach(property -> {
-					id.with(property.getName(), (Serializable) getWriteValue(property, accessor).orElse(null));
+					id.with(property.getName(), getWriteValue(property, accessor).orElse(null));
 				});
 
 		return id;

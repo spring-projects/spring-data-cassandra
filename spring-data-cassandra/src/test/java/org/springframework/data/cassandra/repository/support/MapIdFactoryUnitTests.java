@@ -30,6 +30,7 @@ import org.springframework.data.cassandra.repository.MapId;
  * Unit tests for {@link MapIdFactory}.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class MapIdFactoryUnitTests {
 
@@ -209,8 +210,6 @@ public class MapIdFactoryUnitTests {
 
 	interface Foo {}
 
-	interface IdExtendingNotMapId extends Foo {}
-
 	interface LiteralGet {
 		String get();
 	}
@@ -221,10 +220,6 @@ public class MapIdFactoryUnitTests {
 
 	interface GetReturningVoid {
 		void string();
-	}
-
-	interface GetReturningNonSerializable {
-		Object getFoo();
 	}
 
 	interface MethodWithMoreThanOneArgument {
@@ -251,30 +246,18 @@ public class MapIdFactoryUnitTests {
 		String withString(String s);
 	}
 
-	interface SetterMethodTakingNonSerializable {
-		void string(Object o);
-	}
-
-	interface SetMethodTakingNonSerializable {
-		void string(Object o);
-	}
-
-	interface WithMethodTakingNonSerializable {
-		void string(Object o);
-	}
-
 	@Test
 	public void testUnhappies() {
-		Class<?>[] interfaces = new Class<?>[] { IdClass.class, IdExtendingNotMapId.class, LiteralGet.class,
-				GetterReturningVoid.class, GetReturningVoid.class, GetReturningNonSerializable.class,
-				MethodWithMoreThanOneArgument.class, LiteralSet.class, LiteralWith.class,
+
+		Class<?>[] interfaces = new Class<?>[] { IdClass.class, LiteralGet.class, GetterReturningVoid.class,
+				GetReturningVoid.class, MethodWithMoreThanOneArgument.class, LiteralSet.class, LiteralWith.class,
 				SetterMethodNotReturningVoidOrThis.class, SetMethodNotReturningVoidOrThis.class,
-				WithMethodNotReturningVoidOrThis.class, SetterMethodTakingNonSerializable.class,
-				SetMethodTakingNonSerializable.class, WithMethodTakingNonSerializable.class };
-		for (Class<?> i : interfaces) {
+				WithMethodNotReturningVoidOrThis.class };
+
+		for (Class<?> idInterface : interfaces) {
 			try {
-				validate(i);
-				fail("should've caught IdInterfaceException validating interface " + i);
+				validate(idInterface);
+				fail("should've caught IdInterfaceException validating interface " + idInterface);
 			} catch (IdInterfaceExceptions e) {
 				assertThat(e.getCount()).isEqualTo(1);
 			}

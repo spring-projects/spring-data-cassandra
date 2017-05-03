@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -25,7 +24,7 @@ import java.util.Map;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public interface MapId extends Serializable, Map<String, Object> {
+public interface MapId extends Map<String, Object> {
 
 	/**
 	 * Builder method that adds the value for the named property, then returns {@code this}.

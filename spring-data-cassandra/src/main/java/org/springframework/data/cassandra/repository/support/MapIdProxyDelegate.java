@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -110,11 +109,8 @@ class MapIdProxyDelegate implements InvocationHandler {
 			delegate.put(name, null);
 			return;
 		}
-		if (!(value instanceof Serializable)) {
-			throw new IllegalArgumentException(
-					String.format("Given object [%s] must implement %s", value, Serializable.class.getName()));
-		}
-		delegate.put(name, (Serializable) value);
+
+		delegate.put(name, value);
 	}
 }
 

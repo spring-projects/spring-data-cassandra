@@ -15,11 +15,17 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.cassandra.repository.MapId;
+import org.springframework.data.mapping.model.MappingException;
 
+/**
+ * @author Matthew T. Adams
+ * @author Mark Paluch
+ */
 public class IdInterfaceValidator {
 
 	/**
@@ -44,10 +50,8 @@ public class IdInterfaceValidator {
 	 * Id interfaces
 	 * <ul>
 	 * <li>must be an {@code interface}, not a <code>class</code>,</li>
-	 * <li>may extend {@link Serializable},</li>
-	 * <li>may extend {@link MapId},</li>
-	 * <li>must have getter methods that only return a {@link Serializable} type,</li>
-	 * <li>must have setter methods that only take a single {@link Serializable} type,</li>
+	 * <li>may extend {@link MapId} or any other interface,</li>
+	 * <li>must have setter methods that only take a single argument,</li>
 	 * <li>must have setter methods that only return {@code void} or the id interface's type,</li>
 	 * <li>must not define any getter methods with the literal name "get", and</li>
 	 * <li>must not define any setter methods with the literal names "set" or "with".</li>
@@ -60,56 +64,57 @@ public class IdInterfaceValidator {
 	 */
 	public static void validate(Class<?> id) {
 
-		IdInterfaceExceptions x = new IdInterfaceExceptions(id);
+		List<MappingException> exceptions = new ArrayList<>();
 
 		if (!id.isInterface()) {
-			x.add(new IdInterfaceException(id, null, "id type must be an interface"));
-		}
-
-		Class<?>[] interfaces = id.getInterfaces();
-		if (interfaces.length > 2 || ((interfaces.length == 1
-				&& !(interfaces[0].equals(Serializable.class) || interfaces[0].equals(MapId.class))))) {
-			x.add(new IdInterfaceException(id, null, "id type may only extend Serializable and/or MapId"));
+			exceptions.add(new IdInterfaceException(id, null, "Id type must be an interface"));
 		}
 
 		for (Method m : id.getDeclaredMethods()) {
+
 			Class<?>[] args = m.getParameterTypes();
 			String name = m.getName();
-			Class<?> ret = m.getReturnType();
+			Class<?> returnType = m.getReturnType();
+
 			switch (args.length) {
 				case 0: // then getter
+
 					if (name.startsWith("get") && name.length() == 3) {
-						x.add(new IdInterfaceException(id, m, "getter methods must have a property name following 'get' prefix"));
+						exceptions
+								.add(new IdInterfaceException(id, m, "Getter method must have a property name following 'get' prefix"));
 					}
-					if (!Serializable.class.isAssignableFrom(ret)) {
-						x.add(new IdInterfaceException(id, m, "getter methods must return Serializable types"));
+
+					if (Void.TYPE.isAssignableFrom(returnType) || Void.class.isAssignableFrom(returnType)) {
+						exceptions.add(new IdInterfaceException(id, m, "Getter method must return a value"));
 					}
+
 					break;
 				case 1: // then setter
+
 					if (name.startsWith("set") && name.length() == 3) {
-						x.add(new IdInterfaceException(id, m, "setter methods must have a property name following 'set' prefix"));
+						exceptions
+								.add(new IdInterfaceException(id, m, "Setter method must have a property name following 'set' prefix"));
 					}
+
 					if (name.startsWith("with") && name.length() == 4) {
-						x.add(new IdInterfaceException(id, m, "setter methods must have a property name following 'with' prefix"));
+						exceptions.add(
+								new IdInterfaceException(id, m, "Setter method must have a property name following 'with' prefix"));
 					}
-					if (!void.class.equals(ret) && !id.equals(ret)) {
-						x.add(new IdInterfaceException(id, m,
-								"setter methods not returning void may only return the same type as their id interface"));
-					}
-					Class<?> arg = args[0];
-					if (!Serializable.class.isAssignableFrom(arg)) {
-						x.add(new IdInterfaceException(id, m, "setter methods must take exactly one Serializable type"));
+
+					if (!Void.TYPE.isAssignableFrom(returnType) && !Void.class.equals(returnType) && !id.equals(returnType)) {
+						exceptions.add(new IdInterfaceException(id, m,
+								"Setter method not returning void may only return the same type as their id interface"));
 					}
 					break;
 				default:
-					x.add(new IdInterfaceException(id, m,
-							"id interface methods may only take zero parameters for a getter or one parameter for a setter; found "
+					exceptions.add(new IdInterfaceException(id, m,
+							"Id interface methods may only take zero parameters for a getter or one parameter for a setter; found "
 									+ args.length));
 			}
 		}
 
-		if (x.getCount() > 0) {
-			throw x;
+		if (!exceptions.isEmpty()) {
+			throw new IdInterfaceExceptions(id, exceptions);
 		}
 	}
 }

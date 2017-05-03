@@ -15,11 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * Factory class for producing implementations of given id interfaces. For restrictions on id interfaces definitions,
@@ -35,10 +38,10 @@ public class MapIdFactory {
 	/**
 	 * Produces an implementation of the given id interface type using the type's class loader. For restrictions on id
 	 * interfaces definitions, see {@link IdInterfaceValidator#validate(Class)}. Returns an implementation of the given
-	 * interface that also implements {@link MapId} and {@link Serializable}, so it can be cast as such if necessary.
+	 * interface that also implements {@link MapId}, so it can be cast as such if necessary.
 	 *
 	 * @param idInterface The type of the id interface.
-	 * @return An implementation of the given interface that also implements {@link MapId} and {@link Serializable}.
+	 * @return An implementation of the given interface that also implements {@link MapId}.
 	 * @see IdInterfaceValidator#validate(Class)
 	 */
 	public static <T> T id(Class<T> idInterface) {
@@ -50,10 +53,10 @@ public class MapIdFactory {
 	/**
 	 * Produces an implementation of the given class loader. For restrictions on id interfaces definitions, see
 	 * {@link IdInterfaceValidator#validate(Class)}. Returns an implementation of the given interface that also implements
-	 * {@link MapId} and {@link Serializable}, so it can be cast as such if necessary.
+	 * {@link MapId}, so it can be cast as such if necessary.
 	 *
 	 * @param idInterface The type of the id interface.
-	 * @return An implementation of the given interface that also implements {@link MapId} and {@link Serializable}.
+	 * @return An implementation of the given interface that also implements {@link MapId}.
 	 * @see IdInterfaceValidator#validate(Class)
 	 */
 	public static <T> T id(Class<T> idInterface, ClassLoader loader) {
@@ -63,18 +66,13 @@ public class MapIdFactory {
 
 		IdInterfaceValidator.validate(idInterface);
 
-		Class<?>[] interfaces = idInterface.getInterfaces();
-		switch (interfaces.length) {
-			case 0:
-				interfaces = new Class<?>[] { idInterface, MapId.class, Serializable.class };
-				break;
-			case 1:
-				Class<?> other = interfaces[0].equals(Serializable.class) ? MapId.class : Serializable.class;
-				interfaces = new Class<?>[] { idInterface, interfaces[0], other };
-				break;
-			default:
-				interfaces = new Class<?>[] { idInterface, interfaces[0], interfaces[1] };
-		}
-		return (T) Proxy.newProxyInstance(loader, interfaces, new MapIdProxyDelegate(idInterface));
+		Class<?>[] idInterfaces = ClassUtils.getAllInterfacesForClass(idInterface);
+		Set<Class<?>> proxyInterfaces = new HashSet<>(idInterfaces.length + 1, 1);
+
+		proxyInterfaces.add(MapId.class);
+		proxyInterfaces.addAll(Arrays.asList(idInterfaces));
+
+		return (T) Proxy.newProxyInstance(loader, proxyInterfaces.toArray(new Class[proxyInterfaces.size()]),
+				new MapIdProxyDelegate(idInterface));
 	}
 }

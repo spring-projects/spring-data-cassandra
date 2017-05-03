@@ -16,23 +16,43 @@
 package org.springframework.data.cassandra.repository.support;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
+
+import org.springframework.data.mapping.model.MappingException;
+import org.springframework.util.Assert;
 
 /**
  * Aggregator of multiple violations for convenience when verifying id interfaces. This allows the framework to
  * communicate all errors at once, rather than one at a time.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @SuppressWarnings("serial")
-public class IdInterfaceExceptions extends RuntimeException {
+public class IdInterfaceExceptions extends MappingException {
 
-	Collection<IdInterfaceException> exceptions = new LinkedList<>();
-	String idInterfaceName;
+	private final Collection<MappingException> exceptions;
+	private final String className;
 
-	public IdInterfaceExceptions(Class<?> idInterface) {
-		this.idInterfaceName = idInterface.getClass().getName();
+	/**
+	 * Create a new {@link IdInterfaceExceptions} for the given {@code idInterfaceClass} and exceptions.
+	 *
+	 * @param idInterfaceClass must not be {@literal null}.
+	 * @param exceptions must not be {@literal null}.
+	 * @since 2.0
+	 */
+	public IdInterfaceExceptions(Class<?> idInterfaceClass, Collection<MappingException> exceptions) {
+
+		super(String.format("Mapping Exceptions for %s", idInterfaceClass.getName()));
+
+		Assert.notNull(idInterfaceClass, "CassandraPersistentEntity must not be null");
+
+		this.exceptions = Collections.unmodifiableCollection(new LinkedList<>(exceptions));
+		this.className = idInterfaceClass.getName();
+
+		this.exceptions.forEach(this::addSuppressed);
 	}
 
 	public void add(IdInterfaceException e) {
@@ -42,7 +62,7 @@ public class IdInterfaceExceptions extends RuntimeException {
 	/**
 	 * Returns a list of the {@link IdInterfaceException}s aggregated within.
 	 */
-	public Collection<IdInterfaceException> getExceptions() {
+	public Collection<MappingException> getExceptions() {
 		return exceptions;
 	}
 
@@ -62,14 +82,14 @@ public class IdInterfaceExceptions extends RuntimeException {
 
 	@Override
 	public String getMessage() {
-		StringBuilder builder = new StringBuilder(idInterfaceName).append(":\n");
-		for (IdInterfaceException e : exceptions) {
+		StringBuilder builder = new StringBuilder(className).append(":\n");
+		for (MappingException e : exceptions) {
 			builder.append(e.getMessage()).append("\n");
 		}
 		return builder.toString();
 	}
 
 	public String getIdInterfaceName() {
-		return idInterfaceName;
+		return className;
 	}
 }
