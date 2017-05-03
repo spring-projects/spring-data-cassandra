@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -38,7 +37,7 @@ import org.springframework.util.Assert;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class MappingCassandraEntityInformation<T, ID extends Serializable> extends AbstractEntityInformation<T, ID>
+public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInformation<T, ID>
 		implements CassandraEntityInformation<T, ID> {
 
 	private final CassandraPersistentEntity<T> entityMetadata;

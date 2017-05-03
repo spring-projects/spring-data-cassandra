@@ -18,8 +18,6 @@ package org.springframework.data.cassandra.repository.support;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.Serializable;
-
 import org.reactivestreams.Publisher;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
@@ -35,8 +33,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Mark Paluch
  * @since 2.0
  */
-public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
-		implements ReactiveCassandraRepository<T, ID> {
+public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassandraRepository<T, ID> {
 
 	protected CassandraEntityInformation<T, ID> entityInformation;
 
@@ -82,18 +79,18 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#save(java.lang.Iterable)
 	 */
 	@Override
-	public <S extends T> Flux<S> save(Iterable<S> entities) {
+	public <S extends T> Flux<S> saveAll(Iterable<S> entities) {
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		return save(Flux.fromIterable(entities));
+		return saveAll(Flux.fromIterable(entities));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#save(org.reactivestreams.Publisher)
 	 */
 	@Override
-	public <S extends T> Flux<S> save(Publisher<S> entityStream) {
+	public <S extends T> Flux<S> saveAll(Publisher<S> entityStream) {
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
@@ -141,10 +138,10 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findOne(java.io.Serializable)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findById(java.lang.Object)
 	 */
 	@Override
-	public Mono<T> findOne(ID id) {
+	public Mono<T> findById(ID id) {
 
 		Assert.notNull(id, "The given id must not be null");
 
@@ -152,10 +149,10 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findOne(reactor.core.publisher.Mono)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findById(reactor.core.publisher.Mono)
 	 */
 	@Override
-	public Mono<T> findOne(Mono<ID> mono) {
+	public Mono<T> findById(Mono<ID> mono) {
 
 		Assert.notNull(mono, "The given id must not be null");
 
@@ -163,10 +160,10 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#exists(java.io.Serializable)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#existsById(java.lang.Object)
 	 */
 	@Override
-	public Mono<Boolean> exists(ID id) {
+	public Mono<Boolean> existsById(ID id) {
 
 		Assert.notNull(id, "The given id must not be null");
 
@@ -174,10 +171,10 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#exists(reactor.core.publisher.Mono)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#existsById(reactor.core.publisher.Mono)
 	 */
 	@Override
-	public Mono<Boolean> exists(Mono<ID> mono) {
+	public Mono<Boolean> existsById(Mono<ID> mono) {
 
 		Assert.notNull(mono, "The given id must not be null");
 
@@ -195,21 +192,21 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll(java.lang.Iterable)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAllById(java.lang.Iterable)
 	 */
 	@Override
-	public Flux<T> findAll(Iterable<ID> iterable) {
+	public Flux<T> findAllById(Iterable<ID> iterable) {
 
 		Assert.notNull(iterable, "The given Iterable of id's must not be null");
 
-		return findAll(Flux.fromIterable(iterable));
+		return findAllById(Flux.fromIterable(iterable));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll(org.reactivestreams.Publisher)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAllById(org.reactivestreams.Publisher)
 	 */
 	@Override
-	public Flux<T> findAll(Publisher<ID> idStream) {
+	public Flux<T> findAllById(Publisher<ID> idStream) {
 
 		Assert.notNull(idStream, "The given Publisher of id's must not be null");
 
@@ -225,10 +222,10 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(java.io.Serializable)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#deleteById(java.lang.Object)
 	 */
 	@Override
-	public Mono<Void> delete(ID id) {
+	public Mono<Void> deleteById(ID id) {
 
 		Assert.notNull(id, "The given id must not be null");
 
@@ -247,10 +244,10 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(java.lang.Iterable)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#deleteAll(java.lang.Iterable)
 	 */
 	@Override
-	public Mono<Void> delete(Iterable<? extends T> entities) {
+	public Mono<Void> deleteAll(Iterable<? extends T> entities) {
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
@@ -258,10 +255,10 @@ public class SimpleReactiveCassandraRepository<T, ID extends Serializable>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(org.reactivestreams.Publisher)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#deleteAll(org.reactivestreams.Publisher)
 	 */
 	@Override
-	public Mono<Void> delete(Publisher<? extends T> entityStream) {
+	public Mono<Void> deleteAll(Publisher<? extends T> entityStream) {
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 

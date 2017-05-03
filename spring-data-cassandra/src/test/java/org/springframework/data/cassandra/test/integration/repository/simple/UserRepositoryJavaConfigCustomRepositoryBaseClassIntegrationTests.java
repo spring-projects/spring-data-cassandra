@@ -17,8 +17,6 @@ package org.springframework.data.cassandra.test.integration.repository.simple;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.io.Serializable;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.aop.framework.Advised;
@@ -57,7 +55,7 @@ public class UserRepositoryJavaConfigCustomRepositoryBaseClassIntegrationTests
 		assertThat(((Advised) repository).getTargetSource().getTarget()).isInstanceOf(CustomCassandraRepository.class);
 	}
 
-	public static class CustomCassandraRepository<T, ID extends Serializable> extends SimpleCassandraRepository<T, ID> {
+	public static class CustomCassandraRepository<T, ID> extends SimpleCassandraRepository<T, ID> {
 
 		public CustomCassandraRepository(CassandraEntityInformation<T, ID> metadata, CassandraOperations operations) {
 			super(metadata, operations);

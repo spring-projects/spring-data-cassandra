@@ -492,7 +492,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		Collection<Clause> clauses = new ArrayList<>();
 
-		for (Entry<String, Serializable> entry : id.entrySet()) {
+		for (Entry<String, Object> entry : id.entrySet()) {
 
 			Optional<CassandraPersistentProperty> lookup = entity.getPersistentProperty(entry.getKey());
 

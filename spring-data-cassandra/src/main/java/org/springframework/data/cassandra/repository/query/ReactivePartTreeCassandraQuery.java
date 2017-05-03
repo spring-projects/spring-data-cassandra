@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.query;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.PartTree;
 
@@ -44,8 +45,12 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 
 		super(queryMethod, operations);
 
-		this.tree = new PartTree(queryMethod.getName(), queryMethod.getEntityInformation().getJavaType());
-		this.mappingContext = operations.getConverter().getMappingContext();
+		try {
+			this.tree = new PartTree(queryMethod.getName(), queryMethod.getEntityInformation().getJavaType());
+			this.mappingContext = operations.getConverter().getMappingContext();
+		} catch (Exception e) {
+			throw QueryCreationException.create(queryMethod, e);
+		}
 	}
 
 	/**

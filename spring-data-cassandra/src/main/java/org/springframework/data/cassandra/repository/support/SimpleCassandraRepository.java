@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +35,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class SimpleCassandraRepository<T, ID extends Serializable> implements TypedIdCassandraRepository<T, ID> {
+public class SimpleCassandraRepository<T, ID> implements TypedIdCassandraRepository<T, ID> {
 
 	private CassandraEntityInformation<T, ID> entityInformation;
 
@@ -80,7 +79,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
 	 */
 	@Override
-	public <S extends T> List<S> save(Iterable<S> entities) {
+	public <S extends T> List<S> saveAll(Iterable<S> entities) {
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 		List<S> result = new ArrayList<>();
@@ -136,10 +135,10 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#findById(java.lang.Object)
 	 */
 	@Override
-	public Optional<T> findOne(ID id) {
+	public Optional<T> findById(ID id) {
 
 		Assert.notNull(id, "The given id must not be null");
 
@@ -147,10 +146,10 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#existsById(java.lang.Object)
 	 */
 	@Override
-	public boolean exists(ID id) {
+	public boolean existsById(ID id) {
 
 		Assert.notNull(id, "The given id must not be null");
 
@@ -180,7 +179,7 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
 	 */
 	@Override
-	public List<T> findAll(Iterable<ID> ids) {
+	public List<T> findAllById(Iterable<ID> ids) {
 
 		Assert.notNull(ids, "The given Iterable of id's must not be null");
 
@@ -188,10 +187,10 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#deleteById(java.lang.Object)
 	 */
 	@Override
-	public void delete(ID id) {
+	public void deleteById(ID id) {
 
 		Assert.notNull(id, "The given id must not be null");
 
@@ -206,15 +205,15 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		Assert.notNull(entity, "The given entity must not be null");
 
-		delete(entityInformation.getId(entity)
+		deleteById(entityInformation.getId(entity)
 				.orElseThrow(() -> new IllegalArgumentException(String.format("Cannot obtain Id from [%s]", entity))));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
+	 * @see org.springframework.data.repository.CrudRepository#deleteAll(java.lang.Iterable)
 	 */
 	@Override
-	public void delete(Iterable<? extends T> entities) {
+	public void deleteAll(Iterable<? extends T> entities) {
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 

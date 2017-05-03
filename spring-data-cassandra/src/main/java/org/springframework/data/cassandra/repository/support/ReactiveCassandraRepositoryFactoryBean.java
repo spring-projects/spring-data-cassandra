@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
-
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
@@ -33,7 +31,7 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.repository.reactive.ReactiveSortingRepository
  * @see org.springframework.data.repository.reactive.RxJava1SortingRepository
  */
-public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
+public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
 	private boolean mappingContextConfigured = false;

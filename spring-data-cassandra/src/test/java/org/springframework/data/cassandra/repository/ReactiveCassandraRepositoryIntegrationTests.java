@@ -116,7 +116,8 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		carter = new Person("49", "Carter", "Beauford");
 		boyd = new Person("45", "Boyd", "Tinsley");
 
-		StepVerifier.create(repository.save(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4).verifyComplete();
+		StepVerifier.create(repository.saveAll(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4)
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -125,12 +126,12 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	}
 
 	@Test // DATACASS-335
-	public void shouldFindOneByLastName() {
+	public void shouldFindByIdByLastName() {
 		StepVerifier.create(repository.findOneByLastname(carter.getLastname())).expectNext(carter).verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void shouldFindOneByPublisherOfLastName() {
+	public void shouldFindByIdByPublisherOfLastName() {
 		StepVerifier.create(repository.findByLastname(Mono.just(carter.getLastname()))).expectNext(carter).verifyComplete();
 	}
 
@@ -145,7 +146,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		GroupKey key1 = new GroupKey("Simpsons", "hash", "Bart");
 		GroupKey key2 = new GroupKey("Simpsons", "hash", "Homer");
 
-		StepVerifier.create(groupRepostitory.save(Flux.just(new Group(key1), new Group(key2)))).expectNextCount(2)
+		StepVerifier.create(groupRepostitory.saveAll(Flux.just(new Group(key1), new Group(key2)))).expectNextCount(2)
 				.verifyComplete();
 
 		StepVerifier

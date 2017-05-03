@@ -81,9 +81,9 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 
 		repository.save(bean);
 
-		assertThat(repository.exists(bean.getUsername())).isTrue();
+		assertThat(repository.existsById(bean.getUsername())).isTrue();
 
-		Optional<User> retrieved = repository.findOne(bean.getUsername());
+		Optional<User> retrieved = repository.findById(bean.getUsername());
 
 		assertThat(retrieved).hasValueSatisfying(actual -> {
 			assertThat(actual.getUsername()).isEqualTo(bean.getUsername());
@@ -92,12 +92,12 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 		});
 
 		assertThat(repository.count()).isEqualTo(1);
-		assertThat(repository.exists(bean.getUsername())).isTrue();
+		assertThat(repository.existsById(bean.getUsername())).isTrue();
 
 		repository.delete(bean);
 
 		assertThat(repository.count()).isEqualTo(0);
-		assertThat(repository.findOne(bean.getUsername())).isNotPresent();
+		assertThat(repository.findById(bean.getUsername())).isNotPresent();
 	}
 
 	@Test // DATACASS-249
@@ -113,7 +113,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 
 		qualifiedUserRepository.save(bean);
 
-		assertThat(qualifiedUserRepository.exists(bean.getUsername())).isTrue();
+		assertThat(qualifiedUserRepository.existsById(bean.getUsername())).isTrue();
 	}
 
 	@Test // DATACASS-149

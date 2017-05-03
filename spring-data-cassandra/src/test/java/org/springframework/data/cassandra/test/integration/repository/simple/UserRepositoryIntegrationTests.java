@@ -113,7 +113,7 @@ public class UserRepositoryIntegrationTests {
 
 	public void findsUserById() throws Exception {
 
-		Optional<User> user = repository.findOne(tom.getUsername());
+		Optional<User> user = repository.findById(tom.getUsername());
 		assertThat(user).isNotNull().contains(tom);
 
 	}
@@ -128,7 +128,7 @@ public class UserRepositoryIntegrationTests {
 
 	public void findsAllWithGivenIds() {
 
-		Iterable<User> result = repository.findAll(Arrays.asList(bob.getUsername(), tom.getUsername()));
+		Iterable<User> result = repository.findAllById(Arrays.asList(bob.getUsername(), tom.getUsername()));
 
 		assertThat(result).contains(bob, tom);
 		assertThat(result).doesNotContain(alice, scott);
@@ -146,7 +146,7 @@ public class UserRepositoryIntegrationTests {
 
 	public void deletesUserByIdCorrectly() {
 
-		repository.delete(tom.getUsername());
+		repository.deleteById(tom.getUsername());
 
 		List<User> result = Lists.newArrayList(repository.findAll());
 
@@ -158,11 +158,11 @@ public class UserRepositoryIntegrationTests {
 
 		String id = "tom";
 
-		assertThat(repository.exists(id)).isTrue();
+		assertThat(repository.existsById(id)).isTrue();
 
-		repository.delete(id);
+		repository.deleteById(id);
 
-		assertThat(repository.exists(id)).isFalse();
+		assertThat(repository.existsById(id)).isFalse();
 	}
 
 	// DATACASS-182
@@ -173,7 +173,7 @@ public class UserRepositoryIntegrationTests {
 
 		repository.save(tom);
 
-		Optional<User> loadedTom = repository.findOne(tom.getUsername());
+		Optional<User> loadedTom = repository.findById(tom.getUsername());
 
 		assertThat(loadedTom).hasValueSatisfying(actual -> {
 

@@ -31,6 +31,7 @@ import org.springframework.util.StringUtils;
  * @see MapIdFactory#id(Class)
  * @see MapIdFactory#id(Class, ClassLoader)
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 class MapIdProxyDelegate implements InvocationHandler {
 
@@ -74,7 +75,7 @@ class MapIdProxyDelegate implements InvocationHandler {
 		return MAP_ID_SIGNATURES.containsKey(new Signature(method, true));
 	}
 
-	public Serializable invokeGetter(Method method) {
+	public Object invokeGetter(Method method) {
 		String name = method.getName();
 		if (name.startsWith("get")) {
 			if (name.length() == 3) {

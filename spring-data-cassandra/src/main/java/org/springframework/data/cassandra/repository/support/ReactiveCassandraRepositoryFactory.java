@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -79,7 +78,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 
-		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
+		CassandraEntityInformation<?, Object> entityInformation = getEntityInformation(information.getDomainType());
 
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
@@ -97,7 +96,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
 	 */
 	@SuppressWarnings("unchecked")
-	public <T, ID extends Serializable> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+	public <T, ID> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
 
 		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(domainClass);
 

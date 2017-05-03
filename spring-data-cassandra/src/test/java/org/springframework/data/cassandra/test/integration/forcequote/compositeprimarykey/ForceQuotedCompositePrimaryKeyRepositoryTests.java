@@ -23,6 +23,7 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 
 /**
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 
@@ -52,7 +53,7 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 		assertThat(entity).isSameAs(s);
 
 		// select
-		Implicit f = implicitRepository.findOne(key).get();
+		Implicit f = implicitRepository.findById(key).get();
 		assertThat(entity).isNotSameAs(f);
 		String stringValue = query("stringvalue", "\"Implicit\"", "\"keyZero\"", f.getPrimaryKey().getKeyZero(),
 				"\"keyOne\"", f.getPrimaryKey().getKeyOne());
@@ -62,13 +63,13 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 		f.setStringValue(f.getStringValue() + "X");
 		Implicit u = implicitRepository.save(f);
 		assertThat(f).isSameAs(u);
-		f = implicitRepository.findOne(u.getPrimaryKey()).get();
+		f = implicitRepository.findById(u.getPrimaryKey()).get();
 		assertThat(u).isNotSameAs(f);
 		assertThat(f.getStringValue()).isEqualTo(u.getStringValue());
 
 		// delete
-		implicitRepository.delete(key);
-		assertThat(implicitRepository.findOne(key)).isNotPresent();
+		implicitRepository.deleteById(key);
+		assertThat(implicitRepository.findById(key)).isNotPresent();
 	}
 
 	public void testExplicit(String tableName, String stringValueColumnName, String keyZeroColumnName,
@@ -81,7 +82,7 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 		assertThat(entity).isSameAs(s);
 
 		// select
-		Explicit f = explicitRepository.findOne(key).get();
+		Explicit f = explicitRepository.findById(key).get();
 		assertThat(entity).isNotSameAs(f);
 		String stringValue = query(stringValueColumnName, tableName, keyZeroColumnName, f.getPrimaryKey().getKeyZero(),
 				keyOneColumnName, f.getPrimaryKey().getKeyOne());
@@ -91,12 +92,12 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 		f.setStringValue(f.getStringValue() + "X");
 		Explicit u = explicitRepository.save(f);
 		assertThat(f).isSameAs(u);
-		f = explicitRepository.findOne(u.getPrimaryKey()).get();
+		f = explicitRepository.findById(u.getPrimaryKey()).get();
 		assertThat(u).isNotSameAs(f);
 		assertThat(f.getStringValue()).isEqualTo(u.getStringValue());
 
 		// delete
-		explicitRepository.delete(key);
-		assertThat(explicitRepository.findOne(key)).isNotPresent();
+		explicitRepository.deleteById(key);
+		assertThat(explicitRepository.findById(key)).isNotPresent();
 	}
 }

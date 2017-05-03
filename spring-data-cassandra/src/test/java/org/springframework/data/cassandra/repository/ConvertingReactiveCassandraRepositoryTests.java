@@ -99,13 +99,13 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		carter = new Person("49", "Carter", "Beauford");
 		boyd = new Person("45", "Boyd", "Tinsley");
 
-		StepVerifier.create(reactiveRepository.save(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4)
+		StepVerifier.create(reactiveRepository.saveAll(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4)
 				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void reactiveStreamsMethodsShouldWork() {
-		StepVerifier.create(reactivePersonRepostitory.exists(dave.getId())).expectNext(true).verifyComplete();
+		StepVerifier.create(reactivePersonRepostitory.existsById(dave.getId())).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -127,7 +127,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-335
 	public void simpleRxJava1MethodsShouldWork() {
 
-		rxJava1PersonRepostitory.exists(dave.getId()) //
+		rxJava1PersonRepostitory.existsById(dave.getId()) //
 				.test() //
 				.awaitTerminalEvent() //
 				.assertResult(true) //
@@ -138,7 +138,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-335
 	public void existsWithSingleRxJava1IdMethodsShouldWork() {
 
-		rxJava1PersonRepostitory.exists(Single.just(dave.getId())) //
+		rxJava1PersonRepostitory.existsById(Single.just(dave.getId())) //
 				.test() //
 				.awaitTerminalEvent() //
 				.assertResult(true) //
@@ -186,7 +186,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void simpleRxJava2MethodsShouldWork() {
 
-		rxJava2PersonRepostitory.exists(dave.getId()) //
+		rxJava2PersonRepostitory.existsById(dave.getId()) //
 				.test()//
 				.assertValue(true) //
 				.assertNoErrors() //
@@ -197,7 +197,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void existsWithSingleRxJava2IdMethodsShouldWork() {
 
-		rxJava2PersonRepostitory.exists(io.reactivex.Single.just(dave.getId())).test() //
+		rxJava2PersonRepostitory.existsById(io.reactivex.Single.just(dave.getId())).test() //
 				.assertValue(true) //
 				.assertNoErrors() //
 				.assertComplete() //
@@ -266,7 +266,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Test // DATACASS-335
-	public void shouldFindOneByPublisherOfLastName() {
+	public void shouldFindByIdByPublisherOfLastName() {
 
 		StepVerifier.create(reactiveRepository.findByLastname(Single.just(this.carter.getLastname()))) //
 				.expectNext(carter) //

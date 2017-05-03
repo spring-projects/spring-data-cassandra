@@ -27,5 +27,5 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface CdiUserRepository extends CrudRepository<User, String> {
 
-	Optional<User> findOne(String id);
+	Optional<User> findById(String id);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2017 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
-
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.repository.Repository;
@@ -30,11 +28,10 @@ import org.springframework.util.Assert;
  * @author Alex Shvid
  * @author John Blum
  * @author Oliver Gierke
- * @see java.io.Serializable
  * @see org.springframework.data.repository.Repository
  * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport
  */
-public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
+public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
 	private CassandraTemplate cassandraTemplate;

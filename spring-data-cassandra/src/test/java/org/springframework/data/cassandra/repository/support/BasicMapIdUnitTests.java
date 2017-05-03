@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,11 +26,14 @@ import org.junit.Test;
  * Unit tests for {@link BasicMapId}.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class BasicMapIdUnitTests {
+
 	@Test
 	public void testMapConstructor() {
-		Map<String, Serializable> map = new HashMap<>();
+
+		Map<String, Object> map = new HashMap<>();
 		map.put("field1", "value1");
 		map.put("field2", 2);
 

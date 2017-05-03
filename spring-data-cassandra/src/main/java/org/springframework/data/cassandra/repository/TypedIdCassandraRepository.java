@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.data.cassandra.mapping.PrimaryKey;
@@ -58,8 +57,8 @@ import org.springframework.data.repository.NoRepositoryBean;
  * <li>Define your repository interface to be a subinterface of {@link CassandraRepository}, which uses a provided id
  * type, {@link MapId} (implemented by {@link BasicMapId}).</li>
  * <li>Whenever you need a {@link MapId}, you can use the static factory method {@link BasicMapId#id()} (which is
- * convenient if you import statically) and the builder method {@link MapId#with(String, Serializable)} to easily
- * construct an id.</li>
+ * convenient if you import statically) and the builder method {@link MapId#with(String, Object)} to easily construct an
+ * id.</li>
  * </ul>
  * </ul>
  *
@@ -68,14 +67,14 @@ import org.springframework.data.repository.NoRepositoryBean;
  * @author Mark Paluch
  */
 @NoRepositoryBean
-public interface TypedIdCassandraRepository<T, ID extends Serializable> extends CrudRepository<T, ID> {
+public interface TypedIdCassandraRepository<T, ID> extends CrudRepository<T, ID> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
+	 * @see org.springframework.data.repository.CrudRepository#saveAll(java.lang.Iterable)
 	 */
 	@Override
-	<S extends T> List<S> save(Iterable<S> entites);
+	<S extends T> List<S> saveAll(Iterable<S> entites);
 
 	/*
 	 * (non-Javadoc)
@@ -86,10 +85,10 @@ public interface TypedIdCassandraRepository<T, ID extends Serializable> extends 
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
+	 * @see org.springframework.data.repository.CrudRepository#findAllById(java.lang.Iterable)
 	 */
 	@Override
-	List<T> findAll(Iterable<ID> ids);
+	List<T> findAllById(Iterable<ID> ids);
 
 	/**
 	 * Inserts the given entity. Assumes the instance to be new to be able to apply insertion optimizations. Use the
@@ -104,8 +103,8 @@ public interface TypedIdCassandraRepository<T, ID extends Serializable> extends 
 
 	/**
 	 * Inserts the given entities. Assumes the given entities to have not been persisted yet and thus will optimize the
-	 * insert over a call to {@link #save(Iterable)}. Prefer using {@link #save(Iterable)} to avoid the usage of store
-	 * specific API.
+	 * insert over a call to {@link #saveAll(Iterable)}. Prefer using {@link #saveAll(Iterable)} to avoid the usage of
+	 * store specific API.
 	 *
 	 * @param entities must not be {@literal null}.
 	 * @return the saved entities

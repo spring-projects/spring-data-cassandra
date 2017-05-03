@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -83,7 +82,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 
-		CassandraEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
+		CassandraEntityInformation<?, Object> entityInformation = getEntityInformation(information.getDomainType());
 
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
@@ -93,7 +92,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T, ID extends Serializable> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+	public <T, ID> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
 
 		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(domainClass);
 

@@ -18,8 +18,6 @@ package org.springframework.data.cassandra.repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.Serializable;
-
 import org.reactivestreams.Publisher;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
@@ -31,7 +29,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
  * @since 2.0
  */
 @NoRepositoryBean
-public interface ReactiveCassandraRepository<T, ID extends Serializable> extends ReactiveCrudRepository<T, ID> {
+public interface ReactiveCassandraRepository<T, ID> extends ReactiveCrudRepository<T, ID> {
 
 	/**
 	 * Inserts the given entity. Assumes the instance to be new to be able to apply insertion optimizations. Use the

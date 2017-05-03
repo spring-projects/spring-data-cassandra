@@ -23,6 +23,7 @@ import org.springframework.data.cassandra.core.CassandraOperations;
  * Tests to be executed using Java/XML configuration.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class ForceQuotedRepositoryTests {
 
@@ -48,15 +49,15 @@ public class ForceQuotedRepositoryTests {
 		Implicit s = implicitRepository.save(entity);
 		assertThat(entity).isSameAs(s);
 
-		Implicit f = implicitRepository.findOne(key).get();
+		Implicit f = implicitRepository.findById(key).get();
 		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query("stringvalue", "\"Implicit\"", "primarykey", f.getPrimaryKey());
 		assertThat(stringValue).isEqualTo(f.getStringValue());
 
-		implicitRepository.delete(key);
+		implicitRepository.deleteById(key);
 
-		assertThat(implicitRepository.findOne(key)).isNotPresent();
+		assertThat(implicitRepository.findById(key)).isNotPresent();
 	}
 
 	public void testExplicit(String tableName) {
@@ -66,15 +67,15 @@ public class ForceQuotedRepositoryTests {
 		Explicit s = explicitRepository.save(entity);
 		assertThat(entity).isSameAs(s);
 
-		Explicit f = explicitRepository.findOne(key).get();
+		Explicit f = explicitRepository.findById(key).get();
 		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query("stringvalue", String.format("\"%s\"", tableName), "primarykey", f.getPrimaryKey());
 		assertThat(stringValue).isEqualTo(f.getStringValue());
 
-		explicitRepository.delete(key);
+		explicitRepository.deleteById(key);
 
-		assertThat(explicitRepository.findOne(key)).isNotPresent();
+		assertThat(explicitRepository.findById(key)).isNotPresent();
 	}
 
 	public void testImplicitProperties() {
@@ -84,15 +85,15 @@ public class ForceQuotedRepositoryTests {
 		ImplicitProperties s = implicitPropertiesRepository.save(entity);
 		assertThat(entity).isSameAs(s);
 
-		ImplicitProperties f = implicitPropertiesRepository.findOne(key).get();
+		ImplicitProperties f = implicitPropertiesRepository.findById(key).get();
 		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query("\"stringValue\"", "implicitproperties", "\"primaryKey\"", f.getPrimaryKey());
 		assertThat(stringValue).isEqualTo(f.getStringValue());
 
-		implicitPropertiesRepository.delete(key);
+		implicitPropertiesRepository.deleteById(key);
 
-		assertThat(implicitPropertiesRepository.findOne(key)).isNotPresent();
+		assertThat(implicitPropertiesRepository.findById(key)).isNotPresent();
 	}
 
 	public void testExplicitProperties(String stringValueColumnName, String primaryKeyColumnName) {
@@ -102,15 +103,15 @@ public class ForceQuotedRepositoryTests {
 		ExplicitProperties s = explicitPropertiesRepository.save(entity);
 		assertThat(entity).isSameAs(s);
 
-		ExplicitProperties f = explicitPropertiesRepository.findOne(key).get();
+		ExplicitProperties f = explicitPropertiesRepository.findById(key).get();
 		assertThat(entity).isNotSameAs(f);
 
 		String stringValue = query(String.format("\"%s\"", stringValueColumnName), "explicitproperties",
 				String.format("\"%s\"", primaryKeyColumnName), f.getPrimaryKey());
 		assertThat(stringValue).isEqualTo(f.getStringValue());
 
-		implicitPropertiesRepository.delete(key);
+		implicitPropertiesRepository.deleteById(key);
 
-		assertThat(implicitPropertiesRepository.findOne(key)).isNotPresent();
+		assertThat(implicitPropertiesRepository.findById(key)).isNotPresent();
 	}
 }

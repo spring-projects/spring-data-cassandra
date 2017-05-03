@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +38,7 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class BasicMapId implements MapId {
 
-	private final Map<String, Serializable> map = new HashMap<String, Serializable>();
+	private final Map<String, Object> map = new HashMap<>();
 
 	/**
 	 * Create a new and empty {@link BasicMapId}.
@@ -51,7 +50,7 @@ public class BasicMapId implements MapId {
 	 *
 	 * @param map must not be {@literal null}.
 	 */
-	public BasicMapId(Map<String, Serializable> map) {
+	public BasicMapId(Map<String, Object> map) {
 
 		Assert.notNull(map, "Map must not be null");
 		this.map.putAll(map);
@@ -71,7 +70,7 @@ public class BasicMapId implements MapId {
 	 *
 	 * @return {@link BasicMapId}
 	 */
-	public static MapId id(String name, Serializable value) {
+	public static MapId id(String name, Object value) {
 		return new BasicMapId().with(name, value);
 	}
 
@@ -85,10 +84,10 @@ public class BasicMapId implements MapId {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.MapId#with(java.lang.String, java.io.Serializable)
+	 * @see org.springframework.data.cassandra.repository.MapId#with(java.lang.String, java.io.Object)
 	 */
 	@Override
-	public BasicMapId with(String name, Serializable value) {
+	public BasicMapId with(String name, Object value) {
 		put(name, value);
 		return this;
 	}
@@ -121,7 +120,7 @@ public class BasicMapId implements MapId {
 	 * @see java.util.Map#entrySet()
 	 */
 	@Override
-	public Set<java.util.Map.Entry<String, Serializable>> entrySet() {
+	public Set<java.util.Map.Entry<String, Object>> entrySet() {
 		return map.entrySet();
 	}
 
@@ -146,7 +145,7 @@ public class BasicMapId implements MapId {
 	 * @see java.util.Map#get(java.lang.Object)
 	 */
 	@Override
-	public Serializable get(Object name) {
+	public Object get(Object name) {
 		return map.get(name);
 	}
 
@@ -178,7 +177,7 @@ public class BasicMapId implements MapId {
 	 * @see java.util.Map#put(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public Serializable put(String name, Serializable value) {
+	public Object put(String name, Object value) {
 		return map.put(name, value);
 	}
 
@@ -186,7 +185,7 @@ public class BasicMapId implements MapId {
 	 * @see java.util.Map#putAll(java.util.Map)
 	 */
 	@Override
-	public void putAll(Map<? extends String, ? extends Serializable> source) {
+	public void putAll(Map<? extends String, ? extends Object> source) {
 		map.putAll(source);
 	}
 
@@ -194,7 +193,7 @@ public class BasicMapId implements MapId {
 	 * @see java.util.Map#remove(java.lang.Object)
 	 */
 	@Override
-	public Serializable remove(Object name) {
+	public Object remove(Object name) {
 		return map.remove(name);
 	}
 
@@ -210,7 +209,7 @@ public class BasicMapId implements MapId {
 	 * @see java.util.Map#values()
 	 */
 	@Override
-	public Collection<Serializable> values() {
+	public Collection<Object> values() {
 		return map.values();
 	}
 
@@ -223,7 +222,7 @@ public class BasicMapId implements MapId {
 		StringBuilder s = new StringBuilder("{ ");
 
 		boolean first = true;
-		for (Map.Entry<String, Serializable> entry : map.entrySet()) {
+		for (Map.Entry<String, Object> entry : map.entrySet()) {
 
 			if (first) {
 				first = false;

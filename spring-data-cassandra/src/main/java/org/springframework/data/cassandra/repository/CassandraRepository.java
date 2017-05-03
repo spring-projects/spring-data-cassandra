@@ -1,7 +1,5 @@
 package org.springframework.data.cassandra.repository;
 
-import java.io.Serializable;
-
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -21,17 +19,18 @@ import org.springframework.data.repository.NoRepositoryBean;
  * <li>Define your repository interface to be a subinterface of this interface, which uses a provided id type,
  * {@link MapId} (implemented by {@link BasicMapId}).</li>
  * <li>Whenever you need a {@link MapId}, you can use the static factory method {@link BasicMapId#id()} (which is
- * convenient if you import statically) and the builder method {@link MapId#with(String, Serializable)} to easily
- * construct an id.</li>
+ * convenient if you import statically) and the builder method {@link MapId#with(String, Object)} to easily construct an
+ * id.</li>
  * <li>Optionally, entity class authors can have their entities implement {@link MapIdentifiable}, to make it easier and
  * quicker for entity clients to get the entity's identity.</li>
  * </ul>
- * 
+ *
  * @param <T> The type of the persistent entity.
  * @see TypedIdCassandraRepository
  * @see MapId
  * @See {@link MapIdentifiable}
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @NoRepositoryBean
 public interface CassandraRepository<T> extends TypedIdCassandraRepository<T, MapId> {}

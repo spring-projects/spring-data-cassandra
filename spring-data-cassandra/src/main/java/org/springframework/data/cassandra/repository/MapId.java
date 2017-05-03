@@ -23,8 +23,9 @@ import java.util.Map;
  * properties.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-public interface MapId extends Serializable, Map<String, Serializable> {
+public interface MapId extends Serializable, Map<String, Object> {
 
 	/**
 	 * Builder method that adds the value for the named property, then returns {@code this}.
@@ -33,5 +34,5 @@ public interface MapId extends Serializable, Map<String, Serializable> {
 	 * @param value The property value.
 	 * @return {@code this}
 	 */
-	MapId with(String name, Serializable value);
+	MapId with(String name, Object value);
 }

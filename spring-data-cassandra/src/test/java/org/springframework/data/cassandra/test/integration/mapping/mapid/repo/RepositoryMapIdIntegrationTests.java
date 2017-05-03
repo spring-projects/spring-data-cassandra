@@ -34,7 +34,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 /**
  * Integration tests for repositories using {@link MapId}.
  *
- * @author Matthew T. Adams.
+ * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -72,7 +73,7 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		// select
 		MapId id = id("key", saved.getKey());
-		SinglePrimaryKeyColumn selected = singlePrimaryKecColumnRepository.findOne(id).get();
+		SinglePrimaryKeyColumn selected = singlePrimaryKecColumnRepository.findById(id).get();
 		assertThat(saved).isNotSameAs(selected);
 		assertThat(selected.getKey()).isEqualTo(saved.getKey());
 		assertThat(selected.getValue()).isEqualTo(saved.getValue());
@@ -82,13 +83,13 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 		SinglePrimaryKeyColumn updated = singlePrimaryKecColumnRepository.save(selected);
 		assertThat(selected).isSameAs(updated);
 
-		selected = singlePrimaryKecColumnRepository.findOne(id).get();
+		selected = singlePrimaryKecColumnRepository.findById(id).get();
 		assertThat(updated).isNotSameAs(selected);
 		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
 		singlePrimaryKecColumnRepository.delete(selected);
-		assertThat(singlePrimaryKecColumnRepository.findOne(id)).isEmpty();
+		assertThat(singlePrimaryKecColumnRepository.findById(id)).isEmpty();
 	}
 
 	@Test
@@ -102,7 +103,7 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		// select
 		MapId id = id("key0", saved.getKey0()).with("key1", saved.getKey1());
-		MultiPrimaryKeyColumns selected = multiPrimaryKeyColumnsRepository.findOne(id).get();
+		MultiPrimaryKeyColumns selected = multiPrimaryKeyColumnsRepository.findById(id).get();
 		assertThat(saved).isNotSameAs(selected);
 		assertThat(selected.getKey0()).isEqualTo(saved.getKey0());
 		assertThat(selected.getKey1()).isEqualTo(saved.getKey1());
@@ -113,13 +114,13 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 		MultiPrimaryKeyColumns updated = multiPrimaryKeyColumnsRepository.save(selected);
 		assertThat(selected).isSameAs(updated);
 
-		selected = multiPrimaryKeyColumnsRepository.findOne(id).get();
+		selected = multiPrimaryKeyColumnsRepository.findById(id).get();
 		assertThat(updated).isNotSameAs(selected);
 		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
 		template.delete(selected);
-		assertThat(multiPrimaryKeyColumnsRepository.findOne(id)).isEmpty();
+		assertThat(multiPrimaryKeyColumnsRepository.findById(id)).isEmpty();
 	}
 
 }

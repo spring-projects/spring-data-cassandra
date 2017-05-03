@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.io.Serializable;
-
 import org.springframework.data.repository.core.EntityInformation;
 
 /**
@@ -25,8 +23,7 @@ import org.springframework.data.repository.core.EntityInformation;
  * @author Alex Shvid
  * @author Mark Paluch
  */
-public interface CassandraEntityInformation<T, ID extends Serializable>
-		extends EntityInformation<T, ID>, CassandraEntityMetadata<T> {
+public interface CassandraEntityInformation<T, ID> extends EntityInformation<T, ID>, CassandraEntityMetadata<T> {
 
 	/**
 	 * Return {@literal true} if the persistent entity consists entirely of primary key properties (a single Id property,
