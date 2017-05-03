@@ -534,18 +534,6 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteJodaDateMidnight() {
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-		entity.setJodaDateMidnight(new org.joda.time.DateMidnight(2010, 7, 4));
-
-		operations.insert(entity);
-		AllPossibleTypes loaded = load(entity);
-
-		assertThat(loaded.getJodaDateMidnight()).isEqualTo(entity.getJodaDateMidnight());
-	}
-
-	@Test // DATACASS-296
 	public void shouldReadAndWriteJodaDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");

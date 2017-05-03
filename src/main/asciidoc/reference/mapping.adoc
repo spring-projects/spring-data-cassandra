@@ -106,9 +106,6 @@ for further details.
 (Joda, Java 8, JSR310-BackPort)
 | `timestamp`
 
-| `DateMidnight` (Joda)
-| `date`
-
 | `ZoneId` (Java 8, JSR310-BackPort)
 | `text`
 

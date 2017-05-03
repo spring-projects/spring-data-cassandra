@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.joda.time.DateMidnight;
 import org.joda.time.LocalDate;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.ClassUtils;
@@ -54,8 +53,6 @@ public abstract class CassandraJodaTimeConverters {
 
 		converters.add(CassandraLocalDateToLocalDateConverter.INSTANCE);
 		converters.add(LocalDateToCassandraLocalDateConverter.INSTANCE);
-		converters.add(CassandraLocalDateToDateMidnightConverter.INSTANCE);
-		converters.add(DateMidnightToCassandraLocalDateConverter.INSTANCE);
 
 		return converters;
 	}
@@ -88,41 +85,6 @@ public abstract class CassandraJodaTimeConverters {
 
 		@Override
 		public com.datastax.driver.core.LocalDate convert(LocalDate source) {
-			return com.datastax.driver.core.LocalDate.fromYearMonthDay(source.getYear(), source.getMonthOfYear(),
-					source.getDayOfMonth());
-		}
-	}
-
-	/**
-	 * Simple singleton to convert {@link com.datastax.driver.core.LocalDate}s to their {@link DateMidnight}
-	 * representation.
-	 *
-	 * @author Mark Paluch
-	 */
-	public enum CassandraLocalDateToDateMidnightConverter
-			implements Converter<com.datastax.driver.core.LocalDate, DateMidnight> {
-
-		INSTANCE;
-
-		@Override
-		public DateMidnight convert(com.datastax.driver.core.LocalDate source) {
-			return new DateMidnight(source.getYear(), source.getMonth(), source.getDay());
-		}
-	}
-
-	/**
-	 * Simple singleton to convert {@link DateMidnight}s to their {@link com.datastax.driver.core.LocalDate}
-	 * representation.
-	 *
-	 * @author Mark Paluch
-	 */
-	public enum DateMidnightToCassandraLocalDateConverter
-			implements Converter<DateMidnight, com.datastax.driver.core.LocalDate> {
-
-		INSTANCE;
-
-		@Override
-		public com.datastax.driver.core.LocalDate convert(DateMidnight source) {
 			return com.datastax.driver.core.LocalDate.fromYearMonthDay(source.getYear(), source.getMonthOfYear(),
 					source.getDayOfMonth());
 		}
