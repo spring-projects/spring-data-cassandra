@@ -43,7 +43,7 @@ public enum ReservedKeyword {
 
 	TABLE, THREE, TOKEN, TRUNCATE, TWO, UPDATE, USE, USING, WHERE, WITH;
 
-	private final static Set<String> RESERVED;
+	private static final Set<String> RESERVED;
 
 	static {
 		RESERVED = new HashSet<>();

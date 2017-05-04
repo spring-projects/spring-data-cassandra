@@ -48,7 +48,7 @@ import com.google.common.util.concurrent.Service;
  */
 class CassandraOperationsProducer {
 
-	public final static String KEYSPACE_NAME = RandomKeySpaceName.create();
+	public static final String KEYSPACE_NAME = RandomKeySpaceName.create();
 
 	@Produces
 	@Singleton

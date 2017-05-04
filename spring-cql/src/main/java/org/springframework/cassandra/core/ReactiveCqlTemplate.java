@@ -84,7 +84,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	/**
 	 * Placeholder for default values.
 	 */
-	private final static Statement DEFAULTS = QueryBuilder.select().from("DEFAULT");
+	private static final Statement DEFAULTS = QueryBuilder.select().from("DEFAULT");
 
 	/**
 	 * If this variable is set to a non-negative value, it will be used for setting the {@code fetchSize} property on

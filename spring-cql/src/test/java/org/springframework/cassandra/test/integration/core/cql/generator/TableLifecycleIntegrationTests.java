@@ -36,7 +36,7 @@ import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIn
  */
 public class TableLifecycleIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	private final static Logger log = LoggerFactory.getLogger(TableLifecycleIntegrationTests.class);
+	private static final Logger log = LoggerFactory.getLogger(TableLifecycleIntegrationTests.class);
 
 	CreateTableCqlGeneratorUnitTests.MultipleOptionsTest createTableTest = new CreateTableCqlGeneratorUnitTests.MultipleOptionsTest();
 

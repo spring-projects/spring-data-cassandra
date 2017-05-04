@@ -31,7 +31,7 @@ import org.springframework.beans.factory.FactoryBean;
  */
 public class MultiLevelSetFlattenerFactoryBean<T> implements FactoryBean<Set<T>> {
 
-	private final static Logger log = LoggerFactory.getLogger(MultiLevelSetFlattenerFactoryBean.class);
+	private static final Logger log = LoggerFactory.getLogger(MultiLevelSetFlattenerFactoryBean.class);
 
 	private Set<Set<T>> multiLevelSet;
 

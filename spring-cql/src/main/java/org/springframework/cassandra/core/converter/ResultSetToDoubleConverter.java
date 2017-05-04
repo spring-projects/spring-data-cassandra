@@ -15,7 +15,18 @@
  */
 package org.springframework.cassandra.core.converter;
 
+import org.springframework.core.convert.converter.Converter;
+
+import com.datastax.driver.core.ResultSet;
+
+/**
+ * {@link Converter} from {@link ResultSet} to a single {@link Double} value.
+ *
+ * @author Mark Paluch
+ */
 public class ResultSetToDoubleConverter extends AbstractResultSetToBasicFixedTypeConverter<Double> {
+
+	public static final ResultSetToDoubleConverter INSTANCE = new ResultSetToDoubleConverter();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)

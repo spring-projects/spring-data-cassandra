@@ -17,7 +17,18 @@ package org.springframework.cassandra.core.converter;
 
 import java.net.InetAddress;
 
+import org.springframework.core.convert.converter.Converter;
+
+import com.datastax.driver.core.ResultSet;
+
+/**
+ * {@link Converter} from {@link ResultSet} to a single {@link InetAddress} value.
+ *
+ * @author Mark Paluch
+ */
 public class ResultSetToInetAddressConverter extends AbstractResultSetToBasicFixedTypeConverter<InetAddress> {
+
+	public static final ResultSetToInetAddressConverter INSTANCE = new ResultSetToInetAddressConverter();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)

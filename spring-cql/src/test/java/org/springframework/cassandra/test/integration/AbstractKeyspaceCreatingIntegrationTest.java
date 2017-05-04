@@ -40,7 +40,7 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 	 * Class rule to prepare a keyspace to give tests a keyspace context. The keyspace name is random and changes per
 	 * test.
 	 */
-	@ClassRule public final static KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment);
+	@ClassRule public static final KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment);
 
 	/**
 	 * The session that's connected to the keyspace used in the current instance's test.

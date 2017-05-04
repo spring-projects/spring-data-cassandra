@@ -33,7 +33,7 @@ import com.datastax.driver.core.Statement;
  */
 public class TestLatencyTracker implements LatencyTracker {
 
-	private final static Logger LOG = LoggerFactory.getLogger(TestLatencyTracker.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TestLatencyTracker.class);
 
 	@Override
 	public void update(Host host, Statement statement, Exception exception, long newLatencyNanos) {

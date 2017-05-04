@@ -44,7 +44,7 @@ import com.datastax.driver.core.TypeCodec;
  */
 class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
-	private final static TypeInformation<Set> SET = ClassTypeInformation.from(Set.class);
+	private static final TypeInformation<Set> SET = ClassTypeInformation.from(Set.class);
 
 	private final CassandraConverter converter;
 

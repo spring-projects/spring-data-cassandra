@@ -41,7 +41,7 @@ import com.datastax.driver.core.TableOptionsMetadata;
  */
 public class CqlTableSpecificationAssertions {
 
-	private final static Logger log = LoggerFactory.getLogger(CqlTableSpecificationAssertions.class);
+	private static final Logger log = LoggerFactory.getLogger(CqlTableSpecificationAssertions.class);
 
 	public static double DELTA = 1e-6; // delta for comparisons of doubles
 

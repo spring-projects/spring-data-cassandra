@@ -26,5 +26,5 @@ import org.springframework.core.convert.support.DefaultConversionService;
  */
 public abstract class AbstractResultSetToBasicFixedTypeConverter<T> extends AbstractResultSetConverter<T> {
 
-	protected final static ConversionService CONVERTER = new DefaultConversionService();
+	protected static final ConversionService CONVERTER = new DefaultConversionService();
 }

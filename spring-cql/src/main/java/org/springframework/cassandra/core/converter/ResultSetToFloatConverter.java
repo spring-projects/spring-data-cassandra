@@ -15,7 +15,18 @@
  */
 package org.springframework.cassandra.core.converter;
 
+import org.springframework.core.convert.converter.Converter;
+
+import com.datastax.driver.core.ResultSet;
+
+/**
+ * {@link Converter} from {@link ResultSet} to a single {@link Float} value.
+ *
+ * @author Mark Paluch
+ */
 public class ResultSetToFloatConverter extends AbstractResultSetToBasicFixedTypeConverter<Float> {
+
+	public static final ResultSetToFloatConverter INSTANCE = new ResultSetToFloatConverter();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)

@@ -17,7 +17,18 @@ package org.springframework.cassandra.core.converter;
 
 import java.util.UUID;
 
+import org.springframework.core.convert.converter.Converter;
+
+import com.datastax.driver.core.ResultSet;
+
+/**
+ * {@link Converter} from {@link ResultSet} to a single {@link UUID} value.
+ *
+ * @author Mark Paluch
+ */
 public class ResultSetToUuidConverter extends AbstractResultSetToBasicFixedTypeConverter<UUID> {
+
+	public static final ResultSetToUuidConverter INSTANCE = new ResultSetToUuidConverter();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)

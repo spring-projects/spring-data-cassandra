@@ -384,9 +384,9 @@ public class CassandraRule extends ExternalResource {
 	 */
 	public static class InvocationMode {
 
-		private final static InvocationMode once = new InvocationMode();
-		private final static InvocationMode each = new InvocationMode();
-		private final static InvocationMode never = new InvocationMode();
+		private static final InvocationMode once = new InvocationMode();
+		private static final InvocationMode each = new InvocationMode();
+		private static final InvocationMode never = new InvocationMode();
 
 		/**
 		 * Invocation mode to invoke an action once at before the first test.

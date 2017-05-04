@@ -50,8 +50,8 @@ class EmbeddedCassandraServerHelper {
 	public static final long DEFAULT_STARTUP_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(20);
 	public static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
 
-	private final static AtomicReference<Object> sync = new AtomicReference<>();
-	private final static AtomicReference<CassandraDaemon> cassandraRef = new AtomicReference<>();
+	private static final AtomicReference<Object> sync = new AtomicReference<>();
+	private static final AtomicReference<CassandraDaemon> cassandraRef = new AtomicReference<>();
 
 	private static String launchedYamlFile;
 

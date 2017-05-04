@@ -34,7 +34,7 @@ import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIn
  */
 public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	private final static Logger log = LoggerFactory.getLogger(IndexLifecycleCqlGeneratorIntegrationTests.class);
+	private static final Logger log = LoggerFactory.getLogger(IndexLifecycleCqlGeneratorIntegrationTests.class);
 
 	@Before
 	public void setUp() throws Exception {

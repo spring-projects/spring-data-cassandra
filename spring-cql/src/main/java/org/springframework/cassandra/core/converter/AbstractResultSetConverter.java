@@ -44,7 +44,7 @@ import com.datastax.driver.core.ResultSet;
  */
 public abstract class AbstractResultSetConverter<T> implements Converter<ResultSet, T> {
 
-	private final static ResultSetToListConverter converter = new ResultSetToListConverter();
+	private static final ResultSetToListConverter converter = new ResultSetToListConverter();
 
 	/**
 	 * Converts the given value to this converter's type or throws {@link IllegalArgumentException}.

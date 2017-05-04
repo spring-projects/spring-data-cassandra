@@ -18,7 +18,18 @@ package org.springframework.cassandra.core.converter;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.convert.converter.Converter;
+
+import com.datastax.driver.core.ResultSet;
+
+/**
+ * {@link Converter} from {@link ResultSet} to a single {@link String} value.
+ *
+ * @author Mark Paluch
+ */
 public class ResultSetToStringConverter extends AbstractResultSetConverter<String> {
+
+	public static final ResultSetToStringConverter INSTANCE = new ResultSetToStringConverter();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)

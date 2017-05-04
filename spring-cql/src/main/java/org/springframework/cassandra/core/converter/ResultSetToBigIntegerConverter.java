@@ -17,7 +17,18 @@ package org.springframework.cassandra.core.converter;
 
 import java.math.BigInteger;
 
+import org.springframework.core.convert.converter.Converter;
+
+import com.datastax.driver.core.ResultSet;
+
+/**
+ * {@link Converter} from {@link ResultSet} to a single {@link BigInteger} value.
+ *
+ * @author Mark Paluch
+ */
 public class ResultSetToBigIntegerConverter extends AbstractResultSetToBasicFixedTypeConverter<BigInteger> {
+
+	public static final ResultSetToBigIntegerConverter INSTANCE = new ResultSetToBigIntegerConverter();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)

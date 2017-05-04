@@ -17,7 +17,18 @@ package org.springframework.cassandra.core.converter;
 
 import java.nio.ByteBuffer;
 
+import org.springframework.core.convert.converter.Converter;
+
+import com.datastax.driver.core.ResultSet;
+
+/**
+ * {@link Converter} from {@link ResultSet} to a single {@link ByteBuffer} value.
+ *
+ * @author Mark Paluch
+ */
 public class ResultSetToByteBufferConverter extends AbstractResultSetConverter<ByteBuffer> {
+
+	public static final ResultSetToByteBufferConverter INSTANCE = new ResultSetToByteBufferConverter();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)

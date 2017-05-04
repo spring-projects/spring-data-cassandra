@@ -30,7 +30,7 @@ import com.datastax.driver.core.QueryOptions;
 @Configuration
 public abstract class AbstractTestJavaConfig extends AbstractSessionConfiguration {
 
-	private final static CassandraConnectionProperties PROPERTIES = new CassandraConnectionProperties();
+	private static final CassandraConnectionProperties PROPERTIES = new CassandraConnectionProperties();
 
 	@Override
 	protected int getPort() {

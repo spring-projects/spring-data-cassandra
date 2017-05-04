@@ -20,9 +20,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.ResultSet;
+
+/**
+ * {@link Converter} from {@link ResultSet} to a {@link List} of {@link String}.
+ *
+ * @author Mark Paluch
+ */
 public class ResultSetToListOfStringConverter extends AbstractResultSetConverter<List<String>> {
+
+	public static final ResultSetToListOfStringConverter INSTANCE = new ResultSetToListOfStringConverter();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)

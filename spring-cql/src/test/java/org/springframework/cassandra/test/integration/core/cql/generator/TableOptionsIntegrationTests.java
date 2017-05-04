@@ -31,7 +31,7 @@ import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIn
  */
 public class TableOptionsIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	private final static Logger log = LoggerFactory.getLogger(TableOptionsIntegrationTests.class);
+	private static final Logger log = LoggerFactory.getLogger(TableOptionsIntegrationTests.class);
 
 	@Test
 	public void test() {

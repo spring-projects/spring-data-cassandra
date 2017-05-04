@@ -38,7 +38,7 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	/**
 	 * Initiate a Cassandra environment in test class scope.
 	 */
-	@ClassRule public final static CassandraRule cassandraEnvironment = new CassandraRule("embedded-cassandra.yaml");
+	@ClassRule public static final CassandraRule cassandraEnvironment = new CassandraRule("embedded-cassandra.yaml");
 
 	/**
 	 * Initiate a Cassandra environment in test scope.

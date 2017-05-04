@@ -31,7 +31,7 @@ import com.datastax.driver.core.Host.StateListener;
  */
 public class TestHostStateListener implements StateListener {
 
-	private final static Logger log = LoggerFactory.getLogger(TestHostStateListener.class);
+	private static final Logger log = LoggerFactory.getLogger(TestHostStateListener.class);
 
 	@Override
 	public void onAdd(Host host) {

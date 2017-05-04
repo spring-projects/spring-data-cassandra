@@ -64,7 +64,7 @@ public class CassandraAccessor implements InitializingBean {
 	/**
 	 * Placeholder for default values.
 	 */
-	private final static Statement DEFAULTS = QueryBuilder.select().from("DEFAULT");
+	private static final Statement DEFAULTS = QueryBuilder.select().from("DEFAULT");
 
 	/** Logger available to subclasses */
 	protected final Logger logger = LoggerFactory.getLogger(getClass());

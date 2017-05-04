@@ -32,7 +32,7 @@ import com.datastax.driver.core.NettyOptions;
  */
 public class IntegrationTestNettyOptions extends NettyOptions {
 
-	public final static IntegrationTestNettyOptions INSTANCE = new IntegrationTestNettyOptions();
+	public static final IntegrationTestNettyOptions INSTANCE = new IntegrationTestNettyOptions();
 	private volatile static EventLoopGroup eventLoopGroup;
 	private volatile static Timer timer;
 
