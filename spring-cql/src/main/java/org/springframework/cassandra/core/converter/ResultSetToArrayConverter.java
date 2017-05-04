@@ -31,7 +31,7 @@ import com.datastax.driver.core.Row;
  */
 public class ResultSetToArrayConverter implements Converter<ResultSet, Object[]> {
 
-	protected Converter<Row, Object[]> rowConverter;
+	private final Converter<Row, Object[]> rowConverter;
 
 	/**
 	 * Create a new {@link ResultSetToArrayConverter} given a row {@link Converter}.
@@ -39,24 +39,9 @@ public class ResultSetToArrayConverter implements Converter<ResultSet, Object[]>
 	 * @param rowConverter must not be {@literal null}.
 	 */
 	public ResultSetToArrayConverter(Converter<Row, Object[]> rowConverter) {
-		setRowConverter(rowConverter);
-	}
-
-	/**
-	 * @return the row {@link Converter}.
-	 */
-	public Converter<Row, Object[]> getRowConverter() {
-		return rowConverter;
-	}
-
-	/**
-	 * Set the row {@link Converter}.
-	 *
-	 * @param rowConverter must not be {@literal null}.
-	 */
-	public void setRowConverter(Converter<Row, Object[]> rowConverter) {
 
 		Assert.notNull(rowConverter, "Converter must not be null");
+
 		this.rowConverter = rowConverter;
 	}
 

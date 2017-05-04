@@ -39,23 +39,33 @@ import com.datastax.driver.core.ResultSet;
  * {@link IllegalArgumentException}.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  * @param <T>
  */
 public abstract class AbstractResultSetConverter<T> implements Converter<ResultSet, T> {
+
+	private final static ResultSetToListConverter converter = new ResultSetToListConverter();
 
 	/**
 	 * Converts the given value to this converter's type or throws {@link IllegalArgumentException}.
 	 */
 	protected abstract T doConvertSingleValue(Object object);
 
+	/**
+	 * @return the target type.
+	 */
 	protected abstract Class<?> getType();
 
-	protected ResultSetToListConverter converter = new ResultSetToListConverter();
-
+	/**
+	 * @return surrogate value if the {@link ResultSet} is {@literal null}.
+	 */
 	protected T getNullResultSetValue() {
 		return null;
 	}
 
+	/**
+	 * @return surrogate value if the {@link ResultSet} is {@link ResultSet#isExhausted() exhausted}.
+	 */
 	protected T getExhaustedResultSetValue() {
 		return null;
 	}
@@ -100,8 +110,8 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 		return null;
 	}
 
-	protected void doThrow(String string) {
+	void doThrow(String string) {
 		throw new IllegalArgumentException(
-				String.format("can't convert %s to desired type [%s]", string, getType().getName()));
+				String.format("Cannot convert %s to desired type [%s]", string, getType().getName()));
 	}
 }

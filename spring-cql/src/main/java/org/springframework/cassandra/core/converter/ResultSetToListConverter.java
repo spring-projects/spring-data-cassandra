@@ -32,7 +32,7 @@ import com.datastax.driver.core.Row;
  */
 public class ResultSetToListConverter implements Converter<ResultSet, List<Map<String, Object>>> {
 
-	private Converter<Row, Map<String, Object>> rowConverter;
+	private final Converter<Row, Map<String, Object>> rowConverter;
 
 	/**
 	 * Create a new {@link ResultSetToListConverter} using a default {@link RowToMapConverter}.
@@ -47,22 +47,6 @@ public class ResultSetToListConverter implements Converter<ResultSet, List<Map<S
 	 * @param rowConverter must not be {@literal null}.
 	 */
 	public ResultSetToListConverter(Converter<Row, Map<String, Object>> rowConverter) {
-		setRowConverter(rowConverter);
-	}
-
-	/**
-	 * @return the row to map {@link Converter}.
-	 */
-	public Converter<Row, Map<String, Object>> getRowConverter() {
-		return rowConverter;
-	}
-
-	/**
-	 * Set the the row to map {@link Converter}.
-	 *
-	 * @param rowConverter must not be {@literal null}.
-	 */
-	public void setRowConverter(Converter<Row, Map<String, Object>> rowConverter) {
 
 		Assert.notNull(rowConverter, "Converter must not be null");
 
