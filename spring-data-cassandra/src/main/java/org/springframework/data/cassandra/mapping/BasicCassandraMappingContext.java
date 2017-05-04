@@ -69,25 +69,25 @@ public class BasicCassandraMappingContext
 		extends AbstractMappingContext<CassandraPersistentEntity<?>, CassandraPersistentProperty>
 		implements CassandraMappingContext, ApplicationContextAware {
 
-	protected ApplicationContext context;
-
-	protected CassandraPersistentEntityMetadataVerifier verifier = new CompositeCassandraPersistentEntityMetadataVerifier();
-
-	protected ClassLoader beanClassLoader;
-
-	protected Mapping mapping = new Mapping();
-
-	// useful caches
-	protected Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<>();
-	protected Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
-
-	protected Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<>();
-	protected Set<CassandraPersistentEntity<?>> userDefinedTypes = new HashSet<>();
-	protected Set<CassandraPersistentEntity<?>> tableEntities = new HashSet<>();
+	private CassandraPersistentEntityMetadataVerifier verifier = new CompositeCassandraPersistentEntityMetadataVerifier();
 
 	private CustomConversions customConversions;
 
+	private Mapping mapping = new Mapping();
+
 	private UserTypeResolver userTypeResolver;
+
+	private ApplicationContext context;
+
+	private ClassLoader beanClassLoader;
+
+	// useful caches
+	private final Map<Class<?>, CassandraPersistentEntity<?>> entitiesByType = new HashMap<>();
+	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
+
+	private final Set<CassandraPersistentEntity<?>> primaryKeyEntities = new HashSet<>();
+	private final Set<CassandraPersistentEntity<?>> userDefinedTypes = new HashSet<>();
+	private final Set<CassandraPersistentEntity<?>> tableEntities = new HashSet<>();
 
 	/**
 	 * Create a new {@link BasicCassandraMappingContext}.

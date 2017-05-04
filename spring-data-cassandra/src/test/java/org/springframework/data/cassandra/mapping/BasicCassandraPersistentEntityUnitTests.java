@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AliasFor;
@@ -82,16 +83,19 @@ public class BasicCassandraPersistentEntityUnitTests {
 
 	@Test
 	public void setForceQuoteCallsSetTableName() {
+
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
 				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
 
+		DirectFieldAccessor dfa = new DirectFieldAccessor(entitySpy);
+
 		entitySpy.setTableName(CqlIdentifier.cqlId("Messages", false));
 
-		assertThat(entitySpy.forceQuote).isNotPresent();
+		assertThat((Optional) dfa.getPropertyValue("forceQuote")).isNotPresent();
 
 		entitySpy.setForceQuote(true);
 
-		assertThat(entitySpy.forceQuote).contains(true);
+		assertThat((Optional) dfa.getPropertyValue("forceQuote")).contains(true);
 
 		verify(entitySpy, times(2)).setTableName(isA(CqlIdentifier.class));
 	}
@@ -101,10 +105,11 @@ public class BasicCassandraPersistentEntityUnitTests {
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
 				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
 
-		entitySpy.forceQuote = Optional.of(true);
+		DirectFieldAccessor dfa = new DirectFieldAccessor(entitySpy);
+		dfa.setPropertyValue("forceQuote", Optional.of(true));
 		entitySpy.setForceQuote(true);
 
-		assertThat(entitySpy.forceQuote).contains(true);
+		assertThat((Optional) dfa.getPropertyValue("forceQuote")).contains(true);
 
 		verify(entitySpy, never()).setTableName(isA(CqlIdentifier.class));
 	}

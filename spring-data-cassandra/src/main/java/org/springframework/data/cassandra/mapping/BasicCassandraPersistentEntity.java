@@ -52,22 +52,22 @@ import com.datastax.driver.core.UserType;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty>
 		implements CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	protected static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
+	private static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
 
 	private static final Optional<Comparator<CassandraPersistentProperty>> PROPERTY_COMPARATOR = Optional
 			.of(CassandraPersistentPropertyComparator.INSTANCE);
 
-	protected ApplicationContext context;
+	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
-	protected Optional<Boolean> forceQuote = Optional.empty();
+	private CassandraMappingContext mappingContext;
 
-	protected CassandraMappingContext mappingContext;
+	private ApplicationContext context;
 
-	protected CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
+	private StandardEvaluationContext spelContext;
 
-	protected Optional<CqlIdentifier> tableName = Optional.empty();
+	private Optional<Boolean> forceQuote = Optional.empty();
 
-	protected StandardEvaluationContext spelContext;
+	private Optional<CqlIdentifier> tableName = Optional.empty();
 
 	/**
 	 * Create a new {@link BasicCassandraPersistentEntity} given {@link TypeInformation}.

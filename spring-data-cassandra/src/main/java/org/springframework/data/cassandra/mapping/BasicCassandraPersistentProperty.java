@@ -63,26 +63,19 @@ import com.datastax.driver.core.UserType;
 public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentProperty<CassandraPersistentProperty>
 		implements CassandraPersistentProperty, ApplicationContextAware {
 
-	protected ApplicationContext context;
+	private final UserTypeResolver userTypeResolver;
+
+	private StandardEvaluationContext spelContext;
 
 	/**
 	 * Whether this property has been explicitly instructed to force quote column names.
 	 */
-	protected Boolean forceQuote;
+	private Boolean forceQuote;
 
 	/**
 	 * An unmodifiable list of this property's column names.
 	 */
-	protected List<CqlIdentifier> columnNames;
-
-	/**
-	 * An unmodifiable list of this property's explicitly set column names.
-	 */
-	protected List<CqlIdentifier> explicitColumnNames;
-
-	protected StandardEvaluationContext spelContext;
-
-	private final UserTypeResolver userTypeResolver;
+	private List<CqlIdentifier> columnNames;
 
 	/**
 	 * Create a new {@link BasicCassandraPersistentProperty}.
@@ -125,7 +118,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		Assert.notNull(context, "ApplicationContext must not be null");
 
-		this.context = context;
 		spelContext = new StandardEvaluationContext();
 		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
 		spelContext.setBeanResolver(new BeanFactoryResolver(context));
@@ -459,7 +451,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 						getName(), getOwner().getType().getName(), this.columnNames.size(), this.columnNames.size() == 1 ? "" : "s",
 						columnNames.size()));
 
-		this.columnNames = this.explicitColumnNames = Collections.unmodifiableList(new ArrayList<>(columnNames));
+		this.columnNames = Collections.unmodifiableList(new ArrayList<>(columnNames));
 	}
 
 	/* (non-Javadoc)

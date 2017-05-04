@@ -403,7 +403,7 @@ public class BasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-172
 	public void usesTypeShouldReportTypeUsageInMappedUdt() {
 
-		final UserType myTypeMock = mock(UserType.class, "mappedudt");
+		UserType myTypeMock = mock(UserType.class, "mappedudt");
 		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
 
 		mappingContext.setUserTypeResolver(typeName -> myTypeMock);
@@ -416,7 +416,7 @@ public class BasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-172
 	public void usesTypeShouldReportTypeUsageInColumn() {
 
-		final UserType myTypeMock = mock(UserType.class, "mappedudt");
+		UserType myTypeMock = mock(UserType.class, "mappedudt");
 		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
 
 		mappingContext.setUserTypeResolver(typeName -> myTypeMock);
