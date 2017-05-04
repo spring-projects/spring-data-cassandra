@@ -37,10 +37,12 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.convert.CassandraCustomConversions;
 import org.springframework.data.convert.WritingConverter;
+import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
 
@@ -67,14 +69,22 @@ public class BasicCassandraMappingContextUnitTests {
 
 	private static class Transient {}
 
-	@Test
+	@Test // DATACASS-282
 	public void testGetExistingPersistentEntityHappyPath() {
+
+		TableMetadata tableMetadata = mock(TableMetadata.class);
+		when(tableMetadata.getName()).thenReturn(X.class.getSimpleName().toLowerCase());
 
 		mappingContext.getRequiredPersistentEntity(X.class);
 
-		assertThat(mappingContext.contains(X.class)).isTrue();
 		assertThat(mappingContext.getExistingPersistentEntity(X.class)).isNotNull();
 		assertThat(mappingContext.contains(Y.class)).isFalse();
+		assertThat(mappingContext.getNonPrimaryKeyEntities()).hasSize(1);
+		assertThat(mappingContext.getPrimaryKeyEntities()).isEmpty();
+		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
+		assertThat(mappingContext.getTableEntities()).hasSize(1);
+		assertThat(mappingContext.contains(X.class)).isTrue();
+		assertThat(mappingContext.usesTable(tableMetadata)).isTrue();
 	}
 
 	@Test // DATACASS-248
@@ -353,6 +363,13 @@ public class BasicCassandraMappingContextUnitTests {
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(MappedUdt.class);
 
 		assertThat(persistentEntity.isUserDefinedType()).isTrue();
+
+		assertThat(mappingContext.getExistingPersistentEntity(MappedUdt.class)).isNotNull();
+		assertThat(mappingContext.getNonPrimaryKeyEntities()).isEmpty();
+		assertThat(mappingContext.getPrimaryKeyEntities()).isEmpty();
+		assertThat(mappingContext.getUserDefinedTypeEntities()).hasSize(1);
+		assertThat(mappingContext.getTableEntities()).hasSize(0);
+		assertThat(mappingContext.contains(MappedUdt.class)).isTrue();
 	}
 
 	@Test // DATACASS-172
@@ -435,6 +452,35 @@ public class BasicCassandraMappingContextUnitTests {
 		} catch (InvalidDataAccessApiUsageException e) {
 			assertThat(e).hasMessageContaining("Unknown type [class java.lang.Object] for property [complexObject]");
 		}
+	}
+
+	@Test // DATACASS-282
+	public void shouldNotRetainInvalidEntitiesInCache() {
+
+		TableMetadata tableMetadata = mock(TableMetadata.class);
+		when(tableMetadata.getName())
+				.thenReturn(InvalidEntityWithIdAndPrimaryKeyColumn.class.getSimpleName().toLowerCase());
+
+		try {
+			mappingContext.getPersistentEntity(InvalidEntityWithIdAndPrimaryKeyColumn.class);
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e).isInstanceOf(VerifierMappingExceptions.class);
+		}
+
+		assertThat(mappingContext.getNonPrimaryKeyEntities()).isEmpty();
+		assertThat(mappingContext.getPrimaryKeyEntities()).isEmpty();
+		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
+		assertThat(mappingContext.getTableEntities()).isEmpty();
+		assertThat(mappingContext.contains(InvalidEntityWithIdAndPrimaryKeyColumn.class)).isFalse();
+		assertThat(mappingContext.usesTable(tableMetadata)).isFalse();
+	}
+
+	@Table
+	private static class InvalidEntityWithIdAndPrimaryKeyColumn {
+
+		@Id String foo;
+		@PrimaryKeyColumn String bar;
 	}
 
 	@Table
@@ -520,4 +566,5 @@ public class BasicCassandraMappingContextUnitTests {
 			return "serialized";
 		}
 	}
+
 }

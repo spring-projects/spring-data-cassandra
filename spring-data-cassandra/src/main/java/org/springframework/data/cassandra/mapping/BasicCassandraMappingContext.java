@@ -258,6 +258,51 @@ public class BasicCassandraMappingContext
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.AbstractMappingContext#addPersistentEntity(org.springframework.data.util.TypeInformation)
+	 */
+	@Override
+	protected Optional<CassandraPersistentEntity<?>> addPersistentEntity(TypeInformation<?> typeInformation) {
+
+		// Prevent conversion types created as CassandraPersistentEntity
+		Optional<CassandraPersistentEntity<?>> optional = shouldCreatePersistentEntityFor(typeInformation)
+				? super.addPersistentEntity(typeInformation) : Optional.empty();
+
+		optional.ifPresent(entity -> {
+
+			if (entity.isUserDefinedType()) {
+				userDefinedTypes.add(entity);
+			}
+			// now do some caching of the entity
+
+			Set<CassandraPersistentEntity<?>> entities = entitySetsByTableName.computeIfAbsent(entity.getTableName(),
+					cqlIdentifier -> new HashSet<>());
+
+			entities.add(entity);
+
+			if (!entity.isUserDefinedType()) {
+				if (entity.isCompositePrimaryKey()) {
+					primaryKeyEntities.add(entity);
+				}
+
+				entity.findAnnotation(Table.class).ifPresent(table -> tableEntities.add(entity));
+			}
+
+			entitiesByType.put(entity.getType(), entity);
+		});
+
+		return optional;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.mapping.context.AbstractMappingContext#shouldCreatePersistentEntityFor(org.springframework.data.util.TypeInformation)
+	 */
+	@Override
+	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> typeInfo) {
+		return (!customConversions.hasCustomWriteTarget(typeInfo.getType())
+				&& super.shouldCreatePersistentEntityFor(typeInfo));
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation)
 	 */
 	@Override
@@ -270,7 +315,7 @@ public class BasicCassandraMappingContext
 
 		if (userDefinedType != null) {
 			entity = new CassandraUserTypePersistentEntity<>(typeInformation, this, verifier, userTypeResolver);
-			userDefinedTypes.add(entity);
+
 		} else {
 			entity = new BasicCassandraPersistentEntity<>(typeInformation, this, verifier);
 		}
@@ -278,23 +323,6 @@ public class BasicCassandraMappingContext
 		if (context != null) {
 			entity.setApplicationContext(context);
 		}
-
-		// now do some caching of the entity
-
-		Set<CassandraPersistentEntity<?>> entities = entitySetsByTableName.computeIfAbsent(entity.getTableName(),
-				cqlIdentifier -> new HashSet<>());
-
-		entities.add(entity);
-
-		if (!entity.isUserDefinedType()) {
-			if (entity.isCompositePrimaryKey()) {
-				primaryKeyEntities.add(entity);
-			}
-
-			entity.findAnnotation(Table.class).ifPresent(table -> tableEntities.add(entity));
-		}
-
-		entitiesByType.put(entity.getType(), entity);
 
 		return entity;
 	}
@@ -413,25 +441,6 @@ public class BasicCassandraMappingContext
 		}
 
 		return specification;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#shouldCreatePersistentEntityFor(org.springframework.data.util.TypeInformation)
-	 */
-	@Override
-	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> typeInfo) {
-		return (!customConversions.hasCustomWriteTarget(typeInfo.getType())
-				&& super.shouldCreatePersistentEntityFor(typeInfo));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#addPersistentEntity(org.springframework.data.util.TypeInformation)
-	 */
-	@Override
-	protected Optional<CassandraPersistentEntity<?>> addPersistentEntity(TypeInformation<?> typeInformation) {
-		// Prevent conversion types created as CassandraPersistentEntity
-		return (shouldCreatePersistentEntityFor(typeInformation) ? super.addPersistentEntity(typeInformation)
-				: Optional.empty());
 	}
 
 	/* (non-Javadoc)
