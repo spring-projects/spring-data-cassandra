@@ -1,6 +1,26 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.0.M3 (2017-05-09)
+----------------------------------------
+* DATACASS-440 - Remove support for JodaTime's deprecated DateMidnight.
+* DATACASS-439 - Remove deprecated types and members.
+* DATACASS-438 - Adapt to moved CustomConversions to Spring Data Commons.
+* DATACASS-435 - Remove strict mode in BasicCassandraPersistentEntityMetadataVerifier.
+* DATACASS-434 - Remove own ConsistencyLevel and RetryPolicy types.
+* DATACASS-431 - Disable tests for ALTER TYPE support on Apache Cassandra 3.10.
+* DATACASS-430 - Adopt changed Mono and Flux error handling API.
+* DATACASS-429 - Assert compatibility with Duration type.
+* DATACASS-427 - Adapt to API changes in Reactor 3.1.
+* DATACASS-426 - Release 2.0 M3 (Kay).
+* DATACASS-424 - Upgrade to Cassandra driver 3.2.0.
+* DATACASS-423 - Remove obsolete build profiles.
+* DATACASS-420 - Literal null values in inserts/updates causing cell tombstones.
+* DATACASS-395 - Refactor to immutable converters.
+* DATACASS-367 - Drop requirement that Id's have to be Serializable.
+* DATACASS-282 - Entities are partially registered although they are found invalid.
+
+
 Changes in version 1.4.10.RELEASE (2017-04-19)
 ----------------------------------------------
 * DATACASS-433 - Release 1.4.10 (Hopper SR10).
