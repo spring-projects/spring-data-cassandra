@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.querybuilder.Batch;
@@ -107,12 +108,25 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 */
 	@Override
 	public CassandraBatchOperations insert(Iterable<?> entities) {
+		return insert(entities, null);
+	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable, int)
+	 */
+	@Override
+	public CassandraBatchOperations insert(Iterable<?> entities, int ttl) {
+		WriteOptions options = WriteOptions.builder().ttl(30).build();
+		return insert(entities, options);
+	}
+
+	private CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options) {
 		assertNotExecuted();
 
 		for (Object entity : nullSafeIterable(entities)) {
 			Assert.notNull(entity, "Entity must not be null");
-			batch.add(QueryUtils.createInsertQuery(getTableName(entity), entity, null, operations.getConverter()));
+			batch.add(QueryUtils.createInsertQuery(getTableName(entity), entity, options, operations.getConverter()));
 		}
 
 		return this;
@@ -133,12 +147,26 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 */
 	@Override
 	public CassandraBatchOperations update(Iterable<?> entities) {
+		return update(entities, null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable, int)
+	 */
+	@Override
+	public CassandraBatchOperations update(Iterable<?> entities, int ttl) {
+		WriteOptions options = WriteOptions.builder().ttl(30).build();
+		return update(entities, options);
+	}
+
+	private CassandraBatchOperations update(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
 
 		for (Object entity : nullSafeIterable(entities)) {
 			Assert.notNull(entity, "Entity must not be null");
-			batch.add(QueryUtils.createUpdateQuery(getTableName(entity), entity, null, operations.getConverter()));
+			batch.add(QueryUtils.createUpdateQuery(getTableName(entity), entity, options, operations.getConverter()));
 		}
 
 		return this;

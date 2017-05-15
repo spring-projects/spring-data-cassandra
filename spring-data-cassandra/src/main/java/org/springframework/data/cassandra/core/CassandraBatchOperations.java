@@ -69,6 +69,16 @@ public interface CassandraBatchOperations {
 	CassandraBatchOperations insert(Iterable<?> entities);
 
 	/**
+	 * Add a collection of inserts with a given {@code ttl} to the batch.
+	 *
+	 * @param entities the entities to insert; must not be {@literal null}.
+	 * @param ttl the TTL to apply.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 */
+	CassandraBatchOperations insert(Iterable<?> entities, int ttl);
+
+	/**
 	 * Add an array of updates to the batch.
 	 *
 	 * @param entities the entities to update; must not be {@literal null}.
@@ -85,6 +95,16 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
 	CassandraBatchOperations update(Iterable<?> entities);
+
+	/**
+	 * Add a collection of updates with a given {@code ttl} to the batch.
+	 *
+	 * @param entities the entities to update; must not be {@literal null}.
+	 * @param ttl the TTL to apply.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 */
+	CassandraBatchOperations update(Iterable<?> entities, int ttl);
 
 	/**
 	 * Add an array of deletes to the batch.

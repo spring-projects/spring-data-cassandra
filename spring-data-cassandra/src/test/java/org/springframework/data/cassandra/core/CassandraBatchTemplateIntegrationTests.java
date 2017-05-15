@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -81,6 +82,29 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
 	}
 
+	@Test // DATACASS-443
+	public void shouldInsertCollectionOfEntitiesWithTtl() {
+
+		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
+		Group mike = new Group(new GroupKey("users", "0x1", "mike"));
+
+		walter.setEmail("walter@white.com");
+		mike.setEmail("mike@sauls.com");
+
+		int ttl = 30;
+
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		batchOperations.insert(Arrays.asList(walter, mike), ttl).execute();
+
+		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT TTL(email) FROM group;");
+
+		assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(2);
+
+		for (Row row : resultSet) {
+			assertThat(row.getInt(0)).isBetween(1,ttl);
+		}
+	}
+
 	@Test // DATACASS-288
 	public void shouldUpdateEntities() {
 
@@ -113,6 +137,29 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		Group loaded = template.selectOneById(walter.getId(), Group.class);
 
 		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
+	}
+
+	@Test // DATACASS-443
+	public void shouldUpdateCollectionOfEntitiesWithTtl() {
+
+		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
+		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
+
+		walter.setEmail("walter@white.com");
+		mike.setEmail("mike@sauls.com");
+
+		int ttl = 30;
+
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		batchOperations.update(Arrays.asList(walter, mike), ttl).execute();
+
+		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT TTL(email) FROM group;");
+
+		assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(2);
+
+		for (Row row : resultSet) {
+			assertThat(row.getInt(0)).isBetween(1,ttl);
+		}
 	}
 
 	@Test // DATACASS-288
