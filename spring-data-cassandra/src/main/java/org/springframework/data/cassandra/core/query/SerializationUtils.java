@@ -30,6 +30,9 @@ import com.datastax.driver.core.TypeCodec;
  * Utility methods for CQL serialization.
  *
  * @author Mark Paluch
+ * @see org.springframework.core.convert.converter.Converter
+ * @see com.datastax.driver.core.CodecRegistry
+ * @see com.datastax.driver.core.TypeCodec
  * @since 2.0
  */
 abstract class SerializationUtils {
@@ -51,7 +54,8 @@ abstract class SerializationUtils {
 		}
 
 		CriteriaDefinition.Predicate predicate = criteria.getPredicate();
-		return serialize(criteria.getColumnName(), criteria.getPredicate().getOperator())
+
+		return serialize(criteria.getColumnName(), predicate.getOperator())
 				.append(serializeToCqlSafely(predicate.getValue())).toString();
 
 	}
@@ -61,8 +65,8 @@ abstract class SerializationUtils {
 	 * but falling back to the given object's {@link Object#toString()} method if it's not serializable. Useful for
 	 * printing raw {@link Criteria}s containing complex values before actually converting them into Mongo native types.
 	 *
-	 * @param criteria
-	 * @return
+	 * @param value value to serialize to CQL.
+	 * @return the value as a serialized CQL {@link String}.
 	 */
 	public static String serializeToCqlSafely(Object value) {
 
@@ -92,6 +96,7 @@ abstract class SerializationUtils {
 		}
 
 		TypeCodec<Object> codec = CodecRegistry.DEFAULT_INSTANCE.codecFor(value);
+
 		return codec.format(value);
 	}
 
@@ -103,7 +108,6 @@ abstract class SerializationUtils {
 	}
 
 	private static String toString(Map<?, ?> source) {
-
 		return iterableToDelimitedString(source.entrySet(), "{ ", " }",
 				s -> String.format("%s : %s", serialize(s.getKey()), serialize(s.getValue())));
 	}
@@ -119,9 +123,9 @@ abstract class SerializationUtils {
 	}
 
 	/**
-	 * Creates a string representation from the given {@link Iterable} prepending the prefix, applying the given
-	 * {@link Converter} to each element before adding it to the result {@link String}, concatenating each element with
-	 * {@literal ,} and applying the postfix.
+	 * Creates a {@link String} representation from the given {@link Iterable} prepending the {@code prefix},
+	 * applying the given {@link Converter} to each element before adding it to the result {@link String},
+	 * concatenating each element with {@literal ,} and applying the {@code postfix}.
 	 */
 	private static <T> String iterableToDelimitedString(Iterable<T> source, String prefix, String postfix,
 			Converter<? super T, Object> transformer) {
@@ -131,6 +135,7 @@ abstract class SerializationUtils {
 
 		while (iterator.hasNext()) {
 			builder.append(transformer.convert(iterator.next()));
+
 			if (iterator.hasNext()) {
 				builder.append(",");
 			}

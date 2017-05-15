@@ -33,6 +33,7 @@ import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition.Predicate;
 import org.springframework.data.cassandra.core.query.Filter;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.domain.Sort;
@@ -51,13 +52,26 @@ import org.springframework.util.Assert;
  * Map {@link org.springframework.data.cassandra.core.query.Query} to CQL-specific data types.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.core.query.ColumnName
+ * @see org.springframework.data.cassandra.core.query.Columns
+ * @see org.springframework.data.cassandra.core.query.Criteria
+ * @see org.springframework.data.cassandra.core.query.Filter
+ * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
+ * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity
+ * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty
+ * @see org.springframework.data.domain.Sort
+ * @see org.springframework.data.mapping.PersistentProperty
+ * @see org.springframework.data.mapping.PropertyPath
+ * @see org.springframework.data.mapping.context.MappingContext
+ * @see org.springframework.data.mapping.context.PersistentPropertyPath
+ * @see org.springframework.data.util.TypeInformation
  * @since 2.0
  */
 public class QueryMapper {
 
 	private final CassandraConverter converter;
 
-	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+	private final CassandraMappingContext mappingContext;
 
 	/**
 	 * Creates a new {@link QueryMapper} with the given {@link CassandraConverter}.
@@ -73,35 +87,25 @@ public class QueryMapper {
 	}
 
 	/**
-	 * Map a {@link Filter} with a {@link CassandraPersistentEntity type hint}. Filter mapping translates property names
-	 * to column names and maps {@link Predicate} values to simple Cassandra values.
+	 * Returns the configured {@link CassandraConverter} used to convert object values into
+	 * Cassandra column typed values.
 	 *
-	 * @param filter must not be {@literal null}.
-	 * @param entity must not be {@literal null}.
-	 * @return the mapped {@link Filter}.
+	 * @return the configured {@link CassandraConverter}.
+	 * @see org.springframework.data.cassandra.convert.CassandraConverter
 	 */
-	public Filter getMappedObject(Filter filter, CassandraPersistentEntity<?> entity) {
+	protected CassandraConverter getConverter() {
+		return this.converter;
+	}
 
-		Assert.notNull(filter, "Filter must not be null");
-		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
-
-		List<CriteriaDefinition> result = new ArrayList<>();
-
-		for (CriteriaDefinition criteriaDefinition : filter) {
-
-			Field field = createPropertyField(entity, criteriaDefinition.getColumnName());
-
-			Predicate predicate = criteriaDefinition.getPredicate();
-
-			Optional<Object> value = Optional.ofNullable(predicate.getValue());
-			TypeInformation<?> typeInformation = getTypeInformation(field, value);
-			Optional<Object> mappedValue = converter.convertToCassandraColumn(value, typeInformation);
-
-			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue.orElse(null));
-			result.add(Criteria.of(field.getMappedKey(), mappedPredicate));
-		}
-
-		return Filter.from(result);
+	/**
+	 * Returns the configured {@link CassandraMappingContext} containing mapping meta-data (persistent entities
+	 * and properties) used to store (map) objects to Cassandra tables (rows/columns).
+	 *
+	 * @return the configured {@link CassandraMappingContext}.
+	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
+	 */
+	protected CassandraMappingContext getMappingContext() {
+		return this.mappingContext;
 	}
 
 	/**
@@ -113,8 +117,41 @@ public class QueryMapper {
 	public List<Selector> getColumns(CassandraPersistentEntity<?> entity) {
 
 		return entity.getPersistentProperties() //
-				.flatMap(p -> p.getColumnNames().stream()).map(ColumnSelector::from) //
-				.collect(Collectors.toList());
+			.flatMap(p -> p.getColumnNames().stream()).map(ColumnSelector::from) //
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * Map a {@link Filter} with a {@link CassandraPersistentEntity type hint}. Filter mapping translates property names
+	 * to column names and maps {@link Predicate} values to simple Cassandra values.
+	 *
+	 * @param filter must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @return the mapped {@link Filter}.
+	 */
+	public Filter getMappedObject(Filter filter, CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(filter, "Filter must not be null");
+		Assert.notNull(entity, "Entity must not be null");
+
+		List<CriteriaDefinition> result = new ArrayList<>();
+
+		for (CriteriaDefinition criteriaDefinition : filter) {
+
+			Field field = createPropertyField(entity, criteriaDefinition.getColumnName());
+
+			Predicate predicate = criteriaDefinition.getPredicate();
+
+			Optional<Object> value = Optional.ofNullable(predicate.getValue());
+			TypeInformation<?> typeInformation = getTypeInformation(field, value);
+			Optional<Object> mappedValue = getConverter().convertToColumnType(value, typeInformation);
+
+			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue.orElse(null));
+
+			result.add(Criteria.of(field.getMappedKey(), mappedPredicate));
+		}
+
+		return Filter.from(result);
 	}
 
 	/**
@@ -171,8 +208,8 @@ public class QueryMapper {
 
 			ColumnSelector mappedColumnSelector = ColumnSelector.from(cqlIdentifier);
 
-			return columnSelector.getAlias() //
-					.map(mappedColumnSelector::as) //
+			return columnSelector.getAlias()
+					.map(mappedColumnSelector::as)
 					.orElse(mappedColumnSelector);
 		}
 
@@ -180,23 +217,23 @@ public class QueryMapper {
 
 			FunctionCall functionCall = (FunctionCall) selector;
 
-			List<Object> mappedParameters = functionCall.getParameters() //
-					.stream() //
-					.map(o -> {
-
-						if (o instanceof Selector) {
-							return getMappedSelector((Selector) o, cqlIdentifier);
+			List<Object> mappedParameters = functionCall.getParameters()
+					.stream()
+					.map(obj -> {
+						if (obj instanceof Selector) {
+							return getMappedSelector((Selector) obj, cqlIdentifier);
 						}
 
-						return o;
+						return obj;
 					}) //
 					.collect(Collectors.toList());
 
-			FunctionCall mappedCall = FunctionCall.from(functionCall.getExpression(), mappedParameters.toArray());
+			FunctionCall mappedFunctionCall =
+					FunctionCall.from(functionCall.getExpression(), mappedParameters.toArray());
 
 			return functionCall.getAlias() //
-					.map(mappedCall::as) //
-					.orElse(mappedCall);
+					.map(mappedFunctionCall::as) //
+					.orElse(mappedFunctionCall);
 		}
 
 		throw new IllegalArgumentException(String.format("Selector [%s] not supported", selector));
@@ -232,11 +269,8 @@ public class QueryMapper {
 
 			columns.getSelector(column) //
 					.filter(selector -> selector instanceof ColumnSelector) //
-					.ifPresent(columnExpression -> {
-
-						getCqlIdentifier(column, field) //
-								.map(CqlIdentifier::toCql) //
-								.ifPresent(columnNames::add);
+					.ifPresent(columnSelector -> {
+						getCqlIdentifier(column, field).map(CqlIdentifier::toCql).ifPresent(columnNames::add);
 					});
 		}
 
@@ -271,20 +305,21 @@ public class QueryMapper {
 		for (Order order : sort) {
 
 			ColumnName columnName = ColumnName.from(order.getProperty());
+
 			Field field = createPropertyField(entity, columnName);
 
 			Order mappedOrder = getCqlIdentifier(columnName, field)
 					.map(cqlIdentifier -> new Order(order.getDirection(), cqlIdentifier.toCql())).orElse(order);
+
 			mappedOrders.add(mappedOrder);
 		}
 
-		return new Sort(mappedOrders);
+		return Sort.by(mappedOrders);
 	}
 
 	private Optional<CqlIdentifier> getCqlIdentifier(ColumnName column, Field field) {
 
 		try {
-
 			if (field.getProperty().isPresent()) {
 				return field.getProperty().map(CassandraPersistentProperty::getColumnName);
 			}
@@ -306,19 +341,19 @@ public class QueryMapper {
 	 * @return
 	 */
 	protected Field createPropertyField(CassandraPersistentEntity<?> entity, ColumnName key) {
-		return entity == null ? new Field(key) : new MetadataBackedField(key, entity, mappingContext);
+		return Optional.ofNullable(entity).<Field>map(e -> new MetadataBackedField(key, e, getMappingContext()))
+			.orElseGet(() -> new Field(key));
 	}
 
 	@SuppressWarnings("unchecked")
 	TypeInformation<?> getTypeInformation(Field field, Optional<? extends Object> value) {
 
-		return field.getProperty().map(CassandraPersistentProperty::getTypeInformation).orElseGet(() -> {
-
-			return value.map(Object::getClass) //
-					.map(ClassTypeInformation::from) //
-					.orElse((ClassTypeInformation) ClassTypeInformation.OBJECT);
-
-		});
+		return field.getProperty().map(CassandraPersistentProperty::getTypeInformation)
+				.orElseGet(() ->
+					value.map(Object::getClass)
+						.map(ClassTypeInformation::from)
+						.orElse((ClassTypeInformation) ClassTypeInformation.OBJECT)
+				);
 	}
 
 	/**
@@ -336,7 +371,6 @@ public class QueryMapper {
 		 * @param name must not be {@literal null} or empty.
 		 */
 		public Field(ColumnName name) {
-
 			Assert.notNull(name, "Name must not be null!");
 			this.name = name;
 		}
@@ -345,7 +379,7 @@ public class QueryMapper {
 		 * Returns a new {@link Field} with the given name.
 		 *
 		 * @param name must not be {@literal null} or empty.
-		 * @return
+		 * @return a new {@link Field} with the given name.
 		 */
 		public Field with(ColumnName name) {
 			return new Field(name);
@@ -386,16 +420,17 @@ public class QueryMapper {
 		private final Optional<CassandraPersistentProperty> optionalProperty;
 
 		/**
-		 * Creates a new {@link MetadataBackedField} with the given name, {@link MongoPersistentEntity} and
-		 * {@link MappingContext}.
+		 * Creates a new {@link MetadataBackedField} with the given name, {@link CassandraPersistentEntity}
+		 * and {@link MappingContext}.
 		 *
 		 * @param name must not be {@literal null} or empty.
 		 * @param entity must not be {@literal null}.
-		 * @param context must not be {@literal null}.
+		 * @param mappingContext must not be {@literal null}.
 		 */
 		public MetadataBackedField(ColumnName name, CassandraPersistentEntity<?> entity,
-				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> context) {
-			this(name, entity, context, null);
+				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+
+			this(name, entity, mappingContext, null);
 		}
 
 		/**
@@ -404,19 +439,19 @@ public class QueryMapper {
 		 *
 		 * @param name must not be {@literal null} or empty.
 		 * @param entity must not be {@literal null}.
-		 * @param context must not be {@literal null}.
+		 * @param mappingContext must not be {@literal null}.
 		 * @param property may be {@literal null}.
 		 */
 		public MetadataBackedField(ColumnName name, CassandraPersistentEntity<?> entity,
-				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> context,
+				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
 				CassandraPersistentProperty property) {
 
 			super(name);
 
-			Assert.notNull(entity, "MongoPersistentEntity must not be null!");
+			Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
 			this.entity = entity;
-			this.mappingContext = context;
+			this.mappingContext = mappingContext;
 			this.path = getPath(name.toCql());
 			this.property = path.map(PersistentPropertyPath::getLeafProperty).orElse(property);
 			this.optionalProperty = Optional.ofNullable(this.property);
@@ -431,11 +466,13 @@ public class QueryMapper {
 		private Optional<PersistentPropertyPath<CassandraPersistentProperty>> getPath(String pathExpression) {
 
 			try {
-				PropertyPath path = PropertyPath.from(pathExpression.replaceAll("\\.\\d", ""), entity.getTypeInformation());
-				PersistentPropertyPath<CassandraPersistentProperty> propertyPath = mappingContext
-						.getPersistentPropertyPath(path);
+				PropertyPath propertyPath = PropertyPath.from(pathExpression.replaceAll("\\.\\d", ""),
+						entity.getTypeInformation());
 
-				return Optional.of(propertyPath);
+				PersistentPropertyPath<CassandraPersistentProperty> persistentPropertyPath =
+						mappingContext.getPersistentPropertyPath(propertyPath);
+
+				return Optional.of(persistentPropertyPath);
 			} catch (PropertyReferenceException e) {
 				return Optional.empty();
 			}

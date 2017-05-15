@@ -98,8 +98,15 @@ public interface CriteriaDefinition {
 	 */
 	enum Operators implements Operator {
 
-		EQ("="), GT(">"), GTE(">="), LT("<"), LTE("<="), IN("IN"), CONTAINS("CONTAINS"), CONTAINS_KEY("CONTAINS KEY"), LIKE(
-				"LIKE");
+		EQ("="),
+		GT(">"),
+		GTE(">="),
+		LT("<"),
+		LTE("<="),
+		CONTAINS("CONTAINS"),
+		CONTAINS_KEY("CONTAINS KEY"),
+		IN("IN"),
+		LIKE("LIKE");
 
 		private final String operator;
 

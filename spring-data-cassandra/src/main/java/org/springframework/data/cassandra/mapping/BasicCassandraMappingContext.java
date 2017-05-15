@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
-import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.*;
-import static org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder.*;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.cassandra.core.keyspace.CreateTableSpecification.createTable;
+import static org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder.getDataTypeFor;
 
 import java.util.Collection;
 import java.util.Collections;

@@ -49,7 +49,6 @@ class StringBasedQuery {
 	 *
 	 * @param query must not be empty.
 	 * @param parameterBinder must not be {@literal null}.
-	 * @param codecRegistry must not be {@literal null}.
 	 */
 	public StringBasedQuery(String query, ExpressionEvaluatingParameterBinder parameterBinder) {
 
@@ -61,6 +60,16 @@ class StringBasedQuery {
 		this.query = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query,
 				this.queryParameterBindings);
 
+	}
+
+	/* (non-Javadoc) */
+	protected ExpressionEvaluatingParameterBinder getParameterBinder() {
+		return this.parameterBinder;
+	}
+
+	/* (non-Javadoc) */
+	protected String getQuery() {
+		return this.query;
 	}
 
 	/**
@@ -75,10 +84,10 @@ class StringBasedQuery {
 		Assert.notNull(parameterAccessor, "CassandraParameterAccessor must not be null");
 		Assert.notNull(queryMethod, "CassandraQueryMethod must not be null");
 
-		List<Object> arguments = parameterBinder.bind(parameterAccessor,
-				new BindingContext(queryMethod, queryParameterBindings));
+		List<Object> arguments = getParameterBinder().bind(parameterAccessor,
+				new BindingContext(queryMethod, this.queryParameterBindings));
 
-		return ParameterBinder.INSTANCE.bind(query, arguments);
+		return ParameterBinder.INSTANCE.bind(getQuery(), arguments);
 	}
 
 	/**

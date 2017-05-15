@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,10 +51,10 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	private static final Map<DataType.Name, DataType> nameToDataType;
 
 	static {
-
 		CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 
 		Map<Class<?>, Class<?>> primitiveWrappers = new HashMap<>(8);
+
 		primitiveWrappers.put(Boolean.class, boolean.class);
 		primitiveWrappers.put(Byte.class, byte.class);
 		primitiveWrappers.put(Character.class, char.class);
@@ -64,11 +65,12 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		primitiveWrappers.put(Short.class, short.class);
 
 		Set<Class<?>> simpleTypes = getCassandraPrimitiveTypes(codecRegistry);
+
 		simpleTypes.add(Number.class);
 		simpleTypes.add(Row.class);
 		simpleTypes.add(UDTValue.class);
 
-		classToDataType = Collections.unmodifiableMap(classToDataType(primitiveWrappers, codecRegistry));
+		classToDataType = Collections.unmodifiableMap(classToDataType(codecRegistry, primitiveWrappers));
 		nameToDataType = Collections.unmodifiableMap(nameToDataType());
 		CASSANDRA_SIMPLE_TYPES = Collections.unmodifiableSet(simpleTypes);
 	}
@@ -82,40 +84,37 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		Map<Name, DataType> nameToDataType = new HashMap<>(16);
 
-		for (DataType dataType : DataType.allPrimitiveTypes()) {
+		DataType.allPrimitiveTypes().forEach(dataType -> {
 			nameToDataType.put(dataType.getName(), dataType);
-		}
+		});
 
 		return nameToDataType;
 	}
 
 	/**
 	 * @return the map between {@link Class} and {@link DataType}.
-	 * @param primitiveWrappers map of primitive to wrapper type
 	 * @param codecRegistry the Cassandra codec registry
+	 * @param primitiveWrappers map of primitive to wrapper type
 	 */
-	private static Map<Class<?>, DataType> classToDataType(Map<Class<?>, Class<?>> primitiveWrappers,
-			CodecRegistry codecRegistry) {
+	private static Map<Class<?>, DataType> classToDataType(CodecRegistry codecRegistry,
+			Map<Class<?>, Class<?>> primitiveWrappers) {
 
 		Map<Class<?>, DataType> classToDataType = new HashMap<>(16);
 
-		for (DataType dataType : DataType.allPrimitiveTypes()) {
+		DataType.allPrimitiveTypes().forEach(dataType -> {
+			Class<?> javaType = codecRegistry.codecFor(dataType).getJavaType().getRawType();
 
-			Class<?> javaClass = codecRegistry.codecFor(dataType).getJavaType().getRawType();
-			classToDataType.put(javaClass, dataType);
+			classToDataType.put(javaType, dataType);
 
-			Class<?> primitiveJavaClass = primitiveWrappers.get(javaClass);
-			if (primitiveJavaClass != null) {
-				classToDataType.put(primitiveJavaClass, dataType);
-			}
-		}
+			Optional.ofNullable(primitiveWrappers.get(javaType))
+				.ifPresent(primitiveType -> classToDataType.put(primitiveType, dataType));
+		});
 
 		// override String to text datatype as String is used multiple times
 		classToDataType.put(String.class, DataType.text());
 
-		// map Long to bigint as counter columns (last type aver multiple overrides)
-		// are a special use case so map it to a more common type by
-		// default
+		// map Long to bigint as counter columns (last type aver multiple overrides) are a special use case
+		// so map it to a more common type by default
 		classToDataType.put(Long.class, DataType.bigint());
 		classToDataType.put(long.class, DataType.bigint());
 
@@ -130,10 +129,10 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	private static Set<Class<?>> getCassandraPrimitiveTypes(CodecRegistry codecRegistry) {
 
-		return DataType.allPrimitiveTypes().stream() //
-				.map(codecRegistry::codecFor) //
-				.map(TypeCodec::getJavaType) //
-				.map(TypeToken::getRawType) //
+		return DataType.allPrimitiveTypes().stream()
+				.map(codecRegistry::codecFor)
+				.map(TypeCodec::getJavaType)
+				.map(TypeToken::getRawType)
 				.collect(Collectors.toSet());
 	}
 
@@ -165,15 +164,19 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	public static DataType.Name[] getDataTypeNamesFrom(List<TypeInformation<?>> arguments) {
 
 		DataType.Name[] array = new DataType.Name[arguments.size()];
+
 		for (int i = 0; i != array.length; i++) {
 			TypeInformation<?> typeInfo = arguments.get(i);
 			DataType dataType = getDataTypeFor(typeInfo.getType());
+
 			if (dataType == null) {
 				throw new InvalidDataAccessApiUsageException(
-						String.format("Did not find appropriate primitive DataType for type '%s'", typeInfo.getType()));
+					String.format("Did not find appropriate primitive DataType for type '%s'", typeInfo.getType()));
 			}
+
 			array[i] = dataType.getName();
 		}
+
 		return array;
 	}
 

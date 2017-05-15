@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.util.ObjectUtils.*;
+import static org.springframework.util.ObjectUtils.nullSafeHashCode;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -245,7 +245,7 @@ public class Criteria implements CriteriaDefinition {
 			return true;
 		}
 
-		if (obj == null || !(obj instanceof Criteria)) {
+		if (!(obj instanceof Criteria)) {
 			return false;
 		}
 

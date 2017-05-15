@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+
+import lombok.EqualsAndHashCode;
 
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
@@ -37,12 +37,12 @@ import org.springframework.util.StringUtils;
  * included using a {@link Selector}.
  *
  * @author Mark Paluch
- * @since 2.0
- * @see CqlIdentifier
- * @see ColumnName
+ * @see org.springframework.cassandra.core.cql.CqlIdentifier
+ * @see org.springframework.data.cassandra.core.query.ColumnName
  * @see Selector
- * @see ColumnSelector
  * @see FunctionCall
+ * @see ColumnSelector
+ * @since 2.0
  */
 public class Columns implements Iterable<ColumnName> {
 
@@ -338,14 +338,14 @@ public class Columns implements Iterable<ColumnName> {
 		 * Create a {@link ColumnSelector} given {@link CqlIdentifier}.
 		 */
 		public static ColumnSelector from(CqlIdentifier columnName) {
-			return new ColumnSelector(ColumnName.from(columnName));
+			return from(ColumnName.from(columnName));
 		}
 
 		/**
 		 * Create a {@link ColumnSelector} given a plain {@code columnName}.
 		 */
 		public static ColumnSelector from(String columnName) {
-			return new ColumnSelector(ColumnName.from(columnName));
+			return from(ColumnName.from(columnName));
 		}
 
 		/**
@@ -368,12 +368,12 @@ public class Columns implements Iterable<ColumnName> {
 			return new ColumnSelector(columnName, alias);
 		}
 
-		public String getExpression() {
-			return columnName.toCql();
-		}
-
 		public Optional<CqlIdentifier> getAlias() {
 			return alias;
+		}
+
+		public String getExpression() {
+			return columnName.toCql();
 		}
 
 		/* (non-Javadoc)
@@ -454,11 +454,11 @@ public class Columns implements Iterable<ColumnName> {
 		@Override
 		public String toString() {
 
-			String params = StringUtils.collectionToDelimitedString(getParameters(), ", ");
+			String parameters = StringUtils.collectionToDelimitedString(getParameters(), ", ");
 
 			return getAlias()
-					.map(cqlIdentifier -> String.format("%s(%s) AS %s", getExpression(), params, cqlIdentifier.toCql()))
-					.orElseGet(() -> String.format("%s(%s)", getExpression(), params));
+					.map(cqlIdentifier -> String.format("%s(%s) AS %s", getExpression(), parameters, cqlIdentifier.toCql()))
+					.orElseGet(() -> String.format("%s(%s)", getExpression(), parameters));
 		}
 	}
 }

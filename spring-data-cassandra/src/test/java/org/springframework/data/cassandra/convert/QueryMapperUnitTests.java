@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -77,7 +78,8 @@ public class QueryMapperUnitTests {
 	@Before
 	public void before() throws Exception {
 
-		CustomConversions customConversions = new CustomConversions(Collections.singletonList(CurrencyConverter.INSTANCE));
+		CassandraCustomConversions customConversions =
+			new CassandraCustomConversions(Collections.singletonList(CurrencyConverter.INSTANCE));
 
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setUserTypeResolver(userTypeResolver);

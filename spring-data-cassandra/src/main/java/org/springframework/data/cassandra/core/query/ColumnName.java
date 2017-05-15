@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
  * Implementing classes must provide either {@link #getColumnName()} or {@link #getCqlIdentifier()}.
  *
  * @author Mark Paluch
+ * @see org.springframework.cassandra.core.cql.CqlIdentifier
  * @since 2.0
  */
 public abstract class ColumnName {
@@ -84,14 +85,17 @@ public abstract class ColumnName {
 	 * @see org.springframework.data.cassandra.core.query.Criteria#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(Object obj) {
 
-		if (this == o)
+		if (this == obj) {
 			return true;
-		if (!(o instanceof ColumnName))
-			return false;
+		}
 
-		ColumnName that = (ColumnName) o;
+		if (!(obj instanceof ColumnName)) {
+			return false;
+		}
+
+		ColumnName that = (ColumnName) obj;
 
 		return toCql().equals(that.toCql());
 	}
@@ -101,7 +105,9 @@ public abstract class ColumnName {
 	 */
 	@Override
 	public int hashCode() {
-		return 31 + toCql().hashCode();
+		int hashValue = 17;
+		hashValue = 37 * hashValue + toCql().hashCode();
+		return hashValue;
 	}
 
 	/**
@@ -115,14 +121,6 @@ public abstract class ColumnName {
 
 		StringColumnName(String columnName) {
 			this.columnName = columnName;
-		}
-
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
-		@Override
-		public String toString() {
-			return columnName;
 		}
 
 		/* (non-Javadoc)
@@ -148,6 +146,14 @@ public abstract class ColumnName {
 		public String toCql() {
 			return columnName;
 		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return columnName;
+		}
 	}
 
 	/**
@@ -161,14 +167,6 @@ public abstract class ColumnName {
 
 		CqlIdentifierColumnName(CqlIdentifier cqlIdentifier) {
 			this.cqlIdentifier = cqlIdentifier;
-		}
-
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
-		@Override
-		public String toString() {
-			return cqlIdentifier.toString();
 		}
 
 		/* (non-Javadoc)
@@ -193,6 +191,14 @@ public abstract class ColumnName {
 		@Override
 		public String toCql() {
 			return cqlIdentifier.toCql();
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return cqlIdentifier.toString();
 		}
 	}
 }

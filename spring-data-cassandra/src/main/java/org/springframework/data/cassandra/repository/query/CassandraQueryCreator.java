@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
@@ -37,6 +35,9 @@ import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.querybuilder.Clause;
 
@@ -73,14 +74,34 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 		this.mappingContext = mappingContext;
 	}
 
+	/**
+	 * Returns the {@link CassandraMappingContext} used by this template to access mapping meta-data used to
+	 * store (map) object to Cassandra tables.
+	 *
+	 * @return the {@link CassandraMappingContext} used by this template.
+	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
+	 */
+	protected CassandraMappingContext getMappingContext() {
+		return this.mappingContext;
+	}
+
+	/**
+	 * Returns the {@link QueryBuilder} used to construct Cassandra CQL queries.
+	 *
+	 * @return the {@link QueryBuilder} used to construct Cassandra CQL queries.
+	 */
+	protected QueryBuilder getQueryBuilder() {
+		return this.queryBuilder;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#create(org.springframework.data.repository.query.parser.Part, java.util.Iterator)
 	 */
 	@Override
 	protected CriteriaDefinition create(Part part, Iterator<Object> iterator) {
 
-		PersistentPropertyPath<CassandraPersistentProperty> path = mappingContext
-				.getPersistentPropertyPath(part.getProperty());
+		PersistentPropertyPath<CassandraPersistentProperty> path =
+				getMappingContext().getPersistentPropertyPath(part.getProperty());
 
 		CassandraPersistentProperty property = path.getLeafProperty();
 
@@ -94,10 +115,10 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 	protected CriteriaDefinition and(Part part, CriteriaDefinition base, Iterator<Object> iterator) {
 
 		if (base == null) {
-			return queryBuilder.and(create(part, iterator));
+			return getQueryBuilder().and(create(part, iterator));
 		}
 
-		queryBuilder.and(base);
+		getQueryBuilder().and(base);
 
 		return create(part, iterator);
 	}
@@ -120,10 +141,10 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 	protected Query complete(CriteriaDefinition criteria, Sort sort) {
 
 		if (criteria != null) {
-			queryBuilder.and(criteria);
+			getQueryBuilder().and(criteria);
 		}
 
-		Query query = queryBuilder.create(sort);
+		Query query = getQueryBuilder().create(sort);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(String.format("Created query [%s]", query));

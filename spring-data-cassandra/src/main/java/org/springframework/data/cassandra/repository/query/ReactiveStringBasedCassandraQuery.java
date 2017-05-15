@@ -15,13 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.SimpleStatement;
 
@@ -81,6 +82,11 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider));
 	}
 
+	/* (non-Javadoc) */
+	protected StringBasedQuery getStringBasedQuery() {
+		return this.stringBasedQuery;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor)
 	 */
@@ -88,7 +94,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
 
 		try {
-			SimpleStatement boundQuery = stringBasedQuery.bindQuery(parameterAccessor, getQueryMethod());
+			SimpleStatement boundQuery = getStringBasedQuery().bindQuery(parameterAccessor, getQueryMethod());
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(String.format("Created query [%s].", boundQuery));

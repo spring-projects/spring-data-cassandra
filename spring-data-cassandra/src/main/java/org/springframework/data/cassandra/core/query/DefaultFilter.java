@@ -22,6 +22,7 @@ import java.util.stream.StreamSupport;
  * Default implementation of {@link Filter}.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.core.query.Filter
  * @since 2.0
  */
 class DefaultFilter implements Filter {
@@ -46,7 +47,6 @@ class DefaultFilter implements Filter {
 	 */
 	@Override
 	public String toString() {
-
 		return StreamSupport.stream(this.spliterator(), false) //
 				.map(SerializationUtils::serializeToCqlSafely) //
 				.collect(Collectors.joining(" AND "));

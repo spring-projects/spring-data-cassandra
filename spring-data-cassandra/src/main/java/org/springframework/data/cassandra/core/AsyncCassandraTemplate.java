@@ -69,6 +69,14 @@ import com.datastax.driver.core.querybuilder.Update;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @see org.springframework.cassandra.core.AsyncCqlOperations
+ * @see org.springframework.data.cassandra.core.AsyncCassandraOperations
+ * @see com.datastax.driver.core.querybuilder.Delete
+ * @see com.datastax.driver.core.querybuilder.Insert
+ * @see com.datastax.driver.core.querybuilder.QueryBuilder
+ * @see com.datastax.driver.core.querybuilder.Select
+ * @see com.datastax.driver.core.querybuilder.Truncate
+ * @see com.datastax.driver.core.querybuilder.Update
  * @since 2.0
  */
 public class AsyncCassandraTemplate implements AsyncCassandraOperations {
@@ -321,8 +329,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return selectOne(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return selectOne(getStatementFactory().select(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -511,8 +519,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Truncate truncate = QueryBuilder.truncate(
-				getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Truncate truncate =
+			QueryBuilder.truncate(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(truncate), aBoolean -> null);
 	}

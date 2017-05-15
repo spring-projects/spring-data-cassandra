@@ -15,7 +15,8 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.util.ObjectUtils.*;
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
+import static org.springframework.util.ObjectUtils.nullSafeHashCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,8 @@ import com.datastax.driver.core.PagingState;
  * {@link QueryOptions} for a CQL query. {@link Query} is created with a fluent API creating immutable objects.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.core.query.Filter
+ * @see org.springframework.data.domain.Sort
  * @since 2.0
  */
 public class Query implements Filter {
@@ -119,13 +122,15 @@ public class Query implements Filter {
 		Assert.notNull(criteriaDefinition, "Criteria must not be null");
 
 		List<CriteriaDefinition> criteriaDefinitions = new ArrayList<>(this.criteriaDefinitions.size() + 1);
+
 		criteriaDefinitions.addAll(this.criteriaDefinitions);
 
 		if (!criteriaDefinitions.contains(criteriaDefinition)) {
 			criteriaDefinitions.add(criteriaDefinition);
 		}
 
-		return new Query(criteriaDefinitions, columns, sort, pagingState, queryOptions, limit, allowFiltering);
+		return new Query(criteriaDefinitions, this.columns, this.sort, this.pagingState,
+				this.queryOptions, this.limit, this.allowFiltering);
 	}
 
 	/* (non-Javadoc)
@@ -147,15 +152,15 @@ public class Query implements Filter {
 
 		Assert.notNull(columns, "Columns must not be null");
 
-		return new Query(criteriaDefinitions, this.columns.and(columns), sort, pagingState, queryOptions, limit,
-				allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns.and(columns), this.sort, this.pagingState,
+				this.queryOptions, this.limit, this.allowFiltering);
 	}
 
 	/**
 	 * @return the query {@link Columns}.
 	 */
 	public Columns getColumns() {
-		return columns;
+		return this.columns;
 	}
 
 	/**
@@ -170,20 +175,20 @@ public class Query implements Filter {
 
 		for (Order order : sort) {
 			if (order.isIgnoreCase()) {
-				throw new IllegalArgumentException(String.format("Given sort contained an Order for %s with ignore case! "
-						+ "Apache Cassandra does not support sorting ignoring case currently!", order.getProperty()));
+				throw new IllegalArgumentException(String.format("Given sort contained an Order for %s with ignore case; "
+						+ "Apache Cassandra does not support sorting ignoring case currently", order.getProperty()));
 			}
 		}
 
-		return new Query(criteriaDefinitions, columns, this.sort.and(sort), pagingState, queryOptions, limit,
-				allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(sort), this.pagingState,
+				this.queryOptions, this.limit, this.allowFiltering);
 	}
 
 	/**
 	 * @return the query {@link Sort} object.
 	 */
 	public Sort getSort() {
-		return sort;
+		return this.sort;
 	}
 
 	/**
@@ -196,14 +201,15 @@ public class Query implements Filter {
 
 		Assert.notNull(pagingState, "PagingState must not be null");
 
-		return new Query(criteriaDefinitions, columns, sort, Optional.of(pagingState), queryOptions, limit, allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, Optional.of(pagingState),
+				this.queryOptions, this.limit, this.allowFiltering);
 	}
 
 	/**
 	 * @return the optional {@link PagingState}.
 	 */
 	public Optional<PagingState> getPagingState() {
-		return pagingState;
+		return this.pagingState;
 	}
 
 	/**
@@ -216,14 +222,15 @@ public class Query implements Filter {
 
 		Assert.notNull(queryOptions, "QueryOptions must not be null");
 
-		return new Query(criteriaDefinitions, columns, sort, pagingState, Optional.of(queryOptions), limit, allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState,
+				Optional.of(queryOptions), this.limit, this.allowFiltering);
 	}
 
 	/**
 	 * @return the optional {@link QueryOptions}.
 	 */
 	public Optional<QueryOptions> getQueryOptions() {
-		return queryOptions;
+		return this.queryOptions;
 	}
 
 	/**
@@ -233,7 +240,8 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@code limit} applied.
 	 */
 	public Query limit(long limit) {
-		return new Query(criteriaDefinitions, columns, sort, pagingState, queryOptions, Optional.of(limit), allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState,
+				this.queryOptions, Optional.of(limit), this.allowFiltering);
 	}
 
 	/**
@@ -249,15 +257,15 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@code allowFiltering} applied.
 	 */
 	public Query withAllowFiltering() {
-
-		return new Query(criteriaDefinitions, columns, sort, pagingState, queryOptions, limit, true);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState,
+				this.queryOptions, this.limit, true);
 	}
 
 	/**
 	 * @return {@literal true} to allow filtering.
 	 */
 	public boolean isAllowFiltering() {
-		return allowFiltering;
+		return this.allowFiltering;
 	}
 
 	/* (non-Javadoc)

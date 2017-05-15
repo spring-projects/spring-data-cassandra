@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.data.cassandra.core.query.SerializationUtils.*;
+import static org.springframework.data.cassandra.core.query.SerializationUtils.serializeToCqlSafely;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,15 +56,6 @@ public class Update {
 	}
 
 	/**
-	 * Set the {@code columnName} to {@code value}.
-	 *
-	 * @return a new {@link Update}.
-	 */
-	public static Update update(String columnName, Object value) {
-		return empty().set(columnName, value);
-	}
-
-	/**
 	 * Create a {@link Update} object given a list of {@link AssignmentOp}s.
 	 *
 	 * @param assignmentOps must not be {@literal null}.
@@ -84,10 +75,19 @@ public class Update {
 	/**
 	 * Set the {@code columnName} to {@code value}.
 	 *
+	 * @return a new {@link Update}.
+	 */
+	public static Update update(String columnName, Object value) {
+		return empty().set(columnName, value);
+	}
+
+	/**
+	 * Set the {@code columnName} to {@code value}.
+	 *
 	 * @param columnName must not be {@literal null}.
-	 * @param value
-	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
-	 *         assignment.
+	 * @param value value to set on column with name.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments
+	 * and the current assignment.
 	 */
 	public Update set(String columnName, Object value) {
 		return add(new SetOp(ColumnName.from(columnName), value));
@@ -180,11 +180,11 @@ public class Update {
 	 */
 	public Update decrement(String columnName, Number delta) {
 
-		if (delta.doubleValue() > 0) {
-			return add(new IncrOp(ColumnName.from(columnName), -Math.abs(delta.doubleValue())));
-		}
+		double deltaValue = delta.doubleValue();
 
-		return add(new IncrOp(ColumnName.from(columnName), delta.doubleValue()));
+		deltaValue = deltaValue > 0 ? -Math.abs(deltaValue) : deltaValue;
+
+		return add(new IncrOp(ColumnName.from(columnName), deltaValue));
 	}
 
 	/**
@@ -313,23 +313,33 @@ public class Update {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#prependAll(java.lang.Object[])
+		 */
+		@Override
+		public Update prependAll(Object... values) {
+
+			Assert.notNull(values, "Values must not be null");
+
+			return prependAll(Arrays.asList(values));
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#prependAll(java.lang.Iterable)
+		 */
+		@Override
+		public Update prependAll(Iterable<? extends Object> values) {
+
+			Assert.notNull(values, "Values must not be null");
+
+			return add(new AddToOp(columnName, values, Mode.PREPEND));
+		}
+
+		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#append(java.lang.Object)
 		 */
 		@Override
 		public Update append(Object value) {
-			return prependAll(Collections.singleton(value));
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#entry(java.lang.Object, java.lang.Object)
-		 */
-		@Override
-		public Update entry(Object key, Object value) {
-
-			Assert.notNull(key, "Key must not be null");
-			Assert.notNull(value, "Value must not be null");
-
-			return addAll(Collections.singletonMap(key, value));
+			return appendAll(Collections.singleton(value));
 		}
 
 		/* (non-Javadoc)
@@ -355,25 +365,15 @@ public class Update {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#prependAll(java.lang.Object[])
+		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#entry(java.lang.Object, java.lang.Object)
 		 */
 		@Override
-		public Update prependAll(Object... values) {
+		public Update entry(Object key, Object value) {
 
-			Assert.notNull(values, "Values must not be null");
+			Assert.notNull(key, "Key must not be null");
+			Assert.notNull(value, "Value must not be null");
 
-			return prependAll(Arrays.asList(values));
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#prependAll(java.lang.Iterable)
-		 */
-		@Override
-		public Update prependAll(Iterable<? extends Object> values) {
-
-			Assert.notNull(values, "Values must not be null");
-
-			return add(new AddToOp(columnName, values, Mode.PREPEND));
+			return addAll(Collections.singletonMap(key, value));
 		}
 
 		/* (non-Javadoc)
@@ -446,7 +446,7 @@ public class Update {
 		 */
 		@Override
 		public SetValueBuilder atIndex(int index) {
-			return value -> add(new SetAtIndexOp(columnName, index, value));
+			return value -> add(new SetAtIndexOp(this.columnName, index, value));
 		}
 
 		/* (non-Javadoc)
@@ -454,10 +454,7 @@ public class Update {
 		 */
 		@Override
 		public SetValueBuilder atKey(Object key) {
-
-			Assert.notNull(key, "Key must not be null");
-
-			return value -> add(new SetAtKeyOp(columnName, key, value));
+			return value -> add(new SetAtKeyOp(this.columnName, key, value));
 		}
 	}
 
@@ -511,11 +508,9 @@ public class Update {
 		@Override
 		public String toString() {
 
-			if (mode == Mode.PREPEND) {
-				return String.format("%s = %s + %s", getColumnName(), serializeToCqlSafely(value), getColumnName());
-			}
-
-			return String.format("%s = %s + %s", getColumnName(), getColumnName(), serializeToCqlSafely(value));
+			return Mode.PREPEND.equals(getMode())
+				? String.format("%s = %s + %s", getColumnName(), serializeToCqlSafely(value), getColumnName())
+				: String.format("%s = %s + %s", getColumnName(), getColumnName(), serializeToCqlSafely(value));
 		}
 
 		public enum Mode {

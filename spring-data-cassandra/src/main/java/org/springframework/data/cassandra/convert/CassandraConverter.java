@@ -34,6 +34,13 @@ import org.springframework.data.util.TypeInformation;
 public interface CassandraConverter
 		extends EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Object> {
 
+	/**
+	 * Returns the {@link CustomConversions} registered in the {@link CassandraConverter}.
+	 *
+	 * @return the {@link CustomConversions}.
+	 */
+	CustomConversions getCustomConversions();
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.convert.EntityConverter#getMappingContext()
 	 */
@@ -58,6 +65,25 @@ public interface CassandraConverter
 	Object getId(Object object, CassandraPersistentEntity<?> entity);
 
 	/**
+	 * Converts the given object into a value Cassandra will be able to store natively in a column.
+	 *
+	 * @param obj {@link Object} to convert; must not be {@literal null}.
+	 * @return the result of the conversion.
+	 * @since 2.0
+	 */
+	<T> Optional<Object> convertToColumnType(Optional<T> obj);
+
+	/**
+	 * Converts the given object into a value Cassandra will be able to store natively in a column.
+	 *
+	 * @param obj {@link Object} to convert; must not be {@literal null}.
+	 * @param typeInformation {@link TypeInformation} used to describe the object type; may be {@literal null}.
+	 * @return the result of the conversion.
+	 * @since 1.5
+	 */
+	<T> Optional<Object> convertToColumnType(Optional<T> obj, TypeInformation<?> typeInformation);
+
+	/**
 	 * Converts and writes a {@code source} object into a {@code sink} using the given {@link CassandraPersistentEntity}.
 	 *
 	 * @param source the source, may be {@literal null}.
@@ -66,29 +92,4 @@ public interface CassandraConverter
 	 */
 	void write(Object source, Object sink, CassandraPersistentEntity<?> entity);
 
-	/**
-	 * Converts the given object into one Cassandra will be able to store natively in a column.
-	 *
-	 * @param obj {@link Object} to convert, must not be {@literal null}.
-	 * @return the result of the conversion.
-	 * @since 2.0
-	 */
-	<T> Optional<Object> convertToCassandraColumn(Optional<T> obj);
-
-	/**
-	 * Converts the given object into one Cassandra will be able to store natively in a column.
-	 *
-	 * @param obj {@link Object} to convert, must not be {@literal null}.
-	 * @param typeInformation {@link TypeInformation} used to describe the object type; may be {@literal null}.
-	 * @return the result of the conversion.
-	 * @since 1.5
-	 */
-	<T> Optional<Object> convertToCassandraColumn(Optional<T> obj, TypeInformation<?> typeInformation);
-
-	/**
-	 * Returns the {@link CustomConversions} registered in the {@link CassandraConverter}.
-	 *
-	 * @return the {@link CustomConversions}.
-	 */
-	CustomConversions getCustomConversions();
 }

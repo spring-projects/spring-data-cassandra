@@ -66,6 +66,18 @@ import com.datastax.driver.core.querybuilder.Update;
  * first case given to the service directly, in the second case to the prepared template.
  *
  * @author Mark Paluch
+ * @author John Blum
+ * @see org.springframework.cassandra.core.ReactiveCqlOperations
+ * @see org.springframework.data.cassandra.convert.CassandraConverter
+ * @see org.springframework.data.cassandra.convert.QueryMapper
+ * @see org.springframework.data.cassandra.convert.UpdateMapper
+ * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
+ * @see com.datastax.driver.core.querybuilder.Delete
+ * @see com.datastax.driver.core.querybuilder.Insert
+ * @see com.datastax.driver.core.querybuilder.QueryBuilder
+ * @see com.datastax.driver.core.querybuilder.Select
+ * @see com.datastax.driver.core.querybuilder.Truncate
+ * @see com.datastax.driver.core.querybuilder.Update
  * @since 2.0
  */
 public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
@@ -147,8 +159,9 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#getConverter()
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#getConverter()
 	 */
 	@Override
 	public CassandraConverter getConverter() {
@@ -165,15 +178,6 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return converter;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#getReactiveCqlOperations()
-	 */
-	@Override
-	public ReactiveCqlOperations getReactiveCqlOperations() {
-		return cqlOperations;
-	}
-
 	/**
 	 * Returns the {@link CassandraMappingContext} used by this template to access mapping meta-data used to
 	 * store (map) objects to Cassandra tables.
@@ -183,6 +187,15 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 */
 	protected CassandraMappingContext getMappingContext() {
 		return this.mappingContext;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#getReactiveCqlOperations()
+	 */
+	@Override
+	public ReactiveCqlOperations getReactiveCqlOperations() {
+		return this.cqlOperations;
 	}
 
 	/**
@@ -265,7 +278,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		return select(getStatementFactory().select(query,
-			getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
+				getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)

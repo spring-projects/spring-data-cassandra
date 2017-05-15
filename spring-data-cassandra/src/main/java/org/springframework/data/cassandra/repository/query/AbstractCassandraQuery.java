@@ -136,9 +136,8 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 		Statement statement = createQuery(parameterAccessor);
 
-		CassandraQueryExecution queryExecution = getExecution(
-				new ResultProcessingConverter(resultProcessor, getOperations().getConverter().getMappingContext(),
-						getEntityInstantiators()));
+		CassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(
+				resultProcessor, getOperations().getConverter().getMappingContext(), getEntityInstantiators()));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				getOperations().getConverter().getCustomConversions());
