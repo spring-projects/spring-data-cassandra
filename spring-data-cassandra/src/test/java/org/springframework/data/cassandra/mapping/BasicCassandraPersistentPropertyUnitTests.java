@@ -57,6 +57,12 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		assertThat(getPropertyFor(Timeline.class, "time").getColumnName().toCql()).isEqualTo("time");
 	}
 
+	@Test // DATACASS-167
+	public void shouldConsiderEmbeddedAnnotation() {
+		assertThat(getPropertyFor(Timeline.class, "data").isEmbedded()).isTrue();
+		assertThat(getPropertyFor(Timeline.class, "text").isEmbedded()).isFalse();
+	}
+
 	@Test // DATACASS-259
 	public void shouldConsiderComposedColumnAnnotation() {
 
@@ -113,6 +119,12 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		Date time;
 
 		@Column("message") String text;
+
+		@Embedded EmbeddedData data;
+	}
+
+	static class EmbeddedData {
+		String value;
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)

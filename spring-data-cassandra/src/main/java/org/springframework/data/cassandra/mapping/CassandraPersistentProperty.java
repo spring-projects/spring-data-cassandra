@@ -46,6 +46,11 @@ public interface CassandraPersistentProperty
 	boolean isCompositePrimaryKey();
 
 	/**
+	 * Whether the property is embedded JSON.
+	 */
+	boolean isEmbedded();
+
+	/**
 	 * Returns a {@link CassandraPersistentEntity} representing the composite primary key class of this entity, or null if
 	 * this class does not use a composite primary key.
 	 */
@@ -137,7 +142,7 @@ public interface CassandraPersistentProperty
 	 * Sets this property's column names to the collection given. The given collection must have the same size as this
 	 * property's current list of column names, and must contain no {@code null} elements.
 	 *
-	 * @param columnName
+	 * @param columnNames
 	 */
 	void setColumnNames(List<CqlIdentifier> columnNames);
 

@@ -140,6 +140,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return (AnnotatedElementUtils.findMergedAnnotation(getType(), PrimaryKeyClass.class) != null);
 	}
 
+	@Override
+	public boolean isEmbedded() {
+		return (AnnotatedElementUtils.findMergedAnnotation(getProperty().getField().get(), Embedded.class) != null);
+	}
+
 	/**
 	 * @return
 	 */
@@ -189,7 +194,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
-					"Unknown type [%s] for property [%s] in entity [%s]; only primitive types and Collections or Maps of primitive types are allowed",
+					"Unknown type [%s] for property [%s] in entity [%s]; only primitive types, Collections or Maps of primitive types and @Embedded annotated entities are allowed",
 					getType(), getName(), getOwner().getName()));
 		}
 

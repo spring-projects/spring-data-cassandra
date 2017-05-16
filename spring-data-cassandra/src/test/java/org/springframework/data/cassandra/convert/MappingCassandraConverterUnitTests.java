@@ -59,13 +59,7 @@ import org.springframework.data.cassandra.domain.TypeWithCompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithKeyClass;
 import org.springframework.data.cassandra.domain.TypeWithMapId;
 import org.springframework.data.cassandra.domain.UserToken;
-import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraType;
-import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.mapping.*;
 import org.springframework.data.util.Version;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -109,6 +103,33 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
 		mappingCassandraConverter.afterPropertiesSet();
+	}
+
+	@Test // DATACASS-167
+	public void insertEntityWithEmbeddedEntityShouldMapObjectAsJsonString() {
+
+		EmbeddedType embeddedType = new EmbeddedType();
+		embeddedType.setValue("some value");
+
+		WithEmbeddedColumns withEmbeddedColumns = new WithEmbeddedColumns();
+		withEmbeddedColumns.setEmbeddedType(embeddedType);
+
+		Insert insert = QueryBuilder.insertInto("table");
+
+		mappingCassandraConverter.write(withEmbeddedColumns, insert);
+
+		assertThat(getValues(insert)).contains("{\"value\":\"some value\"}");
+	}
+
+	@Test // DATACASS-167
+	public void shouldReadEntityWithEmbeddedEntity() {
+
+		Row rowMock = RowMockUtil.newRowMock(column("embeddedType", "{\"value\":\"some value\"}", DataType.text()));
+
+		WithEmbeddedColumns result = mappingCassandraConverter.readRow(WithEmbeddedColumns.class, rowMock);
+
+		assertThat(result.embeddedType).isNotNull();
+		assertThat(result.embeddedType.value).isEqualTo("some value");
 	}
 
 	@Test // DATACASS-260
@@ -1080,5 +1101,42 @@ public class MappingCassandraConverterUnitTests {
 		@PrimaryKey private String id;
 
 		ZoneId zoneId;
+	}
+
+	@Table
+	public static class WithEmbeddedColumns {
+
+		@PrimaryKey private String id;
+
+		@Embedded private EmbeddedType embeddedType;
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public EmbeddedType getEmbeddedType() {
+			return embeddedType;
+		}
+
+		public void setEmbeddedType(EmbeddedType embeddedType) {
+			this.embeddedType = embeddedType;
+		}
+	}
+
+	public static class EmbeddedType {
+
+		private String value;
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
 	}
 }
