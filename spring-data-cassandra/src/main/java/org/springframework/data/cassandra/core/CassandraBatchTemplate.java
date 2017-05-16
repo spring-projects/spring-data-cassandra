@@ -117,7 +117,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 */
 	@Override
 	public CassandraBatchOperations insert(Iterable<?> entities, int ttl) {
-		WriteOptions options = WriteOptions.builder().ttl(30).build();
+		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
 		return insert(entities, options);
 	}
 
@@ -156,7 +156,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 */
 	@Override
 	public CassandraBatchOperations update(Iterable<?> entities, int ttl) {
-		WriteOptions options = WriteOptions.builder().ttl(30).build();
+		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
 		return update(entities, options);
 	}
 
