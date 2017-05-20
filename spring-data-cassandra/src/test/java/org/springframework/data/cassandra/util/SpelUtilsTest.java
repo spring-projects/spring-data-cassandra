@@ -27,7 +27,6 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * Unit tests for class {@link SpelUtils org.springframework.data.cassandra.util.SpelUtils}.
  *
  * @author Michael Hausegger, hausegger.michael@googlemail.com
- *
  */
 public class SpelUtilsTest {
 
@@ -36,7 +35,7 @@ public class SpelUtilsTest {
 	public void testEvaluateProvidingNullContext() throws Exception {
 
 		SpelExpressionParser spelExpressionParser = SpelUtils.DEFAULT_PARSER;
-		String result = SpelUtils.evaluate("cellEditor",null,spelExpressionParser);
+		String result = SpelUtils.evaluate("cellEditor", null, spelExpressionParser);
 
 		assertThat(result).isEqualTo("cellEditor");
 	}
@@ -46,7 +45,7 @@ public class SpelUtilsTest {
 	public void testEvaluateProvidingEmptyCharSequenceAndNullContext() throws Exception {
 
 		SpelExpressionParser spelExpressionParser = new SpelExpressionParser();
-		String result = SpelUtils.evaluate("",null,spelExpressionParser);
+		String result = SpelUtils.evaluate("", null, spelExpressionParser);
 
 		assertThat(result).isEmpty();
 	}
@@ -57,40 +56,35 @@ public class SpelUtilsTest {
 
 		SpelParserConfiguration spelParserConfiguration = new SpelParserConfiguration(false, false);
 		SpelExpressionParser spelExpressionParser = new SpelExpressionParser(spelParserConfiguration);
-		String result = SpelUtils.evaluate( "+18:00", null, String.class, spelExpressionParser);
+		String result = SpelUtils.evaluate("+18:00", null, String.class, spelExpressionParser);
 
 		assertThat(spelParserConfiguration.isAutoGrowNullReferences()).isFalse();
 		assertThat(spelParserConfiguration.isAutoGrowCollections()).isFalse();
 
 		assertThat(spelParserConfiguration.getCompilerMode()).isEqualTo(SpelCompilerMode.OFF);
-		assertThat(spelParserConfiguration.getMaximumAutoGrowSize()).isEqualTo( Integer.MAX_VALUE );
+		assertThat(spelParserConfiguration.getMaximumAutoGrowSize()).isEqualTo(Integer.MAX_VALUE);
 
 		assertThat(result).isEqualTo("+18:00");
-
 	}
 
 
 	@Test  //DATACASS-405
 	public void testProvidingNullEvaluationContextOne() throws Exception {
 
-		assertThat( SpelUtils.evaluate( "caret-begin-word", null, Object.class) ).isEqualTo("caret-begin-word");
-
+		assertThat(SpelUtils.evaluate("caret-begin-word", null, Object.class)).isEqualTo("caret-begin-word");
 	}
 
 
 	@Test  //DATACASS-405
 	public void testProvidingNullEvaluationContextTwo() throws Exception {
 
-		assertThat( SpelUtils.evaluate( "", null) ).isEmpty();
-
+		assertThat(SpelUtils.evaluate("", null)).isEmpty();
 	}
 
 
 	@Test  //DATACASS-405
 	public void testProvidingNullEvaluationContextThree() throws Exception {
 
-		assertThat( SpelUtils.evaluate("caret-begin-word", null) ).isEqualTo("caret-begin-word");
-
+		assertThat(SpelUtils.evaluate("caret-begin-word", null)).isEqualTo("caret-begin-word");
 	}
-
 }

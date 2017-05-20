@@ -67,7 +67,6 @@ public class BasicMapIdUnitTests {
 
 		assertThat(basicMapId.size()).isEqualTo(0);
 		assertThat(basicMapId.isEmpty()).isTrue();
-
 	}
 
 
@@ -78,8 +77,7 @@ public class BasicMapIdUnitTests {
 
 		assertThat(basicMapId.size()).isEqualTo(1);
 		assertThat(basicMapId.isEmpty()).isFalse();
-		assertThat( (String) basicMapId.get("a")).isEqualTo("a");
-
+		assertThat((String) basicMapId.get("a")).isEqualTo("a");
 	}
 
 
@@ -87,7 +85,6 @@ public class BasicMapIdUnitTests {
 	public void testStaticInstantiationRaisesIllegalArgumentExceptionIfTriedWithNull() throws Exception {
 
 		BasicMapId.id(null);
-
 	}
 
 
@@ -95,7 +92,6 @@ public class BasicMapIdUnitTests {
 	public void testInstantiationRaisesIllegalArgumentExceptionIfTriedWithNull() throws Exception {
 
 		new BasicMapId((Map<String, Serializable>) null);
-
 	}
 
 
@@ -110,7 +106,6 @@ public class BasicMapIdUnitTests {
 
 		assertThat(set.isEmpty()).isTrue();
 		assertThat(set.size()).isEqualTo(0);
-
 	}
 
 
@@ -134,7 +129,6 @@ public class BasicMapIdUnitTests {
 
 		assertThat(basicMapId.toString()).isNotNull();
 		assertThat(basicMapId.toString()).isEqualTo("{  : , a : a }");
-
 	}
 
 
@@ -151,7 +145,6 @@ public class BasicMapIdUnitTests {
 		assertThat(basicMapId.size()).isEqualTo(1);
 
 		assertThat(basicMapId.isEmpty()).isFalse();
-
 	}
 
 
@@ -164,7 +157,6 @@ public class BasicMapIdUnitTests {
 		assertThat(basicMapId.size()).isEqualTo(0);
 
 		assertThat(basicMapId.equals(new Object())).isFalse();
-
 	}
 
 
@@ -190,8 +182,6 @@ public class BasicMapIdUnitTests {
 		assertThat(basicMapId.equals(basicMapId)).isTrue();
 
 		assertThat(basicMapId.equals(null)).isFalse();
-
-
 	}
 
 
@@ -205,10 +195,9 @@ public class BasicMapIdUnitTests {
 
 		assertThat(basicMapId.containsValue(basicMapId)).isFalse();
 
-		basicMapId.put("",basicMapId);
+		basicMapId.put("", basicMapId);
 
 		assertThat(basicMapId.containsValue(basicMapId)).isTrue();
-
 	}
 
 
@@ -225,7 +214,6 @@ public class BasicMapIdUnitTests {
 
 		assertThat(basicMapId.size()).isEqualTo(1);
 		assertThat(basicMapId.isEmpty()).isFalse();
-
 	}
 
 
@@ -320,7 +308,6 @@ public class BasicMapIdUnitTests {
 
 		assertThat(basicMapId).isSameAs(basicMapIdTwo);
 		assertThat(basicMapIdTwo).isSameAs(basicMapId);
-
 	}
 
 
@@ -348,6 +335,4 @@ public class BasicMapIdUnitTests {
 		assertThat(basicMapIdTwo).isSameAs(basicMapId);
 		assertThat(string).isEqualTo(", ");
 	}
-
-
 }
