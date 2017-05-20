@@ -16,14 +16,7 @@
 
 package org.springframework.data.cassandra.repository.support;
 
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertSame;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -32,18 +25,17 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.springframework.data.cassandra.repository.MapId;
 
 /**
  * Unit tests for {@link BasicMapId}.
  *
  * @author Matthew T. Adams
- * @author Michael Hausegger
+ * @author Michael Hausegger, hausegger.michael@googlemail.com
  */
 public class BasicMapIdUnitTests {
 
 
-	@Test
+	@Test  //DATACASS-405
 	public void testMapConstructor() {
 
 		Map<String, Serializable> map = new HashMap<String, Serializable>();
@@ -57,364 +49,252 @@ public class BasicMapIdUnitTests {
 	}
 
 
-	@Test
-	public void testOne() throws Exception {
+	@Test  //DATACASS-405
+	public void testPutAllProvidingItselfEmptyAsInputParameter() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
 		basicMapId.putAll(basicMapId);
 
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
+		assertThat(basicMapId.size()).isEqualTo(0);
+		assertThat(basicMapId.isEmpty()).isTrue();
 	}
 
 
-	@Test
-	public void testTwo() throws Exception {
+	@Test  //DATACASS-405
+	public void testNewEmptyBasicMapIdDoesNotContainAnyEntries() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
-		int intOne = basicMapId.size();
 
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
+		assertThat(basicMapId.size()).isEqualTo(0);
+		assertThat(basicMapId.isEmpty()).isTrue();
 
-		assertEquals(0, intOne);
 	}
 
 
-	@Test
-	public void testThree() throws Exception {
+	@Test  //DATACASS-405
+	public void testFactoryMethodConstructsObjectCorrectly() throws Exception {
 
-		BasicMapId basicMapId = (BasicMapId) BasicMapId.id("#xAD]-}", (Serializable) "#xAD]-}");
+		BasicMapId basicMapId = (BasicMapId) BasicMapId.id("a", "a");
 
-		assertEquals(1, basicMapId.size());
-		assertFalse(basicMapId.isEmpty());
+		assertThat(basicMapId.size()).isEqualTo(1);
+		assertThat(basicMapId.isEmpty()).isFalse();
+		assertThat( (String) basicMapId.get("a")).isEqualTo("a");
 
-		Serializable serializable = basicMapId.put("", (Serializable) "#xAD]-}");
-
-		assertEquals(2, basicMapId.size());
-		assertFalse(basicMapId.isEmpty());
-
-		assertNull(serializable);
-
-		String string = (String) basicMapId.put("", (Serializable) "#xAD]-}");
-
-		assertEquals(2, basicMapId.size());
-		assertFalse(basicMapId.isEmpty());
-
-		assertNotNull(string);
-		assertEquals("#xAD]-}", string);
 	}
 
 
-	@Test
-	public void testFour() throws Exception {
+	@Test(expected = IllegalArgumentException.class)  //DATACASS-405
+	public void testStaticInstantiationRaisesIllegalArgumentExceptionIfTriedWithNull() throws Exception {
 
-		BasicMapId basicMapId = new BasicMapId();
-		HashMap<String, String> hashMap = new HashMap<String, String>();
-		Serializable serializable = basicMapId.put("", (Serializable) hashMap);
+		BasicMapId.id(null);
 
-		assertEquals(1, basicMapId.size());
-		assertFalse(basicMapId.isEmpty());
-
-		assertEquals(0, hashMap.size());
-		assertTrue(hashMap.isEmpty());
-
-		assertNull(serializable);
-
-		HashMap hashMapTwo = (HashMap) basicMapId.get("");
-
-		assertEquals(1, basicMapId.size());
-		assertFalse(basicMapId.isEmpty());
-
-		assertTrue(hashMapTwo.isEmpty());
-		assertEquals(0, hashMapTwo.size());
 	}
 
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testFiveRaisesIllegalArgumentException() throws Exception {
+	@Test(expected = IllegalArgumentException.class)  //DATACASS-405
+	public void testInstantiationRaisesIllegalArgumentExceptionIfTriedWithNull() throws Exception {
 
-		BasicMapId.id((MapId) null);
+		new BasicMapId((Map<String, Serializable>) null);
+
 	}
 
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testSevenRaisesIllegalArgumentException() throws Exception {
-
-		BasicMapId basicMapId = new BasicMapId((Map<String, Serializable>) null);
-	}
-
-
-	@Test
-	public void testEight() throws Exception {
-
-		BasicMapId basicMapId = (BasicMapId) BasicMapId.id("#xAD]-}", (Serializable) "#xAD]-}");
-
-		assertFalse(basicMapId.isEmpty());
-		assertEquals(1, basicMapId.size());
-
-		int intOne = basicMapId.size();
-
-		assertFalse(basicMapId.isEmpty());
-		assertEquals(1, basicMapId.size());
-
-		assertEquals(1, intOne);
-	}
-
-
-	@Test
-	public void testNine() throws Exception {
-
-		BasicMapId basicMapId = new BasicMapId();
-		basicMapId.hashCode();
-
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
-	}
-
-
-	@Test
-	public void testTen() throws Exception {
+	@Test  //DATACASS-405
+	public void testCanReturnEmptyEntrySetIfEmpty() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
 		Set<Map.Entry<String, Serializable>> set = (Set<Map.Entry<String, Serializable>>) basicMapId.entrySet();
 
-		assertTrue(basicMapId.isEmpty());
-		assertEquals(0, basicMapId.size());
+		assertThat(basicMapId.isEmpty()).isTrue();
+		assertThat(basicMapId.size()).isEqualTo(0);
 
-		assertTrue(set.isEmpty());
-		assertEquals(0, set.size());
+		assertThat(set.isEmpty()).isTrue();
+		assertThat(set.size()).isEqualTo(0);
+
 	}
 
 
-	@Test
-	public void testEleven() throws Exception {
+	@Test  //DATACASS-405
+	public void testPutCallableSubsequentlyCorrectly() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
-		Serializable serializable = basicMapId.put("4/i}1evv*I,Jc~", (Serializable) "4/i}1evv*I,Jc~");
 
-		assertFalse(basicMapId.isEmpty());
-		assertEquals(1, basicMapId.size());
+		basicMapId.put("a", "a");
 
-		assertNull(serializable);
+		assertThat(basicMapId.isEmpty()).isFalse();
+		assertThat(basicMapId.size()).isEqualTo(1);
 
-		Serializable serializableTwo = basicMapId.put("", (Serializable) "");
+		basicMapId.put("", "");
 
-		assertFalse(basicMapId.isEmpty());
-		assertEquals(2, basicMapId.size());
+		assertThat(basicMapId.isEmpty()).isFalse();
+		assertThat(basicMapId.size()).isEqualTo(2);
 
-		assertNull(serializableTwo);
+		assertThat(basicMapId.isEmpty()).isFalse();
+		assertThat(basicMapId.size()).isEqualTo(2);
 
-		String string = basicMapId.toString();
+		assertThat(basicMapId.toString()).isNotNull();
+		assertThat(basicMapId.toString()).isEqualTo("{  : , a : a }");
 
-		assertFalse(basicMapId.isEmpty());
-		assertEquals(2, basicMapId.size());
-
-		assertNotNull(string);
-		assertEquals("{  : , 4/i}1evv*I,Jc~ : 4/i}1evv*I,Jc~ }", string);
 	}
 
 
-	@Test
-	public void testTwelve() throws Exception {
+	@Test  //DATACASS-405
+	public void testCanWorkWithHashMapObjects() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
-		boolean booleanOne = basicMapId.isEmpty();
+		basicMapId.put("", new HashMap<String, String>());
 
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
+		assertThat(basicMapId.isEmpty()).isFalse();
+		assertThat(basicMapId.size()).isEqualTo(1);
 
-		assertTrue(booleanOne);
+		assertThat(basicMapId.isEmpty()).isFalse();
+		assertThat(basicMapId.size()).isEqualTo(1);
+
+		assertThat(basicMapId.isEmpty()).isFalse();
+
 	}
 
 
-	@Test
-	public void testThirteen() throws Exception {
+	@Test  //DATACASS-405
+	public void testEmptyBasicMapIdDoesNotConsiderItselfToBeEqualToBasicJavaObject() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
-		HashMap<String, String> hashMap = new HashMap<String, String>();
-		Serializable serializable = basicMapId.put("", (Serializable) hashMap);
 
-		assertFalse(basicMapId.isEmpty());
-		assertEquals(1, basicMapId.size());
+		assertThat(basicMapId.isEmpty()).isTrue();
+		assertThat(basicMapId.size()).isEqualTo(0);
 
-		assertEquals(0, hashMap.size());
-		assertTrue(hashMap.isEmpty());
+		assertThat(basicMapId.equals(new Object())).isFalse();
 
-		assertNull(serializable);
-
-		boolean booleanOne = basicMapId.isEmpty();
-
-		assertFalse(basicMapId.isEmpty());
-		assertEquals(1, basicMapId.size());
-
-		assertFalse(booleanOne);
 	}
 
 
-	@Test
-	public void testFourteen() throws Exception {
-
-		BasicMapId basicMapId = new BasicMapId();
-		Object object = new Object();
-		boolean booleanOne = basicMapId.equals(object);
-
-		assertTrue(basicMapId.isEmpty());
-		assertEquals(0, basicMapId.size());
-
-		assertFalse(booleanOne);
-	}
-
-
-	@Test
-	public void testFifteen() throws Exception {
+	@Test  //DATACASS-405
+	public void testEqualsMethod() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
 		BasicMapId basicMapIdTwo = new BasicMapId((Map<String, Serializable>) basicMapId);
-		boolean booleanOne = basicMapIdTwo.equals(basicMapId);
 
-		assertTrue(basicMapId.isEmpty());
-		assertEquals(0, basicMapId.size());
+		assertThat(basicMapId.isEmpty()).isTrue();
+		assertThat(basicMapId.size()).isEqualTo(0);
 
-		assertTrue(basicMapIdTwo.isEmpty());
-		assertEquals(0, basicMapIdTwo.size());
+		assertThat(basicMapIdTwo.isEmpty()).isTrue();
+		assertThat(basicMapIdTwo.size()).isEqualTo(0);
 
-		assertTrue(basicMapId.equals((Object) basicMapIdTwo));
-		assertTrue(basicMapIdTwo.equals((Object) basicMapId));
+		assertThat(basicMapId.equals(basicMapIdTwo)).isTrue();
+		assertThat(basicMapIdTwo.equals(basicMapId)).isTrue();
 
-		assertNotSame(basicMapId, basicMapIdTwo);
-		assertNotSame(basicMapIdTwo, basicMapId);
+		assertThat(basicMapId).isNotSameAs(basicMapIdTwo);
+		assertThat(basicMapIdTwo).isNotSameAs(basicMapId);
 
-		assertTrue(booleanOne);
+		assertThat(basicMapIdTwo.equals(basicMapId)).isTrue();
+		assertThat(basicMapId.equals(basicMapId)).isTrue();
+
+		assertThat(basicMapId.equals(null)).isFalse();
+
+
 	}
 
 
-	@Test
-	public void testSixteen() throws Exception {
+	@Test  //DATACASS-405
+	public void testContainsValue() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
-		boolean booleanOne = basicMapId.equals(basicMapId);
 
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
+		assertThat(basicMapId.isEmpty()).isTrue();
+		assertThat(basicMapId.size()).isEqualTo(0);
 
-		assertTrue(booleanOne);
+		assertThat(basicMapId.containsValue(basicMapId)).isFalse();
+
+		basicMapId.put("",basicMapId);
+
+		assertThat(basicMapId.containsValue(basicMapId)).isTrue();
+
 	}
 
 
-	@Test
-	public void testSeventeen() throws Exception {
+	@Test  //DATACASS-405
+	public void testContainsKeyUsingString() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
-		boolean booleanOne = basicMapId.equals((Object) null);
+		basicMapId.put("a\"", basicMapId);
 
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
+		assertThat(basicMapId.size()).isEqualTo(1);
+		assertThat(basicMapId.isEmpty()).isFalse();
 
-		assertFalse(booleanOne);
+		assertThat(basicMapId.containsKey("a\"")).isTrue();
+
+		assertThat(basicMapId.size()).isEqualTo(1);
+		assertThat(basicMapId.isEmpty()).isFalse();
+
 	}
 
 
-	@Test
-	public void testEighteen() throws Exception {
-
-		BasicMapId basicMapId = new BasicMapId();
-		boolean booleanOne = basicMapId.containsValue(basicMapId);
-
-		assertTrue(basicMapId.isEmpty());
-		assertEquals(0, basicMapId.size());
-
-		assertFalse(booleanOne);
-	}
-
-
-	@Test
-	public void testNineteen() throws Exception {
-
-		BasicMapId basicMapId = new BasicMapId();
-		Serializable serializable = basicMapId.put("null=:z%uGo,\"", (Serializable) basicMapId);
-
-		assertEquals(1, basicMapId.size());
-		assertFalse(basicMapId.isEmpty());
-
-		assertNull(serializable);
-
-		boolean booleanOne = basicMapId.containsKey("null=:z%uGo,\"");
-
-		assertEquals(1, basicMapId.size());
-		assertFalse(basicMapId.isEmpty());
-
-		assertTrue(booleanOne);
-	}
-
-
-	@Test
-	public void testTwenty() throws Exception {
+	@Test  //DATACASS-405
+	public void testContainsKeyUsingNegativeInteger() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
 		Integer integer = new Integer((-766));
-		boolean booleanOne = basicMapId.containsKey(integer);
 
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
+		assertThat(basicMapId.size()).isEqualTo(0);
+		assertThat(basicMapId.isEmpty()).isTrue();
 
-		assertFalse(booleanOne);
+		assertThat(basicMapId.containsKey(integer)).isFalse();
 	}
 
 
-	@Test
-	public void testTwentyOne() throws Exception {
+	@Test  //DATACASS-405
+	public void testValuesReturnsObjectEvenIfBasicMapIdDoesNotContainAnyValues() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
 		Collection<Serializable> collection = basicMapId.values();
 
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
+		assertThat(basicMapId.size()).isEqualTo(0);
+		assertThat(basicMapId.isEmpty()).isTrue();
 
-		assertNotNull(collection);
+		assertThat(collection).isNotNull();
 	}
 
 
-	@Test
-	public void testTwentyTwo() throws Exception {
+	@Test  //DATACASS-405
+	public void testClearWorksEvenIfNoInternalValuesArePresent() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
 		basicMapId.clear();
 
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
+		assertThat(basicMapId.size()).isEqualTo(0);
+		assertThat(basicMapId.isEmpty()).isTrue();
 	}
 
 
-	@Test
-	public void testTwentyThree() throws Exception {
+	@Test  //DATACASS-405
+	public void testEmptySetGetsReturnedEvenIfObjectDoesNotContainInternalValues() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
 		Set<String> set = basicMapId.keySet();
 
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
+		assertThat(basicMapId.size()).isEqualTo(0);
+		assertThat(basicMapId.isEmpty()).isTrue();
 
-		assertTrue(set.isEmpty());
-		assertEquals(0, set.size());
+		assertThat(set.isEmpty()).isTrue();
+		assertThat(set.size()).isEqualTo(0);
 	}
 
 
-	@Test
-	public void testTwentyFour() throws Exception {
+	@Test  //DATACASS-405
+	public void testRemoveWorksEvenIfObjectDoesNotContainAnyValues() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
-		Serializable serializable = basicMapId.remove((Object) basicMapId);
+		Serializable serializable = basicMapId.remove(basicMapId);
 
-		assertTrue(basicMapId.isEmpty());
-		assertEquals(0, basicMapId.size());
+		assertThat(basicMapId.isEmpty()).isTrue();
+		assertThat(basicMapId.size()).isEqualTo(0);
 
-		assertNull(serializable);
+		assertThat(serializable).isNull();
 	}
 
 
-	@Test(expected = NullPointerException.class)
-	public void testTwentyFiveRaisesNullPointerException() throws Exception {
+	@Test(expected = NullPointerException.class)  //DATACASS-405
+	public void testTryingToPutAllNullRaisesNullPointerException() throws Exception {
 
 		BasicMapId basicMapId = new BasicMapId();
 
@@ -422,104 +302,52 @@ public class BasicMapIdUnitTests {
 	}
 
 
-	@Test
-	public void testTwentySix() throws Exception {
-
-		BasicMapId basicMapId = new BasicMapId();
-		Integer integer = new Integer((-766));
-		Serializable serializable = basicMapId.get(integer);
-
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
-
-		assertNull(serializable);
-	}
-
-
-	@Test
-	public void testTwentySeven() throws Exception {
-
-		BasicMapId basicMapId = new BasicMapId();
-		BasicMapId basicMapIdTwo = basicMapId.with("8zE>gM!ei&~0<[j0z9", "8zE>gM!ei&~0<[j0z9");
-
-		assertEquals(1, basicMapId.size());
-		assertFalse(basicMapId.isEmpty());
-
-		assertFalse(basicMapIdTwo.isEmpty());
-		assertEquals(1, basicMapIdTwo.size());
-
-		assertSame(basicMapId, basicMapIdTwo);
-		assertSame(basicMapIdTwo, basicMapId);
-
-		BasicMapId basicMapIdThree = (BasicMapId) BasicMapId.id((MapId) basicMapId);
-
-		assertEquals(1, basicMapId.size());
-		assertFalse(basicMapId.isEmpty());
-
-		assertFalse(basicMapIdThree.isEmpty());
-		assertEquals(1, basicMapIdThree.size());
-
-		assertTrue(basicMapIdThree.equals((Object) basicMapIdTwo));
-		assertTrue(basicMapIdThree.equals((Object) basicMapId));
-
-		assertSame(basicMapId, basicMapIdTwo);
-		assertNotSame(basicMapId, basicMapIdThree);
-
-		assertNotSame(basicMapIdThree, basicMapIdTwo);
-		assertNotSame(basicMapIdThree, basicMapId);
-	}
-
-
-	@Test
-	public void testTwentyEight() throws Exception {
-
-		BasicMapId basicMapId = new BasicMapId();
-		BasicMapId basicMapIdTwo = (BasicMapId) BasicMapId.id((MapId) basicMapId);
-
-		assertEquals(0, basicMapId.size());
-		assertTrue(basicMapId.isEmpty());
-
-		assertEquals(0, basicMapIdTwo.size());
-		assertTrue(basicMapIdTwo.isEmpty());
-
-		assertTrue(basicMapIdTwo.equals((Object) basicMapId));
-		assertNotSame(basicMapId, basicMapIdTwo);
-
-		assertNotSame(basicMapIdTwo, basicMapId);
-	}
-
-
-	@Test
-	public void testTwentyNine() throws Exception {
+	@Test  //DATACASS-405
+	public void testWith() throws Exception {
 
 		BasicMapId basicMapId = (BasicMapId) BasicMapId.id();
 
-		assertTrue(basicMapId.isEmpty());
-		assertEquals(0, basicMapId.size());
+		assertThat(basicMapId.isEmpty()).isTrue();
+		assertThat(basicMapId.size()).isEqualTo(0);
 
 		BasicMapId basicMapIdTwo = basicMapId.with(", ", ", ");
 
-		assertFalse(basicMapId.isEmpty());
-		assertEquals(1, basicMapId.size());
+		assertThat(basicMapId.isEmpty()).isFalse();
+		assertThat(basicMapId.size()).isEqualTo(1);
 
-		assertFalse(basicMapIdTwo.isEmpty());
-		assertEquals(1, basicMapIdTwo.size());
+		assertThat(basicMapIdTwo.isEmpty()).isFalse();
+		assertThat(basicMapIdTwo.size()).isEqualTo(1);
 
-		assertSame(basicMapId, basicMapIdTwo);
-		assertSame(basicMapIdTwo, basicMapId);
+		assertThat(basicMapId).isSameAs(basicMapIdTwo);
+		assertThat(basicMapIdTwo).isSameAs(basicMapId);
 
-		String string = (String) basicMapIdTwo.remove((Object) ", ");
-
-		assertTrue(basicMapId.isEmpty());
-		assertEquals(0, basicMapId.size());
-
-		assertEquals(0, basicMapIdTwo.size());
-		assertTrue(basicMapIdTwo.isEmpty());
-
-		assertNotNull(string);
-		assertSame(basicMapId, basicMapIdTwo);
-
-		assertSame(basicMapIdTwo, basicMapId);
-		assertEquals(", ", string);
 	}
+
+
+	@Test  //DATACASS-405
+	public void testRemove() throws Exception {
+
+		BasicMapId basicMapId = (BasicMapId) BasicMapId.id();
+
+		assertThat(basicMapId.isEmpty()).isTrue();
+		assertThat(basicMapId.size()).isEqualTo(0);
+
+		BasicMapId basicMapIdTwo = basicMapId.with(", ", ", ");
+
+		String string = (String) basicMapIdTwo.remove(", ");
+
+		assertThat(basicMapId.isEmpty()).isTrue();
+		assertThat(basicMapId.size()).isEqualTo(0);
+
+		assertThat(basicMapIdTwo.size()).isEqualTo(0);
+		assertThat(basicMapIdTwo.isEmpty()).isTrue();
+
+		assertThat(string).isNotNull();
+		assertThat(basicMapId).isSameAs(basicMapIdTwo);
+
+		assertThat(basicMapIdTwo).isSameAs(basicMapId);
+		assertThat(string).isEqualTo(", ");
+	}
+
+
 }

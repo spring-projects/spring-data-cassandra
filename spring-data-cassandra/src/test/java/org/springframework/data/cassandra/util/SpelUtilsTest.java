@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,102 +16,81 @@
 
 package org.springframework.data.cassandra.util;
 
-import static org.junit.Assert.*;
-
-import javax.swing.text.Segment;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
-import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.SpelCompilerMode;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 /**
  * Unit tests for class {@link SpelUtils org.springframework.data.cassandra.util.SpelUtils}.
  *
- * @author Michael Hausegger
- * @date 20.02.2017
- * @see SpelUtils
- **/
+ * @author Michael Hausegger, hausegger.michael@googlemail.com
+ *
+ */
 public class SpelUtilsTest {
 
 
-	@Test
-	public void testOne() throws Exception {
+	@Test  //DATACASS-405
+	public void testEvaluateProvidingNullContext() throws Exception {
 
 		SpelExpressionParser spelExpressionParser = SpelUtils.DEFAULT_PARSER;
-		String string = SpelUtils.evaluate((CharSequence) "cellEditor", (EvaluationContext) null, (ExpressionParser) spelExpressionParser);
+		String result = SpelUtils.evaluate("cellEditor",null,spelExpressionParser);
 
-		assertEquals("cellEditor", string);
+		assertThat(result).isEqualTo("cellEditor");
 	}
 
 
-	@Test
-	public void testTwo() throws Exception {
+	@Test  //DATACASS-405
+	public void testEvaluateProvidingEmptyCharSequenceAndNullContext() throws Exception {
 
 		SpelExpressionParser spelExpressionParser = new SpelExpressionParser();
-		String string = SpelUtils.evaluate((CharSequence) "", (EvaluationContext) null, (ExpressionParser) spelExpressionParser);
+		String result = SpelUtils.evaluate("",null,spelExpressionParser);
 
-		assertEquals("", string);
+		assertThat(result).isEmpty();
 	}
 
 
-	@Test
-	public void testThree() throws Exception {
+	@Test  //DATACASS-405
+	public void testEvaluateProvidingAnOwnExpressionParser() throws Exception {
 
-		Class<String> clasz = String.class;
 		SpelParserConfiguration spelParserConfiguration = new SpelParserConfiguration(false, false);
 		SpelExpressionParser spelExpressionParser = new SpelExpressionParser(spelParserConfiguration);
-		String string = SpelUtils.evaluate((CharSequence) "+18:00", (EvaluationContext) null, clasz, (ExpressionParser) spelExpressionParser);
+		String result = SpelUtils.evaluate( "+18:00", null, String.class, spelExpressionParser);
 
-		assertFalse(spelParserConfiguration.isAutoGrowNullReferences());
-		assertFalse(spelParserConfiguration.isAutoGrowCollections());
+		assertThat(spelParserConfiguration.isAutoGrowNullReferences()).isFalse();
+		assertThat(spelParserConfiguration.isAutoGrowCollections()).isFalse();
 
-		assertEquals(SpelCompilerMode.OFF, spelParserConfiguration.getCompilerMode());
-		assertEquals(2147483647, spelParserConfiguration.getMaximumAutoGrowSize());
+		assertThat(spelParserConfiguration.getCompilerMode()).isEqualTo(SpelCompilerMode.OFF);
+		assertThat(spelParserConfiguration.getMaximumAutoGrowSize()).isEqualTo( Integer.MAX_VALUE );
 
-		assertEquals("+18:00", string);
+		assertThat(result).isEqualTo("+18:00");
+
 	}
 
 
-	@Test
-	public void testFour() throws Exception {
+	@Test  //DATACASS-405
+	public void testProvidingNullEvaluationContextOne() throws Exception {
 
-		Class<Object> clasz = Object.class;
-		String string = (String) SpelUtils.evaluate((CharSequence) "caret-begin-word", (EvaluationContext) null, clasz);
+		assertThat( SpelUtils.evaluate( "caret-begin-word", null, Object.class) ).isEqualTo("caret-begin-word");
 
-		assertEquals("caret-begin-word", string);
 	}
 
 
-	@Test
-	public void testFive() throws Exception {
+	@Test  //DATACASS-405
+	public void testProvidingNullEvaluationContextTwo() throws Exception {
 
-		String string = SpelUtils.evaluate((CharSequence) "", (EvaluationContext) null);
+		assertThat( SpelUtils.evaluate( "", null) ).isEmpty();
 
-		assertEquals("", string);
 	}
 
 
-	@Test
-	public void testSix() throws Exception {
+	@Test  //DATACASS-405
+	public void testProvidingNullEvaluationContextThree() throws Exception {
 
-		String string = SpelUtils.evaluate((CharSequence) "caret-begin-word", (EvaluationContext) null);
+		assertThat( SpelUtils.evaluate("caret-begin-word", null) ).isEqualTo("caret-begin-word");
 
-		assertEquals("caret-begin-word", string);
 	}
 
-
-	@Test(expected = StringIndexOutOfBoundsException.class)
-	public void testSevenRaisesStringIndexOutOfBoundsException() throws Exception {
-
-		char[] charArray = new char[2];
-		Segment segment = new Segment(charArray, (-2826), 0);
-		StandardEvaluationContext standardEvaluationContext = new StandardEvaluationContext((Object) charArray);
-		Class<Object> clasz = Object.class;
-
-		SpelUtils.evaluate((CharSequence) segment, (EvaluationContext) standardEvaluationContext, clasz);
-	}
 }
