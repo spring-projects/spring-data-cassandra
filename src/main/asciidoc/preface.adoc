@@ -13,10 +13,6 @@ This section provides a basic introduction to Spring, Spring Data and the Cassan
 refers only to Spring Data for Apache Cassandra features and assumes the user is familiar with Cassandra as well as
 core Spring concepts.
 
-This section provides some basic introduction to Spring and Cassandra database. The rest of the document
-refers only to Spring Data for Apache Cassandra features and assumes the user is familiar with Apache Cassandra as
-well as Spring concepts.
-
 [[get-started:first-steps:spring]]
 == Knowing Spring
 
