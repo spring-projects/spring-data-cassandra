@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.domain.FlatGroup;
 import org.springframework.data.cassandra.domain.Group;
@@ -91,9 +92,10 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		mike.setEmail("mike@sauls.com");
 
 		int ttl = 30;
+		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
-		batchOperations.insert(Arrays.asList(walter, mike), ttl).execute();
+		batchOperations.insert(Arrays.asList(walter, mike), options).execute();
 
 		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT TTL(email) FROM group;");
 
@@ -148,9 +150,10 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		mike.setEmail("mike@sauls.com");
 
 		int ttl = 30;
+		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
-		batchOperations.update(Arrays.asList(walter, mike), ttl).execute();
+		batchOperations.update(Arrays.asList(walter, mike), options).execute();
 
 		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT TTL(email) FROM group;");
 

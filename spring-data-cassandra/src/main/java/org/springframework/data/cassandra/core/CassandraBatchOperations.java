@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
+import org.springframework.cassandra.core.WriteOptions;
+
 /**
  * Batch operations for insert/update/delete actions on a table. {@link CassandraBatchOperations} use logged Cassandra
  * {@code BATCH}es for single entities and collections of entities. A {@link CassandraBatchOperations} instance cannot
@@ -69,14 +71,14 @@ public interface CassandraBatchOperations {
 	CassandraBatchOperations insert(Iterable<?> entities);
 
 	/**
-	 * Add a collection of inserts with a given {@code ttl} to the batch.
+	 * Add a collection of inserts with given {@code options} to the batch.
 	 *
 	 * @param entities the entities to insert; must not be {@literal null}.
-	 * @param ttl the TTL to apply.
+	 * @param options the WriteOptions to apply.
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
-	CassandraBatchOperations insert(Iterable<?> entities, int ttl);
+	CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options);
 
 	/**
 	 * Add an array of updates to the batch.
@@ -97,14 +99,14 @@ public interface CassandraBatchOperations {
 	CassandraBatchOperations update(Iterable<?> entities);
 
 	/**
-	 * Add a collection of updates with a given {@code ttl} to the batch.
+	 * Add a collection of updates with given {@code options} to the batch.
 	 *
 	 * @param entities the entities to update; must not be {@literal null}.
-	 * @param ttl the TTL to apply.
+	 * @param options the WriteOptions to apply.
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
-	CassandraBatchOperations update(Iterable<?> entities, int ttl);
+	CassandraBatchOperations update(Iterable<?> entities, WriteOptions options);
 
 	/**
 	 * Add an array of deletes to the batch.

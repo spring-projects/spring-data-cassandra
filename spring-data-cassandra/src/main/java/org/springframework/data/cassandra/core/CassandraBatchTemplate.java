@@ -113,15 +113,11 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable, int)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable, WriteOptions)
 	 */
 	@Override
-	public CassandraBatchOperations insert(Iterable<?> entities, int ttl) {
-		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
-		return insert(entities, options);
-	}
+	public CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options) {
 
-	private CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options) {
 		assertNotExecuted();
 
 		for (Object entity : nullSafeIterable(entities)) {
@@ -152,15 +148,10 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable, int)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable, WriteOptions)
 	 */
 	@Override
-	public CassandraBatchOperations update(Iterable<?> entities, int ttl) {
-		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
-		return update(entities, options);
-	}
-
-	private CassandraBatchOperations update(Iterable<?> entities, WriteOptions options) {
+	public CassandraBatchOperations update(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
 
