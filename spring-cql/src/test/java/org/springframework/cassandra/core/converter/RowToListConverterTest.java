@@ -29,7 +29,7 @@ public class RowToListConverterTest {
 
 
 	@Test
-	public void testCreatesRowToListConverterAndCallsConvert() throws Exception {
+	public void testCreatesRowToListConverterAndCallsConvertProvidingNull() throws Exception {
 
 		RowToListConverter rowToMapConverter = new RowToListConverter();
 
