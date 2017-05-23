@@ -27,6 +27,26 @@
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
 			<artifactId>spring-expression</artifactId>
 		</dependency>
 
@@ -35,12 +55,6 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>spring-data-commons</artifactId>
 			<version>${springdata.commons}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>spring-cql</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -55,12 +69,16 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Cassandra driver -->
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>spring-cql</artifactId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
+			<groupId>com.datastax.cassandra</groupId>
+			<artifactId>cassandra-driver-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava}</version>
 		</dependency>
 
 		<!-- Reactor -->
@@ -129,7 +147,6 @@
 		<dependency>
 			<groupId>org.xerial.snappy</groupId>
 			<artifactId>snappy-java</artifactId>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -144,6 +161,11 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.umd.cs.mtc</groupId>
+			<artifactId>multithreadedtc</artifactId>
 		</dependency>
 
 	</dependencies>

@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.repository.query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.reactivestreams.Publisher;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
@@ -32,6 +31,10 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.util.Assert;
 
+import org.reactivestreams.Publisher;
+
+import com.datastax.driver.core.Statement;
+
 /**
  * Base class for reactive {@link RepositoryQuery} implementations for Cassandra.
  *
@@ -40,11 +43,11 @@ import org.springframework.util.Assert;
  */
 public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery {
 
-	private final EntityInstantiators instantiators;
+	private final ReactiveCassandraQueryMethod method;
 
 	private final ReactiveCassandraOperations operations;
 
-	private final ReactiveCassandraQueryMethod method;
+	private final EntityInstantiators instantiators;
 
 	/**
 	 * Create a new {@link AbstractReactiveCassandraQuery} from the given {@link CassandraQueryMethod} and
@@ -63,13 +66,23 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 		this.instantiators = new EntityInstantiators();
 	}
 
+	/* (non-Javadoc) */
+	protected EntityInstantiators getEntityInstantiators() {
+		return this.instantiators;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
 	 */
 	@Override
-	public CassandraQueryMethod getQueryMethod() {
-		return method;
+	public ReactiveCassandraQueryMethod getQueryMethod() {
+		return this.method;
+	}
+
+	/* (non-Javadoc) */
+	protected ReactiveCassandraOperations getReactiveCassandraOperations() {
+		return this.operations;
 	}
 
 	/*
@@ -79,14 +92,14 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 	@Override
 	public Object execute(Object[] parameters) {
 
-		return (method.hasReactiveWrapperParameter() ? executeDeferred(parameters)
-				: execute(new ReactiveCassandraParameterAccessor(method, parameters)));
+		return (getQueryMethod().hasReactiveWrapperParameter() ? executeDeferred(parameters)
+				: execute(new ReactiveCassandraParameterAccessor(getQueryMethod(), parameters)));
 	}
 
 	@SuppressWarnings("unchecked")
 	private Object executeDeferred(Object[] parameters) {
 
-		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(method, parameters);
+		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(getQueryMethod(), parameters);
 
 		return (getQueryMethod().isCollectionQuery() ? Flux.defer(() -> (Publisher<Object>) execute(accessor))
 				: Mono.defer(() -> (Mono<Object>) execute(accessor)));
@@ -94,22 +107,24 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 
 	private Object execute(CassandraParameterAccessor parameterAccessor) {
 
-		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(operations.getConverter(),
-				parameterAccessor);
+		CassandraParameterAccessor convertingParameterAccessor =
+				new ConvertingParameterAccessor(getReactiveCassandraOperations().getConverter(), parameterAccessor);
 
-		String query = createQuery(convertingParameterAccessor);
+		Statement statement = createQuery(convertingParameterAccessor);
 
-		ResultProcessor resultProcessor = method.getResultProcessor().withDynamicProjection(convertingParameterAccessor);
+		ResultProcessor resultProcessor =
+				getQueryMethod().getResultProcessor().withDynamicProjection(convertingParameterAccessor);
 
-		ReactiveCassandraQueryExecution queryExecution = getExecution(
-				new ResultProcessingConverter(resultProcessor, operations.getConverter().getMappingContext(), instantiators));
+		ReactiveCassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(
+				resultProcessor, getReactiveCassandraOperations().getConverter().getMappingContext(),
+						getEntityInstantiators()));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
-				operations.getConverter().getCustomConversions());
+				getReactiveCassandraOperations().getConverter().getCustomConversions());
 
 		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
 
-		return queryExecution.execute(query, resultType);
+		return queryExecution.execute(statement, resultType);
 	}
 
 	/**
@@ -117,7 +132,7 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 	 *
 	 * @param accessor must not be {@literal null}.
 	 */
-	protected abstract String createQuery(CassandraParameterAccessor accessor);
+	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
 
 	/**
 	 * Returns the execution instance to use.
@@ -130,6 +145,7 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 
 	/* (non-Javadoc) */
 	private ReactiveCassandraQueryExecution getExecutionToWrap() {
-		return (method.isCollectionQuery() ? new CollectionExecution(operations) : new SingleEntityExecution(operations));
+		return (getQueryMethod().isCollectionQuery() ? new CollectionExecution(getReactiveCassandraOperations())
+				: new SingleEntityExecution(getReactiveCassandraOperations()));
 	}
 }

@@ -13,7 +13,7 @@
 		<constructor-arg value="#{T(org.springframework.cassandra.support.RandomKeySpaceName).create()}"/>
 	</bean>
 
-	<bean id="nettyOptions" class="org.springframework.cassandra.test.integration.support.IntegrationTestNettyOptions"/>
+	<bean id="nettyOptions" class="org.springframework.cassandra.support.IntegrationTestNettyOptions"/>
 
 	<context:property-placeholder location="classpath:/config/cassandra-connection.properties"/>
 

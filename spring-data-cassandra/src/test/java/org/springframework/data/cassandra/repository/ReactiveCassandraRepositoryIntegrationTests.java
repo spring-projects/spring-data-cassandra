@@ -20,6 +20,8 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,15 +32,15 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.GroupKey;
-import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.domain.User;
+import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.cassandra.repository.support.ReactiveCassandraRepositoryFactory;
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
@@ -63,8 +65,8 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	public static class Config extends IntegrationTestConfig {
 
 		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { Person.class.getPackage().getName() };
+		protected Set<Class<?>> getInitialEntitySet() {
+			return new HashSet<>(Arrays.asList(Group.class, User.class));
 		}
 	}
 
@@ -74,10 +76,10 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	ReactiveCassandraRepositoryFactory factory;
 	ClassLoader classLoader;
 	BeanFactory beanFactory;
-	PersonRepository repository;
+	UserRepository repository;
 	GroupRepository groupRepostitory;
 
-	Person dave, oliver, carter, boyd;
+	User dave, oliver, carter, boyd;
 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
@@ -93,10 +95,10 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	public void setUp() throws Exception {
 
 		KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-		TableMetadata person = keyspace.getTable("person");
+		TableMetadata users = keyspace.getTable("users");
 
-		if (person.getIndex("IX_lastname") == null) {
-			session.execute("CREATE INDEX IX_lastname ON person (lastname);");
+		if (users.getIndex("IX_lastname") == null) {
+			session.execute("CREATE INDEX IX_lastname ON users (lastname);");
 			Thread.sleep(500);
 		}
 
@@ -106,15 +108,15 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		factory.setBeanFactory(beanFactory);
 		factory.setEvaluationContextProvider(DefaultEvaluationContextProvider.INSTANCE);
 
-		repository = factory.getRepository(PersonRepository.class);
+		repository = factory.getRepository(UserRepository.class);
 		groupRepostitory = factory.getRepository(GroupRepository.class);
 
 		StepVerifier.create(repository.deleteAll().concatWith(groupRepostitory.deleteAll())).verifyComplete();
 
-		dave = new Person("42", "Dave", "Matthews");
-		oliver = new Person("4", "Oliver August", "Matthews");
-		carter = new Person("49", "Carter", "Beauford");
-		boyd = new Person("45", "Boyd", "Tinsley");
+		dave = new User("42", "Dave", "Matthews");
+		oliver = new User("4", "Oliver August", "Matthews");
+		carter = new User("49", "Carter", "Beauford");
+		boyd = new User("45", "Boyd", "Tinsley");
 
 		StepVerifier.create(repository.saveAll(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4)
 				.verifyComplete();
@@ -162,16 +164,16 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 				.verifyComplete();
 	}
 
-	interface PersonRepository extends ReactiveCassandraRepository<Person, String> {
+	interface UserRepository extends ReactiveCassandraRepository<User, String> {
 
-		Flux<Person> findByLastname(String lastname);
+		Flux<User> findByLastname(String lastname);
 
-		Mono<Person> findOneByLastname(String lastname);
+		Mono<User> findOneByLastname(String lastname);
 
-		Mono<Person> findByLastname(Publisher<String> lastname);
+		Mono<User> findByLastname(Publisher<String> lastname);
 
-		@Query("SELECT * FROM person WHERE lastname = ?0")
-		Flux<Person> findStringQuery(Mono<String> lastname);
+		@Query("SELECT * FROM users WHERE lastname = ?0")
+		Flux<User> findStringQuery(Mono<String> lastname);
 	}
 
 	interface GroupRepository extends ReactiveCassandraRepository<Group, GroupKey> {

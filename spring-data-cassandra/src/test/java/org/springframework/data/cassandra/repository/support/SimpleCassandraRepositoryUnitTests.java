@@ -30,10 +30,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
-import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 
 /**
  * Unit tests for {@link SimpleCassandraRepository}.

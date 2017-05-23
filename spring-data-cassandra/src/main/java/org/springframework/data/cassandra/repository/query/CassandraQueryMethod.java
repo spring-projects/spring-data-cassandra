@@ -45,11 +45,11 @@ import com.datastax.driver.core.ResultSet;
  */
 public class CassandraQueryMethod extends QueryMethod {
 
-	private CassandraEntityMetadata<?> entityMetadata;
+	private final Method method;
 
 	private final CassandraMappingContext mappingContext;
 
-	private final Method method;
+	private CassandraEntityMetadata<?> entityMetadata;
 
 	/**
 	 * Create a new {@link CassandraQueryMethod} from the given {@link Method}.
@@ -164,6 +164,11 @@ public class CassandraQueryMethod extends QueryMethod {
 	 */
 	Query getQueryAnnotation() {
 		return AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
+	}
+
+	@Override
+	protected Class<?> getDomainClass() {
+		return super.getDomainClass();
 	}
 
 	/**

@@ -34,9 +34,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.support.exception.CassandraConnectionFailureException;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.domain.Person;
-import org.springframework.data.cassandra.test.integration.simpletons.Book;
+import org.springframework.data.cassandra.domain.User;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
@@ -67,7 +65,8 @@ public class CassandraTemplateUnitTests {
 	@Before
 	public void setUp() {
 
-		template = new CassandraTemplate(session, new MappingCassandraConverter());
+		template = new CassandraTemplate(session);
+
 		when(session.execute(any(Statement.class))).thenReturn(resultSet);
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 	}
@@ -87,11 +86,11 @@ public class CassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		List<Person> list = template.select("SELECT * FROM person", Person.class);
+		List<User> list = template.select("SELECT * FROM users", User.class);
 
-		assertThat(list).hasSize(1).contains(new Person("myid", "Walter", "White"));
+		assertThat(list).hasSize(1).contains(new User("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users");
 	}
 
 	@Test // DATACASS-292
@@ -100,7 +99,7 @@ public class CassandraTemplateUnitTests {
 		when(resultSet.iterator()).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
 		try {
-			template.select("SELECT * FROM person", Person.class);
+			template.select("SELECT * FROM users", User.class);
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
@@ -123,11 +122,11 @@ public class CassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		Person person = template.selectOne("SELECT * FROM person WHERE id='myid';", Person.class);
+		User user = template.selectOne("SELECT * FROM users WHERE id='myid';", User.class);
 
-		assertThat(person).isEqualTo(new Person("myid", "Walter", "White"));
+		assertThat(user).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
 	}
 
 	@Test // DATACASS-292
@@ -145,11 +144,11 @@ public class CassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		Person person = template.selectOneById("myid", Person.class);
+		User user = template.selectOneById("myid", User.class);
 
-		assertThat(person).isEqualTo(new Person("myid", "Walter", "White"));
+		assertThat(user).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
 	}
 
 	@Test // DATACASS-292
@@ -157,11 +156,11 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 
-		boolean exists = template.exists("myid", Person.class);
+		boolean exists = template.exists("myid", User.class);
 
 		assertThat(exists).isTrue();
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
 	}
 
 	@Test // DATACASS-292
@@ -169,11 +168,11 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.iterator()).thenReturn(Collections.emptyIterator());
 
-		boolean exists = template.exists("myid", Person.class);
+		boolean exists = template.exists("myid", User.class);
 
 		assertThat(exists).isFalse();
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM person WHERE id='myid';");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
 	}
 
 	@Test // DATACASS-292
@@ -183,11 +182,11 @@ public class CassandraTemplateUnitTests {
 		when(row.getLong(0)).thenReturn(42L);
 		when(columnDefinitions.size()).thenReturn(1);
 
-		long count = template.count(Person.class);
+		long count = template.count(User.class);
 
 		assertThat(count).isEqualTo(42L);
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM person;");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM users;");
 	}
 
 	@Test // DATACASS-292
@@ -195,14 +194,14 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
-		Person person = new Person("heisenberg", "Walter", "White");
+		User user = new User("heisenberg", "Walter", "White");
 
-		Person inserted = template.insert(person);
+		User inserted = template.insert(user);
 
-		assertThat(inserted).isEqualTo(person);
+		assertThat(inserted).isEqualTo(user);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
-				.isEqualTo("INSERT INTO person (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
+				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
 	}
 
 	@Test // DATACASS-292
@@ -212,7 +211,7 @@ public class CassandraTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
 		try {
-			template.insert(new Person("heisenberg", "Walter", "White"));
+			template.insert(new User("heisenberg", "Walter", "White"));
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
@@ -225,9 +224,9 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.wasApplied()).thenReturn(false);
 
-		Person person = new Person("heisenberg", "Walter", "White");
+		User user = new User("heisenberg", "Walter", "White");
 
-		Person inserted = template.insert(person);
+		User inserted = template.insert(user);
 
 		assertThat(inserted).isNull();
 	}
@@ -237,14 +236,14 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
-		Person person = new Person("heisenberg", "Walter", "White");
+		User user = new User("heisenberg", "Walter", "White");
 
-		Person updated = template.update(person);
+		User updated = template.update(user);
 
-		assertThat(updated).isEqualTo(person);
+		assertThat(updated).isEqualTo(user);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
-				.isEqualTo("UPDATE person SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
+				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
 	}
 
 	@Test // DATACASS-292
@@ -254,7 +253,7 @@ public class CassandraTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
 		try {
-			template.update(new Person("heisenberg", "Walter", "White"));
+			template.update(new User("heisenberg", "Walter", "White"));
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
@@ -267,9 +266,9 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.wasApplied()).thenReturn(false);
 
-		Person person = new Person("heisenberg", "Walter", "White");
+		User user = new User("heisenberg", "Walter", "White");
 
-		Person updated = template.update(person);
+		User updated = template.update(user);
 
 		assertThat(updated).isNull();
 	}
@@ -279,13 +278,13 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
-		Person person = new Person("heisenberg", "Walter", "White");
+		User user = new User("heisenberg", "Walter", "White");
 
-		boolean deleted = template.deleteById(person.getId(), Person.class);
+		boolean deleted = template.deleteById(user.getId(), User.class);
 
 		assertThat(deleted).isTrue();
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM person WHERE id='heisenberg';");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM users WHERE id='heisenberg';");
 	}
 
 	@Test // DATACASS-292
@@ -293,13 +292,13 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
-		Person person = new Person("heisenberg", "Walter", "White");
+		User user = new User("heisenberg", "Walter", "White");
 
-		Person deleted = template.delete(person);
+		User deleted = template.delete(user);
 
-		assertThat(deleted).isEqualTo(person);
+		assertThat(deleted).isEqualTo(user);
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM person WHERE id='heisenberg';");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM users WHERE id='heisenberg';");
 	}
 
 	@Test // DATACASS-292
@@ -309,7 +308,7 @@ public class CassandraTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
 		try {
-			template.delete(new Person("heisenberg", "Walter", "White"));
+			template.delete(new User("heisenberg", "Walter", "White"));
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
@@ -322,9 +321,9 @@ public class CassandraTemplateUnitTests {
 
 		when(resultSet.wasApplied()).thenReturn(false);
 
-		Person person = new Person("heisenberg", "Walter", "White");
+		User user = new User("heisenberg", "Walter", "White");
 
-		Person deleted = template.delete(person);
+		User deleted = template.delete(user);
 
 		assertThat(deleted).isNull();
 	}
@@ -332,17 +331,17 @@ public class CassandraTemplateUnitTests {
 	@Test // DATACASS-292
 	public void truncateShouldRemoveEntities() {
 
-		template.truncate(Person.class);
+		template.truncate(User.class);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo("TRUNCATE person;");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("TRUNCATE users;");
 	}
 
 	@Test // DATACASS-292
 	@Ignore
 	public void batchOperationsShouldCallSession() {
 
-		template.batchOps().insert(new Book()).execute();
+		template.batchOps().insert(new User()).execute();
 
 		verify(session).execute(Mockito.any(Batch.class));
 	}

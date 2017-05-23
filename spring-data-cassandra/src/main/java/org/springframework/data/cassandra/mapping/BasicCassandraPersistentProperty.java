@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.mapping;
 
-import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.cassandra.core.cql.CqlIdentifier.cqlId;
 
 import java.util.ArrayList;
 import java.util.Collections;

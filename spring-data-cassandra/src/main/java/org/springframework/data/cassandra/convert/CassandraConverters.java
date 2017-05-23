@@ -69,6 +69,7 @@ abstract class CassandraConverters {
 
 	@ReadingConverter
 	public enum RowToBooleanConverter implements Converter<Row, Boolean> {
+
 		INSTANCE;
 
 		@Override
@@ -84,6 +85,7 @@ abstract class CassandraConverters {
 	 */
 	@ReadingConverter
 	public enum RowToDateConverter implements Converter<Row, Date> {
+
 		INSTANCE;
 
 		@Override
@@ -99,6 +101,7 @@ abstract class CassandraConverters {
 	 */
 	@ReadingConverter
 	public enum RowToInetAddressConverter implements Converter<Row, InetAddress> {
+
 		INSTANCE;
 
 		@Override
@@ -124,11 +127,11 @@ abstract class CassandraConverters {
 	 */
 	@ReadingConverter
 	public enum RowToNumberConverterFactory implements ConverterFactory<Row, Number> {
+
 		INSTANCE;
 
 		@Override
 		public <T extends Number> Converter<Row, T> getConverter(Class<T> targetType) {
-
 			Assert.notNull(targetType, "Target type must not be null");
 			return new RowToNumber<>(targetType);
 		}
@@ -158,6 +161,7 @@ abstract class CassandraConverters {
 	 */
 	@ReadingConverter
 	public enum RowToStringConverter implements Converter<Row, String> {
+
 		INSTANCE;
 
 		@Override
@@ -173,6 +177,7 @@ abstract class CassandraConverters {
 	 */
 	@ReadingConverter
 	public enum RowToUuidConverter implements Converter<Row, UUID> {
+
 		INSTANCE;
 
 		@Override
@@ -188,6 +193,7 @@ abstract class CassandraConverters {
 	 */
 	@ReadingConverter
 	public enum RowToCassandraLocalDateConverter implements Converter<Row, LocalDate> {
+
 		INSTANCE;
 
 		@Override

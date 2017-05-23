@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.config.java;
 
 import java.util.Collections;
+import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
@@ -143,7 +144,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
 
 		mappingContext.setBeanClassLoader(beanClassLoader);
-		mappingContext.setInitialEntitySet(CassandraEntityClassScanner.scan(getEntityBasePackages()));
+		mappingContext.setInitialEntitySet(getInitialEntitySet());
 
 		CustomConversions customConversions = customConversions();
 
@@ -152,6 +153,21 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(cluster().getObject(), getKeyspaceName()));
 
 		return mappingContext;
+	}
+
+	/**
+	 * Return the {@link Set} of initial entity classes. Scans by default the class path using
+	 * {@link #getEntityBasePackages()}. Can be overriden by subclasses to skip class path scanning and return a fixed set
+	 * of entity classes.
+	 *
+	 * @return {@link Set} of initial entity classes.
+	 * @throws ClassNotFoundException
+	 * @see #getEntityBasePackages()
+	 * @see CassandraEntityClassScanner
+	 * @since 2.0
+	 */
+	protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
+		return CassandraEntityClassScanner.scan(getEntityBasePackages());
 	}
 
 	/**

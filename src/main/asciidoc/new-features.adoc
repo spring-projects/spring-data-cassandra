@@ -1,6 +1,10 @@
 [[new-features]]
 = New & Noteworthy
 
+[[new-features.2-0-0]]
+== What's new in Spring Data for Apache Cassandra 2.0
+* `Update` and `Query` objects.
+
 [[new-features.1-5-0]]
 == What's new in Spring Data for Apache Cassandra 1.5
 * Assert compatibility with Cassandra 3.0 and Cassandra Java Driver 3.0.

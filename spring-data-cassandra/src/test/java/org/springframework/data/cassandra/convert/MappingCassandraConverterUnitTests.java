@@ -54,10 +54,10 @@ import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.RowMockUtil;
 import org.springframework.data.cassandra.domain.CompositeKey;
-import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.domain.TypeWithCompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithKeyClass;
 import org.springframework.data.cassandra.domain.TypeWithMapId;
+import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
@@ -674,7 +674,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Delete delete = QueryBuilder.delete().from("table");
 
-		mappingCassandraConverter.write("42", delete.where(), mappingContext.getRequiredPersistentEntity(Person.class));
+		mappingCassandraConverter.write("42", delete.where(), mappingContext.getRequiredPersistentEntity(User.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("id", "42");
 	}
@@ -684,10 +684,10 @@ public class MappingCassandraConverterUnitTests {
 
 		Delete delete = QueryBuilder.delete().from("table");
 
-		Person person = new Person();
-		person.setId("42");
+		User user = new User();
+		user.setId("42");
 
-		mappingCassandraConverter.write(person, delete.where(), mappingContext.getRequiredPersistentEntity(Person.class));
+		mappingCassandraConverter.write(user, delete.where(), mappingContext.getRequiredPersistentEntity(User.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("id", "42");
 	}
@@ -697,8 +697,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Delete delete = QueryBuilder.delete().from("table");
 
-		mappingCassandraConverter.write(new Person(), delete.where(),
-				mappingContext.getRequiredPersistentEntity(Person.class));
+		mappingCassandraConverter.write(new User(), delete.where(), mappingContext.getRequiredPersistentEntity(User.class));
 	}
 
 	@Test // DATACASS-308
@@ -707,7 +706,7 @@ public class MappingCassandraConverterUnitTests {
 		Delete delete = QueryBuilder.delete().from("table");
 
 		mappingCassandraConverter.write(id("id", "42"), delete.where(),
-				mappingContext.getRequiredPersistentEntity(Person.class));
+				mappingContext.getRequiredPersistentEntity(User.class));
 
 		assertThat(getWherePredicates(delete)).containsEntry("id", "42");
 	}
@@ -794,7 +793,7 @@ public class MappingCassandraConverterUnitTests {
 		mappingCassandraConverter.write(entity, delete.where(),
 				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
-		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
+		assertThat(getWherePredicates(delete)).containsEntry("first_name", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
 	}
 
@@ -819,7 +818,7 @@ public class MappingCassandraConverterUnitTests {
 		mappingCassandraConverter.write(key, delete.where(),
 				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
-		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
+		assertThat(getWherePredicates(delete)).containsEntry("first_name", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
 	}
 
@@ -831,7 +830,7 @@ public class MappingCassandraConverterUnitTests {
 		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), delete.where(),
 				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
-		assertThat(getWherePredicates(delete)).containsEntry("firstname", "Walter");
+		assertThat(getWherePredicates(delete)).containsEntry("first_name", "Walter");
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
 	}
 

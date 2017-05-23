@@ -143,7 +143,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 		return bindableValue
 				.flatMap(
-						v -> converter.convertToCassandraColumn(bindableValue, findTypeInformation(index, v, Optional.empty())))
+						v -> converter.convertToColumnType(bindableValue, findTypeInformation(index, v, Optional.empty())))
 				.orElse(null);
 	}
 
@@ -151,7 +151,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	private Object potentiallyConvert(int index, Optional<Object> bindableValue, CassandraPersistentProperty property) {
 
 		return bindableValue.flatMap(
-				v -> converter.convertToCassandraColumn(bindableValue, findTypeInformation(index, v, Optional.of(property))))
+				v -> converter.convertToColumnType(bindableValue, findTypeInformation(index, v, Optional.of(property))))
 				.orElse(null);
 	}
 

@@ -16,10 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,8 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.querybuilder.BindMarker;
+import com.datastax.driver.core.SimpleStatement;
 
 /**
  * String-based Query abstracting a CQL query with parameter bindings.
@@ -41,10 +37,11 @@ import com.datastax.driver.core.querybuilder.BindMarker;
  */
 class StringBasedQuery {
 
-	private final CodecRegistry codecRegistry;
-	private final ExpressionEvaluatingParameterBinder parameterBinder;
-	private final List<ParameterBinding> queryParameterBindings = new ArrayList<>();
 	private final String query;
+
+	private final ExpressionEvaluatingParameterBinder parameterBinder;
+
+	private final List<ParameterBinding> queryParameterBindings = new ArrayList<>();
 
 	/**
 	 * Create a new {@link StringBasedQuery} given {@code query}, {@link ExpressionEvaluatingParameterBinder} and
@@ -52,21 +49,27 @@ class StringBasedQuery {
 	 *
 	 * @param query must not be empty.
 	 * @param parameterBinder must not be {@literal null}.
-	 * @param codecRegistry must not be {@literal null}.
 	 */
-	public StringBasedQuery(String query, ExpressionEvaluatingParameterBinder parameterBinder,
-			CodecRegistry codecRegistry) {
+	public StringBasedQuery(String query, ExpressionEvaluatingParameterBinder parameterBinder) {
 
 		Assert.hasText(query, "Query must not be empty");
 		Assert.notNull(parameterBinder, "ExpressionEvaluatingParameterBinder must not be null");
-		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
 
-		this.codecRegistry = codecRegistry;
 		this.parameterBinder = parameterBinder;
 
 		this.query = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query,
 				this.queryParameterBindings);
 
+	}
+
+	/* (non-Javadoc) */
+	protected ExpressionEvaluatingParameterBinder getParameterBinder() {
+		return this.parameterBinder;
+	}
+
+	/* (non-Javadoc) */
+	protected String getQuery() {
+		return this.query;
 	}
 
 	/**
@@ -76,15 +79,15 @@ class StringBasedQuery {
 	 * @param queryMethod must not be {@literal null}.
 	 * @return the bound String query containing formatted parameters.
 	 */
-	public String bindQuery(CassandraParameterAccessor parameterAccessor, CassandraQueryMethod queryMethod) {
+	public SimpleStatement bindQuery(CassandraParameterAccessor parameterAccessor, CassandraQueryMethod queryMethod) {
 
 		Assert.notNull(parameterAccessor, "CassandraParameterAccessor must not be null");
 		Assert.notNull(queryMethod, "CassandraQueryMethod must not be null");
 
-		List<Object> arguments = parameterBinder.bind(parameterAccessor,
-				new BindingContext(queryMethod, queryParameterBindings));
+		List<Object> arguments = getParameterBinder().bind(parameterAccessor,
+				new BindingContext(queryMethod, this.queryParameterBindings));
 
-		return ParameterBinder.INSTANCE.bind(query, codecRegistry, arguments);
+		return ParameterBinder.INSTANCE.bind(getQuery(), arguments);
 	}
 
 	/**
@@ -99,10 +102,10 @@ class StringBasedQuery {
 		private static final String ARGUMENT_PLACEHOLDER = "?_param_?";
 		private static final Pattern ARGUMENT_PLACEHOLDER_PATTERN = Pattern.compile(Pattern.quote(ARGUMENT_PLACEHOLDER));
 
-		public String bind(String input, CodecRegistry codecRegistry, List<Object> parameters) {
+		public SimpleStatement bind(String input, List<Object> parameters) {
 
 			if (parameters.isEmpty()) {
-				return input;
+				return new SimpleStatement(input);
 			}
 
 			StringBuilder result = new StringBuilder();
@@ -110,7 +113,6 @@ class StringBasedQuery {
 			int startIndex = 0;
 			int currentPosition = 0;
 			int parameterIndex = 0;
-
 			Matcher matcher = ARGUMENT_PLACEHOLDER_PATTERN.matcher(input);
 
 			while (currentPosition < input.length()) {
@@ -121,141 +123,16 @@ class StringBasedQuery {
 
 				int exprStart = matcher.start();
 
-				result.append(input.subSequence(startIndex, exprStart));
-				result = appendValue(parameters.get(parameterIndex++), codecRegistry, result);
+				result.append(input.subSequence(startIndex, exprStart)).append("?");
 
+				parameterIndex++;
 				currentPosition = matcher.end();
 				startIndex = currentPosition;
 			}
 
-			return result.append(input.subSequence(currentPosition, input.length())).toString();
-		}
+			String bindableStatement = result.append(input.subSequence(currentPosition, input.length())).toString();
 
-		static StringBuilder appendValue(Object value, CodecRegistry codecRegistry, StringBuilder builder) {
-
-			if (value == null) {
-				builder.append("null");
-			} else if (value instanceof BindMarker) {
-				builder.append(value);
-			} else if (value instanceof List && isSerializable(value)) {
-				// bind variables are not supported inside collection literals
-				appendList((List<?>) value, codecRegistry, builder);
-			} else if (value instanceof Set && isSerializable(value)) {
-				// bind variables are not supported inside collection literals
-				appendSet((Set<?>) value, codecRegistry, builder);
-			} else if (value instanceof Map && isSerializable(value)) {
-				// bind variables are not supported inside collection literals
-				appendMap((Map<?, ?>) value, codecRegistry, builder);
-			} else if (isSerializable(value)) {
-				TypeCodec<Object> codec = codecRegistry.codecFor(value);
-				builder.append(codec.format(value));
-			} else {
-				throw new IllegalArgumentException(String.format("Argument value [%s] is not serializable", value.toString()));
-			}
-
-			return builder;
-		}
-
-		private static StringBuilder appendList(List<?> list, CodecRegistry codecRegistry, StringBuilder builder) {
-
-			for (int index = 0, size = list.size(); index < size; index++) {
-				builder.append(index > 0 ? "," : "");
-				appendValue(list.get(index), codecRegistry, builder);
-			}
-
-			return builder;
-		}
-
-		private static StringBuilder appendSet(Set<?> set, CodecRegistry codecRegistry, StringBuilder builder) {
-
-			boolean first = true;
-
-			for (Object element : set) {
-				builder.append(first ? "" : ",");
-				appendValue(element, codecRegistry, builder);
-				first = false;
-			}
-
-			return builder;
-		}
-
-		private static StringBuilder appendMap(Map<?, ?> map, CodecRegistry codecRegistry, StringBuilder builder) {
-
-			builder.append('{');
-
-			boolean first = true;
-
-			for (Map.Entry<?, ?> entry : map.entrySet()) {
-				builder.append(first ? "" : ",");
-				appendValue(entry.getKey(), codecRegistry, builder);
-				builder.append(':');
-				appendValue(entry.getValue(), codecRegistry, builder);
-				first = false;
-			}
-
-			builder.append('}');
-
-			return builder;
-		}
-
-		/**
-		 * Return true if the given value is likely to find a suitable codec to be serialized as a query parameter. If the
-		 * value is not serializable, it must be included in the query string. Non serializable values include special
-		 * values such as function calls, column names and bind markers, and collections thereof. We also don't serialize
-		 * fixed size number types. The reason is that if we do it, we will force a particular size (4 bytes for ints, ...)
-		 * and for the query builder, we don't want users to have to bother with that.
-		 *
-		 * @param value the value to inspect.
-		 * @return true if the value is serializable, false otherwise.
-		 */
-		static boolean isSerializable(Object value) {
-
-			if (containsSpecialValue(value)) {
-				return false;
-			}
-
-			if (value instanceof Collection) {
-				for (Object element : (Collection) value) {
-					if (!isSerializable(element)) {
-						return false;
-					}
-				}
-			}
-
-			if (value instanceof Map) {
-				for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
-					if (!isSerializable(entry.getKey()) || !isSerializable(entry.getValue())) {
-						return false;
-					}
-				}
-			}
-
-			return true;
-		}
-
-		static boolean containsSpecialValue(Object value) {
-
-			if (value instanceof BindMarker) {
-				return true;
-			}
-
-			if (value instanceof Collection) {
-				for (Object element : (Collection) value) {
-					if (containsSpecialValue(element)) {
-						return true;
-					}
-				}
-			}
-
-			if (value instanceof Map) {
-				for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
-					if (containsSpecialValue(entry.getKey()) || containsSpecialValue(entry.getValue())) {
-						return true;
-					}
-				}
-			}
-
-			return false;
+			return new SimpleStatement(bindableStatement, parameters.subList(0, parameterIndex).toArray());
 		}
 	}
 
