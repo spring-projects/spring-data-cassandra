@@ -31,12 +31,12 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
-import org.springframework.data.domain.Sort;
-
-import com.datastax.driver.core.utils.UUIDs;
 import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cql.core.ReactiveCqlTemplate;
 import org.springframework.data.cql.core.session.DefaultBridgedReactiveSession;
+import org.springframework.data.domain.Sort;
+
+import com.datastax.driver.core.utils.UUIDs;
 
 /**
  * Integration tests for {@link ReactiveCassandraTemplate}.
@@ -110,8 +110,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		boolean result = template.update(query, Update.empty().set("firstname", "Walter Hartwell"), User.class).block();
 		assertThat(result).isTrue();
 
-		assertThat(template.selectOneById(user.getId(), User.class).block().getFirstname())
-				.isEqualTo("Walter Hartwell");
+		assertThat(template.selectOneById(user.getId(), User.class).block().getFirstname()).isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343

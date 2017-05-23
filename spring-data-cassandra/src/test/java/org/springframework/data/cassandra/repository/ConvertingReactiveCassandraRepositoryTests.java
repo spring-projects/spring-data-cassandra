@@ -116,12 +116,11 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-360
 	public void dtoProjectionShouldWork() {
 
-		StepVerifier.create(reactiveUserRepostitory.findProjectedByLastname(boyd.getLastname()))
-				.consumeNextWith(actual -> {
+		StepVerifier.create(reactiveUserRepostitory.findProjectedByLastname(boyd.getLastname())).consumeNextWith(actual -> {
 
-					assertThat(actual.firstname).isEqualTo(boyd.getFirstname());
-					assertThat(actual.lastname).isEqualTo(boyd.getLastname());
-				}).verifyComplete();
+			assertThat(actual.firstname).isEqualTo(boyd.getFirstname());
+			assertThat(actual.lastname).isEqualTo(boyd.getLastname());
+		}).verifyComplete();
 	}
 
 	@Test // DATACASS-335

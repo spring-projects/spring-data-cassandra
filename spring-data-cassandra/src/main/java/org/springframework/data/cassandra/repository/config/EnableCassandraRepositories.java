@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 the original author or authors
- * 
+ * Copyright 2013-2017 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
 /**
  * Annotation to enable Cassandra repositories.
- * 
+ *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Thomas Darimont
@@ -82,7 +82,7 @@ public @interface EnableCassandraRepositories {
 	 * Returns the postfix to be used when looking up custom repository implementations. Defaults to {@literal Impl}. So
 	 * for a repository named {@code UserRepository} the corresponding implementation class will be looked up scanning for
 	 * {@code UserRepositoryImpl}.
-	 * 
+	 *
 	 * @return
 	 */
 	String repositoryImplementationPostfix() default "Impl";
@@ -90,7 +90,7 @@ public @interface EnableCassandraRepositories {
 	/**
 	 * Configures the location of where to find the Spring Data named queries properties file. Will default to
 	 * {@code META-INF/cassandra-named-queries.properties}.
-	 * 
+	 *
 	 * @return
 	 */
 	String namedQueriesLocation() default "";
@@ -98,7 +98,7 @@ public @interface EnableCassandraRepositories {
 	/**
 	 * Returns the key of the {@link QueryLookupStrategy} to be used for lookup queries for query methods. Defaults to
 	 * {@link Key#CREATE_IF_NOT_FOUND}.
-	 * 
+	 *
 	 * @return
 	 */
 	Key queryLookupStrategy() default Key.CREATE_IF_NOT_FOUND;
@@ -106,14 +106,14 @@ public @interface EnableCassandraRepositories {
 	/**
 	 * Returns the {@link FactoryBean} class to be used for each repository instance. Defaults to
 	 * {@link CassandraRepositoryFactoryBean}.
-	 * 
+	 *
 	 * @return
 	 */
 	Class<?> repositoryFactoryBeanClass() default CassandraRepositoryFactoryBean.class;
 
 	/**
 	 * Configure the repository base class to be used to create repository proxies for this particular configuration.
-	 * 
+	 *
 	 * @return
 	 * @since 1.3
 	 */
@@ -122,7 +122,7 @@ public @interface EnableCassandraRepositories {
 	/**
 	 * Configures the name of the {@link CassandraTemplate} bean to be used with the repositories detected. Defaults to
 	 * {@link DefaultBeanNames#DATA_TEMPLATE}
-	 * 
+	 *
 	 * @return
 	 */
 	String cassandraTemplateRef() default "cassandraTemplate";

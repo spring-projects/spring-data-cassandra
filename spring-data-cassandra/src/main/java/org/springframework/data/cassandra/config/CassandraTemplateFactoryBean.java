@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.config;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cql.core.CqlOperations;
 import org.springframework.data.cql.core.session.DefaultSessionFactory;
 import org.springframework.data.cql.core.session.SessionFactory;

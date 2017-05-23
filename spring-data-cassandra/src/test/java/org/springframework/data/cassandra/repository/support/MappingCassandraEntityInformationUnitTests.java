@@ -27,12 +27,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.domain.CompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithKeyClass;
 import org.springframework.data.cassandra.domain.TypeWithMapId;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 
 /**
  * Unit tests for {@link MappingCassandraEntityInformation}.

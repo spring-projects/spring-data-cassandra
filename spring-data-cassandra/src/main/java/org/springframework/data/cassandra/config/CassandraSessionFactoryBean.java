@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.config;
 
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCreator;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cql.config.CassandraCqlSessionFactoryBean;
 import org.springframework.util.Assert;
