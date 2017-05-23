@@ -170,9 +170,8 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	}
 
 	/**
-<<<<<<< 5cbbf085712acc72951fc9627d0f80c85dbb1505
-	 * Creates a string query using the given {@link ParameterAccessor}
-=======
+	 * Creates a string query using the given {@link ParameterAccessor}.
+	 *
 	 * @param resultSet
 	 * @param declaredReturnType
 	 * @param returnedUnwrappedObjectType
@@ -250,7 +249,6 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 	/**
 	 * Creates a {@link Statement} using the given {@link ParameterAccessor}
->>>>>>> DATACASS-343 - Introduce Query and Update objects.
 	 *
 	 * @param accessor must not be {@literal null}.
 	 */

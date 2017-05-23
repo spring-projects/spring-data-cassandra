@@ -70,15 +70,9 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	}
 
 	/**
-<<<<<<< 85e5d32f4c6db62b63513c14864f7625d7813060
 	 * Returns the {@link StatementFactory} used by this query to construct and run Cassandra CQL statements.
 	 *
 	 * @return the {@link StatementFactory} used by this query to construct and run Cassandra CQL statements.
-=======
-	 * Returns the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
-	 *
-	 * @return the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
->>>>>>> DATACASS-343 - Polish.
 	 * @see org.springframework.data.cassandra.core.StatementFactory
 	 */
 	protected StatementFactory getStatementFactory() {
