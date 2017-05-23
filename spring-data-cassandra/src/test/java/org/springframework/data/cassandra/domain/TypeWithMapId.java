@@ -17,12 +17,12 @@ package org.springframework.data.cassandra.domain;
 
 import lombok.Data;
 
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.data.cassandra.repository.MapIdentifiable;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
+import org.springframework.data.cql.core.PrimaryKeyType;
 
 /**
  * @author Mark Paluch

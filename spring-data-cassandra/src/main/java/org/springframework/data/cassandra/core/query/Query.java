@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-import static org.springframework.util.ObjectUtils.nullSafeHashCode;
+import static org.springframework.util.ObjectUtils.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.springframework.cassandra.core.QueryOptions;
+import org.springframework.data.cql.core.QueryOptions;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.util.Assert;
@@ -129,8 +128,8 @@ public class Query implements Filter {
 			criteriaDefinitions.add(criteriaDefinition);
 		}
 
-		return new Query(criteriaDefinitions, this.columns, this.sort, this.pagingState,
-				this.queryOptions, this.limit, this.allowFiltering);
+		return new Query(criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions, this.limit,
+				this.allowFiltering);
 	}
 
 	/* (non-Javadoc)
@@ -180,8 +179,8 @@ public class Query implements Filter {
 			}
 		}
 
-		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(sort), this.pagingState,
-				this.queryOptions, this.limit, this.allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(sort), this.pagingState, this.queryOptions,
+				this.limit, this.allowFiltering);
 	}
 
 	/**
@@ -201,8 +200,8 @@ public class Query implements Filter {
 
 		Assert.notNull(pagingState, "PagingState must not be null");
 
-		return new Query(this.criteriaDefinitions, this.columns, this.sort, Optional.of(pagingState),
-				this.queryOptions, this.limit, this.allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, Optional.of(pagingState), this.queryOptions,
+				this.limit, this.allowFiltering);
 	}
 
 	/**
@@ -222,8 +221,8 @@ public class Query implements Filter {
 
 		Assert.notNull(queryOptions, "QueryOptions must not be null");
 
-		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState,
-				Optional.of(queryOptions), this.limit, this.allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, Optional.of(queryOptions),
+				this.limit, this.allowFiltering);
 	}
 
 	/**
@@ -240,8 +239,8 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@code limit} applied.
 	 */
 	public Query limit(long limit) {
-		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState,
-				this.queryOptions, Optional.of(limit), this.allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions,
+				Optional.of(limit), this.allowFiltering);
 	}
 
 	/**
@@ -257,8 +256,8 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@code allowFiltering} applied.
 	 */
 	public Query withAllowFiltering() {
-		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState,
-				this.queryOptions, this.limit, true);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions, this.limit,
+				true);
 	}
 
 	/**

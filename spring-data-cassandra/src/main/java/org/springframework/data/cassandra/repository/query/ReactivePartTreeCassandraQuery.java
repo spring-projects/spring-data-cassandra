@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import org.springframework.data.cassandra.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.PartTree;
@@ -59,8 +59,8 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	}
 
 	/**
-	 * Returns the {@link CassandraMappingContext} used by this query to access mapping meta-data used to
-	 * store (map) objects to Cassandra tables.
+	 * Returns the {@link CassandraMappingContext} used by this query to access mapping meta-data used to store (map)
+	 * objects to Cassandra tables.
 	 *
 	 * @return the {@link CassandraMappingContext} used by this query.
 	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
@@ -95,8 +95,7 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	@Override
 	protected Statement createQuery(CassandraParameterAccessor parameterAccessor) {
 
-		CassandraQueryCreator queryCreator =
-				new CassandraQueryCreator(getTree(), parameterAccessor, getMappingContext());
+		CassandraQueryCreator queryCreator = new CassandraQueryCreator(getTree(), parameterAccessor, getMappingContext());
 
 		Query query = queryCreator.createQuery();
 
@@ -105,8 +104,8 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 				query.limit(getTree().getMaxResults());
 			}
 
-			CassandraPersistentEntity<?> persistentEntity =
-					getMappingContext().getRequiredPersistentEntity(getQueryMethod().getDomainClass());
+			CassandraPersistentEntity<?> persistentEntity = getMappingContext()
+					.getRequiredPersistentEntity(getQueryMethod().getDomainClass());
 
 			return getStatementFactory().select(query, persistentEntity);
 		} catch (RuntimeException e) {

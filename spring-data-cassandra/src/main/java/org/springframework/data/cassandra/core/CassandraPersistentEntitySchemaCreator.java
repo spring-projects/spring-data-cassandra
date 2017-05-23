@@ -25,13 +25,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
-import org.springframework.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
-import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
-import org.springframework.cassandra.core.keyspace.CreateUserTypeSpecification;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cql.core.generator.CreateTableCqlGenerator;
+import org.springframework.data.cql.core.generator.CreateUserTypeCqlGenerator;
+import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
+import org.springframework.data.cql.core.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 
@@ -42,9 +42,9 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author Jens Schauder
  * @since 1.5
- * @see org.springframework.data.cassandra.mapping.Table
- * @see org.springframework.data.cassandra.mapping.UserDefinedType
- * @see org.springframework.data.cassandra.mapping.CassandraType
+ * @see org.springframework.data.cassandra.core.mapping.Table
+ * @see org.springframework.data.cassandra.core.mapping.UserDefinedType
+ * @see org.springframework.data.cassandra.core.mapping.CassandraType
  */
 public class CassandraPersistentEntitySchemaCreator {
 

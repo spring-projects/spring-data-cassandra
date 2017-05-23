@@ -15,10 +15,10 @@
  */
 package org.springframework.data.cassandra.core;
 
-import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.QueryOptionsUtil;
-import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.data.convert.EntityWriter;
+import org.springframework.data.cql.core.QueryOptions;
+import org.springframework.data.cql.core.QueryOptionsUtil;
+import org.springframework.data.cql.core.WriteOptions;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.querybuilder.Delete;

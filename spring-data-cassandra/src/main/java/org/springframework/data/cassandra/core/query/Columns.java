@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.query;
 
+import lombok.EqualsAndHashCode;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,9 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import lombok.EqualsAndHashCode;
-
-import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;

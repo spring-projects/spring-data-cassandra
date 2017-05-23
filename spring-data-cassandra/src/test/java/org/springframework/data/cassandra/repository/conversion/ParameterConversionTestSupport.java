@@ -21,20 +21,20 @@ import java.util.Collections;
 
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.convert.CassandraCustomConversions;
+import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
-import org.springframework.data.cassandra.mapping.UserTypeResolver;
+import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
+import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Cluster;

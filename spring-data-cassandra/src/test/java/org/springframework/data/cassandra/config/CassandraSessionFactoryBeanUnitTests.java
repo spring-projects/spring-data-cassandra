@@ -29,8 +29,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cql.core.CqlIdentifier;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;

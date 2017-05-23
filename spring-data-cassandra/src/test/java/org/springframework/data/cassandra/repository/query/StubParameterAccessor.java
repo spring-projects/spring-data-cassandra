@@ -19,8 +19,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.mapping.CassandraType;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;

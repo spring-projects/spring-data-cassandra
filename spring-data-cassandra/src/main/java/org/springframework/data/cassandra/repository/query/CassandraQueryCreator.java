@@ -20,12 +20,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.context.MappingContext;
@@ -35,9 +37,6 @@ import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.querybuilder.Clause;
 
@@ -75,8 +74,8 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 	}
 
 	/**
-	 * Returns the {@link CassandraMappingContext} used by this template to access mapping meta-data used to
-	 * store (map) object to Cassandra tables.
+	 * Returns the {@link CassandraMappingContext} used by this template to access mapping meta-data used to store (map)
+	 * object to Cassandra tables.
 	 *
 	 * @return the {@link CassandraMappingContext} used by this template.
 	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
@@ -100,8 +99,8 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 	@Override
 	protected CriteriaDefinition create(Part part, Iterator<Object> iterator) {
 
-		PersistentPropertyPath<CassandraPersistentProperty> path =
-				getMappingContext().getPersistentPropertyPath(part.getProperty());
+		PersistentPropertyPath<CassandraPersistentProperty> path = getMappingContext()
+				.getPersistentPropertyPath(part.getProperty());
 
 		CassandraPersistentProperty property = path.getLeafProperty();
 

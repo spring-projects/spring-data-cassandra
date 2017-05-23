@@ -23,10 +23,7 @@ import reactor.test.StepVerifier;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.core.ReactiveCqlTemplate;
-import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
@@ -37,6 +34,9 @@ import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.domain.Sort;
 
 import com.datastax.driver.core.utils.UUIDs;
+import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cql.core.ReactiveCqlTemplate;
+import org.springframework.data.cql.core.session.DefaultBridgedReactiveSession;
 
 /**
  * Integration tests for {@link ReactiveCassandraTemplate}.

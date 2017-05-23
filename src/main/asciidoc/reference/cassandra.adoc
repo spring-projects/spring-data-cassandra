@@ -152,8 +152,8 @@ First, create a simple domain object class to persist.
 ----
 package org.spring.data.cassandra.example;
 
-import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
 
 @Table
 public class Person {

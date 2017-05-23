@@ -17,10 +17,10 @@ package org.springframework.data.cassandra.repository;
 
 import java.util.List;
 
-import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.CrudRepository;

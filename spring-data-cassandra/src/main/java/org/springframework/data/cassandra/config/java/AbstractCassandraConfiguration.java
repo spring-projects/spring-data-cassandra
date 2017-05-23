@@ -19,25 +19,25 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
-import org.springframework.cassandra.core.session.DefaultSessionFactory;
-import org.springframework.cassandra.core.session.SessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.CassandraCustomConversions;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
-import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
+import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.cql.config.java.AbstractClusterConfiguration;
+import org.springframework.data.cql.core.session.DefaultSessionFactory;
+import org.springframework.data.cql.core.session.SessionFactory;
 import org.springframework.data.mapping.context.MappingContext;
 
 /**

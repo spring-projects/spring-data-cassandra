@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import org.reactivestreams.Publisher;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
@@ -30,8 +31,6 @@ import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.util.Assert;
-
-import org.reactivestreams.Publisher;
 
 import com.datastax.driver.core.Statement;
 
@@ -107,17 +106,16 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 
 	private Object execute(CassandraParameterAccessor parameterAccessor) {
 
-		CassandraParameterAccessor convertingParameterAccessor =
-				new ConvertingParameterAccessor(getReactiveCassandraOperations().getConverter(), parameterAccessor);
+		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(
+				getReactiveCassandraOperations().getConverter(), parameterAccessor);
 
 		Statement statement = createQuery(convertingParameterAccessor);
 
-		ResultProcessor resultProcessor =
-				getQueryMethod().getResultProcessor().withDynamicProjection(convertingParameterAccessor);
+		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor()
+				.withDynamicProjection(convertingParameterAccessor);
 
-		ReactiveCassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(
-				resultProcessor, getReactiveCassandraOperations().getConverter().getMappingContext(),
-						getEntityInstantiators()));
+		ReactiveCassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(resultProcessor,
+				getReactiveCassandraOperations().getConverter().getMappingContext(), getEntityInstantiators()));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				getReactiveCassandraOperations().getConverter().getCustomConversions());

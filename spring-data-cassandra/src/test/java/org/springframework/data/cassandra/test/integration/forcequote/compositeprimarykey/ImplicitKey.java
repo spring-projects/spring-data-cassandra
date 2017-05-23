@@ -17,9 +17,9 @@ package org.springframework.data.cassandra.test.integration.forcequote.composite
 
 import java.io.Serializable;
 
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cql.core.PrimaryKeyType;
 
 /**
  * @author Matthew T. Adams

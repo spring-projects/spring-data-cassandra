@@ -19,13 +19,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.reactivestreams.Publisher;
-import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.ReactiveCqlOperations;
-import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.data.cql.core.QueryOptions;
+import org.springframework.data.cql.core.ReactiveCqlOperations;
+import org.springframework.data.cql.core.WriteOptions;
 
 import com.datastax.driver.core.Statement;
 

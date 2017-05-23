@@ -20,25 +20,25 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.springframework.cassandra.core.AsyncCqlOperations;
-import org.springframework.cassandra.core.AsyncCqlTemplate;
-import org.springframework.cassandra.core.AsyncSessionCallback;
-import org.springframework.cassandra.core.CqlProvider;
-import org.springframework.cassandra.core.GuavaListenableFutureAdapter;
-import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.WriteOptions;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.cassandra.core.session.DefaultSessionFactory;
-import org.springframework.cassandra.core.session.SessionFactory;
-import org.springframework.cassandra.core.support.CQLExceptionTranslator;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.convert.QueryMapper;
-import org.springframework.data.cassandra.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.convert.QueryMapper;
+import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.data.cql.core.AsyncCqlOperations;
+import org.springframework.data.cql.core.AsyncCqlTemplate;
+import org.springframework.data.cql.core.AsyncSessionCallback;
+import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cql.core.CqlProvider;
+import org.springframework.data.cql.core.GuavaListenableFutureAdapter;
+import org.springframework.data.cql.core.QueryOptions;
+import org.springframework.data.cql.core.WriteOptions;
+import org.springframework.data.cql.core.session.DefaultSessionFactory;
+import org.springframework.data.cql.core.session.SessionFactory;
+import org.springframework.data.cql.core.support.CQLExceptionTranslator;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -182,8 +182,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	}
 
 	/**
-	 * Returns the {@link CassandraMappingContext} used by this template to access mapping meta-data used to
-	 * store (map) objects to Cassandra tables.
+	 * Returns the {@link CassandraMappingContext} used by this template to access mapping meta-data used to store (map)
+	 * objects to Cassandra tables.
 	 *
 	 * @return the {@link CassandraMappingContext} used by this template.
 	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
@@ -329,8 +329,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return selectOne(getStatementFactory().select(query,
-				getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
+		return selectOne(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
+				entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -344,8 +344,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(update, "Update must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getAsyncCqlOperations().execute(getStatementFactory().update(query, update,
-				getMappingContext().getRequiredPersistentEntity(entityClass)));
+		return getAsyncCqlOperations().execute(
+				getStatementFactory().update(query, update, getMappingContext().getRequiredPersistentEntity(entityClass)));
 	}
 
 	/* (non-Javadoc)
@@ -357,8 +357,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getAsyncCqlOperations().execute(getStatementFactory().delete(query,
-				getMappingContext().getRequiredPersistentEntity(entityClass)));
+		return getAsyncCqlOperations()
+				.execute(getStatementFactory().delete(query, getMappingContext().getRequiredPersistentEntity(entityClass)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -519,8 +519,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Truncate truncate =
-			QueryBuilder.truncate(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Truncate truncate = QueryBuilder
+				.truncate(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(truncate), aBoolean -> null);
 	}

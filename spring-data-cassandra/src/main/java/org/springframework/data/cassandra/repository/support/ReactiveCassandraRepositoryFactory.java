@@ -19,8 +19,8 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.ReactivePartTreeCassandraQuery;

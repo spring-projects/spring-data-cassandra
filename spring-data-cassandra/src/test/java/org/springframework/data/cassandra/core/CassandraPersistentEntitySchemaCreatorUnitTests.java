@@ -28,9 +28,9 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.cassandra.core.CqlOperations;
-import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.UserDefinedType;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import org.springframework.data.cql.core.CqlOperations;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaCreator}.

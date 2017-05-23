@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.repository.support;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cql.AbstractEmbeddedCassandraIntegrationTest;
 
 /**
  * Base class to support integration tests and provide a {@link CassandraOperations} instance.

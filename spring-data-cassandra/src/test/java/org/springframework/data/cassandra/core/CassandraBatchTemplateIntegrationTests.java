@@ -23,12 +23,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.cassandra.core.WriteOptions;
-import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.domain.FlatGroup;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.GroupKey;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
+import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cql.core.WriteOptions;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;

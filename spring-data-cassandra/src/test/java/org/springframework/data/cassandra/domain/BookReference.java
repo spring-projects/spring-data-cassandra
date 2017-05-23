@@ -20,8 +20,8 @@ import lombok.Data;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
 
 /**
  * Test POJO

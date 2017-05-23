@@ -123,9 +123,9 @@ abstract class SerializationUtils {
 	}
 
 	/**
-	 * Creates a {@link String} representation from the given {@link Iterable} prepending the {@code prefix},
-	 * applying the given {@link Converter} to each element before adding it to the result {@link String},
-	 * concatenating each element with {@literal ,} and applying the {@code postfix}.
+	 * Creates a {@link String} representation from the given {@link Iterable} prepending the {@code prefix}, applying the
+	 * given {@link Converter} to each element before adding it to the result {@link String}, concatenating each element
+	 * with {@literal ,} and applying the {@code postfix}.
 	 */
 	private static <T> String iterableToDelimitedString(Iterable<T> source, String prefix, String postfix,
 			Converter<? super T, Object> transformer) {

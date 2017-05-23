@@ -24,7 +24,7 @@ Defines configuration elements in the XML namespace for Spring Data for Apache C
 	<xsd:element name="cluster" type="clusterType">
 		<xsd:annotation>
 			<xsd:documentation
-				source="org.springframework.cassandra.config.xml.CassandraClusterFactoryBean"><![CDATA[
+					source="org.springframework.data.cql.config.xml.CassandraClusterFactoryBean"><![CDATA[
 Defines a Cassandra cluster.
 			]]></xsd:documentation>
 			<xsd:appinfo>
@@ -194,7 +194,7 @@ to the com.datastax.driver.core.Cluster.Builder.
 				<xsd:annotation>
 					<xsd:appinfo>
 						<tool:annotation kind="ref">
-							<tool:assignable-to type="org.springframework.cassandra.config.ClusterBuilderConfigurer"/>
+							<tool:assignable-to type="org.springframework.data.cql.config.ClusterBuilderConfigurer"/>
 						</tool:annotation>
 					</xsd:appinfo>
 				</xsd:annotation>
@@ -258,7 +258,7 @@ pooling options (see com.datastax.driver.core.HostDistance and com.datastax.driv
 		</xsd:attribute>
 		<xsd:attribute name="initialization-executor-ref" type="executorRef" use="optional">
 			<xsd:annotation>
-				<xsd:documentation source="org.springframework.cassandra.config.PoolingOptionsFactoryBean"><![CDATA[
+				<xsd:documentation source="org.springframework.data.cql.config.PoolingOptionsFactoryBean"><![CDATA[
 Pooling option defining a reference to an Executor used to initialize the Cassandra Pool. Applies to both local
 and remote pooling options (see com.datastax.driver.core.HostDistance
 and com.datastax.driver.core.PoolingOptions) for more details.
@@ -752,7 +752,7 @@ Defines a CassandraConverter for getting rich mapping functionality.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:exports
-					type="org.springframework.data.cassandra.convert.CassandraConverter" />
+					type="org.springframework.data.cassandra.core.convert.CassandraConverter" />
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
@@ -781,7 +781,7 @@ Defines a CassandraMappingContext for holding rich entity mapping information.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:exports
-					type="org.springframework.data.cassandra.mapping.CassandraMappingContext" />
+					type="org.springframework.data.cassandra.core.mapping.CassandraMappingContext" />
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
@@ -810,7 +810,7 @@ The reference to a UserTypeResolver. UserTypeResolver is required when working w
 					]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:exports
-							type="org.springframework.data.cassandra.mapping.UserTypeResolver" />
+							type="org.springframework.data.cassandra.core.mapping.UserTypeResolver" />
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -842,7 +842,7 @@ The reference to a CassandraTemplate. Will default to 'cqlTemplate'.
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
-					<tool:assignable-to type="org.springframework.data.cassandra.convert.CassandraConverter"/>
+					<tool:assignable-to type="org.springframework.data.cassandra.core.convert.CassandraConverter"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -866,7 +866,7 @@ The reference to a CassandraTemplate. Will default to 'cqlTemplate'.
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
 					<tool:assignable-to
-						type="org.springframework.cassandra.core.CqlTemplate" />
+							type="org.springframework.data.cql.core.CqlTemplate"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -877,7 +877,7 @@ The reference to a CassandraTemplate. Will default to 'cqlTemplate'.
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
-					<tool:assignable-to type="org.springframework.data.cassandra.mapping.CassandraMappingContext"/>
+					<tool:assignable-to type="org.springframework.data.cassandra.core.mapping.CassandraMappingContext"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>

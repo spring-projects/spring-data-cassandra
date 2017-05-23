@@ -19,14 +19,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.springframework.cassandra.core.CqlOperations;
-import org.springframework.cassandra.core.QueryOptions;
-import org.springframework.cassandra.core.WriteOptions;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cql.core.CqlOperations;
+import org.springframework.data.cql.core.QueryOptions;
+import org.springframework.data.cql.core.WriteOptions;
 
 import com.datastax.driver.core.Statement;
 

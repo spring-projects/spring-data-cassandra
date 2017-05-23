@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.support.CassandraVersion;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
@@ -44,6 +43,7 @@ import org.springframework.data.cassandra.repository.QueryDerivationIntegrationT
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
+import org.springframework.data.cql.support.CassandraVersion;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 import org.springframework.test.context.ContextConfiguration;

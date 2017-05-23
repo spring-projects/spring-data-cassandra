@@ -28,10 +28,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
-import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -42,7 +42,7 @@ import com.datastax.driver.core.DataType;
 
 /**
  * Unit tests for {@link ReactiveCassandraParameterAccessor}.
- * 
+ *
  * @author Mark Paluch
  * @soundtrack Ace Of Base - Cruel Summer (Album Edit)
  */

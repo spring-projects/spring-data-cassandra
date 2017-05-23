@@ -26,10 +26,7 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.core.CqlTemplate;
-import org.springframework.cassandra.support.CassandraVersion;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
@@ -39,6 +36,9 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
+import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cql.core.CqlTemplate;
+import org.springframework.data.cql.support.CassandraVersion;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 

@@ -1,4 +1,4 @@
 /**
- * Spring Data's CQL abstraction.
+ * Spring Data's Cassandra abstraction.
  */
 package org.springframework.data.cassandra;

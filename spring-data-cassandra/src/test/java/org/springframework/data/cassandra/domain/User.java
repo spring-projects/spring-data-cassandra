@@ -20,7 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.Table;
 
 /**
  * @author Alex Shvid

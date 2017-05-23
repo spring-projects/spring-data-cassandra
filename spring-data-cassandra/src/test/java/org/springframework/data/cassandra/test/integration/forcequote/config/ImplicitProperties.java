@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.test.integration.forcequote.config;
 
 import java.util.UUID;
 
-import org.springframework.data.cassandra.mapping.Column;
-import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
 
 /**
  * @author Matthew T. Adams

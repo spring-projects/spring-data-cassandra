@@ -8,7 +8,7 @@
 
 	<import resource="classpath:/config/spring-data-cassandra-basic.xml" />
 
-	<bean id="userTypeResolver" class="org.springframework.data.cassandra.mapping.SimpleUserTypeResolver">
+	<bean id="userTypeResolver" class="org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver">
 		<constructor-arg ref="cassandraCluster" />
 		<constructor-arg value="#{randomKeyspaceName}" />
 	</bean>

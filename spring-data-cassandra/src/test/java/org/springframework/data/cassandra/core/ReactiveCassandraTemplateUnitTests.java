@@ -34,9 +34,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.cassandra.core.session.ReactiveResultSet;
-import org.springframework.cassandra.core.session.ReactiveSession;
 import org.springframework.data.cassandra.domain.User;
+import org.springframework.data.cql.core.session.ReactiveResultSet;
+import org.springframework.data.cql.core.session.ReactiveSession;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;

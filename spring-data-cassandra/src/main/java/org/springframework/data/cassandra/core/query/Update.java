@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.data.cassandra.core.query.SerializationUtils.serializeToCqlSafely;
+import static org.springframework.data.cassandra.core.query.SerializationUtils.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -86,8 +86,8 @@ public class Update {
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @param value value to set on column with name.
-	 * @return a new {@link Update} object containing the merge result of the existing assignments
-	 * and the current assignment.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
 	 */
 	public Update set(String columnName, Object value) {
 		return add(new SetOp(ColumnName.from(columnName), value));
@@ -509,8 +509,8 @@ public class Update {
 		public String toString() {
 
 			return Mode.PREPEND.equals(getMode())
-				? String.format("%s = %s + %s", getColumnName(), serializeToCqlSafely(value), getColumnName())
-				: String.format("%s = %s + %s", getColumnName(), getColumnName(), serializeToCqlSafely(value));
+					? String.format("%s = %s + %s", getColumnName(), serializeToCqlSafely(value), getColumnName())
+					: String.format("%s = %s + %s", getColumnName(), getColumnName(), serializeToCqlSafely(value));
 		}
 
 		public enum Mode {

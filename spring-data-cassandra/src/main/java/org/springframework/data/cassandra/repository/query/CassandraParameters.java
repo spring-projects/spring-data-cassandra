@@ -23,7 +23,7 @@ import java.util.List;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.data.cassandra.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
@@ -102,7 +102,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 
 		/**
 		 * Returns the {@link CassandraType} for the declared parameter if specified using
-		 * {@link org.springframework.data.cassandra.mapping.CassandraType}.
+		 * {@link org.springframework.data.cassandra.core.mapping.CassandraType}.
 		 *
 		 * @return the {@link CassandraType} or {@literal null}.
 		 */

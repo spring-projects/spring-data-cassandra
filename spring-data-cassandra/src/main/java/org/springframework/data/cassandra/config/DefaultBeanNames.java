@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.config;
 
-import org.springframework.cassandra.config.xml.DefaultCqlBeanNames;
+import org.springframework.data.cql.config.xml.DefaultCqlBeanNames;
 
 /**
  * @author Matthew T. Adams

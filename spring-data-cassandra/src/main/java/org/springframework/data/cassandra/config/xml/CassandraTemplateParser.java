@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2017 the original author or authors
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.config.xml;
 
-import static org.springframework.cassandra.config.xml.ParsingUtils.*;
+import static org.springframework.data.cql.config.xml.ParsingUtils.*;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
 
 /**
  * Spring Data Cassandra XML namespace parser for the {@code cassandra:template} element.
- * 
+ *
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @author Mateusz Szymczak

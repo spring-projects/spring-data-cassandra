@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import org.springframework.data.cassandra.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.repository.query.ParameterAccessor;
 
 import com.datastax.driver.core.DataType;
@@ -31,14 +31,14 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 
 	/**
 	 * Returns the Cassandra {@link DataType} for the declared parameter if the type is a
-	 * {@link org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder simple type}. Parameter types may be
-	 * specified using {@link org.springframework.data.cassandra.mapping.CassandraType}.
+	 * {@link org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder simple type}. Parameter types may be
+	 * specified using {@link org.springframework.data.cassandra.core.mapping.CassandraType}.
 	 *
 	 * @param index the parameter index
 	 * @return the Cassandra {@link DataType} or {@literal null} if the parameter type cannot be determined from
-	 *         {@link org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder}
-	 * @see org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder
-	 * @see org.springframework.data.cassandra.mapping.CassandraType
+	 *         {@link org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder}
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraType
 	 */
 	DataType getDataType(int index);
 
@@ -47,8 +47,8 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 	 *
 	 * @param index the parameter index
 	 * @return the Cassandra {@link CassandraType} or {@literal null}.
-	 * @see org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder
-	 * @see org.springframework.data.cassandra.mapping.CassandraType
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraType
 	 */
 	CassandraType findCassandraType(int index);
 

@@ -19,7 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.springframework.data.cassandra.mapping.UserDefinedType;
+import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
 /**
  * @author Mark Paluch

@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import org.springframework.cassandra.core.SessionCallback;
-import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
-import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cql.core.SessionCallback;
+import org.springframework.data.cql.core.generator.CreateTableCqlGenerator;
+import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 

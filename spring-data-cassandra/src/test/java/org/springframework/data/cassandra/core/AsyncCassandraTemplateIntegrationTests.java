@@ -21,9 +21,7 @@ import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.core.AsyncCqlTemplate;
-import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
@@ -31,6 +29,8 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
+import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cql.core.AsyncCqlTemplate;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.concurrent.ListenableFuture;
 

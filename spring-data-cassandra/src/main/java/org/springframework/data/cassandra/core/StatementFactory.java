@@ -20,11 +20,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.cassandra.core.QueryOptionsUtil;
-import org.springframework.cassandra.core.WriteOptions;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.data.cassandra.convert.QueryMapper;
-import org.springframework.data.cassandra.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.convert.QueryMapper;
+import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.query.Columns.ColumnSelector;
 import org.springframework.data.cassandra.core.query.Columns.FunctionCall;
 import org.springframework.data.cassandra.core.query.Columns.Selector;
@@ -42,7 +40,9 @@ import org.springframework.data.cassandra.core.query.Update.RemoveOp;
 import org.springframework.data.cassandra.core.query.Update.SetAtIndexOp;
 import org.springframework.data.cassandra.core.query.Update.SetAtKeyOp;
 import org.springframework.data.cassandra.core.query.Update.SetOp;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cql.core.QueryOptionsUtil;
+import org.springframework.data.cql.core.WriteOptions;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.util.Assert;
@@ -108,7 +108,7 @@ public class StatementFactory {
 	 * Returns the {@link QueryMapper} used to map {@link Query} to CQL-specific data types.
 	 *
 	 * @return the {@link QueryMapper} used to map {@link Query} to CQL-specific data types.
-	 * @see org.springframework.data.cassandra.convert.QueryMapper
+	 * @see QueryMapper
 	 */
 	protected QueryMapper getQueryMapper() {
 		return this.queryMapper;
@@ -118,7 +118,7 @@ public class StatementFactory {
 	 * Returns the {@link UpdateMapper} used to map {@link Update} to CQL-specific data types.
 	 *
 	 * @return the {@link UpdateMapper} used to map {@link Update} to CQL-specific data types.
-	 * @see org.springframework.data.cassandra.convert.UpdateMapper
+	 * @see UpdateMapper
 	 */
 	protected UpdateMapper getUpdateMapper() {
 		return this.updateMapper;
@@ -140,8 +140,7 @@ public class StatementFactory {
 
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(query.getColumns(), entity);
 
-		Sort sort = Optional.ofNullable(query.getSort())
-				.map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
+		Sort sort = Optional.ofNullable(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
 				.orElse(null);
 
 		Select select = select(selectors, entity.getTableName(), filter, sort);
@@ -293,8 +292,8 @@ public class StatementFactory {
 	private static Assignment getAssignment(IncrOp incrOp) {
 
 		return incrOp.getValue().intValue() > 0
-			? QueryBuilder.incr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().intValue()))
-			: QueryBuilder.decr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().intValue()));
+				? QueryBuilder.incr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().intValue()))
+				: QueryBuilder.decr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().intValue()));
 	}
 
 	private static Assignment getAssignment(SetOp updateOp) {
@@ -333,8 +332,8 @@ public class StatementFactory {
 		}
 
 		return Mode.PREPEND.equals(updateOp.getMode())
-			? QueryBuilder.prependAll(updateOp.getColumnName().toCql(), (List) updateOp.getValue())
-			: QueryBuilder.appendAll(updateOp.getColumnName().toCql(), (List) updateOp.getValue());
+				? QueryBuilder.prependAll(updateOp.getColumnName().toCql(), (List) updateOp.getValue())
+				: QueryBuilder.appendAll(updateOp.getColumnName().toCql(), (List) updateOp.getValue());
 	}
 
 	private static Assignment getAssignment(AddToMapOp updateOp) {
@@ -429,7 +428,7 @@ public class StatementFactory {
 				return QueryBuilder.containsKey(columnName, predicate.getValue());
 		}
 
-		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported",
-				columnName, predicate.getOperator(), predicate.getValue()));
+		throw new IllegalArgumentException(
+				String.format("Criteria %s %s %s not supported", columnName, predicate.getOperator(), predicate.getValue()));
 	}
 }

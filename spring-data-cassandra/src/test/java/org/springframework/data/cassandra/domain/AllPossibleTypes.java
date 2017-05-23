@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.springframework.data.cassandra.convert.CassandraTypeMappingIntegrationTest.Condition;
-import org.springframework.data.cassandra.mapping.CassandraType;
-import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.convert.CassandraTypeMappingIntegrationTest.Condition;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
 
 import com.datastax.driver.core.DataType.Name;
 

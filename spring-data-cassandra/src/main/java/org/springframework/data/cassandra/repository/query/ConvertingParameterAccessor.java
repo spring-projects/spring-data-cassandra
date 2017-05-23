@@ -19,11 +19,11 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
-import org.springframework.data.cassandra.mapping.CassandraType;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentProperty;
@@ -142,16 +142,16 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	private Object potentiallyConvert(int index, Optional<Object> bindableValue) {
 
 		return bindableValue
-				.flatMap(
-						v -> converter.convertToColumnType(bindableValue, findTypeInformation(index, v, Optional.empty())))
+				.flatMap(v -> converter.convertToColumnType(bindableValue, findTypeInformation(index, v, Optional.empty())))
 				.orElse(null);
 	}
 
 	@SuppressWarnings("unchecked")
 	private Object potentiallyConvert(int index, Optional<Object> bindableValue, CassandraPersistentProperty property) {
 
-		return bindableValue.flatMap(
-				v -> converter.convertToColumnType(bindableValue, findTypeInformation(index, v, Optional.of(property))))
+		return bindableValue
+				.flatMap(
+						v -> converter.convertToColumnType(bindableValue, findTypeInformation(index, v, Optional.of(property))))
 				.orElse(null);
 	}
 

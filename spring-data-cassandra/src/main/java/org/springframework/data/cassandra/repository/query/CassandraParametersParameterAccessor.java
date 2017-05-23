@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.repository.query;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.data.cassandra.mapping.CassandraSimpleTypeHolder;
-import org.springframework.data.cassandra.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 

@@ -8,7 +8,7 @@
     </appender>
 
 	<logger name="org.springframework" level="ERROR" />
-	<logger name="org.springframework.cassandra" level="ERROR" />
+	<logger name="org.springframework.data.cql" level="ERROR"/>
 	<logger name="org.springframework.data.cassandra" level="ERROR" />
 
 	<logger name="com.datastax" level="ERROR" />
@@ -22,7 +22,7 @@
 	<logger name="com.datastax.driver.core.Session" level="OFF" />
 
 	<!-- This one is noisy and subject to be refactored -->
-	<logger name="org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntityMetadataVerifier" level="OFF" />
+	<logger name="org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntityMetadataVerifier" level="OFF" />
 
 	<root level="ERROR">
 		<appender-ref ref="console" />

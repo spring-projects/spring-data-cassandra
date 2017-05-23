@@ -18,12 +18,12 @@ package org.springframework.data.cassandra.repository.support;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
+import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
 import org.springframework.util.Assert;

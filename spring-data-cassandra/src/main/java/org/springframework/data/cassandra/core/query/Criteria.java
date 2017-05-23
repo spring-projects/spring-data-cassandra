@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.util.ObjectUtils.nullSafeHashCode;
+import static org.springframework.util.ObjectUtils.*;
 
 import java.util.Arrays;
 import java.util.Collection;

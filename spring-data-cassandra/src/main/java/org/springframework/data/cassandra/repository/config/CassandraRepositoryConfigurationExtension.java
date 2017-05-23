@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import org.springframework.cassandra.core.WriteOptions;
+import org.springframework.data.cql.core.WriteOptions;
 
 /**
  * Batch operations for insert/update/delete actions on a table. {@link CassandraBatchOperations} use logged Cassandra

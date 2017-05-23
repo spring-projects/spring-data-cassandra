@@ -17,16 +17,16 @@ package org.springframework.data.cassandra.config.java;
 
 import reactor.core.scheduler.Schedulers;
 
-import org.springframework.cassandra.core.ReactiveCqlOperations;
-import org.springframework.cassandra.core.ReactiveCqlTemplate;
-import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
-import org.springframework.cassandra.core.session.DefaultReactiveSessionFactory;
-import org.springframework.cassandra.core.session.ReactiveSession;
-import org.springframework.cassandra.core.session.ReactiveSessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
+import org.springframework.data.cql.core.ReactiveCqlOperations;
+import org.springframework.data.cql.core.ReactiveCqlTemplate;
+import org.springframework.data.cql.core.session.DefaultBridgedReactiveSession;
+import org.springframework.data.cql.core.session.DefaultReactiveSessionFactory;
+import org.springframework.data.cql.core.session.ReactiveSession;
+import org.springframework.data.cql.core.session.ReactiveSessionFactory;
 
 /**
  * Extension to {@link AbstractCassandraConfiguration} providing Spring Data Cassandra configuration for Spring Data's

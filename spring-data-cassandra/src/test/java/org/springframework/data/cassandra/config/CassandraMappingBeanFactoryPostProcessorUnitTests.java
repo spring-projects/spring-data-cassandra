@@ -25,9 +25,9 @@ import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 
 import com.datastax.driver.core.Session;
 

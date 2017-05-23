@@ -1,6 +1,6 @@
 package org.springframework.data.cassandra.repository;
 
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.repository.NoRepositoryBean;
 

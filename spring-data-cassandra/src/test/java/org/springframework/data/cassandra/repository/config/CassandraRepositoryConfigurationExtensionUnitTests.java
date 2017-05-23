@@ -27,7 +27,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.StandardAnnotationMetadata;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;

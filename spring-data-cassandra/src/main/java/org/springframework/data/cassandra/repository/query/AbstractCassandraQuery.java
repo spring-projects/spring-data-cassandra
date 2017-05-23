@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,12 +26,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import lombok.RequiredArgsConstructor;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingConverter;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingExecution;
@@ -44,9 +46,6 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -92,7 +91,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	@Deprecated
 	public void setConversionService(ConversionService conversionService) {
 		throw new UnsupportedOperationException("setConversionService(ConversionService) is not supported anymore. "
-			+ "Please use CassandraMappingContext instead");
+				+ "Please use CassandraMappingContext instead");
 	}
 
 	/**
@@ -131,13 +130,12 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(getOperations().getConverter(),
 				new CassandraParametersParameterAccessor(getQueryMethod(), parameters));
 
-		ResultProcessor resultProcessor =
-				getQueryMethod().getResultProcessor().withDynamicProjection(parameterAccessor);
+		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor().withDynamicProjection(parameterAccessor);
 
 		Statement statement = createQuery(parameterAccessor);
 
-		CassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(
-				resultProcessor, getOperations().getConverter().getMappingContext(), getEntityInstantiators()));
+		CassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(resultProcessor,
+				getOperations().getConverter().getMappingContext(), getEntityInstantiators()));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				getOperations().getConverter().getCustomConversions());

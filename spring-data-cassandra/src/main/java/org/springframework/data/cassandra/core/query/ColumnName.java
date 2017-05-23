@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.query;
 
 import java.util.Optional;
 
-import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.util.Assert;
 
 /**

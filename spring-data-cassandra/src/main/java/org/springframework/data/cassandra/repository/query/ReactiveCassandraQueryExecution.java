@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;

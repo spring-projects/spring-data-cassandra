@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.lang.reflect.Method;
 
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;

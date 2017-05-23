@@ -17,11 +17,11 @@ package org.springframework.data.cassandra.config;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cassandra.core.CqlOperations;
-import org.springframework.cassandra.core.session.DefaultSessionFactory;
-import org.springframework.cassandra.core.session.SessionFactory;
-import org.springframework.data.cassandra.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cql.core.CqlOperations;
+import org.springframework.data.cql.core.session.DefaultSessionFactory;
+import org.springframework.data.cql.core.session.SessionFactory;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
@@ -89,7 +89,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 	/**
 	 * Sets the Cassandra {@link Session} to use. The {@link CassandraTemplate} will use the logged keyspace of the
 	 * underlying {@link Session}. Don't change the keyspace using CQL but use a
-	 * {@link org.springframework.cassandra.core.session.SessionFactory}.
+	 * {@link org.springframework.data.cql.core.session.SessionFactory}.
 	 *
 	 * @param session must not be {@literal null}.
 	 */

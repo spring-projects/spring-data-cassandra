@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.springframework.cassandra.core.WriteOptions;
+import org.springframework.data.cql.core.WriteOptions;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.querybuilder.Batch;

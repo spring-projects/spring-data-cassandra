@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.domain.Person;
-import org.springframework.data.cassandra.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 
 import com.datastax.driver.core.DataType.Name;
 

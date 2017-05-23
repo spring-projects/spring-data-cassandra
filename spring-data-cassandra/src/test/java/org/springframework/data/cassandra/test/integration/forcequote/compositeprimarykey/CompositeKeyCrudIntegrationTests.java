@@ -24,12 +24,12 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.core.QueryOptions;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey.entity.CorrelationEntity;
+import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cql.core.QueryOptions;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;

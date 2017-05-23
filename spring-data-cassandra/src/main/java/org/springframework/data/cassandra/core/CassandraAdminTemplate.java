@@ -18,17 +18,17 @@ package org.springframework.data.cassandra.core;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.cassandra.core.SessionCallback;
-import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator;
-import org.springframework.cassandra.core.cql.generator.DropTableCqlGenerator;
-import org.springframework.cassandra.core.cql.generator.DropUserTypeCqlGenerator;
-import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
-import org.springframework.cassandra.core.keyspace.DropTableSpecification;
-import org.springframework.cassandra.core.keyspace.DropUserTypeSpecification;
-import org.springframework.cassandra.core.session.SessionFactory;
-import org.springframework.data.cassandra.convert.CassandraConverter;
-import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cql.core.SessionCallback;
+import org.springframework.data.cql.core.generator.CreateTableCqlGenerator;
+import org.springframework.data.cql.core.generator.DropTableCqlGenerator;
+import org.springframework.data.cql.core.generator.DropUserTypeCqlGenerator;
+import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
+import org.springframework.data.cql.core.keyspace.DropTableSpecification;
+import org.springframework.data.cql.core.keyspace.DropUserTypeSpecification;
+import org.springframework.data.cql.core.session.SessionFactory;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.KeyspaceMetadata;
