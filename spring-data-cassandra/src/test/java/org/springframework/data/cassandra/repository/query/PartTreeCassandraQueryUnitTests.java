@@ -34,13 +34,13 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Group;
+import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
-import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Address;
-import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
@@ -124,7 +124,7 @@ public class PartTreeCassandraQueryUnitTests {
 		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);
 		when(userTypeMock.newValue()).thenReturn(udtValueMock);
 
-		String query = deriveQueryFromMethod("findByMainAddress", new Address());
+		String query = deriveQueryFromMethod("findByMainAddress", new AddressType());
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={};");
 	}
@@ -177,7 +177,9 @@ public class PartTreeCassandraQueryUnitTests {
 		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
 	}
 
-	private PartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface,String methodName, Class<?>... paramTypes) {Class<?>[] userTypes = Arrays.stream(paramTypes)//
+	private PartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface, String methodName,
+			Class<?>... paramTypes) {
+		Class<?>[] userTypes = Arrays.stream(paramTypes)//
 				.map(it -> it.getName().contains("Mockito") ? it.getSuperclass() : it)//
 				.toArray(size -> new Class<?>[size]);
 		try {
@@ -214,11 +216,11 @@ public class PartTreeCassandraQueryUnitTests {
 
 		Person findPersonBy();
 
-		Person findByMainAddress(Address address);
+		Person findByMainAddress(AddressType address);
 
 		Person findByMainAddress(UDTValue udtValue);
 
-		Person findByMainAddressIn(Collection<Address> address);
+		Person findByMainAddressIn(Collection<AddressType> address);
 
 		Person findByFirstnameIn(Collection<String> firstname);
 

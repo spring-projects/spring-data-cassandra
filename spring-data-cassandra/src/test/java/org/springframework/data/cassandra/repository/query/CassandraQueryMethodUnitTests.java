@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.projection.ProjectionFactory;
@@ -50,8 +50,8 @@ public class CassandraQueryMethodUnitTests {
 		CassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "method");
 		CassandraEntityMetadata<?> metadata = queryMethod.getEntityInformation();
 
-		assertThat(metadata.getJavaType()).isAssignableFrom(Person.class);
-		assertThat(metadata.getTableName().toCql()).isEqualTo("person");
+		assertThat(metadata.getJavaType()).isAssignableFrom(User.class);
+		assertThat(metadata.getTableName().toCql()).isEqualTo("users");
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-7
@@ -79,9 +79,9 @@ public class CassandraQueryMethodUnitTests {
 	}
 
 	@SuppressWarnings("unused")
-	interface SampleRepository extends Repository<Person, Long> {
+	interface SampleRepository extends Repository<User, Long> {
 
-		List<Person> method();
+		List<User> method();
 
 	}
 }

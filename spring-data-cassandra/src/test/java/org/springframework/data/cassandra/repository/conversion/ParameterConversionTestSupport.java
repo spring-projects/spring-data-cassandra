@@ -32,8 +32,8 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
+import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
+import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.util.StringUtils;
 

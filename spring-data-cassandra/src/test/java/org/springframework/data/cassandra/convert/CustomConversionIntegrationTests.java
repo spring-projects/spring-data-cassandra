@@ -30,13 +30,13 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.Table;
-import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
+import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.util.StringUtils;
 

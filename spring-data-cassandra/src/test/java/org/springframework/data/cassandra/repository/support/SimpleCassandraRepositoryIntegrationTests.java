@@ -29,12 +29,11 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -54,7 +53,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		@Override
 		public String[] getEntityBasePackages() {
-			return new String[] { Person.class.getPackage().getName() };
+			return new String[] { User.class.getPackage().getName() };
 		}
 	}
 
@@ -63,9 +62,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 	CassandraRepositoryFactory factory;
 	ClassLoader classLoader;
 	BeanFactory beanFactory;
-	PersonRepostitory repository;
+	UserRepostitory repository;
 
-	Person dave, oliver, carter, boyd;
+	User dave, oliver, carter, boyd;
 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
@@ -86,14 +85,14 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		factory.setBeanFactory(beanFactory);
 		factory.setEvaluationContextProvider(DefaultEvaluationContextProvider.INSTANCE);
 
-		repository = factory.getRepository(PersonRepostitory.class);
+		repository = factory.getRepository(UserRepostitory.class);
 
 		repository.deleteAll();
 
-		dave = new Person("42", "Dave", "Matthews");
-		oliver = new Person("4", "Oliver August", "Matthews");
-		carter = new Person("49", "Carter", "Beauford");
-		boyd = new Person("45", "Boyd", "Tinsley");
+		dave = new User("42", "Dave", "Matthews");
+		oliver = new User("4", "Oliver August", "Matthews");
+		carter = new User("49", "Carter", "Beauford");
+		boyd = new User("45", "Boyd", "Tinsley");
 
 		repository.saveAll(Arrays.asList(oliver, dave, carter, boyd));
 	}
@@ -125,33 +124,33 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-396
 	public void findByIdShouldReturnObject() {
 
-		Optional<Person> person = repository.findById(dave.getId());
+		Optional<User> User = repository.findById(dave.getId());
 
-		assertThat(person).contains(dave);
+		assertThat(User).contains(dave);
 	}
 
 	@Test // DATACASS-396
 	public void findByIdShouldCompleteWithoutValueForAbsentObject() {
 
-		Optional<Person> person = repository.findById("unknown");
+		Optional<User> User = repository.findById("unknown");
 
-		assertThat(person).isEmpty();
+		assertThat(User).isEmpty();
 	}
 
 	@Test // DATACASS-396, DATACASS-416
 	public void findAllShouldReturnAllResults() {
 
-		List<Person> persons = repository.findAll();
+		List<User> Users = repository.findAll();
 
-		assertThat(persons).hasSize(4);
+		assertThat(Users).hasSize(4);
 	}
 
 	@Test // DATACASS-396, DATACASS-416
 	public void findAllByIterableOfIdShouldReturnResults() {
 
-		List<Person> persons = repository.findAllById(Arrays.asList(dave.getId(), boyd.getId()));
+		List<User> Users = repository.findAllById(Arrays.asList(dave.getId(), boyd.getId()));
 
-		assertThat(persons).hasSize(2);
+		assertThat(Users).hasSize(2);
 	}
 
 	@Test // DATACASS-396
@@ -167,9 +166,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.deleteAll();
 
-		Person person = new Person("36", "Homer", "Simpson");
+		User User = new User("36", "Homer", "Simpson");
 
-		repository.insert(person);
+		repository.insert(User);
 
 		assertThat(repository.count()).isEqualTo(1);
 	}
@@ -190,11 +189,11 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		Person saved = repository.save(dave);
+		User saved = repository.save(dave);
 
 		assertThat(saved).isEqualTo(saved);
 
-		Optional<Person> loaded = repository.findById(dave.getId());
+		Optional<User> loaded = repository.findById(dave.getId());
 
 		assertThat(loaded).isPresent();
 
@@ -207,15 +206,15 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-396
 	public void saveEntityShouldInsertNewEntity() {
 
-		Person person = new Person("36", "Homer", "Simpson");
+		User User = new User("36", "Homer", "Simpson");
 
-		Person saved = repository.save(person);
+		User saved = repository.save(User);
 
-		assertThat(saved).isEqualTo(person);
+		assertThat(saved).isEqualTo(User);
 
-		Optional<Person> loaded = repository.findById(person.getId());
+		Optional<User> loaded = repository.findById(User.getId());
 
-		assertThat(loaded).contains(person);
+		assertThat(loaded).contains(User);
 	}
 
 	@Test // DATACASS-396, DATACASS-416
@@ -223,7 +222,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.deleteAll();
 
-		List<Person> saved = repository.saveAll(Arrays.asList(dave, oliver, boyd));
+		List<User> saved = repository.saveAll(Arrays.asList(dave, oliver, boyd));
 
 		assertThat(saved).hasSize(3);
 
@@ -233,20 +232,20 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-396, DATACASS-416
 	public void saveIterableOfMixedEntitiesShouldInsertEntity() {
 
-		Person person = new Person("36", "Homer", "Simpson");
+		User User = new User("36", "Homer", "Simpson");
 
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		List<Person> saved = repository.saveAll(Arrays.asList(person, dave));
+		List<User> saved = repository.saveAll(Arrays.asList(User, dave));
 
 		assertThat(saved).hasSize(2);
 
-		Optional<Person> persistentDave = repository.findById(dave.getId());
+		Optional<User> persistentDave = repository.findById(dave.getId());
 		assertThat(persistentDave).contains(dave);
 
-		Optional<Person> persistentHomer = repository.findById(person.getId());
-		assertThat(persistentHomer).contains(person);
+		Optional<User> persistentHomer = repository.findById(User.getId());
+		assertThat(persistentHomer).contains(User);
 	}
 
 	@Test // DATACASS-396, DATACASS-416
@@ -254,7 +253,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.deleteAll();
 
-		List<Person> result = repository.findAll();
+		List<User> result = repository.findAll();
 
 		assertThat(result).isEmpty();
 	}
@@ -264,7 +263,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.deleteById(dave.getId());
 
-		Optional<Person> loaded = repository.findById(dave.getId());
+		Optional<User> loaded = repository.findById(dave.getId());
 
 		assertThat(loaded).isEmpty();
 	}
@@ -274,7 +273,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.delete(dave);
 
-		Optional<Person> loaded = repository.findById(dave.getId());
+		Optional<User> loaded = repository.findById(dave.getId());
 
 		assertThat(loaded).isEmpty();
 	}
@@ -284,10 +283,10 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.deleteAll(Arrays.asList(dave, boyd));
 
-		Optional<Person> loaded = repository.findById(boyd.getId());
+		Optional<User> loaded = repository.findById(boyd.getId());
 
 		assertThat(loaded).isEmpty();
 	}
 
-	interface PersonRepostitory extends TypedIdCassandraRepository<Person, String> {}
+	interface UserRepostitory extends TypedIdCassandraRepository<User, String> {}
 }

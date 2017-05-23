@@ -23,8 +23,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.NamedQueryIntegrationTests.PersonRepositoryWithNamedQueries;
 import org.springframework.data.cassandra.repository.Query;
-import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.base.PersonRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -32,7 +32,7 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.UDTValue;
 
 /**
- * Integration tests for query argument conversion through {@link PersonRepository}.
+ * Integration tests for query argument conversion through {@link PersonRepositoryWithNamedQueries}.
  *
  * @author Mark Paluch
  */

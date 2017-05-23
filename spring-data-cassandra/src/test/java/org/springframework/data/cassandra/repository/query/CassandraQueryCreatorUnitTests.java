@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.repository.query.StubParameterAccessor.*;
 
 import java.io.Serializable;
@@ -38,13 +39,13 @@ import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.support.MappingCassandraEntityInformation;
 import org.springframework.data.repository.query.parser.PartTree;
 
@@ -57,14 +58,17 @@ import com.datastax.driver.core.RegularStatement;
  */
 public class CassandraQueryCreatorUnitTests {
 
-	CassandraMappingContext context;
+	BasicCassandraMappingContext context;
 	CassandraConverter converter;
 
 	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() throws SecurityException, NoSuchMethodException {
+
 		context = new BasicCassandraMappingContext();
+		context.setUserTypeResolver(mock(UserTypeResolver.class));
+
 		converter = new MappingCassandraConverter(context);
 	}
 

@@ -23,12 +23,12 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.core.keyspace.AlterTableSpecification;
 import org.springframework.cassandra.core.keyspace.TableOption;
 import org.springframework.cassandra.core.keyspace.TableOption.CachingOption;
 import org.springframework.cassandra.core.keyspace.TableOption.KeyCachingOption;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.test.integration.support.CassandraVersion;
+import org.springframework.cassandra.support.CassandraVersion;
 import org.springframework.data.util.Version;
 
 import com.datastax.driver.core.ColumnMetadata;

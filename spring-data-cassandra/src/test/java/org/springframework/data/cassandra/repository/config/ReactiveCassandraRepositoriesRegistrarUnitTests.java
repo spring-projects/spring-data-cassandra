@@ -29,6 +29,8 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -50,7 +52,12 @@ public class ReactiveCassandraRepositoriesRegistrarUnitTests {
 
 		@Bean
 		public ReactiveCassandraTemplate reactiveCassandraTemplate() throws Exception {
-			return new ReactiveCassandraTemplate(mock(ReactiveSession.class), new MappingCassandraConverter());
+
+			BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+			mappingContext.setUserTypeResolver(mock(UserTypeResolver.class));
+			MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
+
+			return new ReactiveCassandraTemplate(mock(ReactiveSession.class), converter);
 		}
 	}
 

@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyString;
 
 import org.junit.Test;
+import org.springframework.cassandra.support.IntegrationTestNettyOptions;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.*;
@@ -342,6 +343,36 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 		bean.afterPropertiesSet();
 
 		assertThat(getPolicies(bean).getTimestampGenerator()).isEqualTo(mockTimestampGenerator);
+	}
+
+	@Test
+	public void configuredProtocolVersionShouldBeSet() throws Exception {
+
+		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
+
+		bean.setNettyOptions(IntegrationTestNettyOptions.INSTANCE);
+		bean.setProtocolVersion(ProtocolVersion.V2);
+		bean.afterPropertiesSet();
+
+		assertThat(getProtocolVersionEnum(bean)).isEqualTo(ProtocolVersion.V2);
+	}
+
+	@Test
+	public void defaultProtocolVersionShouldBeSet() throws Exception {
+
+		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean();
+
+		bean.afterPropertiesSet();
+
+		assertThat(getProtocolVersionEnum(bean)).isNull();
+	}
+
+	private ProtocolVersion getProtocolVersionEnum(CassandraCqlClusterFactoryBean cassandraCqlClusterFactoryBean)
+			throws Exception {
+
+		// initialize connection factory
+		return (ProtocolVersion) ReflectionTestUtils.getField(
+				cassandraCqlClusterFactoryBean.getObject().getConfiguration().getProtocolOptions(), "initialProtocolVersion");
 	}
 
 	private Policies getPolicies(CassandraCqlClusterFactoryBean bean) throws Exception {

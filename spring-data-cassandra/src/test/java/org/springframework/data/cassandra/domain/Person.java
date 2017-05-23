@@ -19,7 +19,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.springframework.data.annotation.Id;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.cassandra.core.PrimaryKeyType;
+import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
 
 /**
@@ -31,7 +37,24 @@ import org.springframework.data.cassandra.mapping.Table;
 @NoArgsConstructor
 public class Person {
 
-	@Id String id;
-	String firstname;
-	String lastname;
+	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) private String lastname;
+
+	@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1) private String firstname;
+
+	private String nickname;
+	private Date birthDate;
+	private int numberOfChildren;
+	private boolean cool;
+
+	private LocalDate createdDate;
+	private ZoneId zoneId;
+
+	private AddressType mainAddress;
+	private List<AddressType> alternativeAddresses;
+
+	public Person(String firstname, String lastname) {
+
+		this.firstname = firstname;
+		this.lastname = lastname;
+	}
 }

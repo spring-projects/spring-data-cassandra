@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.test.integration.forcequote.composite
 import org.junit.Test;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
+import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.test.context.ContextConfiguration;
 
 /**

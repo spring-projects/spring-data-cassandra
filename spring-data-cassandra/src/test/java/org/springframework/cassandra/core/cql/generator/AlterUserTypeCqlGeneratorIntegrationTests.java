@@ -20,9 +20,9 @@ import static org.springframework.cassandra.core.cql.generator.AlterUserTypeCqlG
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.core.keyspace.AlterUserTypeSpecification;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.test.integration.support.CassandraVersion;
+import org.springframework.cassandra.support.CassandraVersion;
 import org.springframework.data.util.Version;
 
 import com.datastax.driver.core.DataType;

@@ -21,12 +21,12 @@ import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.cassandra.core.keyspace.DropTableSpecification;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.test.integration.simpletons.Book;
+import org.springframework.data.cassandra.domain.User;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;
@@ -60,28 +60,28 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-173
-	public void testCreateTables() throws Exception {
+	public void testCreateTables() {
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("users"), User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("users"), User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 	}
 
 	@Test
-	public void testDropTable() throws Exception {
+	public void testDropTable() {
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("users"), User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 
-		cassandraAdminTemplate.dropTable(Book.class);
+		cassandraAdminTemplate.dropTable(User.class);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("book"), Book.class, null);
-		cassandraAdminTemplate.dropTable(CqlIdentifier.cqlId("book"));
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.cqlId("users"), User.class, null);
+		cassandraAdminTemplate.dropTable(CqlIdentifier.cqlId("users"));
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 	}

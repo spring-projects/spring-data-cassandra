@@ -20,8 +20,8 @@ import static org.springframework.cassandra.core.cql.generator.CreateUserTypeCql
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.core.keyspace.CreateUserTypeSpecification;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.KeyspaceMetadata;

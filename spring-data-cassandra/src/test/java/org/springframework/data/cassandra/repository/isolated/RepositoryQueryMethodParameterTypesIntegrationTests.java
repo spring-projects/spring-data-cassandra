@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,8 +43,8 @@ import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
-import org.springframework.data.cassandra.test.integration.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
+import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
+import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.ContextConfiguration;
@@ -69,8 +70,8 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 	public static class Config extends IntegrationTestConfig {
 
 		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { AllPossibleTypes.class.getPackage().getName() };
+		protected Set<Class<?>> getInitialEntitySet() {
+			return Collections.singleton(AllPossibleTypes.class);
 		}
 
 		@Override

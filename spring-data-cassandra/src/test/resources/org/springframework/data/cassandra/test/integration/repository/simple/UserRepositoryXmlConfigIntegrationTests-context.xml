@@ -17,7 +17,7 @@
 		entity-base-packages="org.springframework.data.cassandra.test.integration.repository.simple"
 	    user-type-resolver-ref="userTypeResolver">
 		<cass:entity
-			class="org.springframework.data.cassandra.test.integration.repository.simple.User">
+			class="org.springframework.data.cassandra.domain.User">
 			<cass:table name="users" />
 		</cass:entity>
 	</cass:mapping>

@@ -31,12 +31,11 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.projection.ProjectionFactory;
@@ -54,16 +53,17 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Mock ReactiveCassandraOperations mockCassandraOperations;
+	@Mock UserTypeResolver userTypeResolver;
 
-	private CassandraMappingContext mappingContext;
-	private CassandraConverter converter;
+	private BasicCassandraMappingContext mappingContext;
 
 	@Before
 	public void setUp() {
-		mappingContext = new BasicCassandraMappingContext();
-		converter = new MappingCassandraConverter(mappingContext);
 
-		when(mockCassandraOperations.getConverter()).thenReturn(converter);
+		mappingContext = new BasicCassandraMappingContext();
+		mappingContext.setUserTypeResolver(userTypeResolver);
+
+		when(mockCassandraOperations.getConverter()).thenReturn(new MappingCassandraConverter(mappingContext));
 	}
 
 	@Test // DATACASS-335

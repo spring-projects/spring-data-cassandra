@@ -31,12 +31,11 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
-import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
-import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -56,7 +55,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		@Override
 		public String[] getEntityBasePackages() {
-			return new String[] { Person.class.getPackage().getName() };
+			return new String[] { User.class.getPackage().getName() };
 		}
 	}
 
@@ -65,9 +64,9 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	ReactiveCassandraRepositoryFactory factory;
 	ClassLoader classLoader;
 	BeanFactory beanFactory;
-	PersonRepostitory repository;
+	UserRepostitory repository;
 
-	Person dave, oliver, carter, boyd;
+	User dave, oliver, carter, boyd;
 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
@@ -88,14 +87,14 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		factory.setBeanFactory(beanFactory);
 		factory.setEvaluationContextProvider(DefaultEvaluationContextProvider.INSTANCE);
 
-		repository = factory.getRepository(PersonRepostitory.class);
+		repository = factory.getRepository(UserRepostitory.class);
 
 		deleteAll();
 
-		dave = new Person("42", "Dave", "Matthews");
-		oliver = new Person("4", "Oliver August", "Matthews");
-		carter = new Person("49", "Carter", "Beauford");
-		boyd = new Person("45", "Boyd", "Tinsley");
+		dave = new User("42", "Dave", "Matthews");
+		oliver = new User("4", "Oliver August", "Matthews");
+		carter = new User("49", "Carter", "Beauford");
+		boyd = new User("45", "Boyd", "Tinsley");
 	}
 
 	private void insertTestData() {
@@ -203,7 +202,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	@Test // DATACASS-335
 	public void insertEntityShouldInsertEntity() {
 
-		Person person = new Person("36", "Homer", "Simpson");
+		User person = new User("36", "Homer", "Simpson");
 
 		StepVerifier.create(repository.insert(person)).expectNext(person).verifyComplete();
 
@@ -213,7 +212,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	@Test // DATACASS-335
 	public void insertShouldDeferredWrite() {
 
-		Person person = new Person("36", "Homer", "Simpson");
+		User person = new User("36", "Homer", "Simpson");
 
 		repository.insert(person);
 
@@ -254,7 +253,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	@Test // DATACASS-335
 	public void saveEntityShouldInsertNewEntity() {
 
-		Person person = new Person("36", "Homer", "Simpson");
+		User person = new User("36", "Homer", "Simpson");
 
 		StepVerifier.create(repository.save(person)).expectNextCount(1).verifyComplete();
 
@@ -272,7 +271,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	@Test // DATACASS-335
 	public void saveIterableOfMixedEntitiesShouldInsertEntity() {
 
-		Person person = new Person("36", "Homer", "Simpson");
+		User person = new User("36", "Homer", "Simpson");
 
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
@@ -334,5 +333,5 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		StepVerifier.create(repository.findById(boyd.getId())).expectNextCount(0).verifyComplete();
 	}
 
-	interface PersonRepostitory extends ReactiveCassandraRepository<Person, String> {}
+	interface UserRepostitory extends ReactiveCassandraRepository<User, String> {}
 }

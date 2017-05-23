@@ -20,21 +20,22 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.cassandra.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.cassandra.KeyspaceRule;
 import org.springframework.cassandra.config.CassandraCqlClusterFactoryBean;
 import org.springframework.cassandra.core.SessionCallback;
-import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.cassandra.test.integration.KeyspaceRule;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration;
-import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
+import org.springframework.data.cassandra.domain.Person;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -232,8 +233,8 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 		}
 
 		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { Person.class.getPackage().getName() };
+		protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
+			return Collections.singleton(Person.class);
 		}
 
 		@Override

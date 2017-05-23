@@ -35,12 +35,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.domain.AddressType;
+import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.support.UserTypeBuilder;
-import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Address;
-import org.springframework.data.cassandra.test.integration.repository.querymethods.declared.Person;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
@@ -312,9 +312,9 @@ public class StringBasedCassandraQueryUnitTests {
 
 		when(userTypeResolver.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(addressType);
 
-		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", Address.class);
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", AddressType.class);
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), new Address()));
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), new AddressType()));
 
 		SimpleStatement stringQuery = cassandraQuery.createQuery(accessor);
 
@@ -383,7 +383,7 @@ public class StringBasedCassandraQueryUnitTests {
 		Person findByCreatedDate(LocalDate createdDate);
 
 		@Query("SELECT * FROM person WHERE address=?0;")
-		Person findByMainAddress(Address address);
+		Person findByMainAddress(AddressType address);
 
 		@Query("SELECT * FROM person WHERE address=?0;")
 		Person findByMainAddress(UDTValue udtValue);

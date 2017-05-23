@@ -36,13 +36,13 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.test.integration.support.CassandraVersion;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.cassandra.support.CassandraVersion;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
-import org.springframework.data.cassandra.test.integration.support.SchemaTestUtils;
+import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.util.Version;
 
 import com.datastax.driver.core.Duration;

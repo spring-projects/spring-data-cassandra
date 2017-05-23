@@ -23,9 +23,9 @@ import reactor.test.StepVerifier;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.cassandra.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.cassandra.core.session.DefaultBridgedReactiveSession;
 import org.springframework.cassandra.core.session.ReactiveResultSet;
-import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.exceptions.SyntaxError;
