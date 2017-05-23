@@ -34,12 +34,6 @@ Add the Maven dependency:
 ```xml
 <dependency>
   <groupId>org.springframework.data</groupId>
-  <artifactId>spring-cql</artifactId>
-  <version>${version}.RELEASE</version>
-</dependency>
-
-<dependency>
-  <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-cassandra</artifactId>
   <version>${version}.RELEASE</version>
 </dependency>
@@ -48,12 +42,6 @@ Add the Maven dependency:
 If you would rather like the latest snapshots of the upcoming major version, use our Maven snapshot repository and declare the appropriate dependency version.
 
 ```xml
-<dependency>
-  <groupId>org.springframework.data</groupId>
-  <artifactId>spring-cql</artifactId>
-  <version>${version}.BUILD-SNAPSHOT</version>
-</dependency>
-
 <dependency>
   <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-cassandra</artifactId>
