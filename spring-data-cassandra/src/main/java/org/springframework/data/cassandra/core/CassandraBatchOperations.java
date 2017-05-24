@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.cassandra.core.WriteOptions;
  * isolation, they're not much more expensive than normal writes.
  *
  * @author Mark Paluch
+ * @author Anup Sabbi
  * @since 1.5
  */
 public interface CassandraBatchOperations {
@@ -71,12 +72,13 @@ public interface CassandraBatchOperations {
 	CassandraBatchOperations insert(Iterable<?> entities);
 
 	/**
-	 * Add a collection of inserts with given {@code options} to the batch.
+	 * Add a collection of inserts with given {@link WriteOptions} to the batch.
 	 *
 	 * @param entities the entities to insert; must not be {@literal null}.
-	 * @param options the WriteOptions to apply.
+	 * @param options the WriteOptions to apply; must not be {@literal null}.
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 2.0
 	 */
 	CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options);
 
@@ -99,12 +101,13 @@ public interface CassandraBatchOperations {
 	CassandraBatchOperations update(Iterable<?> entities);
 
 	/**
-	 * Add a collection of updates with given {@code options} to the batch.
+	 * Add a collection of updates with given {@link WriteOptions} to the batch.
 	 *
 	 * @param entities the entities to update; must not be {@literal null}.
-	 * @param options the WriteOptions to apply.
+	 * @param options the WriteOptions to apply; must not be {@literal null}.
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 2.0
 	 */
 	CassandraBatchOperations update(Iterable<?> entities, WriteOptions options);
 

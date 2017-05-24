@@ -51,7 +51,7 @@ import com.datastax.driver.core.utils.UUIDs;
  */
 public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	final static Version CASSANDRA_3 = Version.parse("3.0");
+	static final Version CASSANDRA_3 = Version.parse("3.0");
 
 	Version cassandraVersion;
 

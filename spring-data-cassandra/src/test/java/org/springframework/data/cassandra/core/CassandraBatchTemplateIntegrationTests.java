@@ -37,10 +37,14 @@ import com.datastax.driver.core.Row;
  * Integration tests for {@link CassandraBatchTemplate}.
  *
  * @author Mark Paluch
+ * @author Anup Sabbi
  */
 public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraTemplate template;
+
+	Group walter = new Group(new GroupKey("users", "0x1", "walter"));
+	Group mike = new Group(new GroupKey("users", "0x1", "mike"));
 
 	@Before
 	public void setUp() throws Exception {
@@ -52,13 +56,13 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		SchemaTestUtils.truncate(Group.class, template);
 		SchemaTestUtils.truncate(FlatGroup.class, template);
+
+		template.insert(walter);
+		template.insert(mike);
 	}
 
 	@Test // DATACASS-288
 	public void shouldInsertEntities() {
-
-		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
-		Group mike = new Group(new GroupKey("users", "0x1", "mike"));
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(walter).insert(mike).execute();
@@ -71,9 +75,6 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 	@Test // DATACASS-288
 	public void shouldInsertCollectionOfEntities() {
 
-		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
-		Group mike = new Group(new GroupKey("users", "0x1", "mike"));
-
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(Arrays.asList(walter, mike)).execute();
 
@@ -85,14 +86,11 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 	@Test // DATACASS-443
 	public void shouldInsertCollectionOfEntitiesWithTtl() {
 
-		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
-		Group mike = new Group(new GroupKey("users", "0x1", "mike"));
-
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
 
 		int ttl = 30;
-		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
+		WriteOptions options = WriteOptions.builder().ttl(30).build();
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 		batchOperations.insert(Arrays.asList(walter, mike), options).execute();
@@ -102,15 +100,12 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(2);
 
 		for (Row row : resultSet) {
-			assertThat(row.getInt(0)).isBetween(1,ttl);
+			assertThat(row.getInt(0)).isBetween(1, ttl);
 		}
 	}
 
 	@Test // DATACASS-288
 	public void shouldUpdateEntities() {
-
-		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
-		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -126,9 +121,6 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 	@Test // DATACASS-288
 	public void shouldUpdateCollectionOfEntities() {
 
-		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
-		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
-
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
 
@@ -142,9 +134,6 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 	@Test // DATACASS-443
 	public void shouldUpdateCollectionOfEntitiesWithTtl() {
-
-		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
-		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -160,7 +149,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(2);
 
 		for (Row row : resultSet) {
-			assertThat(row.getInt(0)).isBetween(1,ttl);
+			assertThat(row.getInt(0)).isBetween(1, ttl);
 		}
 	}
 
@@ -184,9 +173,6 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 	@Test // DATACASS-288
 	public void shouldDeleteEntities() {
 
-		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
-		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
-
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 
 		batchOperations.delete(walter).delete(mike).execute();
@@ -199,9 +185,6 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 	@Test // DATACASS-288
 	public void shouldDeleteCollectionOfEntities() {
 
-		Group walter = template.insert(new Group(new GroupKey("users", "0x1", "walter")));
-		Group mike = template.insert(new Group(new GroupKey("users", "0x1", "mike")));
-
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
 
 		batchOperations.delete(Arrays.asList(walter, mike)).execute();
@@ -213,9 +196,6 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 	@Test // DATACASS-288
 	public void shouldApplyTimestampToAllEntities() {
-
-		Group walter = new Group(new GroupKey("users", "0x1", "walter"));
-		Group mike = new Group(new GroupKey("users", "0x1", "mike"));
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -238,7 +218,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 	public void shouldNotExecuteTwice() {
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
-		batchOperations.insert(new Group(new GroupKey("users", "0x1", "walter"))).execute();
+		batchOperations.insert(walter).execute();
 
 		batchOperations.execute();
 
@@ -249,7 +229,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 	public void shouldNotAllowModificationAfterExecution() {
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
-		batchOperations.insert(new Group(new GroupKey("users", "0x1", "walter"))).execute();
+		batchOperations.insert(walter).execute();
 
 		batchOperations.update(new Group());
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.cassandra.core.WriteOptions;
@@ -30,26 +29,18 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @author Anup Sabbi
  * @since 1.5
  */
 class CassandraBatchTemplate implements CassandraBatchOperations {
+
+	private static final WriteOptions EMPTY = new WriteOptions();
 
 	private AtomicBoolean executed = new AtomicBoolean();
 
 	private final Batch batch;
 
 	private final CassandraOperations operations;
-
-	/* (non-Javadoc) */
-	@SafeVarargs
-	private static <T> Iterable<T> nullSafeIterable(T... array) {
-		return (array == null ? Collections.emptyList() : Arrays.asList(array));
-	}
-
-	/* (non-Javadoc) */
-	private static <T> Iterable<T> nullSafeIterable(Iterable<T> iterable) {
-		return (iterable != null ? iterable : Collections::emptyIterator);
-	}
 
 	/**
 	 * Create a new {@link CassandraBatchTemplate} given {@link CassandraOperations}.
@@ -64,8 +55,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		this.batch = QueryBuilder.batch();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#execute()
 	 */
 	@Override
@@ -79,8 +69,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		assertNotExecuted();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#withTimestamp(long)
 	 */
 	@Override
@@ -93,34 +82,37 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(Object...)
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Object[])
 	 */
 	@Override
 	public CassandraBatchOperations insert(Object... entities) {
-		return insert(nullSafeIterable(entities));
+
+		Assert.notNull(entities, "Entities must not be null");
+
+		return insert(Arrays.asList(entities));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable)
 	 */
 	@Override
 	public CassandraBatchOperations insert(Iterable<?> entities) {
-		return insert(entities, null);
+		return insert(entities, EMPTY);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable, WriteOptions)
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable, org.springframework.cassandra.core.WriteOptions)
 	 */
 	@Override
 	public CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
+		Assert.notNull(entities, "Entities must not be null");
+		Assert.notNull(options, "WriteOptions must not be null");
 
-		for (Object entity : nullSafeIterable(entities)) {
+		for (Object entity : entities) {
+
 			Assert.notNull(entity, "Entity must not be null");
 			batch.add(QueryUtils.createInsertQuery(getTableName(entity), entity, options, operations.getConverter()));
 		}
@@ -128,34 +120,37 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(Object...)
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Object[])
 	 */
 	@Override
 	public CassandraBatchOperations update(Object... entities) {
-		return update(nullSafeIterable(entities));
+
+		Assert.notNull(entities, "Entities must not be null");
+
+		return update(Arrays.asList(entities));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable)
 	 */
 	@Override
 	public CassandraBatchOperations update(Iterable<?> entities) {
-		return update(entities, null);
+		return update(entities, EMPTY);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable, WriteOptions)
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable, org.springframework.cassandra.core.WriteOptions)
 	 */
 	@Override
 	public CassandraBatchOperations update(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
+		Assert.notNull(entities, "Entities must not be null");
+		Assert.notNull(options, "WriteOptions must not be null");
 
-		for (Object entity : nullSafeIterable(entities)) {
+		for (Object entity : entities) {
+
 			Assert.notNull(entity, "Entity must not be null");
 			batch.add(QueryUtils.createUpdateQuery(getTableName(entity), entity, options, operations.getConverter()));
 		}
@@ -163,25 +158,27 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#delete(Object...)
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#delete(java.lang.Object[])
 	 */
 	@Override
 	public CassandraBatchOperations delete(Object... entities) {
-		return delete(nullSafeIterable(entities));
+
+		Assert.notNull(entities, "Entities must not be null");
+
+		return delete(Arrays.asList(entities));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#delete(java.lang.Iterable)
 	 */
 	@Override
 	public CassandraBatchOperations delete(Iterable<?> entities) {
 
 		assertNotExecuted();
+		Assert.notNull(entities, "Entities must not be null");
 
-		for (Object entity : nullSafeIterable(entities)) {
+		for (Object entity : entities) {
 			Assert.notNull(entity, "Entity must not be null");
 			batch.add(QueryUtils.createDeleteQuery(getTableName(entity), entity, null, operations.getConverter()));
 		}
