@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -304,6 +305,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void write(Object source, Object sink, CassandraPersistentEntity<?> entity) {
 
 		if (source == null) {
@@ -314,7 +316,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			throw new MappingException("No mapping metadata found for " + source.getClass());
 		}
 
-		if (sink instanceof Insert) {
+		if (sink instanceof Map) {
+			writeMapFromWrapper(getConvertingAccessor(source, entity), (Map<String, Object>) sink, entity);
+		} else if (sink instanceof Insert) {
 			writeInsertFromObject(source, (Insert) sink, entity);
 		} else if (sink instanceof Update) {
 			writeUpdateFromObject(source, (Update) sink, entity);
@@ -331,6 +335,40 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	protected void writeInsertFromObject(final Object object, final Insert insert, CassandraPersistentEntity<?> entity) {
 		writeInsertFromWrapper(getConvertingAccessor(object, entity), insert, entity);
+	}
+
+	private void writeMapFromWrapper(final ConvertingPropertyAccessor accessor, final Map<String, Object> insert,
+			CassandraPersistentEntity<?> entity) {
+
+		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
+
+			@Override
+			public void doWithPersistentProperty(CassandraPersistentProperty property) {
+
+				Object value = getWriteValue(property, accessor);
+
+				if (log.isDebugEnabled()) {
+					log.debug("doWithProperties Property.type {}, Property.value {}", property.getType().getName(), value);
+				}
+
+				if (property.isCompositePrimaryKey()) {
+					if (log.isDebugEnabled()) {
+						log.debug("Property is a compositeKey");
+					}
+
+					writeMapFromWrapper(getConvertingAccessor(value, property.getCompositePrimaryKeyEntity()), insert,
+							property.getCompositePrimaryKeyEntity());
+
+					return;
+				}
+
+				if (log.isDebugEnabled()) {
+					log.debug("Adding map.entry [{}] - [{}]", property.getColumnName().toCql(), value);
+				}
+
+				insert.put(property.getColumnName().toCql(), value);
+			}
+		});
 	}
 
 	protected void writeInsertFromWrapper(final ConvertingPropertyAccessor accessor, final Insert insert,
