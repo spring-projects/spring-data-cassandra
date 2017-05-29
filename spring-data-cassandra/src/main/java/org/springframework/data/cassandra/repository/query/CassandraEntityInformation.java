@@ -25,13 +25,4 @@ import org.springframework.data.repository.core.EntityInformation;
  */
 public interface CassandraEntityInformation<T, ID> extends EntityInformation<T, ID>, CassandraEntityMetadata<T> {
 
-	/**
-	 * Return {@literal true} if the persistent entity consists entirely of primary key properties (a single Id property,
-	 * composite primary key).
-	 *
-	 * @return {@literal true} if the persistent entity consists entirely of primary key properties (a single Id property,
-	 *         composite primary key).
-	 * @since 2.0
-	 */
-	boolean isPrimaryKeyEntity();
 }

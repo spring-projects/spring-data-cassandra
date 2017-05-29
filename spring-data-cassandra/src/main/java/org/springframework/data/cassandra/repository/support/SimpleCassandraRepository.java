@@ -16,15 +16,21 @@
 package org.springframework.data.cassandra.repository.support;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -41,8 +47,6 @@ public class SimpleCassandraRepository<T, ID> implements TypedIdCassandraReposit
 
 	private CassandraOperations operations;
 
-	private final boolean isPrimaryKeyEntity;
-
 	/**
 	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
 	 * {@link CassandraTemplate}.
@@ -57,7 +61,6 @@ public class SimpleCassandraRepository<T, ID> implements TypedIdCassandraReposit
 
 		this.entityInformation = metadata;
 		this.operations = operations;
-		this.isPrimaryKeyEntity = metadata.isPrimaryKeyEntity();
 	}
 
 	/* (non-Javadoc)
@@ -68,37 +71,48 @@ public class SimpleCassandraRepository<T, ID> implements TypedIdCassandraReposit
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
-			return operations.insert(entity);
-		}
+		Insert insert = createFullInsert(entity);
 
-		return operations.update(entity);
+		operations.getCqlOperations().execute(insert);
+
+		return entity;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
+	 * @see org.springframework.data.repository.CrudRepository#saveAll(java.lang.Iterable)
 	 */
 	@Override
 	public <S extends T> List<S> saveAll(Iterable<S> entities) {
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
-		List<S> result = new ArrayList<>();
+
+		List<S> result = new ArrayList<S>();
+
 		for (S entity : entities) {
 
-			S saved;
-
-			if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
-				saved = operations.insert(entity);
-			} else {
-				saved = operations.update(entity);
-			}
-
-			if (saved != null) {
-				result.add(saved);
-			}
+			result.add(entity);
+			operations.getCqlOperations().execute(createFullInsert(entity));
 		}
 
 		return result;
+	}
+
+	private <S extends T> Insert createFullInsert(S entity) {
+
+		CassandraConverter converter = operations.getConverter();
+		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
+				.getRequiredPersistentEntity(entity.getClass());
+		Map<String, Object> toInsert = new LinkedHashMap<>();
+
+		converter.write(entity, toInsert, persistentEntity);
+
+		Insert insert = QueryBuilder.insertInto(persistentEntity.getTableName().toCql());
+
+		for (Entry<String, Object> entry : toInsert.entrySet()) {
+			insert.value(entry.getKey(), entry.getValue());
+		}
+
+		return insert;
 	}
 
 	/* (non-Javadoc)

@@ -18,12 +18,19 @@ package org.springframework.data.cassandra.repository.support;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.reactivestreams.Publisher;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -38,8 +45,6 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	protected CassandraEntityInformation<T, ID> entityInformation;
 
 	protected ReactiveCassandraOperations operations;
-
-	private final boolean isPrimaryKeyEntity;
 
 	/**
 	 * Create a new {@link SimpleReactiveCassandraRepository} for the given {@link CassandraEntityInformation} and
@@ -56,7 +61,6 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		this.entityInformation = metadata;
 		this.operations = operations;
-		this.isPrimaryKeyEntity = metadata.isPrimaryKeyEntity();
 	}
 
 	/* (non-Javadoc)
@@ -67,11 +71,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
-			return operations.insert(entity);
-		}
-
-		return operations.update(entity);
+		return operations.getReactiveCqlOperations().execute(createFullInsert(entity)).map(it -> entity);
 
 	}
 
@@ -95,13 +95,26 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
 		return Flux.from(entityStream).flatMap(entity -> {
-
-			if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
-				return operations.insert(entity);
-			}
-
-			return operations.update(entity);
+			return operations.getReactiveCqlOperations().execute(createFullInsert(entity)).map(it -> entity);
 		});
+	}
+
+	private <S extends T> Insert createFullInsert(S entity) {
+
+		CassandraConverter converter = operations.getConverter();
+		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
+				.getRequiredPersistentEntity(entity.getClass());
+		Map<String, Object> toInsert = new LinkedHashMap<>();
+
+		converter.write(entity, toInsert, persistentEntity);
+
+		Insert insert = QueryBuilder.insertInto(persistentEntity.getTableName().toCql());
+
+		for (Entry<String, Object> entry : toInsert.entrySet()) {
+			insert.value(entry.getKey(), entry.getValue());
+		}
+
+		return insert;
 	}
 
 	/* (non-Javadoc)

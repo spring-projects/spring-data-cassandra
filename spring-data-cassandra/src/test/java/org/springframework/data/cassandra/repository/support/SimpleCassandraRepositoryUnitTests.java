@@ -25,6 +25,8 @@ import java.io.Serializable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
@@ -34,6 +36,11 @@ import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingCont
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cql.core.CqlOperations;
+
+import com.datastax.driver.core.UserType;
+import com.datastax.driver.core.querybuilder.Insert;
 
 /**
  * Unit tests for {@link SimpleCassandraRepository}.
@@ -50,11 +57,20 @@ public class SimpleCassandraRepositoryUnitTests {
 	SimpleCassandraRepository<Object, ? extends Serializable> repository;
 
 	@Mock CassandraOperations cassandraOperations;
+	@Mock CqlOperations cqlOperations;
 	@Mock UserTypeResolver userTypeResolver;
+	@Mock UserType userType;
+
+	@Captor ArgumentCaptor<Insert> insertCaptor;
 
 	@Before
 	public void before() {
+
 		mappingContext.setUserTypeResolver(userTypeResolver);
+
+		when(cassandraOperations.getConverter()).thenReturn(converter);
+		when(cassandraOperations.getCqlOperations()).thenReturn(cqlOperations);
+		when(userTypeResolver.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userType);
 	}
 
 	@Test // DATACASS-428
@@ -67,12 +83,10 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		SimplePerson person = new SimplePerson();
 
-		when(cassandraOperations.insert(person)).thenReturn(person);
+		repository.save(person);
 
-		Object result = repository.save(person);
-
-		assertThat(result).isEqualTo(person);
-		verify(cassandraOperations).insert(person);
+		verify(cqlOperations).execute(insertCaptor.capture());
+		assertThat(insertCaptor.getValue().toString()).isEqualTo("INSERT INTO simpleperson (id) VALUES (null);");
 	}
 
 	@Test // DATACASS-428
@@ -85,12 +99,9 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		Person person = new Person();
 
-		when(cassandraOperations.update(person)).thenReturn(person);
+		repository.save(person);
 
-		Object result = repository.save(person);
-
-		assertThat(result).isEqualTo(person);
-		verify(cassandraOperations).update(person);
+		verify(cqlOperations).execute(any(Insert.class));
 	}
 
 	@Test // DATACASS-428
@@ -105,12 +116,12 @@ public class SimpleCassandraRepositoryUnitTests {
 		person.setFirstname("foo");
 		person.setLastname("bar");
 
-		when(cassandraOperations.update(person)).thenReturn(person);
+		repository.save(person);
 
-		Object result = repository.save(person);
-
-		assertThat(result).isEqualTo(person);
-		verify(cassandraOperations).update(person);
+		verify(cqlOperations).execute(insertCaptor.capture());
+		assertThat(insertCaptor.getValue().toString())
+				.contains("INSERT INTO person (lastname,firstname,alternativeaddresses,");
+		assertThat(insertCaptor.getValue().toString()).contains("VALUES ('bar','foo',null");
 	}
 
 	@Test // DATACASS-428
@@ -123,11 +134,8 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		Person person = new Person();
 
-		when(cassandraOperations.insert(person)).thenReturn(person);
+		repository.insert(person);
 
-		Object result = repository.insert(person);
-
-		assertThat(result).isEqualTo(person);
 		verify(cassandraOperations).insert(person);
 	}
 

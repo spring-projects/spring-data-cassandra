@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.repository.support;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -24,7 +23,6 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentProper
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
 import org.springframework.util.Assert;
 
@@ -41,7 +39,6 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 
 	private final CassandraPersistentEntity<T> entityMetadata;
 	private final CassandraConverter converter;
-	private final boolean isPrimaryKeyEntity;
 
 	/**
 	 * Create a new {@link MappingCassandraEntityInformation} for the given {@link CassandraPersistentEntity}.
@@ -54,7 +51,6 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 
 		this.entityMetadata = entity;
 		this.converter = converter;
-		this.isPrimaryKeyEntity = hasNonIdProperties(entity);
 	}
 
 	/* (non-Javadoc)
@@ -88,29 +84,5 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 	@Override
 	public CqlIdentifier getTableName() {
 		return entityMetadata.getTableName();
-	}
-
-	@Override
-	public boolean isPrimaryKeyEntity() {
-		return isPrimaryKeyEntity;
-	}
-
-	private static boolean hasNonIdProperties(CassandraPersistentEntity<?> entity) {
-
-		final AtomicReference<Boolean> hasPrimaryKeyOnlyProperties = new AtomicReference<Boolean>(true);
-
-		entity.doWithProperties(new PropertyHandler<CassandraPersistentProperty>() {
-			@Override
-			public void doWithPersistentProperty(CassandraPersistentProperty property) {
-
-				if (property.isCompositePrimaryKey() || property.isPrimaryKeyColumn() || property.isIdProperty()) {
-					return;
-				}
-
-				hasPrimaryKeyOnlyProperties.set(false);
-			}
-		});
-
-		return hasPrimaryKeyOnlyProperties.get();
 	}
 }
