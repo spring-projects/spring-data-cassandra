@@ -43,9 +43,9 @@ import com.datastax.driver.core.querybuilder.Select;
  */
 public class SimpleCassandraRepository<T, ID> implements TypedIdCassandraRepository<T, ID> {
 
-	private CassandraEntityInformation<T, ID> entityInformation;
+	private final CassandraEntityInformation<T, ID> entityInformation;
 
-	private CassandraOperations operations;
+	private final CassandraOperations operations;
 
 	/**
 	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and

@@ -90,12 +90,13 @@ import com.datastax.driver.core.querybuilder.Update;
 public class MappingCassandraConverter extends AbstractCassandraConverter
 		implements CassandraConverter, ApplicationContextAware, BeanClassLoaderAware {
 
-	protected ApplicationContext applicationContext;
-	protected final CassandraMappingContext mappingContext;
-	protected ClassLoader beanClassLoader;
-	protected SpELContext spELContext;
-
 	private final Logger log = LoggerFactory.getLogger(getClass());
+
+	private final CassandraMappingContext mappingContext;
+
+	private ClassLoader beanClassLoader;
+
+	private SpELContext spELContext;
 
 	/**
 	 * Create a new {@link MappingCassandraConverter} with a {@link BasicCassandraMappingContext}.
@@ -124,7 +125,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
 	}
 

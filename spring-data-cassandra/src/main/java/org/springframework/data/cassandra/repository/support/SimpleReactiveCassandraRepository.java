@@ -42,9 +42,9 @@ import com.datastax.driver.core.querybuilder.Select;
  */
 public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassandraRepository<T, ID> {
 
-	protected CassandraEntityInformation<T, ID> entityInformation;
+	private final CassandraEntityInformation<T, ID> entityInformation;
 
-	protected ReactiveCassandraOperations operations;
+	private final ReactiveCassandraOperations operations;
 
 	/**
 	 * Create a new {@link SimpleReactiveCassandraRepository} for the given {@link CassandraEntityInformation} and

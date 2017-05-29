@@ -38,6 +38,7 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 		implements CassandraEntityInformation<T, ID> {
 
 	private final CassandraPersistentEntity<T> entityMetadata;
+
 	private final CassandraConverter converter;
 
 	/**
