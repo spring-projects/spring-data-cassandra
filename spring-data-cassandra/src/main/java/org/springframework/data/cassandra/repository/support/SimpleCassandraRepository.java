@@ -16,15 +16,24 @@
 package org.springframework.data.cassandra.repository.support;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.cassandra.core.util.CollectionUtils;
+import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.querybuilder.Batch;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
 /**
@@ -38,8 +47,6 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 	protected CassandraOperations operations;
 	protected CassandraEntityInformation<T, ID> entityInformation;
-
-	private final boolean isPrimaryKeyEntity;
 
 	/**
 	 * Creates a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
@@ -55,7 +62,6 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		this.entityInformation = metadata;
 		this.operations = operations;
-		this.isPrimaryKeyEntity = metadata.isPrimaryKeyEntity();
 	}
 
 	/* (non-Javadoc)
@@ -66,11 +72,11 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		if (entityInformation.isNew(entity) || isPrimaryKeyEntity) {
-			return operations.insert(entity);
-		}
+		Insert insert = createFullInsert(entity);
 
-		return operations.update(entity);
+		operations.execute(insert);
+
+		return entity;
 	}
 
 	/* (non-Javadoc)
@@ -81,7 +87,36 @@ public class SimpleCassandraRepository<T, ID extends Serializable> implements Ty
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		return operations.insert(CollectionUtils.toList(entities));
+		List<S> result = new ArrayList<S>();
+
+		Batch batch = QueryBuilder.batch();
+		for (S entity : entities) {
+
+			result.add(entity);
+			batch.add(createFullInsert(entity));
+		}
+
+		operations.execute(batch);
+
+		return result;
+	}
+
+	private <S extends T> Insert createFullInsert(S entity) {
+
+		CassandraConverter converter = operations.getConverter();
+		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
+				.getPersistentEntity(entity.getClass());
+		Map<String, Object> toInsert = new LinkedHashMap<String, Object>();
+
+		converter.write(entity, toInsert, persistentEntity);
+
+		Insert insert = QueryBuilder.insertInto(persistentEntity.getTableName().toCql());
+
+		for (Entry<String, Object> entry : toInsert.entrySet()) {
+			insert.value(entry.getKey(), entry.getValue());
+		}
+
+		return insert;
 	}
 
 	/* (non-Javadoc)
