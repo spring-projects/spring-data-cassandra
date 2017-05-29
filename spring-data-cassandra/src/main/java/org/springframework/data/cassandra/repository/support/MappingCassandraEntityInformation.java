@@ -41,7 +41,9 @@ public class MappingCassandraEntityInformation<T, ID extends Serializable> exten
 		implements CassandraEntityInformation<T, ID> {
 
 	private final CassandraPersistentEntity<T> entityMetadata;
+
 	private final CassandraConverter converter;
+
 	private final boolean isPrimaryKeyEntity;
 
 	/**

@@ -45,8 +45,9 @@ import com.datastax.driver.core.querybuilder.Select;
  */
 public class SimpleCassandraRepository<T, ID extends Serializable> implements TypedIdCassandraRepository<T, ID> {
 
-	protected CassandraOperations operations;
-	protected CassandraEntityInformation<T, ID> entityInformation;
+	private final CassandraEntityInformation<T, ID> entityInformation;
+
+	private final CassandraOperations operations;
 
 	/**
 	 * Creates a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
