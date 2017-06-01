@@ -36,7 +36,11 @@ import com.datastax.driver.core.exceptions.DriverException;
  *
  * @author David Webb
  * @author Mark Paluch
+ * @deprecated since 2.0. This class uses an unsafe, static held cache and is not able to prepare
+ *             {@link com.datastax.driver.core.querybuilder.BuiltStatement}. Use
+ *             {@link org.springframework.data.cql.core.support.CachedPreparedStatementCreator}.
  */
+@Deprecated
 public class CachedPreparedStatementCreator implements PreparedStatementCreator {
 
 	private static final Map<Session, Map<String, PreparedStatement>> CACHE = new ConcurrentHashMap<>();
