@@ -52,9 +52,9 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 			}
 
 			if (ReactiveWrappers.isSingleValueType(value.getClass())) {
-				subscriptions.add(ReactiveWrapperConverters.toWrapper(value, Mono.class).subscribe());
+				subscriptions.add(ReactiveWrapperConverters.toWrapper(value, Mono.class).toProcessor());
 			} else {
-				subscriptions.add(ReactiveWrapperConverters.toWrapper(value, Flux.class).collectList().subscribe());
+				subscriptions.add(ReactiveWrapperConverters.toWrapper(value, Flux.class).collectList().toProcessor());
 			}
 		}
 	}

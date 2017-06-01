@@ -31,9 +31,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cql.core.session.DefaultBridgedReactiveSession;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * Unit tests for {@link DefaultBridgedReactiveSession}.
@@ -43,13 +47,19 @@ import com.datastax.driver.core.Statement;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultBridgedReactiveSessionUnitTests {
 
-	@Mock private Session sessionMock;
+	@Mock Session sessionMock;
+	@Mock ResultSetFuture future;
+	@Mock ListenableFuture<PreparedStatement> preparedStatementFuture;
 
 	private DefaultBridgedReactiveSession reactiveSession;
 
 	@Before
 	public void before() throws Exception {
+
 		reactiveSession = new DefaultBridgedReactiveSession(sessionMock, Schedulers.immediate());
+
+		when(sessionMock.executeAsync(any(Statement.class))).thenReturn(future);
+		when(sessionMock.prepareAsync(any(RegularStatement.class))).thenReturn(preparedStatementFuture);
 	}
 
 	@Test // DATACASS-335
