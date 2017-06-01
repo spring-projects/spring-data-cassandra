@@ -38,7 +38,7 @@ import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.Person;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.projection.ProjectionFactory;
@@ -197,13 +197,13 @@ public class PartTreeCassandraQueryUnitTests {
 	}
 
 	@SuppressWarnings("unused")
-	interface GroupRepository extends CassandraRepository<Group> {
+	interface GroupRepository extends MapIdCassandraRepository<Group> {
 
 		Group findByIdHashPrefix(String hashPrefix);
 	}
 
 	@SuppressWarnings("unused")
-	interface Repo extends CassandraRepository<Person> {
+	interface Repo extends MapIdCassandraRepository<Person> {
 
 		@Query()
 		Person findByLastname(String lastname);

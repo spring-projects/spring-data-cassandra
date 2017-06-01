@@ -339,7 +339,7 @@ public class NamedQueryIntegrationTests extends AbstractSpringDataEmbeddedCassan
 		assertThat(count).isEqualTo(before + 100L);
 	}
 
-	public interface PersonRepositoryWithNamedQueries extends CassandraRepository<Person> {
+	public interface PersonRepositoryWithNamedQueries extends MapIdCassandraRepository<Person> {
 
 		List<Person> findFolksWithLastnameAsList(String lastname);
 

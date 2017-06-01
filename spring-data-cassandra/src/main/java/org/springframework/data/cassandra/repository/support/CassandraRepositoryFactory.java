@@ -21,7 +21,7 @@ import java.util.Optional;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
+import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.PartTreeCassandraQuery;
@@ -39,7 +39,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
 /**
- * Factory to create {@link TypedIdCassandraRepository} instances.
+ * Factory to create {@link CassandraRepository} instances.
  *
  * @author Alex Shvid
  * @author Matthew T. Adams

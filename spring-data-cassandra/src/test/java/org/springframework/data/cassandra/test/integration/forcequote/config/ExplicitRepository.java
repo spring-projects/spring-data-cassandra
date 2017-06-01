@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.test.integration.forcequote.config;
 
-import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
+import org.springframework.data.cassandra.repository.CassandraRepository;
 
 /**
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-public interface ExplicitRepository extends TypedIdCassandraRepository<Explicit, String> {}
+public interface ExplicitRepository extends CassandraRepository<Explicit, String> {}

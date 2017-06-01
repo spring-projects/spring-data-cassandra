@@ -281,7 +281,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	/**
 	 * @author Mark Paluch
 	 */
-	static interface PersonRepository extends CassandraRepository<Person> {
+	static interface PersonRepository extends MapIdCassandraRepository<Person> {
 
 		List<Person> findByLastname(String lastname);
 

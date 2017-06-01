@@ -42,6 +42,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -88,7 +89,7 @@ public class IntParamIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private int number;
 	}
 
-	interface IntThingRepo extends CassandraRepository<IntThing> {
+	interface IntThingRepo extends MapIdCassandraRepository<IntThing> {
 
 		@Query("SELECT * from intthing where number = ?0")
 		IntThing findThingByIntPrimitive(int number);

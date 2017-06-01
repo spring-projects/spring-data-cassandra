@@ -16,20 +16,19 @@
 package org.springframework.data.cassandra.repository.support;
 
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
+import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
 
 /**
- * {@link org.springframework.beans.factory.FactoryBean} to create {@link TypedIdCassandraRepository} instances.
+ * {@link org.springframework.beans.factory.FactoryBean} to create {@link CassandraRepository} instances.
  *
  * @author Alex Shvid
  * @author John Blum
  * @author Oliver Gierke
- * @see org.springframework.data.repository.Repository
- * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport
+ * @author Mark Paluch
  */
 public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {

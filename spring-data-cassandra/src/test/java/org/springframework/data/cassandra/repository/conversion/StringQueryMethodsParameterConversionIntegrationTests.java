@@ -22,7 +22,7 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 import org.springframework.data.cassandra.repository.NamedQueryIntegrationTests.PersonRepositoryWithNamedQueries;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.test.context.ContextConfiguration;
@@ -100,7 +100,7 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 		assertThat(contactRepository.findByAlternativePhonesContains(udtValue)).contains(walter);
 	}
 
-	interface ContactStringQueryRepository extends CassandraRepository<Contact> {
+	interface ContactStringQueryRepository extends MapIdCassandraRepository<Contact> {
 
 		@Query("SELECT * from contact where address = ?0;")
 		List<Contact> findByAddress(Address address);

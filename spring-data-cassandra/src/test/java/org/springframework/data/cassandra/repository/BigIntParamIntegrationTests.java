@@ -46,6 +46,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Integration tests for {@link BigInteger} usage in repositories.
  *
  * @author Pete Cable
+ * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -94,7 +95,7 @@ public class BigIntParamIntegrationTests extends AbstractSpringDataEmbeddedCassa
 	/**
 	 * @author Pete Cable
 	 */
-	interface BigThingRepo extends CassandraRepository<BigThing> {
+	interface BigThingRepo extends MapIdCassandraRepository<BigThing> {
 
 		@Query("SELECT * from bigthing where number = ?0")
 		BigThing findThingByBigInteger(BigInteger number);

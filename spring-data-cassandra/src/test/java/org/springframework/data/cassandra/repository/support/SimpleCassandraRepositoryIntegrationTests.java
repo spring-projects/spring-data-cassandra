@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.domain.User;
-import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
+import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
@@ -288,5 +288,5 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(loaded).isEmpty();
 	}
 
-	interface UserRepostitory extends TypedIdCassandraRepository<User, String> {}
+	interface UserRepostitory extends CassandraRepository<User, String> {}
 }

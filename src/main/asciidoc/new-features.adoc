@@ -4,6 +4,7 @@
 [[new-features.2-0-0]]
 == What's new in Spring Data for Apache Cassandra 2.0
 * `Update` and `Query` objects.
+* CRUD repository interface renaming: `CassandraRepository` using `MapId` is now renamed to `MapIdCassandraRepository`. `TypedIdCassandraRepository` is renamed to `CassandraRepository`.
 
 [[new-features.1-5-0]]
 == What's new in Spring Data for Apache Cassandra 1.5

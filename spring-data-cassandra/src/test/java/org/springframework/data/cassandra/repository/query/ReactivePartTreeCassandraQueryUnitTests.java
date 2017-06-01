@@ -36,7 +36,7 @@ import org.springframework.data.cassandra.core.convert.MappingCassandraConverter
 import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.Person;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -127,7 +127,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@SuppressWarnings("unused")
-	interface Repo extends CassandraRepository<Person> {
+	interface Repo extends MapIdCassandraRepository<Person> {
 
 		@Query()
 		Flux<Person> findByLastname(String lastname);

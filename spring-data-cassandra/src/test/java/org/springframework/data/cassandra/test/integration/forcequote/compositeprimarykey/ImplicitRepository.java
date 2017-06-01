@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.test.integration.forcequote.compositeprimarykey;
 
-import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
+import org.springframework.data.cassandra.repository.CassandraRepository;
 
 /**
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-public interface ImplicitRepository extends TypedIdCassandraRepository<Implicit, ImplicitKey> {}
+public interface ImplicitRepository extends CassandraRepository<Implicit, ImplicitKey> {}

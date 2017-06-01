@@ -26,7 +26,7 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
+import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
 
@@ -41,7 +41,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class SimpleCassandraRepository<T, ID> implements TypedIdCassandraRepository<T, ID> {
+public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, ID> {
 
 	private final CassandraEntityInformation<T, ID> entityInformation;
 

@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.test.integration.mapping.mapid.repo;
 
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 
 /**
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-public interface MultiPrimaryKeyColumnsRepository extends CassandraRepository<MultiPrimaryKeyColumns> {}
+public interface MultiPrimaryKeyColumnsRepository extends MapIdCassandraRepository<MultiPrimaryKeyColumns> {}

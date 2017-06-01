@@ -96,7 +96,7 @@ public class DateKeyIntegrationTests extends AbstractSpringDataEmbeddedCassandra
 	 *
 	 * @author Matthew T. Adams
 	 */
-	interface DateThingRepo extends CassandraRepository<DateThing> {
+	interface DateThingRepo extends MapIdCassandraRepository<DateThing> {
 
 		@Query("SELECT * from datething where date = ?0")
 		DateThing findThingByDate(Date date);

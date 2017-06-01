@@ -28,7 +28,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.RepositoryConfiguration;
@@ -38,6 +38,7 @@ import org.springframework.data.repository.config.RepositoryConfigurationSource;
  * Unit tests for {@link CassandraRepositoryConfigurationExtension}.
  *
  * @author Christoph Strobl
+ * @author Mark Paluch
  */
 public class CassandraRepositoryConfigurationExtensionUnitTests {
 
@@ -108,5 +109,5 @@ public class CassandraRepositoryConfigurationExtensionUnitTests {
 
 	interface UnannotatedRepository extends Repository<Object, Long> {}
 
-	interface StoreRepository extends CassandraRepository<Object> {}
+	interface StoreRepository extends MapIdCassandraRepository<Object> {}
 }
