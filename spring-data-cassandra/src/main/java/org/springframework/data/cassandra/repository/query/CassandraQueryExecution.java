@@ -20,8 +20,10 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.EntityInstantiators;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.ClassUtils;
@@ -144,7 +146,7 @@ interface CassandraQueryExecution {
 	final class ResultProcessingConverter implements Converter<Object, Object> {
 
 		private final @NonNull ResultProcessor processor;
-		private final @NonNull CassandraMappingContext mappingContext;
+		private final @NonNull MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 		private final @NonNull EntityInstantiators instantiators;
 
 		/* (non-Javadoc)

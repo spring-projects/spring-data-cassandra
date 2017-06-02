@@ -27,7 +27,7 @@ import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.PrimaryKeyType;
 
 /**
- * Unit tests for {@link BasicCassandraMappingContext}.
+ * Unit tests for {@link CassandraMappingContext}.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
@@ -39,7 +39,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	public static final String EXPLICIT_KEY_0 = "TheFirstKeyField";
 	public static final String EXPLICIT_KEY_1 = "TheSecondKeyField";
 
-	CassandraMappingContext context = new BasicCassandraMappingContext();
+	CassandraMappingContext context = new CassandraMappingContext();
 
 	@Test
 	public void testImplicit() {

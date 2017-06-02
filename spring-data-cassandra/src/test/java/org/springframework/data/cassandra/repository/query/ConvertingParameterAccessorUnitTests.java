@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator;
@@ -57,7 +57,7 @@ public class ConvertingParameterAccessorUnitTests {
 	@Before
 	public void setUp() {
 
-		this.converter = new MappingCassandraConverter(new BasicCassandraMappingContext());
+		this.converter = new MappingCassandraConverter(new CassandraMappingContext());
 		this.converter.afterPropertiesSet();
 		this.convertingParameterAccessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
 	}

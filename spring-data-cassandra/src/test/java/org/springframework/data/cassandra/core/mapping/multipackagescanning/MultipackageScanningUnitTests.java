@@ -23,35 +23,38 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.multipackagescanning.first.First;
 import org.springframework.data.cassandra.core.mapping.multipackagescanning.second.Second;
 import org.springframework.data.cassandra.core.mapping.multipackagescanning.third.Third;
+import org.springframework.data.mapping.context.MappingContext;
 
 /**
- * Unit tests for {@link BasicCassandraMappingContext}.
+ * Unit tests for {@link CassandraMappingContext}.
  *
  * @author Matthew T. Adams
  */
 public class MultipackageScanningUnitTests {
 
-	BasicCassandraMappingContext mapping;
+	MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> context;
 	String pkg = getClass().getPackage().getName();
 
 	@Before
 	public void before() throws ClassNotFoundException {
 
-		mapping = new BasicCassandraMappingContext();
-		mapping.setInitialEntitySet(CassandraEntityClassScanner.scan(pkg + ".first", pkg + ".second"));
+		CassandraMappingContext context = new CassandraMappingContext();
 
-		mapping.initialize();
+		context.setInitialEntitySet(CassandraEntityClassScanner.scan(pkg + ".first", pkg + ".second"));
+		context.initialize();
+		this.context = context;
 	}
 
 	@Test
 	public void test() {
 
-		Collection<CassandraPersistentEntity<?>> entities = mapping.getPersistentEntities();
+		Collection<? extends CassandraPersistentEntity<?>> entities = context.getPersistentEntities();
 
 		Collection<Class<?>> types = entities.stream().map(CassandraPersistentEntity::getType).collect(Collectors.toSet());
 

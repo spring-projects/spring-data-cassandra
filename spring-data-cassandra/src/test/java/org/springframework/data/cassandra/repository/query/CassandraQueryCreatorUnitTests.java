@@ -35,7 +35,7 @@ import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
@@ -58,7 +58,7 @@ import com.datastax.driver.core.RegularStatement;
  */
 public class CassandraQueryCreatorUnitTests {
 
-	BasicCassandraMappingContext context;
+	CassandraMappingContext context;
 	CassandraConverter converter;
 
 	@Rule public ExpectedException exception = ExpectedException.none();
@@ -66,7 +66,7 @@ public class CassandraQueryCreatorUnitTests {
 	@Before
 	public void setUp() throws SecurityException, NoSuchMethodException {
 
-		context = new BasicCassandraMappingContext();
+		context = new CassandraMappingContext();
 		context.setUserTypeResolver(mock(UserTypeResolver.class));
 
 		converter = new MappingCassandraConverter(context);

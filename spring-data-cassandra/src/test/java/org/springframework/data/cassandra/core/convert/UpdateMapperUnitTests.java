@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
@@ -43,7 +43,7 @@ import org.springframework.data.cassandra.core.query.Update;
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateMapperUnitTests {
 
-	BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+	CassandraMappingContext mappingContext = new CassandraMappingContext();
 	CassandraPersistentEntity<?> persistentEntity;
 	MappingCassandraConverter cassandraConverter;
 	UpdateMapper updateMapper;

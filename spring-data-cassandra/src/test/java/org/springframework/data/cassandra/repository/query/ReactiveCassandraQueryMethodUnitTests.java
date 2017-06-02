@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.projection.ProjectionFactory;
@@ -44,7 +43,7 @@ public class ReactiveCassandraQueryMethodUnitTests {
 
 	@Before
 	public void setUp() {
-		context = new BasicCassandraMappingContext();
+		context = new CassandraMappingContext();
 	}
 
 	@Test // DATACASS-335

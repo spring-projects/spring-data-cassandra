@@ -28,15 +28,15 @@ import org.springframework.data.cql.core.PrimaryKeyType;
 import org.springframework.data.mapping.PropertyHandler;
 
 /**
- * Unit tests for {@link BasicCassandraMappingContext}.
+ * Unit tests for {@link CassandraMappingContext}.
  *
  * @author David Webb
  * @author Mark Paluch
  */
-public class BasicCassandraPersistentEntityOrderPropertiesUnitTests {
+public class CassandraPersistentEntityOrderPropertiesUnitTests {
 
 	private List<CassandraPersistentProperty> expected;
-	private BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+	private CassandraMappingContext mappingContext = new CassandraMappingContext();
 
 	@Before
 	public void init() {}

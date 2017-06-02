@@ -766,7 +766,7 @@ Defines a CassandraConverter for getting rich mapping functionality.
 			<xsd:attribute name="mapping-ref" type="mappingContextRef" use="optional">
 				<xsd:annotation>
 					<xsd:documentation
-						source="org.springframework.data.cassandra.mapping.CassandraMappingContext"><![CDATA[
+							source="org.springframework.data.cassandra.core.mapping.CassandraMappingContext"><![CDATA[
 The reference to a CassandraMappingContext. Will default to 'cassandraMapping'.
 					]]></xsd:documentation>
 				</xsd:annotation>

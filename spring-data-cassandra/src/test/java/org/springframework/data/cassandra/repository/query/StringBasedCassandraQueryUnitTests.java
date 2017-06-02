@@ -34,7 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Person;
@@ -81,7 +81,7 @@ public class StringBasedCassandraQueryUnitTests {
 	@SuppressWarnings("unchecked")
 	public void setUp() {
 
-		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+		CassandraMappingContext mappingContext = new CassandraMappingContext();
 		mappingContext.setUserTypeResolver(userTypeResolver);
 
 		this.metadata = AbstractRepositoryMetadata.getMetadata(SampleRepository.class);

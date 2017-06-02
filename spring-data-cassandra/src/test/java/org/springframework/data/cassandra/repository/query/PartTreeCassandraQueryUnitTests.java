@@ -33,7 +33,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Group;
@@ -65,13 +65,13 @@ public class PartTreeCassandraQueryUnitTests {
 	@Mock UserType userTypeMock;
 	@Mock UDTValue udtValueMock;
 
-	BasicCassandraMappingContext mappingContext;
+	CassandraMappingContext mappingContext;
 	CassandraConverter converter;
 
 	@Before
 	public void setUp() {
 
-		this.mappingContext = new BasicCassandraMappingContext();
+		this.mappingContext = new CassandraMappingContext();
 		this.mappingContext.setUserTypeResolver(userTypeResolverMock);
 
 		this.converter = new MappingCassandraConverter(mappingContext);

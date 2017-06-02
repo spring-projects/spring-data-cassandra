@@ -51,7 +51,7 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 
 	private static final Logger LOG = LoggerFactory.getLogger(CassandraQueryCreator.class);
 
-	private final CassandraMappingContext mappingContext;
+	private final MappingContext<?, CassandraPersistentProperty> mappingContext;
 
 	private final QueryBuilder queryBuilder = new QueryBuilder();
 
@@ -64,7 +64,7 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 	 * @param mappingContext must not be {@literal null}.
 	 */
 	public CassandraQueryCreator(PartTree tree, CassandraParameterAccessor accessor,
-			CassandraMappingContext mappingContext) {
+			MappingContext<?, CassandraPersistentProperty> mappingContext) {
 
 		super(tree, accessor);
 
@@ -74,13 +74,13 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 	}
 
 	/**
-	 * Returns the {@link CassandraMappingContext} used by this template to access mapping meta-data used to store (map)
-	 * object to Cassandra tables.
+	 * Returns the {@link MappingContext} used by this template to access mapping meta-data used to store (map) object to
+	 * Cassandra tables.
 	 *
-	 * @return the {@link CassandraMappingContext} used by this template.
-	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
+	 * @return the {@link MappingContext} used by this template.
+	 * @see CassandraMappingContext
 	 */
-	protected CassandraMappingContext getMappingContext() {
+	protected MappingContext<?, CassandraPersistentProperty> getMappingContext() {
 		return this.mappingContext;
 	}
 

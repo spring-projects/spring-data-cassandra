@@ -52,7 +52,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.RowMockUtil;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
@@ -105,7 +104,7 @@ public class MappingCassandraConverterUnitTests {
 	@Before
 	public void setUp() throws Exception {
 
-		mappingContext = new BasicCassandraMappingContext();
+		mappingContext = new CassandraMappingContext();
 
 		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
 		mappingCassandraConverter.afterPropertiesSet();

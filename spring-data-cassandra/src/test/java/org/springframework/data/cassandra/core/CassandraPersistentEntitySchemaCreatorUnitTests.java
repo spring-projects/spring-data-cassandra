@@ -28,7 +28,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cql.core.CqlOperations;
 
@@ -44,7 +44,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 	@Mock CassandraAdminOperations adminOperations;
 	@Mock CqlOperations operations;
 
-	BasicCassandraMappingContext context = new BasicCassandraMappingContext();
+	CassandraMappingContext context = new CassandraMappingContext();
 
 	@Before
 	public void setUp() throws Exception {

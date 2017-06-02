@@ -32,6 +32,7 @@ import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.support.exception.UnsupportedCassandraOperationException;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.TypeInformation;
@@ -59,7 +60,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
-	private CassandraMappingContext mappingContext;
+	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private ApplicationContext context;
 
@@ -84,7 +85,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 *
 	 * @param typeInformation
 	 */
-	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext) {
+	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation,
+			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
 		this(typeInformation, mappingContext, DEFAULT_VERIFIER);
 	}
 
@@ -94,7 +96,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 *
 	 * @param typeInformation
 	 */
-	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation, CassandraMappingContext mappingContext,
+	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation,
+			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
 			CassandraPersistentEntityMetadataVerifier verifier) {
 
 		// FIXME: Constructor with comparator, no optionality here
@@ -226,7 +229,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getMappingContext()
 	 */
 	@Override
-	public CassandraMappingContext getMappingContext() {
+	public MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
 		return mappingContext;
 	}
 

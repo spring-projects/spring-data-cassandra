@@ -56,9 +56,6 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.cassandra.core.query.Columns
  * @see org.springframework.data.cassandra.core.query.Criteria
  * @see org.springframework.data.cassandra.core.query.Filter
- * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
- * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity
- * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty
  * @see org.springframework.data.domain.Sort
  * @see org.springframework.data.mapping.PersistentProperty
  * @see org.springframework.data.mapping.PropertyPath
@@ -90,18 +87,17 @@ public class QueryMapper {
 	 * Returns the configured {@link CassandraConverter} used to convert object values into Cassandra column typed values.
 	 *
 	 * @return the configured {@link CassandraConverter}.
-	 * @see org.springframework.data.cassandra.convert.CassandraConverter
+	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
 	 */
 	protected CassandraConverter getConverter() {
 		return this.converter;
 	}
 
 	/**
-	 * Returns the configured {@link CassandraMappingContext} containing mapping meta-data (persistent entities and
-	 * properties) used to store (map) objects to Cassandra tables (rows/columns).
+	 * Returns the configured {@link MappingContext} containing mapping meta-data (persistent entities and properties)
+	 * used to store (map) objects to Cassandra tables (rows/columns).
 	 *
-	 * @return the configured {@link CassandraMappingContext}.
-	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
+	 * @return the configured {@link MappingContext}.
 	 */
 	protected CassandraMappingContext getMappingContext() {
 		return this.mappingContext;

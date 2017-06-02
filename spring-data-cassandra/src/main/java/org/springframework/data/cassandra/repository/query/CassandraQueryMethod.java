@@ -21,9 +21,10 @@ import java.util.Optional;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
@@ -47,7 +48,7 @@ public class CassandraQueryMethod extends QueryMethod {
 
 	private final Method method;
 
-	private final CassandraMappingContext mappingContext;
+	private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
 
 	private CassandraEntityMetadata<?> entityMetadata;
 
@@ -60,7 +61,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @param mappingContext must not be {@literal null}.
 	 */
 	public CassandraQueryMethod(Method method, RepositoryMetadata repositoryMetadata, ProjectionFactory projectionFactory,
-			CassandraMappingContext mappingContext) {
+			MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext) {
 
 		super(method, repositoryMetadata, projectionFactory);
 
@@ -103,7 +104,7 @@ public class CassandraQueryMethod extends QueryMethod {
 			} else {
 
 				Optional<CassandraPersistentEntity<?>> optionalReturnedEntity = mappingContext
-						.getPersistentEntity(returnedObjectType);
+						.getPersistentEntity(returnedObjectType).map(CassandraPersistentEntity.class::cast);
 				CassandraPersistentEntity<?> managedEntity = mappingContext.getRequiredPersistentEntity(domainClass);
 
 				CassandraPersistentEntity<?> returnedEntity = optionalReturnedEntity.filter(e -> !e.getType().isInterface())
@@ -115,7 +116,6 @@ public class CassandraQueryMethod extends QueryMethod {
 
 				this.entityMetadata = new SimpleCassandraEntityMetadata<>((Class<Object>) returnedEntity.getType(),
 						collectionEntity);
-
 			}
 		}
 

@@ -21,7 +21,9 @@ import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -37,7 +39,7 @@ import com.datastax.driver.core.Statement;
  */
 public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 
-	private final CassandraMappingContext mappingContext;
+	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final PartTree tree;
 
@@ -59,13 +61,13 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	}
 
 	/**
-	 * Returns the {@link CassandraMappingContext} used by this query to access mapping meta-data used to store (map)
-	 * objects to Cassandra tables.
+	 * Returns the {@link MappingContext} used by this query to access mapping meta-data used to store (map) objects to
+	 * Cassandra tables.
 	 *
-	 * @return the {@link CassandraMappingContext} used by this query.
-	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
+	 * @return the {@link MappingContext} used by this query.
+	 * @see CassandraMappingContext
 	 */
-	protected CassandraMappingContext getMappingContext() {
+	protected MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
 		return this.mappingContext;
 	}
 

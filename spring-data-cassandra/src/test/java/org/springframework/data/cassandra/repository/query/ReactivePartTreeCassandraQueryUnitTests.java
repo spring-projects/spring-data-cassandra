@@ -33,7 +33,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
@@ -55,12 +55,12 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	@Mock ReactiveCassandraOperations mockCassandraOperations;
 	@Mock UserTypeResolver userTypeResolver;
 
-	private BasicCassandraMappingContext mappingContext;
+	private CassandraMappingContext mappingContext;
 
 	@Before
 	public void setUp() {
 
-		mappingContext = new BasicCassandraMappingContext();
+		mappingContext = new CassandraMappingContext();
 		mappingContext.setUserTypeResolver(userTypeResolver);
 
 		when(mockCassandraOperations.getConverter()).thenReturn(new MappingCassandraConverter(mappingContext));

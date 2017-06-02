@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.convert.CustomConversions;
@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Test suite for applying {@link CustomConversions} to {@link MappingCassandraConverter} and
- * {@link BasicCassandraMappingContext}.
+ * {@link CassandraMappingContext}.
  *
  * @author Mark Paluch
  */
@@ -62,7 +62,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 		converters.add(new PersonWriteConverter());
 		CustomConversions customConversions = new CassandraCustomConversions(converters);
 
-		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+		CassandraMappingContext mappingContext = new CassandraMappingContext();
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.afterPropertiesSet();
 

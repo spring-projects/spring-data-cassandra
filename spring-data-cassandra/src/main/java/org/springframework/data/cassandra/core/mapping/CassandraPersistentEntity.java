@@ -21,7 +21,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.model.MutablePersistentEntity;
+import org.springframework.data.mapping.context.MappingContext;
 
 import com.datastax.driver.core.UserType;
 
@@ -32,9 +32,8 @@ import com.datastax.driver.core.UserType;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-// TODO: Not extend MutablePersistentEntity but rather PersistentEntity.
 public interface CassandraPersistentEntity<T>
-		extends MutablePersistentEntity<T, CassandraPersistentProperty>, ApplicationContextAware {
+		extends PersistentEntity<T, CassandraPersistentProperty>, ApplicationContextAware {
 
 	/**
 	 * Returns whether this entity represents a composite primary key.
@@ -78,7 +77,7 @@ public interface CassandraPersistentEntity<T>
 	UserType getUserType();
 
 	// TODO: Review if that's required or it can be handled in a different way
-	CassandraMappingContext getMappingContext();
+	MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext();
 
 	ApplicationContext getApplicationContext();
 }

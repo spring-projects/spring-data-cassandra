@@ -28,7 +28,7 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCreator;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.domain.User;
@@ -63,7 +63,7 @@ class CassandraOperationsProducer {
 	@ApplicationScoped
 	public CassandraOperations createCassandraOperations(Cluster cluster) throws Exception {
 
-		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+		CassandraMappingContext mappingContext = new CassandraMappingContext();
 		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(cluster, KEYSPACE_NAME));
 		mappingContext.setInitialEntitySet(Collections.singleton(User.class));
 		mappingContext.afterPropertiesSet();

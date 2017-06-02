@@ -35,7 +35,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -80,12 +80,6 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Mark Paluch
  * @author Antoine Toulme
  * @author John Blum
- * @see org.springframework.beans.factory.InitializingBean
- * @see org.springframework.context.ApplicationContextAware
- * @see org.springframework.beans.factory.BeanClassLoaderAware
- * @see org.springframework.data.convert.EntityConverter
- * @see org.springframework.data.convert.EntityReader
- * @see org.springframework.data.convert.EntityWriter
  */
 public class MappingCassandraConverter extends AbstractCassandraConverter
 		implements CassandraConverter, ApplicationContextAware, BeanClassLoaderAware {
@@ -99,10 +93,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private SpELContext spELContext;
 
 	/**
-	 * Create a new {@link MappingCassandraConverter} with a {@link BasicCassandraMappingContext}.
+	 * Create a new {@link MappingCassandraConverter} with a {@link CassandraMappingContext}.
 	 */
 	public MappingCassandraConverter() {
-		this(new BasicCassandraMappingContext());
+		this(new CassandraMappingContext());
 	}
 
 	/**
@@ -260,7 +254,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.convert.CassandraConverter#convertToColumnType(java.util.Optional)
+	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter#convertToColumnType(java.util.Optional)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -271,7 +265,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.convert.CassandraConverter#convertToColumnType(java.util.Optional, org.springframework.data.util.TypeInformation)
+	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter#convertToColumnType(java.util.Optional, org.springframework.data.util.TypeInformation)
 	 */
 	@Override
 	public <T> Optional<Object> convertToColumnType(Optional<T> obj, TypeInformation<?> typeInformation) {
@@ -732,8 +726,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return Optional.of((O) converted);
 		}
 
-		Optional<CassandraPersistentEntity<?>> optionalUdt = getMappingContext().getPersistentEntity(actualType.getType())
-				.filter(CassandraPersistentEntity::isUserDefinedType);
+		Optional<BasicCassandraPersistentEntity<?>> optionalUdt = getMappingContext()
+				.getPersistentEntity(actualType.getType()).filter(CassandraPersistentEntity::isUserDefinedType);
 
 		if (optionalUdt.isPresent()) {
 
@@ -871,7 +865,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return obj.map(it -> (T) readCollectionOrArray(property.getTypeInformation(), (Collection) it));
 		}
 
-		Optional<CassandraPersistentEntity<?>> persistentEntity = getMappingContext()
+		Optional<BasicCassandraPersistentEntity<?>> persistentEntity = getMappingContext()
 				.getPersistentEntity(property.getActualType()).filter(CassandraPersistentEntity::isUserDefinedType);
 
 		if (persistentEntity.isPresent() && obj.filter(it -> it instanceof UDTValue).isPresent()) {
@@ -907,7 +901,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return getPotentiallyConvertedSimpleRead(items, collectionType);
 		}
 
-		Optional<CassandraPersistentEntity<?>> cassandraPersistentEntity = componentType
+		Optional<BasicCassandraPersistentEntity<?>> cassandraPersistentEntity = componentType
 				.flatMap(it -> getMappingContext().getPersistentEntity(it))
 				.filter(CassandraPersistentEntity::isUserDefinedType);
 
@@ -945,7 +939,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		private final CassandraValueProvider parent;
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.mapping.CassandraPersistentProperty)
+		 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.mapping.CassandraPersistentProperty)
 		 */
 		@Override
 		public boolean hasProperty(CassandraPersistentProperty property) {

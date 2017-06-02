@@ -85,7 +85,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	}
 
 	/**
-	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type
+	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.core.mapping.CassandraMappingContext} handles type
 	 *             conversion.
 	 */
 	@Deprecated
@@ -95,7 +95,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	}
 
 	/**
-	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type
+	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.core.mapping.CassandraMappingContext} handles type
 	 *             conversion.
 	 */
 	@Deprecated
@@ -174,7 +174,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 * @param declaredReturnType
 	 * @param returnedUnwrappedObjectType
 	 * @return
-	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type
+	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.core.mapping.CassandraMappingContext} handles type
 	 *             conversion.
 	 */
 	@Deprecated
@@ -204,7 +204,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 * @param resultSet
 	 * @param type
 	 * @return
-	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.mapping.CassandraMappingContext} handles type
+	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.core.mapping.CassandraMappingContext} handles type
 	 *             conversion.
 	 */
 	@Deprecated

@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
@@ -48,7 +47,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	@Mock ProjectionFactory projectionFactory;
 
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PossibleRepository.class);
-	CassandraMappingContext context = new BasicCassandraMappingContext();
+	CassandraMappingContext context = new CassandraMappingContext();
 
 	@Test // DATACASS-296
 	public void returnsCassandraSimpleType() throws Exception {

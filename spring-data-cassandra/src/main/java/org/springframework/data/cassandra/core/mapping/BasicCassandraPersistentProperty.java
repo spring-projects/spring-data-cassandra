@@ -36,6 +36,7 @@ import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.Ordering;
 import org.springframework.data.cql.core.PrimaryKeyType;
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.Property;
@@ -326,8 +327,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	protected DataType getDataTypeFor(Class<?> javaType) {
 
-		Optional<CassandraPersistentEntity<?>> optionalEntity = getOwner().getMappingContext()
-				.getPersistentEntity(javaType);
+		Optional<CassandraPersistentEntity<?>> optionalEntity = getOwner().getMappingContext().getPersistentEntity(javaType)
+				.map(CassandraPersistentEntity.class::cast);
 
 		Optional<CassandraPersistentEntity<?>> udtEntity = optionalEntity
 				.filter(CassandraPersistentEntity::isUserDefinedType);
@@ -493,7 +494,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
 
-		CassandraMappingContext mappingContext = getOwner().getMappingContext();
+		MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext = getOwner()
+				.getMappingContext();
 
 		Assert.state(mappingContext != null, "CassandraMappingContext needed");
 

@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cql.core.CqlIdentifier;
@@ -55,7 +55,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 	@Mock TableMetadata person;
 	@Mock TableMetadata contact;
 
-	BasicCassandraMappingContext context = new BasicCassandraMappingContext();
+	CassandraMappingContext context = new CassandraMappingContext();
 
 	// DATACASS-355
 	@Before

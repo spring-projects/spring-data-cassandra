@@ -30,7 +30,6 @@ import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -141,7 +140,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	@Bean
 	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
 
-		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+		CassandraMappingContext mappingContext = new CassandraMappingContext();
 
 		mappingContext.setBeanClassLoader(beanClassLoader);
 		mappingContext.setInitialEntitySet(getInitialEntitySet());

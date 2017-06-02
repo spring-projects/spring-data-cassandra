@@ -33,7 +33,6 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.util.StringUtils;
 
@@ -45,7 +44,7 @@ import com.datastax.driver.core.Session;
  * via their default implementation types:
  * <ul>
  * <li>{@link CassandraOperations} via {@link CassandraTemplate}</li>
- * <li>{@link CassandraMappingContext} via {@link BasicCassandraMappingContext}</li>
+ * <li>{@link CassandraMappingContext} via {@link CassandraMappingContext}</li>
  * <li>{@link CassandraConverter} via {@link MappingCassandraConverter}</li>
  * </ul>
  * <p/>
@@ -55,8 +54,8 @@ import com.datastax.driver.core.Session;
  * when creating a default definition for the {@link CassandraConverter}.
  * <p/>
  * If a single definition of a required type is present, then it is used. For example, if there is already a
- * {@link CassandraMappingContext} definition present, then it will be used in the {@link BasicCassandraMappingContext}
- * bean definition.
+ * {@link CassandraMappingContext} definition present, then it will be used in the {@link CassandraMappingContext} bean
+ * definition.
  * <p/>
  * It requires that a single {@link Session} or {@link CassandraSessionFactoryBean} definition be present. As described
  * above, multiple {@link Session} definitions, multiple {@link CassandraSessionFactoryBean} definitions, or both a
@@ -154,7 +153,7 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanFactoryPost
 	private BeanDefinitionHolder registerDefaultContext(BeanDefinitionRegistry registry) {
 
 		BeanDefinitionHolder contextBean = new BeanDefinitionHolder(
-				BeanDefinitionBuilder.genericBeanDefinition(BasicCassandraMappingContext.class).getBeanDefinition(),
+				BeanDefinitionBuilder.genericBeanDefinition(CassandraMappingContext.class).getBeanDefinition(),
 				DefaultBeanNames.CONTEXT);
 
 		registry.registerBeanDefinition(contextBean.getBeanName(), contextBean.getBeanDefinition());

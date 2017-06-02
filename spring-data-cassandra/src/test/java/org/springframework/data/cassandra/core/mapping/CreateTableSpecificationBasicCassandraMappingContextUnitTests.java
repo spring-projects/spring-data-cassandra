@@ -48,14 +48,14 @@ import com.datastax.driver.core.UserType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Unit tests for {@link BasicCassandraMappingContext} targeted on {@link CreateTableSpecification}.
+ * Unit tests for {@link CassandraMappingContext} targeted on {@link CreateTableSpecification}.
  *
  * @author Mark Paluch
  * @soundtrack Black Rose - Volbeat
  */
 public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
-	private BasicCassandraMappingContext ctx = new BasicCassandraMappingContext();
+	private CassandraMappingContext ctx = new CassandraMappingContext();
 
 	@Before
 	public void setUp() throws Exception {

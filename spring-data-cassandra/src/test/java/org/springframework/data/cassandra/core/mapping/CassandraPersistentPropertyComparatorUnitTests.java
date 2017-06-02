@@ -176,7 +176,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	@Test // DATACASS-352
 	public void columnNameComparisonShouldHonorContract() throws Exception {
 
-		BasicCassandraMappingContext context = new BasicCassandraMappingContext();
+		CassandraMappingContext context = new CassandraMappingContext();
 		CassandraPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(TwoColumns.class);
 
 		CassandraPersistentProperty annotated = persistentEntity.getRequiredPersistentProperty("annotated");

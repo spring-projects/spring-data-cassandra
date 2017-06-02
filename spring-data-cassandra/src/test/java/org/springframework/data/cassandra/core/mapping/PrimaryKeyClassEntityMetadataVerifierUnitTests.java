@@ -33,7 +33,7 @@ import org.springframework.data.mapping.model.MappingException;
 public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 
 	private PrimaryKeyClassEntityMetadataVerifier verifier = new PrimaryKeyClassEntityMetadataVerifier();
-	private BasicCassandraMappingContext context = new BasicCassandraMappingContext();
+	private CassandraMappingContext context = new CassandraMappingContext();
 
 	@Before
 	public void setUp() throws Exception {

@@ -34,7 +34,8 @@ import org.springframework.data.mapping.model.MappingException;
 public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 
 	private BasicCassandraPersistentEntityMetadataVerifier verifier = new BasicCassandraPersistentEntityMetadataVerifier();
-	private BasicCassandraMappingContext context = new BasicCassandraMappingContext();
+
+	private CassandraMappingContext context = new CassandraMappingContext();
 
 	@Before
 	public void setUp() throws Exception {

@@ -70,7 +70,7 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.convert.CassandraRowValueProvider#getRow()
+	 * @see org.springframework.data.cassandra.core.convert.CassandraRowValueProvider#getRow()
 	 */
 	@Override
 	public Row getRow() {
@@ -78,7 +78,7 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.mapping.CassandraPersistentProperty)
+	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.mapping.CassandraPersistentProperty)
 	 */
 	@Override
 	public boolean hasProperty(CassandraPersistentProperty property) {

@@ -26,6 +26,7 @@ import org.springframework.data.cassandra.core.convert.QueryMapper;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.CqlProvider;
@@ -38,6 +39,7 @@ import org.springframework.data.cql.core.session.DefaultReactiveSessionFactory;
 import org.springframework.data.cql.core.session.ReactiveResultSet;
 import org.springframework.data.cql.core.session.ReactiveSession;
 import org.springframework.data.cql.core.session.ReactiveSessionFactory;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -66,24 +68,13 @@ import com.datastax.driver.core.querybuilder.Update;
  *
  * @author Mark Paluch
  * @author John Blum
- * @see org.springframework.data.cql.core.ReactiveCqlOperations
- * @see org.springframework.data.cassandra.core.convert.CassandraConverter
- * @see org.springframework.data.cassandra.core.convert.QueryMapper
- * @see org.springframework.data.cassandra.core.convert.UpdateMapper
- * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
- * @see com.datastax.driver.core.querybuilder.Delete
- * @see com.datastax.driver.core.querybuilder.Insert
- * @see com.datastax.driver.core.querybuilder.QueryBuilder
- * @see com.datastax.driver.core.querybuilder.Select
- * @see com.datastax.driver.core.querybuilder.Truncate
- * @see com.datastax.driver.core.querybuilder.Update
  * @since 2.0
  */
 public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	private final CassandraConverter converter;
 
-	private final CassandraMappingContext mappingContext;
+	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final ReactiveCqlOperations cqlOperations;
 
@@ -182,9 +173,9 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 * objects to Cassandra tables.
 	 *
 	 * @return the {@link CassandraMappingContext} used by this template.
-	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
+	 * @see CassandraMappingContext
 	 */
-	protected CassandraMappingContext getMappingContext() {
+	protected MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
 		return this.mappingContext;
 	}
 

@@ -105,7 +105,7 @@ public class CassandraCompositePrimaryKeyUnitTests {
 
 	@Before
 	public void setup() {
-		context = new BasicCassandraMappingContext();
+		context = new CassandraMappingContext();
 		thing = context.getRequiredPersistentEntity(ClassTypeInformation.from(Thing.class));
 		key = context.getRequiredPersistentEntity(ClassTypeInformation.from(Key.class));
 	}

@@ -40,6 +40,7 @@ import org.springframework.data.cql.core.SessionCallback;
 import org.springframework.data.cql.core.WriteOptions;
 import org.springframework.data.cql.core.session.DefaultSessionFactory;
 import org.springframework.data.cql.core.session.SessionFactory;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -75,7 +76,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 	private final CassandraConverter converter;
 
-	private final CassandraMappingContext mappingContext;
+	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final CqlOperations cqlOperations;
 
@@ -174,9 +175,9 @@ public class CassandraTemplate implements CassandraOperations {
 	 * object to Cassandra tables.
 	 *
 	 * @return the {@link CassandraMappingContext} used by this template.
-	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
+	 * @see CassandraMappingContext
 	 */
-	protected CassandraMappingContext getMappingContext() {
+	protected MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
 		return this.mappingContext;
 	}
 

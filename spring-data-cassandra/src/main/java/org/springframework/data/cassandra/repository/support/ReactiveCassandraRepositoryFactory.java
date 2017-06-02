@@ -19,12 +19,13 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.ReactivePartTreeCassandraQuery;
 import org.springframework.data.cassandra.repository.query.ReactiveStringBasedCassandraQuery;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -49,7 +50,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 
 	private final ReactiveCassandraOperations operations;
 
-	private final CassandraMappingContext mappingContext;
+	private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
 
 	/**
 	 * Create a new {@link ReactiveCassandraRepositoryFactory} with the given {@link ReactiveCassandraOperations}.
@@ -113,10 +114,11 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 
 		private final EvaluationContextProvider evaluationContextProvider;
 		private final ReactiveCassandraOperations operations;
-		private final CassandraMappingContext mappingContext;
+		private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
 
 		CassandraQueryLookupStrategy(ReactiveCassandraOperations operations,
-				EvaluationContextProvider evaluationContextProvider, CassandraMappingContext mappingContext) {
+				EvaluationContextProvider evaluationContextProvider,
+				MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext) {
 
 			this.evaluationContextProvider = evaluationContextProvider;
 			this.operations = operations;

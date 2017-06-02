@@ -26,7 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cql.core.ReactiveCqlOperations;
@@ -69,7 +69,7 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	public void setUp() {
 
 		this.metadata = AbstractRepositoryMetadata.getMetadata(SampleRepository.class);
-		this.converter = new MappingCassandraConverter(new BasicCassandraMappingContext());
+		this.converter = new MappingCassandraConverter(new CassandraMappingContext());
 		this.factory = new SpelAwareProxyProjectionFactory();
 
 		this.converter.afterPropertiesSet();

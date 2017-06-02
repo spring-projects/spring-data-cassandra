@@ -37,7 +37,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.Query;
@@ -82,7 +82,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 	@Autowired AllPossibleTypesRepository allPossibleTypesRepository;
 	@Autowired Session session;
-	@Autowired BasicCassandraMappingContext mappingContext;
+	@Autowired CassandraMappingContext mappingContext;
 	@Autowired MappingCassandraConverter converter;
 
 	@Before

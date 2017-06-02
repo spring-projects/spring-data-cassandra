@@ -27,8 +27,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.repository.Repository;
@@ -46,7 +46,7 @@ public class CassandraRepositoryFactoryUnitTests {
 
 	@Mock CassandraMappingContext mappingContext;
 
-	@Mock CassandraPersistentEntity entity;
+	@Mock BasicCassandraPersistentEntity entity;
 
 	@Mock CassandraTemplate template;
 

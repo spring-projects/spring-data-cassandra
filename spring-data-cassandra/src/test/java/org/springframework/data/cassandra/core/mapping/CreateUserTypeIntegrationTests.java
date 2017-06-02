@@ -42,7 +42,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.UserType;
 
 /**
- * Integration tests for creation of UDT types through {@link BasicCassandraMappingContext}.
+ * Integration tests for creation of UDT types through {@link CassandraMappingContext}.
  *
  * @author Mark Paluch
  */
@@ -56,7 +56,7 @@ public class CreateUserTypeIntegrationTests extends AbstractSpringDataEmbeddedCa
 		@Bean
 		public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
 
-			BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+			CassandraMappingContext mappingContext = new CassandraMappingContext();
 
 			mappingContext.setInitialEntitySet(new HashSet<>(Arrays.asList(Car.class, Engine.class, Manufacturer.class)));
 

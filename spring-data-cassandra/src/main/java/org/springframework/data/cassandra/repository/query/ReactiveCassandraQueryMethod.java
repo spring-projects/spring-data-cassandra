@@ -17,8 +17,10 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.lang.reflect.Method;
 
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
@@ -43,7 +45,7 @@ public class ReactiveCassandraQueryMethod extends CassandraQueryMethod {
 	 * @param mappingContext must not be {@literal null}.
 	 */
 	public ReactiveCassandraQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory projectionFactory,
-			CassandraMappingContext mappingContext) {
+			MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext) {
 
 		super(method, metadata, projectionFactory, mappingContext);
 

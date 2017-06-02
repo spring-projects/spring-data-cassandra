@@ -32,7 +32,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.Person;
@@ -51,7 +51,7 @@ import com.datastax.driver.core.querybuilder.Insert;
 @SuppressWarnings("unchecked")
 public class SimpleCassandraRepositoryUnitTests {
 
-	BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+	CassandraMappingContext mappingContext = new CassandraMappingContext();
 	MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
 
 	SimpleCassandraRepository<Object, ? extends Serializable> repository;

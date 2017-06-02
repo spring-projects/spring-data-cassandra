@@ -27,6 +27,7 @@ import org.springframework.data.cassandra.core.convert.QueryMapper;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cql.core.AsyncCqlOperations;
 import org.springframework.data.cql.core.AsyncCqlTemplate;
@@ -39,6 +40,7 @@ import org.springframework.data.cql.core.WriteOptions;
 import org.springframework.data.cql.core.session.DefaultSessionFactory;
 import org.springframework.data.cql.core.session.SessionFactory;
 import org.springframework.data.cql.support.CqlExceptionTranslator;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -69,14 +71,6 @@ import com.datastax.driver.core.querybuilder.Update;
  *
  * @author Mark Paluch
  * @author John Blum
- * @see org.springframework.cassandra.core.AsyncCqlOperations
- * @see org.springframework.data.cassandra.core.AsyncCassandraOperations
- * @see com.datastax.driver.core.querybuilder.Delete
- * @see com.datastax.driver.core.querybuilder.Insert
- * @see com.datastax.driver.core.querybuilder.QueryBuilder
- * @see com.datastax.driver.core.querybuilder.Select
- * @see com.datastax.driver.core.querybuilder.Truncate
- * @see com.datastax.driver.core.querybuilder.Update
  * @since 2.0
  */
 public class AsyncCassandraTemplate implements AsyncCassandraOperations {
@@ -85,7 +79,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 	private final CassandraConverter converter;
 
-	private final CassandraMappingContext mappingContext;
+	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final CqlExceptionTranslator exceptionTranslator;
 
@@ -186,9 +180,9 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 * objects to Cassandra tables.
 	 *
 	 * @return the {@link CassandraMappingContext} used by this template.
-	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext
+	 * @see CassandraMappingContext
 	 */
-	protected CassandraMappingContext getMappingContext() {
+	protected MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
 		return this.mappingContext;
 	}
 

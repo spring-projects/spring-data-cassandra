@@ -47,18 +47,17 @@ import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
 
 /**
- * Unit tests for {@link BasicCassandraMappingContext}.
+ * Unit tests for {@link CassandraMappingContext}.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class BasicCassandraMappingContextUnitTests {
+public class CassandraMappingContextUnitTests {
 
-	BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+	CassandraMappingContext mappingContext = new CassandraMappingContext();
 
 	@Before
 	public void before() {
-
 		mappingContext.setUserTypeResolver(typeName -> null);
 	}
 
@@ -77,10 +76,7 @@ public class BasicCassandraMappingContextUnitTests {
 
 		mappingContext.getRequiredPersistentEntity(X.class);
 
-		assertThat(mappingContext.getExistingPersistentEntity(X.class)).isNotNull();
 		assertThat(mappingContext.contains(Y.class)).isFalse();
-		assertThat(mappingContext.getNonPrimaryKeyEntities()).hasSize(1);
-		assertThat(mappingContext.getPrimaryKeyEntities()).isEmpty();
 		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
 		assertThat(mappingContext.getTableEntities()).hasSize(1);
 		assertThat(mappingContext.contains(X.class)).isTrue();
@@ -364,9 +360,6 @@ public class BasicCassandraMappingContextUnitTests {
 
 		assertThat(persistentEntity.isUserDefinedType()).isTrue();
 
-		assertThat(mappingContext.getExistingPersistentEntity(MappedUdt.class)).isNotNull();
-		assertThat(mappingContext.getNonPrimaryKeyEntities()).isEmpty();
-		assertThat(mappingContext.getPrimaryKeyEntities()).isEmpty();
 		assertThat(mappingContext.getUserDefinedTypeEntities()).hasSize(1);
 		assertThat(mappingContext.getTableEntities()).hasSize(0);
 		assertThat(mappingContext.contains(MappedUdt.class)).isTrue();
@@ -375,7 +368,8 @@ public class BasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-172
 	public void getNonPrimaryKeyEntitiesShouldNotContainUdt() {
 
-		CassandraPersistentEntity<?> existingPersistentEntity = mappingContext.getRequiredPersistentEntity(MappedUdt.class);
+		BasicCassandraPersistentEntity<?> existingPersistentEntity = mappingContext
+				.getRequiredPersistentEntity(MappedUdt.class);
 
 		assertThat(mappingContext.getTableEntities()).doesNotContain(existingPersistentEntity);
 	}
@@ -383,7 +377,8 @@ public class BasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-172, DATACASS-359
 	public void getPersistentEntitiesShouldContainUdt() {
 
-		CassandraPersistentEntity<?> existingPersistentEntity = mappingContext.getRequiredPersistentEntity(MappedUdt.class);
+		BasicCassandraPersistentEntity<?> existingPersistentEntity = mappingContext
+				.getRequiredPersistentEntity(MappedUdt.class);
 
 		assertThat(mappingContext.getPersistentEntities(true)).contains(existingPersistentEntity);
 		assertThat(mappingContext.getUserDefinedTypeEntities()).contains(existingPersistentEntity);
@@ -468,8 +463,6 @@ public class BasicCassandraMappingContextUnitTests {
 			assertThat(e).isInstanceOf(VerifierMappingExceptions.class);
 		}
 
-		assertThat(mappingContext.getNonPrimaryKeyEntities()).isEmpty();
-		assertThat(mappingContext.getPrimaryKeyEntities()).isEmpty();
 		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
 		assertThat(mappingContext.getTableEntities()).isEmpty();
 		assertThat(mappingContext.contains(InvalidEntityWithIdAndPrimaryKeyColumn.class)).isFalse();

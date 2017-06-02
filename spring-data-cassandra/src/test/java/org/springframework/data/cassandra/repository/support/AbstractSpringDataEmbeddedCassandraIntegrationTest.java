@@ -37,7 +37,8 @@ public abstract class AbstractSpringDataEmbeddedCassandraIntegrationTest
 	 */
 	public void deleteAllEntities() {
 
-		Stream<CassandraPersistentEntity<?>> stream = template.getConverter().getMappingContext().getTableEntities()
+		Stream<? extends CassandraPersistentEntity<?>> stream = template.getConverter().getMappingContext()
+				.getTableEntities()
 				.stream();
 
 		stream.map(CassandraPersistentEntity::getType).filter(type -> !type.isInterface()).forEach(template::truncate);
