@@ -46,7 +46,7 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 		converters.addAll(CassandraThreeTenBackPortConverters.getConvertersToRegister());
 
 		STORE_CONVERTERS = Collections.unmodifiableList(converters);
-		STORE_CONVERSIONS = StoreConversions.of(new CassandraSimpleTypeHolder(), STORE_CONVERTERS);
+		STORE_CONVERSIONS = StoreConversions.of(CassandraSimpleTypeHolder.HOLDER, STORE_CONVERTERS);
 	}
 
 	/**

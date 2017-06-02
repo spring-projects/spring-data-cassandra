@@ -81,8 +81,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 * @param simpleTypeHolder mapping of Java [simple|wrapper] types to Cassandra data types.
 	 */
 	public BasicCassandraPersistentProperty(Property property, CassandraPersistentEntity<?> owner,
-			CassandraSimpleTypeHolder simpleTypeHolder) {
-
+			SimpleTypeHolder simpleTypeHolder) {
 		this(property, owner, simpleTypeHolder, null);
 	}
 
@@ -100,10 +99,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		super(property, owner, simpleTypeHolder);
 
 		this.userTypeResolver = userTypeResolver;
-
-		if (owner.getApplicationContext() != null) {
-			setApplicationContext(owner.getApplicationContext());
-		}
 	}
 
 	/* (non-Javadoc)
@@ -247,12 +242,38 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return userType;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isIndexed()
-	 */
-	@Override
-	public boolean isIndexed() {
-		return isAnnotationPresent(Indexed.class);
+	private DataType getDataTypeFor(DataType.Name dataTypeName) {
+
+		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(dataTypeName);
+
+		if (dataType == null) {
+			throw new InvalidDataAccessApiUsageException(String.format(
+					"Only primitive types are allowed inside Collections for property [%1$s] of type [%2$s] in entity [%3$s]",
+					getName(), getType(), getOwner().getName()));
+		}
+
+		return dataType;
+	}
+
+	private DataType getDataTypeFor(Class<?> javaType) {
+
+		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(javaType);
+
+		if (dataType == null) {
+			throw new InvalidDataAccessApiUsageException(String.format(
+					"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
+					getName(), getType(), getOwner().getName()));
+		}
+
+		return dataType;
+	}
+
+	private void ensureTypeArguments(int args, int expected) {
+		if (args != expected) {
+			throw new InvalidDataAccessApiUsageException(
+					String.format("Expected [%1$s] typed arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]",
+							expected, getName(), getType(), getOwner().getName()));
+		}
 	}
 
 	/* (non-Javadoc)
@@ -289,40 +310,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		return findAnnotation(PrimaryKeyColumn.class)
 				.filter(primaryKeyColumn -> PrimaryKeyType.CLUSTERED.equals(primaryKeyColumn.type())).isPresent();
-	}
-
-	protected DataType getDataTypeFor(DataType.Name dataTypeName) {
-
-		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(dataTypeName);
-
-		if (dataType == null) {
-			throw new InvalidDataAccessApiUsageException(String.format(
-					"Only primitive types are allowed inside Collections for property [%1$s] of type [%2$s] in entity [%3$s]",
-					getName(), getType(), getOwner().getName()));
-		}
-
-		return dataType;
-	}
-
-	protected DataType getDataTypeFor(Class<?> javaType) {
-
-		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(javaType);
-
-		if (dataType == null) {
-			throw new InvalidDataAccessApiUsageException(String.format(
-					"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
-					getName(), getType(), getOwner().getName()));
-		}
-
-		return dataType;
-	}
-
-	protected void ensureTypeArguments(int args, int expected) {
-		if (args != expected) {
-			throw new InvalidDataAccessApiUsageException(
-					String.format("Expected [%1$s] typed arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]",
-							expected, getName(), getType(), getOwner().getName()));
-		}
 	}
 
 	private CqlIdentifier determineColumnName() {

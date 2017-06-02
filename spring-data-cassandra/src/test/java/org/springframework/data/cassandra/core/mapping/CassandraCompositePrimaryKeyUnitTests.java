@@ -43,7 +43,45 @@ import com.datastax.driver.core.DataType;
  */
 public class CassandraCompositePrimaryKeyUnitTests {
 
-	private static final CassandraSimpleTypeHolder SIMPLE_TYPE_HOLDER = new CassandraSimpleTypeHolder();
+	CassandraMappingContext context;
+
+	CassandraPersistentEntity<?> entity;
+
+	CassandraPersistentEntity<?> key;
+
+	@Before
+	public void setup() {
+
+		context = new CassandraMappingContext();
+		entity = context.getRequiredPersistentEntity(ClassTypeInformation.from(TypeWithCompositeKey.class));
+		key = context.getRequiredPersistentEntity(ClassTypeInformation.from(CompositeKey.class));
+	}
+
+	@Test
+	public void validateMappingInfo() {
+
+		Field field = ReflectionUtils.findField(TypeWithCompositeKey.class, "id");
+		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(Property.of(field), entity,
+				CassandraSimpleTypeHolder.HOLDER);
+		assertThat(property.isIdProperty()).isTrue();
+		assertThat(property.isCompositePrimaryKey()).isTrue();
+
+		CreateTableSpecification spec = context.getCreateTableSpecificationFor(entity);
+
+		List<ColumnSpecification> partitionKeyColumns = spec.getPartitionKeyColumns();
+		assertThat(partitionKeyColumns).hasSize(1);
+		ColumnSpecification partitionKeyColumn = partitionKeyColumns.get(0);
+		assertThat(partitionKeyColumn.getName().toCql()).isEqualTo("z");
+		assertThat(partitionKeyColumn.getKeyType()).isEqualTo(PrimaryKeyType.PARTITIONED);
+		assertThat(partitionKeyColumn.getType()).isEqualTo(DataType.text());
+
+		List<ColumnSpecification> clusteredKeyColumns = spec.getClusteredKeyColumns();
+		assertThat(clusteredKeyColumns).hasSize(1);
+		ColumnSpecification clusteredKeyColumn = clusteredKeyColumns.get(0);
+		assertThat(clusteredKeyColumn.getName().toCql()).isEqualTo("a");
+		assertThat(clusteredKeyColumn.getKeyType()).isEqualTo(PrimaryKeyType.CLUSTERED);
+		assertThat(partitionKeyColumn.getType()).isEqualTo(DataType.text());
+	}
 
 	@PrimaryKeyClass
 	@EqualsAndHashCode
@@ -64,45 +102,5 @@ public class CassandraCompositePrimaryKeyUnitTests {
 		Date time;
 
 		@Column("message") String text;
-	}
-
-	CassandraMappingContext context;
-
-	CassandraPersistentEntity<?> entity;
-
-	CassandraPersistentEntity<?> key;
-
-	@Before
-	public void setup() {
-
-		context = new CassandraMappingContext();
-		entity = context.getRequiredPersistentEntity(ClassTypeInformation.from(TypeWithCompositeKey.class));
-		key = context.getRequiredPersistentEntity(ClassTypeInformation.from(CompositeKey.class));
-	}
-
-	@Test
-	public void validateMappingInfo() {
-
-		Field field = ReflectionUtils.findField(TypeWithCompositeKey.class, "id");
-		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(Property.of(field), entity,
-				SIMPLE_TYPE_HOLDER);
-		assertThat(property.isIdProperty()).isTrue();
-		assertThat(property.isCompositePrimaryKey()).isTrue();
-
-		CreateTableSpecification spec = context.getCreateTableSpecificationFor(entity);
-
-		List<ColumnSpecification> partitionKeyColumns = spec.getPartitionKeyColumns();
-		assertThat(partitionKeyColumns).hasSize(1);
-		ColumnSpecification partitionKeyColumn = partitionKeyColumns.get(0);
-		assertThat(partitionKeyColumn.getName().toCql()).isEqualTo("z");
-		assertThat(partitionKeyColumn.getKeyType()).isEqualTo(PrimaryKeyType.PARTITIONED);
-		assertThat(partitionKeyColumn.getType()).isEqualTo(DataType.text());
-
-		List<ColumnSpecification> clusteredKeyColumns = spec.getClusteredKeyColumns();
-		assertThat(clusteredKeyColumns).hasSize(1);
-		ColumnSpecification clusteredKeyColumn = clusteredKeyColumns.get(0);
-		assertThat(clusteredKeyColumn.getName().toCql()).isEqualTo("a");
-		assertThat(clusteredKeyColumn.getKeyType()).isEqualTo(PrimaryKeyType.CLUSTERED);
-		assertThat(partitionKeyColumn.getType()).isEqualTo(DataType.text());
 	}
 }

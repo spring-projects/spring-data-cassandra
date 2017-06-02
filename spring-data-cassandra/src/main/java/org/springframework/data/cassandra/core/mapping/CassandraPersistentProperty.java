@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core.mapping;
 import java.util.Optional;
 
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.Ordering;
@@ -59,11 +58,6 @@ public interface CassandraPersistentProperty
 	DataType getDataType();
 
 	/**
-	 * Whether the property has a secondary index on this column.
-	 */
-	boolean isIndexed();
-
-	/**
 	 * Whether the property is a composite primary key.
 	 */
 	boolean isCompositePrimaryKey();
@@ -86,13 +80,10 @@ public interface CassandraPersistentProperty
 	 */
 	boolean isClusterKeyColumn();
 
-	@Override
-	CassandraPersistentEntity<?> getOwner();
-
 	/**
 	 * Whether to force-quote the column names of this property.
 	 *
-	 * @param forceQuote
+	 * @param forceQuote {@literal true} to enforce quoting.
 	 * @see CassandraPersistentProperty#getColumnName()
 	 */
 	void setForceQuote(boolean forceQuote);
@@ -112,14 +103,4 @@ public interface CassandraPersistentProperty
 	 * @return a boolean indicating whether this property type is a {@link java.util.Map}.
 	 */
 	boolean isMapLike();
-
-	enum PropertyToFieldNameConverter implements Converter<CassandraPersistentProperty, String> {
-
-		INSTANCE;
-
-		@Override
-		public String convert(CassandraPersistentProperty property) {
-			return property.getColumnName().toCql();
-		}
-	}
 }

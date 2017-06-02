@@ -17,15 +17,12 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.TypeInformation;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
@@ -76,6 +73,13 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	}
 
 	public static final SimpleTypeHolder HOLDER = new CassandraSimpleTypeHolder();
+
+	/**
+	 * Create a new {@link CassandraSimpleTypeHolder} instance.
+	 */
+	private CassandraSimpleTypeHolder() {
+		super(CASSANDRA_SIMPLE_TYPES, true);
+	}
 
 	/**
 	 * @return the map between {@link Name} and {@link DataType}.
@@ -136,7 +140,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	/**
 	 * Returns the {@link DataType} for a {@link DataType.Name}.
 	 *
-	 * @param name
+	 * @param name must not be {@literal null}.
 	 * @return
 	 */
 	public static DataType getDataTypeFor(DataType.Name name) {
@@ -146,7 +150,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	/**
 	 * Returns the default {@link DataType} for a {@link Class}.
 	 *
-	 * @param javaClass
+	 * @param javaClass must not be {@literal null}.
 	 * @return
 	 */
 	public static DataType getDataTypeFor(Class<?> javaClass) {
@@ -158,26 +162,4 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		return classToDataType.get(javaClass);
 	}
 
-	public static DataType.Name[] getDataTypeNamesFrom(List<TypeInformation<?>> arguments) {
-
-		DataType.Name[] array = new DataType.Name[arguments.size()];
-
-		for (int i = 0; i != array.length; i++) {
-			TypeInformation<?> typeInfo = arguments.get(i);
-			DataType dataType = getDataTypeFor(typeInfo.getType());
-
-			if (dataType == null) {
-				throw new InvalidDataAccessApiUsageException(
-						String.format("Did not find appropriate primitive DataType for type '%s'", typeInfo.getType()));
-			}
-
-			array[i] = dataType.getName();
-		}
-
-		return array;
-	}
-
-	public CassandraSimpleTypeHolder() {
-		super(CASSANDRA_SIMPLE_TYPES, true);
-	}
 }

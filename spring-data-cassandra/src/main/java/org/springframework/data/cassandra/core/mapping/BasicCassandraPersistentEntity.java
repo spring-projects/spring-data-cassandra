@@ -98,6 +98,19 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 				.orElseGet(this::determineDefaultName);
 	}
 
+	CqlIdentifier determineDefaultName() {
+		return cqlId(getType().getSimpleName(), false);
+	}
+
+	CqlIdentifier determineName(String value, boolean forceQuote) {
+
+		if (!StringUtils.hasText(value)) {
+			return cqlId(getType().getSimpleName(), forceQuote);
+		}
+
+		return cqlId(spelContext == null ? value : SpelUtils.evaluate(value, spelContext), forceQuote);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.BasicPersistentEntity#addAssociation(org.springframework.data.mapping.Association)
 	 */
@@ -152,14 +165,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
 		spelContext.setBeanResolver(new BeanFactoryResolver(context));
 		spelContext.setRootObject(context);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getApplicationContext()
-	 */
-	@Override
-	public ApplicationContext getApplicationContext() {
-		return context;
 	}
 
 	/* (non-Javadoc)
@@ -223,18 +228,5 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public UserType getUserType() {
 		return null;
-	}
-
-	protected CqlIdentifier determineDefaultName() {
-		return cqlId(getType().getSimpleName(), false);
-	}
-
-	protected CqlIdentifier determineName(String value, boolean forceQuote) {
-
-		if (!StringUtils.hasText(value)) {
-			return cqlId(getType().getSimpleName(), forceQuote);
-		}
-
-		return cqlId(spelContext == null ? value : SpelUtils.evaluate(value, spelContext), forceQuote);
 	}
 }

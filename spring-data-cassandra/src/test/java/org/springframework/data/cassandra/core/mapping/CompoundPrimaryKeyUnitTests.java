@@ -69,6 +69,6 @@ public class CompoundPrimaryKeyUnitTests {
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Property property) {
-		return new BasicCassandraPersistentProperty(property, entity, new CassandraSimpleTypeHolder());
+		return new BasicCassandraPersistentProperty(property, entity, CassandraSimpleTypeHolder.HOLDER);
 	}
 }

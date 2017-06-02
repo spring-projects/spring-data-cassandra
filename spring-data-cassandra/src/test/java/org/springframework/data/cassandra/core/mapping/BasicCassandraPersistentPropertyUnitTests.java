@@ -99,7 +99,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 		Field field = ReflectionUtils.findField(type, fieldName);
 
-		return new BasicCassandraPersistentProperty(Property.of(field), getEntity(type), new CassandraSimpleTypeHolder());
+		return new BasicCassandraPersistentProperty(Property.of(field), getEntity(type), CassandraSimpleTypeHolder.HOLDER);
 	}
 
 	private <T> BasicCassandraPersistentEntity<T> getEntity(Class<T> type) {

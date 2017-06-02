@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import java.util.Optional;
-
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.TypeInformation;
@@ -63,8 +61,8 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	@Override
 	protected CqlIdentifier determineTableName() {
 
-		Optional<UserDefinedType> typeAnnotation = findAnnotation(UserDefinedType.class);
-		return typeAnnotation.map(userDefinedType -> determineName(userDefinedType.value(), userDefinedType.forceQuote()))
+		return findAnnotation(UserDefinedType.class) //
+				.map(userDefinedType -> determineName(userDefinedType.value(), userDefinedType.forceQuote())) //
 				.orElseGet(super::determineDefaultName);
 	}
 

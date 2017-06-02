@@ -122,6 +122,22 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter#getMappingContext()
+	 */
+	@Override
+	public CassandraMappingContext getMappingContext() {
+		return mappingContext;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <R> R readRow(Class<R> type, Row row) {
 
@@ -288,6 +304,15 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(beanClassLoaderClass);
 
 			write(source, sink, entity);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> Class<T> transformClassToBeanClassLoaderClass(Class<T> entity) {
+		try {
+			return (Class<T>) ClassUtils.forName(entity.getName(), beanClassLoader);
+		} catch (ClassNotFoundException | LinkageError e) {
+			return entity;
 		}
 	}
 
@@ -591,25 +616,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return id;
 	}
 
-	@SuppressWarnings("unchecked")
-	protected <T> Class<T> transformClassToBeanClassLoaderClass(Class<T> entity) {
-		try {
-			return (Class<T>) ClassUtils.forName(entity.getName(), beanClassLoader);
-		} catch (ClassNotFoundException | LinkageError e) {
-			return entity;
-		}
-	}
-
-	@Override
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.beanClassLoader = classLoader;
-	}
-
-	@Override
-	public CassandraMappingContext getMappingContext() {
-		return mappingContext;
-	}
-
 	/**
 	 * Create a new {@link ConvertingPropertyAccessor} for the given source and entity.
 	 *
@@ -807,7 +813,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return getConversionService().convert(value, target);
 	}
 
-	private Class<?> getCollectionType(TypeInformation<?> type) {
+	private static Class<?> getCollectionType(TypeInformation<?> type) {
 
 		if (type.getType().isInterface()) {
 			return type.getType();

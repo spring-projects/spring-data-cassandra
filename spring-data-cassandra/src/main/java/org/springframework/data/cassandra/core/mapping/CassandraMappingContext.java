@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -103,11 +104,10 @@ public class CassandraMappingContext
 		processMappingOverrides();
 	}
 
-	@SuppressWarnings("all")
-	protected void processMappingOverrides() {
+	private void processMappingOverrides() {
 
 		mapping.getEntityMappings().stream() //
-				.filter(entityMapping -> entityMapping != null) //
+				.filter(Objects::nonNull) //
 				.forEach(entityMapping -> {
 
 					Class<?> entityClass = getEntityClass(entityMapping.getEntityClassName());
@@ -132,12 +132,13 @@ public class CassandraMappingContext
 		}
 	}
 
-	protected void processMappingOverrides(CassandraPersistentEntity<?> entity, EntityMapping entityMapping) {
+	private static void processMappingOverrides(CassandraPersistentEntity<?> entity, EntityMapping entityMapping) {
+
 		entityMapping.getPropertyMappings()
 				.forEach((key, propertyMapping) -> processMappingOverride(entity, propertyMapping));
 	}
 
-	protected void processMappingOverride(CassandraPersistentEntity<?> entity, PropertyMapping mapping) {
+	private static void processMappingOverride(CassandraPersistentEntity<?> entity, PropertyMapping mapping) {
 
 		CassandraPersistentProperty property = entity.getRequiredPersistentProperty(mapping.getPropertyName());
 
@@ -178,6 +179,11 @@ public class CassandraMappingContext
 		this.customConversions = customConversions;
 	}
 
+	/**
+	 * Sets the {@link Mapping}.
+	 *
+	 * @param mapping must not be {@literal null}.
+	 */
 	public void setMapping(Mapping mapping) {
 
 		Assert.notNull(mapping, "Mapping must not be null");
@@ -208,7 +214,6 @@ public class CassandraMappingContext
 	/**
 	 * @return Returns the verifier.
 	 */
-	@SuppressWarnings("unused")
 	public CassandraPersistentEntityMetadataVerifier getVerifier() {
 		return verifier;
 	}
@@ -296,12 +301,20 @@ public class CassandraMappingContext
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(java.lang.reflect.Field, java.beans.PropertyDescriptor, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
+	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(org.springframework.data.mapping.model.Property, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
 	 */
 	@Override
 	protected CassandraPersistentProperty createPersistentProperty(Property property,
 			BasicCassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
-		return new BasicCassandraPersistentProperty(property, owner, simpleTypeHolder, userTypeResolver);
+
+		BasicCassandraPersistentProperty cassandraProperty = new BasicCassandraPersistentProperty(property, owner,
+				simpleTypeHolder, userTypeResolver);
+
+		if (context != null) {
+			cassandraProperty.setApplicationContext(context);
+		}
+
+		return cassandraProperty;
 	}
 
 	/**
@@ -331,7 +344,7 @@ public class CassandraMappingContext
 		return hasMappedUserType(name) || hasReferencedUserType(name);
 	}
 
-	private boolean hasReferencedUserType(final CqlIdentifier identifier) {
+	private boolean hasReferencedUserType(CqlIdentifier identifier) {
 
 		return getPersistentEntities().stream() //
 				.flatMap(PersistentEntity::getPersistentProperties) //
@@ -559,7 +572,7 @@ public class CassandraMappingContext
 		 * Return the data type for the {@link CassandraPersistentEntity}.
 		 *
 		 * @param entity must not be {@literal null}.
-		 * @return
+		 * @return the {@link DataType}.
 		 */
 		abstract DataType getDataType(CassandraPersistentEntity<?> entity);
 	}

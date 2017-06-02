@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.mapping.PersistentEntity;
@@ -69,7 +68,4 @@ public interface CassandraPersistentEntity<T>
 	 * @see UserDefinedType
 	 */
 	UserType getUserType();
-
-
-	ApplicationContext getApplicationContext();
 }
