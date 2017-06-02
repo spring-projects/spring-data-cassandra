@@ -21,9 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
-import org.springframework.data.cql.config.KeyspaceAttributes;
 import org.springframework.data.cql.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cql.core.keyspace.DefaultOption;
+import org.springframework.data.cql.core.keyspace.KeyspaceAttributes;
 import org.springframework.data.cql.core.keyspace.KeyspaceOption;
 import org.springframework.data.cql.core.keyspace.Option;
 import org.springframework.data.cql.support.RandomKeySpaceName;

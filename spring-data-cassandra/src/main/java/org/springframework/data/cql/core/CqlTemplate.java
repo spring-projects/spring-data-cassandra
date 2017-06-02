@@ -24,7 +24,6 @@ import java.util.function.Function;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.cql.core.session.SessionFactory;
-import org.springframework.data.cql.support.CassandraAccessor;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.BoundStatement;
@@ -77,7 +76,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @see RowMapper
  * @see org.springframework.dao.support.PersistenceExceptionTranslator
  */
-public class CqlTemplate extends CassandraAccessor implements CqlOperations {
+public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/**
 	 * Create a new, uninitialized {@link CqlTemplate}. Note: The {@link SessionFactory} has to be set before using the

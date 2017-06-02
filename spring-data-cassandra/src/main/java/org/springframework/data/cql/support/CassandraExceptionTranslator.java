@@ -26,7 +26,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.data.cql.core.support.CQLExceptionTranslator;
 import org.springframework.data.cql.support.exception.*;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -47,7 +46,7 @@ import com.datastax.driver.core.exceptions.*;
  * @author Mark Paluch
  */
 @SuppressWarnings("unchecked")
-public class CassandraExceptionTranslator implements CQLExceptionTranslator {
+public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 
 	private static final Set<String> CONNECTION_FAILURE_TYPES = new HashSet<>(
 			Arrays.asList("NoHostAvailableException", "ConnectionException", "OperationTimedOutException",

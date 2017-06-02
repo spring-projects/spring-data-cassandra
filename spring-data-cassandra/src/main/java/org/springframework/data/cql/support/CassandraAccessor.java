@@ -15,31 +15,16 @@
  */
 package org.springframework.data.cql.support;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.StreamSupport;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.cql.core.ArgumentPreparedStatementBinder;
-import org.springframework.data.cql.core.ColumnMapRowMapper;
-import org.springframework.data.cql.core.CqlProvider;
-import org.springframework.data.cql.core.PreparedStatementBinder;
-import org.springframework.data.cql.core.ResultSetExtractor;
-import org.springframework.data.cql.core.RowCallbackHandler;
-import org.springframework.data.cql.core.RowMapper;
-import org.springframework.data.cql.core.RowMapperResultSetExtractor;
-import org.springframework.data.cql.core.SingleColumnRowMapper;
 import org.springframework.data.cql.core.session.DefaultSessionFactory;
 import org.springframework.data.cql.core.session.SessionFactory;
-import org.springframework.data.cql.core.support.CQLExceptionTranslator;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
@@ -69,7 +54,7 @@ public class CassandraAccessor implements InitializingBean {
 	/** Logger available to subclasses */
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	protected CQLExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+	protected CqlExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	/**
 	 * If this variable is set to a non-negative value, it will be used for setting the {@code fetchSize} property on
@@ -123,9 +108,9 @@ public class CassandraAccessor implements InitializingBean {
 	 * Exception Hierarchy.
 	 *
 	 * @param exceptionTranslator exception translator to set; must not be {@literal null}.
-	 * @see CQLExceptionTranslator
+	 * @see CqlExceptionTranslator
 	 */
-	public void setExceptionTranslator(CQLExceptionTranslator exceptionTranslator) {
+	public void setExceptionTranslator(CqlExceptionTranslator exceptionTranslator) {
 
 		Assert.notNull(exceptionTranslator, "CQLExceptionTranslator must not be null");
 		this.exceptionTranslator = exceptionTranslator;
@@ -136,9 +121,9 @@ public class CassandraAccessor implements InitializingBean {
 	 * Exception Hierarchy.
 	 *
 	 * @return the Cassandra exception translator.
-	 * @see CQLExceptionTranslator
+	 * @see CqlExceptionTranslator
 	 */
-	public CQLExceptionTranslator getExceptionTranslator() {
+	public CqlExceptionTranslator getExceptionTranslator() {
 
 		Assert.state(this.exceptionTranslator != null, "CQLExceptionTranslator was not properly initialized");
 
@@ -296,102 +281,6 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Create a new arg-based PreparedStatementSetter using the args passed in. By default, we'll create an
-	 * {@link ArgumentPreparedStatementBinder}. This method allows for the creation to be overridden by subclasses.
-	 *
-	 * @param args object array with arguments
-	 * @return the new {@link PreparedStatementBinder} to use
-	 */
-	protected PreparedStatementBinder newPreparedStatementBinder(Object[] args) {
-		return new ArgumentPreparedStatementBinder(args);
-	}
-
-	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowCallbackHandler}.
-	 *
-	 * @param rowCallbackHandler {@link RowCallbackHandler} to adapt as a {@link ResultSetExtractor}.
-	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowCallbackHandler}.
-	 * @see org.springframework.data.cql.core.AsyncCqlTemplate.RowCallbackHandlerResultSetExtractor
-	 * @see org.springframework.data.cql.core.ResultSetExtractor
-	 * @see org.springframework.data.cql.core.RowCallbackHandler
-	 */
-	protected RowCallbackHandlerResultSetExtractor newResultSetExtractor(RowCallbackHandler rowCallbackHandler) {
-		return new RowCallbackHandlerResultSetExtractor(rowCallbackHandler);
-	}
-
-	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowMapper}.
-	 *
-	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
-	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.
-	 * @see org.springframework.data.cql.core.ResultSetExtractor
-	 * @see org.springframework.data.cql.core.RowMapper
-	 * @see org.springframework.data.cql.core.RowMapperResultSetExtractor
-	 */
-	protected <T> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper) {
-		return new RowMapperResultSetExtractor<>(rowMapper);
-	}
-
-	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowMapper}.
-	 *
-	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
-	 * @param rowsExpected number of expected rows in the {@link ResultSet}.
-	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.
-	 * @see org.springframework.data.cql.core.ResultSetExtractor
-	 * @see org.springframework.data.cql.core.RowMapper
-	 * @see org.springframework.data.cql.core.RowMapperResultSetExtractor
-	 */
-	protected <T> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper, int rowsExpected) {
-		return new RowMapperResultSetExtractor<>(rowMapper, rowsExpected);
-	}
-
-	/**
-	 * Create a new RowMapper for reading columns as key-value pairs.
-	 *
-	 * @return the RowMapper to use
-	 * @see ColumnMapRowMapper
-	 */
-	protected RowMapper<Map<String, Object>> newColumnMapRowMapper() {
-		return new ColumnMapRowMapper();
-	}
-
-	/**
-	 * Create a new RowMapper for reading result objects from a single column.
-	 *
-	 * @param requiredType the type that each result object is expected to match
-	 * @return the RowMapper to use
-	 * @see SingleColumnRowMapper
-	 */
-	protected <T> RowMapper<T> newSingleColumnRowMapper(Class<T> requiredType) {
-		return SingleColumnRowMapper.newInstance(requiredType);
-	}
-
-	/**
-	 * Determine CQL from potential provider object.
-	 *
-	 * @param cqlProvider object that's potentially a {@link CqlProvider}
-	 * @return the CQL string, or {@code null}
-	 * @see CqlProvider
-	 */
-	protected static String toCql(Object cqlProvider) {
-		return Optional.ofNullable(cqlProvider) //
-				.filter(o -> o instanceof CqlProvider) //
-				.map(o -> (CqlProvider) o) //
-				.map(CqlProvider::getCql) //
-				.orElse(null);
-	}
-
-	protected void logDebug(String logMessage, Object... array) {
-		if (logger.isDebugEnabled()) {
-			logger.debug(logMessage, array);
-		}
-	}
-
-	/**
 	 * Translate the given {@link DriverException} into a generic {@link DataAccessException}.
 	 * <p>
 	 * The returned {@link DataAccessException} is supposed to contain the original {@code DriverException} as root cause.
@@ -435,29 +324,5 @@ public class CassandraAccessor implements InitializingBean {
 		Assert.notNull(ex, "DriverException must not be null");
 
 		return getExceptionTranslator().translate(task, cql, ex);
-	}
-
-	/**
-	 * Adapter to enable use of a {@link RowCallbackHandler} inside a {@link ResultSetExtractor}.
-	 */
-	protected static class RowCallbackHandlerResultSetExtractor implements ResultSetExtractor<Object> {
-
-		private final RowCallbackHandler rowCallbackHandler;
-
-		protected RowCallbackHandlerResultSetExtractor(RowCallbackHandler rowCallbackHandler) {
-			this.rowCallbackHandler = rowCallbackHandler;
-		}
-
-		/* (non-Javadoc)
-		 *
-		  @see org.springframework.cassandra.core.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
-		 */
-		@Override
-		public Object extractData(ResultSet resultSet) {
-
-			StreamSupport.stream(resultSet.spliterator(), false).forEach(rowCallbackHandler::processRow);
-
-			return null;
-		}
 	}
 }

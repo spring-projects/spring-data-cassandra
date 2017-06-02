@@ -19,8 +19,8 @@ import static org.springframework.data.cql.core.CqlStringUtils.*;
 
 import java.util.Map;
 
-import org.springframework.data.cql.config.KeyspaceAttributes;
 import org.springframework.data.cql.core.keyspace.CreateKeyspaceSpecification;
+import org.springframework.data.cql.core.keyspace.KeyspaceAttributes;
 import org.springframework.data.cql.core.keyspace.KeyspaceOption;
 import org.springframework.data.cql.core.keyspace.Option;
 

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cql.core.keyspace;
 
-import org.springframework.data.cql.config.DataCenterReplication;
 import org.springframework.data.cql.core.KeyspaceIdentifier;
 import org.springframework.data.cql.core.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.data.cql.core.util.MapBuilder;

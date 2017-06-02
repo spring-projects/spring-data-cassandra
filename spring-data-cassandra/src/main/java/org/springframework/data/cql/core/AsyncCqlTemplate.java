@@ -24,7 +24,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cql.core.session.SessionFactory;
-import org.springframework.data.cql.support.CassandraAccessor;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -77,7 +76,7 @@ import com.google.common.util.concurrent.Futures;
  * @see RowMapper
  * @see org.springframework.dao.support.PersistenceExceptionTranslator
  */
-public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOperations {
+public class AsyncCqlTemplate extends CqlTemplateSupport implements AsyncCqlOperations {
 
 	/**
 	 * Create a new, uninitialized {@link AsyncCqlTemplate}. Note: The {@link SessionFactory} has to be set before using

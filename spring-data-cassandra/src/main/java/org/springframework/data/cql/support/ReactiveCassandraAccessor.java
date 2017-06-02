@@ -21,7 +21,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cql.core.session.ReactiveSession;
 import org.springframework.data.cql.core.session.ReactiveSessionFactory;
-import org.springframework.data.cql.core.support.CQLExceptionTranslator;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.exceptions.DriverException;
@@ -43,7 +42,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	/** Logger available to subclasses */
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	private CQLExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+	private CqlExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	private ReactiveSessionFactory sessionFactory;
 
@@ -76,7 +75,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 * @see CassandraExceptionTranslator
 	 * @see DataAccessException
 	 */
-	public void setExceptionTranslator(CQLExceptionTranslator exceptionTranslator) {
+	public void setExceptionTranslator(CqlExceptionTranslator exceptionTranslator) {
 
 		Assert.notNull(exceptionTranslator, "CQLExceptionTranslator must not be null");
 
@@ -89,7 +88,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 * @return the Cassandra exception translator.
 	 * @see CassandraExceptionTranslator
 	 */
-	public CQLExceptionTranslator getExceptionTranslator() {
+	public CqlExceptionTranslator getExceptionTranslator() {
 		return this.exceptionTranslator;
 	}
 

@@ -38,7 +38,7 @@ import org.springframework.data.cql.core.QueryOptions;
 import org.springframework.data.cql.core.WriteOptions;
 import org.springframework.data.cql.core.session.DefaultSessionFactory;
 import org.springframework.data.cql.core.session.SessionFactory;
-import org.springframework.data.cql.core.support.CQLExceptionTranslator;
+import org.springframework.data.cql.support.CqlExceptionTranslator;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -87,7 +87,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 	private final CassandraMappingContext mappingContext;
 
-	private final CQLExceptionTranslator exceptionTranslator;
+	private final CqlExceptionTranslator exceptionTranslator;
 
 	private final StatementFactory statementFactory;
 
