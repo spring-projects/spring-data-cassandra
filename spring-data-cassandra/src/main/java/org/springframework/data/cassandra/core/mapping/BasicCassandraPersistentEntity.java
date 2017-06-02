@@ -17,9 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.springframework.data.cql.core.CqlIdentifier.*;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.BeansException;
@@ -32,7 +30,6 @@ import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.support.exception.UnsupportedCassandraOperationException;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.TypeInformation;
@@ -60,8 +57,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
-	private MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
-
 	private ApplicationContext context;
 
 	private StandardEvaluationContext spelContext;
@@ -76,34 +71,20 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 * @param typeInformation must not be {@literal null}.
 	 */
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation) {
-		this(typeInformation, null, DEFAULT_VERIFIER);
+		this(typeInformation, DEFAULT_VERIFIER);
 	}
 
 	/**
 	 * Create a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
 	 * name to the entity's simple type name.
 	 *
-	 * @param typeInformation
+	 * @param typeInformation must not be {@literal null}.
+	 * @param verifier must not be {@literal null}.
 	 */
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation,
-			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
-		this(typeInformation, mappingContext, DEFAULT_VERIFIER);
-	}
-
-	/**
-	 * Create a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
-	 * name to the entity's simple type name.
-	 *
-	 * @param typeInformation
-	 */
-	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation,
-			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
 			CassandraPersistentEntityMetadataVerifier verifier) {
 
-		// FIXME: Constructor with comparator, no optionality here
 		super(typeInformation, PROPERTY_COMPARATOR);
-
-		this.mappingContext = mappingContext;
 
 		setVerifier(verifier);
 	}
@@ -142,40 +123,11 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getCompositePrimaryKeyProperties()
-	 */
-	@Override
-	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
-
-		List<CassandraPersistentProperty> properties = new ArrayList<>();
-
-		Assert.state(isCompositePrimaryKey(),
-				String.format("[%s] does not represent a composite primary key class", this.getType().getName()));
-
-		addCompositePrimaryKeyProperties(this, properties);
-
-		return properties;
-	}
-
-	protected void addCompositePrimaryKeyProperties(CassandraPersistentEntity<?> compositePrimaryKeyEntity,
-			final List<CassandraPersistentProperty> properties) {
-
-		compositePrimaryKeyEntity.getPersistentProperties().forEach(property -> {
-
-			if (property.isCompositePrimaryKey()) {
-				addCompositePrimaryKeyProperties(property.getCompositePrimaryKeyEntity(), properties);
-			} else {
-				properties.add(property);
-			}
-
-		});
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.BasicPersistentEntity#verify()
 	 */
 	@Override
 	public void verify() throws MappingException {
+
 		super.verify();
 
 		if (verifier != null) {
@@ -223,14 +175,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		if (changed) {
 			setTableName(cqlId(getTableName().getUnquoted(), forceQuote));
 		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getMappingContext()
-	 */
-	@Override
-	public MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
-		return mappingContext;
 	}
 
 	/* (non-Javadoc)

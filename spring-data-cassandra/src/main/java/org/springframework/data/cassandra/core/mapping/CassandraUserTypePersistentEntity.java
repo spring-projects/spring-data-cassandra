@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core.mapping;
 import java.util.Optional;
 
 import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -45,15 +44,13 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	 * Create a new {@link CassandraUserTypePersistentEntity}.
 	 *
 	 * @param typeInformation must not be {@literal null}.
-	 * @param mappingContext must not be {@literal null}.
 	 * @param verifier must not be {@literal null}.
 	 * @param resolver must not be {@literal null}.
 	 */
 	public CassandraUserTypePersistentEntity(TypeInformation<T> typeInformation,
-			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
 			CassandraPersistentEntityMetadataVerifier verifier, UserTypeResolver resolver) {
 
-		super(typeInformation, mappingContext, verifier);
+		super(typeInformation, verifier);
 
 		Assert.notNull(resolver, "UserTypeResolver must not be null");
 

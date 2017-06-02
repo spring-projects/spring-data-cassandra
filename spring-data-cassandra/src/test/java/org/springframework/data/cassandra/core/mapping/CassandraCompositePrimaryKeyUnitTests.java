@@ -16,18 +16,16 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cql.core.CqlIdentifier.*;
+
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.PrimaryKeyType;
 import org.springframework.data.cql.core.keyspace.ColumnSpecification;
 import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
@@ -48,51 +46,20 @@ public class CassandraCompositePrimaryKeyUnitTests {
 	private static final CassandraSimpleTypeHolder SIMPLE_TYPE_HOLDER = new CassandraSimpleTypeHolder();
 
 	@PrimaryKeyClass
-	static class Key implements Serializable {
+	@EqualsAndHashCode
+	static class CompositeKey implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String z;
 
 		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED) String a;
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((a == null) ? 0 : a.hashCode());
-			result = prime * result + ((z == null) ? 0 : z.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Key other = (Key) obj;
-			if (a == null) {
-				if (other.a != null)
-					return false;
-			} else if (!a.equals(other.a))
-				return false;
-			if (z == null) {
-				if (other.z != null)
-					return false;
-			} else if (!z.equals(other.z))
-				return false;
-			return true;
-		}
-
 	}
 
 	@Table
-	static class Thing {
+	static class TypeWithCompositeKey {
 
-		@PrimaryKey Key id;
+		@PrimaryKey CompositeKey id;
 
 		Date time;
 
@@ -100,36 +67,29 @@ public class CassandraCompositePrimaryKeyUnitTests {
 	}
 
 	CassandraMappingContext context;
-	CassandraPersistentEntity<?> thing;
+
+	CassandraPersistentEntity<?> entity;
+
 	CassandraPersistentEntity<?> key;
 
 	@Before
 	public void setup() {
+
 		context = new CassandraMappingContext();
-		thing = context.getRequiredPersistentEntity(ClassTypeInformation.from(Thing.class));
-		key = context.getRequiredPersistentEntity(ClassTypeInformation.from(Key.class));
+		entity = context.getRequiredPersistentEntity(ClassTypeInformation.from(TypeWithCompositeKey.class));
+		key = context.getRequiredPersistentEntity(ClassTypeInformation.from(CompositeKey.class));
 	}
 
 	@Test
 	public void validateMappingInfo() {
 
-		Field field = ReflectionUtils.findField(Thing.class, "id");
-		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(Property.of(field), thing,
+		Field field = ReflectionUtils.findField(TypeWithCompositeKey.class, "id");
+		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(Property.of(field), entity,
 				SIMPLE_TYPE_HOLDER);
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();
 
-		List<CqlIdentifier> expectedColumnNames = Arrays.asList(cqlId("z"), cqlId("a"));
-		assertThat(expectedColumnNames.equals(property.getColumnNames())).isTrue();
-
-		List<CqlIdentifier> actualColumnNames = new ArrayList<>();
-		List<CassandraPersistentProperty> properties = property.getCompositePrimaryKeyProperties();
-		for (CassandraPersistentProperty p : properties) {
-			actualColumnNames.addAll(p.getColumnNames());
-		}
-		assertThat(expectedColumnNames.equals(actualColumnNames)).isTrue();
-
-		CreateTableSpecification spec = context.getCreateTableSpecificationFor(thing);
+		CreateTableSpecification spec = context.getCreateTableSpecificationFor(entity);
 
 		List<ColumnSpecification> partitionKeyColumns = spec.getPartitionKeyColumns();
 		assertThat(partitionKeyColumns).hasSize(1);

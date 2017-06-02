@@ -19,8 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cql.core.CqlIdentifier.*;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Test;
 import org.springframework.data.cql.core.CqlIdentifier;
@@ -110,12 +108,9 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 		CassandraPersistentProperty stringOne = key.getRequiredPersistentProperty("stringOne");
 
 		assertThat(stringZero.getColumnName().toCql()).isEqualTo("\"stringZero\"");
+		assertThat(stringZero.getColumnName()).isEqualTo(quotedCqlId("stringZero"));
 		assertThat(stringOne.getColumnName().toCql()).isEqualTo("\"stringOne\"");
-
-		List<CqlIdentifier> names = Arrays.asList(quotedCqlId("stringZero"), quotedCqlId("stringOne"));
-		CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(ImplicitComposite.class);
-
-		assertThat(entity.getRequiredPersistentProperty("primaryKey").getColumnNames()).isEqualTo(names);
+		assertThat(stringOne.getColumnName()).isEqualTo(quotedCqlId("stringOne"));
 	}
 
 	@PrimaryKeyClass
@@ -148,11 +143,6 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 		assertThat(stringOne.getColumnName()).isEqualTo(CqlIdentifier.cqlId("stringOne"));
 		assertThat(stringZero.getColumnName().toCql()).isEqualTo("stringzero");
 		assertThat(stringOne.getColumnName().toCql()).isEqualTo("stringone");
-
-		List<CqlIdentifier> names = Arrays.asList(cqlId("stringZero"), cqlId("stringOne"));
-		CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(DefaultComposite.class);
-
-		assertThat(entity.getRequiredPersistentProperty("primaryKey").getColumnNames()).isEqualTo(names);
 	}
 
 	@PrimaryKeyClass
@@ -187,11 +177,6 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 
 		assertThat(stringZero.getColumnName().toCql()).isEqualTo("\"" + EXPLICIT_KEY_0 + "\"");
 		assertThat(stringOne.getColumnName().toCql()).isEqualTo("\"" + EXPLICIT_KEY_1 + "\"");
-
-		List<CqlIdentifier> names = Arrays.asList(quotedCqlId(EXPLICIT_KEY_0), quotedCqlId(EXPLICIT_KEY_1));
-		CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(ExplicitComposite.class);
-
-		assertThat(entity.getRequiredPersistentProperty("primaryKey").getColumnNames()).isEqualTo(names);
 	}
 
 	@PrimaryKeyClass

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.context.ApplicationContextAware;
@@ -24,7 +23,6 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.Ordering;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.TypeInformation;
 
 import com.datastax.driver.core.DataType;
 
@@ -41,39 +39,9 @@ public interface CassandraPersistentProperty
 		extends PersistentProperty<CassandraPersistentProperty>, ApplicationContextAware {
 
 	/**
-	 * Whether the property is a composite primary key.
-	 */
-	boolean isCompositePrimaryKey();
-
-	/**
-	 * Returns a {@link CassandraPersistentEntity} representing the composite primary key class of this entity, or null if
-	 * this class does not use a composite primary key.
-	 */
-	CassandraPersistentEntity<?> getCompositePrimaryKeyEntity();
-
-	/**
-	 * Returns a {@link TypeInformation} representing the type of the composite primary key class of this entity, or null
-	 * if this class does not use a composite primary key.
-	 */
-	TypeInformation<?> getCompositePrimaryKeyTypeInformation();
-
-	/**
-	 * Gets the list of composite primary key properties that this composite primary key field is a placeholder for.
-	 */
-	List<CassandraPersistentProperty> getCompositePrimaryKeyProperties();
-
-	/**
-	 * The name of the single column to which the property is persisted. This is a convenience method when the caller
-	 * knows that the property is mapped to a single column. Throws {@link IllegalStateException} if this property is
-	 * mapped to multiple columns.
+	 * The name of the single column to which the property is persisted.
 	 */
 	CqlIdentifier getColumnName();
-
-	/**
-	 * The names of the columns to which the property is persisted if this is a composite primary key property. Never
-	 * returns null.
-	 */
-	List<CqlIdentifier> getColumnNames();
 
 	/**
 	 * The ordering (ascending or descending) for the column. Valid only for primary key columns; returns null for
@@ -96,14 +64,9 @@ public interface CassandraPersistentProperty
 	boolean isIndexed();
 
 	/**
-	 * Whether the property is a partition key column.
+	 * Whether the property is a composite primary key.
 	 */
-	boolean isPartitionKeyColumn();
-
-	/**
-	 * Whether the property is a cluster key column.
-	 */
-	boolean isClusterKeyColumn();
+	boolean isCompositePrimaryKey();
 
 	/**
 	 * Whether the property is a partition key column or a cluster key column
@@ -113,6 +76,16 @@ public interface CassandraPersistentProperty
 	 */
 	boolean isPrimaryKeyColumn();
 
+	/**
+	 * Whether the property is a partition key column.
+	 */
+	boolean isPartitionKeyColumn();
+
+	/**
+	 * Whether the property is a cluster key column.
+	 */
+	boolean isClusterKeyColumn();
+
 	@Override
 	CassandraPersistentEntity<?> getOwner();
 
@@ -120,7 +93,7 @@ public interface CassandraPersistentProperty
 	 * Whether to force-quote the column names of this property.
 	 *
 	 * @param forceQuote
-	 * @see CassandraPersistentProperty#getColumnNames()
+	 * @see CassandraPersistentProperty#getColumnName()
 	 */
 	void setForceQuote(boolean forceQuote);
 
@@ -129,17 +102,9 @@ public interface CassandraPersistentProperty
 	 * property is not mapped by a single column, throws {@link IllegalStateException}. If the given column name is null,
 	 * {@link IllegalArgumentException} is thrown.
 	 *
-	 * @param columnName
+	 * @param columnName must not be {@literal null}.
 	 */
 	void setColumnName(CqlIdentifier columnName);
-
-	/**
-	 * Sets this property's column names to the collection given. The given collection must have the same size as this
-	 * property's current list of column names, and must contain no {@code null} elements.
-	 *
-	 * @param columnName
-	 */
-	void setColumnNames(List<CqlIdentifier> columnNames);
 
 	/**
 	 * Returns whether the property is a {@link java.util.Map}.

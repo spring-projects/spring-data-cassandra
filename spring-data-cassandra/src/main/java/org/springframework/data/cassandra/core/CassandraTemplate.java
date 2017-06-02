@@ -409,11 +409,10 @@ public class CassandraTemplate implements CassandraOperations {
 				String.format("Entity class [%s] has no primary key", entityClass.getName())));
 
 		if (idProperty.isCompositePrimaryKey()) {
-			String typeName = idProperty.getCompositePrimaryKeyEntity().getType().getName();
 
 			throw new IllegalArgumentException(
 					String.format("Entity class [%s] uses a composite primary key class [%s] which this method can't support",
-							entityClass.getName(), typeName));
+							entityClass.getName(), idProperty.getType().getName()));
 		}
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());

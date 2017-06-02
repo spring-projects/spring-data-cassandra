@@ -207,8 +207,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (property.isCompositePrimaryKey()) {
 
-			CassandraPersistentEntity<?> keyEntity = property.getCompositePrimaryKeyEntity();
-
+			CassandraPersistentEntity<?> keyEntity = mappingContext.getRequiredPersistentEntity(property);
 			Optional<Object> optionalKey = propertyAccessor.getProperty(property);
 
 			if (!optionalKey.isPresent()) {
@@ -216,8 +215,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			// now recurse on using the key this time
-			optionalKey.ifPresent(key -> readProperties(property.getCompositePrimaryKeyEntity(), valueProvider,
-					getConvertingAccessor(key, keyEntity)));
+			optionalKey.ifPresent(key -> readProperties(keyEntity, valueProvider, getConvertingAccessor(key, keyEntity)));
 
 			// now that the key's properties have been populated, set the key property on the entity
 			propertyAccessor.setProperty(property, optionalKey);
@@ -338,12 +336,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			if (property.isCompositePrimaryKey()) {
+
 				if (log.isDebugEnabled()) {
 					log.debug("Property is a compositeKey");
 				}
 
-				writeMapFromWrapper(getConvertingAccessor(value.orElse(null), property.getCompositePrimaryKeyEntity()), insert,
-						property.getCompositePrimaryKeyEntity());
+				CassandraPersistentEntity<?> compositePrimaryKey = mappingContext.getRequiredPersistentEntity(property);
+				writeMapFromWrapper(getConvertingAccessor(value.orElse(null), compositePrimaryKey), insert,
+						compositePrimaryKey);
 
 				return;
 			}
@@ -368,12 +368,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			if (property.isCompositePrimaryKey()) {
+
 				if (log.isDebugEnabled()) {
 					log.debug("Property is a compositeKey");
 				}
 
-				writeInsertFromWrapper(getConvertingAccessor(value.orElse(null), property.getCompositePrimaryKeyEntity()),
-						insert, property.getCompositePrimaryKeyEntity());
+				CassandraPersistentEntity<?> compositePrimaryKey = mappingContext.getRequiredPersistentEntity(property);
+				writeInsertFromWrapper(getConvertingAccessor(value.orElse(null), compositePrimaryKey), insert,
+						compositePrimaryKey);
 
 				return;
 			}
@@ -402,8 +404,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			Optional<Object> value = getWriteValue(property, accessor);
 
 			if (property.isCompositePrimaryKey()) {
-				CassandraPersistentEntity<?> keyEntity = property.getCompositePrimaryKeyEntity();
-				writeUpdateFromWrapper(getConvertingAccessor(value.orElse(null), keyEntity), update, keyEntity);
+
+				CassandraPersistentEntity<?> compositePrimaryKey = mappingContext.getRequiredPersistentEntity(property);
+
+				writeUpdateFromWrapper(getConvertingAccessor(value.orElse(null), compositePrimaryKey), update,
+						compositePrimaryKey);
 				return;
 			}
 
@@ -447,6 +452,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		});
 	}
 
+	@SuppressWarnings("unchecked")
 	private Collection<Clause> getWhereClauses(Object source, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(source, "Id source must not be null");
@@ -463,7 +469,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			// FIXME: Generics
 			CassandraPersistentEntity<?> whereEntity = optionalCompositeIdProperty //
-					.map(CassandraPersistentProperty::getCompositePrimaryKeyEntity) //
+					.map(it -> (CassandraPersistentEntity<?>) mappingContext.getRequiredPersistentEntity(it)) //
 					.orElse((CassandraPersistentEntity) entity);
 
 			return getWhereClauses((MapId) id, whereEntity);
@@ -480,8 +486,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 					.orElseThrow(() -> new InvalidDataAccessApiUsageException(
 							String.format("Cannot use [%s] as composite Id for [%s]", id, entity.getName())));
 
-			return getWhereClauses(getConvertingAccessor(id, compositeIdProperty.getCompositePrimaryKeyEntity()),
-					compositeIdProperty.getCompositePrimaryKeyEntity());
+			CassandraPersistentEntity<?> compositePrimaryKey = mappingContext
+					.getRequiredPersistentEntity(compositeIdProperty);
+			return getWhereClauses(getConvertingAccessor(id, compositePrimaryKey), compositePrimaryKey);
 		}
 
 		Class<?> targetType = getTargetType(idProperty);
@@ -588,9 +595,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	protected <T> Class<T> transformClassToBeanClassLoaderClass(Class<T> entity) {
 		try {
 			return (Class<T>) ClassUtils.forName(entity.getName(), beanClassLoader);
-		} catch (ClassNotFoundException e) {
-			return entity;
-		} catch (LinkageError e) {
+		} catch (ClassNotFoundException | LinkageError e) {
 			return entity;
 		}
 	}
@@ -894,7 +899,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Class<?> rawComponentType = componentType.map(TypeInformation::getType).orElse((Class) List.class);
 
 		collectionType = Collection.class.isAssignableFrom(collectionType) ? collectionType : List.class;
-		Collection<Object> items = targetType.getType().isArray() ? new ArrayList<Object>()
+		Collection<Object> items = targetType.getType().isArray() ? new ArrayList<>()
 				: CollectionFactory.createCollection(collectionType, rawComponentType, sourceValue.size());
 
 		if (sourceValue.isEmpty()) {

@@ -38,7 +38,6 @@ import org.springframework.data.util.ClassTypeInformation;
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraUserTypePersistentEntityUnitTests {
 
-	@Mock CassandraMappingContext mappingContextMock;
 	@Mock UserTypeResolver userTypeResolverMock;
 
 	@Test // DATACASS-172
@@ -85,8 +84,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 	}
 
 	private <T> CassandraUserTypePersistentEntity<T> getEntity(Class<T> entityClass) {
-		return new CassandraUserTypePersistentEntity<>(ClassTypeInformation.from(entityClass), mappingContextMock, null,
-				userTypeResolverMock);
+		return new CassandraUserTypePersistentEntity<>(ClassTypeInformation.from(entityClass), null, userTypeResolverMock);
 	}
 
 	@UserDefinedType

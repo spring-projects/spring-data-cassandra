@@ -15,13 +15,10 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import java.util.List;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.context.MappingContext;
 
 import com.datastax.driver.core.UserType;
 
@@ -39,9 +36,6 @@ public interface CassandraPersistentEntity<T>
 	 * Returns whether this entity represents a composite primary key.
 	 */
 	boolean isCompositePrimaryKey();
-
-	// TODO: return rather a Stream, rename to "getPrimaryKeyProperties"
-	List<CassandraPersistentProperty> getCompositePrimaryKeyProperties();
 
 	/**
 	 * Returns the table name to which the entity shall be persisted.
@@ -76,8 +70,6 @@ public interface CassandraPersistentEntity<T>
 	 */
 	UserType getUserType();
 
-	// TODO: Review if that's required or it can be handled in a different way
-	MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext();
 
 	ApplicationContext getApplicationContext();
 }

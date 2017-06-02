@@ -104,19 +104,6 @@ public class QueryMapper {
 	}
 
 	/**
-	 * Return {@link ColumnSelector}s for all columns of {@link CassandraPersistentEntity}.
-	 *
-	 * @param entity must not be {@literal null}.
-	 * @return {@link ColumnSelector}s for all columns of {@link CassandraPersistentEntity}.
-	 */
-	public List<Selector> getColumns(CassandraPersistentEntity<?> entity) {
-
-		return entity.getPersistentProperties() //
-				.flatMap(p -> p.getColumnNames().stream()).map(ColumnSelector::from) //
-				.collect(Collectors.toList());
-	}
-
-	/**
 	 * Map a {@link Filter} with a {@link CassandraPersistentEntity type hint}. Filter mapping translates property names
 	 * to column names and maps {@link Predicate} values to simple Cassandra values.
 	 *
@@ -136,6 +123,11 @@ public class QueryMapper {
 			Field field = createPropertyField(entity, criteriaDefinition.getColumnName());
 
 			Predicate predicate = criteriaDefinition.getPredicate();
+
+			field.getProperty().filter(CassandraPersistentProperty::isCompositePrimaryKey).ifPresent(it -> {
+				throw new IllegalArgumentException(
+						"Cannot use composite primary key directly. Reference a property of the composite primary key");
+			});
 
 			Optional<Object> value = Optional.ofNullable(predicate.getValue());
 			TypeInformation<?> typeInformation = getTypeInformation(field, value);
@@ -179,20 +171,24 @@ public class QueryMapper {
 		}
 
 		if (columns.isEmpty()) {
-
-			entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) property -> {
-
-				if (property.isCompositePrimaryKey()) {
-					for (CqlIdentifier cqlIdentifier : property.getColumnNames()) {
-						selectors.add(ColumnSelector.from(cqlIdentifier.toCql()));
-					}
-				} else {
-					selectors.add(ColumnSelector.from(property.getColumnName().toCql()));
-				}
-			});
+			addColumns(entity, selectors);
 		}
 
 		return selectors;
+	}
+
+	private void addColumns(CassandraPersistentEntity<?> entity, List<Selector> selectors) {
+
+		entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) property -> {
+
+			if (property.isCompositePrimaryKey()) {
+
+				CassandraPersistentEntity<?> primaryKeyEntity = mappingContext.getRequiredPersistentEntity(property);
+				addColumns(primaryKeyEntity, selectors);
+			} else {
+				selectors.add(ColumnSelector.from(property.getColumnName().toCql()));
+			}
+		});
 	}
 
 	private Selector getMappedSelector(Selector selector, CqlIdentifier cqlIdentifier) {
@@ -311,7 +307,14 @@ public class QueryMapper {
 
 		try {
 			if (field.getProperty().isPresent()) {
-				return field.getProperty().map(CassandraPersistentProperty::getColumnName);
+				return field.getProperty().map(cassandraPersistentProperty -> {
+
+					if (cassandraPersistentProperty.isCompositePrimaryKey()) {
+						throw new IllegalArgumentException(
+								"Cannot use composite primary key directly. Reference a property of the composite primary key");
+					}
+					return cassandraPersistentProperty.getColumnName();
+				});
 			}
 
 			if (column.getColumnName().isPresent()) {

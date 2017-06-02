@@ -17,13 +17,10 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.springframework.data.cql.core.CqlIdentifier.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -36,12 +33,10 @@ import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.Ordering;
 import org.springframework.data.cql.core.PrimaryKeyType;
 import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
@@ -71,12 +66,12 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	/**
 	 * Whether this property has been explicitly instructed to force quote column names.
 	 */
-	private Boolean forceQuote;
+	private Optional<Boolean> forceQuote = Optional.empty();
 
 	/**
 	 * An unmodifiable list of this property's column names.
 	 */
-	private List<CqlIdentifier> columnNames;
+	private CqlIdentifier columnName;
 
 	/**
 	 * Create a new {@link BasicCassandraPersistentProperty}.
@@ -134,39 +129,16 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isCompositePrimaryKey()
-	 */
-	@Override
-	public boolean isCompositePrimaryKey() {
-		return (AnnotatedElementUtils.findMergedAnnotation(getType(), PrimaryKeyClass.class) != null);
-	}
-
-	/**
-	 * @return
-	 */
-	public Class<?> getCompositePrimaryKeyType() {
-		return (isCompositePrimaryKey() ? getType() : null);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getCompositePrimaryKeyTypeInformation()
-	 */
-	@Override
-	public TypeInformation<?> getCompositePrimaryKeyTypeInformation() {
-		return (isCompositePrimaryKey() ? ClassTypeInformation.from(getCompositePrimaryKeyType()) : null);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getColumnName()
 	 */
 	@Override
 	public CqlIdentifier getColumnName() {
 
-		List<CqlIdentifier> columnNames = getColumnNames();
+		if (this.columnName == null) {
+			this.columnName = determineColumnName();
+		}
 
-		Assert.state(columnNames.size() == 1, String.format("Property [%s] has no single column mapping", getName()));
-
-		return columnNames.get(0);
+		return this.columnName;
 	}
 
 	/* (non-Javadoc)
@@ -177,9 +149,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return findAnnotation(PrimaryKeyColumn.class).map(PrimaryKeyColumn::ordering);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getDataType()
-	 */
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getDataType()
 	 */
@@ -206,6 +175,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		if (isMap()) {
+
 			List<TypeInformation<?>> args = getTypeInformation().getTypeArguments();
 
 			ensureTypeArguments(args.size(), 2);
@@ -214,6 +184,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		if (isCollectionLike()) {
+
 			List<TypeInformation<?>> args = getTypeInformation().getTypeArguments();
 
 			ensureTypeArguments(args.size(), 1);
@@ -285,13 +256,19 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isClusterKeyColumn()
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isCompositePrimaryKey()
 	 */
 	@Override
-	public boolean isClusterKeyColumn() {
+	public boolean isCompositePrimaryKey() {
+		return (AnnotatedElementUtils.findMergedAnnotation(getType(), PrimaryKeyClass.class) != null);
+	}
 
-		return findAnnotation(PrimaryKeyColumn.class)
-				.filter(primaryKeyColumn -> PrimaryKeyType.CLUSTERED.equals(primaryKeyColumn.type())).isPresent();
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isPrimaryKeyColumn()
+	 */
+	@Override
+	public boolean isPrimaryKeyColumn() {
+		return isAnnotationPresent(PrimaryKeyColumn.class);
 	}
 
 	/* (non-Javadoc)
@@ -305,11 +282,13 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isPrimaryKeyColumn()
+	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#isClusterKeyColumn()
 	 */
 	@Override
-	public boolean isPrimaryKeyColumn() {
-		return isAnnotationPresent(PrimaryKeyColumn.class);
+	public boolean isClusterKeyColumn() {
+
+		return findAnnotation(PrimaryKeyColumn.class)
+				.filter(primaryKeyColumn -> PrimaryKeyType.CLUSTERED.equals(primaryKeyColumn.type())).isPresent();
 	}
 
 	protected DataType getDataTypeFor(DataType.Name dataTypeName) {
@@ -326,16 +305,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	protected DataType getDataTypeFor(Class<?> javaType) {
-
-		Optional<CassandraPersistentEntity<?>> optionalEntity = getOwner().getMappingContext().getPersistentEntity(javaType)
-				.map(CassandraPersistentEntity.class::cast);
-
-		Optional<CassandraPersistentEntity<?>> udtEntity = optionalEntity
-				.filter(CassandraPersistentEntity::isUserDefinedType);
-
-		if (udtEntity.isPresent()) {
-			return udtEntity.map(CassandraPersistentEntity::getUserType).get();
-		}
 
 		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(javaType);
 
@@ -356,52 +325,36 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getColumnNames()
-	 */
-	@Override
-	public List<CqlIdentifier> getColumnNames() {
-
-		columnNames = (columnNames != null ? columnNames : Collections.unmodifiableList(determineColumnNames()));
-
-		return columnNames;
-	}
-
-	protected List<CqlIdentifier> determineColumnNames() {
-
-		List<CqlIdentifier> columnNames = new ArrayList<>();
+	private CqlIdentifier determineColumnName() {
 
 		if (isCompositePrimaryKey()) { // then the id type has @PrimaryKeyClass
-			addCompositePrimaryKeyColumnNames(getCompositePrimaryKeyEntity(), columnNames);
-		} else { // else we're dealing with a single-column field
-			String defaultName = getName(); // TODO: replace with naming strategy class
-			String overriddenName;
-			boolean forceQuote;
-
-			if (isIdProperty()) { // then the id is of a simple type (since it's not a composite primary key)
-				Optional<PrimaryKey> optionalPrimaryKey = findAnnotation(PrimaryKey.class);
-				overriddenName = optionalPrimaryKey.map(PrimaryKey::value).orElse("");
-				forceQuote = optionalPrimaryKey.map(PrimaryKey::forceQuote).orElse(false);
-
-			} else if (isPrimaryKeyColumn()) { // then it's a simple type
-				Optional<PrimaryKeyColumn> optionalPrimaryKey = findAnnotation(PrimaryKeyColumn.class);
-				overriddenName = optionalPrimaryKey.map(PrimaryKeyColumn::value).orElse("");
-				forceQuote = optionalPrimaryKey.map(PrimaryKeyColumn::forceQuote).orElse(false);
-
-			} else { // then it's a vanilla column with the assumption that it's mapped to a single column
-				Optional<Column> optionalColumn = findAnnotation(Column.class);
-				overriddenName = optionalColumn.map(Column::value).orElse("");
-				forceQuote = optionalColumn.map(Column::forceQuote).orElse(false);
-			}
-
-			columnNames.add(createColumnName(defaultName, overriddenName, forceQuote));
-
+			return null;
 		}
 
-		return columnNames;
+		String defaultName = getName(); // TODO: replace with naming strategy class
+		String overriddenName;
+		boolean forceQuote;
+
+		if (isIdProperty()) { // then the id is of a simple type (since it's not a composite primary key)
+			Optional<PrimaryKey> optionalPrimaryKey = findAnnotation(PrimaryKey.class);
+			overriddenName = optionalPrimaryKey.map(PrimaryKey::value).orElse("");
+			forceQuote = optionalPrimaryKey.map(PrimaryKey::forceQuote).orElse(false);
+
+		} else if (isPrimaryKeyColumn()) { // then it's a simple type
+			Optional<PrimaryKeyColumn> optionalPrimaryKey = findAnnotation(PrimaryKeyColumn.class);
+			overriddenName = optionalPrimaryKey.map(PrimaryKeyColumn::value).orElse("");
+			forceQuote = optionalPrimaryKey.map(PrimaryKeyColumn::forceQuote).orElse(false);
+
+		} else { // then it's a vanilla column with the assumption that it's mapped to a single column
+			Optional<Column> optionalColumn = findAnnotation(Column.class);
+			overriddenName = optionalColumn.map(Column::value).orElse("");
+			forceQuote = optionalColumn.map(Column::forceQuote).orElse(false);
+		}
+
+		return createColumnName(defaultName, overriddenName, forceQuote);
 	}
 
-	protected CqlIdentifier createColumnName(String defaultName, String overriddenName, boolean forceQuote) {
+	private CqlIdentifier createColumnName(String defaultName, String overriddenName, boolean forceQuote) {
 
 		String name = defaultName;
 
@@ -412,47 +365,15 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return cqlId(name, forceQuote);
 	}
 
-	protected void addCompositePrimaryKeyColumnNames(CassandraPersistentEntity<?> compositePrimaryKeyEntity,
-			final List<CqlIdentifier> columnNames) {
-
-		compositePrimaryKeyEntity.getPersistentProperties().forEach(property -> {
-			if (property.isCompositePrimaryKey()) {
-				addCompositePrimaryKeyColumnNames(property.getCompositePrimaryKeyEntity(), columnNames);
-			} else {
-				columnNames.add(property.getColumnName());
-			}
-		});
-	}
-
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#setColumnName(org.springframework.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void setColumnName(CqlIdentifier columnName) {
 
-		Assert.notNull(columnName, "columnName must not be null");
+		Assert.notNull(columnName, "ColumnName must not be null");
 
-		setColumnNames(Collections.singletonList(columnName));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#setColumnNames(java.util.List)
-	 */
-	@Override
-	public void setColumnNames(List<CqlIdentifier> columnNames) {
-
-		Assert.notNull(columnNames, "List of column names must not be null");
-
-		// force calculation of columnNames if not known yet
-		getColumnNames();
-
-		Assert.state(this.columnNames.size() == columnNames.size(),
-				String.format(
-						"Property [%s] of entity [%s] is mapped to [%s] column%s, but given column name list has size [%s]",
-						getName(), getOwner().getType().getName(), this.columnNames.size(), this.columnNames.size() == 1 ? "" : "s",
-						columnNames.size()));
-
-		this.columnNames = Collections.unmodifiableList(new ArrayList<>(columnNames));
+		this.columnName = columnName;
 	}
 
 	/* (non-Javadoc)
@@ -461,45 +382,17 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public void setForceQuote(boolean forceQuote) {
 
-		if (this.forceQuote != null && this.forceQuote == forceQuote) {
-			return;
-		} else {
-			this.forceQuote = forceQuote;
+		boolean changed = !this.forceQuote.isPresent() || this.forceQuote.filter(v -> v != forceQuote).isPresent();
+
+		this.forceQuote = Optional.of(forceQuote);
+
+		if (changed) {
+
+			CqlIdentifier columnName = getColumnName();
+			if (columnName != null) {
+				setColumnName(cqlId(columnName.getUnquoted(), forceQuote));
+			}
 		}
-
-		List<CqlIdentifier> columnNames = getColumnNames() //
-				.stream() //
-				.map(CqlIdentifier::getUnquoted) //
-				.map(name -> cqlId(name, forceQuote)) //
-				.collect(Collectors.toList());
-
-		setColumnNames(columnNames);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getCompositePrimaryKeyProperties()
-	 */
-	@Override
-	public List<CassandraPersistentProperty> getCompositePrimaryKeyProperties() {
-
-		Assert.state(isCompositePrimaryKey(),
-				String.format("[%s] does not represent a composite primary key property", getName()));
-
-		return getCompositePrimaryKeyEntity().getCompositePrimaryKeyProperties();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentProperty#getCompositePrimaryKeyEntity()
-	 */
-	@Override
-	public CassandraPersistentEntity<?> getCompositePrimaryKeyEntity() {
-
-		MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext = getOwner()
-				.getMappingContext();
-
-		Assert.state(mappingContext != null, "CassandraMappingContext needed");
-
-		return mappingContext.getRequiredPersistentEntity(getCompositePrimaryKeyTypeInformation());
 	}
 
 	/* (non-Javadoc)

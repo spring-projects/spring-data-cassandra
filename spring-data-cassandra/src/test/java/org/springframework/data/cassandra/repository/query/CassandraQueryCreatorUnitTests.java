@@ -269,7 +269,7 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM key WHERE firstname='Walter';");
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACASS-7
+	@Test(expected = IllegalArgumentException.class) // DATACASS-7
 	public void createsFindByPrimaryKey2PartCorrectly() {
 		createQuery("findByKey", TypeWithCompositeId.class, new Key());
 	}

@@ -93,11 +93,6 @@ public class CassandraMappingContextUnitTests {
 		assertThat(idProperty).hasValueSatisfying(actual -> {
 
 			assertThat(actual.getColumnName().toCql()).isEqualTo("foo");
-
-			List<CqlIdentifier> columnNames = actual.getColumnNames();
-
-			assertThat(columnNames).hasSize(1);
-			assertThat(columnNames.get(0).toCql()).isEqualTo("foo");
 		});
 	}
 
@@ -178,7 +173,6 @@ public class CassandraMappingContextUnitTests {
 						.isTrue();
 
 		assertThat(primaryKeyClass.isCompositePrimaryKey()).isTrue();
-		assertThat(primaryKeyClass.getCompositePrimaryKeyProperties()).hasSize(2);
 
 		CassandraPersistentProperty firstname = primaryKeyClass.getRequiredPersistentProperty("firstname");
 
