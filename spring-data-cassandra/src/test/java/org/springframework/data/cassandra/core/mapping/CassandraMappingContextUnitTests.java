@@ -68,7 +68,7 @@ public class CassandraMappingContextUnitTests {
 
 	private static class Transient {}
 
-	@Test // DATACASS-282
+	@Test // DATACASS-282, DATACASS-455
 	public void testGetExistingPersistentEntityHappyPath() {
 
 		TableMetadata tableMetadata = mock(TableMetadata.class);
@@ -76,11 +76,10 @@ public class CassandraMappingContextUnitTests {
 
 		mappingContext.getRequiredPersistentEntity(X.class);
 
-		assertThat(mappingContext.contains(Y.class)).isFalse();
 		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
 		assertThat(mappingContext.getTableEntities()).hasSize(1);
-		assertThat(mappingContext.contains(X.class)).isTrue();
-		assertThat(mappingContext.usesTable(tableMetadata)).isTrue();
+		assertThat(mappingContext.getPersistentEntities()).hasSize(1);
+		assertThat(mappingContext.usesTable(CqlIdentifier.cqlId(tableMetadata.getName()))).isTrue();
 	}
 
 	@Test // DATACASS-248
@@ -353,7 +352,7 @@ public class CassandraMappingContextUnitTests {
 				.isEqualTo(DataType.list(DataType.varchar()));
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-455
 	public void shouldRegisterUdtTypes() {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(MappedUdt.class);
@@ -361,8 +360,8 @@ public class CassandraMappingContextUnitTests {
 		assertThat(persistentEntity.isUserDefinedType()).isTrue();
 
 		assertThat(mappingContext.getUserDefinedTypeEntities()).hasSize(1);
+		assertThat(mappingContext.getPersistentEntities()).hasSize(1);
 		assertThat(mappingContext.getTableEntities()).hasSize(0);
-		assertThat(mappingContext.contains(MappedUdt.class)).isTrue();
 	}
 
 	@Test // DATACASS-172
@@ -380,45 +379,38 @@ public class CassandraMappingContextUnitTests {
 		BasicCassandraPersistentEntity<?> existingPersistentEntity = mappingContext
 				.getRequiredPersistentEntity(MappedUdt.class);
 
-		assertThat(mappingContext.getPersistentEntities(true)).contains(existingPersistentEntity);
+		assertThat(mappingContext.getPersistentEntities()).contains(existingPersistentEntity);
 		assertThat(mappingContext.getUserDefinedTypeEntities()).contains(existingPersistentEntity);
-		assertThat(mappingContext.getPersistentEntities(false)).doesNotContain(existingPersistentEntity);
 		assertThat(mappingContext.getTableEntities()).doesNotContain(existingPersistentEntity);
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-455
 	public void usesTypeShouldNotReportTypeUsage() {
-
-		UserType myTypeMock = mock(UserType.class, "mappedudt");
-		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
-
-		assertThat(mappingContext.usesUserType(myTypeMock)).isFalse();
+		assertThat(mappingContext.usesUserType(CqlIdentifier.cqlId("mappedudt"))).isFalse();
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-455
 	public void usesTypeShouldReportTypeUsageInMappedUdt() {
 
 		UserType myTypeMock = mock(UserType.class, "mappedudt");
-		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
 
 		mappingContext.setUserTypeResolver(typeName -> myTypeMock);
 
 		mappingContext.getRequiredPersistentEntity(WithUdt.class);
 
-		assertThat(mappingContext.usesUserType(myTypeMock)).isTrue();
+		assertThat(mappingContext.usesUserType(CqlIdentifier.cqlId("mappedudt"))).isTrue();
 	}
 
-	@Test // DATACASS-172
+	@Test // DATACASS-172, DATACASS-455
 	public void usesTypeShouldReportTypeUsageInColumn() {
 
 		UserType myTypeMock = mock(UserType.class, "mappedudt");
-		when(myTypeMock.getTypeName()).thenReturn("mappedudt");
 
 		mappingContext.setUserTypeResolver(typeName -> myTypeMock);
 
 		mappingContext.getRequiredPersistentEntity(MappedUdt.class);
 
-		assertThat(mappingContext.usesUserType(myTypeMock)).isTrue();
+		assertThat(mappingContext.usesUserType(CqlIdentifier.cqlId("mappedudt"))).isTrue();
 	}
 
 	@Test // DATACASS-172
@@ -449,7 +441,7 @@ public class CassandraMappingContextUnitTests {
 		}
 	}
 
-	@Test // DATACASS-282
+	@Test // DATACASS-282, DATACASS-455
 	public void shouldNotRetainInvalidEntitiesInCache() {
 
 		TableMetadata tableMetadata = mock(TableMetadata.class);
@@ -465,8 +457,8 @@ public class CassandraMappingContextUnitTests {
 
 		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
 		assertThat(mappingContext.getTableEntities()).isEmpty();
-		assertThat(mappingContext.contains(InvalidEntityWithIdAndPrimaryKeyColumn.class)).isFalse();
-		assertThat(mappingContext.usesTable(tableMetadata)).isFalse();
+		assertThat(mappingContext.getPersistentEntities()).isEmpty();
+		assertThat(mappingContext.usesTable(CqlIdentifier.cqlId(tableMetadata.getName()))).isFalse();
 	}
 
 	@Table

@@ -23,6 +23,8 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.AbstractTableMetadata;
+
 /**
  * Schema drop support for Cassandra based on {@link CassandraMappingContext} and {@link CassandraPersistentEntity}.
  * This class generates CQL to drop user types (UDT) and tables.
@@ -63,9 +65,11 @@ public class CassandraPersistentEntitySchemaDropper {
 	 */
 	public void dropTables(boolean dropUnused) {
 
-		cassandraAdminOperations.getKeyspaceMetadata().getTables().stream()
-				.filter(table -> dropUnused || mappingContext.usesTable(table))
-				.forEach(table -> cassandraAdminOperations.dropTable(CqlIdentifier.cqlId(table.getName())));
+		cassandraAdminOperations.getKeyspaceMetadata().getTables() //
+				.stream() //
+				.map(AbstractTableMetadata::getName) //
+				.map(CqlIdentifier::cqlId) //
+				.filter(table -> dropUnused || mappingContext.usesTable(table)).forEach(cassandraAdminOperations::dropTable);
 	}
 
 	/**
@@ -81,12 +85,13 @@ public class CassandraPersistentEntitySchemaDropper {
 				.map(CassandraPersistentEntity::getTableName).collect(Collectors.toSet());
 
 		cassandraAdminOperations.getKeyspaceMetadata().getUserTypes().forEach(userType -> {
-			CqlIdentifier identifier = CqlIdentifier.cqlId(userType.getTypeName());
 
-			if (canRecreate.contains(identifier)) {
-				cassandraAdminOperations.dropUserType(identifier);
-			} else if (dropUnused && !mappingContext.usesUserType(userType)) {
-				cassandraAdminOperations.dropUserType(identifier);
+			CqlIdentifier typeName = CqlIdentifier.cqlId(userType.getTypeName());
+
+			if (canRecreate.contains(typeName)) {
+				cassandraAdminOperations.dropUserType(typeName);
+			} else if (dropUnused && !mappingContext.usesUserType(typeName)) {
+				cassandraAdminOperations.dropUserType(typeName);
 			}
 		});
 	}
