@@ -70,7 +70,7 @@ public class RowMapperResultSetExtractor<T> implements ResultSetExtractor<List<T
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
+	 * @see org.springframework.data.cql.core.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
 	 */
 	@Override
 	public List<T> extractData(ResultSet resultSet) throws DriverException, DataAccessException {

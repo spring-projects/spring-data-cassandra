@@ -42,7 +42,7 @@ import com.datastax.driver.core.Row;
 public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.RowMapper#mapRow(com.datastax.driver.core.Row, int)
+	 * @see org.springframework.data.cql.core.RowMapper#mapRow(com.datastax.driver.core.Row, int)
 	 */
 	@Override
 	public Map<String, Object> mapRow(Row rs, int rowNum) {

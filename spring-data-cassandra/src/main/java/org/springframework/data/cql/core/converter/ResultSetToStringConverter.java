@@ -32,7 +32,7 @@ public class ResultSetToStringConverter extends AbstractResultSetConverter<Strin
 	public static final ResultSetToStringConverter INSTANCE = new ResultSetToStringConverter();
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
 	 */
 	@Override
 	protected String doConvertSingleValue(Object object) {
@@ -40,7 +40,7 @@ public class ResultSetToStringConverter extends AbstractResultSetConverter<Strin
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleRow(java.util.Map)
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#doConvertSingleRow(java.util.Map)
 	 */
 	@Override
 	protected String doConvertSingleRow(Map<String, Object> row) {

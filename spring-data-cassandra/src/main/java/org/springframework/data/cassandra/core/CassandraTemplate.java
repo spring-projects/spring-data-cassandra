@@ -208,7 +208,7 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperationsNG#stream(java.lang.String, java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#stream(java.lang.String, java.lang.Class)
 	 */
 	@Override
 	public <T> Stream<T> stream(String cql, Class<T> entityClass) throws DataAccessException {
@@ -250,7 +250,7 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperationsNG#stream(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#stream(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
 	@Override
 	public <T> Stream<T> stream(Statement statement, Class<T> entityClass) throws DataAccessException {
@@ -433,7 +433,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public <T> T insert(T entity, WriteOptions options) {
@@ -456,7 +456,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public <T> T update(T entity, WriteOptions options) {
@@ -479,7 +479,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, org.springframework.cassandra.core.QueryOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, org.springframework.data.cql.core.QueryOptions)
 	 */
 	@Override
 	public <T> T delete(T entity, QueryOptions options) {
@@ -532,7 +532,7 @@ public class CassandraTemplate implements CassandraOperations {
 	/*
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperationsNG#getTableName(java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableName(java.lang.Class)
 	 */
 	@Override
 	public CqlIdentifier getTableName(Class<?> entityClass) {
@@ -541,7 +541,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperationsNG#batchOps()
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#batchOps()
 	 */
 	@Override
 	public CassandraBatchOperations batchOps() {

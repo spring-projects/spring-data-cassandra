@@ -108,49 +108,49 @@ public class DefaultOption implements Option {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.Option#getType()
+	 * @see org.springframework.data.cql.core.keyspace.Option#getType()
 	 */
 	public Class<?> getType() {
 		return type;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.Option#getName()
+	 * @see org.springframework.data.cql.core.keyspace.Option#getName()
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.Option#takesValue()
+	 * @see org.springframework.data.cql.core.keyspace.Option#takesValue()
 	 */
 	public boolean takesValue() {
 		return type != null;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.Option#requiresValue()
+	 * @see org.springframework.data.cql.core.keyspace.Option#requiresValue()
 	 */
 	public boolean requiresValue() {
 		return this.requiresValue;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.Option#escapesValue()
+	 * @see org.springframework.data.cql.core.keyspace.Option#escapesValue()
 	 */
 	public boolean escapesValue() {
 		return this.escapesValue;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.Option#quotesValue()
+	 * @see org.springframework.data.cql.core.keyspace.Option#quotesValue()
 	 */
 	public boolean quotesValue() {
 		return this.quotesValue;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.Option#checkValue(java.lang.Object)
+	 * @see org.springframework.data.cql.core.keyspace.Option#checkValue(java.lang.Object)
 	 */
 	public void checkValue(Object value) {
 		if (takesValue()) {

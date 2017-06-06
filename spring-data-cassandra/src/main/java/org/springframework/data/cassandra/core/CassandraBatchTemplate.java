@@ -102,7 +102,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options) {
@@ -140,7 +140,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public CassandraBatchOperations update(Iterable<?> entities, WriteOptions options) {

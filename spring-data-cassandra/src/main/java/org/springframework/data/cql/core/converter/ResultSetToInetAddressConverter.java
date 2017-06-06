@@ -31,7 +31,7 @@ public class ResultSetToInetAddressConverter extends AbstractResultSetToBasicFix
 	public static final ResultSetToInetAddressConverter INSTANCE = new ResultSetToInetAddressConverter();
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
 	 */
 	@Override
 	protected InetAddress doConvertSingleValue(Object object) {
@@ -39,7 +39,7 @@ public class ResultSetToInetAddressConverter extends AbstractResultSetToBasicFix
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#getType()
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#getType()
 	 */
 	@Override
 	protected Class<?> getType() {

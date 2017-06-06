@@ -37,7 +37,7 @@ import org.springframework.util.StringUtils;
  * included using a {@link Selector}.
  *
  * @author Mark Paluch
- * @see org.springframework.cassandra.core.cql.CqlIdentifier
+ * @see org.springframework.data.cql.core.cql.CqlIdentifier
  * @see org.springframework.data.cassandra.core.query.ColumnName
  * @see Selector
  * @see FunctionCall

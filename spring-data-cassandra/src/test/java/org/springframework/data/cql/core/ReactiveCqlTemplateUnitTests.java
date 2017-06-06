@@ -78,7 +78,7 @@ public class ReactiveCqlTemplateUnitTests {
 	}
 
 	// -------------------------------------------------------------------------
-	// Tests dealing with a plain org.springframework.cassandra.core.ReactiveSession
+	// Tests dealing with a plain org.springframework.data.cql.core.ReactiveSession
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-335

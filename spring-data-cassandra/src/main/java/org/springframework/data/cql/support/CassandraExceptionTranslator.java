@@ -73,7 +73,7 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.support.CQLExceptionTranslator#translate(java.lang.String, java.lang.String, com.datastax.driver.core.exceptions.DriverException)
+	 * @see org.springframework.data.cql.core.support.CQLExceptionTranslator#translate(java.lang.String, java.lang.String, com.datastax.driver.core.exceptions.DriverException)
 	 */
 	@Override
 	public DataAccessException translate(String task, String cql, DriverException exception) {

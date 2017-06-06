@@ -49,7 +49,7 @@ import com.datastax.driver.core.DataType.Name;
  * @author Mark Paluch
  * @see org.springframework.data.cassandra.core.query.Filter
  * @see org.springframework.data.cassandra.core.query.Update
- * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity
+ * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
  * @see org.springframework.data.mapping.PersistentProperty
  * @see org.springframework.data.util.TypeInformation
  * @since 2.0

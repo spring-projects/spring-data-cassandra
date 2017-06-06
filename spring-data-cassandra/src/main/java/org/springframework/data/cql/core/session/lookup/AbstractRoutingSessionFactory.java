@@ -112,7 +112,7 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.session.SessionFactory#getSession()
+	 * @see org.springframework.data.cql.core.session.SessionFactory#getSession()
 	 */
 	@Override
 	public Session getSession() {
@@ -175,7 +175,7 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 			return this.sessionFactoryLookup.getSessionFactory((String) sessionFactory);
 		} else {
 			throw new IllegalArgumentException(String
-					.format("Illegal session factory value. Only [org.springframework.cassandra.core.session.SessionFactory]"
+					.format("Illegal session factory value. Only [org.springframework.data.cql.core.session.SessionFactory]"
 							+ " and String supported: %s", sessionFactory));
 		}
 	}

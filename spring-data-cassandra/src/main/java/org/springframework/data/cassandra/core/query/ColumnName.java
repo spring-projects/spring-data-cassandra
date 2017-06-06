@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  * Implementing classes must provide either {@link #getColumnName()} or {@link #getCqlIdentifier()}.
  *
  * @author Mark Paluch
- * @see org.springframework.cassandra.core.cql.CqlIdentifier
+ * @see org.springframework.data.cql.core.cql.CqlIdentifier
  * @since 2.0
  */
 public abstract class ColumnName {

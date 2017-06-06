@@ -380,7 +380,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public <T> Mono<T> insert(T entity, WriteOptions options) {
@@ -417,7 +417,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public <T> Flux<T> insert(Publisher<? extends T> entities, WriteOptions options) {
@@ -438,7 +438,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public <T> Mono<T> update(T entity, WriteOptions options) {
@@ -475,7 +475,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public <T> Flux<T> update(Publisher<? extends T> entities, WriteOptions options) {
@@ -515,7 +515,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Object, org.springframework.cassandra.core.QueryOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Object, org.springframework.data.cql.core.QueryOptions)
 	 */
 	@Override
 	public <T> Mono<T> delete(T entity, QueryOptions options) {
@@ -552,7 +552,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.reactivestreams.Publisher, org.springframework.cassandra.core.QueryOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.reactivestreams.Publisher, org.springframework.data.cql.core.QueryOptions)
 	 */
 	@Override
 	public <T> Flux<T> delete(Publisher<? extends T> entities, QueryOptions options) {

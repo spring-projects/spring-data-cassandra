@@ -58,7 +58,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * it.
  * <p>
  * All CQL operations performed by this class are logged at debug level, using
- * "org.springframework.cassandra.core.CqlTemplate" as log category.
+ * "org.springframework.data.cql.core.CqlTemplate" as log category.
  * <p>
  * <b>NOTE: An instance of this class is thread-safe once configured.</b>
  *
@@ -119,7 +119,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(org.springframework.cassandra.core.SessionCallback)
+	 * @see org.springframework.data.cql.core.CqlOperations#execute(org.springframework.data.cql.core.SessionCallback)
 	 */
 	@Override
 	public <T> T execute(SessionCallback<T> action) throws DataAccessException {
@@ -139,7 +139,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(java.lang.String)
+	 * @see org.springframework.data.cql.core.CqlOperations#execute(java.lang.String)
 	 */
 	@Override
 	public boolean execute(String cql) throws DataAccessException {
@@ -151,7 +151,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.ResultSetExtractor)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(java.lang.String, org.springframework.data.cql.core.ResultSetExtractor)
 	 */
 	@Override
 	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
@@ -176,7 +176,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.RowCallbackHandler)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(java.lang.String, org.springframework.data.cql.core.RowCallbackHandler)
 	 */
 	@Override
 	public void query(String cql, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
@@ -185,7 +185,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(java.lang.String, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
@@ -194,7 +194,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(java.lang.String)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForList(java.lang.String)
 	 */
 	@Override
 	public List<Map<String, Object>> queryForList(String cql) throws DataAccessException {
@@ -203,7 +203,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(java.lang.String, java.lang.Class)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForList(java.lang.String, java.lang.Class)
 	 */
 	@Override
 	public <T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException {
@@ -212,7 +212,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForMap(java.lang.String)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForMap(java.lang.String)
 	 */
 	@Override
 	public Map<String, Object> queryForMap(String cql) throws DataAccessException {
@@ -221,7 +221,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, java.lang.Class)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForObject(java.lang.String, java.lang.Class)
 	 */
 	@Override
 	public <T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
@@ -230,7 +230,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForObject(java.lang.String, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
@@ -239,7 +239,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForResultSet(java.lang.String)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForResultSet(java.lang.String)
 	 */
 	@Override
 	public ResultSet queryForResultSet(String cql) throws DataAccessException {
@@ -248,7 +248,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForRows(java.lang.String)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForRows(java.lang.String)
 	 */
 	@Override
 	public Iterable<Row> queryForRows(String cql) throws DataAccessException {
@@ -261,7 +261,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.CqlOperations#execute(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public boolean execute(Statement statement) throws DataAccessException {
@@ -273,7 +273,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(com.datastax.driver.core.Statement, org.springframework.cassandra.core.ResultSetExtractor)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(com.datastax.driver.core.Statement, org.springframework.data.cql.core.ResultSetExtractor)
 	 */
 	@Override
 	public <T> T query(Statement statement, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
@@ -294,7 +294,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(com.datastax.driver.core.Statement, org.springframework.cassandra.core.RowCallbackHandler)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(com.datastax.driver.core.Statement, org.springframework.data.cql.core.RowCallbackHandler)
 	 */
 	@Override
 	public void query(Statement statement, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
@@ -303,7 +303,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(com.datastax.driver.core.Statement, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(com.datastax.driver.core.Statement, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> List<T> query(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
@@ -312,7 +312,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForList(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public List<Map<String, Object>> queryForList(Statement statement) throws DataAccessException {
@@ -321,7 +321,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForList(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
 	@Override
 	public <T> List<T> queryForList(Statement statement, Class<T> elementType) throws DataAccessException {
@@ -330,7 +330,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForMap(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForMap(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public Map<String, Object> queryForMap(Statement statement) throws DataAccessException {
@@ -339,7 +339,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForObject(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
 	@Override
 	public <T> T queryForObject(Statement statement, Class<T> requiredType) throws DataAccessException {
@@ -348,7 +348,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(com.datastax.driver.core.Statement, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForObject(com.datastax.driver.core.Statement, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> T queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
@@ -357,7 +357,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForResultSet(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForResultSet(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public ResultSet queryForResultSet(Statement statement) throws DataAccessException {
@@ -366,7 +366,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForRows(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForRows(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public Iterable<Row> queryForRows(Statement statement) throws DataAccessException {
@@ -379,7 +379,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#execute(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public boolean execute(String cql, Object... args) throws DataAccessException {
@@ -388,7 +388,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder)
+	 * @see org.springframework.data.cql.core.CqlOperations#execute(java.lang.String, org.springframework.data.cql.core.PreparedStatementBinder)
 	 */
 	@Override
 	public boolean execute(String cql, PreparedStatementBinder preparedStatementBinder) throws DataAccessException {
@@ -397,7 +397,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(java.lang.String, org.springframework.cassandra.core.PreparedStatementCallback)
+	 * @see org.springframework.data.cql.core.CqlOperations#execute(java.lang.String, org.springframework.data.cql.core.PreparedStatementCallback)
 	 */
 	@Override
 	public <T> T execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException {
@@ -406,7 +406,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(org.springframework.cassandra.core.PreparedStatementCreator)
+	 * @see org.springframework.data.cql.core.CqlOperations#execute(org.springframework.data.cql.core.PreparedStatementCreator)
 	 */
 	@Override
 	public boolean execute(PreparedStatementCreator preparedStatementCreator) throws DataAccessException {
@@ -415,7 +415,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#execute(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementCallback)
+	 * @see org.springframework.data.cql.core.CqlOperations#execute(org.springframework.data.cql.core.PreparedStatementCreator, org.springframework.data.cql.core.PreparedStatementCallback)
 	 */
 	@Override
 	public <T> T execute(PreparedStatementCreator preparedStatementCreator, PreparedStatementCallback<T> action)
@@ -441,7 +441,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.ResultSetExtractor)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(org.springframework.data.cql.core.PreparedStatementCreator, org.springframework.data.cql.core.ResultSetExtractor)
 	 */
 	@Override
 	public <T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor)
@@ -452,7 +452,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowCallbackHandler)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(org.springframework.data.cql.core.PreparedStatementCreator, org.springframework.data.cql.core.RowCallbackHandler)
 	 */
 	@Override
 	public void query(PreparedStatementCreator preparedStatementCreator, RowCallbackHandler rowCallbackHandler)
@@ -463,7 +463,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(org.springframework.data.cql.core.PreparedStatementCreator, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
@@ -474,7 +474,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(org.springframework.data.cql.core.PreparedStatementCreator, org.springframework.data.cql.core.PreparedStatementBinder, org.springframework.data.cql.core.ResultSetExtractor)
 	 */
 	@Override
 	public <T> T query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
@@ -510,7 +510,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(org.springframework.data.cql.core.PreparedStatementCreator, org.springframework.data.cql.core.PreparedStatementBinder, org.springframework.data.cql.core.RowCallbackHandler)
 	 */
 	@Override
 	public void query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
@@ -521,7 +521,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(org.springframework.cassandra.core.PreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(org.springframework.data.cql.core.PreparedStatementCreator, org.springframework.data.cql.core.PreparedStatementBinder, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator,
@@ -532,7 +532,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.ResultSetExtractor, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#query(java.lang.String, org.springframework.data.cql.core.ResultSetExtractor, java.lang.Object[])
 	 */
 	@Override
 	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor, Object... args) throws DataAccessException {
@@ -542,7 +542,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.RowCallbackHandler, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#query(java.lang.String, org.springframework.data.cql.core.RowCallbackHandler, java.lang.Object[])
 	 */
 	@Override
 	public void query(String cql, RowCallbackHandler rowCallbackHandler, Object... args) throws DataAccessException {
@@ -552,7 +552,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.RowMapper, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#query(java.lang.String, org.springframework.data.cql.core.RowMapper, java.lang.Object[])
 	 */
 	@Override
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
@@ -561,7 +561,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ResultSetExtractor)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(java.lang.String, org.springframework.data.cql.core.PreparedStatementBinder, org.springframework.data.cql.core.ResultSetExtractor)
 	 */
 	@Override
 	public <T> T query(String cql, PreparedStatementBinder preparedStatementBinder,
@@ -572,7 +572,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowCallbackHandler)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(java.lang.String, org.springframework.data.cql.core.PreparedStatementBinder, org.springframework.data.cql.core.RowCallbackHandler)
 	 */
 	@Override
 	public void query(String cql, PreparedStatementBinder preparedStatementBinder, RowCallbackHandler rowCallbackHandler)
@@ -583,7 +583,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.CqlOperations#query(java.lang.String, org.springframework.data.cql.core.PreparedStatementBinder, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> List<T> query(String cql, PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper)
@@ -594,7 +594,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForList(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public List<Map<String, Object>> queryForList(String cql, Object... args) throws DataAccessException {
@@ -604,7 +604,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForList(java.lang.String, java.lang.Class, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForList(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
 	@Override
 	public <T> List<T> queryForList(String cql, Class<T> elementType, Object... args) throws DataAccessException {
@@ -614,7 +614,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForMap(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForMap(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public Map<String, Object> queryForMap(String cql, Object... args) throws DataAccessException {
@@ -623,7 +623,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, java.lang.Class, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForObject(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
 	@Override
 	public <T> T queryForObject(String cql, Class<T> requiredType, Object... args) throws DataAccessException {
@@ -632,7 +632,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForObject(java.lang.String, org.springframework.data.cql.core.RowMapper, java.lang.Object[])
 	 */
 	@Override
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
@@ -642,7 +642,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForResultSet(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForResultSet(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public ResultSet queryForResultSet(String cql, Object... args) throws DataAccessException {
@@ -651,7 +651,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#queryForRows(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.CqlOperations#queryForRows(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public Iterable<Row> queryForRows(String cql, Object... args) throws DataAccessException {
@@ -660,7 +660,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#describeRing()
+	 * @see org.springframework.data.cql.core.CqlOperations#describeRing()
 	 */
 	@Override
 	public List<RingMember> describeRing() throws DataAccessException {
@@ -669,7 +669,7 @@ public class CqlTemplate extends CqlTemplateSupport implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.CqlOperationsNG#describeRing(org.springframework.cassandra.core.HostMapper)
+	 * @see org.springframework.data.cql.core.CqlOperations#describeRing(org.springframework.data.cql.core.HostMapper)
 	 */
 	@Override
 	public <T> Collection<T> describeRing(HostMapper<T> hostMapper) throws DataAccessException {

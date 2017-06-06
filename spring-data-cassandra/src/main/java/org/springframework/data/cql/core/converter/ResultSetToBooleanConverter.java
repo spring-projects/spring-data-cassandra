@@ -29,7 +29,7 @@ public class ResultSetToBooleanConverter extends AbstractResultSetToBasicFixedTy
 	public static final ResultSetToBooleanConverter INSTANCE = new ResultSetToBooleanConverter();
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
 	 */
 	@Override
 	protected Boolean doConvertSingleValue(Object object) {
@@ -37,7 +37,7 @@ public class ResultSetToBooleanConverter extends AbstractResultSetToBasicFixedTy
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#getType()
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#getType()
 	 */
 	@Override
 	protected Class<?> getType() {

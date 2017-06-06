@@ -950,7 +950,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		private final CassandraValueProvider parent;
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.mapping.CassandraPersistentProperty)
+		 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
 		 */
 		@Override
 		public boolean hasProperty(CassandraPersistentProperty property) {

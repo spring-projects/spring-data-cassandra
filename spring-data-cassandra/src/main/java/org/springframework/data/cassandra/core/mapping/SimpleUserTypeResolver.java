@@ -50,7 +50,7 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.UserTypeResolver#resolveType(org.springframework.cassandra.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.mapping.UserTypeResolver#resolveType(org.springframework.data.cql.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public UserType resolveType(CqlIdentifier typeName) {

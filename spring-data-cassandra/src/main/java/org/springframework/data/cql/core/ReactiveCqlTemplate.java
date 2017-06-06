@@ -65,7 +65,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  * it.
  * <p>
  * All CQL operations performed by this class are logged at debug level, using
- * "org.springframework.cassandra.core.ReactiveCqlTemplate" as log category.
+ * "org.springframework.data.cql.core.ReactiveCqlTemplate" as log category.
  * <p>
  * <b>NOTE: An instance of this class is thread-safe once configured.</b>
  *
@@ -196,11 +196,11 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with a plain org.springframework.cassandra.core.ReactiveSession
+	// Methods dealing with a plain org.springframework.data.cql.core.ReactiveSession
 	// -------------------------------------------------------------------------
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(org.springframework.cassandra.core.ReactiveSessionCallback)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(org.springframework.data.cql.core.ReactiveSessionCallback)
 	 */
 	@Override
 	public <T> Flux<T> execute(ReactiveSessionCallback<T> action) throws DataAccessException {
@@ -215,7 +215,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	// -------------------------------------------------------------------------
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(java.lang.String)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(java.lang.String)
 	 */
 	@Override
 	public Mono<Boolean> execute(String cql) throws DataAccessException {
@@ -226,7 +226,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.cassandra.core.ReactiveResultSetExtractor)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.data.cql.core.ReactiveResultSetExtractor)
 	 */
 	@Override
 	public <T> Flux<T> query(String cql, ReactiveResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
@@ -245,7 +245,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> Flux<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
@@ -253,7 +253,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForObject(java.lang.String, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
@@ -262,7 +262,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForObject(java.lang.String, java.lang.Class)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForObject(java.lang.String, java.lang.Class)
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
@@ -270,7 +270,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForMap(java.lang.String)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForMap(java.lang.String)
 	 */
 	@Override
 	public Mono<Map<String, Object>> queryForMap(String cql) throws DataAccessException {
@@ -278,7 +278,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForFlux(java.lang.String, java.lang.Class)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForFlux(java.lang.String, java.lang.Class)
 	 */
 	@Override
 	public <T> Flux<T> queryForFlux(String cql, Class<T> elementType) throws DataAccessException {
@@ -286,7 +286,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForFlux(java.lang.String)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForFlux(java.lang.String)
 	 */
 	@Override
 	public Flux<Map<String, Object>> queryForFlux(String cql) throws DataAccessException {
@@ -294,7 +294,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForResultSet(java.lang.String)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForResultSet(java.lang.String)
 	 */
 	@Override
 	public Mono<ReactiveResultSet> queryForResultSet(String cql) throws DataAccessException {
@@ -312,7 +312,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForRows(java.lang.String)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForRows(java.lang.String)
 	 */
 	@Override
 	public Flux<Row> queryForRows(String cql) throws DataAccessException {
@@ -321,7 +321,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(org.reactivestreams.Publisher)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(org.reactivestreams.Publisher)
 	 */
 	@Override
 	public Flux<Boolean> execute(Publisher<String> statementPublisher) throws DataAccessException {
@@ -336,7 +336,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	// -------------------------------------------------------------------------
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public Mono<Boolean> execute(Statement statement) throws DataAccessException {
@@ -347,7 +347,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(com.datastax.driver.core.Statement, org.springframework.cassandra.core.ReactiveResultSetExtractor)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(com.datastax.driver.core.Statement, org.springframework.data.cql.core.ReactiveResultSetExtractor)
 	 */
 	@Override
 	public <T> Flux<T> query(Statement statement, ReactiveResultSetExtractor<T> rse) throws DataAccessException {
@@ -366,7 +366,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(com.datastax.driver.core.Statement, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(com.datastax.driver.core.Statement, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> Flux<T> query(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
@@ -374,7 +374,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForObject(com.datastax.driver.core.Statement, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForObject(com.datastax.driver.core.Statement, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
@@ -383,7 +383,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForObject(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForObject(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(Statement statement, Class<T> requiredType) throws DataAccessException {
@@ -391,7 +391,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForMap(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForMap(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public Mono<Map<String, Object>> queryForMap(Statement statement) throws DataAccessException {
@@ -399,7 +399,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForFlux(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForFlux(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
 	@Override
 	public <T> Flux<T> queryForFlux(Statement statement, Class<T> elementType) throws DataAccessException {
@@ -407,7 +407,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForFlux(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForFlux(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public Flux<Map<String, Object>> queryForFlux(Statement statement) throws DataAccessException {
@@ -415,7 +415,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForResultSet(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForResultSet(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public Mono<ReactiveResultSet> queryForResultSet(Statement statement) throws DataAccessException {
@@ -444,7 +444,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	// -------------------------------------------------------------------------
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(org.springframework.cassandra.core.ReactivePreparedStatementCreator, org.springframework.cassandra.core.ReactivePreparedStatementCallback)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(org.springframework.data.cql.core.ReactivePreparedStatementCreator, org.springframework.data.cql.core.ReactivePreparedStatementCallback)
 	 */
 	@Override
 	public <T> Flux<T> execute(ReactivePreparedStatementCreator psc, ReactivePreparedStatementCallback<T> action)
@@ -463,7 +463,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(java.lang.String, org.springframework.cassandra.core.ReactivePreparedStatementCallback)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(java.lang.String, org.springframework.data.cql.core.ReactivePreparedStatementCallback)
 	 */
 	@Override
 	public <T> Flux<T> execute(String cql, ReactivePreparedStatementCallback<T> action) throws DataAccessException {
@@ -502,7 +502,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(org.springframework.cassandra.core.ReactivePreparedStatementCreator, org.springframework.cassandra.core.ReactiveResultSetExtractor)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(org.springframework.data.cql.core.ReactivePreparedStatementCreator, org.springframework.data.cql.core.ReactiveResultSetExtractor)
 	 */
 	@Override
 	public <T> Flux<T> query(ReactivePreparedStatementCreator psc, ReactiveResultSetExtractor<T> rse)
@@ -512,7 +512,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.ReactiveResultSetExtractor)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.data.cql.core.PreparedStatementBinder, org.springframework.data.cql.core.ReactiveResultSetExtractor)
 	 */
 	@Override
 	public <T> Flux<T> query(String cql, PreparedStatementBinder psb, ReactiveResultSetExtractor<T> rse)
@@ -522,7 +522,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.cassandra.core.ReactiveResultSetExtractor, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.data.cql.core.ReactiveResultSetExtractor, java.lang.Object[])
 	 */
 	@Override
 	public <T> Flux<T> query(String cql, ReactiveResultSetExtractor<T> rse, Object... args) throws DataAccessException {
@@ -530,7 +530,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(org.springframework.cassandra.core.ReactivePreparedStatementCreator, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(org.springframework.data.cql.core.ReactivePreparedStatementCreator, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> Flux<T> query(ReactivePreparedStatementCreator psc, RowMapper<T> rowMapper) throws DataAccessException {
@@ -538,7 +538,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.data.cql.core.PreparedStatementBinder, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> Flux<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
@@ -546,7 +546,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(org.springframework.cassandra.core.ReactivePreparedStatementCreator, org.springframework.cassandra.core.PreparedStatementBinder, org.springframework.cassandra.core.RowMapper)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(org.springframework.data.cql.core.ReactivePreparedStatementCreator, org.springframework.data.cql.core.PreparedStatementBinder, org.springframework.data.cql.core.RowMapper)
 	 */
 	@Override
 	public <T> Flux<T> query(ReactivePreparedStatementCreator psc, PreparedStatementBinder psb, RowMapper<T> rowMapper)
@@ -556,7 +556,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.cassandra.core.RowMapper, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#query(java.lang.String, org.springframework.data.cql.core.RowMapper, java.lang.Object[])
 	 */
 	@Override
 	public <T> Flux<T> query(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
@@ -564,7 +564,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForObject(java.lang.String, org.springframework.cassandra.core.RowMapper, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForObject(java.lang.String, org.springframework.data.cql.core.RowMapper, java.lang.Object[])
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
@@ -573,7 +573,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForObject(java.lang.String, java.lang.Class, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForObject(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
 	@Override
 	public <T> Mono<T> queryForObject(String cql, Class<T> requiredType, Object... args) throws DataAccessException {
@@ -581,7 +581,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForMap(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForMap(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public Mono<Map<String, Object>> queryForMap(String cql, Object... args) throws DataAccessException {
@@ -589,7 +589,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForFlux(java.lang.String, java.lang.Class, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForFlux(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
 	@Override
 	public <T> Flux<T> queryForFlux(String cql, Class<T> elementType, Object... args) throws DataAccessException {
@@ -597,7 +597,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForFlux(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForFlux(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public Flux<Map<String, Object>> queryForFlux(String cql, Object... args) throws DataAccessException {
@@ -605,7 +605,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForResultSet(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForResultSet(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public Mono<ReactiveResultSet> queryForResultSet(String cql, Object... args) throws DataAccessException {
@@ -617,7 +617,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#queryForRows(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#queryForRows(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public Flux<Row> queryForRows(String cql, Object... args) throws DataAccessException {
@@ -626,7 +626,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(org.springframework.cassandra.core.ReactivePreparedStatementCreator)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(org.springframework.data.cql.core.ReactivePreparedStatementCreator)
 	 */
 	@Override
 	public Mono<Boolean> execute(ReactivePreparedStatementCreator psc) throws DataAccessException {
@@ -634,7 +634,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(java.lang.String, org.springframework.cassandra.core.PreparedStatementBinder)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(java.lang.String, org.springframework.data.cql.core.PreparedStatementBinder)
 	 */
 	@Override
 	public Mono<Boolean> execute(String cql, PreparedStatementBinder psb) throws DataAccessException {
@@ -643,7 +643,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public Mono<Boolean> execute(String cql, Object... args) throws DataAccessException {
@@ -651,7 +651,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveCqlOperations#execute(java.lang.String, org.reactivestreams.Publisher)
+	 * @see org.springframework.data.cql.core.ReactiveCqlOperations#execute(java.lang.String, org.reactivestreams.Publisher)
 	 */
 	@Override
 	public Flux<Boolean> execute(String cql, Publisher<Object[]> args) throws DataAccessException {

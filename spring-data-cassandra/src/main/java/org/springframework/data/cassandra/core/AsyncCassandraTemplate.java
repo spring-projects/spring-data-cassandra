@@ -424,7 +424,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#insert(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#insert(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public <T> ListenableFuture<T> insert(T entity, WriteOptions options) {
@@ -448,7 +448,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(java.lang.Object, org.springframework.cassandra.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
 	 */
 	@Override
 	public <T> ListenableFuture<T> update(T entity, WriteOptions options) {
@@ -472,7 +472,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#delete(java.lang.Object, org.springframework.cassandra.core.QueryOptions)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#delete(java.lang.Object, org.springframework.data.cql.core.QueryOptions)
 	 */
 	@Override
 	public <T> ListenableFuture<T> delete(T entity, QueryOptions options) {

@@ -99,7 +99,7 @@ public class WriteOptions extends QueryOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.cassandra.core.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
+		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
 		 */
 		@Override
 		public WriteOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {
@@ -108,7 +108,7 @@ public class WriteOptions extends QueryOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.cassandra.core.QueryOptions.QueryOptionsBuilder#retryPolicy(org.springframework.cassandra.core.RetryPolicy)
+		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#retryPolicy(org.springframework.data.cql.core.RetryPolicy)
 		 */
 		@Override
 		public WriteOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
@@ -117,7 +117,7 @@ public class WriteOptions extends QueryOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.cassandra.core.QueryOptions.QueryOptionsBuilder#fetchSize(int)
+		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#fetchSize(int)
 		 */
 		@Override
 		public WriteOptionsBuilder fetchSize(int fetchSize) {
@@ -126,7 +126,7 @@ public class WriteOptions extends QueryOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.cassandra.core.QueryOptions.QueryOptionsBuilder#readTimeout(long)
+		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#readTimeout(long)
 		 */
 		@Override
 		public WriteOptionsBuilder readTimeout(long readTimeout) {
@@ -135,7 +135,7 @@ public class WriteOptions extends QueryOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.cassandra.core.QueryOptions.QueryOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
+		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
 		 */
 		@Override
 		public WriteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
@@ -144,7 +144,7 @@ public class WriteOptions extends QueryOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.cassandra.core.QueryOptions.QueryOptionsBuilder#tracing(boolean)
+		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#tracing(boolean)
 		 */
 		@Override
 		public WriteOptionsBuilder tracing(boolean tracing) {
@@ -153,7 +153,7 @@ public class WriteOptions extends QueryOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.cassandra.core.QueryOptions.QueryOptionsBuilder#withTracing()
+		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#withTracing()
 		 */
 		@Override
 		public WriteOptionsBuilder withTracing() {

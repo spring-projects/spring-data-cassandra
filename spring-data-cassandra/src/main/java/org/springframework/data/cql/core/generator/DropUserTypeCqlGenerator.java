@@ -44,7 +44,7 @@ public class DropUserTypeCqlGenerator extends UserTypeNameCqlGenerator<DropUserT
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.cql.generator.UserTypeNameCqlGenerator#toCql(java.lang.StringBuilder)
+	 * @see org.springframework.data.cql.core.cql.generator.UserTypeNameCqlGenerator#toCql(java.lang.StringBuilder)
 	 */
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {

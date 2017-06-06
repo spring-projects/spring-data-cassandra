@@ -42,7 +42,7 @@ public class SingleSessionFactoryLookup implements SessionFactoryLookup {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.session.lookup.SessionFactoryLookup#getSessionFactory(java.lang.String)
+	 * @see org.springframework.data.cql.core.session.lookup.SessionFactoryLookup#getSessionFactory(java.lang.String)
 	 */
 	@Override
 	public SessionFactory getSessionFactory(String sessionFactoryName) throws SessionFactoryLookupFailureException {

@@ -31,7 +31,7 @@ public class ResultSetToByteBufferConverter extends AbstractResultSetConverter<B
 	public static final ResultSetToByteBufferConverter INSTANCE = new ResultSetToByteBufferConverter();
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
 	 */
 	@Override
 	protected ByteBuffer doConvertSingleValue(Object object) {
@@ -44,7 +44,7 @@ public class ResultSetToByteBufferConverter extends AbstractResultSetConverter<B
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#getType()
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#getType()
 	 */
 	@Override
 	protected Class<?> getType() {

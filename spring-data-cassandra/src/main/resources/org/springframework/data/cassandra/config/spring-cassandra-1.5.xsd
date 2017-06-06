@@ -759,7 +759,7 @@ Defines a CassandraConverter for getting rich mapping functionality.
 			<xsd:attribute name="mapping-ref" type="mappingContextRef" use="optional">
 				<xsd:annotation>
 					<xsd:documentation
-						source="org.springframework.data.cassandra.mapping.CassandraMappingContext"><![CDATA[
+							source="org.springframework.data.cassandra.core.mapping.CassandraMappingContext"><![CDATA[
 The reference to a CassandraMappingContext. Will default to 'cassandraMapping'.
 					]]></xsd:documentation>
 				</xsd:annotation>
@@ -774,7 +774,7 @@ Defines a CassandraMappingContext for holding rich entity mapping information.
 			]]></xsd:documentation>
 			<xsd:appinfo>
 				<tool:exports
-					type="org.springframework.data.cassandra.mapping.CassandraMappingContext" />
+						type="org.springframework.data.cassandra.core.mapping.CassandraMappingContext"/>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexType>
@@ -803,7 +803,7 @@ The reference to a UserTypeResolver. UserTypeResolver is required when working w
 					]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:exports
-							type="org.springframework.data.cassandra.mapping.UserTypeResolver" />
+								type="org.springframework.data.cassandra.core.mapping.UserTypeResolver"/>
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -835,7 +835,7 @@ The reference to a CassandraTemplate. Will default to 'cqlTemplate'.
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
-					<tool:assignable-to type="org.springframework.data.cassandra.convert.CassandraConverter"/>
+					<tool:assignable-to type="org.springframework.data.cassandra.core.convert.CassandraConverter"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>
@@ -858,7 +858,7 @@ The reference to a CassandraTemplate. Will default to 'cqlTemplate'.
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation kind="ref">
-					<tool:assignable-to type="org.springframework.data.cassandra.mapping.CassandraMappingContext"/>
+					<tool:assignable-to type="org.springframework.data.cassandra.core.mapping.CassandraMappingContext"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>

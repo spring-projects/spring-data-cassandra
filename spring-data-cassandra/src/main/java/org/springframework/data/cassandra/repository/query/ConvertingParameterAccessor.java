@@ -277,7 +277,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator#nextConverted(org.springframework.data.cassandra.mapping.CassandraPersistentProperty)
+		 * @see org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator#nextConverted(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
 		 */
 		@Override
 		public Object nextConverted(CassandraPersistentProperty property) {

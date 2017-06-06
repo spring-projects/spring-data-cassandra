@@ -36,7 +36,7 @@ public enum RingMemberHostMapper implements HostMapper<RingMember> {
 	INSTANCE;
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.HostMapper#mapHosts(java.util.Iterable)
+	 * @see org.springframework.data.cql.core.HostMapper#mapHosts(java.util.Iterable)
 	 */
 	@Override
 	public Collection<RingMember> mapHosts(Iterable<Host> hosts) throws DriverException {

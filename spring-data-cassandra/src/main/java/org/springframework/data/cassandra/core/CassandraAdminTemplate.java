@@ -66,7 +66,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, org.springframework.cassandra.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, org.springframework.data.cql.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
 	 */
 	@Override
 	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
@@ -86,7 +86,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(org.springframework.cassandra.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(org.springframework.data.cql.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void dropTable(CqlIdentifier tableName) {
@@ -95,7 +95,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropUserType(org.springframework.cassandra.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropUserType(org.springframework.data.cql.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void dropUserType(CqlIdentifier typeName) {
@@ -107,7 +107,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(java.lang.String, org.springframework.cassandra.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(java.lang.String, org.springframework.data.cql.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public Optional<TableMetadata> getTableMetadata(String keyspace, CqlIdentifier tableName) {

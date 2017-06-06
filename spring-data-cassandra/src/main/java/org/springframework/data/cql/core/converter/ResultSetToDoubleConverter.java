@@ -29,7 +29,7 @@ public class ResultSetToDoubleConverter extends AbstractResultSetToBasicFixedTyp
 	public static final ResultSetToDoubleConverter INSTANCE = new ResultSetToDoubleConverter();
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
 	 */
 	@Override
 	protected Double doConvertSingleValue(Object object) {
@@ -37,7 +37,7 @@ public class ResultSetToDoubleConverter extends AbstractResultSetToBasicFixedTyp
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#getType()
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#getType()
 	 */
 	@Override
 	protected Class<?> getType() {

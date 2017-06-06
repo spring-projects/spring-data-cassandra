@@ -56,7 +56,7 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity#determineTableName()
+	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity#determineTableName()
 	 */
 	@Override
 	protected CqlIdentifier determineTableName() {
@@ -67,7 +67,7 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity#isUserDefinedType()
+	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity#isUserDefinedType()
 	 */
 	@Override
 	public boolean isUserDefinedType() {
@@ -75,7 +75,7 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.BasicCassandraPersistentEntity#getUserType()
+	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity#getUserType()
 	 */
 	@Override
 	public UserType getUserType() {

@@ -31,7 +31,7 @@ public class ResultSetToUuidConverter extends AbstractResultSetToBasicFixedTypeC
 	public static final ResultSetToUuidConverter INSTANCE = new ResultSetToUuidConverter();
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
 	 */
 	@Override
 	protected UUID doConvertSingleValue(Object object) {
@@ -39,7 +39,7 @@ public class ResultSetToUuidConverter extends AbstractResultSetToBasicFixedTypeC
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#getType()
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#getType()
 	 */
 	@Override
 	protected Class<?> getType() {

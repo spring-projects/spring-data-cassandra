@@ -128,7 +128,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#isCompositePrimaryKey()
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#isCompositePrimaryKey()
 	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
@@ -168,7 +168,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#setForceQuote(boolean)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#setForceQuote(boolean)
 	 */
 	@Override
 	public void setForceQuote(boolean forceQuote) {
@@ -183,7 +183,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#setTableName(org.springframework.cassandra.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#setTableName(org.springframework.data.cql.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void setTableName(CqlIdentifier tableName) {
@@ -193,7 +193,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getTableName()
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#getTableName()
 	 */
 	@Override
 	public CqlIdentifier getTableName() {
@@ -215,7 +215,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#isUserDefinedType()
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#isUserDefinedType()
 	 */
 	@Override
 	public boolean isUserDefinedType() {
@@ -223,7 +223,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntity#getUserType()
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#getUserType()
 	 */
 	@Override
 	public UserType getUserType() {

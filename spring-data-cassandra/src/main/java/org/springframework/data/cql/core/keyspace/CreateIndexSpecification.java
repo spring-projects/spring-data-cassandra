@@ -84,7 +84,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.IndexDescriptor#isCustom()
+	 * @see org.springframework.data.cql.core.keyspace.IndexDescriptor#isCustom()
 	 */
 	@Override
 	public boolean isCustom() {
@@ -105,7 +105,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.IndexDescriptor#getUsing()
+	 * @see org.springframework.data.cql.core.keyspace.IndexDescriptor#getUsing()
 	 */
 	@Override
 	public String getUsing() {
@@ -113,7 +113,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.IndexDescriptor#getColumnName()
+	 * @see org.springframework.data.cql.core.keyspace.IndexDescriptor#getColumnName()
 	 */
 	@Override
 	public CqlIdentifier getColumnName() {
@@ -138,7 +138,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.keyspace.IndexDescriptor#getTableName()
+	 * @see org.springframework.data.cql.core.keyspace.IndexDescriptor#getTableName()
 	 */
 	@Override
 	public CqlIdentifier getTableName() {

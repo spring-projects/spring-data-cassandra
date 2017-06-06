@@ -39,7 +39,7 @@ public class ArgumentPreparedStatementBinder implements PreparedStatementBinder 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.PreparedStatementBinder#bindValues(com.datastax.driver.core.PreparedStatement)
+	 * @see org.springframework.data.cql.core.PreparedStatementBinder#bindValues(com.datastax.driver.core.PreparedStatement)
 	 */
 	@Override
 	public BoundStatement bindValues(PreparedStatement ps) throws DriverException {

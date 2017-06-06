@@ -44,7 +44,7 @@ import com.google.common.util.concurrent.ListenableFuture;
  * this is an intermediate solution until Datastax can provide a fully reactive driver.
  * <p>
  * All CQL operations performed by this class are logged at debug level, using
- * "org.springframework.cassandra.core.DefaultBridgedReactiveSession" as log category.
+ * "org.springframework.data.cql.core.DefaultBridgedReactiveSession" as log category.
  * <p>
  *
  * @author Mark Paluch
@@ -77,7 +77,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveSession#execute(java.lang.String)
+	 * @see org.springframework.data.cql.core.ReactiveSession#execute(java.lang.String)
 	 */
 	@Override
 	public Mono<ReactiveResultSet> execute(String query) {
@@ -88,7 +88,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveSession#execute(java.lang.String, java.lang.Object[])
+	 * @see org.springframework.data.cql.core.ReactiveSession#execute(java.lang.String, java.lang.Object[])
 	 */
 	@Override
 	public Mono<ReactiveResultSet> execute(String query, Object... values) {
@@ -99,7 +99,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveSession#execute(java.lang.String, java.util.Map)
+	 * @see org.springframework.data.cql.core.ReactiveSession#execute(java.lang.String, java.util.Map)
 	 */
 	@Override
 	public Mono<ReactiveResultSet> execute(String query, Map<String, Object> values) {
@@ -110,7 +110,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveSession#execute(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cql.core.ReactiveSession#execute(com.datastax.driver.core.Statement)
 	 */
 	@Override
 	public Mono<ReactiveResultSet> execute(Statement statement) {
@@ -147,7 +147,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveSession#prepare(java.lang.String)
+	 * @see org.springframework.data.cql.core.ReactiveSession#prepare(java.lang.String)
 	 */
 	@Override
 	public Mono<PreparedStatement> prepare(String query) {
@@ -158,7 +158,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveSession#prepare(com.datastax.driver.core.RegularStatement)
+	 * @see org.springframework.data.cql.core.ReactiveSession#prepare(com.datastax.driver.core.RegularStatement)
 	 */
 	@Override
 	public Mono<PreparedStatement> prepare(RegularStatement statement) {
@@ -194,7 +194,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveSession#close()
+	 * @see org.springframework.data.cql.core.ReactiveSession#close()
 	 */
 	@Override
 	public void close() {
@@ -202,7 +202,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveSession#isClosed()
+	 * @see org.springframework.data.cql.core.ReactiveSession#isClosed()
 	 */
 	@Override
 	public boolean isClosed() {
@@ -210,7 +210,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.ReactiveSession#getCluster()
+	 * @see org.springframework.data.cql.core.ReactiveSession#getCluster()
 	 */
 	@Override
 	public Cluster getCluster() {
@@ -228,7 +228,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.cassandra.core.ReactiveResultSet#rows()
+		 * @see org.springframework.data.cql.core.ReactiveResultSet#rows()
 		 */
 		@Override
 		public Flux<Row> rows() {
@@ -241,7 +241,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.cassandra.core.ReactiveResultSet#getColumnDefinitions()
+		 * @see org.springframework.data.cql.core.ReactiveResultSet#getColumnDefinitions()
 		 */
 		@Override
 		public ColumnDefinitions getColumnDefinitions() {
@@ -249,7 +249,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.cassandra.core.ReactiveResultSet#wasApplied()
+		 * @see org.springframework.data.cql.core.ReactiveResultSet#wasApplied()
 		 */
 		@Override
 		public boolean wasApplied() {
@@ -257,7 +257,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.cassandra.core.ReactiveResultSet#getExecutionInfo()
+		 * @see org.springframework.data.cql.core.ReactiveResultSet#getExecutionInfo()
 		 */
 		@Override
 		public ExecutionInfo getExecutionInfo() {
@@ -265,7 +265,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.cassandra.core.ReactiveResultSet#getAllExecutionInfo()
+		 * @see org.springframework.data.cql.core.ReactiveResultSet#getAllExecutionInfo()
 		 */
 		@Override
 		public List<ExecutionInfo> getAllExecutionInfo() {

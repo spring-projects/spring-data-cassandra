@@ -31,7 +31,7 @@ public class ResultSetToBigDecimalConverter extends AbstractResultSetToBasicFixe
 	public static final ResultSetToBigDecimalConverter INSTANCE = new ResultSetToBigDecimalConverter();
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
 	 */
 	@Override
 	protected BigDecimal doConvertSingleValue(Object object) {
@@ -39,7 +39,7 @@ public class ResultSetToBigDecimalConverter extends AbstractResultSetToBasicFixe
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.core.converter.AbstractResultSetConverter#getType()
+	 * @see org.springframework.data.cql.core.converter.AbstractResultSetConverter#getType()
 	 */
 	@Override
 	protected Class<?> getType() {

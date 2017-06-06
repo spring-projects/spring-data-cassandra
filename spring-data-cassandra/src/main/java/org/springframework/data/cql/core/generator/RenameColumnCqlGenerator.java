@@ -50,7 +50,7 @@ public class RenameColumnCqlGenerator extends ColumnChangeCqlGenerator<RenameCol
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.core.cql.generator.ColumnChangeCqlGenerator#toCql(java.lang.StringBuilder)
+	 * @see org.springframework.data.cql.core.cql.generator.ColumnChangeCqlGenerator#toCql(java.lang.StringBuilder)
 	 */
 	public StringBuilder toCql(StringBuilder cql) {
 		return noNull(cql).append(keyword).append(' ').append(spec().getName()).append(" TO ")

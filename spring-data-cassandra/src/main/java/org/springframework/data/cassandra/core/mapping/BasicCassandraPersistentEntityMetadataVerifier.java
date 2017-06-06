@@ -37,7 +37,7 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.mapping.CassandraPersistentEntityMetadataVerifier#verify(org.springframework.data.cassandra.mapping.CassandraPersistentEntity)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntityMetadataVerifier#verify(org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity)
 	 */
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
