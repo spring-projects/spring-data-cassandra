@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.4.11.RELEASE (2017-06-07)
+----------------------------------------------
+* DATACASS-436 - Release 1.4.11 (Hopper SR11).
+
+
 Changes in version 2.0.0.M3 (2017-05-09)
 ----------------------------------------
 * DATACASS-440 - Remove support for JodaTime's deprecated DateMidnight.
