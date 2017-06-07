@@ -143,7 +143,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * Returns whether the method has an annotated query.
 	 */
 	public boolean hasAnnotatedQuery() {
-		return (getAnnotatedQuery() != null);
+		return findAnnotatedQuery().isPresent();
 	}
 
 	/**
@@ -153,8 +153,16 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @return
 	 */
 	public String getAnnotatedQuery() {
-		String query = (String) AnnotationUtils.getValue(getQueryAnnotation());
-		return (StringUtils.hasText(query) ? query : null);
+		return findAnnotatedQuery().orElse(null);
+	}
+
+	private Optional<String> findAnnotatedQuery() {
+
+		Optional<Query> queryAnnotation = Optional.ofNullable(getQueryAnnotation());
+
+		return queryAnnotation.map(AnnotationUtils::getValue) //
+				.map(it -> (String) it) //
+				.filter(StringUtils::hasText);
 	}
 
 	/**
