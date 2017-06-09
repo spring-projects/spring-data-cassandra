@@ -99,12 +99,41 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		assertThat(getUninterruptibly(template.selectOneById(user.getId(), User.class))).isNull();
+		assertThat(getUser(user.getId())).isNull();
 
 		ListenableFuture<User> insert = template.insert(user);
 
 		assertThat(getUninterruptibly(insert)).isEqualTo(user);
-		assertThat(getUninterruptibly(template.selectOneById(user.getId(), User.class))).isEqualTo(user);
+		assertThat(getUser(user.getId())).isEqualTo(user);
+	}
+
+	@Test // DATACASS-250
+	public void insertShouldCreateEntityWithLwt() {
+
+		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		ListenableFuture<User> inserted = template.insert(user, lwtOptions);
+
+		assertThat(getUninterruptibly(inserted)).isEqualTo(user);
+	}
+
+	@Test // DATACASS-250
+	public void insertShouldNotUpdateEntityWithLwt() {
+
+		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		getUninterruptibly(template.insert(user, lwtOptions));
+
+		user.setFirstname("Walter Hartwell");
+
+		ListenableFuture<User> lwt = template.insert(user, lwtOptions);
+
+		assertThat(getUninterruptibly(lwt)).isNull();
+		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter");
 	}
 
 	@Test // DATACASS-292
@@ -125,10 +154,40 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		getUninterruptibly(template.insert(user));
 
 		user.setFirstname("Walter Hartwell");
+
 		User updated = getUninterruptibly(template.update(user));
 
 		assertThat(updated).isNotNull();
-		assertThat(getUninterruptibly(template.selectOneById(user.getId(), User.class))).isEqualTo(user);
+		assertThat(getUser(user.getId())).isEqualTo(user);
+	}
+
+	@Test // DATACASS-292
+	public void updateShouldNotCreateEntityWithLwt() {
+
+		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		ListenableFuture<User> lwt = template.update(user, lwtOptions);
+
+		assertThat(getUninterruptibly(lwt)).isNull();
+		assertThat(getUser(user.getId())).isNull();
+	}
+
+	@Test // DATACASS-292
+	public void updateShouldUpdateEntityWithLwt() {
+
+		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+		getUninterruptibly(template.insert(user));
+
+		user.setFirstname("Walter Hartwell");
+
+		ListenableFuture<User> updated = template.update(user, lwtOptions);
+
+		assertThat(getUninterruptibly(updated)).isNotNull();
+		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343
@@ -142,8 +201,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 				template.update(query, Update.empty().set("firstname", "Walter Hartwell"), User.class));
 		assertThat(result).isTrue();
 
-		assertThat(getUninterruptibly(template.selectOneById(user.getId(), User.class)).getFirstname())
-				.isEqualTo("Walter Hartwell");
+		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343
@@ -155,7 +213,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		Query query = Query.query(Criteria.where("id").is("heisenberg"));
 		assertThat(getUninterruptibly(template.delete(query, User.class))).isTrue();
 
-		assertThat(getUninterruptibly(template.selectOneById(user.getId(), User.class))).isNull();
+		assertThat(getUser(user.getId())).isNull();
 	}
 
 	@Test // DATACASS-343
@@ -168,7 +226,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		assertThat(getUninterruptibly(template.delete(query, User.class))).isTrue();
 
-		User loaded = getUninterruptibly(template.selectOneById(user.getId(), User.class));
+		User loaded = getUser(user.getId());
 		assertThat(loaded.getFirstname()).isEqualTo("Walter");
 		assertThat(loaded.getLastname()).isNull();
 	}
@@ -182,7 +240,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		User deleted = getUninterruptibly(template.delete(user));
 
 		assertThat(deleted).isNotNull();
-		assertThat(getUninterruptibly(template.selectOneById(user.getId(), User.class))).isNull();
+		assertThat(getUser(user.getId())).isNull();
 	}
 
 	@Test // DATACASS-292
@@ -194,7 +252,11 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		Boolean deleted = getUninterruptibly(template.deleteById(user.getId(), User.class));
 		assertThat(deleted).isTrue();
 
-		assertThat(getUninterruptibly(template.selectOneById(user.getId(), User.class))).isNull();
+		assertThat(getUser(user.getId())).isNull();
+	}
+
+	private User getUser(String id) {
+		return getUninterruptibly(template.selectOneById(id, User.class));
 	}
 
 	private static <T> T getUninterruptibly(Future<T> future) {

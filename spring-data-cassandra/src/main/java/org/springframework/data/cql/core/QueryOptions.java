@@ -313,7 +313,9 @@ public class QueryOptions {
 			return applyOptions(new QueryOptions());
 		}
 
-		<T extends QueryOptions> T applyOptions(T queryOptions) {
+		protected <T> T applyOptions(T options) {
+
+			QueryOptions queryOptions = (QueryOptions) options;
 
 			queryOptions.setConsistencyLevel(consistencyLevel);
 			queryOptions.setRetryPolicy(retryPolicy);
@@ -330,7 +332,7 @@ public class QueryOptions {
 				queryOptions.setTracing(tracing);
 			}
 
-			return queryOptions;
+			return options;
 		}
 	}
 }
