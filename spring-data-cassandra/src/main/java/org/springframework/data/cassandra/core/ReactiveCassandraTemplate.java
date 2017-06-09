@@ -34,7 +34,6 @@ import org.springframework.data.cql.core.QueryOptions;
 import org.springframework.data.cql.core.ReactiveCqlOperations;
 import org.springframework.data.cql.core.ReactiveCqlTemplate;
 import org.springframework.data.cql.core.ReactiveSessionCallback;
-import org.springframework.data.cql.core.WriteOptions;
 import org.springframework.data.cql.core.session.DefaultReactiveSessionFactory;
 import org.springframework.data.cql.core.session.ReactiveResultSet;
 import org.springframework.data.cql.core.session.ReactiveSession;
@@ -380,10 +379,10 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public <T> Mono<T> insert(T entity, WriteOptions options) {
+	public <T> Mono<T> insert(T entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
@@ -417,10 +416,10 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher, org.springframework.data.cql.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public <T> Flux<T> insert(Publisher<? extends T> entities, WriteOptions options) {
+	public <T> Flux<T> insert(Publisher<? extends T> entities, InsertOptions options) {
 
 		Assert.notNull(entities, "Entity publisher must not be null");
 
@@ -438,10 +437,10 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public <T> Mono<T> update(T entity, WriteOptions options) {
+	public <T> Mono<T> update(T entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
@@ -475,10 +474,10 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher, org.springframework.data.cql.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public <T> Flux<T> update(Publisher<? extends T> entities, WriteOptions options) {
+	public <T> Flux<T> update(Publisher<? extends T> entities, UpdateOptions options) {
 
 		Assert.notNull(entities, "Entity publisher must not be null");
 

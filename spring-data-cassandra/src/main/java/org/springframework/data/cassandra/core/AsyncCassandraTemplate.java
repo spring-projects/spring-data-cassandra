@@ -36,7 +36,6 @@ import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.CqlProvider;
 import org.springframework.data.cql.core.GuavaListenableFutureAdapter;
 import org.springframework.data.cql.core.QueryOptions;
-import org.springframework.data.cql.core.WriteOptions;
 import org.springframework.data.cql.core.session.DefaultSessionFactory;
 import org.springframework.data.cql.core.session.SessionFactory;
 import org.springframework.data.cql.support.CqlExceptionTranslator;
@@ -424,10 +423,10 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#insert(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public <T> ListenableFuture<T> insert(T entity, WriteOptions options) {
+	public <T> ListenableFuture<T> insert(T entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
@@ -448,10 +447,10 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public <T> ListenableFuture<T> update(T entity, WriteOptions options) {
+	public <T> ListenableFuture<T> update(T entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 

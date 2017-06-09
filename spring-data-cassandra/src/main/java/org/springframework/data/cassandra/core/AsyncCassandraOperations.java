@@ -37,7 +37,10 @@ import com.datastax.driver.core.Statement;
  * @author John Blum
  * @since 2.0
  * @see AsyncCassandraTemplate
- * @see CassandraOperations
+ * @see AsyncCqlOperations
+ * @see Statement
+ * @see InsertOptions
+ * @see UpdateOptions
  */
 public interface AsyncCassandraOperations {
 
@@ -234,10 +237,11 @@ public interface AsyncCassandraOperations {
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the inserted entity.
+	 * @return the inserted entity or a {@literal null} inside of {@link ListenableFuture} if the {@code INSERT} operation
+	 *         was not applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> insert(T entity, WriteOptions options) throws DataAccessException;
+	<T> ListenableFuture<T> insert(T entity, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and return the entity if the update was applied.
@@ -253,10 +257,11 @@ public interface AsyncCassandraOperations {
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the updated entity.
+	 * @return the updated entityor a {@literal null} inside of {@link ListenableFuture} if the {@code UPDATE} operation
+	 *         was not applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> update(T entity, WriteOptions options) throws DataAccessException;
+	<T> ListenableFuture<T> update(T entity, UpdateOptions options) throws DataAccessException;
 
 	/**
 	 * Delete the given entity and return the entity if the delete was applied.

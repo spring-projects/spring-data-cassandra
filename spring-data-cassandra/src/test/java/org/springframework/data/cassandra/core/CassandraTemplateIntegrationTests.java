@@ -146,6 +146,35 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assertThat(template.selectOneById(user.getId(), User.class)).isEqualTo(user);
 	}
 
+	@Test // DATACASS-250
+	public void insertShouldCreateEntityWithLwt() {
+
+		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		User inserted = template.insert(user, lwtOptions);
+
+		assertThat(inserted).isEqualTo(user);
+	}
+
+	@Test // DATACASS-250
+	public void insertShouldNotUpdateEntityWithLwt() {
+
+		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		template.insert(user, lwtOptions);
+
+		user.setFirstname("Walter Hartwell");
+
+		User lwt = template.insert(user, lwtOptions);
+
+		assertThat(lwt).isNull();
+		assertThat(template.selectOneById(user.getId(), User.class).getFirstname()).isEqualTo("Walter");
+	}
+
 	@Test // DATACASS-292
 	public void shouldInsertAndCountEntities() {
 
@@ -169,6 +198,35 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		assertThat(updated).isNotNull();
 		assertThat(template.selectOneById(user.getId(), User.class)).isEqualTo(user);
+	}
+
+	@Test // DATACASS-292
+	public void updateShouldNotCreateEntityWithLwt() {
+
+		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		User lwt = template.update(user, lwtOptions);
+
+		assertThat(lwt).isNull();
+		assertThat(template.selectOneById(user.getId(), User.class)).isNull();
+	}
+
+	@Test // DATACASS-292
+	public void updateShouldUpdateEntityWithLwt() {
+
+		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+		template.insert(user);
+
+		user.setFirstname("Walter Hartwell");
+
+		User updated = template.update(user, lwtOptions);
+
+		assertThat(updated).isNotNull();
+		assertThat(template.selectOneById(user.getId(), User.class).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343

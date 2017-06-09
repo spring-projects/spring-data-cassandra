@@ -204,6 +204,23 @@ public class CassandraTemplateUnitTests {
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
 	}
 
+	@Test // DATACASS-250
+	public void insertShouldInsertWithOptionsEntity() {
+
+		InsertOptions insertOptions = InsertOptions.builder().withIfNotExists().build();
+
+		when(resultSet.wasApplied()).thenReturn(true);
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		User inserted = template.insert(user, insertOptions);
+
+		assertThat(inserted).isEqualTo(user);
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White') IF NOT EXISTS;");
+	}
+
 	@Test // DATACASS-292
 	public void insertShouldTranslateException() throws Exception {
 
@@ -244,6 +261,23 @@ public class CassandraTemplateUnitTests {
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
+	}
+
+	@Test // DATACASS-250
+	public void updateShouldUpdateEntityWithOptions() {
+
+		when(resultSet.wasApplied()).thenReturn(true);
+
+		UpdateOptions updateOptions = UpdateOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		User updated = template.update(user, updateOptions);
+
+		assertThat(updated).isEqualTo(user);
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg' IF EXISTS;");
 	}
 
 	@Test // DATACASS-292

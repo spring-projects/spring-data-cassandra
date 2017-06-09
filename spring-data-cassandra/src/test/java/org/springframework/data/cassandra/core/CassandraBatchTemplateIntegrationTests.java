@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -70,6 +71,29 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		Group loaded = template.selectOneById(walter.getId(), Group.class);
 
 		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
+	}
+
+	@Test // DATACASS-288
+	public void shouldInsertEntitiesWithLwt() {
+
+		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
+
+		Group previousWalter = new Group(new GroupKey("users", "0x1", "walter"));
+		previousWalter.setAge(42);
+		template.insert(previousWalter);
+
+		walter.setAge(100);
+
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		batchOperations.insert(Collections.singleton(walter), lwtOptions).insert(mike).execute();
+
+		Group loadedWalter = template.selectOneById(walter.getId(), Group.class);
+		Group loadedMike = template.selectOneById(mike.getId(), Group.class);
+
+		assertThat(loadedWalter.getId().getUsername()).isEqualTo(walter.getId().getUsername());
+		assertThat(loadedWalter.getAge()).isEqualTo(42);
+
+		assertThat(loadedMike).isNotNull();
 	}
 
 	@Test // DATACASS-288

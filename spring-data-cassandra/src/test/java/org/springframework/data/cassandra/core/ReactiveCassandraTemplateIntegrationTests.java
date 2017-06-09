@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
+import reactor.test.StepVerifier.FirstStep;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,11 +69,39 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		User user = new User("heisenberg", "Walter", "White");
 
 		Mono<User> insert = template.insert(user);
-		StepVerifier.create(template.selectOneById(user.getId(), User.class)).verifyComplete();
+		verifyUser(user.getId()).verifyComplete();
 
 		StepVerifier.create(insert).expectNext(user).verifyComplete();
 
-		StepVerifier.create(template.selectOneById(user.getId(), User.class)).expectNext(user).verifyComplete();
+		verifyUser(user.getId()).expectNext(user).verifyComplete();
+	}
+
+	@Test // DATACASS-250
+	public void insertShouldCreateEntityWithLwt() {
+
+		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		Mono<User> inserted = template.insert(user, lwtOptions);
+
+		StepVerifier.create(inserted).expectNext(user).verifyComplete();
+	}
+
+	@Test // DATACASS-250
+	public void insertShouldNotUpdateEntityWithLwt() {
+
+		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		StepVerifier.create(template.insert(user, lwtOptions)).expectNext(user).verifyComplete();
+
+		user.setFirstname("Walter Hartwell");
+
+		StepVerifier.create(template.insert(user, lwtOptions)).verifyComplete();
+
+		verifyUser(user.getId()).consumeNextWith(it -> assertThat(it.getFirstname()).isEqualTo("Walter")).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -96,7 +125,35 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
 
-		StepVerifier.create(template.selectOneById(user.getId(), User.class)).expectNext(user).verifyComplete();
+		verifyUser(user.getId()).expectNext(user).verifyComplete();
+	}
+
+	@Test // DATACASS-292
+	public void updateShouldNotCreateEntityWithLwt() {
+
+		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		StepVerifier.create(template.update(user, lwtOptions)).verifyComplete();
+
+		verifyUser(user.getId()).verifyComplete();
+	}
+
+	@Test // DATACASS-292
+	public void updateShouldUpdateEntityWithLwt() {
+
+		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+
+		user.setFirstname("Walter Hartwell");
+
+		StepVerifier.create(template.update(user, lwtOptions)).expectNextCount(1).verifyComplete();
+
+		verifyUser(user.getId()).consumeNextWith(it -> assertThat(it.getFirstname()).isEqualTo("Walter Hartwell"))
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-343
@@ -149,7 +206,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		StepVerifier.create(template.delete(user)).expectNext(user).verifyComplete();
 
-		StepVerifier.create(template.selectOneById(user.getId(), User.class)).verifyComplete();
+		verifyUser(user.getId()).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -161,7 +218,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		StepVerifier.create(template.deleteById(user.getId(), User.class)).expectNext(true).verifyComplete();
 
-		StepVerifier.create(template.selectOneById(user.getId(), User.class)).verifyComplete();
+		verifyUser(user.getId()).verifyComplete();
 	}
 
 	@Test // DATACASS-343
@@ -198,5 +255,9 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		Query query = Query.query(Criteria.where("userId").is(token1.getUserId()));
 
 		assertThat(template.selectOne(query, UserToken.class).block()).isEqualTo(token1);
+	}
+
+	private FirstStep<User> verifyUser(String userId) {
+		return StepVerifier.create(template.selectOneById(userId, User.class));
 	}
 }
