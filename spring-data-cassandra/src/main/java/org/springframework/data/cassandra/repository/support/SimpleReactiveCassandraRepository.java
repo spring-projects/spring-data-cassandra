@@ -162,14 +162,14 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findById(reactor.core.publisher.Mono)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findById(org.reactivestreams.Publisher)
 	 */
 	@Override
-	public Mono<T> findById(Mono<ID> mono) {
+	public Mono<T> findById(Publisher<ID> publisher) {
 
-		Assert.notNull(mono, "The given id must not be null");
+		Assert.notNull(publisher, "The given id must not be null");
 
-		return mono.flatMap(id -> operations.selectOneById(id, entityInformation.getJavaType()));
+		return Mono.from(publisher).flatMap(id -> operations.selectOneById(id, entityInformation.getJavaType()));
 	}
 
 	/* (non-Javadoc)
@@ -184,14 +184,14 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#existsById(reactor.core.publisher.Mono)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#existsById(org.reactivestreams.Publisher)
 	 */
 	@Override
-	public Mono<Boolean> existsById(Mono<ID> mono) {
+	public Mono<Boolean> existsById(Publisher<ID> publisher) {
 
-		Assert.notNull(mono, "The given id must not be null");
+		Assert.notNull(publisher, "The given id must not be null");
 
-		return mono.flatMap(id -> operations.exists(id, entityInformation.getJavaType()));
+		return Mono.from(publisher).flatMap(id -> operations.exists(id, entityInformation.getJavaType()));
 	}
 
 	/* (non-Javadoc)

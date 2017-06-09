@@ -128,6 +128,15 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	}
 
 	@Test // DATACASS-335
+	public void existsByFluxOfIdShouldReturnTrueForExistingObject() {
+
+		insertTestData();
+
+		StepVerifier.create(repository.existsById(Flux.just(dave.getId(), oliver.getId()))).expectNext(true)
+				.verifyComplete();
+	}
+
+	@Test // DATACASS-335
 	public void existsByEmptyMonoOfIdShouldReturnEmptyMono() {
 		StepVerifier.create(repository.existsById(Mono.empty())).verifyComplete();
 	}
@@ -151,6 +160,14 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		insertTestData();
 
 		StepVerifier.create(repository.findById(Mono.just(dave.getId()))).expectNext(dave).verifyComplete();
+	}
+
+	@Test // DATACASS-462
+	public void findByIdByFluxOfIdShouldReturnTrueForExistingObject() {
+
+		insertTestData();
+
+		StepVerifier.create(repository.findById(Flux.just(dave.getId(), oliver.getId()))).expectNext(dave).verifyComplete();
 	}
 
 	@Test // DATACASS-335
