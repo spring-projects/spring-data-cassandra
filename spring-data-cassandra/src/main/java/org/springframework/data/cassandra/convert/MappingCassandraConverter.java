@@ -50,7 +50,7 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.MappingException;
-import org.springframework.data.mapping.model.PropertyValueProvider;
+import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -183,15 +183,22 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		CassandraUDTValueProvider valueProvider = new CassandraUDTValueProvider(udtValue, CodecRegistry.DEFAULT_INSTANCE,
 				expressionEvaluator);
 
-		CassandraPersistentEntityParameterValueProvider parameterProvider = new CassandraPersistentEntityParameterValueProvider(
-				entity, new MappingAndConvertingValueProvider(valueProvider), null);
+		PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = getParameterValueProvider(
+				entity, valueProvider);
 
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
-		S instance = instantiator.createInstance(entity, parameterProvider);
+		S instance = instantiator.createInstance(entity, parameterValueProvider);
 
 		readProperties(entity, valueProvider, getConvertingAccessor(instance, entity));
 
 		return instance;
+	}
+
+	private <S> PersistentEntityParameterValueProvider<CassandraPersistentProperty> getParameterValueProvider(
+			CassandraPersistentEntity<S> entity, CassandraValueProvider valueProvider) {
+
+		return new PersistentEntityParameterValueProvider<CassandraPersistentProperty>(entity,
+				new MappingAndConvertingValueProvider(valueProvider), null);
 	}
 
 	protected void readPropertiesFromRow(CassandraPersistentEntity<?> entity, CassandraRowValueProvider row,
@@ -259,10 +266,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	@SuppressWarnings("unused")
 	protected Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
-			PropertyValueProvider<CassandraPersistentProperty> propertyProvider) {
+			CassandraValueProvider propertyProvider) {
 
 		return instantiators.getInstantiatorFor(entity).createInstance(entity,
-				new CassandraPersistentEntityParameterValueProvider(entity, propertyProvider, null));
+				getParameterValueProvider(entity, propertyProvider));
 	}
 
 	/* (non-Javadoc)
@@ -852,8 +859,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @return the return value, may be {@literal null}.
 	 */
 	@SuppressWarnings("unchecked")
-	private Object getReadValue(PropertyValueProvider<CassandraPersistentProperty> row,
-			CassandraPersistentProperty property) {
+	private Object getReadValue(CassandraValueProvider row, CassandraPersistentProperty property) {
+
+		if (property.isCompositePrimaryKey()) {
+
+			CassandraPersistentEntity<?> keyEntity = mappingContext.getPersistentEntity(property);
+			return instantiatePrimaryKey(keyEntity, property, row);
+		}
 
 		Object obj = row.getPropertyValue(property);
 
