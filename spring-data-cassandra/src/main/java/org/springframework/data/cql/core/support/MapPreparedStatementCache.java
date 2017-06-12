@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cql.core.support;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+
+import lombok.EqualsAndHashCode;
 
 import org.springframework.util.Assert;
 
@@ -74,8 +74,8 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 	/**
 	 * @return the underlying {@link Map cache}.
 	 */
-	public Map<CacheKey, PreparedStatement> getCache() {
-		return cache;
+	protected Map<CacheKey, PreparedStatement> getCache() {
+		return this.cache;
 	}
 
 	/* (non-Javadoc)
@@ -87,14 +87,14 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 
 		CacheKey cacheKey = new CacheKey(session, statement.toString());
 
-		return cache.computeIfAbsent(cacheKey, key -> session.prepare(statement));
+		return getCache().computeIfAbsent(cacheKey, key -> preparer.get());
 	}
 
 	/**
-	 * Cache key for {@link PreparedStatement} caching.
+	 * {@link CacheKey} for {@link PreparedStatement} caching.
 	 */
 	@EqualsAndHashCode
-	public static class CacheKey {
+	protected static class CacheKey {
 
 		final Cluster cluster;
 		final String keyspace;

@@ -55,8 +55,9 @@ public class CachedPreparedStatementCreatorIntegrationTest extends AbstractKeysp
 		assertThat(insert.isIdempotent()).isTrue();
 
 		PreparedStatementCache cache = PreparedStatementCache.create();
-		PreparedStatement preparedStatement = CachedPreparedStatementCreator.of(cache, insert)
-				.createPreparedStatement(session);
+
+		PreparedStatement preparedStatement =
+			CachedPreparedStatementCreator.of(cache, insert).createPreparedStatement(session);
 
 		assertThat(preparedStatement.isIdempotent()).isTrue();
 	}

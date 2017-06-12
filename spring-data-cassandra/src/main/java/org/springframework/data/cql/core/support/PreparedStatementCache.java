@@ -35,6 +35,26 @@ import com.datastax.driver.core.Session;
 public interface PreparedStatementCache {
 
 	/**
+	 * Create a default cache backed by a {@link java.util.concurrent.ConcurrentHashMap}.
+	 *
+	 * @return a new {@link MapPreparedStatementCache}.
+	 */
+	static PreparedStatementCache create() {
+		return MapPreparedStatementCache.create();
+	}
+
+	/**
+	 * Obtain a {@link PreparedStatement} by {@link Session} and {@link RegularStatement}.
+	 *
+	 * @param session must not be {@literal null}.
+	 * @param statement must not be {@literal null}.
+	 * @return the {@link PreparedStatement}.
+	 */
+	default PreparedStatement getPreparedStatement(Session session, RegularStatement statement) {
+		return getPreparedStatement(session, statement, () -> session.prepare(statement));
+	}
+
+	/**
 	 * Obtain a {@link PreparedStatement} by {@link Session} and {@link RegularStatement}.
 	 *
 	 * @param session must not be {@literal null}.
@@ -45,12 +65,4 @@ public interface PreparedStatementCache {
 	PreparedStatement getPreparedStatement(Session session, RegularStatement statement,
 			Supplier<PreparedStatement> preparer);
 
-	/**
-	 * Create a default cache backed by a {@link java.util.concurrent.ConcurrentHashMap}.
-	 *
-	 * @return a new {@link MapPreparedStatementCache}.
-	 */
-	static PreparedStatementCache create() {
-		return MapPreparedStatementCache.create();
-	}
 }

@@ -63,7 +63,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	 * CQL test for a cache hit. Otherwise, the statement is likely to be re-prepared.
 	 *
 	 * @param cache must not be {@literal null}.
-	 * @param cql must not be {@literal null} or empty.
+	 * @param statement must not be {@literal null}.
 	 * @return the {@link CachedPreparedStatementCreator} for {@link RegularStatement}.
 	 */
 	public static CachedPreparedStatementCreator of(PreparedStatementCache cache, RegularStatement statement) {
@@ -86,7 +86,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	public static CachedPreparedStatementCreator of(PreparedStatementCache cache, String cql) {
 
 		Assert.notNull(cache, "Cache must not be null");
-		Assert.hasText(cql, "CQL statement must not be null");
+		Assert.hasText(cql, "CQL statement is required");
 
 		return new CachedPreparedStatementCreator(cache, new SimpleStatement(cql));
 	}
@@ -102,24 +102,22 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	 * @param queryOptions must not be {@literal null}.
 	 * @return the {@link CachedPreparedStatementCreator} for {@code cql}.
 	 */
-	public static CachedPreparedStatementCreator of(PreparedStatementCache cache, String cql, QueryOptions queryOptions) {
+	public static CachedPreparedStatementCreator of(PreparedStatementCache cache, String cql,
+			QueryOptions queryOptions) {
 
 		Assert.notNull(cache, "Cache must not be null");
-		Assert.hasText(cql, "CQL statement must not be null");
+		Assert.hasText(cql, "CQL statement is required");
 		Assert.notNull(queryOptions, "QueryOptions must not be null");
 
-		SimpleStatement statement = new SimpleStatement(cql);
-
-		QueryOptionsUtil.addQueryOptions(statement, queryOptions);
-
-		return new CachedPreparedStatementCreator(cache, statement);
+		return new CachedPreparedStatementCreator(cache,
+			QueryOptionsUtil.addQueryOptions(new SimpleStatement(cql), queryOptions));
 	}
 
 	/**
 	 * @return the underlying {@link PreparedStatementCache}.
 	 */
 	public PreparedStatementCache getCache() {
-		return cache;
+		return this.cache;
 	}
 
 	/* (non-Javadoc)
@@ -127,6 +125,6 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	 */
 	@Override
 	public PreparedStatement createPreparedStatement(Session session) throws DriverException {
-		return cache.getPreparedStatement(session, statement, () -> session.prepare(statement));
+		return getCache().getPreparedStatement(session, this.statement);
 	}
 }
