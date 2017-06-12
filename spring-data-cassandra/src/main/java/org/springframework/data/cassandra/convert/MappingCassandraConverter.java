@@ -121,6 +121,30 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+	 */
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.spELContext = new SpELContext(this.spELContext, applicationContext);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter#getMappingContext()
+	 */
+	@Override
+	public CassandraMappingContext getMappingContext() {
+		return mappingContext;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <R> R readRow(Class<R> type, Row row) {
 
@@ -150,14 +174,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		return readEntityFromRow(persistentEntity, row);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.spELContext = new SpELContext(this.spELContext, applicationContext);
 	}
 
 	protected <S> S readEntityFromRow(final CassandraPersistentEntity<S> entity, final Row row) {
@@ -630,16 +646,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		} catch (LinkageError e) {
 			return entity;
 		}
-	}
-
-	@Override
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.beanClassLoader = classLoader;
-	}
-
-	@Override
-	public CassandraMappingContext getMappingContext() {
-		return mappingContext;
 	}
 
 	/**
