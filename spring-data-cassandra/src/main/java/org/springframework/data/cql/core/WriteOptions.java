@@ -95,7 +95,7 @@ public class WriteOptions extends QueryOptions {
 
 		private Integer ttl;
 
-		private WriteOptionsBuilder() {}
+		protected WriteOptionsBuilder() {}
 
 		/*
 		 * (non-Javadoc)
@@ -177,12 +177,16 @@ public class WriteOptions extends QueryOptions {
 		 * @return a new {@link WriteOptions} with the configured values
 		 */
 		public WriteOptions build() {
+			return applyOptions(new WriteOptions());
+		}
 
-			WriteOptions queryOptions = applyOptions(new WriteOptions());
+		@Override
+		protected <T> T applyOptions(T queryOptions) {
 
-			queryOptions.setTtl(ttl);
+			WriteOptions writeOptions = (WriteOptions) queryOptions;
+			writeOptions.setTtl(ttl);
 
-			return queryOptions;
+			return super.applyOptions(queryOptions);
 		}
 	}
 }

@@ -41,6 +41,8 @@ import com.datastax.driver.core.Statement;
  * @see CassandraTemplate
  * @see CqlOperations
  * @see Statement
+ * @see InsertOptions
+ * @see UpdateOptions
  */
 public interface CassandraOperations {
 
@@ -266,10 +268,10 @@ public interface CassandraOperations {
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the inserted entity.
+	 * @return the inserted entity or {@literal null} if the {@code INSERT} operation was not applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T insert(T entity, WriteOptions options) throws DataAccessException;
+	<T> T insert(T entity, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and return the entity if the update was applied.
@@ -285,10 +287,10 @@ public interface CassandraOperations {
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the updated entity.
+	 * @return the updated entity or {@literal null} if the {@code UPDATE} operation was not applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T update(T entity, WriteOptions options) throws DataAccessException;
+	<T> T update(T entity, UpdateOptions options) throws DataAccessException;
 
 	/**
 	 * Delete the given entity and return the entity if the delete was applied.

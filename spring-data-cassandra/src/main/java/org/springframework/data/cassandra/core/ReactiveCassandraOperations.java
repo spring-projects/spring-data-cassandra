@@ -36,6 +36,10 @@ import com.datastax.driver.core.Statement;
  * @author Mark Paluch
  * @since 2.0
  * @see ReactiveCassandraTemplate
+ * @see ReactiveCqlOperations
+ * @see Statement
+ * @see InsertOptions
+ * @see UpdateOptions
  * @see Flux
  * @see Mono
  */
@@ -180,10 +184,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @@return the inserted entity.
+	 * @return the inserted entity or {@link Mono#empty()} if the {@code INSERT} operation was not applied.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> insert(T entity, WriteOptions options) throws DataAccessException;
+	<T> Mono<T> insert(T entity, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Insert the given entities and emit the entity if the insert was applied.
@@ -199,10 +203,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entities The entities to insert, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the inserted entities.
+	 * @return the inserted entities. Does not emit items for which the {@code INSERT} operation was not applied.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Flux<T> insert(Publisher<? extends T> entities, WriteOptions options) throws DataAccessException;
+	<T> Flux<T> insert(Publisher<? extends T> entities, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and emit the entity if the update was applied.
@@ -218,10 +222,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the updated entity.
+	 * @return the updated entity or {@link Mono#empty()} if the {@code UPDATE} operation was not applied.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> update(T entity, WriteOptions options) throws DataAccessException;
+	<T> Mono<T> update(T entity, UpdateOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entities and emit the entity if the update was applied.
@@ -237,10 +241,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entities The entities to update.
 	 * @param options may be {@literal null}.
-	 * @return the updated entities.
+	 * @return the updated entities. Does not emit items for which the {@code UPDATE} operation was not applied.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Flux<T> update(Publisher<? extends T> entities, WriteOptions options) throws DataAccessException;
+	<T> Flux<T> update(Publisher<? extends T> entities, UpdateOptions options) throws DataAccessException;
 
 	/**
 	 * Remove the given object from the table by id.

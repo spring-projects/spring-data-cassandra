@@ -37,7 +37,6 @@ import org.springframework.data.cql.core.CqlProvider;
 import org.springframework.data.cql.core.CqlTemplate;
 import org.springframework.data.cql.core.QueryOptions;
 import org.springframework.data.cql.core.SessionCallback;
-import org.springframework.data.cql.core.WriteOptions;
 import org.springframework.data.cql.core.session.DefaultSessionFactory;
 import org.springframework.data.cql.core.session.SessionFactory;
 import org.springframework.data.mapping.context.MappingContext;
@@ -433,10 +432,10 @@ public class CassandraTemplate implements CassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public <T> T insert(T entity, WriteOptions options) {
+	public <T> T insert(T entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
@@ -456,10 +455,10 @@ public class CassandraTemplate implements CassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, org.springframework.data.cql.core.WriteOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public <T> T update(T entity, WriteOptions options) {
+	public <T> T update(T entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 

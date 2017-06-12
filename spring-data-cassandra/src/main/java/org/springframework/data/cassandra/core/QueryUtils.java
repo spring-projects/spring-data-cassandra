@@ -55,6 +55,15 @@ class QueryUtils {
 
 		Insert insert = QueryOptionsUtil.addWriteOptions(QueryBuilder.insertInto(tableName), options);
 
+		if (options instanceof InsertOptions) {
+
+			InsertOptions insertOptions = (InsertOptions) options;
+
+			if (insertOptions.isIfNotExists()) {
+				insert = insert.ifNotExists();
+			}
+		}
+
 		entityWriter.write(objectToUpdate, insert);
 
 		return insert;
@@ -78,6 +87,15 @@ class QueryUtils {
 		Assert.notNull(entityWriter, "EntityWriter must not be null");
 
 		Update update = QueryOptionsUtil.addWriteOptions(QueryBuilder.update(tableName), options);
+
+		if (options instanceof UpdateOptions) {
+
+			UpdateOptions updateOptions = (UpdateOptions) options;
+
+			if (updateOptions.isIfExists()) {
+				update.where().ifExists();
+			}
+		}
 
 		entityWriter.write(objectToUpdate, update);
 
