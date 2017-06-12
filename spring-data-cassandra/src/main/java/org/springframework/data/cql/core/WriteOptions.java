@@ -73,7 +73,7 @@ public class WriteOptions extends QueryOptions {
 	 * @return the time to live, if set.
 	 */
 	public Integer getTtl() {
-		return ttl;
+		return this.ttl;
 	}
 
 	/**
@@ -184,7 +184,8 @@ public class WriteOptions extends QueryOptions {
 		protected <T> T applyOptions(T queryOptions) {
 
 			WriteOptions writeOptions = (WriteOptions) queryOptions;
-			writeOptions.setTtl(ttl);
+
+			writeOptions.setTtl(this.ttl);
 
 			return super.applyOptions(queryOptions);
 		}

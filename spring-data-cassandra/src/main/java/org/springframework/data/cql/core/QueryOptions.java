@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cql.core;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.util.Assert;
@@ -84,7 +85,7 @@ public class QueryOptions {
 	 * @since 1.5
 	 */
 	protected ConsistencyLevel getConsistencyLevel() {
-		return consistencyLevel;
+		return this.consistencyLevel;
 	}
 
 	/**
@@ -104,7 +105,7 @@ public class QueryOptions {
 	 * @since 1.5
 	 */
 	protected RetryPolicy getRetryPolicy() {
-		return retryPolicy;
+		return this.retryPolicy;
 	}
 
 	/**
@@ -123,6 +124,7 @@ public class QueryOptions {
 	public void setFetchSize(int fetchSize) {
 
 		Assert.isTrue(fetchSize >= 0, "FetchSize must be greater than equal to zero");
+
 		this.fetchSize = fetchSize;
 	}
 
@@ -147,6 +149,7 @@ public class QueryOptions {
 	public void setReadTimeout(long readTimeout) {
 
 		Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
+
 		this.readTimeout = readTimeout;
 	}
 
@@ -155,7 +158,7 @@ public class QueryOptions {
 	 * @since 1.5
 	 */
 	protected Long getReadTimeout() {
-		return readTimeout;
+		return this.readTimeout;
 	}
 
 	/**
@@ -172,7 +175,7 @@ public class QueryOptions {
 	 * @return whether to enable tracing. May be {@literal null} if not set.
 	 */
 	protected Boolean getTracing() {
-		return tracing;
+		return this.tracing;
 	}
 
 	/**
@@ -206,6 +209,7 @@ public class QueryOptions {
 			Assert.notNull(consistencyLevel, "ConsistencyLevel must not be null");
 
 			this.consistencyLevel = consistencyLevel;
+
 			return this;
 		}
 
@@ -221,6 +225,7 @@ public class QueryOptions {
 			Assert.notNull(retryPolicy, "RetryPolicy must not be null");
 
 			this.retryPolicy = retryPolicy;
+
 			return this;
 		}
 
@@ -239,9 +244,10 @@ public class QueryOptions {
 		 */
 		public QueryOptionsBuilder fetchSize(int fetchSize) {
 
-			Assert.isTrue(fetchSize >= 0, "FetchSize must be greater or equal to zero");
+			Assert.isTrue(fetchSize >= 0, "FetchSize must be greater than equal to zero");
 
 			this.fetchSize = fetchSize;
+
 			return this;
 		}
 
@@ -256,7 +262,7 @@ public class QueryOptions {
 		 */
 		public QueryOptionsBuilder readTimeout(long readTimeout) {
 
-			Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater or equal to zero");
+			Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
 
 			this.readTimeout = readTimeout;
 
@@ -275,7 +281,7 @@ public class QueryOptions {
 		 */
 		public QueryOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
-			Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater or equal to zero");
+			Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
 			Assert.notNull(timeUnit, "TimeUnit must not be null");
 
 			this.readTimeout = timeUnit.toMillis(readTimeout);
@@ -292,6 +298,7 @@ public class QueryOptions {
 		public QueryOptionsBuilder tracing(boolean tracing) {
 
 			this.tracing = tracing;
+
 			return this;
 		}
 
@@ -320,17 +327,9 @@ public class QueryOptions {
 			queryOptions.setConsistencyLevel(consistencyLevel);
 			queryOptions.setRetryPolicy(retryPolicy);
 
-			if (fetchSize != null) {
-				queryOptions.setFetchSize(fetchSize);
-			}
-
-			if (readTimeout != null) {
-				queryOptions.setReadTimeout(readTimeout);
-			}
-
-			if (tracing != null) {
-				queryOptions.setTracing(tracing);
-			}
+			Optional.ofNullable(this.fetchSize).ifPresent(queryOptions::setFetchSize);
+			Optional.ofNullable(this.readTimeout).ifPresent(queryOptions::setReadTimeout);
+			Optional.ofNullable(this.tracing).ifPresent(queryOptions::setTracing);
 
 			return options;
 		}

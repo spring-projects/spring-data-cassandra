@@ -47,7 +47,7 @@ public class UpdateOptions extends WriteOptions {
 	 * @return {@literal true} to apply {@code IF EXISTS} to {@code UPDATE} operations.
 	 */
 	public boolean isIfExists() {
-		return ifExists;
+		return this.ifExists;
 	}
 
 	/**
@@ -164,7 +164,7 @@ public class UpdateOptions extends WriteOptions {
 
 			UpdateOptions insertOptions = applyOptions(new UpdateOptions());
 
-			insertOptions.ifExists = ifExists;
+			insertOptions.ifExists = this.ifExists;
 
 			return insertOptions;
 		}

@@ -47,7 +47,7 @@ public class InsertOptions extends WriteOptions {
 	 * @return {@literal true} to apply {@code IF NOT EXISTS} to {@code INSERT} operations.
 	 */
 	public boolean isIfNotExists() {
-		return ifNotExists;
+		return this.ifNotExists;
 	}
 
 	/**
@@ -164,7 +164,7 @@ public class InsertOptions extends WriteOptions {
 
 			InsertOptions insertOptions = applyOptions(new InsertOptions());
 
-			insertOptions.ifNotExists = ifNotExists;
+			insertOptions.ifNotExists = this.ifNotExists;
 
 			return insertOptions;
 		}

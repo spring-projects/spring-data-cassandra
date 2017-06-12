@@ -257,8 +257,8 @@ public interface AsyncCassandraOperations {
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the updated entityor a {@literal null} inside of {@link ListenableFuture} if the {@code UPDATE} operation
-	 *         was not applied.
+	 * @return the updated entity or a {@literal null} inside of {@link ListenableFuture}
+	 * if the {@code UPDATE} operation was not applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> ListenableFuture<T> update(T entity, UpdateOptions options) throws DataAccessException;

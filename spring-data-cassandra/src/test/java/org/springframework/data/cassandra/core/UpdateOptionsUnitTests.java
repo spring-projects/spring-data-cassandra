@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
@@ -27,14 +27,14 @@ import org.junit.Test;
 public class UpdateOptionsUnitTests {
 
 	@Test // DATACASS-250
-	public void shouldConfigureInsertOptions() {
+	public void shouldConfigureUpdateOptions() {
 
-		UpdateOptions insertOptions = UpdateOptions.builder() //
+		UpdateOptions updateOptions = UpdateOptions.builder() //
 				.ttl(10) //
 				.withIfExists() //
 				.build();
 
-		assertThat(insertOptions.getTtl()).isEqualTo(10);
-		assertThat(insertOptions.isIfExists()).isTrue();
+		assertThat(updateOptions.getTtl()).isEqualTo(10);
+		assertThat(updateOptions.isIfExists()).isTrue();
 	}
 }
