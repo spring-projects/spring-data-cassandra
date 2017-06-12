@@ -17,11 +17,12 @@ package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
-import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.RowMockUtil.*;
 import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -46,9 +47,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.RowMockUtil;
@@ -88,15 +86,13 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
  * @author Mark Paluch
  * @soundtrack Outlandich - Dont Leave Me Feat Cyt (Sun Kidz Electrocore Mix)
  */
-@SuppressWarnings("Since15")
-@RunWith(MockitoJUnitRunner.class)
 public class MappingCassandraConverterUnitTests {
 
 	private static final Version VERSION_4_3 = Version.parse("4.3");
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
-	@Mock Row rowMock;
+	Row rowMock;
 
 	CassandraMappingContext mappingContext;
 	MappingCassandraConverter mappingCassandraConverter;
@@ -257,7 +253,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280
 	public void shouldReadStringCorrectly() {
 
-		when(rowMock.getString(0)).thenReturn("foo");
+		rowMock = RowMockUtil.newRowMock(column("foo", "foo", DataType.varchar()));
 
 		String result = mappingCassandraConverter.readRow(String.class, rowMock);
 
@@ -267,7 +263,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280
 	public void shouldReadIntegerCorrectly() {
 
-		when(rowMock.getObject(0)).thenReturn(2);
+		rowMock = RowMockUtil.newRowMock(column("foo", 2, DataType.varint()));
 
 		Integer result = mappingCassandraConverter.readRow(Integer.class, rowMock);
 
@@ -277,7 +273,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280
 	public void shouldReadLongCorrectly() {
 
-		when(rowMock.getObject(0)).thenReturn(2);
+		rowMock = RowMockUtil.newRowMock(column("foo", 2, DataType.varint()));
 
 		Long result = mappingCassandraConverter.readRow(Long.class, rowMock);
 
@@ -287,7 +283,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280
 	public void shouldReadDoubleCorrectly() {
 
-		when(rowMock.getObject(0)).thenReturn(2D);
+		rowMock = RowMockUtil.newRowMock(column("foo", 2D, DataType.cdouble()));
 
 		Double result = mappingCassandraConverter.readRow(Double.class, rowMock);
 
@@ -297,7 +293,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280
 	public void shouldReadFloatCorrectly() {
 
-		when(rowMock.getObject(0)).thenReturn(2F);
+		rowMock = RowMockUtil.newRowMock(column("foo", 2F, DataType.cdouble()));
 
 		Float result = mappingCassandraConverter.readRow(Float.class, rowMock);
 
@@ -307,7 +303,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280
 	public void shouldReadBigIntegerCorrectly() {
 
-		when(rowMock.getObject(0)).thenReturn(BigInteger.valueOf(2));
+		rowMock = RowMockUtil.newRowMock(column("foo", BigInteger.valueOf(2), DataType.bigint()));
 
 		BigInteger result = mappingCassandraConverter.readRow(BigInteger.class, rowMock);
 
@@ -317,7 +313,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280
 	public void shouldReadBigDecimalCorrectly() {
 
-		when(rowMock.getObject(0)).thenReturn(BigDecimal.valueOf(2));
+		rowMock = RowMockUtil.newRowMock(column("foo", BigDecimal.valueOf(2), DataType.decimal()));
 
 		BigDecimal result = mappingCassandraConverter.readRow(BigDecimal.class, rowMock);
 
@@ -329,7 +325,7 @@ public class MappingCassandraConverterUnitTests {
 
 		UUID uuid = UUID.randomUUID();
 
-		when(rowMock.getUUID(0)).thenReturn(uuid);
+		rowMock = RowMockUtil.newRowMock(column("foo", uuid, DataType.uuid()));
 
 		UUID result = mappingCassandraConverter.readRow(UUID.class, rowMock);
 
@@ -341,7 +337,7 @@ public class MappingCassandraConverterUnitTests {
 
 		InetAddress localHost = InetAddress.getLocalHost();
 
-		when(rowMock.getInet(0)).thenReturn(localHost);
+		rowMock = RowMockUtil.newRowMock(column("foo", localHost, DataType.inet()));
 
 		InetAddress result = mappingCassandraConverter.readRow(InetAddress.class, rowMock);
 
@@ -353,7 +349,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Date date = new Date(1);
 
-		when(rowMock.getTimestamp(0)).thenReturn(date);
+		rowMock = RowMockUtil.newRowMock(column("foo", date, DataType.timestamp()));
 
 		Date result = mappingCassandraConverter.readRow(Date.class, rowMock);
 
@@ -365,7 +361,7 @@ public class MappingCassandraConverterUnitTests {
 
 		LocalDate date = LocalDate.fromDaysSinceEpoch(1234);
 
-		when(rowMock.getDate(0)).thenReturn(date);
+		rowMock = RowMockUtil.newRowMock(column("foo", date, DataType.date()));
 
 		LocalDate result = mappingCassandraConverter.readRow(LocalDate.class, rowMock);
 
@@ -375,7 +371,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280
 	public void shouldReadBooleanCorrectly() {
 
-		when(rowMock.getBool(0)).thenReturn(true);
+		rowMock = RowMockUtil.newRowMock(column("foo", true, DataType.cboolean()));
 
 		Boolean result = mappingCassandraConverter.readRow(Boolean.class, rowMock);
 
@@ -388,7 +384,7 @@ public class MappingCassandraConverterUnitTests {
 		LocalDateTime now = LocalDateTime.now();
 		Instant instant = now.toInstant(ZoneOffset.UTC);
 
-		Row rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
+		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
 				column("localdate", Date.from(instant), DataType.timestamp()));
 
 		TypeWithLocalDate result = mappingCassandraConverter.readRow(TypeWithLocalDate.class, rowMock);
@@ -471,7 +467,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-296
 	public void shouldReadLocalDateTimeUsingCassandraDateCorrectly() {
 
-		Row rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
+		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
 				column("localDate", LocalDate.fromYearMonthDay(2010, 7, 4), DataType.date()));
 
 		TypeWithLocalDateMappedToDate result = mappingCassandraConverter.readRow(TypeWithLocalDateMappedToDate.class,
@@ -515,7 +511,7 @@ public class MappingCassandraConverterUnitTests {
 		LocalDateTime now = LocalDateTime.now();
 		Instant instant = now.toInstant(ZoneOffset.UTC);
 
-		Row rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
+		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
 				column("localDateTime", Date.from(instant), DataType.timestamp()));
 
 		TypeWithLocalDate result = mappingCassandraConverter.readRow(TypeWithLocalDate.class, rowMock);
@@ -531,7 +527,7 @@ public class MappingCassandraConverterUnitTests {
 		LocalDateTime now = LocalDateTime.now();
 		Instant instant = now.toInstant(ZoneOffset.UTC);
 
-		Row rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
+		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
 				column("instant", Date.from(instant), DataType.timestamp()));
 
 		TypeWithInstant result = mappingCassandraConverter.readRow(TypeWithInstant.class, rowMock);
@@ -543,7 +539,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-296
 	public void shouldReadZoneIdCorrectly() {
 
-		Row rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
+		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
 				column("zoneId", "Europe/Paris", DataType.varchar()));
 
 		TypeWithZoneId result = mappingCassandraConverter.readRow(TypeWithZoneId.class, rowMock);
@@ -555,7 +551,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-296
 	public void shouldReadJodaLocalDateTimeUsingCassandraDateCorrectly() {
 
-		Row rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
+		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
 				column("localDate", LocalDate.fromYearMonthDay(2010, 7, 4), DataType.date()));
 
 		TypeWithJodaLocalDateMappedToDate result = mappingCassandraConverter
@@ -596,7 +592,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-296
 	public void shouldReadThreeTenBpLocalDateTimeUsingCassandraDateCorrectly() {
 
-		Row rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
+		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataType.ascii()),
 				column("localDate", LocalDate.fromYearMonthDay(2010, 7, 4), DataType.date()));
 
 		TypeWithThreeTenBpLocalDateMappedToDate result = mappingCassandraConverter
@@ -821,6 +817,19 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(getWherePredicates(delete)).containsEntry("lastname", "White");
 	}
 
+	@Test // DATACASS-463
+	public void shouldReadTypeWithCompositePrimaryKeyCorrectly() {
+
+		// condition, localDate
+		Row row = RowMockUtil.newRowMock(column("condition", "MINT", DataType.varchar()),
+				column("localdate", LocalDate.fromYearMonthDay(2017, 1, 2), DataType.date()));
+
+		TypeWithEnumAndLocalDateKey result = mappingCassandraConverter.read(TypeWithEnumAndLocalDateKey.class, row);
+
+		assertThat(result.id.condition).isEqualTo(Condition.MINT);
+		assertThat(result.id.localDate).isEqualTo(java.time.LocalDate.of(2017, 1, 2));
+	}
+
 	@Test // DATACASS-308
 	public void shouldWriteWhereConditionForTypeWithPkClassKeyUsingMapId() {
 
@@ -978,6 +987,22 @@ public class MappingCassandraConverterUnitTests {
 		public void setCondition(Condition condition) {
 			this.condition = condition;
 		}
+	}
+
+	@PrimaryKeyClass
+	@RequiredArgsConstructor
+	@Value
+	public static class EnumAndDateCompositePrimaryKey implements Serializable {
+
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) private final Condition condition;
+
+		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.PARTITIONED) private final java.time.LocalDate localDate;
+	}
+
+	@RequiredArgsConstructor
+	public static class TypeWithEnumAndLocalDateKey {
+
+		@PrimaryKey private final EnumAndDateCompositePrimaryKey id;
 	}
 
 	@Table

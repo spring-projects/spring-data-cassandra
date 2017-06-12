@@ -70,6 +70,13 @@ public class RowMockUtil {
 				.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].type);
 
 		when(rowMock.getObject(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(rowMock.getString(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(rowMock.getDate(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(rowMock.getBool(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(rowMock.getInet(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(rowMock.getTimestamp(anyInt()))
+				.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(rowMock.getUUID(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
 
 		return rowMock;
 	}
