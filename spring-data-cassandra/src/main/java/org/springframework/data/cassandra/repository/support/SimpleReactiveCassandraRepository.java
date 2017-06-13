@@ -38,6 +38,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * Reactive repository base implementation for Cassandra.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.0
  */
 public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassandraRepository<T, ID> {
@@ -94,27 +95,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
-		return Flux.from(entityStream).flatMap(entity -> {
-			return operations.getReactiveCqlOperations().execute(createFullInsert(entity)).map(it -> entity);
-		});
-	}
-
-	private <S extends T> Insert createFullInsert(S entity) {
-
-		CassandraConverter converter = operations.getConverter();
-		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
-				.getRequiredPersistentEntity(entity.getClass());
-		Map<String, Object> toInsert = new LinkedHashMap<>();
-
-		converter.write(entity, toInsert, persistentEntity);
-
-		Insert insert = QueryBuilder.insertInto(persistentEntity.getTableName().toCql());
-
-		for (Entry<String, Object> entry : toInsert.entrySet()) {
-			insert.value(entry.getKey(), entry.getValue());
-		}
-
-		return insert;
+		return Flux.from(entityStream).flatMap(entity -> operations.getReactiveCqlOperations().execute(createFullInsert(entity)).map(it -> entity));
 	}
 
 	/* (non-Javadoc)
@@ -246,6 +227,17 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#deleteById(org.reactivestreams.Publisher)
+	 */
+	@Override
+	public Mono<Void> deleteById(Publisher<ID> publisher) {
+
+		Assert.notNull(publisher, "The given id must not be null");
+
+		return Mono.from(publisher).flatMap(id -> operations.deleteById(id, entityInformation.getJavaType())).then();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(java.lang.Object)
 	 */
 	@Override
@@ -284,5 +276,23 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	@Override
 	public Mono<Void> deleteAll() {
 		return operations.truncate(entityInformation.getJavaType());
+	}
+
+	private <S extends T> Insert createFullInsert(S entity) {
+
+		CassandraConverter converter = operations.getConverter();
+		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
+				.getRequiredPersistentEntity(entity.getClass());
+		Map<String, Object> toInsert = new LinkedHashMap<>();
+
+		converter.write(entity, toInsert, persistentEntity);
+
+		Insert insert = QueryBuilder.insertInto(persistentEntity.getTableName().toCql());
+
+		for (Entry<String, Object> entry : toInsert.entrySet()) {
+			insert.value(entry.getKey(), entry.getValue());
+		}
+
+		return insert;
 	}
 }
