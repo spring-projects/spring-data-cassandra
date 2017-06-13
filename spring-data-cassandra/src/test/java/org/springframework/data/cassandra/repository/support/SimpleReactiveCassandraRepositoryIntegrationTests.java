@@ -44,6 +44,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * Integration tests for {@link SimpleReactiveCassandraRepository}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -127,8 +128,8 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		StepVerifier.create(repository.existsById(Mono.just(dave.getId()))).expectNext(true).verifyComplete();
 	}
 
-	@Test // DATACASS-335
-	public void existsByFluxOfIdShouldReturnTrueForExistingObject() {
+	@Test // DATACASS-462
+	public void existsByIdUsingFluxShouldReturnTrueForExistingObject() {
 
 		insertTestData();
 
@@ -163,7 +164,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	}
 
 	@Test // DATACASS-462
-	public void findByIdByFluxOfIdShouldReturnTrueForExistingObject() {
+	public void findByIdUsingFluxShouldReturnTrueForExistingObject() {
 
 		insertTestData();
 
@@ -321,13 +322,38 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	@Test // DATACASS-335
 	public void deleteByIdShouldRemoveEntity() {
 
+		insertTestData();
+
 		StepVerifier.create(repository.deleteById(dave.getId())).verifyComplete();
 
 		StepVerifier.create(repository.findById(dave.getId())).expectNextCount(0).verifyComplete();
 	}
 
+	@Test // DATACASS-462
+	public void deleteByIdUsingMonoShouldRemoveEntity() {
+
+		insertTestData();
+
+		StepVerifier.create(repository.deleteById(Mono.just(dave.getId()))).verifyComplete();
+
+		StepVerifier.create(repository.existsById(dave.getId())).expectNext(false).verifyComplete();
+	}
+
+	@Test // DATACASS-462
+	public void deleteByIdUsingFluxShouldRemoveFirstEntity() {
+
+		insertTestData();
+
+		StepVerifier.create(repository.deleteById(Flux.just(dave.getId(), oliver.getId()))).verifyComplete();
+
+		StepVerifier.create(repository.existsById(dave.getId())).expectNext(false).verifyComplete();
+		StepVerifier.create(repository.existsById(oliver.getId())).expectNext(true).verifyComplete();
+	}
+
 	@Test // DATACASS-335
 	public void deleteShouldRemoveEntity() {
+
+		insertTestData();
 
 		StepVerifier.create(repository.delete(dave)).verifyComplete();
 
@@ -337,6 +363,8 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	@Test // DATACASS-335
 	public void deleteIterableOfEntitiesShouldRemoveEntities() {
 
+		insertTestData();
+
 		StepVerifier.create(repository.deleteAll(Arrays.asList(dave, boyd))).verifyComplete();
 
 		StepVerifier.create(repository.findById(boyd.getId())).expectNextCount(0).verifyComplete();
@@ -344,6 +372,8 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 	@Test // DATACASS-335
 	public void deletePublisherOfEntitiesShouldRemoveEntities() {
+
+		insertTestData();
 
 		StepVerifier.create(repository.deleteAll(Flux.just(dave, boyd))).verifyComplete();
 
