@@ -1,6 +1,30 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.0.M4 (2017-06-14)
+----------------------------------------
+* DATACASS-463 - PrimaryKeyClass instantiated without value conversion.
+* DATACASS-462 - Adopt to ReactiveCrudRepository.findById(Publisher) and existsById(Publisher).
+* DATACASS-459 - Adopt to changed AnnotationUtils.getValue(…) behavior.
+* DATACASS-456 - Refactor CassandraPersistentProperty to single-column.
+* DATACASS-455 - Refactor BasicCassandraMappingContext to CassandraMappingContext.
+* DATACASS-453 - Upgrade to Reactor 3.1 M2.
+* DATACASS-452 - Better names for CassandraRepository.
+* DATACASS-449 - Remove redundant paragraph in reference documentation preface.
+* DATACASS-448 - Align CQL, mapping and convert packages.
+* DATACASS-447 - Introduce AbstractCassandraConfiguration.getInitialEntitySet method.
+* DATACASS-446 - CassandraAccessor introduces package cycle between o.s.d.cql.core and o.s.d.cql.support.
+* DATACASS-445 - CassandraRepository.save(…) fails silently.
+* DATACASS-443 - Add TTL support for Cassandra Batch operations.
+* DATACASS-442 - Release 2.0 M4 (Kay).
+* DATACASS-403 - Modular CachedPreparedStatementCreator.
+* DATACASS-343 - Introduce Query and Update objects.
+* DATACASS-291 - CachedPreparedStatementCreator uses a static field for caching.
+* DATACASS-278 - PreparedStatementCreator doesn't translate exceptions.
+* DATACASS-265 - Merge spring-cql and spring-data-cassandra modules.
+* DATACASS-250 - Support lightweight transactions (if [not] exists).
+
+
 Changes in version 1.5.4.RELEASE (2017-06-08)
 ---------------------------------------------
 * DATACASS-457 - Remove relativePath from parent in pom.xml.
