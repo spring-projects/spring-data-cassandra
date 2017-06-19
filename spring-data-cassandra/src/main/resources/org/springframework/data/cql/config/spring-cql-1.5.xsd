@@ -51,7 +51,7 @@ Defines a CassandraTemplate.
 			<xsd:appinfo>
 				<tool:annotation>
 					<tool:exports
-							type="org.springframework.data.cql.core.CqlTemplate"/>
+							type="org.springframework.data.cassandra.core.cql.CqlTemplate"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>

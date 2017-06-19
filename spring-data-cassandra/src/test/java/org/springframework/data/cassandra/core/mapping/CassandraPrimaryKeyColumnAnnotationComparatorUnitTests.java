@@ -23,8 +23,8 @@ import java.util.UUID;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.data.cql.core.Ordering;
-import org.springframework.data.cql.core.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.Ordering;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 
 /**
  * The CassandraPrimaryKeyColumnAnnotationComparatorUnitTests class is a test suite of test cases testing the contract

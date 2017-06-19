@@ -18,17 +18,17 @@ package org.springframework.data.cassandra.core;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.SessionCallback;
+import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.DropUserTypeCqlGenerator;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.SessionCallback;
-import org.springframework.data.cql.core.generator.CreateTableCqlGenerator;
-import org.springframework.data.cql.core.generator.DropTableCqlGenerator;
-import org.springframework.data.cql.core.generator.DropUserTypeCqlGenerator;
-import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
-import org.springframework.data.cql.core.keyspace.DropTableSpecification;
-import org.springframework.data.cql.core.keyspace.DropUserTypeSpecification;
-import org.springframework.data.cql.core.session.SessionFactory;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -66,7 +66,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, org.springframework.data.cql.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, org.springframework.data.cassandra.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
 	 */
 	@Override
 	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
@@ -86,7 +86,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(org.springframework.data.cql.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void dropTable(CqlIdentifier tableName) {
@@ -95,7 +95,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropUserType(org.springframework.data.cql.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropUserType(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void dropUserType(CqlIdentifier typeName) {
@@ -107,7 +107,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(java.lang.String, org.springframework.data.cql.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(java.lang.String, org.springframework.data.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public Optional<TableMetadata> getTableMetadata(String keyspace, CqlIdentifier tableName) {

@@ -36,8 +36,8 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Row;

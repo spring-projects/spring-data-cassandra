@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cql.core.CqlIdentifier.*;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
-import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.DataType;

@@ -10,10 +10,10 @@
 ">
 
 	<bean name="randomKeyspaceName" class="java.lang.String">
-		<constructor-arg value="#{T(org.springframework.data.cql.support.RandomKeySpaceName).create()}"/>
+		<constructor-arg value="#{T(org.springframework.data.cassandra.support.RandomKeySpaceName).create()}"/>
 	</bean>
 
-	<bean id="nettyOptions" class="org.springframework.data.cql.support.IntegrationTestNettyOptions"/>
+	<bean id="nettyOptions" class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>
 
 	<context:property-placeholder location="classpath:/config/cassandra-connection.properties"/>
 

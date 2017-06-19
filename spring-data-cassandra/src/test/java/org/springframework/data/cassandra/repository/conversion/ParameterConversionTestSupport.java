@@ -28,13 +28,13 @@ import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Cluster;

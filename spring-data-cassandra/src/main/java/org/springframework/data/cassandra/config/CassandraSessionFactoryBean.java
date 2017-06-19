@@ -21,7 +21,6 @@ import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCr
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cql.config.CassandraCqlSessionFactoryBean;
 import org.springframework.util.Assert;
 
 /**

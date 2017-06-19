@@ -22,7 +22,7 @@ import java.util.Date;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.cql.core.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;

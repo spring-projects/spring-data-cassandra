@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
-import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;

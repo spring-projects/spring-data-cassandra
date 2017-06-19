@@ -21,9 +21,9 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cql.core.PrimaryKeyType;
 
 /**
  * @author Mark Paluch

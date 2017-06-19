@@ -24,7 +24,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cql.core.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.mapping.PropertyHandler;
 
 /**

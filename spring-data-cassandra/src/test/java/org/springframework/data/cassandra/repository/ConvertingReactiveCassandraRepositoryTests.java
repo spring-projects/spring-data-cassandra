@@ -39,7 +39,7 @@ import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.config.EnableReactiveCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.RxJava1CrudRepository;
 import org.springframework.data.repository.reactive.RxJava2CrudRepository;

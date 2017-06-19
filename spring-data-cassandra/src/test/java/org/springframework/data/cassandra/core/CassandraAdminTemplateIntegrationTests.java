@@ -22,11 +22,11 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;
+import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
 import org.springframework.data.cassandra.domain.User;
-import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.generator.DropTableCqlGenerator;
-import org.springframework.data.cql.core.keyspace.DropTableSpecification;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Metadata;

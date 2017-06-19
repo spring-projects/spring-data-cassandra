@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;

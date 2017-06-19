@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core.mapping;
 
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.Ordering;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.PersistentProperty;
 
 import com.datastax.driver.core.DataType;

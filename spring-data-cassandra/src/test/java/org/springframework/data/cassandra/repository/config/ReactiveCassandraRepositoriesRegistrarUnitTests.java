@@ -25,13 +25,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
-import org.springframework.data.cql.core.session.ReactiveSession;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 

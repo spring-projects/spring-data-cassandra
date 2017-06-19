@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.data.cql.core.WriteOptions;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
 
 /**
  * Extension to {@link WriteOptions} for use with {@code INSERT} operations.
@@ -64,7 +64,7 @@ public class InsertOptions extends WriteOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
 		 */
 		@Override
 		public InsertOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {
@@ -73,7 +73,7 @@ public class InsertOptions extends WriteOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#retryPolicy(org.springframework.data.cql.core.RetryPolicy)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#retryPolicy(org.springframework.data.cassandra.core.cql.RetryPolicy)
 		 */
 		@Override
 		public InsertOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
@@ -82,7 +82,7 @@ public class InsertOptions extends WriteOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#fetchSize(int)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#fetchSize(int)
 		 */
 		@Override
 		public InsertOptionsBuilder fetchSize(int fetchSize) {
@@ -91,7 +91,7 @@ public class InsertOptions extends WriteOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#readTimeout(long)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#readTimeout(long)
 		 */
 		@Override
 		public InsertOptionsBuilder readTimeout(long readTimeout) {
@@ -100,7 +100,7 @@ public class InsertOptions extends WriteOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
 		 */
 		@Override
 		public InsertOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
@@ -109,7 +109,7 @@ public class InsertOptions extends WriteOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#tracing(boolean)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#tracing(boolean)
 		 */
 		@Override
 		public InsertOptionsBuilder tracing(boolean tracing) {
@@ -118,7 +118,7 @@ public class InsertOptions extends WriteOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.cql.core.QueryOptions.QueryOptionsBuilder#withTracing()
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#withTracing()
 		 */
 		@Override
 		public InsertOptionsBuilder withTracing() {
@@ -127,7 +127,7 @@ public class InsertOptions extends WriteOptions {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.cql.core.WriteOptions.WriteOptionsBuilder#ttl(int)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
 		 */
 		public InsertOptionsBuilder ttl(int ttl) {
 			return (InsertOptionsBuilder) super.ttl(ttl);

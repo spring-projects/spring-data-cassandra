@@ -30,12 +30,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration;
+import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.domain.Person;
-import org.springframework.data.cql.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cql.KeyspaceRule;
-import org.springframework.data.cql.config.CassandraCqlClusterFactoryBean;
-import org.springframework.data.cql.core.SessionCallback;
+import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.data.cassandra.test.util.KeyspaceRule;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -218,8 +216,8 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 
 		@Bean
 		@Override
-		public CassandraCqlClusterFactoryBean cluster() {
-			return new CassandraCqlClusterFactoryBean() {
+		public CassandraClusterFactoryBean cluster() {
+			return new CassandraClusterFactoryBean() {
 				@Override
 				public void afterPropertiesSet() throws Exception {
 					// avoid Cassandra Cluster creation; use embedded

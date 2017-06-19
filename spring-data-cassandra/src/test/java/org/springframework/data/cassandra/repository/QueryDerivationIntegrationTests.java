@@ -43,7 +43,7 @@ import org.springframework.data.cassandra.repository.QueryDerivationIntegrationT
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.data.cql.support.CassandraVersion;
+import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 import org.springframework.test.context.ContextConfiguration;

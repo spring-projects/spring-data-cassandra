@@ -41,8 +41,8 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
-import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.data.cql.support.CassandraVersion;
+import org.springframework.data.cassandra.support.CassandraVersion;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.util.Version;
 
 import com.datastax.driver.core.Duration;

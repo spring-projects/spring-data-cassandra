@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
 import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.*;
-import static org.springframework.data.cql.core.CqlIdentifier.*;
-import static org.springframework.data.cql.core.keyspace.CreateTableSpecification.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,11 +36,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.UserTypeUtil.FrozenLiteralDataType;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
-import org.springframework.data.cql.core.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.context.AbstractMappingContext;

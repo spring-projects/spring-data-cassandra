@@ -34,10 +34,10 @@ import org.junit.Test;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.keyspace.ColumnSpecification;
-import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.DataType;

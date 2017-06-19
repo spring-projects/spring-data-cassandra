@@ -32,12 +32,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.Person;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.CqlOperations;
 
 import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.querybuilder.Insert;

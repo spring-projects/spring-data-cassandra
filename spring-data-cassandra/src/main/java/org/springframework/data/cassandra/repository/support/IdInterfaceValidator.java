@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.cassandra.repository.MapId;
+import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.mapping.MappingException;
 
 /**

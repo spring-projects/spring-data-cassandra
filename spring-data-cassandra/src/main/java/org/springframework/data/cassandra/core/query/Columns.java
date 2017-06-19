@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -37,7 +37,7 @@ import org.springframework.util.StringUtils;
  * included using a {@link Selector}.
  *
  * @author Mark Paluch
- * @see org.springframework.data.cql.core.cql.CqlIdentifier
+ * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
  * @see org.springframework.data.cassandra.core.query.ColumnName
  * @see Selector
  * @see FunctionCall

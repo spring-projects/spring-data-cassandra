@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.util.Comparator;
 
-import org.springframework.data.cql.core.Ordering;
-import org.springframework.data.cql.core.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.Ordering;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 
 /**
  * {@link Comparator} implementation that uses, in order, the...

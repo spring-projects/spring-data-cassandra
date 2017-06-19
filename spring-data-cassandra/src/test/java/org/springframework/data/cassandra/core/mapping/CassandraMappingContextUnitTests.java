@@ -30,12 +30,12 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.Ordering;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.convert.WritingConverter;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.Ordering;
-import org.springframework.data.cql.core.PrimaryKeyType;
-import org.springframework.data.cql.core.keyspace.ColumnSpecification;
-import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
 

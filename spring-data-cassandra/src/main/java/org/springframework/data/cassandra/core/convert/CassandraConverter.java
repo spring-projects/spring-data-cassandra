@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.convert;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityConverter;
 import org.springframework.data.util.TypeInformation;
@@ -50,8 +51,8 @@ public interface CassandraConverter
 	 * <ul>
 	 * <li>A singular value if for a simple {@link org.springframework.data.annotation.Id} or
 	 * {@link org.springframework.data.cassandra.core.mapping.PrimaryKey} Id</li>
-	 * <li>A {@link org.springframework.data.cassandra.repository.MapId} for composite
-	 * {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn} Id's</li>
+	 * <li>A {@link MapId} for composite {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn}
+	 * Id's</li>
 	 * <li>A the composite primary key for {@link org.springframework.data.cassandra.core.mapping.PrimaryKey} using a
 	 * {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass}</li>
 	 * </ul>

@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;

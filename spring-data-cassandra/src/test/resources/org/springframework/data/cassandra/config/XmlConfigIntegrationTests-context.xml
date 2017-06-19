@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:cassandra="http://www.springframework.org/schema/cql"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:task="http://www.springframework.org/schema/task"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	   	http://www.springframework.org/schema/cql http://www.springframework.org/schema/cql/spring-cql.xsd
+	   	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+">
+
+	<context:property-placeholder location="classpath:/config/cassandra-connection.properties"/>
+
+	<task:executor id="testExecutor" pool-size="10"/>
+
+	<bean name="testAddressTranslator" class="com.datastax.driver.core.policies.IdentityTranslator"/>
+
+	<bean name="testClusterBuilderConfigurer"
+		  class="org.springframework.data.cassandra.config.XmlConfigIntegrationTests.TestClusterBuilderConfigurer"/>
+
+	<bean name="testSpeculativeExecutionPolicy" class="com.datastax.driver.core.policies.NoSpeculativeExecutionPolicy"/>
+
+	<bean name="testTimestampGenerator" class="com.datastax.driver.core.AtomicMonotonicTimestampGenerator"/>
+
+	<bean id="nettyOptions" class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>
+
+	<cassandra:cluster
+		cluster-name="skynet" contact-points="localhost" port="${build.cassandra.native_transport_port}"
+		address-translator-ref="testAddressTranslator"
+		cluster-builder-configurer-ref="testClusterBuilderConfigurer"
+		heartbeat-interval-seconds="60"
+		initialization-executor-ref="testExecutor"
+		idle-timeout-seconds="300"
+		max-schema-agreement-wait-seconds="2"
+		pool-timeout-milliseconds="15000"
+		speculative-execution-policy-ref="testSpeculativeExecutionPolicy"
+		timestamp-generator-ref="testTimestampGenerator"
+		netty-options-ref="nettyOptions"
+		>
+
+		<cassandra:local-pooling-options
+			core-connections="2"
+			max-connections="8"
+			max-simultaneous-requests="100"
+			min-simultaneous-requests="25"/>
+		<cassandra:remote-pooling-options
+			core-connections="1"
+			max-connections="2"
+			max-simultaneous-requests="100"
+			min-simultaneous-requests="25"/>
+		<cassandra:socket-options
+			connect-timeout-millis="5000"
+			keep-alive="true"
+			read-timeout-millis="60000"
+			receive-buffer-size="65536"
+			reuse-address="true"
+			send-buffer-size="65536"
+			so-linger="60"
+			tcp-no-delay="true"/>
+
+	</cassandra:cluster>
+
+	<cassandra:session keyspace-name="xmlconfigtest"/>
+
+	<bean id="cassandraTemplate" class="org.springframework.data.cassandra.core.cql.CqlTemplate">
+		<constructor-arg ref="cassandraSession" />
+	</bean>
+
+</beans>

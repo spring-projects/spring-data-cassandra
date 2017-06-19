@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Cluster;
@@ -50,7 +50,7 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.UserTypeResolver#resolveType(org.springframework.data.cql.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.mapping.UserTypeResolver#resolveType(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public UserType resolveType(CqlIdentifier typeName) {

@@ -26,22 +26,22 @@ import lombok.NonNull;
 import lombok.Value;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.QueryMapper;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlOperations;
+import org.springframework.data.cassandra.core.cql.CqlProvider;
+import org.springframework.data.cassandra.core.cql.CqlTemplate;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.data.cassandra.core.cql.SessionCallback;
+import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.CqlOperations;
-import org.springframework.data.cql.core.CqlProvider;
-import org.springframework.data.cql.core.CqlTemplate;
-import org.springframework.data.cql.core.QueryOptions;
-import org.springframework.data.cql.core.SessionCallback;
-import org.springframework.data.cql.core.session.DefaultSessionFactory;
-import org.springframework.data.cql.core.session.SessionFactory;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -481,7 +481,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, org.springframework.data.cql.core.QueryOptions)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, org.springframework.data.cassandra.core.cql.QueryOptions)
 	 */
 	@Override
 	public WriteResult delete(Object entity, QueryOptions options) {

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
 
 import lombok.AllArgsConstructor;
 
@@ -24,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -36,12 +36,13 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
-import org.springframework.data.cassandra.repository.MapId;
-import org.springframework.data.cassandra.repository.MapIdentifiable;
+import org.springframework.data.cassandra.core.mapping.MapId;
+import org.springframework.data.cassandra.core.mapping.MapIdentifiable;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -605,7 +606,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		// if the class doesn't have an id property, then it's using MapId
-		final MapId id = id();
+		final MapId id = BasicMapId.id();
 
 		for (CassandraPersistentProperty property : entity) {
 

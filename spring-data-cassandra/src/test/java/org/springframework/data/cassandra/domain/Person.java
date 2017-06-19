@@ -24,9 +24,9 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cql.core.PrimaryKeyType;
 
 /**
  * @author Mark Paluch

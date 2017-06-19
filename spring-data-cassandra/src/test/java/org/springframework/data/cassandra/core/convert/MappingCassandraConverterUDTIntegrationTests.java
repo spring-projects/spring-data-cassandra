@@ -35,6 +35,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.config.SchemaAction;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -44,7 +45,6 @@ import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 

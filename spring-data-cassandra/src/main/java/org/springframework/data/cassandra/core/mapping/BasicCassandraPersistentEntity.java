@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cql.core.CqlIdentifier.*;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
 import java.util.Optional;
 
@@ -24,9 +24,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.util.SpelUtils;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.support.exception.UnsupportedCassandraOperationException;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.MappingException;
@@ -181,7 +180,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#setTableName(org.springframework.data.cql.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#setTableName(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void setTableName(CqlIdentifier tableName) {

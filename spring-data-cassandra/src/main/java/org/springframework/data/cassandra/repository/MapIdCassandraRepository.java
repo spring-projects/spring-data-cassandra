@@ -15,8 +15,10 @@
  */
 package org.springframework.data.cassandra.repository;
 
+import org.springframework.data.cassandra.core.mapping.BasicMapId;
+import org.springframework.data.cassandra.core.mapping.MapId;
+import org.springframework.data.cassandra.core.mapping.MapIdentifiable;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.repository.NoRepositoryBean;
 
 /**

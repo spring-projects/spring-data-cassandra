@@ -16,13 +16,13 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cql.core.CqlIdentifier.*;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
 import java.io.Serializable;
 
 import org.junit.Test;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 
 /**
  * Unit tests for {@link CassandraMappingContext}.

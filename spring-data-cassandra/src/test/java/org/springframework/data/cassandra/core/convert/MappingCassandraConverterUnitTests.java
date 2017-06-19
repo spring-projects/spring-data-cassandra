@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
-import static org.springframework.data.cassandra.RowMockUtil.*;
-import static org.springframework.data.cassandra.repository.support.BasicMapId.*;
+import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
+import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +49,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
-import org.springframework.data.cassandra.RowMockUtil;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
@@ -62,7 +62,7 @@ import org.springframework.data.cassandra.domain.TypeWithKeyClass;
 import org.springframework.data.cassandra.domain.TypeWithMapId;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
-import org.springframework.data.cql.core.PrimaryKeyType;
+import org.springframework.data.cassandra.test.util.RowMockUtil;
 import org.springframework.data.util.Version;
 import org.springframework.test.util.ReflectionTestUtils;
 

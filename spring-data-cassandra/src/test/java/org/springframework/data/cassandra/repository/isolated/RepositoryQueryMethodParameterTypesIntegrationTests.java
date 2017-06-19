@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.cassandra.CassandraInvalidQueryException;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -45,7 +46,6 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.cql.support.exception.CassandraInvalidQueryException;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;

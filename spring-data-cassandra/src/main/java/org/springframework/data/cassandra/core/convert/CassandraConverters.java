@@ -25,9 +25,9 @@ import java.util.UUID;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
+import org.springframework.data.cassandra.core.cql.converter.RowToListConverter;
+import org.springframework.data.cassandra.core.cql.converter.RowToMapConverter;
 import org.springframework.data.convert.ReadingConverter;
-import org.springframework.data.cql.core.converter.RowToListConverter;
-import org.springframework.data.cql.core.converter.RowToMapConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.NumberUtils;
 

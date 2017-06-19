@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.core;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.AbstractTableMetadata;

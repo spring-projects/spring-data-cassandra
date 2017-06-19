@@ -36,8 +36,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.domain.User;
-import org.springframework.data.cql.support.exception.CassandraConnectionFailureException;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.driver.core.ColumnDefinitions;

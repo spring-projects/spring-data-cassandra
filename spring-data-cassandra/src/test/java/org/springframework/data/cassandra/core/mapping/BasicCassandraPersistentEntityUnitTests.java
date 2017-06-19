@@ -32,7 +32,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AliasFor;
-import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**

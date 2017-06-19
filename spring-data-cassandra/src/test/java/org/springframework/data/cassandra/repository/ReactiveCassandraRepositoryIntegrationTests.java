@@ -40,7 +40,7 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.cassandra.repository.support.ReactiveCassandraRepositoryFactory;
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
-import org.springframework.data.cql.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;

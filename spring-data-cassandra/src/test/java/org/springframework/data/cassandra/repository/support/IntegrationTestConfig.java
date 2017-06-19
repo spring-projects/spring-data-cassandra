@@ -15,19 +15,19 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.springframework.data.cql.core.keyspace.CreateKeyspaceSpecification.*;
+import static org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification.*;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.cassandra.config.AbstractReactiveCassandraConfiguration;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.config.java.AbstractReactiveCassandraConfiguration;
-import org.springframework.data.cql.core.keyspace.CreateKeyspaceSpecification;
-import org.springframework.data.cql.core.keyspace.DropKeyspaceSpecification;
-import org.springframework.data.cql.support.CassandraConnectionProperties;
-import org.springframework.data.cql.support.IntegrationTestNettyOptions;
-import org.springframework.data.cql.support.RandomKeySpaceName;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
+import org.springframework.data.cassandra.support.CassandraConnectionProperties;
+import org.springframework.data.cassandra.support.IntegrationTestNettyOptions;
+import org.springframework.data.cassandra.support.RandomKeySpaceName;
 
 import com.datastax.driver.core.NettyOptions;
 import com.datastax.driver.core.QueryOptions;

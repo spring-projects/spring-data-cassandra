@@ -21,8 +21,8 @@ import static org.assertj.core.api.Fail.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cql.core.Ordering;
-import org.springframework.data.cql.core.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.Ordering;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.mapping.MappingException;
 
 /**

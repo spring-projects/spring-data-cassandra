@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cass="http://www.springframework.org/schema/data/cassandra"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		">
+
+	<import resource="classpath:/config/spring-data-cassandra-basic.xml" />
+
+	<cass:mapping
+			entity-base-packages="org.springframework.data.cassandra.repository.forcequote.config">
+		<cass:entity
+				class="org.springframework.data.cassandra.repository.forcequote.config.Implicit">
+			<cass:table force-quote="true" />
+		</cass:entity>
+		<cass:entity
+				class="org.springframework.data.cassandra.repository.forcequote.config.Explicit">
+			<!-- this value must match those in
+			org.springframework.data.cassandra.test.integration.forcequote.config.ForceQuotedRepositoryXmlConfigIntegrationTests
+			testExplicit() -->
+			<cass:table force-quote="true" name="Zz" />
+		</cass:entity>
+		<cass:entity
+				class="org.springframework.data.cassandra.repository.forcequote.config.ImplicitProperties">
+			<cass:property name="primaryKey" force-quote="true" />
+			<cass:property name="stringValue" force-quote="true" />
+		</cass:entity>
+		<cass:entity
+				class="org.springframework.data.cassandra.repository.forcequote.config.ExplicitProperties">
+			<!-- these values must match those in
+			org.springframework.data.cassandra.test.integration.forcequote.config.ForceQuotedRepositoryXmlConfigIntegrationTests
+			testExplicitPropertiesWithXmlValues() -->
+			<cass:property name="primaryKey" force-quote="true" column-name="XmlPrimaryKey"/>
+			<cass:property name="stringValue" force-quote="true" column-name="XmlStringValue"/>
+		</cass:entity>
+	</cass:mapping>
+
+	<cass:cluster port="${build.cassandra.native_transport_port}" netty-options-ref="nettyOptions">
+		<cass:keyspace name="ForceQuoteRepositoryXmlConfigIntegrationTests"
+			action="CREATE_DROP" durable-writes="true">
+		</cass:keyspace>
+	</cass:cluster>
+
+	<cass:session keyspace-name="ForceQuoteRepositoryXmlConfigIntegrationTests"
+		schema-action="RECREATE_DROP_UNUSED">
+	</cass:session>
+
+	<cass:repositories
+			base-package="org.springframework.data.cassandra.repository.forcequote.config"/>
+</beans>

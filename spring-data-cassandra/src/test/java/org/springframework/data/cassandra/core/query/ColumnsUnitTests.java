@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.query;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
-import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
 /**
  * Unit tests for {@link Columns}.

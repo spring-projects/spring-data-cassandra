@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.query;
 
 import java.util.Optional;
 
-import org.springframework.data.cql.core.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
 /**
@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  * Implementing classes must provide either {@link #getColumnName()} or {@link #getCqlIdentifier()}.
  *
  * @author Mark Paluch
- * @see org.springframework.data.cql.core.cql.CqlIdentifier
+ * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
  * @since 2.0
  */
 public abstract class ColumnName {

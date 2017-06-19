@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cql.core.CqlIdentifier.*;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
 import java.util.List;
 import java.util.Map;
@@ -28,10 +28,10 @@ import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.Ordering;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.util.SpelUtils;
-import org.springframework.data.cql.core.CqlIdentifier;
-import org.springframework.data.cql.core.Ordering;
-import org.springframework.data.cql.core.PrimaryKeyType;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
@@ -370,7 +370,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#setColumnName(org.springframework.data.cql.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#setColumnName(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void setColumnName(CqlIdentifier columnName) {
