@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.repository.config;
 
 import static org.assertj.core.api.Assertions.*;
@@ -22,6 +21,8 @@ import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
@@ -44,8 +45,9 @@ public class CassandraRepositoryConfigurationExtensionUnitTests {
 	StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(Config.class, true);
 	ResourceLoader loader = new PathMatchingResourcePatternResolver();
 	Environment environment = new StandardEnvironment();
+	BeanDefinitionRegistry registry = new DefaultListableBeanFactory();
 	RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
-			EnableCassandraRepositories.class, loader, environment);
+			EnableCassandraRepositories.class, loader, environment, registry);
 
 	CassandraRepositoryConfigurationExtension extension;
 
