@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -40,11 +41,10 @@ import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
 import org.springframework.data.cql.core.keyspace.CreateUserTypeSpecification;
-import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Optionals;
@@ -258,8 +258,8 @@ public class CassandraMappingContext
 
 			entities.add(entity);
 
-			if (!entity.isUserDefinedType()) {
-				entity.findAnnotation(Table.class).ifPresent(table -> tableEntities.add(entity));
+			if (!entity.isUserDefinedType() && entity.isAnnotationPresent(Table.class)) {
+				tableEntities.add(entity);
 			}
 		});
 
@@ -347,10 +347,8 @@ public class CassandraMappingContext
 	private boolean hasReferencedUserType(CqlIdentifier identifier) {
 
 		return getPersistentEntities().stream() //
-				.flatMap(PersistentEntity::getPersistentProperties) //
-				.map(it -> it.findAnnotation(CassandraType.class)) //
-				.filter(Optional::isPresent) //
-				.flatMap(Optionals::toStream) //
+				.flatMap(entity -> StreamSupport.stream(entity.spliterator(), false)) //
+				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class)))) //
 				.map(CassandraType::userTypeName) //
 				.filter(StringUtils::hasText) //
 				.map(CqlIdentifier::cqlId) //
@@ -372,11 +370,15 @@ public class CassandraMappingContext
 
 		final CreateTableSpecification specification = createTable().name(entity.getTableName());
 
-		entity.getPersistentProperties().filter(CassandraPersistentProperty::isCompositePrimaryKey).forEach(property -> {
+		for (CassandraPersistentProperty property : entity) {
+
+			if (!property.isCompositePrimaryKey()) {
+				continue;
+			}
 
 			CassandraPersistentEntity<?> primaryKeyEntity = getRequiredPersistentEntity(property.getRawType());
 
-			primaryKeyEntity.getPersistentProperties().forEach(primaryKeyProperty -> {
+			for (CassandraPersistentProperty primaryKeyProperty : primaryKeyEntity) {
 
 				if (primaryKeyProperty.isPartitionKeyColumn()) {
 					specification.partitionKeyColumn(primaryKeyProperty.getColumnName(), getDataType(primaryKeyProperty));
@@ -384,12 +386,15 @@ public class CassandraMappingContext
 					specification.clusteredKeyColumn(primaryKeyProperty.getColumnName(), getDataType(primaryKeyProperty),
 							primaryKeyProperty.getPrimaryKeyOrdering());
 				}
+			}
+		}
 
-			});
+		for (CassandraPersistentProperty property : entity) {
 
-		});
+			if (property.isCompositePrimaryKey()) {
+				continue;
+			}
 
-		entity.getPersistentProperties().filter((property) -> !property.isCompositePrimaryKey()).forEach(property -> {
 			if (property.isIdProperty() || property.isPartitionKeyColumn()) {
 				specification.partitionKeyColumn(property.getColumnName(),
 						UserTypeUtil.potentiallyFreeze(getDataType(property)));
@@ -399,7 +404,7 @@ public class CassandraMappingContext
 			} else {
 				specification.column(property.getColumnName(), UserTypeUtil.potentiallyFreeze(getDataType(property)));
 			}
-		});
+		}
 
 		if (specification.getPartitionKeyColumns().isEmpty()) {
 			throw new MappingException(String.format("No partition key columns found in entity [%s]", entity.getType()));
@@ -451,18 +456,18 @@ public class CassandraMappingContext
 	private DataType getDataTypeWithUserTypeFactory(CassandraPersistentProperty property,
 			DataTypeProvider dataTypeProvider) {
 
-		if (property.findAnnotation(CassandraType.class).isPresent()) {
+		if (property.isAnnotationPresent(CassandraType.class)) {
 			return property.getDataType();
 		}
 
-		Optional<BasicCassandraPersistentEntity<?>> persistentEntity = getPersistentEntity(property.getActualType());
+		BasicCassandraPersistentEntity<?> persistentEntity = getPersistentEntity(property.getActualType());
 
-		if (persistentEntity.filter(CassandraPersistentEntity::isUserDefinedType).isPresent()) {
+		if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
 
-			Optional<DataType> dataType = persistentEntity.map(it -> getUserDataType(property, dataTypeProvider, it));
+			DataType dataType = getUserDataType(property, dataTypeProvider, persistentEntity);
 
-			if (dataType.isPresent()) {
-				return dataType.get();
+			if (dataType != null) {
+				return dataType;
 			}
 		}
 
@@ -488,8 +493,8 @@ public class CassandraMappingContext
 
 							if (property.isMapLike()) {
 
-								Class<?> keyType = property.getComponentType().get();
-								Class<?> valueType = property.getMapValueType().get();
+								Class<?> keyType = property.getComponentType();
+								Class<?> valueType = property.getMapValueType();
 								return DataType.map(getDataType(keyType, dataTypeProvider), getDataType(valueType, dataTypeProvider));
 							}
 
@@ -500,10 +505,9 @@ public class CassandraMappingContext
 
 	private DataType getDataType(Class<?> type, DataTypeProvider dataTypeProvider) {
 
-		return getPersistentEntity(type) //
-				.filter(CassandraPersistentEntity::isUserDefinedType) //
-				.map(dataTypeProvider::getDataType) //
-				.orElseGet(() -> getDataType(type));
+		BasicCassandraPersistentEntity<?> entity = getPersistentEntity(type);
+
+		return entity != null && entity.isUserDefinedType() ? dataTypeProvider.getDataType(entity) : getDataType(type);
 	}
 
 	private DataType getUserDataType(CassandraPersistentProperty property, DataTypeProvider dataTypeProvider,

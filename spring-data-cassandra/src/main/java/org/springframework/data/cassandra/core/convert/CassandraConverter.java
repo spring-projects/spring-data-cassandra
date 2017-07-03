@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import java.util.Optional;
-
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -67,21 +65,21 @@ public interface CassandraConverter
 	/**
 	 * Converts the given object into a value Cassandra will be able to store natively in a column.
 	 *
-	 * @param obj {@link Object} to convert; must not be {@literal null}.
+	 * @param value {@link Object} to convert; must not be {@literal null}.
 	 * @return the result of the conversion.
 	 * @since 2.0
 	 */
-	<T> Optional<Object> convertToColumnType(Optional<T> obj);
+	Object convertToColumnType(Object value);
 
 	/**
 	 * Converts the given object into a value Cassandra will be able to store natively in a column.
 	 *
-	 * @param obj {@link Object} to convert; must not be {@literal null}.
+	 * @param value {@link Object} to convert; must not be {@literal null}.
 	 * @param typeInformation {@link TypeInformation} used to describe the object type; may be {@literal null}.
 	 * @return the result of the conversion.
 	 * @since 1.5
 	 */
-	<T> Optional<Object> convertToColumnType(Optional<T> obj, TypeInformation<?> typeInformation);
+	Object convertToColumnType(Object value, TypeInformation<?> typeInformation);
 
 	/**
 	 * Converts and writes a {@code source} object into a {@code sink} using the given {@link CassandraPersistentEntity}.

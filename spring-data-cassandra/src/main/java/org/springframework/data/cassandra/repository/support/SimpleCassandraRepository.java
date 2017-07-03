@@ -219,8 +219,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entity, "The given entity must not be null");
 
-		deleteById(entityInformation.getId(entity)
-				.orElseThrow(() -> new IllegalArgumentException(String.format("Cannot obtain Id from [%s]", entity))));
+		deleteById(entityInformation.getRequiredId(entity));
 	}
 
 	/* (non-Javadoc)

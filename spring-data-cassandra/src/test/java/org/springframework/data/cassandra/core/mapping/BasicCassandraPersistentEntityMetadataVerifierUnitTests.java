@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cql.core.Ordering;
 import org.springframework.data.cql.core.PrimaryKeyType;
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 
 /**
  * Unit tests for {@link org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntityMetadataVerifier}

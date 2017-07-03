@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 
 /**
  * {@link CassandraPersistentEntityMetadataVerifier} for {@link PrimaryKeyClass} entities. Ensures a valid mapping for
@@ -52,7 +52,7 @@ public class PrimaryKeyClassEntityMetadataVerifier implements CassandraPersisten
 		Class<?> entityType = entity.getType();
 
 		// Ensure entity is not both a @Table(@Persistent) and a @PrimaryKey
-		if (entity.findAnnotation(Table.class).isPresent()) {
+		if (entity.isAnnotationPresent(Table.class)) {
 			exceptions.add(new MappingException(String.format("Entity cannot be of type @%s and @%s",
 					Table.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName())));
 		}
@@ -63,7 +63,7 @@ public class PrimaryKeyClassEntityMetadataVerifier implements CassandraPersisten
 					new MappingException(String.format("@%s must only extend Object", PrimaryKeyClass.class.getSimpleName())));
 		}
 
-		entity.getPersistentProperties().forEach(property -> {
+		entity.forEach(property -> {
 			if (property.isCompositePrimaryKey()) {
 				compositePrimaryKeys.add(property);
 			} else if (property.isIdProperty()) {

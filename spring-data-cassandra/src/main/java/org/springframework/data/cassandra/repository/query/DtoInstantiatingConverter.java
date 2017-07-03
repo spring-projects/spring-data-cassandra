@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.Optional;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -43,7 +41,7 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 
 	private final MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> context;
 
-	private final Optional<EntityInstantiator> instantiator;
+	private final EntityInstantiator instantiator;
 
 	/**
 	 * Create a new {@link Converter} to instantiate DTOs.
@@ -62,8 +60,7 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 
 		this.targetType = dtoType;
 		this.context = context;
-
-		this.instantiator = context.getPersistentEntity(dtoType).map(instantiator::getInstantiatorFor);
+		this.instantiator = instantiator.getInstantiatorFor(context.getRequiredPersistentEntity(dtoType));
 	}
 
 	/*
@@ -81,29 +78,28 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 		PersistentPropertyAccessor sourceAccessor = sourceEntity.getPropertyAccessor(source);
 		PersistentEntity<?, ?> targetEntity = context.getRequiredPersistentEntity(targetType);
 
-		EntityInstantiator instantiator = this.instantiator.orElseThrow(
-				() -> new IllegalStateException(String.format("No EntityInstantiator for [%s] available", targetType)));
-
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		Object dto = instantiator.createInstance(targetEntity, new ParameterValueProvider() {
 
 			@Override
-			public Optional<Object> getParameterValue(Parameter parameter) {
+			public Object getParameterValue(Parameter parameter) {
 
 				// TODO: Fix generics
-				return parameter.getName()
-						.flatMap(name -> sourceAccessor.getProperty(sourceEntity.getRequiredPersistentProperty((String) name)));
+				if (parameter != null) {
+					return sourceAccessor.getProperty(sourceEntity.getRequiredPersistentProperty(parameter.getName()));
+				}
+
+				return null;
 			}
 		});
 
 		final PersistentPropertyAccessor targetAccessor = targetEntity.getPropertyAccessor(dto);
 
-		Optional<? extends PreferredConstructor<?, ? extends PersistentProperty<?>>> optionalConstructor = targetEntity
-				.getPersistenceConstructor();
+		PreferredConstructor<?, ? extends PersistentProperty<?>> constructor = targetEntity.getPersistenceConstructor();
 
 		targetEntity.doWithProperties((SimplePropertyHandler) property -> {
 
-			if (!optionalConstructor.filter(c -> c.isConstructorParameter(property)).isPresent()) {
+			if (!constructor.isConstructorParameter(property)) {
 				return;
 			}
 

@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator;
@@ -57,7 +55,7 @@ public class ConvertingParameterAccessorUnitTests {
 	@Before
 	public void setUp() {
 
-		this.converter = new MappingCassandraConverter(new CassandraMappingContext());
+		this.converter = new MappingCassandraConverter();
 		this.converter.afterPropertiesSet();
 		this.convertingParameterAccessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
 	}
@@ -135,9 +133,9 @@ public class ConvertingParameterAccessorUnitTests {
 	public void shouldProvideTypeBasedOnPropertyType() {
 
 		when(mockProperty.getDataType()).thenReturn(DataType.varchar());
-		when(mockProperty.findAnnotation(CassandraType.class)).thenReturn(Optional.of(mock(CassandraType.class)));
+		when(mockProperty.isAnnotationPresent(CassandraType.class)).thenReturn(true);
 		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) String.class);
 
-		assertThat(convertingParameterAccessor.getDataType(0, Optional.of(mockProperty))).isEqualTo(DataType.varchar());
+		assertThat(convertingParameterAccessor.getDataType(0, mockProperty)).isEqualTo(DataType.varchar());
 	}
 }

@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.springframework.data.cql.core.CqlIdentifier.*;
 
-import java.util.Comparator;
 import java.util.Optional;
 
 import org.springframework.beans.BeansException;
@@ -30,8 +29,8 @@ import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.support.exception.UnsupportedCassandraOperationException;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
@@ -51,9 +50,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		implements CassandraPersistentEntity<T>, ApplicationContextAware {
 
 	private static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
-
-	private static final Optional<Comparator<CassandraPersistentProperty>> PROPERTY_COMPARATOR = Optional
-			.of(CassandraPersistentPropertyComparator.INSTANCE);
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
@@ -84,18 +80,20 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	public BasicCassandraPersistentEntity(TypeInformation<T> typeInformation,
 			CassandraPersistentEntityMetadataVerifier verifier) {
 
-		super(typeInformation, PROPERTY_COMPARATOR);
+		super(typeInformation, CassandraPersistentPropertyComparator.INSTANCE);
 
 		setVerifier(verifier);
 	}
 
 	protected CqlIdentifier determineTableName() {
 
-		Optional<Table> tableAnnotation = findAnnotation(Table.class);
+		Table annotation = findAnnotation(Table.class);
 
-		return tableAnnotation //
-				.map(annotation -> determineName(annotation.value(), annotation.forceQuote())) //
-				.orElseGet(this::determineDefaultName);
+		if (annotation != null) {
+			return determineName(annotation.value(), annotation.forceQuote());
+		}
+
+		return determineDefaultName();
 	}
 
 	CqlIdentifier determineDefaultName() {
@@ -132,7 +130,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return findAnnotation(PrimaryKeyClass.class).isPresent();
+		return isAnnotationPresent(PrimaryKeyClass.class);
 	}
 
 	/* (non-Javadoc)

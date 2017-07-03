@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 
 /**
  * Default implementation for Cassandra Persistent Entity Verification. Ensures that annotated
@@ -42,7 +42,7 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 
-		if (entity.getType().isInterface() || !entity.findAnnotation(Table.class).isPresent()) {
+		if (entity.getType().isInterface() || !entity.isAnnotationPresent(Table.class)) {
 			return;
 		}
 
@@ -59,7 +59,7 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 		}
 
 		// Parse entity properties
-		entity.getPersistentProperties().forEach(property -> {
+		entity.forEach(property -> {
 			if (property.isIdProperty()) {
 				idProperties.add(property);
 			} else if (property.isClusterKeyColumn()) {

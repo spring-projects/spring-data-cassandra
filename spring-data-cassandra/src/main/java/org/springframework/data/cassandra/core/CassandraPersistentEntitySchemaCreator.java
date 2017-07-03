@@ -25,14 +25,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.generator.CreateTableCqlGenerator;
 import org.springframework.data.cql.core.generator.CreateUserTypeCqlGenerator;
 import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
 import org.springframework.data.cql.core.keyspace.CreateUserTypeSpecification;
-import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 
 /**
@@ -136,7 +137,6 @@ public class CassandraPersistentEntitySchemaCreator {
 					.filter(created::add).map(identifier -> mappingContext
 							.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
 					.collect(Collectors.toList()));
-
 		});
 
 		return specifications;
@@ -144,14 +144,17 @@ public class CassandraPersistentEntitySchemaCreator {
 
 	private void visitUserTypes(CassandraPersistentEntity<?> entity, final Set<CqlIdentifier> seen) {
 
-		entity.getPersistentProperties() //
-				.map(mappingContext::getPersistentEntity) //
-				.flatMap(Optionals::toStream) //
-				.filter(CassandraPersistentEntity::isUserDefinedType).forEach(persistentEntity -> {
-					if (seen.add(persistentEntity.getTableName())) {
-						visitUserTypes(persistentEntity, seen);
-					}
-				});
+		for (CassandraPersistentProperty property : entity) {
 
+			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(property);
+
+			if (persistentEntity == null) {
+				continue;
+			}
+
+			if (persistentEntity.isUserDefinedType() && seen.add(persistentEntity.getTableName())) {
+				visitUserTypes(persistentEntity, seen);
+			}
+		}
 	}
 }

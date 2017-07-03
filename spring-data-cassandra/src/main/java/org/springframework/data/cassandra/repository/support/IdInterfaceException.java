@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import java.lang.reflect.Method;
 
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 
 /**
  * Exception thrown on incorrect mapping of an Id interface.

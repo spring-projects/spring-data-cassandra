@@ -404,8 +404,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(entityClass);
 
-		CassandraPersistentProperty idProperty = entity.getIdProperty().orElseThrow(() -> new IllegalArgumentException(
-				String.format("Entity class [%s] has no primary key", entityClass.getName())));
+		CassandraPersistentProperty idProperty = entity.getRequiredIdProperty();
 
 		if (idProperty.isCompositePrimaryKey()) {
 

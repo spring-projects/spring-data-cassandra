@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.mapping;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.util.Assert;
 
 /**

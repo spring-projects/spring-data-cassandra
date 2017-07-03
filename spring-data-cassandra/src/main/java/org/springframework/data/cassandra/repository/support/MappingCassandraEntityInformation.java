@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import java.util.Optional;
-
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -59,15 +57,16 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public Optional<ID> getId(T entity) {
+	public ID getId(T entity) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Optional<CassandraPersistentProperty> idProperty = entityMetadata.getIdProperty();
+		CassandraPersistentProperty idProperty = entityMetadata.getIdProperty();
 
-		// FIXME: Cast
-		return idProperty.map(p -> entityMetadata.getIdentifierAccessor(entity).getIdentifier())
-				.orElseGet(() -> Optional.ofNullable(converter.getId(entity, entityMetadata))).map(o -> (ID) o);
+		if (idProperty != null) {
+			return (ID) entityMetadata.getIdentifierAccessor(entity).getIdentifier();
+		}
+		return (ID) converter.getId(entity, entityMetadata);
 	}
 
 	/* (non-Javadoc)
@@ -76,7 +75,12 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 	@SuppressWarnings("unchecked")
 	@Override
 	public Class<ID> getIdType() {
-		return entityMetadata.getIdProperty().map(p -> (Class<ID>) p.getType()).orElse((Class<ID>) MapId.class);
+
+		if (entityMetadata.getIdProperty() != null) {
+			return (Class<ID>) entityMetadata.getIdProperty().getType();
+		}
+
+		return (Class<ID>) MapId.class;
 	}
 
 	/* (non-Javadoc)

@@ -120,7 +120,7 @@ public class UpdateMapper extends QueryMapper {
 
 		Object rawValue = updateOp.getValue();
 
-		Optional<Object> value = Optional.ofNullable(rawValue);
+		Object value = rawValue;
 
 		if (updateOp instanceof SetAtKeyOp) {
 
@@ -130,18 +130,15 @@ public class UpdateMapper extends QueryMapper {
 					.map(PersistentProperty::getTypeInformation);
 
 			Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getActualType);
-			Optional<TypeInformation<?>> valueType = typeInformation.flatMap(TypeInformation::getMapValueType);
+			Optional<TypeInformation<?>> valueType = typeInformation.map(TypeInformation::getMapValueType);
 
-			Optional<Object> key = Optional.ofNullable(op.getKey());
-			Optional<Object> val = Optional.ofNullable(op.getValue());
+			Object mappedKey = keyType.map(typeInfo -> getConverter().convertToColumnType(op.getKey(), typeInfo))
+					.orElseGet(() -> getConverter().convertToColumnType(op.getKey()));
 
-			Optional<Object> mappedKey = keyType.map(typeInfo -> getConverter().convertToColumnType(key, typeInfo))
-					.orElseGet(() -> getConverter().convertToColumnType(key));
+			Object mappedValue = valueType.map(typeInfo -> getConverter().convertToColumnType(op.getValue(), typeInfo))
+					.orElseGet(() -> getConverter().convertToColumnType(op.getValue()));
 
-			Optional<Object> mappedValue = valueType.map(typeInfo -> getConverter().convertToColumnType(val, typeInfo))
-					.orElseGet(() -> getConverter().convertToColumnType(val));
-
-			return new SetAtKeyOp(field.getMappedKey(), mappedKey.orElse(null), mappedValue.orElse(null));
+			return new SetAtKeyOp(field.getMappedKey(), mappedKey, mappedValue);
 		}
 
 		TypeInformation<?> typeInformation = getTypeInformation(field, value);
@@ -150,10 +147,9 @@ public class UpdateMapper extends QueryMapper {
 
 			SetAtIndexOp op = (SetAtIndexOp) updateOp;
 
-			Optional<Object> mappedValue = getConverter().convertToColumnType(Optional.ofNullable(op.getValue()),
-					typeInformation);
+			Object mappedValue = getConverter().convertToColumnType(op.getValue(), typeInformation);
 
-			return new SetAtIndexOp(field.getMappedKey(), op.getIndex(), mappedValue.orElse(null));
+			return new SetAtIndexOp(field.getMappedKey(), op.getIndex(), mappedValue);
 		}
 
 		if (rawValue instanceof Collection && typeInformation.isCollectionLike()) {
@@ -173,27 +169,26 @@ public class UpdateMapper extends QueryMapper {
 			}
 		}
 
-		Optional<Object> mappedValue = getConverter().convertToColumnType(value, typeInformation);
+		Object mappedValue = getConverter().convertToColumnType(value, typeInformation);
 
-		return new SetOp(field.getMappedKey(), mappedValue.orElse(null));
+		return new SetOp(field.getMappedKey(), mappedValue);
 	}
 
 	private AssignmentOp getMappedUpdateOperation(Field field, RemoveOp updateOp) {
 
-		Optional<Object> value = Optional.ofNullable(updateOp.getValue());
+		Object value = updateOp.getValue();
 		TypeInformation<?> typeInformation = getTypeInformation(field, value);
-		Optional<Object> mappedValue = getConverter().convertToColumnType(value, typeInformation);
+		Object mappedValue = getConverter().convertToColumnType(value, typeInformation);
 
-		return new RemoveOp(field.getMappedKey(), mappedValue.orElse(null));
+		return new RemoveOp(field.getMappedKey(), mappedValue);
 	}
 
 	@SuppressWarnings("unchecked")
 	private AssignmentOp getMappedUpdateOperation(Field field, AddToOp updateOp) {
 
-		Optional<Iterable<Object>> value = Optional.ofNullable(updateOp.getValue());
+		Iterable<Object> value = updateOp.getValue();
 		TypeInformation<?> typeInformation = getTypeInformation(field, value);
-		Collection<Object> mappedValue = (Collection) getConverter().convertToColumnType(value, typeInformation)
-				.orElse(null);
+		Collection<Object> mappedValue = (Collection) getConverter().convertToColumnType(value, typeInformation);
 
 		if (field.getProperty().isPresent()) {
 
@@ -221,22 +216,19 @@ public class UpdateMapper extends QueryMapper {
 				.map(PersistentProperty::getTypeInformation);
 
 		Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getActualType);
-		Optional<TypeInformation<?>> valueType = typeInformation.flatMap(TypeInformation::getMapValueType);
+		Optional<TypeInformation<?>> valueType = typeInformation.map(TypeInformation::getMapValueType);
 
 		Map<Object, Object> result = new LinkedHashMap<>(updateOp.getValue().size(), 1);
 
-		updateOp.getValue().forEach((k, v) -> {
+		updateOp.getValue().forEach((key, value) -> {
 
-			Optional<Object> key = Optional.ofNullable(k);
-			Optional<Object> value = Optional.ofNullable(v);
-
-			Optional<Object> mappedKey = keyType.map(typeInfo -> getConverter().convertToColumnType(key, typeInfo))
+			Object mappedKey = keyType.map(typeInfo -> getConverter().convertToColumnType(key, typeInfo))
 					.orElseGet(() -> getConverter().convertToColumnType(key));
 
-			Optional<Object> mappedValue = valueType.map(typeInfo -> getConverter().convertToColumnType(value, typeInfo))
+			Object mappedValue = valueType.map(typeInfo -> getConverter().convertToColumnType(value, typeInfo))
 					.orElseGet(() -> getConverter().convertToColumnType(value));
 
-			result.put(mappedKey.orElse(null), mappedValue.orElse(null));
+			result.put(mappedKey, mappedValue);
 		});
 
 		return new AddToMapOp(field.getMappedKey(), result);

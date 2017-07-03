@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import java.util.Optional;
-
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cql.core.CqlIdentifier;
@@ -46,7 +44,7 @@ public interface CassandraPersistentProperty
 	 * The ordering (ascending or descending) for the column. Valid only for primary key columns; returns null for
 	 * non-primary key columns.
 	 */
-	Optional<Ordering> getPrimaryKeyOrdering();
+	Ordering getPrimaryKeyOrdering();
 
 	/**
 	 * The column's data type. Not valid for a composite primary key.

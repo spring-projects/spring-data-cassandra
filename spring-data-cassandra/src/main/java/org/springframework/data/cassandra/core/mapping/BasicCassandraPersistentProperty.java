@@ -33,8 +33,8 @@ import org.springframework.data.cql.core.CqlIdentifier;
 import org.springframework.data.cql.core.Ordering;
 import org.springframework.data.cql.core.PrimaryKeyType;
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
@@ -140,8 +140,15 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#getPrimaryKeyOrdering()
 	 */
 	@Override
-	public Optional<Ordering> getPrimaryKeyOrdering() {
-		return findAnnotation(PrimaryKeyColumn.class).map(PrimaryKeyColumn::ordering);
+	public Ordering getPrimaryKeyOrdering() {
+
+		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
+
+		if (annotation != null) {
+			return annotation.ordering();
+		}
+
+		return null;
 	}
 
 	/* (non-Javadoc)
@@ -163,10 +170,10 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	private DataType findDataType() {
 
-		Optional<CassandraType> cassandraType = findAnnotation(CassandraType.class);
+		CassandraType cassandraType = findAnnotation(CassandraType.class);
 
-		if (cassandraType.isPresent()) {
-			return getDataTypeFor(cassandraType.get());
+		if (cassandraType != null) {
+			return getDataTypeFor(cassandraType);
 		}
 
 		if (isMap()) {
@@ -298,8 +305,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public boolean isPartitionKeyColumn() {
 
-		return findAnnotation(PrimaryKeyColumn.class)
-				.filter(primaryKeyColumn -> PrimaryKeyType.PARTITIONED.equals(primaryKeyColumn.type())).isPresent();
+		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
+		return annotation != null && PrimaryKeyType.PARTITIONED.equals(annotation.type());
 	}
 
 	/* (non-Javadoc)
@@ -308,8 +315,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public boolean isClusterKeyColumn() {
 
-		return findAnnotation(PrimaryKeyColumn.class)
-				.filter(primaryKeyColumn -> PrimaryKeyType.CLUSTERED.equals(primaryKeyColumn.type())).isPresent();
+		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
+		return annotation != null && PrimaryKeyType.CLUSTERED.equals(annotation.type());
 	}
 
 	private CqlIdentifier determineColumnName() {
@@ -319,23 +326,33 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		String defaultName = getName(); // TODO: replace with naming strategy class
-		String overriddenName;
-		boolean forceQuote;
+		String overriddenName = null;
+		boolean forceQuote = false;
 
 		if (isIdProperty()) { // then the id is of a simple type (since it's not a composite primary key)
-			Optional<PrimaryKey> optionalPrimaryKey = findAnnotation(PrimaryKey.class);
-			overriddenName = optionalPrimaryKey.map(PrimaryKey::value).orElse("");
-			forceQuote = optionalPrimaryKey.map(PrimaryKey::forceQuote).orElse(false);
+			PrimaryKey primaryKey = findAnnotation(PrimaryKey.class);
+
+			if (primaryKey != null) {
+				overriddenName = primaryKey.value();
+				forceQuote = primaryKey.forceQuote();
+			}
 
 		} else if (isPrimaryKeyColumn()) { // then it's a simple type
-			Optional<PrimaryKeyColumn> optionalPrimaryKey = findAnnotation(PrimaryKeyColumn.class);
-			overriddenName = optionalPrimaryKey.map(PrimaryKeyColumn::value).orElse("");
-			forceQuote = optionalPrimaryKey.map(PrimaryKeyColumn::forceQuote).orElse(false);
+			PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
+
+			if (primaryKeyColumn != null) {
+				overriddenName = primaryKeyColumn.value();
+				forceQuote = primaryKeyColumn.forceQuote();
+			}
 
 		} else { // then it's a vanilla column with the assumption that it's mapped to a single column
-			Optional<Column> optionalColumn = findAnnotation(Column.class);
-			overriddenName = optionalColumn.map(Column::value).orElse("");
-			forceQuote = optionalColumn.map(Column::forceQuote).orElse(false);
+
+			Column column = findAnnotation(Column.class);
+
+			if (column != null) {
+				overriddenName = column.value();
+				forceQuote = column.forceQuote();
+			}
 		}
 
 		return createColumnName(defaultName, overriddenName, forceQuote);
@@ -386,8 +403,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 * @see org.springframework.data.mapping.model.AbstractPersistentProperty#getAssociation()
 	 */
 	@Override
-	public Optional<Association<CassandraPersistentProperty>> getAssociation() {
-		return Optional.empty();
+	public Association<CassandraPersistentProperty> getAssociation() {
+		return null;
 	}
 
 	/* (non-Javadoc)

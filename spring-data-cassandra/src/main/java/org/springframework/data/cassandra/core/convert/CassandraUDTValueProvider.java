@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import java.util.Optional;
-
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
@@ -64,17 +62,17 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> Optional<T> getPropertyValue(CassandraPersistentProperty property) {
+	public <T> T getPropertyValue(CassandraPersistentProperty property) {
 
-		Optional<String> spelExpression = property.getSpelExpression();
-		if (spelExpression.isPresent()) {
-			return spelExpression.flatMap(s -> Optional.ofNullable(evaluator.evaluate(s)));
+		String spelExpression = property.getSpelExpression();
+		if (spelExpression != null) {
+			return evaluator.evaluate(spelExpression);
 		}
 
 		String name = property.getColumnName().toCql();
 		DataType fieldType = udtValue.getType().getFieldType(name);
 
-		return Optional.ofNullable(udtValue.get(name, codecRegistry.codecFor(fieldType)));
+		return udtValue.get(name, codecRegistry.codecFor(fieldType));
 	}
 
 	/* (non-Javadoc)

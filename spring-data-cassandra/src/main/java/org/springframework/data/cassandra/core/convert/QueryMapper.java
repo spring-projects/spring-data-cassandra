@@ -129,11 +129,11 @@ public class QueryMapper {
 						"Cannot use composite primary key directly. Reference a property of the composite primary key");
 			});
 
-			Optional<Object> value = Optional.ofNullable(predicate.getValue());
+			Object value = predicate.getValue();
 			TypeInformation<?> typeInformation = getTypeInformation(field, value);
-			Optional<Object> mappedValue = getConverter().convertToColumnType(value, typeInformation);
+			Object mappedValue = getConverter().convertToColumnType(value, typeInformation);
 
-			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue.orElse(null));
+			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue);
 
 			result.add(Criteria.of(field.getMappedKey(), mappedPredicate));
 		}
@@ -339,11 +339,17 @@ public class QueryMapper {
 	}
 
 	@SuppressWarnings("unchecked")
-	TypeInformation<?> getTypeInformation(Field field, Optional<? extends Object> value) {
+	TypeInformation<?> getTypeInformation(Field field, Object value) {
 
-		return field.getProperty().map(CassandraPersistentProperty::getTypeInformation)
-				.orElseGet(() -> value.map(Object::getClass).map(ClassTypeInformation::from)
-						.orElse((ClassTypeInformation) ClassTypeInformation.OBJECT));
+		if (field.getProperty().isPresent()) {
+			return field.getProperty().get().getTypeInformation();
+		}
+
+		if (value != null) {
+			return ClassTypeInformation.from(value.getClass());
+		}
+
+		return ClassTypeInformation.OBJECT;
 	}
 
 	/**

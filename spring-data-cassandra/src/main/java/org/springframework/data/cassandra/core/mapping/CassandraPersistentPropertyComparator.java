@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import java.util.Comparator;
-import java.util.Optional;
 
 import org.springframework.data.cql.core.CqlIdentifier;
 
@@ -79,14 +78,14 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 
 		if (leftIsPrimaryKey && rightIsPrimaryKey) {
 
-			Optional<PrimaryKeyColumn> optionalLeftAnnotation = left.findAnnotation(PrimaryKeyColumn.class);
-			Optional<PrimaryKeyColumn> optionaRightAnnotation = right.findAnnotation(PrimaryKeyColumn.class);
+			PrimaryKeyColumn leftAnnotation = left.findAnnotation(PrimaryKeyColumn.class);
+			PrimaryKeyColumn rightAnnotation = right.findAnnotation(PrimaryKeyColumn.class);
 
-			return optionalLeftAnnotation.map(leftAnnotation -> {
-				return optionaRightAnnotation.map(rightAnnotation -> CassandraPrimaryKeyColumnAnnotationComparator.INSTANCE
-						.compare(leftAnnotation, rightAnnotation)).orElse(0);
+			if (leftAnnotation == null || rightAnnotation == null) {
+				return 0;
+			}
 
-			}).orElse(0);
+			return CassandraPrimaryKeyColumnAnnotationComparator.INSTANCE.compare(leftAnnotation, rightAnnotation);
 		}
 
 		boolean leftIsKey = leftIsCompositePrimaryKey || leftIsPrimaryKey;

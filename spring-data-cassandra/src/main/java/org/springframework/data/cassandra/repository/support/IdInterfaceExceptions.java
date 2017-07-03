@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.util.Assert;
 
 /**

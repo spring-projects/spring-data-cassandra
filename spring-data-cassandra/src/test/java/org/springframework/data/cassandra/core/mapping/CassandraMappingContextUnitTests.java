@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +36,7 @@ import org.springframework.data.cql.core.Ordering;
 import org.springframework.data.cql.core.PrimaryKeyType;
 import org.springframework.data.cql.core.keyspace.ColumnSpecification;
 import org.springframework.data.cql.core.keyspace.CreateTableSpecification;
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
 
 import com.datastax.driver.core.DataType;
@@ -88,9 +87,9 @@ public class CassandraMappingContextUnitTests {
 		CassandraPersistentEntity<?> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(PrimaryKeyOnProperty.class);
 
-		Optional<CassandraPersistentProperty> idProperty = persistentEntity.getIdProperty();
+		CassandraPersistentProperty idProperty = persistentEntity.getIdProperty();
 
-		assertThat(idProperty).hasValueSatisfying(actual -> {
+		assertThat(idProperty).satisfies(actual -> {
 
 			assertThat(actual.getColumnName().toCql()).isEqualTo("foo");
 		});
@@ -168,9 +167,7 @@ public class CassandraMappingContextUnitTests {
 				.getRequiredPersistentEntity(CompositePrimaryKeyClassWithProperties.class);
 
 		assertThat(persistentEntity.isCompositePrimaryKey()).isFalse();
-		assertThat(
-				persistentEntity.getPersistentProperty("key").map(CassandraPersistentProperty::isCompositePrimaryKey).get())
-						.isTrue();
+		assertThat(persistentEntity.getPersistentProperty("key").isCompositePrimaryKey()).isTrue();
 
 		assertThat(primaryKeyClass.isCompositePrimaryKey()).isTrue();
 

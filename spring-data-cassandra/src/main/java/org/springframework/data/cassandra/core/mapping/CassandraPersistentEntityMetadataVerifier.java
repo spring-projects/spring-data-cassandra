@@ -15,12 +15,13 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 
 /**
  * Interface for Cassandra Persistent Entity Mapping Verification.
  *
  * @author David Webb
+ * @author Mark Paluch
  */
 public interface CassandraPersistentEntityMetadataVerifier {
 

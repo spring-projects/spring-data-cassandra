@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.cassandra.repository.MapId;
-import org.springframework.data.mapping.model.MappingException;
+import org.springframework.data.mapping.MappingException;
 
 /**
  * @author Matthew T. Adams

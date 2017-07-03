@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import java.util.Optional;
-
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
@@ -59,14 +57,14 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> Optional<T> getPropertyValue(CassandraPersistentProperty property) {
+	public <T> T getPropertyValue(CassandraPersistentProperty property) {
 
-		Optional<String> spelExpression = property.getSpelExpression();
-		if (spelExpression.isPresent()) {
-			return spelExpression.flatMap(s -> Optional.ofNullable(evaluator.evaluate(s)));
+		String spelExpression = property.getSpelExpression();
+		if (spelExpression != null) {
+			return evaluator.evaluate(spelExpression);
 		}
 
-		return Optional.ofNullable((T) reader.get(property.getColumnName()));
+		return (T) reader.get(property.getColumnName());
 	}
 
 	/* (non-Javadoc)

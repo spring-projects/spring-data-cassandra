@@ -92,7 +92,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 				"column");
 
 		assertThat(persistentProperty.getDataType().getName()).isEqualTo(Name.COUNTER);
-		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isPresent();
+		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();
 	}
 
 	private CassandraPersistentProperty getPropertyFor(Class<?> type, String fieldName) {
