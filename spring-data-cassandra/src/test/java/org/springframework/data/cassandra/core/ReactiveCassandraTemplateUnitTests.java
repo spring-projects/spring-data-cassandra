@@ -166,6 +166,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	public void insertShouldInsertEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
 		User user = new User("heisenberg", "Walter", "White");
 		StepVerifier.create(template.insert(user)).expectNext(user).verifyComplete();
@@ -190,19 +191,10 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void insertShouldNotApplyInsert() {
-
-		when(reactiveResultSet.wasApplied()).thenReturn(false);
-
-		User user = new User("heisenberg", "Walter", "White");
-
-		StepVerifier.create(template.insert(user)).verifyComplete();
-	}
-
-	@Test // DATACASS-335
 	public void updateShouldUpdateEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -214,19 +206,10 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void updateShouldNotApplyUpdate() {
-
-		when(reactiveResultSet.wasApplied()).thenReturn(false);
-
-		User user = new User("heisenberg", "Walter", "White");
-
-		StepVerifier.create(template.update(user)).verifyComplete();
-	}
-
-	@Test // DATACASS-335
 	public void deleteShouldRemoveEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -234,16 +217,6 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM users WHERE id='heisenberg';");
-	}
-
-	@Test // DATACASS-335
-	public void deleteShouldNotApplyRemoval() {
-
-		when(reactiveResultSet.wasApplied()).thenReturn(false);
-
-		User user = new User("heisenberg", "Walter", "White");
-
-		StepVerifier.create(template.delete(user)).verifyComplete();
 	}
 
 	@Test // DATACASS-335

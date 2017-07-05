@@ -58,23 +58,20 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends Abstrac
 		// insert
 		SinglePkc inserted = new SinglePkc(uuid());
 		inserted.setValue(uuid());
-		SinglePkc saved = operations.insert(inserted);
-		assertThat(inserted).isSameAs(saved);
+		operations.insert(inserted);
 
 		// select
-		SinglePkcId id = id(SinglePkcId.class).key(saved.getKey());
+		SinglePkcId id = id(SinglePkcId.class).key(inserted.getKey());
 		SinglePkc selected = operations.selectOneById(id, SinglePkc.class);
-		assertThat(saved).isNotSameAs(selected);
-		assertThat(selected.getKey()).isEqualTo(saved.getKey());
-		assertThat(selected.getValue()).isEqualTo(saved.getValue());
+		assertThat(inserted).isNotSameAs(selected);
+		assertThat(selected.getKey()).isEqualTo(inserted.getKey());
+		assertThat(selected.getValue()).isEqualTo(inserted.getValue());
 
 		// update
 		selected.setValue(uuid());
-		SinglePkc updated = operations.update(selected);
-		assertThat(selected).isSameAs(updated);
+		operations.update(selected);
 
-		selected = operations.selectOneById(id, SinglePkc.class);
-		assertThat(updated).isNotSameAs(selected);
+		SinglePkc updated = operations.selectOneById(id, SinglePkc.class);
 		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
@@ -122,23 +119,20 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends Abstrac
 		// insert
 		MultiPkc inserted = new MultiPkc(uuid(), uuid());
 		inserted.setValue(uuid());
-		MultiPkc saved = operations.insert(inserted);
-		assertThat(inserted).isSameAs(saved);
+		operations.insert(inserted);
 
 		// select
-		MultiPkcId id = id(MultiPkcId.class).key0(saved.getKey0()).key1(saved.getKey1());
+		MultiPkcId id = id(MultiPkcId.class).key0(inserted.getKey0()).key1(inserted.getKey1());
 		MultiPkc selected = operations.selectOneById(id, MultiPkc.class);
-		assertThat(saved).isNotSameAs(selected);
-		assertThat(selected.getKey0()).isEqualTo(saved.getKey0());
-		assertThat(selected.getKey1()).isEqualTo(saved.getKey1());
-		assertThat(selected.getValue()).isEqualTo(saved.getValue());
+		assertThat(selected.getKey0()).isEqualTo(inserted.getKey0());
+		assertThat(selected.getKey1()).isEqualTo(inserted.getKey1());
+		assertThat(selected.getValue()).isEqualTo(inserted.getValue());
 
 		// update
 		selected.setValue(uuid());
-		MultiPkc updated = operations.update(selected);
-		assertThat(selected).isSameAs(updated);
+		operations.update(selected);
 
-		selected = operations.selectOneById(id, MultiPkc.class);
+		MultiPkc updated = operations.selectOneById(id, MultiPkc.class);
 		assertThat(updated).isNotSameAs(selected);
 		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 

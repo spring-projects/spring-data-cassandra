@@ -196,9 +196,8 @@ public class CassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		User inserted = template.insert(user);
+		template.insert(user);
 
-		assertThat(inserted).isEqualTo(user);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
@@ -213,9 +212,8 @@ public class CassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		User inserted = template.insert(user, insertOptions);
+		template.insert(user, insertOptions);
 
-		assertThat(inserted).isEqualTo(user);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White') IF NOT EXISTS;");
@@ -243,9 +241,9 @@ public class CassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		User inserted = template.insert(user);
+		WriteResult writeResult = template.insert(user, InsertOptions.builder().build());
 
-		assertThat(inserted).isNull();
+		assertThat(writeResult.wasApplied()).isFalse();
 	}
 
 	@Test // DATACASS-292
@@ -255,9 +253,8 @@ public class CassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		User updated = template.update(user);
+		template.update(user);
 
-		assertThat(updated).isEqualTo(user);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
@@ -272,9 +269,9 @@ public class CassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		User updated = template.update(user, updateOptions);
+		WriteResult writeResult = template.update(user, updateOptions);
 
-		assertThat(updated).isEqualTo(user);
+		assertThat(writeResult.wasApplied()).isTrue();
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg' IF EXISTS;");
@@ -293,18 +290,6 @@ public class CassandraTemplateUnitTests {
 		} catch (CassandraConnectionFailureException e) {
 			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
 		}
-	}
-
-	@Test // DATACASS-292
-	public void updateShouldNotApplyUpdate() {
-
-		when(resultSet.wasApplied()).thenReturn(false);
-
-		User user = new User("heisenberg", "Walter", "White");
-
-		User updated = template.update(user);
-
-		assertThat(updated).isNull();
 	}
 
 	@Test // DATACASS-292
@@ -328,9 +313,8 @@ public class CassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		User deleted = template.delete(user);
+		template.delete(user);
 
-		assertThat(deleted).isEqualTo(user);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM users WHERE id='heisenberg';");
 	}
@@ -348,18 +332,6 @@ public class CassandraTemplateUnitTests {
 		} catch (CassandraConnectionFailureException e) {
 			assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
 		}
-	}
-
-	@Test // DATACASS-292
-	public void deleteShouldNotApplyRemoval() {
-
-		when(resultSet.wasApplied()).thenReturn(false);
-
-		User user = new User("heisenberg", "Walter", "White");
-
-		User deleted = template.delete(user);
-
-		assertThat(deleted).isNull();
 	}
 
 	@Test // DATACASS-292
