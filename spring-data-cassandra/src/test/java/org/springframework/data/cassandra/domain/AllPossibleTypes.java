@@ -50,7 +50,7 @@ public class AllPossibleTypes {
 
 	private InetAddress inet;
 
-	@CassandraType(type = Name.UUID) private UUID uuid;
+	private UUID uuid;
 
 	@CassandraType(type = Name.INT) private Number justNumber;
 

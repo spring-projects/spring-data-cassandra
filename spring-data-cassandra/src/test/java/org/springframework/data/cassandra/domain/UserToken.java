@@ -19,13 +19,10 @@ import lombok.Data;
 
 import java.util.UUID;
 
-import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cql.core.PrimaryKeyType;
-
-import com.datastax.driver.core.DataType.Name;
 
 /**
  * @author Mark Paluch
@@ -34,10 +31,8 @@ import com.datastax.driver.core.DataType.Name;
 @Data
 public class UserToken {
 
-	@PrimaryKeyColumn(name = "user_id", type = PrimaryKeyType.PARTITIONED,
-			ordinal = 0) @CassandraType(type = Name.UUID) private UUID userId;
-	@PrimaryKeyColumn(name = "auth_token", type = PrimaryKeyType.CLUSTERED,
-			ordinal = 1) @CassandraType(type = Name.UUID) private UUID token;
+	@PrimaryKeyColumn(name = "user_id", type = PrimaryKeyType.PARTITIONED, ordinal = 0) private UUID userId;
+	@PrimaryKeyColumn(name = "auth_token", type = PrimaryKeyType.CLUSTERED, ordinal = 1) private UUID token;
 
 	@Column("user_comment") String userComment;
 	String adminComment;
