@@ -21,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.springframework.core.annotation.AliasFor;
@@ -95,6 +96,16 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();
 	}
 
+	@Test // DATACASS-375
+	public void uuidShouldMapToUUIDByDefault() {
+
+		CassandraPersistentProperty uuidProperty = getPropertyFor(TypeWithUUIDColumn.class, "uuid");
+		CassandraPersistentProperty timeUUIDProperty = getPropertyFor(TypeWithUUIDColumn.class, "timeUUID");
+
+		assertThat(uuidProperty.getDataType().getName()).isEqualTo(Name.UUID);
+		assertThat(timeUUIDProperty.getDataType().getName()).isEqualTo(Name.TIMEUUID);
+	}
+
 	private CassandraPersistentProperty getPropertyFor(Class<?> type, String fieldName) {
 
 		Field field = ReflectionUtils.findField(type, fieldName);
@@ -161,5 +172,12 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	static class TypeWithComposedCassandraTypeAnnotation {
 		@ComposedCassandraTypeAnnotation String column;
+	}
+
+	static class TypeWithUUIDColumn {
+
+		UUID uuid;
+
+		@CassandraType(type = Name.TIMEUUID) UUID timeUUID;
 	}
 }

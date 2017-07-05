@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -48,6 +49,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	private static final Map<DataType.Name, DataType> nameToDataType;
 
 	static {
+
 		CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 
 		Map<Class<?>, Class<?>> primitiveWrappers = new HashMap<>(8);
@@ -97,8 +99,8 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 	/**
 	 * @return the map between {@link Class} and {@link DataType}.
-	 * @param codecRegistry the Cassandra codec registry
-	 * @param primitiveWrappers map of primitive to wrapper type
+	 * @param codecRegistry the Cassandra codec registry.
+	 * @param primitiveWrappers map of primitive to wrapper type.
 	 */
 	private static Map<Class<?>, DataType> classToDataType(CodecRegistry codecRegistry,
 			Map<Class<?>, Class<?>> primitiveWrappers) {
@@ -122,13 +124,16 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		classToDataType.put(Long.class, DataType.bigint());
 		classToDataType.put(long.class, DataType.bigint());
 
+		// override UUID to timeuuid as regular uuid is the favored default
+		classToDataType.put(UUID.class, DataType.uuid());
+
 		return classToDataType;
 	}
 
 	/**
 	 * Returns a {@link Set} containing all Cassandra primitive types.
 	 *
-	 * @param codecRegistry the Cassandra codec registry
+	 * @param codecRegistry the Cassandra codec registry.
 	 * @return the set of Cassandra primitive types.
 	 */
 	private static Set<Class<?>> getCassandraPrimitiveTypes(CodecRegistry codecRegistry) {
