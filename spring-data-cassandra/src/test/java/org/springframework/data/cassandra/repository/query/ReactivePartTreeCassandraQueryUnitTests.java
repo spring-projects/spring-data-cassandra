@@ -87,6 +87,14 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';");
 	}
 
+	@Test // DATACASS-376
+	public void shouldAllowFiltering() {
+
+		String query = deriveQueryFromMethod("findPersonByFirstname", "foo");
+
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' ALLOW FILTERING;");
+	}
+
 	@Test // DATACASS-335
 	public void usesDynamicProjection() {
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
@@ -139,6 +147,9 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		Flux<Person> findByAge(Integer age);
 
 		Flux<Person> findPersonBy();
+
+		@Query(allowFiltering = true)
+		Flux<Person> findPersonByFirstname(String name);
 
 		Mono<PersonProjection> findPersonProjectedBy();
 
