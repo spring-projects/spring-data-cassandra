@@ -195,7 +195,6 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		return this.statementFactory;
 	}
 
-	/* (non-Javadoc) */
 	private CqlIdentifier getTableName(Object entity) {
 		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entity)).getTableName();
 	}
@@ -418,7 +417,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 */
 	@Override
 	public <T> ListenableFuture<T> insert(T entity) {
-		return insert(entity, null);
+		return new MappingListenableFutureAdapter<>(insert(entity, null), writeResult -> entity);
 	}
 
 	/*
@@ -426,14 +425,14 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public <T> ListenableFuture<T> insert(T entity, InsertOptions options) {
+	public ListenableFuture<WriteResult> insert(Object entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		Insert insert = QueryUtils.createInsertQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(insert)),
-				resultSet -> resultSet.wasApplied() ? entity : null);
+				WriteResult::of);
 	}
 
 	/*
@@ -442,7 +441,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 */
 	@Override
 	public <T> ListenableFuture<T> update(T entity) {
-		return update(entity, null);
+		return new MappingListenableFutureAdapter<>(update(entity, null), writeResult -> entity);
 	}
 
 	/*
@@ -450,14 +449,14 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public <T> ListenableFuture<T> update(T entity, UpdateOptions options) {
+	public ListenableFuture<WriteResult> update(Object entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(update)),
-				resultSet -> resultSet.wasApplied() ? entity : null);
+				WriteResult::of);
 	}
 
 	/*
@@ -466,7 +465,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 */
 	@Override
 	public <T> ListenableFuture<T> delete(T entity) {
-		return delete(entity, null);
+		return new MappingListenableFutureAdapter<>(delete(entity, null), writeResult -> entity);
 	}
 
 	/*
@@ -474,14 +473,14 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#delete(java.lang.Object, org.springframework.data.cql.core.QueryOptions)
 	 */
 	@Override
-	public <T> ListenableFuture<T> delete(T entity, QueryOptions options) {
+	public ListenableFuture<WriteResult> delete(Object entity, QueryOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(delete)),
-				resultSet -> resultSet.wasApplied() ? entity : null);
+				WriteResult::of);
 	}
 
 	/*
@@ -518,12 +517,12 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(truncate), aBoolean -> null);
 	}
 
-	private static class MappingListenableFutureAdapter<T, S>
+	static class MappingListenableFutureAdapter<T, S>
 			extends org.springframework.util.concurrent.ListenableFutureAdapter<T, S> {
 
 		private final Function<S, T> mapper;
 
-		public MappingListenableFutureAdapter(ListenableFuture<S> adaptee, Function<S, T> mapper) {
+		MappingListenableFutureAdapter(ListenableFuture<S> adaptee, Function<S, T> mapper) {
 			super(adaptee);
 			this.mapper = mapper;
 		}

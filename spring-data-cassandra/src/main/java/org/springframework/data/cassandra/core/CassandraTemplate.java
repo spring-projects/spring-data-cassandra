@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
+import lombok.NonNull;
+import lombok.Value;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -425,8 +428,8 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object)
 	 */
 	@Override
-	public <T> T insert(T entity) {
-		return insert(entity, null);
+	public void insert(Object entity) {
+		insert(entity, null);
 	}
 
 	/*
@@ -434,13 +437,13 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public <T> T insert(T entity, InsertOptions options) {
+	public WriteResult insert(Object entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		Insert insert = QueryUtils.createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
 
-		return getCqlOperations().execute(new StatementCallback<>(insert, entity));
+		return getCqlOperations().execute(new StatementCallback(insert));
 	}
 
 	/*
@@ -448,8 +451,8 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object)
 	 */
 	@Override
-	public <T> T update(T entity) {
-		return update(entity, null);
+	public void update(Object entity) {
+		update(entity, null);
 	}
 
 	/*
@@ -457,13 +460,13 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public <T> T update(T entity, UpdateOptions options) {
+	public WriteResult update(Object entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		Update update = QueryUtils.createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
 
-		return getCqlOperations().execute(new StatementCallback<>(update, entity));
+		return getCqlOperations().execute(new StatementCallback(update));
 	}
 
 	/*
@@ -471,8 +474,8 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object)
 	 */
 	@Override
-	public <T> T delete(T entity) {
-		return delete(entity, null);
+	public void delete(Object entity) {
+		delete(entity, null);
 	}
 
 	/*
@@ -480,13 +483,13 @@ public class CassandraTemplate implements CassandraOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, org.springframework.data.cql.core.QueryOptions)
 	 */
 	@Override
-	public <T> T delete(T entity, QueryOptions options) {
+	public WriteResult delete(Object entity, QueryOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
 
-		return getCqlOperations().execute(new StatementCallback<>(delete, entity));
+		return getCqlOperations().execute(new StatementCallback(delete));
 	}
 
 	/*
@@ -559,19 +562,14 @@ public class CassandraTemplate implements CassandraOperations {
 		return StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
 	}
 
-	private static class StatementCallback<T> implements SessionCallback<T>, CqlProvider {
+	@Value
+	static class StatementCallback implements SessionCallback<WriteResult>, CqlProvider {
 
-		private final Statement statement;
-		private final T entity;
-
-		StatementCallback(Statement statement, T entity) {
-			this.statement = statement;
-			this.entity = entity;
-		}
+		@NonNull Statement statement;
 
 		@Override
-		public T doInSession(Session session) throws DriverException, DataAccessException {
-			return session.execute(statement).wasApplied() ? entity : null;
+		public WriteResult doInSession(Session session) throws DriverException, DataAccessException {
+			return WriteResult.of(session.execute(statement));
 		}
 
 		@Override

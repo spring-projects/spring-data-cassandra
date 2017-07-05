@@ -83,9 +83,9 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		Mono<User> inserted = template.insert(user, lwtOptions);
+		Mono<WriteResult> inserted = template.insert(user, lwtOptions);
 
-		StepVerifier.create(inserted).expectNext(user).verifyComplete();
+		StepVerifier.create(inserted.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-250
@@ -95,11 +95,13 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.insert(user, lwtOptions)).expectNext(user).verifyComplete();
+		StepVerifier.create(template.insert(user, lwtOptions).map(WriteResult::wasApplied)).expectNext(true)
+				.verifyComplete();
 
 		user.setFirstname("Walter Hartwell");
 
-		StepVerifier.create(template.insert(user, lwtOptions)).verifyComplete();
+		StepVerifier.create(template.insert(user, lwtOptions).map(WriteResult::wasApplied)).expectNext(false)
+				.verifyComplete();
 
 		verifyUser(user.getId()).consumeNextWith(it -> assertThat(it.getFirstname()).isEqualTo("Walter")).verifyComplete();
 	}
@@ -135,7 +137,8 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.update(user, lwtOptions)).verifyComplete();
+		StepVerifier.create(template.update(user, lwtOptions).map(WriteResult::wasApplied)).expectNext(false)
+				.verifyComplete();
 
 		verifyUser(user.getId()).verifyComplete();
 	}

@@ -114,9 +114,9 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		ListenableFuture<User> inserted = template.insert(user, lwtOptions);
+		ListenableFuture<WriteResult> inserted = template.insert(user, lwtOptions);
 
-		assertThat(getUninterruptibly(inserted)).isEqualTo(user);
+		assertThat(getUninterruptibly(inserted).wasApplied()).isTrue();
 	}
 
 	@Test // DATACASS-250
@@ -130,9 +130,9 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		user.setFirstname("Walter Hartwell");
 
-		ListenableFuture<User> lwt = template.insert(user, lwtOptions);
+		ListenableFuture<WriteResult> lwt = template.insert(user, lwtOptions);
 
-		assertThat(getUninterruptibly(lwt)).isNull();
+		assertThat(getUninterruptibly(lwt).wasApplied()).isFalse();
 		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter");
 	}
 
@@ -168,9 +168,9 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		ListenableFuture<User> lwt = template.update(user, lwtOptions);
+		ListenableFuture<WriteResult> lwt = template.update(user, lwtOptions);
 
-		assertThat(getUninterruptibly(lwt)).isNull();
+		assertThat(getUninterruptibly(lwt).wasApplied()).isFalse();
 		assertThat(getUser(user.getId())).isNull();
 	}
 
@@ -184,9 +184,9 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		user.setFirstname("Walter Hartwell");
 
-		ListenableFuture<User> updated = template.update(user, lwtOptions);
+		ListenableFuture<WriteResult> updated = template.update(user, lwtOptions);
 
-		assertThat(getUninterruptibly(updated)).isNotNull();
+		assertThat(getUninterruptibly(updated).wasApplied()).isTrue();
 		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 

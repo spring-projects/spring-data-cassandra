@@ -85,7 +85,7 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		walter.setAge(100);
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
-		batchOperations.insert(Collections.singleton(walter), lwtOptions).insert(mike).execute();
+		WriteResult writeResult = batchOperations.insert(Collections.singleton(walter), lwtOptions).insert(mike).execute();
 
 		Group loadedWalter = template.selectOneById(walter.getId(), Group.class);
 		Group loadedMike = template.selectOneById(mike.getId(), Group.class);
@@ -94,6 +94,9 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(loadedWalter.getAge()).isEqualTo(42);
 
 		assertThat(loadedMike).isNotNull();
+		assertThat(writeResult.wasApplied()).isFalse();
+		assertThat(writeResult.getExecutionInfo()).isNotEmpty();
+		assertThat(writeResult.getRows()).isNotEmpty();
 	}
 
 	@Test // DATACASS-288
@@ -180,8 +183,11 @@ public class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCrea
 	@Test // DATACASS-288
 	public void shouldUpdatesCollectionOfEntities() {
 
-		FlatGroup walter = template.insert(new FlatGroup("users", "0x1", "walter"));
-		FlatGroup mike = template.insert(new FlatGroup("users", "0x1", "mike"));
+		FlatGroup walter = new FlatGroup("users", "0x1", "walter");
+		FlatGroup mike = new FlatGroup("users", "0x1", "mike");
+
+		template.insert(walter);
+		template.insert(mike);
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");

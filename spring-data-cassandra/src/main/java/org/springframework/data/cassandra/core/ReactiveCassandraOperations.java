@@ -183,11 +183,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the inserted entity or {@link Mono#empty()} if the {@code INSERT} operation was not applied.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> insert(T entity, InsertOptions options) throws DataAccessException;
-
+	Mono<WriteResult> insert(Object entity, InsertOptions options) throws DataAccessException;
 	/**
 	 * Update the given entity and emit the entity if the update was applied.
 	 *
@@ -202,11 +201,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the updated entity or {@link Mono#empty()} if the {@code UPDATE} operation was not applied.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> update(T entity, UpdateOptions options) throws DataAccessException;
-
+	Mono<WriteResult> update(Object entity, UpdateOptions options) throws DataAccessException;
 	/**
 	 * Remove the given object from the table by id.
 	 *
@@ -231,11 +229,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the deleted entity.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> delete(T entity, QueryOptions options) throws DataAccessException;
-
+	Mono<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
 	/**
 	 * Execute a {@code TRUNCATE} query to remove all entities of a given class.
 	 *

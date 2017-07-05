@@ -40,9 +40,10 @@ public interface CassandraBatchOperations {
 	/**
 	 * Execute the batch. The batch can be executed only once.
 	 *
+	 * @return the {@link WriteResult} for the bulk operation.
 	 * @throws IllegalStateException if the batch is executed after it was executed already.
 	 */
-	void execute();
+	WriteResult execute();
 
 	/**
 	 * Apply a given {@code timestamp} to the whole batch.
