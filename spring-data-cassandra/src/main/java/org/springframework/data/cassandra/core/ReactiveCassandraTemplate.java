@@ -407,27 +407,6 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher)
-	 */
-	@Override
-	public <T> Flux<T> insert(Publisher<? extends T> entities) {
-		return insert(entities, null);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher, org.springframework.data.cassandra.core.InsertOptions)
-	 */
-	@Override
-	public <T> Flux<T> insert(Publisher<? extends T> entities, InsertOptions options) {
-
-		Assert.notNull(entities, "Entity publisher must not be null");
-
-		return Flux.from(entities).flatMap(entity -> insert(entity, options));
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object)
 	 */
 	@Override
@@ -461,27 +440,6 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		}
 
 		return getReactiveCqlOperations().execute(new UpdateCallback()).next();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher)
-	 */
-	@Override
-	public <T> Flux<T> update(Publisher<? extends T> entities) {
-		return update(entities, null);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher, org.springframework.data.cassandra.core.UpdateOptions)
-	 */
-	@Override
-	public <T> Flux<T> update(Publisher<? extends T> entities, UpdateOptions options) {
-
-		Assert.notNull(entities, "Entity publisher must not be null");
-
-		return Flux.from(entities).flatMap(entity -> update(entity, options));
 	}
 
 	/*
@@ -538,27 +496,6 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		}
 
 		return getReactiveCqlOperations().execute(new DeleteCallback()).next();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.reactivestreams.Publisher)
-	 */
-	@Override
-	public <T> Flux<T> delete(Publisher<? extends T> entities) {
-		return delete(entities, null);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.reactivestreams.Publisher, org.springframework.data.cql.core.QueryOptions)
-	 */
-	@Override
-	public <T> Flux<T> delete(Publisher<? extends T> entities, QueryOptions options) {
-
-		Assert.notNull(entities, "Entity publisher must not be null");
-
-		return Flux.from(entities).flatMap(entity -> delete(entity, options));
 	}
 
 	/*

@@ -95,7 +95,8 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
-		return Flux.from(entityStream).flatMap(entity -> operations.getReactiveCqlOperations().execute(createFullInsert(entity)).map(it -> entity));
+		return Flux.from(entityStream)
+				.flatMap(entity -> operations.getReactiveCqlOperations().execute(createFullInsert(entity)).map(it -> entity));
 	}
 
 	/* (non-Javadoc)
@@ -117,7 +118,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		return operations.insert(Flux.fromIterable(entities));
+		return Flux.fromIterable(entities).flatMap(operations::insert);
 	}
 
 	/* (non-Javadoc)
@@ -128,7 +129,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
-		return operations.insert(entityStream);
+		return Flux.from(entityStream).flatMap(operations::insert);
 	}
 
 	/* (non-Javadoc)
@@ -256,7 +257,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		return operations.delete(Flux.fromIterable(entities)).then();
+		return Flux.fromIterable(entities).flatMap(operations::delete).then();
 	}
 
 	/* (non-Javadoc)
@@ -267,7 +268,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
-		return operations.delete(entityStream).then();
+		return Flux.from(entityStream).flatMap(operations::delete).then();
 	}
 
 	/* (non-Javadoc)
