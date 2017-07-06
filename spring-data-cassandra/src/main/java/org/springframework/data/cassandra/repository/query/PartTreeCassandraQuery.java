@@ -102,8 +102,13 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 		Query query = queryCreator.createQuery();
 
 		try {
+
 			if (getTree().isLimiting()) {
-				query.limit(getTree().getMaxResults());
+				query = query.limit(getTree().getMaxResults());
+			}
+
+			if (getQueryMethod().getQueryAnnotation().map(q -> q.allowFiltering()).orElse(false)) {
+				query = query.withAllowFiltering();
 			}
 
 			CassandraPersistentEntity<?> persistentEntity = getMappingContext()

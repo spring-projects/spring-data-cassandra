@@ -38,6 +38,7 @@ import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.repository.AllowFiltering;
 import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cql.core.CqlIdentifier;
@@ -155,6 +156,14 @@ public class PartTreeCassandraQueryUnitTests {
 		assertThat(query.toString()).isEqualTo("SELECT * FROM group WHERE hash_prefix='foo';");
 	}
 
+	@Test // DATACASS-376
+	public void shouldAllowFiltering() {
+
+		Statement query = deriveQueryFromMethod(Repo.class, "findByFirstname", new Class[] { String.class }, "foo");
+
+		assertThat(query.toString()).isEqualTo("SELECT * FROM person WHERE firstname='foo' ALLOW FILTERING;");
+	}
+
 	private String deriveQueryFromMethod(String method, Object... args) {
 
 		Class<?>[] types = new Class<?>[args.length];
@@ -223,6 +232,9 @@ public class PartTreeCassandraQueryUnitTests {
 		Person findByMainAddressIn(Collection<AddressType> address);
 
 		Person findByFirstnameIn(Collection<String> firstname);
+
+		@AllowFiltering
+		Person findByFirstname(String firstname);
 
 		PersonProjection findPersonProjectedBy();
 

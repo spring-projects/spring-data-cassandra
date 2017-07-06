@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -50,6 +49,8 @@ public class CassandraQueryMethod extends QueryMethod {
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
 
+	private final Optional<Query> query;
+
 	private CassandraEntityMetadata<?> entityMetadata;
 
 	/**
@@ -71,6 +72,7 @@ public class CassandraQueryMethod extends QueryMethod {
 
 		this.method = method;
 		this.mappingContext = mappingContext;
+		this.query = Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(method, Query.class));
 	}
 
 	/**
@@ -142,7 +144,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * Returns whether the method has an annotated query.
 	 */
 	public boolean hasAnnotatedQuery() {
-		return findAnnotatedQuery().isPresent();
+		return query.map(Query::value).filter(StringUtils::hasText).isPresent();
 	}
 
 	/**
@@ -152,16 +154,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @return
 	 */
 	public String getAnnotatedQuery() {
-		return findAnnotatedQuery().orElse(null);
-	}
-
-	private Optional<String> findAnnotatedQuery() {
-
-		Optional<Query> queryAnnotation = Optional.ofNullable(getQueryAnnotation());
-
-		return queryAnnotation.map(AnnotationUtils::getValue) //
-				.map(it -> (String) it) //
-				.filter(StringUtils::hasText);
+		return query.map(Query::value).orElse(null);
 	}
 
 	/**
@@ -169,8 +162,8 @@ public class CassandraQueryMethod extends QueryMethod {
 	 *
 	 * @return
 	 */
-	Query getQueryAnnotation() {
-		return AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
+	Optional<Query> getQueryAnnotation() {
+		return query;
 	}
 
 	@Override
