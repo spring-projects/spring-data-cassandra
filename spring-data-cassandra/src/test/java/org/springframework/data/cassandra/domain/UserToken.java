@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.domain;
 
-import lombok.Data;
-
 import java.util.UUID;
+
+import lombok.Data;
 
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
@@ -36,4 +36,5 @@ public class UserToken {
 
 	@Column("user_comment") String userComment;
 	String adminComment;
+
 }

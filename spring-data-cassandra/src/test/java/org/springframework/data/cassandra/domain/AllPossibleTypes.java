@@ -15,11 +15,6 @@
  */
 package org.springframework.data.cassandra.domain;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -29,6 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.cassandra.core.convert.CassandraTypeMappingIntegrationTest.Condition;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
@@ -92,20 +92,20 @@ public class AllPossibleTypes {
 	private List<Condition> listOfEnum;
 
 	// supported by conversion
+	java.time.Instant instant;
 	java.time.LocalDate localDate;
 	java.time.LocalDateTime localDateTime;
 	java.time.LocalTime localTime;
-	java.time.Instant instant;
 	java.time.ZoneId zoneId;
 
+	org.joda.time.DateTime jodaDateTime;
 	org.joda.time.LocalDate jodaLocalDate;
 	org.joda.time.LocalDateTime jodaLocalDateTime;
-	org.joda.time.DateTime jodaDateTime;
 
+	org.threeten.bp.Instant bpInstant;
 	org.threeten.bp.LocalDate bpLocalDate;
 	org.threeten.bp.LocalDateTime bpLocalDateTime;
 	org.threeten.bp.LocalTime bpLocalTime;
-	org.threeten.bp.Instant bpInstant;
 	org.threeten.bp.ZoneId bpZoneId;
 
 }

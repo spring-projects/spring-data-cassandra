@@ -108,6 +108,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		Map<Class<?>, DataType> classToDataType = new HashMap<>(16);
 
 		DataType.allPrimitiveTypes().forEach(dataType -> {
+
 			Class<?> javaType = codecRegistry.codecFor(dataType).getJavaType().getRawType();
 
 			classToDataType.put(javaType, dataType);
@@ -116,7 +117,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 					.ifPresent(primitiveType -> classToDataType.put(primitiveType, dataType));
 		});
 
-		// override String to text datatype as String is used multiple times
+		// override String to text DataType as String is used multiple times
 		classToDataType.put(String.class, DataType.text());
 
 		// map Long to bigint as counter columns (last type aver multiple overrides) are a special use case
@@ -124,7 +125,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		classToDataType.put(Long.class, DataType.bigint());
 		classToDataType.put(long.class, DataType.bigint());
 
-		// override UUID to timeuuid as regular uuid is the favored default
+		// override UUID to timeuuid as regular uuid as the favored default
 		classToDataType.put(UUID.class, DataType.uuid());
 
 		return classToDataType;
@@ -159,12 +160,6 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 * @return
 	 */
 	public static DataType getDataTypeFor(Class<?> javaClass) {
-
-		if (javaClass.isEnum()) {
-			return DataType.varchar();
-		}
-
-		return classToDataType.get(javaClass);
+		return (javaClass.isEnum() ?  DataType.varchar() : classToDataType.get(javaClass));
 	}
-
 }
