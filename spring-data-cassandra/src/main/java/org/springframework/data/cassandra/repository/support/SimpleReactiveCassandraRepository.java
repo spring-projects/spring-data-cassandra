@@ -15,20 +15,21 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
+
+import org.reactivestreams.Publisher;
 
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -132,29 +133,17 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		return Flux.from(entityStream).flatMap(operations::insert);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findById(java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#count()
 	 */
 	@Override
-	public Mono<T> findById(ID id) {
-
-		Assert.notNull(id, "The given id must not be null");
-
-		return operations.selectOneById(id, entityInformation.getJavaType());
+	public Mono<Long> count() {
+		return operations.count(entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findById(org.reactivestreams.Publisher)
-	 */
-	@Override
-	public Mono<T> findById(Publisher<ID> publisher) {
-
-		Assert.notNull(publisher, "The given id must not be null");
-
-		return Mono.from(publisher).flatMap(id -> operations.selectOneById(id, entityInformation.getJavaType()));
-	}
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#existsById(java.lang.Object)
 	 */
 	@Override
@@ -165,55 +154,88 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		return operations.exists(id, entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#existsById(org.reactivestreams.Publisher)
 	 */
 	@Override
 	public Mono<Boolean> existsById(Publisher<ID> publisher) {
 
-		Assert.notNull(publisher, "The given id must not be null");
+		Assert.notNull(publisher, "The Publisher of ids must not be null");
 
-		return Mono.from(publisher).flatMap(id -> operations.exists(id, entityInformation.getJavaType()));
+		return Mono.from(publisher).flatMap(this::existsById);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findById(java.lang.Object)
+	 */
+	@Override
+	public Mono<T> findById(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
+		return operations.selectOneById(id, entityInformation.getJavaType());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findById(org.reactivestreams.Publisher)
+	 */
+	@Override
+	public Mono<T> findById(Publisher<ID> publisher) {
+
+		Assert.notNull(publisher, "The Publisher of ids must not be null");
+
+		return Mono.from(publisher).flatMap(this::findById);
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAll()
 	 */
 	@Override
 	public Flux<T> findAll() {
 
 		Select select = QueryBuilder.select().from(entityInformation.getTableName().toCql());
+
 		return operations.select(select, entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAllById(java.lang.Iterable)
 	 */
 	@Override
 	public Flux<T> findAllById(Iterable<ID> iterable) {
 
-		Assert.notNull(iterable, "The given Iterable of id's must not be null");
+		Assert.notNull(iterable, "The given Iterable of ids must not be null");
 
 		return findAllById(Flux.fromIterable(iterable));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAllById(org.reactivestreams.Publisher)
 	 */
 	@Override
 	public Flux<T> findAllById(Publisher<ID> idStream) {
 
-		Assert.notNull(idStream, "The given Publisher of id's must not be null");
+		Assert.notNull(idStream, "The given Publisher of ids must not be null");
 
-		return Flux.from(idStream).flatMap(id -> operations.selectOneById(id, entityInformation.getJavaType()));
+		return Flux.from(idStream).flatMap(this::findById);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#count()
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(java.lang.Object)
 	 */
 	@Override
-	public Mono<Long> count() {
-		return operations.count(entityInformation.getJavaType());
+	public Mono<Void> delete(T entity) {
+
+		Assert.notNull(entity, "The given entity must not be null");
+
+		return operations.delete(entity).then();
 	}
 
 	/* (non-Javadoc)
@@ -233,20 +255,17 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	@Override
 	public Mono<Void> deleteById(Publisher<ID> publisher) {
 
-		Assert.notNull(publisher, "The given id must not be null");
+		Assert.notNull(publisher, "The Publisher of ids must not be null");
 
-		return Mono.from(publisher).flatMap(id -> operations.deleteById(id, entityInformation.getJavaType())).then();
+		return Mono.from(publisher).flatMap(this::deleteById).then();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#delete(java.lang.Object)
+	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#deleteAll()
 	 */
 	@Override
-	public Mono<Void> delete(T entity) {
-
-		Assert.notNull(entity, "The given entity must not be null");
-
-		return operations.delete(entity).then();
+	public Mono<Void> deleteAll() {
+		return operations.truncate(entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -271,19 +290,13 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		return Flux.from(entityStream).flatMap(operations::delete).then();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#deleteAll()
-	 */
-	@Override
-	public Mono<Void> deleteAll() {
-		return operations.truncate(entityInformation.getJavaType());
-	}
-
 	private <S extends T> Insert createFullInsert(S entity) {
 
 		CassandraConverter converter = operations.getConverter();
-		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
-				.getRequiredPersistentEntity(entity.getClass());
+
+		CassandraPersistentEntity<?> persistentEntity =
+				converter.getMappingContext().getRequiredPersistentEntity(entity.getClass());
+
 		Map<String, Object> toInsert = new LinkedHashMap<>();
 
 		converter.write(entity, toInsert, persistentEntity);

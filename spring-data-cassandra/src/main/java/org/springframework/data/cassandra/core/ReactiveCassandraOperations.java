@@ -141,14 +141,13 @@ public interface ReactiveCassandraOperations {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Execute the Select by {@code id} for the given {@code entityClass}.
+	 * Returns the number of rows for the given entity class.
 	 *
-	 * @param id must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return the result object returned by the action or {@link Mono#empty()}
+	 * @param entityClass must not be {@literal null}.
+	 * @return the number of existing entities.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
+	Mono<Long> count(Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Determine whether the row {@code entityClass} with the given {@code id} exists.
@@ -161,13 +160,14 @@ public interface ReactiveCassandraOperations {
 	Mono<Boolean> exists(Object id, Class<?> entityClass) throws DataAccessException;
 
 	/**
-	 * Returns the number of rows for the given entity class.
+	 * Execute the Select by {@code id} for the given {@code entityClass}.
 	 *
-	 * @param entityClass must not be {@literal null}.
-	 * @return the number of existing entities.
+	 * @param id must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the result object returned by the action or {@link Mono#empty()}
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	Mono<Long> count(Class<?> entityClass) throws DataAccessException;
+	<T> Mono<T> selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Insert the given entity and emit the entity if the insert was applied.
@@ -187,6 +187,7 @@ public interface ReactiveCassandraOperations {
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
 	Mono<WriteResult> insert(Object entity, InsertOptions options) throws DataAccessException;
+
 	/**
 	 * Update the given entity and emit the entity if the update was applied.
 	 *
@@ -205,15 +206,6 @@ public interface ReactiveCassandraOperations {
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
 	Mono<WriteResult> update(Object entity, UpdateOptions options) throws DataAccessException;
-	/**
-	 * Remove the given object from the table by id.
-	 *
-	 * @param id must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return {@literal true} if the deletion was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	Mono<Boolean> deleteById(Object id, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Delete the given entity and emit the entity if the delete was applied.
@@ -233,6 +225,17 @@ public interface ReactiveCassandraOperations {
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
 	Mono<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
+
+	/**
+	 * Remove the given object from the table by id.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return {@literal true} if the deletion was applied.
+	 * @throws DataAccessException if there is any problem issuing the execution.
+	 */
+	Mono<Boolean> deleteById(Object id, Class<?> entityClass) throws DataAccessException;
+
 	/**
 	 * Execute a {@code TRUNCATE} query to remove all entities of a given class.
 	 *
@@ -255,4 +258,5 @@ public interface ReactiveCassandraOperations {
 	 * @see ReactiveCqlOperations
 	 */
 	ReactiveCqlOperations getReactiveCqlOperations();
+
 }
