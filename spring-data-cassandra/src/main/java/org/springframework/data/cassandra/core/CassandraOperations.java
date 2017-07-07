@@ -258,58 +258,55 @@ public interface CassandraOperations {
 	 * Insert the given entity and return the entity if the insert was applied.
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
-	 * @return the inserted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T insert(T entity) throws DataAccessException;
+	void insert(Object entity) throws DataAccessException;
 
 	/**
 	 * Insert the given entity applying {@link WriteOptions} and return the entity if the insert was applied.
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the inserted entity or {@literal null} if the {@code INSERT} operation was not applied.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T insert(T entity, InsertOptions options) throws DataAccessException;
+	WriteResult insert(Object entity, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and return the entity if the update was applied.
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
-	 * @return the updated entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T update(T entity) throws DataAccessException;
+	void update(Object entity) throws DataAccessException;
 
 	/**
 	 * Update the given entity applying {@link WriteOptions} and return the entity if the update was applied.
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the updated entity or {@literal null} if the {@code UPDATE} operation was not applied.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T update(T entity, UpdateOptions options) throws DataAccessException;
+	WriteResult update(Object entity, UpdateOptions options) throws DataAccessException;
 
 	/**
 	 * Delete the given entity and return the entity if the delete was applied.
 	 *
 	 * @param entity must not be {@literal null}.
-	 * @return the deleted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T delete(T entity) throws DataAccessException;
+	void delete(Object entity) throws DataAccessException;
 
 	/**
 	 * Delete the given entity applying {@link QueryOptions} and return the entity if the delete was applied.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the deleted entity.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T delete(T entity, QueryOptions options) throws DataAccessException;
+	WriteResult delete(Object entity, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Remove the given object from the table by id.

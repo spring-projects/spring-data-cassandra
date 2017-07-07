@@ -1159,13 +1159,13 @@ Person qp = cassandraTemplate.selectOne(query(where("age").is(33)), Person.class
 
 The insert/save operations available to you are listed below.
 
-* `T` *insert* `(T objectToSave)` Insert the object in an Apache Cassandra table.
-* `T` *insert* `(T objectToSave, InsertOptions options)` Insert the object in an Apache Cassandra table applying `InsertOptions`.
+* `void` *insert* `(Object objectToSave)` Insert the object in an Apache Cassandra table.
+* `WriteResult` *insert* `(Object objectToSave, InsertOptions options)` Insert the object in an Apache Cassandra table applying `InsertOptions`.
 
 A similar set of update operations is listed below
 
-* `T` *update* `(T objectToSave)` Update the object in an Apache Cassandra table.
-* `T` *update* `(T objectToSave, UpdateOptions options)` Update the object in an Apache Cassandra table applying `UpdateOptions`.
+* `void` *update* `(Object objectToSave)` Update the object in an Apache Cassandra table.
+* `WriteResult` *update* `(Object objectToSave, UpdateOptions options)` Update the object in an Apache Cassandra table applying `UpdateOptions`.
 
 Then, there is always the old fashioned way. You can write your own CQL statements. You can configure with `InsertOptions` and `UpdateOptions`
 additional options such as TTL, consistency level and lightweight transactions.

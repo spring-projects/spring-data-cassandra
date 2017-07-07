@@ -237,11 +237,10 @@ public interface AsyncCassandraOperations {
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the inserted entity or a {@literal null} inside of {@link ListenableFuture} if the {@code INSERT} operation
-	 *         was not applied.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> insert(T entity, InsertOptions options) throws DataAccessException;
+	ListenableFuture<WriteResult> insert(Object entity, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and return the entity if the update was applied.
@@ -257,11 +256,10 @@ public interface AsyncCassandraOperations {
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the updated entity or a {@literal null} inside of {@link ListenableFuture}
-	 * if the {@code UPDATE} operation was not applied.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> update(T entity, UpdateOptions options) throws DataAccessException;
+	ListenableFuture<WriteResult> update(Object entity, UpdateOptions options) throws DataAccessException;
 
 	/**
 	 * Delete the given entity and return the entity if the delete was applied.
@@ -277,10 +275,10 @@ public interface AsyncCassandraOperations {
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the deleted entity.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> delete(T entity, QueryOptions options) throws DataAccessException;
+	ListenableFuture<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
 
 	/**
 	 * Remove the given object from the table by id.

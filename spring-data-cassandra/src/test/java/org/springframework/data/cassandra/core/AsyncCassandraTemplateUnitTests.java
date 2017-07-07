@@ -257,18 +257,6 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void insertShouldNotApplyInsert() {
-
-		when(resultSet.wasApplied()).thenReturn(false);
-
-		User user = new User("heisenberg", "Walter", "White");
-
-		ListenableFuture<User> future = template.insert(user);
-
-		assertThat(getUninterruptibly(future)).isNull();
-	}
-
-	@Test // DATACASS-292
 	public void updateShouldUpdateEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -300,18 +288,6 @@ public class AsyncCassandraTemplateUnitTests {
 			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
 					.hasRootCauseInstanceOf(NoHostAvailableException.class);
 		}
-	}
-
-	@Test // DATACASS-292
-	public void updateShouldNotApplyUpdate() {
-
-		when(resultSet.wasApplied()).thenReturn(false);
-
-		User user = new User("heisenberg", "Walter", "White");
-
-		ListenableFuture<User> future = template.update(user);
-
-		assertThat(getUninterruptibly(future)).isNull();
 	}
 
 	@Test // DATACASS-292
@@ -359,18 +335,6 @@ public class AsyncCassandraTemplateUnitTests {
 			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
 					.hasRootCauseInstanceOf(NoHostAvailableException.class);
 		}
-	}
-
-	@Test // DATACASS-292
-	public void deleteShouldNotApplyRemoval() {
-
-		when(resultSet.wasApplied()).thenReturn(false);
-
-		User user = new User("heisenberg", "Walter", "White");
-
-		ListenableFuture<User> future = template.delete(user);
-
-		assertThat(getUninterruptibly(future)).isNull();
 	}
 
 	@Test // DATACASS-292

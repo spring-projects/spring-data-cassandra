@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.reactivestreams.Publisher;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.query.Query;
@@ -184,30 +183,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the inserted entity or {@link Mono#empty()} if the {@code INSERT} operation was not applied.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> insert(T entity, InsertOptions options) throws DataAccessException;
-
-	/**
-	 * Insert the given entities and emit the entity if the insert was applied.
-	 *
-	 * @param entities The entities to insert, must not be {@literal null}.
-	 * @return the inserted entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> insert(Publisher<? extends T> entities) throws DataAccessException;
-
-	/**
-	 * Insert the given entities applying {@link WriteOptions} and emit the entity if the insert was applied.
-	 *
-	 * @param entities The entities to insert, must not be {@literal null}.
-	 * @param options may be {@literal null}.
-	 * @return the inserted entities. Does not emit items for which the {@code INSERT} operation was not applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> insert(Publisher<? extends T> entities, InsertOptions options) throws DataAccessException;
-
+	Mono<WriteResult> insert(Object entity, InsertOptions options) throws DataAccessException;
 	/**
 	 * Update the given entity and emit the entity if the update was applied.
 	 *
@@ -222,30 +201,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the updated entity or {@link Mono#empty()} if the {@code UPDATE} operation was not applied.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> update(T entity, UpdateOptions options) throws DataAccessException;
-
-	/**
-	 * Update the given entities and emit the entity if the update was applied.
-	 *
-	 * @param entities The entities to update, must not be {@literal null}.
-	 * @return the updated entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> update(Publisher<? extends T> entities) throws DataAccessException;
-
-	/**
-	 * Update the given entities applying {@link WriteOptions} and emit the entity if the update was applied.
-	 *
-	 * @param entities The entities to update.
-	 * @param options may be {@literal null}.
-	 * @return the updated entities. Does not emit items for which the {@code UPDATE} operation was not applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> update(Publisher<? extends T> entities, UpdateOptions options) throws DataAccessException;
-
+	Mono<WriteResult> update(Object entity, UpdateOptions options) throws DataAccessException;
 	/**
 	 * Remove the given object from the table by id.
 	 *
@@ -270,30 +229,10 @@ public interface ReactiveCassandraOperations {
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param options may be {@literal null}.
-	 * @return the deleted entity.
+	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> delete(T entity, QueryOptions options) throws DataAccessException;
-
-	/**
-	 * Delete the given entities and emit the entity if the delete was applied.
-	 *
-	 * @param entities must not be {@literal null}.
-	 * @return the deleted entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> delete(Publisher<? extends T> entities) throws DataAccessException;
-
-	/**
-	 * Delete the given entities applying {@link QueryOptions} and emit the entity if the delete was applied.
-	 *
-	 * @param entities must not be {@literal null}.
-	 * @param options may be {@literal null}.
-	 * @return the deleted entities.
-	 * @throws DataAccessException if there is any problem issuing the execution.
-	 */
-	<T> Flux<T> delete(Publisher<? extends T> entities, QueryOptions options) throws DataAccessException;
-
+	Mono<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
 	/**
 	 * Execute a {@code TRUNCATE} query to remove all entities of a given class.
 	 *

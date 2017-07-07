@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
+import lombok.NonNull;
+import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -374,7 +376,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 */
 	@Override
 	public <T> Mono<T> insert(T entity) {
-		return insert(entity, null);
+		return insert(entity, null).map(writeResult -> entity);
 	}
 
 	/*
@@ -382,48 +384,13 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public <T> Mono<T> insert(T entity, InsertOptions options) {
+	public Mono<WriteResult> insert(Object entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		Insert insert = QueryUtils.createInsertQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
-		class InsertCallback implements ReactiveSessionCallback<T>, CqlProvider {
-
-			@Override
-			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(insert)
-						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
-			}
-
-			@Override
-			public String getCql() {
-				return insert.toString();
-			}
-		}
-
-		return getReactiveCqlOperations().execute(new InsertCallback()).next();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher)
-	 */
-	@Override
-	public <T> Flux<T> insert(Publisher<? extends T> entities) {
-		return insert(entities, null);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(org.reactivestreams.Publisher, org.springframework.data.cassandra.core.InsertOptions)
-	 */
-	@Override
-	public <T> Flux<T> insert(Publisher<? extends T> entities, InsertOptions options) {
-
-		Assert.notNull(entities, "Entity publisher must not be null");
-
-		return Flux.from(entities).flatMap(entity -> insert(entity, options));
+		return getReactiveCqlOperations().execute(new StatementCallback(insert)).next();
 	}
 
 	/*
@@ -432,7 +399,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 */
 	@Override
 	public <T> Mono<T> update(T entity) {
-		return update(entity, null);
+		return update(entity, null).map(writeResult -> entity);
 	}
 
 	/*
@@ -440,48 +407,13 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public <T> Mono<T> update(T entity, UpdateOptions options) {
+	public Mono<WriteResult> update(Object entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, converter);
 
-		class UpdateCallback implements ReactiveSessionCallback<T>, CqlProvider {
-
-			@Override
-			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(update)
-						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
-			}
-
-			@Override
-			public String getCql() {
-				return update.toString();
-			}
-		}
-
-		return getReactiveCqlOperations().execute(new UpdateCallback()).next();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher)
-	 */
-	@Override
-	public <T> Flux<T> update(Publisher<? extends T> entities) {
-		return update(entities, null);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.reactivestreams.Publisher, org.springframework.data.cassandra.core.UpdateOptions)
-	 */
-	@Override
-	public <T> Flux<T> update(Publisher<? extends T> entities, UpdateOptions options) {
-
-		Assert.notNull(entities, "Entity publisher must not be null");
-
-		return Flux.from(entities).flatMap(entity -> update(entity, options));
+		return getReactiveCqlOperations().execute(new StatementCallback(update)).next();
 	}
 
 	/*
@@ -509,7 +441,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 */
 	@Override
 	public <T> Mono<T> delete(T entity) {
-		return delete(entity, null);
+		return delete(entity, null).map(reactiveWriteResult -> entity);
 	}
 
 	/*
@@ -517,48 +449,13 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Object, org.springframework.data.cql.core.QueryOptions)
 	 */
 	@Override
-	public <T> Mono<T> delete(T entity, QueryOptions options) {
+	public Mono<WriteResult> delete(Object entity, QueryOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
-		class DeleteCallback implements ReactiveSessionCallback<T>, CqlProvider {
-
-			@Override
-			public Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-				return session.execute(delete)
-						.flatMap(reactiveResultSet -> reactiveResultSet.wasApplied() ? Mono.just(entity) : Mono.empty());
-			}
-
-			@Override
-			public String getCql() {
-				return delete.toString();
-			}
-		}
-
-		return getReactiveCqlOperations().execute(new DeleteCallback()).next();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.reactivestreams.Publisher)
-	 */
-	@Override
-	public <T> Flux<T> delete(Publisher<? extends T> entities) {
-		return delete(entities, null);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.reactivestreams.Publisher, org.springframework.data.cql.core.QueryOptions)
-	 */
-	@Override
-	public <T> Flux<T> delete(Publisher<? extends T> entities, QueryOptions options) {
-
-		Assert.notNull(entities, "Entity publisher must not be null");
-
-		return Flux.from(entities).flatMap(entity -> delete(entity, options));
+		return getReactiveCqlOperations().execute(new StatementCallback(delete)).next();
 	}
 
 	/*
@@ -575,4 +472,26 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		return getReactiveCqlOperations().execute(truncate).then();
 	}
+
+	@Value
+	static class StatementCallback implements ReactiveSessionCallback<WriteResult>, CqlProvider {
+
+		@NonNull Statement statement;
+
+		@Override
+		public Publisher<WriteResult> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
+			return session.execute(statement).flatMap(StatementCallback::toWriteResult);
+		}
+
+		@Override
+		public String getCql() {
+			return statement.toString();
+		}
+
+		private static Mono<WriteResult> toWriteResult(ReactiveResultSet resultSet) {
+			return resultSet.rows().collectList()
+					.map(rows -> new WriteResult(resultSet.getAllExecutionInfo(), resultSet.wasApplied(), rows));
+		}
+	}
+
 }

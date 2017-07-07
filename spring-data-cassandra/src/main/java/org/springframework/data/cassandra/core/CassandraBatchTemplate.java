@@ -59,14 +59,15 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#execute()
 	 */
 	@Override
-	public void execute() {
+	public WriteResult execute() {
 
 		if (executed.compareAndSet(false, true)) {
-			operations.getCqlOperations().execute(batch);
-			return;
+			return WriteResult.of(operations.getCqlOperations().queryForResultSet(batch));
 		}
 
 		assertNotExecuted();
+
+		return null; // code won't reach this line
 	}
 
 	/* (non-Javadoc)
