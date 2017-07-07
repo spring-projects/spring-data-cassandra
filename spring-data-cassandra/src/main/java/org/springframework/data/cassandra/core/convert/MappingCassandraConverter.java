@@ -443,17 +443,15 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	protected void writeSelectWhereFromObject(final Object object, final Select.Where where,
-			CassandraPersistentEntity<?> entity) {
+	protected void writeSelectWhereFromObject(Object object, Select.Where where, CassandraPersistentEntity<?> entity) {
 		getWhereClauses(object, entity).forEach(where::and);
 	}
 
-	protected void writeDeleteWhereFromObject(final Object object, final Delete.Where where,
-			CassandraPersistentEntity<?> entity) {
+	protected void writeDeleteWhereFromObject(Object object, Delete.Where where, CassandraPersistentEntity<?> entity) {
 		getWhereClauses(object, entity).forEach(where::and);
 	}
 
-	protected void writeUDTValueWhereFromObject(final ConvertingPropertyAccessor accessor, final UDTValue udtValue,
+	protected void writeUDTValueWhereFromObject(ConvertingPropertyAccessor accessor, UDTValue udtValue,
 			CassandraPersistentEntity<?> entity) {
 
 		for (CassandraPersistentProperty property : entity) {
@@ -481,6 +479,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Assert.notNull(source, "Id source must not be null");
 
 		Object id = extractId(source, entity);
+
 		Assert.notNull(id, String.format("No Id value found in object %s", source));
 
 		CassandraPersistentProperty idProperty = entity.getIdProperty();
@@ -511,8 +510,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 						String.format("Cannot use [%s] as composite Id for [%s]", id, entity.getName()));
 			}
 
-			CassandraPersistentEntity<?> compositePrimaryKey = mappingContext
-					.getRequiredPersistentEntity(compositeIdProperty);
+			CassandraPersistentEntity<?> compositePrimaryKey =
+					mappingContext.getRequiredPersistentEntity(compositeIdProperty);
+
 			return getWhereClauses(getConvertingAccessor(id, compositePrimaryKey), compositePrimaryKey);
 		}
 
@@ -548,7 +548,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Collection<Clause> clauses = new ArrayList<>();
 
 		for (CassandraPersistentProperty property : entity) {
-
 			TypeCodec<Object> codec = getCodec(property);
 			Object value = accessor.getProperty(property, codec.getJavaType().getRawType());
 			clauses.add(QueryBuilder.eq(property.getColumnName().toCql(), value));
@@ -573,6 +572,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			Object writeValue = getWriteValue(entry.getValue(), persistentProperty.getTypeInformation());
+
 			clauses.add(QueryBuilder.eq(persistentProperty.getColumnName().toCql(), writeValue));
 		}
 
@@ -586,7 +586,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Assert.notNull(object, "Object instance must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		final ConvertingPropertyAccessor accessor = getConvertingAccessor(object, entity);
+		ConvertingPropertyAccessor propertyAccessor = getConvertingAccessor(object, entity);
 
 		Assert.isTrue(entity.getType().isAssignableFrom(object.getClass()),
 				String.format("Given instance of type [%s] is not of compatible expected type [%s]",
@@ -600,8 +600,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (idProperty != null) {
 			// TODO: NullId
-			return accessor.getProperty(idProperty, idProperty.isCompositePrimaryKey() ? (Class<Object>) idProperty.getType()
-					: (Class<Object>) getTargetType(idProperty));
+			return propertyAccessor.getProperty(idProperty, idProperty.isCompositePrimaryKey()
+					? (Class<Object>) idProperty.getType() : (Class<Object>) getTargetType(idProperty));
 		}
 
 		// if the class doesn't have an id property, then it's using MapId
@@ -613,7 +613,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				continue;
 			}
 
-			id.with(property.getName(), getWriteValue(property, accessor));
+			id.with(property.getName(), getWriteValue(property, propertyAccessor));
 		}
 
 		return id;

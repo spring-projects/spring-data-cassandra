@@ -15,15 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.NonNull;
-import lombok.Value;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import lombok.NonNull;
+import lombok.Value;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -78,9 +78,9 @@ public class CassandraTemplate implements CassandraOperations {
 
 	private final CassandraConverter converter;
 
-	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
-
 	private final CqlOperations cqlOperations;
+
+	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final StatementFactory statementFactory;
 
@@ -286,8 +286,8 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return select(getStatementFactory().select(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -299,8 +299,8 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return stream(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return stream(getStatementFactory().select(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -325,8 +325,8 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(update, "Update must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getCqlOperations().execute(
-				getStatementFactory().update(query, update, getMappingContext().getRequiredPersistentEntity(entityClass)));
+		return getCqlOperations().execute(getStatementFactory().update(query, update,
+				getMappingContext().getRequiredPersistentEntity(entityClass)));
 	}
 
 	/* (non-Javadoc)
@@ -338,8 +338,8 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getCqlOperations()
-				.execute(getStatementFactory().delete(query, getMappingContext().getRequiredPersistentEntity(entityClass)));
+		return getCqlOperations().execute(getStatementFactory().delete(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -410,10 +410,9 @@ public class CassandraTemplate implements CassandraOperations {
 		CassandraPersistentProperty idProperty = entity.getRequiredIdProperty();
 
 		if (idProperty.isCompositePrimaryKey()) {
-
-			throw new IllegalArgumentException(
-					String.format("Entity class [%s] uses a composite primary key class [%s] which this method can't support",
-							entityClass.getName(), idProperty.getType().getName()));
+			throw new IllegalArgumentException(String.format(
+				"Entity class [%s] uses a composite primary key class [%s] which this method can't support",
+					entityClass.getName(), idProperty.getType().getName()));
 		}
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
@@ -441,7 +440,8 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Insert insert = QueryUtils.createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
+		Insert insert = QueryUtils.createInsertQuery(
+				getTableName(entity.getClass()).toCql(), entity, options, converter);
 
 		return getCqlOperations().execute(new StatementCallback(insert));
 	}
@@ -464,7 +464,8 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Update update = QueryUtils.createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
+		Update update = QueryUtils.createUpdateQuery(
+				getTableName(entity.getClass()).toCql(), entity, options, converter);
 
 		return getCqlOperations().execute(new StatementCallback(update));
 	}
@@ -487,7 +488,8 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
+		Delete delete = QueryUtils.createDeleteQuery(
+				getTableName(entity.getClass()).toCql(), entity, options, converter);
 
 		return getCqlOperations().execute(new StatementCallback(delete));
 	}
@@ -520,8 +522,8 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Truncate truncate = QueryBuilder
-				.truncate(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Truncate truncate = QueryBuilder.truncate(
+				getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
 		getCqlOperations().execute(truncate);
 	}

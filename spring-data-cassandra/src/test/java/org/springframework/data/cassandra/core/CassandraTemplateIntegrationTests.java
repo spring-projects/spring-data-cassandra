@@ -217,6 +217,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
+
 		template.insert(user);
 
 		user.setFirstname("Walter Hartwell");

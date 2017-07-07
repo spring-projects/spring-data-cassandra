@@ -293,8 +293,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return select(getStatementFactory().select(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -308,8 +308,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
-				entityConsumer, entityClass);
+		return select(getStatementFactory().select(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass)), entityConsumer, entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -321,8 +321,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return selectOne(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return selectOne(getStatementFactory().select(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -336,8 +336,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(update, "Update must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getAsyncCqlOperations().execute(
-				getStatementFactory().update(query, update, getMappingContext().getRequiredPersistentEntity(entityClass)));
+		return getAsyncCqlOperations().execute(getStatementFactory().update(query, update,
+				getMappingContext().getRequiredPersistentEntity(entityClass)));
 	}
 
 	/* (non-Javadoc)
@@ -349,8 +349,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getAsyncCqlOperations()
-				.execute(getStatementFactory().delete(query, getMappingContext().getRequiredPersistentEntity(entityClass)));
+		return getAsyncCqlOperations().execute(getStatementFactory().delete(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -431,8 +431,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		Insert insert = QueryUtils.createInsertQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
-		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(insert)),
-				WriteResult::of);
+		return new MappingListenableFutureAdapter<>(
+				getAsyncCqlOperations().execute(new AsyncStatementCallback(insert)), WriteResult::of);
 	}
 
 	/*
@@ -455,8 +455,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
-		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(update)),
-				WriteResult::of);
+		return new MappingListenableFutureAdapter<>(
+				getAsyncCqlOperations().execute(new AsyncStatementCallback(update)), WriteResult::of);
 	}
 
 	/*
@@ -479,8 +479,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
-		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(delete)),
-				WriteResult::of);
+		return new MappingListenableFutureAdapter<>(
+				getAsyncCqlOperations().execute(new AsyncStatementCallback(delete)), WriteResult::of);
 	}
 
 	/*
@@ -511,8 +511,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Truncate truncate = QueryBuilder
-				.truncate(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Truncate truncate = QueryBuilder.truncate(
+				getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(truncate), aBoolean -> null);
 	}

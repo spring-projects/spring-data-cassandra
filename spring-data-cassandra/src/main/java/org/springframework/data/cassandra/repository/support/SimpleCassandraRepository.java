@@ -100,8 +100,10 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	private <S extends T> Insert createFullInsert(S entity) {
 
 		CassandraConverter converter = operations.getConverter();
-		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
-				.getRequiredPersistentEntity(entity.getClass());
+
+		CassandraPersistentEntity<?> persistentEntity =
+				converter.getMappingContext().getRequiredPersistentEntity(entity.getClass());
+
 		Map<String, Object> toInsert = new LinkedHashMap<>();
 
 		converter.write(entity, toInsert, persistentEntity);
@@ -139,8 +141,8 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		List<S> result = new ArrayList<>();
 
 		for (S entity : entities) {
-			result.add(entity);
 			operations.insert(entity);
+			result.add(entity);
 		}
 
 		return result;

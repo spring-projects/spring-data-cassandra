@@ -34,8 +34,9 @@ import com.datastax.driver.core.Row;
  */
 public class WriteResult {
 
-	private final List<ExecutionInfo> executionInfo;
 	private final boolean wasApplied;
+
+	private final List<ExecutionInfo> executionInfo;
 	private final List<Row> rows;
 
 	WriteResult(List<ExecutionInfo> executionInfo, boolean wasApplied, List<Row> rows) {
@@ -54,7 +55,7 @@ public class WriteResult {
 
 		List<Row> rows = new ArrayList<>(limit);
 
-		for (int i = 0; i < limit; i++) {
+		for (int count = 0; count < limit; count++) {
 			rows.add(resultSet.one());
 		}
 
