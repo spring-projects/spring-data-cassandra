@@ -271,42 +271,42 @@ public class CassandraCqlClusterFactoryBeanUnitTests {
 	@Test // DATACASS-317
 	public void shouldSetClusterNameWithBeanNameProperty() throws Exception {
 
-		final Cluster.Builder mockClusterBuilder = mock(Cluster.Builder.class);
+		Cluster.Builder mockClusterBuilder = mock(Cluster.Builder.class);
+		Cluster mockCluster = mock(Cluster.class);
 
 		when(mockClusterBuilder.addContactPoints(anyString())).thenReturn(mockClusterBuilder);
+		when(mockClusterBuilder.build()).thenReturn(mockCluster);
 
-		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean() {
-			@Override
-			Cluster.Builder newClusterBuilder() {
-				return mockClusterBuilder;
-			}
-		};
+		CassandraCqlClusterFactoryBean bean = spy(new CassandraCqlClusterFactoryBean());
+
+		when(bean.newClusterBuilder()).thenReturn(mockClusterBuilder);
 
 		bean.setBeanName("ABC");
 		bean.setClusterName(" ");
 		bean.afterPropertiesSet();
 
+		verify(bean, times(1)).newClusterBuilder();
 		verify(mockClusterBuilder, times(1)).withClusterName(eq("ABC"));
 	}
 
 	@Test // DATACASS-317
 	public void shouldSetClusterNameWithClusterNameProperty() throws Exception {
 
-		final Cluster.Builder mockClusterBuilder = mock(Cluster.Builder.class);
+		Cluster.Builder mockClusterBuilder = mock(Cluster.Builder.class);
+		Cluster mockCluster = mock(Cluster.class);
 
 		when(mockClusterBuilder.addContactPoints(anyString())).thenReturn(mockClusterBuilder);
+		when(mockClusterBuilder.build()).thenReturn(mockCluster);
 
-		CassandraCqlClusterFactoryBean bean = new CassandraCqlClusterFactoryBean() {
-			@Override
-			Cluster.Builder newClusterBuilder() {
-				return mockClusterBuilder;
-			}
-		};
+		CassandraCqlClusterFactoryBean bean = spy(new CassandraCqlClusterFactoryBean());
+
+		when(bean.newClusterBuilder()).thenReturn(mockClusterBuilder);
 
 		bean.setBeanName("ABC");
 		bean.setClusterName("XYZ");
 		bean.afterPropertiesSet();
 
+		verify(bean,times(1)).newClusterBuilder();
 		verify(mockClusterBuilder, times(1)).withClusterName(eq("XYZ"));
 	}
 

@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -33,6 +31,9 @@ import org.springframework.data.cql.support.CassandraExceptionTranslator;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -69,7 +70,25 @@ public class CassandraCqlSessionFactoryBean
 
 	private String keyspaceName;
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+
+		this.session = connect(getKeyspaceName());
+
+		executeScripts(getStartupScripts());
+	}
+
+	/* (non-Javadoc) */
+	Session connect(String keyspaceName) {
+		return (StringUtils.hasText(keyspaceName) ? getCluster().connect(keyspaceName) : getCluster().connect());
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
 	@Override
@@ -77,7 +96,8 @@ public class CassandraCqlSessionFactoryBean
 		return this.session;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
 	@Override
@@ -85,7 +105,8 @@ public class CassandraCqlSessionFactoryBean
 		return (this.session != null ? this.session.getClass() : Session.class);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
 	 */
 	@Override
@@ -94,26 +115,10 @@ public class CassandraCqlSessionFactoryBean
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception {
-
-		this.session = connect(getKeyspaceName());
-		executeScripts(getStartupScripts());
-	}
-
-	Session connect(String keyspaceName) {
-
-		return (StringUtils.hasText(keyspaceName) ? getCluster().connect(keyspaceName) : getCluster().connect());
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
 	 */
 	@Override
 	public void destroy() throws Exception {
-
 		executeScripts(getShutdownScripts());
 		getSession().close();
 	}
@@ -160,6 +165,7 @@ public class CassandraCqlSessionFactoryBean
 	public boolean isConnected() {
 
 		Session session = getObject();
+
 		return !(session == null || session.isClosed());
 	}
 
@@ -172,7 +178,6 @@ public class CassandraCqlSessionFactoryBean
 	 * @see #getCluster()
 	 */
 	public void setCluster(Cluster cluster) {
-
 		Assert.notNull(cluster, "Cluster must not be null");
 		this.cluster = cluster;
 	}
@@ -186,7 +191,6 @@ public class CassandraCqlSessionFactoryBean
 	 * @see #setCluster(Cluster)
 	 */
 	protected Cluster getCluster() {
-
 		Assert.state(this.cluster != null, "Cluster was not properly initialized");
 		return this.cluster;
 	}
@@ -222,7 +226,9 @@ public class CassandraCqlSessionFactoryBean
 	protected Session getSession() {
 
 		Session session = getObject();
+
 		Assert.state(session != null, "Session was not properly initialized");
+
 		return session;
 	}
 

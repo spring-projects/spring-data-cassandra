@@ -18,10 +18,9 @@ package org.springframework.data.cql.config;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -39,9 +38,23 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.datastax.driver.core.AuthProvider;
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.LatencyTracker;
+import com.datastax.driver.core.NettyOptions;
+import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.QueryOptions;
+import com.datastax.driver.core.SSLOptions;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.TimestampGenerator;
 import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
@@ -129,89 +142,55 @@ public class CassandraCqlClusterFactoryBean
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		Assert.isTrue(StringUtils.hasText(contactPoints), "At least one server is required");
+		Assert.hasText(contactPoints, "At least one server is required");
 
 		Cluster.Builder clusterBuilder = newClusterBuilder();
 
 		clusterBuilder.addContactPoints(StringUtils.commaDelimitedListToStringArray(contactPoints)).withPort(port);
+		clusterBuilder.withMaxSchemaAgreementWaitSeconds(maxSchemaAgreementWaitSeconds);
 
-		if (compressionType != null) {
-			clusterBuilder.withCompression(convertCompressionType(compressionType));
-		}
+		Optional.ofNullable(compressionType).map(CassandraCqlClusterFactoryBean::convertCompressionType)
+			.ifPresent(clusterBuilder::withCompression);
 
-		if (poolingOptions != null) {
-			clusterBuilder.withPoolingOptions(poolingOptions);
-		}
-
-		if (socketOptions != null) {
-			clusterBuilder.withSocketOptions(socketOptions);
-		}
-
-		if (queryOptions != null) {
-			clusterBuilder.withQueryOptions(queryOptions);
-		}
+		Optional.ofNullable(addressTranslator).ifPresent(clusterBuilder::withAddressTranslator);
+		Optional.ofNullable(loadBalancingPolicy).ifPresent(clusterBuilder::withLoadBalancingPolicy);
+		Optional.ofNullable(nettyOptions).ifPresent(clusterBuilder::withNettyOptions);
+		Optional.ofNullable(poolingOptions).ifPresent(clusterBuilder::withPoolingOptions);
+		Optional.ofNullable(protocolVersion).ifPresent(clusterBuilder::withProtocolVersion);
+		Optional.ofNullable(queryOptions).ifPresent(clusterBuilder::withQueryOptions);
+		Optional.ofNullable(reconnectionPolicy).ifPresent(clusterBuilder::withReconnectionPolicy);
+		Optional.ofNullable(retryPolicy).ifPresent(clusterBuilder::withRetryPolicy);
+		Optional.ofNullable(socketOptions).ifPresent(clusterBuilder::withSocketOptions);
+		Optional.ofNullable(speculativeExecutionPolicy).ifPresent(clusterBuilder::withSpeculativeExecutionPolicy);
+		Optional.ofNullable(timestampGenerator).ifPresent(clusterBuilder::withTimestampGenerator);
 
 		if (authProvider != null) {
 			clusterBuilder.withAuthProvider(authProvider);
-		} else if (username != null) {
+		}
+		else if (username != null) {
 			clusterBuilder.withCredentials(username, password);
-		}
-
-		if (nettyOptions != null) {
-			clusterBuilder.withNettyOptions(nettyOptions);
-		}
-
-		if (loadBalancingPolicy != null) {
-			clusterBuilder.withLoadBalancingPolicy(loadBalancingPolicy);
-		}
-
-		if (reconnectionPolicy != null) {
-			clusterBuilder.withReconnectionPolicy(reconnectionPolicy);
-		}
-
-		if (retryPolicy != null) {
-			clusterBuilder.withRetryPolicy(retryPolicy);
-		}
-
-		if (!metricsEnabled) {
-			clusterBuilder.withoutMetrics();
 		}
 
 		if (!jmxReportingEnabled) {
 			clusterBuilder.withoutJMXReporting();
 		}
 
+		if (!metricsEnabled) {
+			clusterBuilder.withoutMetrics();
+		}
+
 		if (sslEnabled) {
-			if (sslOptions == null) {
-				clusterBuilder.withSSL();
-			} else {
+			if (sslOptions != null) {
 				clusterBuilder.withSSL(sslOptions);
+			}
+			else {
+				clusterBuilder.withSSL();
 			}
 		}
 
-		if (protocolVersion != null) {
-			clusterBuilder.withProtocolVersion(protocolVersion);
-		}
+		Optional.ofNullable(resolveClusterName()).filter(StringUtils::hasText)
+			.ifPresent(clusterBuilder::withClusterName);
 
-		if (addressTranslator != null) {
-			clusterBuilder.withAddressTranslator(addressTranslator);
-		}
-
-		String clusterName = resolveClusterName();
-
-		if (StringUtils.hasText(clusterName)) {
-			clusterBuilder.withClusterName(clusterName);
-		}
-
-		clusterBuilder.withMaxSchemaAgreementWaitSeconds(maxSchemaAgreementWaitSeconds);
-
-		if (speculativeExecutionPolicy != null) {
-			clusterBuilder.withSpeculativeExecutionPolicy(speculativeExecutionPolicy);
-		}
-
-		if (timestampGenerator != null) {
-			clusterBuilder.withTimestampGenerator(timestampGenerator);
-		}
 
 		if (clusterBuilderConfigurer != null) {
 			clusterBuilderConfigurer.configure(clusterBuilder);
@@ -219,16 +198,10 @@ public class CassandraCqlClusterFactoryBean
 
 		cluster = clusterBuilder.build();
 
-		if (hostStateListener != null) {
-			cluster.register(hostStateListener);
-		}
-
-		if (latencyTracker != null) {
-			cluster.register(latencyTracker);
-		}
+		Optional.ofNullable(hostStateListener).ifPresent(cluster::register);
+		Optional.ofNullable(latencyTracker).ifPresent(cluster::register);
 
 		generateSpecificationsFromFactoryBeans();
-
 		executeSpecsAndScripts(keyspaceCreations, startupScripts);
 	}
 
@@ -240,6 +213,7 @@ public class CassandraCqlClusterFactoryBean
 		return Cluster.builder();
 	}
 
+	/* (non-Javadoc) */
 	private String resolveClusterName() {
 		return (StringUtils.hasText(clusterName) ? clusterName : beanName);
 	}
@@ -297,6 +271,7 @@ public class CassandraCqlClusterFactoryBean
 	private void generateSpecificationsFromFactoryBeans() {
 
 		keyspaceSpecifications.forEach(keyspaceActionSpecification -> {
+
 			if (keyspaceActionSpecification instanceof CreateKeyspaceSpecification) {
 				keyspaceCreations.add((CreateKeyspaceSpecification) keyspaceActionSpecification);
 			}
@@ -321,7 +296,8 @@ public class CassandraCqlClusterFactoryBean
 						.forEach(keyspaceActionSpecification -> template.execute(toCql(keyspaceActionSpecification)));
 
 				scripts.forEach(template::execute);
-			} finally {
+			}
+			finally {
 				if (session != null) {
 					session.close();
 				}

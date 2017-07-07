@@ -47,6 +47,51 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 
 	private SchemaAction schemaAction = SchemaAction.NONE;
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.cassandra.config.CassandraCqlSessionFactoryBean#afterPropertiesSet()
+	 */
+	@Override
+	public void afterPropertiesSet() throws Exception {
+
+		Assert.state(converter != null, "Converter was not properly initialized");
+
+		super.afterPropertiesSet();
+
+		admin = new CassandraAdminTemplate(getObject(), converter);
+
+		performSchemaAction();
+	}
+
+	/**
+	 * Perform the configure {@link SchemaAction} using {@link CassandraMappingContext} metadata.
+	 */
+	protected void performSchemaAction() {
+
+		boolean create = false;
+		boolean drop = DEFAULT_DROP_TABLES;
+		boolean dropUnused = DEFAULT_DROP_UNUSED_TABLES;
+		boolean ifNotExists = DEFAULT_CREATE_IF_NOT_EXISTS;
+
+		switch (schemaAction) {
+			case RECREATE_DROP_UNUSED:
+				dropUnused = true;
+			case RECREATE:
+				drop = true;
+			case CREATE_IF_NOT_EXISTS:
+				ifNotExists = SchemaAction.CREATE_IF_NOT_EXISTS.equals(schemaAction);
+			case CREATE:
+				create = true;
+			case NONE:
+			default:
+				// do nothing
+		}
+
+		if (create) {
+			createTables(drop, dropUnused, ifNotExists);
+		}
+	}
+
 	/**
 	 * Set the {@link CassandraConverter} to use. Schema actions will derive table and user type information from the
 	 * {@link CassandraMappingContext} inside {@code converter}.
@@ -90,50 +135,6 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	 */
 	public SchemaAction getSchemaAction() {
 		return schemaAction;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.config.CassandraCqlSessionFactoryBean#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception {
-
-		Assert.state(converter != null, "Converter was not properly initialized");
-
-		super.afterPropertiesSet();
-
-		admin = new CassandraAdminTemplate(getObject(), converter);
-
-		performSchemaAction();
-	}
-
-	/**
-	 * Perform the configure {@link SchemaAction} using {@link CassandraMappingContext} metadata.
-	 */
-	protected void performSchemaAction() {
-
-		boolean create = false;
-		boolean drop = DEFAULT_DROP_TABLES;
-		boolean dropUnused = DEFAULT_DROP_UNUSED_TABLES;
-		boolean ifNotExists = DEFAULT_CREATE_IF_NOT_EXISTS;
-
-		switch (schemaAction) {
-			case RECREATE_DROP_UNUSED:
-				dropUnused = true;
-			case RECREATE:
-				drop = true;
-			case CREATE_IF_NOT_EXISTS:
-				ifNotExists = SchemaAction.CREATE_IF_NOT_EXISTS.equals(schemaAction);
-			case CREATE:
-				create = true;
-			case NONE:
-			default:
-				// do nothing
-		}
-
-		if (create) {
-			createTables(drop, dropUnused, ifNotExists);
-		}
 	}
 
 	/**
