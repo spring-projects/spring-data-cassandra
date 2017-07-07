@@ -15,7 +15,8 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.util.ObjectUtils.*;
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
+import static org.springframework.util.ObjectUtils.nullSafeHashCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -256,8 +257,8 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@code allowFiltering} applied.
 	 */
 	public Query withAllowFiltering() {
-		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions, this.limit,
-				true);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions,
+				this.limit, true);
 	}
 
 	/**

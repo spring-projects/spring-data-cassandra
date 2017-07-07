@@ -15,14 +15,13 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import rx.Single;
-
-import java.lang.reflect.Method;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +30,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -41,6 +41,8 @@ import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+
+import rx.Single;
 
 /**
  * Unit tests for {@link ReactivePartTreeCassandraQuery}.
@@ -112,11 +114,11 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 		ReactivePartTreeCassandraQuery partTreeQuery = createQueryForMethod(method, types);
 
-		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
-				args);
+		CassandraParameterAccessor accessor =
+				new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(), args);
 
-		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor))
-				.toString();
+		return partTreeQuery.createQuery(
+				new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor)).toString();
 	}
 
 	private ReactivePartTreeCassandraQuery createQueryForMethod(String methodName, Class<?>... paramTypes) {

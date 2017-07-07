@@ -30,8 +30,8 @@ import org.springframework.data.annotation.QueryAnnotation;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-@Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
 @Documented
 @QueryAnnotation
 public @interface Query {
@@ -48,4 +48,5 @@ public @interface Query {
 	 * @since 2.0
 	 */
 	boolean allowFiltering() default false;
+
 }

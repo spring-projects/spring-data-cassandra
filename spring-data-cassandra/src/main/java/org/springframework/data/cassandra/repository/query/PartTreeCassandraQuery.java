@@ -97,7 +97,8 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	@Override
 	protected Statement createQuery(CassandraParameterAccessor parameterAccessor) {
 
-		CassandraQueryCreator queryCreator = new CassandraQueryCreator(getTree(), parameterAccessor, getMappingContext());
+		CassandraQueryCreator queryCreator =
+				new CassandraQueryCreator(getTree(), parameterAccessor, getMappingContext());
 
 		Query query = queryCreator.createQuery();
 
@@ -107,14 +108,17 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 				query = query.limit(getTree().getMaxResults());
 			}
 
-			if (getQueryMethod().getQueryAnnotation().map(q -> q.allowFiltering()).orElse(false)) {
+			if (getQueryMethod().getQueryAnnotation()
+					.map(org.springframework.data.cassandra.repository.Query::allowFiltering).orElse(false)) {
+
 				query = query.withAllowFiltering();
 			}
 
-			CassandraPersistentEntity<?> persistentEntity = getMappingContext()
-					.getRequiredPersistentEntity(getQueryMethod().getDomainClass());
+			CassandraPersistentEntity<?> persistentEntity =
+					getMappingContext().getRequiredPersistentEntity(getQueryMethod().getDomainClass());
 
 			return getStatementFactory().select(query, persistentEntity);
+
 		} catch (RuntimeException e) {
 			throw QueryCreationException.create(getQueryMethod(), e);
 		}
