@@ -34,7 +34,7 @@ import org.w3c.dom.NamedNodeMap;
  * @author David Webb
  * @author Matthew T. Adams
  */
-public class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParser {
+class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)

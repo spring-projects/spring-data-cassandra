@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class CassandraSessionParser extends CassandraCqlSessionParser {
+class CassandraSessionParser extends CassandraCqlSessionParser {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.config.xml.CassandraCqlSessionParser#getBeanClass(org.w3c.dom.Element)

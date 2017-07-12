@@ -25,7 +25,7 @@ import org.w3c.dom.Element;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class CassandraClusterParser extends CassandraCqlClusterParser {
+class CassandraClusterParser extends CassandraCqlClusterParser {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.cassandra.config.xml.CassandraCqlClusterParser#parseInternal(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)

@@ -1,7 +1,7 @@
 # Tooling related information for the cql namespace
 http\://www.springframework.org/schema/cql@name=Spring Cassandra CQL Namespace
 http\://www.springframework.org/schema/cql@prefix=cql
-http\://www.springframework.org/schema/cql@icon=org/springframework/data/cql/config/spring-cql.gif
+http\://www.springframework.org/schema/cql@icon=org/springframework/data/cassandra/config/spring-cql.gif
 
 # Tooling related information for the cassandra namespace
 http\://www.springframework.org/schema/data/cassandra@name=Spring Data Cassandra Namespace

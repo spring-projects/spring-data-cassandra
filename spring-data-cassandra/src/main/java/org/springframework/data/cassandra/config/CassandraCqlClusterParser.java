@@ -45,7 +45,7 @@ import com.datastax.driver.core.SocketOptions;
  * @author John Blum
  * @author Mark Paluch
  */
-public class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
+class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)

@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
  *
  * @author Matthew T. Adams
  */
-public class CassandraMappingXmlBeanFactoryPostProcessorRegistrar {
+class CassandraMappingXmlBeanFactoryPostProcessorRegistrar {
 
 	/**
 	 * Ensures that a {@link CassandraMappingBeanFactoryPostProcessor} is registered. This method is a no-op if one is

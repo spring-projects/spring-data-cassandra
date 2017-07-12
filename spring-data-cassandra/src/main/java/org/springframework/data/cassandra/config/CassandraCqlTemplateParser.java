@@ -31,7 +31,7 @@ import org.w3c.dom.Element;
  * @author David Webb
  * @author Matthew T. Adams
  */
-public class CassandraCqlTemplateParser extends AbstractSingleBeanDefinitionParser {
+class CassandraCqlTemplateParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)

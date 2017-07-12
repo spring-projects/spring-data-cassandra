@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class CassandraMappingConverterParser extends AbstractSingleBeanDefinitionParser {
+class CassandraMappingConverterParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)

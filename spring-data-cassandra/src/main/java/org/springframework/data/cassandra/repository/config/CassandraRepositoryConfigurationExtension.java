@@ -41,7 +41,7 @@ import org.w3c.dom.Element;
  * @author Christoph Strobl
  * @author Mateusz Szymczak
  */
-public class CassandraRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
+class CassandraRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
 	private static final String CASSANDRA_TEMPLATE_REF = "cassandra-template-ref";
 

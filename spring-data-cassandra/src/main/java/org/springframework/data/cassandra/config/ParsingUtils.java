@@ -35,7 +35,7 @@ import org.w3c.dom.Element;
  * @see org.w3c.dom.Attr
  * @see org.w3c.dom.Element
  */
-public abstract class ParsingUtils {
+abstract class ParsingUtils {
 
 	/**
 	 * Convenience method delegating to

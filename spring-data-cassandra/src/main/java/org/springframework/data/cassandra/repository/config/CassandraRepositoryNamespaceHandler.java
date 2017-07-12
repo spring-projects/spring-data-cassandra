@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.config;
+package org.springframework.data.cassandra.repository.config;
 
-import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.data.cassandra.config.CassandraNamespaceHandler;
+import org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension;
+import org.springframework.data.repository.config.RepositoryBeanDefinitionParser;
 
 /**
  * Namespace handler for spring-data-cassandra.
  *
- * @author Alex Shvid
- * @author Matthew T. Adams
- * @author Mark Paluch
  * @author Oliver Gierke
  */
-public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
+class CassandraRepositoryNamespaceHandler extends CassandraNamespaceHandler {
 
 	/*
 	 * (non-Javadoc)
@@ -33,11 +32,10 @@ public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
 	 */
 	@Override
 	public void init() {
+		
+		super.init();
 
-		registerBeanDefinitionParser("cluster", new CassandraClusterParser());
-		registerBeanDefinitionParser("session", new CassandraSessionParser());
-		registerBeanDefinitionParser("template", new CassandraTemplateParser());
-		registerBeanDefinitionParser("converter", new CassandraMappingConverterParser());
-		registerBeanDefinitionParser("mapping", new CassandraMappingContextParser());
+		registerBeanDefinitionParser("repositories",
+				new RepositoryBeanDefinitionParser(new CassandraRepositoryConfigurationExtension()));
 	}
 }
