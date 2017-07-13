@@ -35,12 +35,12 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.UserTypeUtil.FrozenLiteralDataType;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.context.AbstractMappingContext;
@@ -71,7 +71,8 @@ public class CassandraMappingContext
 
 	private CassandraPersistentEntityMetadataVerifier verifier = new CompositeCassandraPersistentEntityMetadataVerifier();
 
-	private CustomConversions customConversions;
+	private CustomConversions customConversions = new CustomConversions(
+			StoreConversions.of(CassandraSimpleTypeHolder.HOLDER), Collections.emptyList());
 
 	private Mapping mapping = new Mapping();
 
@@ -91,7 +92,8 @@ public class CassandraMappingContext
 	 */
 	public CassandraMappingContext() {
 
-		setCustomConversions(new CassandraCustomConversions(Collections.EMPTY_LIST));
+		setCustomConversions(
+				new CustomConversions(StoreConversions.of(CassandraSimpleTypeHolder.HOLDER), Collections.EMPTY_LIST));
 		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
 	}
 
@@ -244,7 +246,8 @@ public class CassandraMappingContext
 
 		// Prevent conversion types created as CassandraPersistentEntity
 		Optional<BasicCassandraPersistentEntity<?>> optional = shouldCreatePersistentEntityFor(typeInformation)
-				? super.addPersistentEntity(typeInformation) : Optional.empty();
+				? super.addPersistentEntity(typeInformation)
+				: Optional.empty();
 
 		optional.ifPresent(entity -> {
 

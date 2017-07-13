@@ -17,14 +17,13 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.mapping.IdInterfaceValidator.*;
 import static org.springframework.data.cassandra.core.mapping.MapIdFactory.*;
-import static org.springframework.data.cassandra.repository.support.IdInterfaceValidator.*;
 
 import java.io.Serializable;
 import java.util.Random;
 
 import org.junit.Test;
-import org.springframework.data.cassandra.repository.support.IdInterfaceExceptions;
 
 /**
  * Unit tests for {@link MapIdFactory}.

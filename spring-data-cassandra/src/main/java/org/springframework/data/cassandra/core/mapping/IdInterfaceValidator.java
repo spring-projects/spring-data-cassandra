@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.repository.support;
+package org.springframework.data.cassandra.core.mapping;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.mapping.MappingException;
 
 /**
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class IdInterfaceValidator {
+class IdInterfaceValidator {
 
 	/**
 	 * Validates the form of the given id interface candidate type. If the interface violates the following restrictions,
@@ -62,7 +61,7 @@ public class IdInterfaceValidator {
 	 * @see IdInterfaceExceptions#getExceptions()
 	 * @see {@link IdInterfaceException}
 	 */
-	public static void validate(Class<?> id) {
+	static void validate(Class<?> id) {
 
 		List<MappingException> exceptions = new ArrayList<>();
 

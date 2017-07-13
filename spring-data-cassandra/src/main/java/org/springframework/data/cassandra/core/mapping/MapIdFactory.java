@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.data.cassandra.repository.support.IdInterfaceValidator;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 

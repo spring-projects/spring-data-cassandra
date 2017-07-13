@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-
 import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -96,7 +94,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * Create a new {@link MappingCassandraConverter} with a {@link CassandraMappingContext}.
 	 */
 	public MappingCassandraConverter() {
-		this(new CassandraMappingContext());
+		this(createMappingContext());
 	}
 
 	/**
@@ -112,6 +110,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		this.mappingContext = mappingContext;
 		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
+	}
+
+	private static CassandraMappingContext createMappingContext() {
+
+		CassandraMappingContext mappingContext = new CassandraMappingContext();
+		mappingContext.setCustomConversions(new CassandraCustomConversions(Collections.emptyList()));
+
+		return mappingContext;
 	}
 
 	/* (non-Javadoc)
@@ -494,7 +500,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			// FIXME: Generics
 			CassandraPersistentEntity<?> whereEntity = compositeIdProperty != null
-					? mappingContext.getRequiredPersistentEntity(compositeIdProperty) : entity;
+					? mappingContext.getRequiredPersistentEntity(compositeIdProperty)
+					: entity;
 
 			return getWhereClauses((MapId) id, whereEntity);
 		}
@@ -630,7 +637,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private ConvertingPropertyAccessor getConvertingAccessor(Object source, CassandraPersistentEntity<?> entity) {
 
 		PersistentPropertyAccessor propertyAccessor = (source instanceof PersistentPropertyAccessor
-				? (PersistentPropertyAccessor) source : entity.getPropertyAccessor(source));
+				? (PersistentPropertyAccessor) source
+				: entity.getPropertyAccessor(source));
 
 		return new ConvertingPropertyAccessor(propertyAccessor, getConversionService());
 	}
