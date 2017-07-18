@@ -35,13 +35,11 @@ import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.config.EnableReactiveCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-import org.springframework.data.repository.reactive.RxJava1CrudRepository;
 import org.springframework.data.repository.reactive.RxJava2CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.test.context.ContextConfiguration;
@@ -73,11 +71,10 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Autowired Session session;
-	@Autowired ReactiveCassandraTemplate template;
 	@Autowired MixedUserRepository reactiveRepository;
 	@Autowired UserRepostitory reactiveUserRepostitory;
-	@Autowired RxJava1UserRepostitory rxJava1UserRepostitory;
-	@Autowired RxJava2UserRepostitory rxJava2UserRepostitory;
+	@Autowired RxJava1UserRepository rxJava1UserRepository;
+	@Autowired RxJava2UserRepository rxJava2UserRepository;
 
 	User dave, oliver, carter, boyd;
 
@@ -126,7 +123,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-335
 	public void simpleRxJava1MethodsShouldWork() {
 
-		rxJava1UserRepostitory.existsById(dave.getId()) //
+		rxJava1UserRepository.existsById(dave.getId()) //
 				.test() //
 				.awaitTerminalEvent() //
 				.assertResult(true) //
@@ -137,7 +134,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-335
 	public void existsWithSingleRxJava1IdMethodsShouldWork() {
 
-		rxJava1UserRepostitory.existsById(Single.just(dave.getId())) //
+		rxJava1UserRepository.existsById(Single.just(dave.getId())) //
 				.test() //
 				.awaitTerminalEvent() //
 				.assertResult(true) //
@@ -148,7 +145,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-335
 	public void singleRxJava1QueryMethodShouldWork() {
 
-		rxJava1UserRepostitory.findManyByLastname(dave.getLastname()) //
+		rxJava1UserRepository.findManyByLastname(dave.getLastname()) //
 				.test() //
 				.awaitTerminalEvent() //
 				.assertValueCount(2) //
@@ -159,7 +156,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-335
 	public void singleProjectedRxJava1QueryMethodShouldWork() {
 
-		List<ProjectedUser> values = rxJava1UserRepostitory.findProjectedByLastname(carter.getLastname()) //
+		List<ProjectedUser> values = rxJava1UserRepository.findProjectedByLastname(carter.getLastname()) //
 				.test() //
 				.awaitTerminalEvent() //
 				.assertValueCount(1) //
@@ -174,7 +171,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-335
 	public void observableRxJava1QueryMethodShouldWork() {
 
-		rxJava1UserRepostitory.findByLastname(boyd.getLastname()) //
+		rxJava1UserRepository.findByLastname(boyd.getLastname()) //
 				.test() //
 				.awaitTerminalEvent() //
 				.assertValue(boyd) //
@@ -185,7 +182,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void simpleRxJava2MethodsShouldWork() {
 
-		rxJava2UserRepostitory.existsById(dave.getId()) //
+		rxJava2UserRepository.existsById(dave.getId()) //
 				.test()//
 				.assertValue(true) //
 				.assertNoErrors() //
@@ -196,7 +193,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void existsWithSingleRxJava2IdMethodsShouldWork() {
 
-		rxJava2UserRepostitory.existsById(io.reactivex.Single.just(dave.getId())).test() //
+		rxJava2UserRepository.existsById(io.reactivex.Single.just(dave.getId())).test() //
 				.assertValue(true) //
 				.assertNoErrors() //
 				.assertComplete() //
@@ -206,7 +203,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void flowableRxJava2QueryMethodShouldWork() {
 
-		rxJava2UserRepostitory.findManyByLastname(dave.getLastname()) //
+		rxJava2UserRepository.findManyByLastname(dave.getLastname()) //
 				.test() //
 				.assertValueCount(2) //
 				.assertNoErrors() //
@@ -217,7 +214,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void singleProjectedRxJava2QueryMethodShouldWork() {
 
-		rxJava2UserRepostitory.findProjectedByLastname(Maybe.just(carter.getLastname())) //
+		rxJava2UserRepository.findProjectedByLastname(Maybe.just(carter.getLastname())) //
 				.test() //
 				.assertValue(actual -> {
 					assertThat(actual.getFirstname()).isEqualTo(carter.getFirstname());
@@ -231,7 +228,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void observableProjectedRxJava2QueryMethodShouldWork() {
 
-		rxJava2UserRepostitory.findProjectedByLastname(Single.just(carter.getLastname())) //
+		rxJava2UserRepository.findProjectedByLastname(Single.just(carter.getLastname())) //
 				.test() //
 				.assertValue(actual -> {
 					assertThat(actual.getFirstname()).isEqualTo(carter.getFirstname());
@@ -245,7 +242,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void maybeRxJava2QueryMethodShouldWork() {
 
-		rxJava2UserRepostitory.findByLastname(boyd.getLastname()) //
+		rxJava2UserRepository.findByLastname(boyd.getLastname()) //
 				.test() //
 				.assertValue(boyd) //
 				.assertNoErrors() //
@@ -281,17 +278,21 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Repository
-	interface RxJava1UserRepostitory extends RxJava1CrudRepository<User, String> {
+	interface RxJava1UserRepository extends org.springframework.data.repository.Repository<User, String> {
 
 		Observable<User> findManyByLastname(String lastname);
 
 		Single<User> findByLastname(String lastname);
 
 		Single<ProjectedUser> findProjectedByLastname(String lastname);
+
+		Single<Boolean> existsById(String id);
+
+		Single<Boolean> existsById(Single<String> id);
 	}
 
 	@Repository
-	interface RxJava2UserRepostitory extends RxJava2CrudRepository<User, String> {
+	interface RxJava2UserRepository extends RxJava2CrudRepository<User, String> {
 
 		Flowable<User> findManyByLastname(String lastname);
 

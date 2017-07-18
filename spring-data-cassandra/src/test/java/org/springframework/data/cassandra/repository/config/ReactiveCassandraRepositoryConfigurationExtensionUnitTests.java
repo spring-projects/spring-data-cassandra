@@ -34,7 +34,7 @@ import org.springframework.data.repository.config.AnnotationRepositoryConfigurat
 import org.springframework.data.repository.config.RepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-import org.springframework.data.repository.reactive.RxJava1CrudRepository;
+import org.springframework.data.repository.reactive.RxJava2CrudRepository;
 
 /**
  * Unit tests for {@link ReactiveCassandraRepositoryConfigurationExtension}.
@@ -107,7 +107,7 @@ public class ReactiveCassandraRepositoryConfigurationExtensionUnitTests {
 	@Table
 	static class Sample {}
 
-	interface SampleRepository extends RxJava1CrudRepository<Sample, Long> {}
+	interface SampleRepository extends RxJava2CrudRepository<Sample, Long> {}
 
 	interface UnannotatedRepository extends ReactiveCrudRepository<Object, Long> {}
 
