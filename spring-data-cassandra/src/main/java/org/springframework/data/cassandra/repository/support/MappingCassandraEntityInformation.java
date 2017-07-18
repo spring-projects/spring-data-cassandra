@@ -84,6 +84,14 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraEntityInformation#getIdAttribute()
+	 */
+	@Override
+	public String getIdAttribute() {
+		return entityMetadata.getRequiredIdProperty().getName();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraEntityMetadata#getTableName()
 	 */
 	@Override

@@ -25,4 +25,11 @@ import org.springframework.data.repository.core.EntityInformation;
  */
 public interface CassandraEntityInformation<T, ID> extends EntityInformation<T, ID>, CassandraEntityMetadata<T> {
 
+	/**
+	 * Returns the attribute that the id will be persisted to.
+	 *
+	 * @return
+	 * @since 2.0
+	 */
+	String getIdAttribute();
 }

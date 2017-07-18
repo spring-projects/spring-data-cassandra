@@ -245,16 +245,6 @@ public interface CassandraOperations {
 	<T> T selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Select objects for the given {@code entityClass} and {@code ids}.
-	 *
-	 * @param ids must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return the converted results
-	 * @throws DataAccessException if there is any problem executing the query.
-	 */
-	<T> List<T> selectBySimpleIds(Iterable<?> ids, Class<T> entityClass) throws DataAccessException;
-
-	/**
 	 * Insert the given entity and return the entity if the insert was applied.
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.

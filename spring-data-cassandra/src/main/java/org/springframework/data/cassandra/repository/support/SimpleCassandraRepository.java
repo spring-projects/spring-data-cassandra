@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import static org.springframework.data.cassandra.core.query.Criteria.*;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,8 +28,11 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
+import org.springframework.data.util.StreamUtils;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.querybuilder.Insert;
@@ -101,8 +106,8 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		CassandraConverter converter = operations.getConverter();
 
-		CassandraPersistentEntity<?> persistentEntity =
-				converter.getMappingContext().getRequiredPersistentEntity(entity.getClass());
+		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
+				.getRequiredPersistentEntity(entity.getClass());
 
 		Map<String, Object> toInsert = new LinkedHashMap<>();
 
@@ -197,7 +202,10 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(ids, "The given Iterable of id's must not be null");
 
-		return operations.selectBySimpleIds(ids, entityInformation.getJavaType());
+		List<ID> idCollection = Streamable.of(ids).stream().collect(StreamUtils.toUnmodifiableList());
+
+		return operations.select(Query.query(where(entityInformation.getIdAttribute()).in(idCollection)),
+				entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)

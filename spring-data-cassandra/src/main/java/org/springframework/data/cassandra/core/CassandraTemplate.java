@@ -15,15 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
+import lombok.NonNull;
+import lombok.Value;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import lombok.NonNull;
-import lombok.Value;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.SessionFactory;
@@ -397,29 +397,6 @@ public class CassandraTemplate implements CassandraOperations {
 		getConverter().write(id, select.where(), entity);
 
 		return selectOne(select, entityClass);
-	}
-
-	@Override
-	public <T> List<T> selectBySimpleIds(Iterable<?> ids, Class<T> entityClass) throws DataAccessException {
-
-		Assert.notNull(ids, "Ids must not be null");
-		Assert.notNull(entityClass, "EntityClass must not be null");
-
-		CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(entityClass);
-
-		CassandraPersistentProperty idProperty = entity.getRequiredIdProperty();
-
-		if (idProperty.isCompositePrimaryKey()) {
-			throw new IllegalArgumentException(String.format(
-				"Entity class [%s] uses a composite primary key class [%s] which this method can't support",
-					entityClass.getName(), idProperty.getType().getName()));
-		}
-
-		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
-
-		select.where(QueryBuilder.in(idProperty.getColumnName().toCql(), toList(ids)));
-
-		return select(select, entityClass);
 	}
 
 	/*
