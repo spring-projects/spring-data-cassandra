@@ -26,14 +26,21 @@ import org.springframework.util.StringUtils;
  *
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public class CreateIndexSpecification extends IndexNameSpecification<CreateIndexSpecification>
 		implements IndexDescriptor {
 
 	private boolean ifNotExists = false;
+
 	private boolean custom = false;
+
 	private CqlIdentifier tableName;
+
 	private CqlIdentifier columnName;
+
+	private ColumnFunction columnFunction = ColumnFunction.NONE;
+
 	private String using;
 
 	/**
@@ -121,6 +128,61 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/**
+	 * Causes the inclusion of an {@code KEYS} clause.
+	 *
+	 * @return this
+	 * @since 2.0
+	 */
+	public CreateIndexSpecification keys() {
+		return columnFunction(ColumnFunction.KEYS);
+	}
+
+	/**
+	 * Causes the inclusion of an {@code VALUES} clause.
+	 *
+	 * @return this
+	 * @since 2.0
+	 */
+	public CreateIndexSpecification values() {
+		return columnFunction(ColumnFunction.VALUES);
+	}
+
+	/**
+	 * Causes the inclusion of an {@code ENTRIES} clause.
+	 *
+	 * @return this
+	 * @since 2.0
+	 */
+	public CreateIndexSpecification entries() {
+		return columnFunction(ColumnFunction.ENTRIES);
+	}
+
+	/**
+	 * Causes the inclusion of an {@code FULL} clause.
+	 *
+	 * @return this
+	 * @since 2.0
+	 */
+	public CreateIndexSpecification full() {
+		return columnFunction(ColumnFunction.FULL);
+	}
+
+	/**
+	 * Set a {@link ColumnFunction} such as {@code KEYS(…)}, {@code ENTRIES(…)}.
+	 *
+	 * @return this
+	 * @since 2.0
+	 */
+	public CreateIndexSpecification columnFunction(ColumnFunction columnFunction) {
+		this.columnFunction = columnFunction;
+		return this;
+	}
+
+	public ColumnFunction getColumnFunction() {
+		return columnFunction;
+	}
+
+	/**
 	 * Sets the table name.
 	 *
 	 * @return this
@@ -155,5 +217,14 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 		this.columnName = columnName;
 		return this;
+	}
+
+	/**
+	 * Column functions to specify indexing behavior.
+	 *
+	 * @since 2.0
+	 */
+	public enum ColumnFunction {
+		NONE, KEYS, VALUES, ENTRIES, FULL,
 	}
 }

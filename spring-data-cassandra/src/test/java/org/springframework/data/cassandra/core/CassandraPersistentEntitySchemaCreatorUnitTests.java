@@ -28,8 +28,11 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
 /**
@@ -115,6 +118,19 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		verifyTypesGetCreatedInOrderFor("universetype", "moontype", "planettype");
 	}
 
+	@Test // DATACASS-213
+	public void createsIndexes() {
+
+		context.getPersistentEntity(IndexedEntity.class);
+
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				adminOperations);
+
+		schemaCreator.createIndexes(false);
+
+		verify(operations).execute("CREATE INDEX ON indexedentity (firstname);");
+	}
+
 	private void verifyTypesGetCreatedInOrderFor(String... typenames) {
 
 		InOrder inOrder = Mockito.inOrder(operations);
@@ -148,5 +164,12 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 	@UserDefinedType
 	static class SpaceAgencyType {
 		List<AstronautType> astronauts;
+	}
+
+	@Table
+	static class IndexedEntity {
+
+		@Id String id;
+		@Indexed String firstName;
 	}
 }

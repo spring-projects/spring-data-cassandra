@@ -19,6 +19,9 @@ import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
 import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.*;
 
+import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +39,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.UserTypeUtil.FrozenLiteralDataType;
@@ -371,7 +375,7 @@ public class CassandraMappingContext
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		final CreateTableSpecification specification = createTable().name(entity.getTableName());
+		CreateTableSpecification specification = createTable().name(entity.getTableName());
 
 		for (CassandraPersistentProperty property : entity) {
 
@@ -414,6 +418,104 @@ public class CassandraMappingContext
 		}
 
 		return specification;
+	}
+
+	/**
+	 * @param entity must not be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
+	public List<CreateIndexSpecification> getCreateIndexSpecificationsFor(CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
+
+		return getCreateIndexSpecifications(entity.getTableName(), entity);
+	}
+
+	private List<CreateIndexSpecification> getCreateIndexSpecifications(CqlIdentifier tableName,
+			CassandraPersistentEntity<?> entity) {
+
+		List<CreateIndexSpecification> indexes = new ArrayList<>();
+
+		for (CassandraPersistentProperty property : entity) {
+
+			if (property.isCompositePrimaryKey()) {
+				indexes.addAll(getCreateIndexSpecifications(tableName, getRequiredPersistentEntity(property)));
+			} else {
+				indexes.addAll(createIndexSpecifications(tableName, property));
+			}
+		}
+		return indexes;
+	}
+
+	private List<CreateIndexSpecification> createIndexSpecifications(CqlIdentifier tableName,
+			CassandraPersistentProperty property) {
+
+		List<CreateIndexSpecification> indexes = new ArrayList<>();
+
+		if (property.isAnnotationPresent(Indexed.class)) {
+
+			Indexed annotation = property.findAnnotation(Indexed.class);
+			CreateIndexSpecification index = createIndexSpecification(annotation, tableName, property);
+
+			if (property.isMapLike()) {
+				index.entries();
+			}
+
+			indexes.add(index);
+		}
+
+		if (property.isMapLike()) {
+
+			AnnotatedType type = property.findAnnotatedType(Indexed.class);
+
+			if (type instanceof AnnotatedParameterizedType) {
+
+				AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
+				AnnotatedType[] typeArgs = parameterizedType.getAnnotatedActualTypeArguments();
+
+				Indexed keyIndex = typeArgs.length == 2 ? AnnotatedElementUtils.getMergedAnnotation(typeArgs[0], Indexed.class)
+						: null;
+				Indexed valueIndex = typeArgs.length == 2
+						? AnnotatedElementUtils.getMergedAnnotation(typeArgs[1], Indexed.class)
+						: null;
+
+				if ((!indexes.isEmpty() && (keyIndex != null || valueIndex != null))
+						|| (keyIndex != null && valueIndex != null)) {
+					throw new MappingException("Multiple index declarations for " + property
+							+ " found. A map index must be either declared for entries, keys or values.");
+				}
+
+				if (keyIndex != null) {
+
+					CreateIndexSpecification index = createIndexSpecification(keyIndex, tableName, property);
+					index.keys();
+					indexes.add(index);
+				}
+
+				if (valueIndex != null) {
+					CreateIndexSpecification index = createIndexSpecification(valueIndex, tableName, property);
+					index.values();
+					indexes.add(index);
+				}
+			}
+		}
+
+		return indexes;
+	}
+
+	private CreateIndexSpecification createIndexSpecification(Indexed annotation, CqlIdentifier tableName,
+			CassandraPersistentProperty property) {
+
+		CreateIndexSpecification index;
+
+		if (StringUtils.hasText(annotation.value())) {
+			index = CreateIndexSpecification.createIndex(annotation.value());
+		} else {
+			index = CreateIndexSpecification.createIndex();
+		}
+
+		return index.tableName(tableName).columnName(property.getColumnName());
 	}
 
 	/**

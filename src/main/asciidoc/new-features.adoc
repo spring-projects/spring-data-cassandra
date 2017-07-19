@@ -7,6 +7,7 @@
 * CRUD repository interface renaming: `CassandraRepository` using `MapId` is now renamed to `MapIdCassandraRepository`. `TypedIdCassandraRepository` is renamed to `CassandraRepository`.
 * Lightweight transactions via `InsertOptions` and `UpdateOptions` using the Template API.
 * Merge of Spring CQL into Spring Data Cassandra.
+* Index creation on application startup via `@Indexed`.
 
 [[new-features.1-5-0]]
 == What's new in Spring Data for Apache Cassandra 1.5

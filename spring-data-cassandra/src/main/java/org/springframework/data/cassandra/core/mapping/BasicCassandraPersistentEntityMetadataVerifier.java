@@ -48,9 +48,14 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 		List<MappingException> exceptions = new ArrayList<>();
 
-		final List<CassandraPersistentProperty> idProperties = new ArrayList<>();
-		final List<CassandraPersistentProperty> partitionKeyColumns = new ArrayList<>();
-		final List<CassandraPersistentProperty> primaryKeyColumns = new ArrayList<>();
+		List<CassandraPersistentProperty> idProperties = new ArrayList<>();
+		List<CassandraPersistentProperty> partitionKeyColumns = new ArrayList<>();
+		List<CassandraPersistentProperty> primaryKeyColumns = new ArrayList<>();
+
+		// @Indexed not allowed on type level
+		if (entity.isAnnotationPresent(Indexed.class)) {
+			exceptions.add(new MappingException("@Indexed cannot be used on entity classes"));
+		}
 
 		// Ensure entity is not both a @Table(@Persistent) and a @PrimaryKeyClass
 		if (entity.isCompositePrimaryKey()) {

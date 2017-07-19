@@ -107,6 +107,17 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 		}
 	}
 
+	@Test // DATACASS-213
+	public void shouldFailOnIndexedEntity() {
+
+		try {
+			verifier.verify(context.getRequiredPersistentEntity(InvalidIndexedPerson.class));
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e).hasMessageContaining("@Indexed cannot be used on entity classes");
+		}
+	}
+
 	interface MyInterface {}
 
 	static class NonPersistentClass {
@@ -124,6 +135,15 @@ public class BasicCassandraPersistentEntityMetadataVerifierUnitTests {
 
 		String firstName;
 		String lastName;
+	}
+
+	@Table
+	@Indexed
+	static class InvalidIndexedPerson {
+
+		@Id String id;
+
+		String firstName;
 	}
 
 	@Table

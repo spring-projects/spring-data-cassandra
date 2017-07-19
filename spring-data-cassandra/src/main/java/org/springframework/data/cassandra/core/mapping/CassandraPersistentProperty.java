@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
+
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -101,4 +104,15 @@ public interface CassandraPersistentProperty
 	 * @return a boolean indicating whether this property type is a {@link java.util.Map}.
 	 */
 	boolean isMapLike();
+
+	/**
+	 * Find an {@link AnnotatedType} by {@code annotationType} derived from the property type. Annotated type is looked up
+	 * by introspecting property field/accessors. Collection/Map-like types are introspected for type annotations within
+	 * type arguments.
+	 *
+	 * @param annotationType must not be {@literal null}.
+	 * @return the annotated type or {@literal null}.
+	 * @since 2.0
+	 */
+	AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType);
 }

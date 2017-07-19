@@ -18,12 +18,14 @@ package org.springframework.data.cassandra.core.cql.generator;
 import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
 
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 
 /**
  * CQL generator for generating a {@code CREATE INDEX} statement.
  *
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSpecification> {
 
@@ -40,13 +42,25 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 
 		cql = noNull(cql);
 
-		cql.append("CREATE").append(spec().isCustom() ? " CUSTOM" : "").append(" INDEX ")
-				.append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
-				.append(spec().getName() == null ? "" : spec().getName()).append(" ON ").append(spec().getTableName())
-				.append(" (").append(spec().getColumnName()).append(")");
+		cql.append("CREATE").append(spec().isCustom() ? " CUSTOM" : "").append(" INDEX")
+				.append(spec().getIfNotExists() ? " IF NOT EXISTS" : "");
+
+		if (spec().getName() != null) {
+			cql.append(" ").append(spec().getName());
+		}
+
+		cql.append(" ON ").append(spec().getTableName()).append(" (");
+
+		if (spec().getColumnFunction() != ColumnFunction.NONE) {
+			cql.append(spec().getColumnFunction().name()).append("(").append(spec().getColumnName()).append(")");
+		} else {
+			cql.append(spec().getColumnName());
+		}
+
+		cql.append(")");
 
 		if (spec().isCustom()) {
-			cql.append(" USING ").append(spec().getUsing());
+			cql.append(" USING ").append("'").append(spec().getUsing()).append("'");
 		}
 
 		cql.append(";");

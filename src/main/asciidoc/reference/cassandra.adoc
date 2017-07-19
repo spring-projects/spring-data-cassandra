@@ -672,7 +672,7 @@ These entity classes can be used to create Cassandra table specifications and us
 Schema creation is tied to `Session` initialization with `SchemaAction`. Following actions are supported:
 
 * `SchemaAction.NONE`: No tables/types will be created or dropped. This is the default setting.
-* `SchemaAction.CREATE`: Create tables and user-defined types from entities annotated with `@Table` and types annotated with `@UserDefinedType`. Existing tables/types will cause an error if the type is attempted to be created.
+* `SchemaAction.CREATE`: Create tables, indexesm and user-defined types from entities annotated with `@Table` and types annotated with `@UserDefinedType`. Existing tables/types will cause an error if the type is attempted to be created.
 * `SchemaAction.CREATE_IF_NOT_EXISTS`: Like `SchemaAction.CREATE` but with `IF NOT EXISTS` applied. Existing tables/types won't cause any errors but may remain stale.
 * `SchemaAction.RECREATE`: Drops and recreate existing tables and types that are known to be used. Tables and types that are not configured in the application are not dropped.
 * `SchemaAction.RECREATE_DROP_UNUSED`: Drop all tables and types and recreate only known tables and types.
