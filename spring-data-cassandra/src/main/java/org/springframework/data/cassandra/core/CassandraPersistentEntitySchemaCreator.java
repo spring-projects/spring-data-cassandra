@@ -26,8 +26,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
@@ -95,6 +97,32 @@ public class CassandraPersistentEntitySchemaCreator {
 	}
 
 	/**
+	 * Create indexes from types known to {@link CassandraMappingContext}.
+	 *
+	 * @param ifNotExists {@literal true} to create tables using {@code IF NOT EXISTS}.
+	 */
+	public void createIndexes(boolean ifNotExists) {
+
+		createIndexSpecifications(ifNotExists).forEach(specification -> cassandraAdminOperations.getCqlOperations()
+				.execute(CreateIndexCqlGenerator.toCql(specification)));
+	}
+
+	/**
+	 * Create {@link List} of {@link CreateIndexSpecification}.
+	 *
+	 * @param ifNotExists {@literal true} to create indexes using {@code IF NOT EXISTS}.
+	 * @return {@link List} of {@link CreateIndexSpecification}.
+	 */
+	protected List<CreateIndexSpecification> createIndexSpecifications(boolean ifNotExists) {
+
+		return mappingContext.getTableEntities() //
+				.stream() //
+				.flatMap(entity -> mappingContext.getCreateIndexSpecificationsFor(entity).stream()) //
+				.peek(it -> it.ifNotExists(ifNotExists)) //
+				.collect(Collectors.toList());
+	}
+
+	/**
 	 * Create user types from types known to {@link CassandraMappingContext}.
 	 *
 	 * @param ifNotExists {@literal true} to create types using {@code IF NOT EXISTS}.
@@ -133,8 +161,8 @@ public class CassandraPersistentEntitySchemaCreator {
 			List<CqlIdentifier> ordered = new ArrayList<>(seen);
 			Collections.reverse(ordered);
 
-			specifications.addAll(ordered.stream()
-					.filter(created::add).map(identifier -> mappingContext
+			specifications.addAll(ordered
+					.stream().filter(created::add).map(identifier -> mappingContext
 							.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
 					.collect(Collectors.toList()));
 		});

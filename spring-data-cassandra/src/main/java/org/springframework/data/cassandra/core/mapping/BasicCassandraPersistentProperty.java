@@ -17,6 +17,11 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +42,7 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.Assert;
@@ -421,5 +427,41 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public boolean isMapLike() {
 		return ClassUtils.isAssignable(Map.class, getType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#findAnnotatedType(java.lang.Class)
+	 */
+	@Override
+	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
+
+		return Optionals.toStream(Optional.ofNullable(getField()).map(Field::getAnnotatedType), //
+				Optional.ofNullable(getGetter()).map(Method::getAnnotatedReturnType), //
+				Optional.ofNullable(getSetter()).map(it -> it.getParameters()[0].getAnnotatedType())) //
+				.filter(it -> hasAnnotation(it, annotationType, getTypeInformation())) //
+				.findFirst() //
+				.orElse(null);
+	}
+
+	private static boolean hasAnnotation(AnnotatedType type, Class<? extends Annotation> annotationType,
+			TypeInformation<?> typeInformation) {
+
+		if (AnnotatedElementUtils.hasAnnotation(type, annotationType)) {
+			return true;
+		}
+
+		AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
+		AnnotatedType[] arguments = parameterizedType.getAnnotatedActualTypeArguments();
+
+		if (typeInformation.isCollectionLike() && arguments.length == 1) {
+			return AnnotatedElementUtils.hasAnnotation(arguments[0], annotationType);
+		}
+
+		if (typeInformation.isMap() && arguments.length == 2) {
+			return AnnotatedElementUtils.hasAnnotation(arguments[0], annotationType)
+					|| AnnotatedElementUtils.hasAnnotation(arguments[1], annotationType);
+		}
+
+		return false;
 	}
 }

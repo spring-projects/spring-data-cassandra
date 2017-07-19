@@ -25,54 +25,44 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecifica
  *
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public class CreateIndexCqlGeneratorUnitTests {
 
-	/**
-	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
-	 */
-	public static void assertPreamble(String indexName, String tableName, String cql) {
-		assertThat(cql.startsWith("CREATE INDEX " + indexName + " ON " + tableName)).isTrue();
+	@Test // DATACASS-213
+	public void createIndex() {
+
+		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().name("myindex").tableName("mytable")
+				.columnName("column");
+
+		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX myindex ON mytable (column);");
 	}
 
-	/**
-	 * Asserts that the given list of columns definitions are contained in the given CQL string properly.
-	 *
-	 * @param columnName IE, "(foo)"
-	 */
-	public static void assertColumn(String columnName, String cql) {
-		assertThat(cql.contains("(" + columnName + ")")).isTrue();
+	@Test // DATACASS-213
+	public void createCustomIndex() {
+
+		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().name("myindex").tableName("mytable")
+				.columnName("column").using("indexclass");
+
+		assertThat(CreateIndexCqlGenerator.toCql(spec))
+				.isEqualTo("CREATE CUSTOM INDEX myindex ON mytable (column) USING 'indexclass';");
 	}
 
-	/**
-	 * Convenient base class that other test classes can use so as not to repeat the generics declarations or
-	 * {@link #generator()} method.
-	 */
-	public static abstract class CreateIndexTest
-			extends AbstractIndexOperationCqlGeneratorTest<CreateIndexSpecification, CreateIndexCqlGenerator> {
+	@Test // DATACASS-213
+	public void createIndexOnKeys() {
 
-		public CreateIndexCqlGenerator generator() {
-			return new CreateIndexCqlGenerator(specification);
-		}
+		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().tableName("mytable").keys()
+				.columnName("column");
+
+		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX ON mytable (KEYS(column));");
 	}
 
-	public static class BasicTest extends CreateIndexTest {
+	@Test // DATACASS-213
+	public void createIndexIfNotExists() {
 
-		public String name = "myindex";
-		public String tableName = "mytable";
-		public String column1 = "column1";
+		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().tableName("mytable").columnName("column")
+				.ifNotExists();
 
-		public CreateIndexSpecification specification() {
-			return CreateIndexSpecification.createIndex().name(name).tableName(tableName).columnName(column1);
-		}
-
-		@Test
-		public void test() {
-			prepare();
-
-			assertPreamble(name, tableName, cql);
-			assertColumn(column1, cql);
-		}
+		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX IF NOT EXISTS ON mytable (column);");
 	}
-
 }

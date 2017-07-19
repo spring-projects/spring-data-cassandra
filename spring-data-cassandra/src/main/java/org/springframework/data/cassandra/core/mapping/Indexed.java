@@ -21,13 +21,34 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Identifies a secondary index in the table on a single, non-key column.
+ * Identifies a secondary index in the table on a single column.
+ * <p>
+ * The following columns of a {@link Table} type can be annotated with {@link Indexed}:
+ * <ul>
+ * <li>Scalar data types</li>
+ * <li>User-defined types</li>
+ * <li>Collection types</li>
+ * <li>Map type</li>
+ * </ul>
+ * <p>
+ * Map types distinguish between the column function applied before indexing. Maps support entry, key or value-level
+ * indexing with the restriction that only a single secondary index is allowed.
+ *
+ * <pre class="code">
+ * &#64;Table
+ * class Person {
+ *
+ * 	Map<@Indexed String, String> indexedKey; // allows CONTAINS KEY queries
+ * 	Map<String, @Indexed String> indexedValue; // allows CONTAINS queries
+ * }
+ * </pre>
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @Retention(value = RetentionPolicy.RUNTIME)
-@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE, ElementType.TYPE_USE })
 public @interface Indexed {
 
 	/**

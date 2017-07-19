@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
@@ -30,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -60,10 +58,6 @@ public class CassandraSessionFactoryBeanUnitTests {
 
 		factoryBean = spy(new CassandraSessionFactoryBean());
 		factoryBean.setCluster(mockCluster);
-	}
-
-	protected CqlIdentifier newCqlIdentifier(String id) {
-		return new CqlIdentifier(id, false);
 	}
 
 	@Test // DATACASS-219
@@ -99,7 +93,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 	}
 
 	private void performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction schemaAction,
-			final boolean dropTables, final boolean dropUnused, final boolean ifNotExists) {
+			boolean dropTables, boolean dropUnused, boolean ifNotExists) {
 
 		doAnswer(invocationOnMock -> {
 			assertThat(invocationOnMock.<Boolean> getArgument(0)).isEqualTo(dropTables);

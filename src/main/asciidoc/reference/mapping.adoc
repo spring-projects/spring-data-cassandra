@@ -245,6 +245,7 @@ be referenced with `@PrimaryKey`.
 where it is applied from being stored in the database.
 * `@Column` - applied at the field level. Describes the column name as it will be represented in the Cassandra table
 thus allowing the name to be different than the field name of the class.
+* `@Indexed` - applied at the field level. Describes the index to be created at session initialization.
 * `@CassandraType` - applied at the field level to specify a Cassandra data type. Types are derived from
 the declaration by default.
 * `@UserDefinedType` - applied at the type level to specify a Cassandra user-defined data type (UDT). Types are derived
@@ -286,6 +287,7 @@ public class Person {
   private String firstName;
 
   @Column(forceQuote = true)
+  @Indexed
   private String lastName;
 
   private Address address;
@@ -299,7 +301,7 @@ public class Person {
   @CassandraType(type = Name.SET, typeArguments = Name.BIGINT)
   private Set<Long> timestamps;
 
-  private Map<String, InetAddress> sessions;
+  private Map<@Indexed String, InetAddress> sessions;
 
   public Person(Integer ssn) {
     this.ssn = ssn;
@@ -346,6 +348,37 @@ public class Address {
 NOTE: Working with User-Defined Types requires a `UserTypeResolver` configured with the mapping context.
 See the <<cassandra.connectors,configuration chapter>> for how to configure a `UserTypeResolver`.
 
+==== Index creation
+
+You can annotate particular entity properties with `@Indexed` if you whish to create secondary indexes on application
+startup. Index creation will create simple secondary indexes for scalar types, user-defined, and collection types.
+
+Map types distinguish between `ENTRY`, `KEYS` and `VALUES` indexes. Index creation derives the index type from the
+annotated element:
+
+.Variants of map indexing
+====
+[source,java]
+----
+@Table
+public class Person {
+
+  @Id
+  private String key;
+
+  @Indexed("indexed_map")
+  private Map<String, String> entries;
+
+  private Map<@Indexed String, String> keys;
+
+  private Map<String, @Indexed String> values;
+
+  // …
+}
+----
+====
+
+WARNING: Index creation on session initialization may have a severe performance impact on application startup.
 
 [[cassandra.mapping.explicit-converters]]
 === Overriding Mapping with explicit Converters

@@ -21,8 +21,11 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
  * Builder class to construct a {@code CREATE TABLE} specification.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CreateTableSpecification extends TableSpecification<CreateTableSpecification> {
+
+	private boolean ifNotExists = false;
 
 	/**
 	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
@@ -47,8 +50,6 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	public static CreateTableSpecification createTable(String name) {
 		return new CreateTableSpecification().name(name);
 	}
-
-	private boolean ifNotExists = false;
 
 	@Override
 	public CreateTableSpecification name(CqlIdentifier name) {

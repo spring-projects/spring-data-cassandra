@@ -23,17 +23,22 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.annotation.AccessType;
+import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mapping.MappingException;
@@ -298,6 +303,133 @@ public class CassandraMappingContextUnitTests {
 		@PrimaryKey PrimaryKeyWithOrderedClusteredColumns key;
 	}
 
+	@Test // DATACASS-213
+	public void createIndexShouldConsiderAnnotatedProperties() {
+
+		List<CreateIndexSpecification> specifications = mappingContext
+				.getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(IndexedType.class));
+
+		CreateIndexSpecification firstname = getSpecificationFor("first_name", specifications);
+
+		assertThat(firstname.getColumnName()).isEqualTo(CqlIdentifier.cqlId("first_name"));
+		assertThat(firstname.getTableName()).isEqualTo(CqlIdentifier.cqlId("indexedtype"));
+		assertThat(firstname.getName()).isEqualTo(CqlIdentifier.cqlId("my_index"));
+		assertThat(firstname.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+
+		CreateIndexSpecification entries = getSpecificationFor("entries", specifications);
+
+		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.cqlId("entries"));
+		assertThat(entries.getTableName()).isEqualTo(CqlIdentifier.cqlId("indexedtype"));
+		assertThat(entries.getName()).isNull();
+		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.ENTRIES);
+
+		CreateIndexSpecification phoneNumbers = getSpecificationFor("phoneNumbers", specifications);
+
+		assertThat(phoneNumbers.getColumnName()).isEqualTo(CqlIdentifier.cqlId("phoneNumbers"));
+		assertThat(phoneNumbers.getTableName()).isEqualTo(CqlIdentifier.cqlId("indexedtype"));
+		assertThat(phoneNumbers.getName()).isNull();
+		assertThat(phoneNumbers.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+	}
+
+	@Test // DATACASS-213
+	public void createMapKeyIndexShouldConsiderAnnotatedAccessors() {
+
+		List<CreateIndexSpecification> specifications = mappingContext
+				.getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(IndexedMapKeyProperty.class));
+
+		CreateIndexSpecification entries = getSpecificationFor("entries", specifications);
+
+		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.cqlId("entries"));
+		assertThat(entries.getTableName()).isEqualTo(CqlIdentifier.cqlId("indexedmapkeyproperty"));
+		assertThat(entries.getName()).isNull();
+		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.KEYS);
+	}
+
+	@Test // DATACASS-213
+	public void createMapValueIndexShouldConsiderAnnotatedAccessors() {
+
+		List<CreateIndexSpecification> specifications = mappingContext
+				.getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(MapValueIndexProperty.class));
+
+		CreateIndexSpecification entries = getSpecificationFor("entries", specifications);
+
+		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.cqlId("entries"));
+		assertThat(entries.getTableName()).isEqualTo(CqlIdentifier.cqlId("mapvalueindexproperty"));
+		assertThat(entries.getName()).isNull();
+		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.VALUES);
+	}
+
+	@Test // DATACASS-213
+	public void createIndexForClusteredPrimaryKeyShouldConsiderAnnotatedAccessors() {
+
+		List<CreateIndexSpecification> specifications = mappingContext
+				.getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(CompositeKeyEntity.class));
+
+		CreateIndexSpecification entries = getSpecificationFor("last_name", specifications);
+
+		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.cqlId("last_name"));
+		assertThat(entries.getTableName()).isEqualTo(CqlIdentifier.cqlId("compositekeyentity"));
+		assertThat(entries.getName()).isEqualTo(CqlIdentifier.cqlId("my_index"));
+		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+	}
+
+	private static CreateIndexSpecification getSpecificationFor(String column,
+			List<CreateIndexSpecification> specifications) {
+
+		return specifications.stream().filter(it -> it.getColumnName().equals(CqlIdentifier.cqlId(column))).findFirst()
+				.orElseThrow(() -> new NoSuchElementException(column));
+	}
+
+	static class IndexedType {
+
+		@PrimaryKeyColumn("first_name") @Indexed("my_index") String firstname;
+
+		@Indexed List<String> phoneNumbers;
+
+		@Indexed Map<String, String> entries;
+
+		Map<@Indexed String, String> keys;
+
+		Map<String, @Indexed String> values;
+	}
+
+	@AccessType(Type.PROPERTY)
+	static class IndexedMapKeyProperty {
+
+		public Map<@Indexed String, String> getEntries() {
+			return null;
+		}
+
+		public void setEntries(Map<String, String> entries) {}
+	}
+
+	@AccessType(Type.PROPERTY)
+	static class MapValueIndexProperty {
+
+		public Map<String, String> getEntries() {
+			return null;
+		}
+
+		public void setEntries(Map<String, @Indexed String> entries) {}
+	}
+
+	@PrimaryKeyClass
+	static class CompositeKeyWithIndex {
+
+		@PrimaryKeyColumn(value = "first_name", type = PrimaryKeyType.PARTITIONED) String firstname;
+		@PrimaryKeyColumn("last_name") @Indexed("my_index") String lastname;
+	}
+
+	static class CompositeKeyEntity {
+
+		@PrimaryKey CompositeKeyWithIndex key;
+	}
+
+	static class InvalidMapIndex {
+
+		@Indexed Map<@Indexed String, String> mixed;
+	}
+
 	@Test // DATACASS-296
 	public void shouldCreatePersistentEntityIfNoConversionRegistered() {
 
@@ -542,5 +674,4 @@ public class CassandraMappingContextUnitTests {
 			return "serialized";
 		}
 	}
-
 }
