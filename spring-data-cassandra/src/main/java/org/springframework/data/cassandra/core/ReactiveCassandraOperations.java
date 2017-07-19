@@ -152,7 +152,9 @@ public interface ReactiveCassandraOperations {
 	/**
 	 * Determine whether the row {@code entityClass} with the given {@code id} exists.
 	 *
-	 * @param id must not be {@literal null}.
+	 * @param id the Id value. For single primary keys it's the plain value. For composite primary keys either the
+	 *          {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass} or
+	 *          {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
 	 * @param entityClass must not be {@literal null}.
 	 * @return {@literal true} if the object exists.
 	 * @throws DataAccessException if there is any problem issuing the execution.
@@ -162,7 +164,9 @@ public interface ReactiveCassandraOperations {
 	/**
 	 * Execute the Select by {@code id} for the given {@code entityClass}.
 	 *
-	 * @param id must not be {@literal null}.
+	 * @param id the Id value. For single primary keys it's the plain value. For composite primary keys either the
+	 *          {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass} or
+	 *          {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return the result object returned by the action or {@link Mono#empty()}
 	 * @throws DataAccessException if there is any problem issuing the execution.
@@ -229,7 +233,9 @@ public interface ReactiveCassandraOperations {
 	/**
 	 * Remove the given object from the table by id.
 	 *
-	 * @param id must not be {@literal null}.
+	 * @param id the Id value. For single primary keys it's the plain value. For composite primary keys either the
+	 *          {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass} or
+	 *          {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
 	 * @return {@literal true} if the deletion was applied.
 	 * @throws DataAccessException if there is any problem issuing the execution.

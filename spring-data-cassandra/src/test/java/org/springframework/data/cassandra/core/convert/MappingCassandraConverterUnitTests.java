@@ -50,8 +50,10 @@ import org.junit.rules.ExpectedException;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
@@ -77,6 +79,7 @@ import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
 
@@ -851,32 +854,88 @@ public class MappingCassandraConverterUnitTests {
 				mappingContext.getRequiredPersistentEntity(TypeWithMapId.class));
 	}
 
+	@Test // DATACASS-362
+	public void shouldSelectCompositeIdUsingMapId() {
+
+		Select select = QueryBuilder.select().from("foo");
+
+		MapId mapId = BasicMapId.id("firstname", "first").with("lastname", "last");
+
+		mappingCassandraConverter.write(mapId, select.where(),
+				mappingContext.getRequiredPersistentEntity(TypeWithMapId.class));
+
+		assertThat(select.toString()).isEqualTo("SELECT * FROM foo WHERE firstname='first' AND lastname='last';");
+	}
+
+	@Test // DATACASS-362
+	public void shouldSelectCompositeIdUsingCompositeKeyClass() {
+
+		Select select = QueryBuilder.select().from("foo");
+
+		CompositeKey key = new CompositeKey();
+		key.setFirstname("first");
+		key.setLastname("last");
+
+		mappingCassandraConverter.write(key, select.where(),
+				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
+
+		assertThat(select.toString()).isEqualTo("SELECT * FROM foo WHERE first_name='first' AND lastname='last';");
+	}
+
+	@Test // DATACASS-362
+	public void shouldSelectCompositeIdUsingCompositeKeyClassViaMapId() {
+
+		Select select = QueryBuilder.select().from("foo");
+
+		MapId mapId = BasicMapId.id("firstname", "first").with("lastname", "last");
+
+		mappingCassandraConverter.write(mapId, select.where(),
+				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
+
+		assertThat(select.toString()).isEqualTo("SELECT * FROM foo WHERE first_name='first' AND lastname='last';");
+	}
+
+	@Test // DATACASS-362
+	public void shouldDeleteCompositeIdUsingCompositeKeyClass() {
+
+		Delete delete = QueryBuilder.delete().from("foo");
+
+		CompositeKey key = new CompositeKey();
+		key.setFirstname("first");
+		key.setLastname("last");
+
+		mappingCassandraConverter.write(key, delete.where(),
+				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
+
+		assertThat(delete.toString()).isEqualTo("DELETE FROM foo WHERE first_name='first' AND lastname='last';");
+	}
+
 	@SuppressWarnings("unchecked")
-	private <T> List<T> getListValue(Insert statement) {
+	private static <T> List<T> getListValue(Insert statement) {
 
 		List<Object> values = getValues(statement);
 		return (List<T>) values.stream().filter(value -> value instanceof List).findFirst().orElse(null);
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> Set<T> getSetValue(Insert statement) {
+	private static <T> Set<T> getSetValue(Insert statement) {
 
 		List<Object> values = getValues(statement);
 		return (Set<T>) values.stream().filter(value -> value instanceof Set).findFirst().orElse(null);
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<Object> getValues(Insert statement) {
+	private static List<Object> getValues(Insert statement) {
 		return (List<Object>) ReflectionTestUtils.getField(statement, "values");
 	}
 
 	@SuppressWarnings("unchecked")
-	private Collection<Object> getAssignmentValues(Update statement) {
+	private static Collection<Object> getAssignmentValues(Update statement) {
 		return getAssignments(statement).values();
 	}
 
 	@SuppressWarnings("unchecked")
-	private Map<String, Object> getAssignments(Update statement) {
+	private static Map<String, Object> getAssignments(Update statement) {
 
 		Map<String, Object> result = new LinkedHashMap<>();
 
@@ -891,24 +950,24 @@ public class MappingCassandraConverterUnitTests {
 		return result;
 	}
 
-	private Collection<Object> getWhereValues(Update update) {
+	private static Collection<Object> getWhereValues(Update update) {
 		return getWherePredicates(update.where()).values();
 	}
 
-	private Collection<Object> getWhereValues(BuiltStatement where) {
+	private static Collection<Object> getWhereValues(BuiltStatement where) {
 		return getWherePredicates(where).values();
 	}
 
-	private Map<String, Object> getWherePredicates(Update statement) {
+	private static Map<String, Object> getWherePredicates(Update statement) {
 		return getWherePredicates(statement.where());
 	}
 
-	private Map<String, Object> getWherePredicates(Delete statement) {
+	private static Map<String, Object> getWherePredicates(Delete statement) {
 		return getWherePredicates(statement.where());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Map<String, Object> getWherePredicates(BuiltStatement where) {
+	private static Map<String, Object> getWherePredicates(BuiltStatement where) {
 
 		Map<String, Object> result = new LinkedHashMap<>();
 

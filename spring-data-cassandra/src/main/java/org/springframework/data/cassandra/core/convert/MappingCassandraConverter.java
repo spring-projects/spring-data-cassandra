@@ -144,6 +144,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return mappingContext;
 	}
 
+	/**
+	 * Read a {@link Row} into the requested target {@code type}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @param row must not be {@literal null}.
+	 * @return the converted valued.
+	 */
 	@SuppressWarnings("unchecked")
 	public <R> R readRow(Class<R> type, Row row) {
 
@@ -498,12 +505,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (id instanceof MapId) {
 
-			// FIXME: Generics
 			CassandraPersistentEntity<?> whereEntity = compositeIdProperty != null
 					? mappingContext.getRequiredPersistentEntity(compositeIdProperty)
 					: entity;
 
-			return getWhereClauses((MapId) id, whereEntity);
+			return getWhereClauses(MapId.class.cast(id), whereEntity);
 		}
 
 		if (idProperty == null) {
@@ -518,20 +524,16 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 						String.format("Cannot use [%s] as composite Id for [%s]", id, entity.getName()));
 			}
 
-			CassandraPersistentEntity<?> compositePrimaryKey =
-					mappingContext.getRequiredPersistentEntity(compositeIdProperty);
+			CassandraPersistentEntity<?> compositePrimaryKey = mappingContext
+					.getRequiredPersistentEntity(compositeIdProperty);
 
 			return getWhereClauses(getConvertingAccessor(id, compositePrimaryKey), compositePrimaryKey);
 		}
 
 		Class<?> targetType = getTargetType(idProperty);
 
-		if (getConversionService().canConvert(id.getClass(), targetType)) {
-			return Collections.singleton(
-					QueryBuilder.eq(idProperty.getColumnName().toCql(), getPotentiallyConvertedSimpleValue(id, targetType)));
-		}
-
-		return Collections.singleton(QueryBuilder.eq(idProperty.getColumnName().toCql(), id));
+		return Collections.singleton(
+				QueryBuilder.eq(idProperty.getColumnName().toCql(), getPotentiallyConvertedSimpleValue(id, targetType)));
 	}
 
 	private Object extractId(Object source, CassandraPersistentEntity<?> entity) {
@@ -608,8 +610,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (idProperty != null) {
 			// TODO: NullId
-			return propertyAccessor.getProperty(idProperty, idProperty.isCompositePrimaryKey()
-					? (Class<Object>) idProperty.getType() : (Class<Object>) getTargetType(idProperty));
+			return propertyAccessor.getProperty(idProperty,
+					idProperty.isCompositePrimaryKey() ? (Class<Object>) idProperty.getType()
+							: (Class<Object>) getTargetType(idProperty));
 		}
 
 		// if the class doesn't have an id property, then it's using MapId
