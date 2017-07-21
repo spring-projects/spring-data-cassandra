@@ -65,4 +65,14 @@ public class CreateIndexCqlGeneratorUnitTests {
 
 		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX IF NOT EXISTS ON mytable (column);");
 	}
+
+	@Test // DATACASS-306
+	public void createIndexWithOptions() {
+
+		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().tableName("mytable").columnName("column")
+				.withOption("foo", "b'a'r").withOption("type", "PREFIX");
+
+		assertThat(CreateIndexCqlGenerator.toCql(spec))
+				.isEqualTo("CREATE INDEX ON mytable (column) WITH OPTIONS = {'foo': 'b''a''r', 'type': 'PREFIX'};");
+	}
 }

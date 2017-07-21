@@ -31,8 +31,8 @@ import java.lang.annotation.Target;
  * <li>Map type</li>
  * </ul>
  * <p>
- * Map types distinguish between the column function applied before indexing. Maps support entry, key or value-level
- * indexing with the restriction that only a single secondary index is allowed.
+ * Map types distinguish allows entry, key or value-level indexing with the restriction that only a single secondary
+ * index is allowed.
  *
  * <pre class="code">
  * &#64;Table
@@ -46,6 +46,7 @@ import java.lang.annotation.Target;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @see Table
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE, ElementType.TYPE_USE })

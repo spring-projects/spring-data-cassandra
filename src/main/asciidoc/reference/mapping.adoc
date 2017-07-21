@@ -246,6 +246,7 @@ where it is applied from being stored in the database.
 * `@Column` - applied at the field level. Describes the column name as it will be represented in the Cassandra table
 thus allowing the name to be different than the field name of the class.
 * `@Indexed` - applied at the field level. Describes the index to be created at session initialization.
+* `@SASI` - applied at the field level. Allows SASI index creation during session initialization.
 * `@CassandraType` - applied at the field level to specify a Cassandra data type. Types are derived from
 the declaration by default.
 * `@UserDefinedType` - applied at the type level to specify a Cassandra user-defined data type (UDT). Types are derived
@@ -350,8 +351,11 @@ See the <<cassandra.connectors,configuration chapter>> for how to configure a `U
 
 ==== Index creation
 
-You can annotate particular entity properties with `@Indexed` if you whish to create secondary indexes on application
+You can annotate particular entity properties with `@Indexed` or `@SASI` if you whish to create secondary indexes on application
 startup. Index creation will create simple secondary indexes for scalar types, user-defined, and collection types.
+
+You can configure a SASI index to apply an analyzer such as `StandardAnalyzer` or `NonTokenizingAnalyzer` via
+`@StandardAnalyzed` respective `@NonTokenizingAnalyzed`.
 
 Map types distinguish between `ENTRY`, `KEYS` and `VALUES` indexes. Index creation derives the index type from the
 annotated element:
@@ -365,6 +369,9 @@ public class Person {
 
   @Id
   private String key;
+
+  @SASI @StandardAnalyzed
+  private String names;
 
   @Indexed("indexed_map")
   private Map<String, String> entries;

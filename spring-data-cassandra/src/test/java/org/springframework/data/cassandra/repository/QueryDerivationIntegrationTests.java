@@ -35,6 +35,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.QueryDerivationIntegrationTests.PersonRepository.NumberOfChildren;
@@ -140,7 +142,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test // DATACASS-172
 	public void shouldFindByMappedUdt() throws InterruptedException {
 
-		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS person_main_address ON person (mainaddress);");
+		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("person_main_address")
+				.ifNotExists().tableName("person").columnName("mainaddress");
+
+		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -153,7 +158,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test // DATACASS-172
 	public void shouldFindByMappedUdtStringQuery() throws InterruptedException {
 
-		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS person_main_address ON person (mainaddress);");
+		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("person_main_address")
+				.ifNotExists().tableName("person").columnName("mainaddress");
+
+		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -186,8 +194,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(Version.parse("3.4")));
 
-		template.getCqlOperations().execute(
-				"CREATE CUSTOM INDEX IF NOT EXISTS fn_starts_with ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex';");
+		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("fn_starts_with").ifNotExists()
+				.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex");
+
+		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -204,8 +214,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test // DATACASS-7
 	public void shouldFindByNumberOfChildren() throws Exception {
 
-		template.getCqlOperations()
-				.execute("CREATE INDEX IF NOT EXISTS person_number_of_children ON person (numberofchildren);");
+		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("person_number_of_children")
+				.ifNotExists().tableName("person").columnName("numberofchildren");
+
+		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -218,7 +230,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test // DATACASS-7
 	public void shouldFindByLocalDate() throws InterruptedException {
 
-		template.getCqlOperations().execute("CREATE INDEX IF NOT EXISTS person_created_date ON person (createddate);");
+		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("person_created_date")
+				.ifNotExists().tableName("person").columnName("createddate");
+
+		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -248,8 +263,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(Version.parse("3.4")));
 
-		template.getCqlOperations().execute(
-				"CREATE CUSTOM INDEX IF NOT EXISTS fn_starts_with ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex';");
+		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("fn_starts_with").ifNotExists()
+				.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex");
+
+		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -265,9 +282,11 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(Version.parse("3.4")));
 
-		template.getCqlOperations().execute(
-				"CREATE CUSTOM INDEX IF NOT EXISTS fn_contains ON person (nickname) USING 'org.apache.cassandra.index.sasi.SASIIndex'\n"
-						+ "WITH OPTIONS = { 'mode': 'CONTAINS' };");
+		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("fn_contains").ifNotExists()
+				.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex")
+				.withOption("mode", "CONTAINS");
+
+		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
