@@ -17,8 +17,14 @@ package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.cassandra.core.cql.CqlStringUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
+import org.springframework.util.StringUtils;
 
 /**
  * CQL generator for generating a {@code CREATE INDEX} statement.
@@ -63,8 +69,25 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 			cql.append(" USING ").append("'").append(spec().getUsing()).append("'");
 		}
 
+		Map<String, String> options = spec().getOptions();
+
+		if (!options.isEmpty()) {
+
+			List<String> entries = new ArrayList<>(options.size());
+
+			options.forEach((key, value) -> entries
+					.add(String.format("'%s': '%s'", CqlStringUtils.escapeSingle(key), CqlStringUtils.escapeSingle(value))));
+
+			StringBuilder optionsCql = new StringBuilder(" WITH OPTIONS = ").append("{");
+			optionsCql.append(StringUtils.collectionToDelimitedString(entries, ", "));
+
+			optionsCql.append("}");
+			cql.append(optionsCql);
+		}
+
 		cql.append(";");
 
 		return cql;
 	}
+
 }

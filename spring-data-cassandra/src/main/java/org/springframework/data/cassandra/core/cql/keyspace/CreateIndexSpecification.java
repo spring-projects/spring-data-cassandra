@@ -17,6 +17,11 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -42,6 +47,8 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	private ColumnFunction columnFunction = ColumnFunction.NONE;
 
 	private String using;
+
+	private Map<String, String> options = new LinkedHashMap<>();
 
 	/**
 	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
@@ -170,10 +177,14 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	/**
 	 * Set a {@link ColumnFunction} such as {@code KEYS(…)}, {@code ENTRIES(…)}.
 	 *
+	 * @param columnFunction column function to apply, must not be {@literal null}.
 	 * @return this
 	 * @since 2.0
 	 */
 	public CreateIndexSpecification columnFunction(ColumnFunction columnFunction) {
+
+		Assert.notNull(columnFunction, "ColumnFunction must not be null");
+
 		this.columnFunction = columnFunction;
 		return this;
 	}
@@ -183,14 +194,42 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/**
+	 * Configure a Index-creation options using key-value pairs.
+	 *
+	 * @param name option name.
+	 * @param value option value.
+	 * @return this
+	 * @since 2.0
+	 */
+	public CreateIndexSpecification withOption(String name, String value) {
+
+		this.options.put(name, value);
+		return this;
+	}
+
+	/**
+	 * @return index options map.
+	 */
+	public Map<String, String> getOptions() {
+		return Collections.unmodifiableMap(options);
+	}
+
+	/**
 	 * Sets the table name.
 	 *
+	 * @param tableName must not be {@literal null} or empty.
 	 * @return this
 	 */
 	public CreateIndexSpecification tableName(String tableName) {
 		return tableName(cqlId(tableName));
 	}
 
+	/**
+	 * Sets the table name.
+	 *
+	 * @param tableName must not be {@literal null}.
+	 * @return this
+	 */
 	public CreateIndexSpecification tableName(CqlIdentifier tableName) {
 
 		Assert.notNull(tableName, "CqlIdentifier must not be null");
@@ -207,10 +246,22 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		return tableName;
 	}
 
+	/**
+	 * Sets the column name.
+	 *
+	 * @param columnName must not be {@literal null} or empty.
+	 * @return this
+	 */
 	public CreateIndexSpecification columnName(String columnName) {
 		return columnName(cqlId(columnName));
 	}
 
+	/**
+	 * Sets the column name.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return this
+	 */
 	public CreateIndexSpecification columnName(CqlIdentifier columnName) {
 
 		Assert.notNull(columnName, "CqlIdentifier must not be null");
@@ -225,6 +276,30 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * @since 2.0
 	 */
 	public enum ColumnFunction {
-		NONE, KEYS, VALUES, ENTRIES, FULL,
+
+		/**
+		 * Use the plain column value for indexing.
+		 */
+		NONE,
+
+		/**
+		 * Index keys for {@link Map} typed columns.
+		 */
+		KEYS,
+
+		/**
+		 * Index values for {@link Map} typed columns.
+		 */
+		VALUES,
+
+		/**
+		 * Index keys and values (entry-level indexing) for {@link Map} typed columns.
+		 */
+		ENTRIES,
+
+		/**
+		 * Index the entire {@link Collection}/{@link Map} as-is to match on whole collections/maps as predicate.
+		 */
+		FULL
 	}
 }
