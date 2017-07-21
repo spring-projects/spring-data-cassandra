@@ -142,6 +142,17 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 		}
 	}
 
+	@Test // DATACASS-213
+	public void shouldFailForIndexedPrimaryKey() {
+
+		try {
+			verifier.verify(getEntity(InvalidIndexedPrimaryKeyType.class));
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e).hasMessageContaining("@Indexed cannot be used on primary key classes");
+		}
+	}
+
 	private CassandraPersistentEntity<?> getEntity(Class<?> entityClass) {
 		return context.getRequiredPersistentEntity(entityClass);
 	}
@@ -234,6 +245,13 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	static class SubclassPK extends MultiPrimaryKeyColumns {
 
 		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) String pk;
+	}
+
+	@PrimaryKeyClass
+	@Indexed
+	static class InvalidIndexedPrimaryKeyType {
+
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
 	}
 
 	private static class NoOpVerifier implements CassandraPersistentEntityMetadataVerifier {

@@ -165,6 +165,7 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 
 		schemaCreator.createUserTypes(ifNotExists);
 		schemaCreator.createTables(ifNotExists);
+		schemaCreator.createIndexes(ifNotExists);
 	}
 
 	/**

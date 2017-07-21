@@ -19,6 +19,7 @@ import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
 import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.UserTypeUtil.FrozenLiteralDataType;
@@ -371,7 +373,7 @@ public class CassandraMappingContext
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		final CreateTableSpecification specification = createTable().name(entity.getTableName());
+		CreateTableSpecification specification = createTable().name(entity.getTableName());
 
 		for (CassandraPersistentProperty property : entity) {
 
@@ -414,6 +416,36 @@ public class CassandraMappingContext
 		}
 
 		return specification;
+	}
+
+	/**
+	 * @param entity must not be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
+	public List<CreateIndexSpecification> getCreateIndexSpecificationsFor(CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
+
+		return getCreateIndexSpecifications(entity.getTableName(), entity);
+	}
+
+	private List<CreateIndexSpecification> getCreateIndexSpecifications(CqlIdentifier tableName,
+			CassandraPersistentEntity<?> entity) {
+
+		List<CreateIndexSpecification> indexes = new ArrayList<>();
+
+		for (CassandraPersistentProperty property : entity) {
+
+			if (property.isCompositePrimaryKey()) {
+				indexes.addAll(getCreateIndexSpecifications(tableName, getRequiredPersistentEntity(property)));
+			} else {
+				indexes.addAll(IndexSpecificationFactory.createIndexSpecifications(property));
+			}
+		}
+
+		indexes.forEach(it -> it.tableName(entity.getTableName()));
+		return indexes;
 	}
 
 	/**

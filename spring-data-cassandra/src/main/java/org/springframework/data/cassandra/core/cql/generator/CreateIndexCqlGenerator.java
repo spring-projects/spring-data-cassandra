@@ -17,13 +17,21 @@ package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.cassandra.core.cql.CqlStringUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
+import org.springframework.util.StringUtils;
 
 /**
  * CQL generator for generating a {@code CREATE INDEX} statement.
  *
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSpecification> {
 
@@ -40,17 +48,46 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 
 		cql = noNull(cql);
 
-		cql.append("CREATE").append(spec().isCustom() ? " CUSTOM" : "").append(" INDEX ")
-				.append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
-				.append(spec().getName() == null ? "" : spec().getName()).append(" ON ").append(spec().getTableName())
-				.append(" (").append(spec().getColumnName()).append(")");
+		cql.append("CREATE").append(spec().isCustom() ? " CUSTOM" : "").append(" INDEX")
+				.append(spec().getIfNotExists() ? " IF NOT EXISTS" : "");
+
+		if (spec().getName() != null) {
+			cql.append(" ").append(spec().getName());
+		}
+
+		cql.append(" ON ").append(spec().getTableName()).append(" (");
+
+		if (spec().getColumnFunction() != ColumnFunction.NONE) {
+			cql.append(spec().getColumnFunction().name()).append("(").append(spec().getColumnName()).append(")");
+		} else {
+			cql.append(spec().getColumnName());
+		}
+
+		cql.append(")");
 
 		if (spec().isCustom()) {
-			cql.append(" USING ").append(spec().getUsing());
+			cql.append(" USING ").append("'").append(spec().getUsing()).append("'");
+		}
+
+		Map<String, String> options = spec().getOptions();
+
+		if (!options.isEmpty()) {
+
+			List<String> entries = new ArrayList<>(options.size());
+
+			options.forEach((key, value) -> entries
+					.add(String.format("'%s': '%s'", CqlStringUtils.escapeSingle(key), CqlStringUtils.escapeSingle(value))));
+
+			StringBuilder optionsCql = new StringBuilder(" WITH OPTIONS = ").append("{");
+			optionsCql.append(StringUtils.collectionToDelimitedString(entries, ", "));
+
+			optionsCql.append("}");
+			cql.append(optionsCql);
 		}
 
 		cql.append(";");
 
 		return cql;
 	}
+
 }

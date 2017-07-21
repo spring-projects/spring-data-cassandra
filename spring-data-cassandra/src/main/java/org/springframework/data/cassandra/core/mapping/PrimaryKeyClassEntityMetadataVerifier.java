@@ -51,6 +51,11 @@ public class PrimaryKeyClassEntityMetadataVerifier implements CassandraPersisten
 
 		Class<?> entityType = entity.getType();
 
+		// @Indexed not allowed on type level
+		if (entity.isAnnotationPresent(Indexed.class)) {
+			exceptions.add(new MappingException("@Indexed cannot be used on primary key classes"));
+		}
+
 		// Ensure entity is not both a @Table(@Persistent) and a @PrimaryKey
 		if (entity.isAnnotationPresent(Table.class)) {
 			exceptions.add(new MappingException(String.format("Entity cannot be of type @%s and @%s",
