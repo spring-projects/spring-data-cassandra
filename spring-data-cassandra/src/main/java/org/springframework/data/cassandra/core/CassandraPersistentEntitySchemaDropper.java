@@ -65,11 +65,12 @@ public class CassandraPersistentEntitySchemaDropper {
 	 */
 	public void dropTables(boolean dropUnused) {
 
-		cassandraAdminOperations.getKeyspaceMetadata().getTables() //
-				.stream() //
-				.map(AbstractTableMetadata::getName) //
-				.map(CqlIdentifier::cqlId) //
-				.filter(table -> dropUnused || mappingContext.usesTable(table)).forEach(cassandraAdminOperations::dropTable);
+		this.cassandraAdminOperations.getKeyspaceMetadata().getTables()
+				.stream()
+				.map(AbstractTableMetadata::getName)
+				.map(CqlIdentifier::cqlId)
+				.filter(table -> dropUnused || this.mappingContext.usesTable(table))
+				.forEach(this.cassandraAdminOperations::dropTable);
 	}
 
 	/**
@@ -81,17 +82,17 @@ public class CassandraPersistentEntitySchemaDropper {
 	 */
 	public void dropUserTypes(boolean dropUnused) {
 
-		Set<CqlIdentifier> canRecreate = mappingContext.getUserDefinedTypeEntities().stream()
+		Set<CqlIdentifier> canRecreate = this.mappingContext.getUserDefinedTypeEntities().stream()
 				.map(CassandraPersistentEntity::getTableName).collect(Collectors.toSet());
 
-		cassandraAdminOperations.getKeyspaceMetadata().getUserTypes().forEach(userType -> {
+		this.cassandraAdminOperations.getKeyspaceMetadata().getUserTypes().forEach(userType -> {
 
 			CqlIdentifier typeName = CqlIdentifier.cqlId(userType.getTypeName());
 
 			if (canRecreate.contains(typeName)) {
-				cassandraAdminOperations.dropUserType(typeName);
+				this.cassandraAdminOperations.dropUserType(typeName);
 			} else if (dropUnused && !mappingContext.usesUserType(typeName)) {
-				cassandraAdminOperations.dropUserType(typeName);
+				this.cassandraAdminOperations.dropUserType(typeName);
 			}
 		});
 	}

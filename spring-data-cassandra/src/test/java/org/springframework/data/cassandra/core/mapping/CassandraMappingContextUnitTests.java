@@ -15,8 +15,10 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -27,6 +29,7 @@ import java.util.NoSuchElementException;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
@@ -304,8 +307,8 @@ public class CassandraMappingContextUnitTests {
 	@Test // DATACASS-213
 	public void createIndexShouldConsiderAnnotatedProperties() {
 
-		List<CreateIndexSpecification> specifications = mappingContext
-				.getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(IndexedType.class));
+		List<CreateIndexSpecification> specifications = mappingContext.getCreateIndexSpecificationsFor(
+				mappingContext.getRequiredPersistentEntity(IndexedType.class));
 
 		CreateIndexSpecification firstname = getSpecificationFor("first_name", specifications);
 

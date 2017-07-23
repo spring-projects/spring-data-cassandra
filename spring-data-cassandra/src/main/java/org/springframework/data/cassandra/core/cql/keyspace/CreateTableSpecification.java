@@ -76,7 +76,7 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	}
 
 	public boolean getIfNotExists() {
-		return ifNotExists;
+		return this.ifNotExists;
 	}
 
 	@Override

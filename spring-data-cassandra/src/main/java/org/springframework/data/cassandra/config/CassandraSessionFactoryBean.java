@@ -53,11 +53,11 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		Assert.state(converter != null, "Converter was not properly initialized");
+		Assert.state(this.converter != null, "Converter was not properly initialized");
 
 		super.afterPropertiesSet();
 
-		admin = new CassandraAdminTemplate(getObject(), converter);
+		this.admin = new CassandraAdminTemplate(getObject(), this.converter);
 
 		performSchemaAction();
 	}
@@ -72,13 +72,13 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 		boolean dropUnused = DEFAULT_DROP_UNUSED_TABLES;
 		boolean ifNotExists = DEFAULT_CREATE_IF_NOT_EXISTS;
 
-		switch (schemaAction) {
+		switch (this.schemaAction) {
 			case RECREATE_DROP_UNUSED:
 				dropUnused = true;
 			case RECREATE:
 				drop = true;
 			case CREATE_IF_NOT_EXISTS:
-				ifNotExists = SchemaAction.CREATE_IF_NOT_EXISTS.equals(schemaAction);
+				ifNotExists = SchemaAction.CREATE_IF_NOT_EXISTS.equals(this.schemaAction);
 			case CREATE:
 				create = true;
 			case NONE:
@@ -133,7 +133,7 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	 * @return the {@link SchemaAction}.
 	 */
 	public SchemaAction getSchemaAction() {
-		return schemaAction;
+		return this.schemaAction;
 	}
 
 	/**
@@ -151,8 +151,8 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 
 	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists) {
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(
-				getMappingContext(), getCassandraAdminOperations());
+		CassandraPersistentEntitySchemaCreator schemaCreator =
+				new CassandraPersistentEntitySchemaCreator(getMappingContext(), getCassandraAdminOperations());
 
 		if (drop) {
 

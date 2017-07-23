@@ -19,16 +19,16 @@ import com.datastax.driver.core.DataType;
 
 public class CqlStringUtils {
 
-	protected static final String SINGLE_QUOTE = "\'";
-	protected static final String DOUBLE_SINGLE_QUOTE = "\'\'";
-	public static final String DOUBLE_QUOTE = "\"";
+	protected static final String DOUBLE_QUOTE = "\"";
 	protected static final String DOUBLE_DOUBLE_QUOTE = "\"\"";
+	protected static final String DOUBLE_SINGLE_QUOTE = "\'\'";
+	protected static final String SINGLE_QUOTE = "\'";
 	protected static final String EMPTY_STRING = "";
 	protected static final String TYPE_PARAMETER_PREFIX = "<";
 	protected static final String TYPE_PARAMETER_SUFFIX = ">";
 
-	public static StringBuilder noNull(StringBuilder sb) {
-		return sb == null ? new StringBuilder() : sb;
+	public static StringBuilder noNull(StringBuilder builder) {
+		return (builder == null ? new StringBuilder() : builder);
 	}
 
 	/**
@@ -36,48 +36,42 @@ public class CqlStringUtils {
 	 * encasing the result in single quotes. Given {@code null}, returns <code>null</code>.
 	 */
 	public static String valuize(String candidate) {
-
-		if (candidate == null) {
-			return null;
-		}
-		return singleQuote(escapeSingle(candidate));
+		return (candidate != null ? singleQuote(escapeSingle(candidate)) : null);
 	}
 
 	/**
 	 * Doubles single quote characters (' -&gt; ''). Given {@code null}, returns <code>null</code>.
 	 */
 	public static String escapeSingle(Object thing) {
-		return thing == null ? null : thing.toString().replace(SINGLE_QUOTE, DOUBLE_SINGLE_QUOTE);
+		return (thing == null ? null : thing.toString().replace(SINGLE_QUOTE, DOUBLE_SINGLE_QUOTE));
 	}
 
 	/**
 	 * Doubles double quote characters (" -&gt; ""). Given {@code null}, returns <code>null</code>.
 	 */
 	public static String escapeDouble(Object thing) {
-		return thing == null ? null : thing.toString().replace(DOUBLE_QUOTE, DOUBLE_DOUBLE_QUOTE);
+		return (thing == null ? null : thing.toString().replace(DOUBLE_QUOTE, DOUBLE_DOUBLE_QUOTE));
 	}
 
 	/**
 	 * Surrounds given object's {@link Object#toString()} with single quotes. Given {@code null}, returns {@code null}.
 	 */
 	public static String singleQuote(Object thing) {
-		return thing == null ? null
-				: new StringBuilder().append(SINGLE_QUOTE).append(thing).append(SINGLE_QUOTE).toString();
+		return (thing == null ? null : SINGLE_QUOTE.concat(thing.toString()).concat(SINGLE_QUOTE));
 	}
 
 	/**
 	 * Surrounds given object's {@link Object#toString()} with double quotes. Given {@code null}, returns {@code null}.
 	 */
 	public static String doubleQuote(Object thing) {
-		return thing == null ? null
-				: new StringBuilder().append(DOUBLE_QUOTE).append(thing).append(DOUBLE_QUOTE).toString();
+		return (thing == null ? null : DOUBLE_QUOTE.concat(thing.toString()).concat(DOUBLE_QUOTE));
 	}
 
 	/**
 	 * Removed single quotes from quoted String option values
 	 */
 	public static String removeSingleQuotes(Object thing) {
-		return thing == null ? null : ((String) thing).replaceAll(SINGLE_QUOTE, EMPTY_STRING);
+		return (thing == null ? null : thing.toString().replaceAll(SINGLE_QUOTE, EMPTY_STRING));
 	}
 
 	/**
@@ -91,8 +85,9 @@ public class CqlStringUtils {
 			return dataType.getName().name();
 		}
 
-		StringBuilder s = new StringBuilder();
-		s.append(dataType.getName().name()).append(TYPE_PARAMETER_PREFIX);
+		StringBuilder builder = new StringBuilder();
+
+		builder.append(dataType.getName().name()).append(TYPE_PARAMETER_PREFIX);
 
 		boolean first = true;
 
@@ -101,29 +96,33 @@ public class CqlStringUtils {
 			if (first) {
 				first = false;
 			} else {
-				s.append(',');
+				builder.append(',');
 			}
 
-			s.append(argDataType.getName().name());
+			builder.append(argDataType.getName().name());
 		}
 
-		return s.append(TYPE_PARAMETER_SUFFIX).toString();
+		return builder.append(TYPE_PARAMETER_SUFFIX).toString();
 	}
 
-	public static String unquote(String s) {
-		return unquote(s, "\"");
+	public static String unquote(String value) {
+		return unquote(value, "\"");
 	}
 
-	public static String unquote(String s, String quoteChar) {
-		if (s == null) {
-			return s;
+	public static String unquote(String value, String quoteChar) {
+
+		if (value == null) {
+			return null;
 		}
-		if (!s.startsWith(quoteChar) || !s.endsWith(quoteChar)) {
-			return s;
+
+		if (!value.startsWith(quoteChar) || !value.endsWith(quoteChar)) {
+			return value;
 		}
-		if (s.length() <= 2) {
-			return s;
+
+		if (value.length() <= 2) {
+			return value;
 		}
-		return s.substring(1, s.length() - 1);
+
+		return value.substring(1, value.length() - 1);
 	}
 }

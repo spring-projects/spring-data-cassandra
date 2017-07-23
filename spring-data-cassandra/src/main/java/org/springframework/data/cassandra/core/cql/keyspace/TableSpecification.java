@@ -145,6 +145,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	public T clusteredKeyColumn(CqlIdentifier name, DataType type, Ordering ordering) {
 
 		Assert.notNull(ordering, "Ordering must not be null");
+
 		return column(name, type, Optional.of(CLUSTERED), Optional.of(ordering));
 	}
 
@@ -228,23 +229,23 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 		ColumnSpecification column = new ColumnSpecification().name(name).type(type);
 
 		optionalKeyType.ifPresent(keyType -> {
+
 			column.keyType(keyType);
 			optionalOrdering.filter(o -> keyType == CLUSTERED).ifPresent(column::ordering);
 
 			if (keyType == PrimaryKeyType.PARTITIONED) {
-				partitionKeyColumns.add(column);
+				this.partitionKeyColumns.add(column);
 			}
 
 			if (keyType == PrimaryKeyType.CLUSTERED) {
-				clusteredKeyColumns.add(column);
+				this.clusteredKeyColumns.add(column);
 			}
-		}
+		});
 
-		);
-		columns.add(column);
+		this.columns.add(column);
 
 		if (!optionalKeyType.isPresent()) {
-			nonKeyColumns.add(column);
+			this.nonKeyColumns.add(column);
 		}
 
 		return (T) this;
@@ -255,7 +256,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 */
 	@Override
 	public List<ColumnSpecification> getColumns() {
-		return Collections.unmodifiableList(columns);
+		return Collections.unmodifiableList(this.columns);
 	}
 
 	/**
@@ -263,7 +264,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 */
 	@Override
 	public List<ColumnSpecification> getPartitionKeyColumns() {
-		return Collections.unmodifiableList(partitionKeyColumns);
+		return Collections.unmodifiableList(this.partitionKeyColumns);
 	}
 
 	/**
@@ -271,7 +272,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 */
 	@Override
 	public List<ColumnSpecification> getClusteredKeyColumns() {
-		return Collections.unmodifiableList(clusteredKeyColumns);
+		return Collections.unmodifiableList(this.clusteredKeyColumns);
 	}
 
 	/**
@@ -280,9 +281,10 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	@Override
 	public List<ColumnSpecification> getPrimaryKeyColumns() {
 
-		ArrayList<ColumnSpecification> primaryKeyColumns = new ArrayList<>();
-		primaryKeyColumns.addAll(partitionKeyColumns);
-		primaryKeyColumns.addAll(clusteredKeyColumns);
+		List<ColumnSpecification> primaryKeyColumns = new ArrayList<>();
+
+		primaryKeyColumns.addAll(this.partitionKeyColumns);
+		primaryKeyColumns.addAll(this.clusteredKeyColumns);
 
 		return Collections.unmodifiableList(primaryKeyColumns);
 	}
@@ -292,6 +294,6 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 */
 	@Override
 	public List<ColumnSpecification> getNonKeyColumns() {
-		return Collections.unmodifiableList(nonKeyColumns);
+		return Collections.unmodifiableList(this.nonKeyColumns);
 	}
 }

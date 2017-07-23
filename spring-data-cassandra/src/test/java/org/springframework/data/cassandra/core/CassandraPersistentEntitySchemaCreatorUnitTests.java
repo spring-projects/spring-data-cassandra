@@ -16,7 +16,8 @@
 package org.springframework.data.cassandra.core;
 
 import static org.mockito.ArgumentMatchers.matches;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -67,8 +69,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		context.getPersistentEntity(MoonType.class);
 		context.getPersistentEntity(PlanetType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
-				adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator =
+				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
 
 		schemaCreator.createUserTypes(false);
 
@@ -80,8 +82,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 
 		context.getPersistentEntity(PlanetType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
-				adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator =
+				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
 
 		schemaCreator.createUserTypes(false);
 
@@ -95,8 +97,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 
 		context.getPersistentEntity(SpaceAgencyType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
-				adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator =
+				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
 
 		schemaCreator.createUserTypes(false);
 
@@ -110,8 +112,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 
 		context.getPersistentEntity(PlanetType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
-				adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator =
+				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
 
 		schemaCreator.createUserTypes(false);
 
@@ -123,8 +125,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 
 		context.getPersistentEntity(IndexedEntity.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
-				adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator =
+				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
 
 		schemaCreator.createIndexes(false);
 
@@ -134,6 +136,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 	private void verifyTypesGetCreatedInOrderFor(String... typenames) {
 
 		InOrder inOrder = Mockito.inOrder(operations);
+
 		for (String typename : typenames) {
 			inOrder.verify(operations).execute(Mockito.contains("CREATE TYPE " + typename));
 		}

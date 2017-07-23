@@ -94,14 +94,15 @@ class IndexSpecificationFactory {
 				AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
 				AnnotatedType[] typeArgs = parameterizedType.getAnnotatedActualTypeArguments();
 
-				Indexed keyIndex = typeArgs.length == 2 ? AnnotatedElementUtils.getMergedAnnotation(typeArgs[0], Indexed.class)
-						: null;
+				Indexed keyIndex = typeArgs.length == 2
+						? AnnotatedElementUtils.getMergedAnnotation(typeArgs[0], Indexed.class) : null;
+
 				Indexed valueIndex = typeArgs.length == 2
-						? AnnotatedElementUtils.getMergedAnnotation(typeArgs[1], Indexed.class)
-						: null;
+						? AnnotatedElementUtils.getMergedAnnotation(typeArgs[1], Indexed.class) : null;
 
 				if ((!indexes.isEmpty() && (keyIndex != null || valueIndex != null))
 						|| (keyIndex != null && valueIndex != null)) {
+
 					throw new MappingException("Multiple index declarations for " + property
 							+ " found. A map index must be either declared for entries, keys or values.");
 				}
@@ -135,6 +136,7 @@ class IndexSpecificationFactory {
 
 	private static CreateIndexSpecification createIndexSpecification(SASI annotation,
 			CassandraPersistentProperty property) {
+
 		CreateIndexSpecification index;
 
 		if (StringUtils.hasText(annotation.value())) {
@@ -150,8 +152,8 @@ class IndexSpecificationFactory {
 		long analyzerCount = INDEX_CONFIGURERS.keySet().stream().filter(property::isAnnotationPresent).count();
 
 		if (analyzerCount > 1) {
-			throw new IllegalStateException(
-					String.format("SASI indexed property %s must be annotated only with a single analyzer annotation", property));
+			throw new IllegalStateException(String.format(
+					"SASI indexed property %s must be annotated only with a single analyzer annotation", property));
 		}
 
 		for (Class<? extends Annotation> annotationType : INDEX_CONFIGURERS.keySet()) {
@@ -161,6 +163,7 @@ class IndexSpecificationFactory {
 			}
 
 			Annotation analyzed = property.findAnnotation(annotationType);
+
 			INDEX_CONFIGURERS.get(annotationType).accept(analyzed, index);
 		}
 

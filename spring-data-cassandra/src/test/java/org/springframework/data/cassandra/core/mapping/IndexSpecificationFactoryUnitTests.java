@@ -15,12 +15,13 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -63,6 +64,7 @@ public class IndexSpecificationFactoryUnitTests {
 		CreateIndexSpecification entries = createIndexFor(IndexedMapKeyProperty.class, "entries");
 
 		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.cqlId("entries"));
+		assertThat(entries.getTableName()).isNull();
 		assertThat(entries.getName()).isNull();
 		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.KEYS);
 	}
@@ -73,6 +75,7 @@ public class IndexSpecificationFactoryUnitTests {
 		CreateIndexSpecification entries = createIndexFor(MapValueIndexProperty.class, "entries");
 
 		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.cqlId("entries"));
+		assertThat(entries.getTableName()).isNull();
 		assertThat(entries.getName()).isNull();
 		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.VALUES);
 	}
@@ -83,11 +86,12 @@ public class IndexSpecificationFactoryUnitTests {
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "simpleSasi");
 
 		assertThat(simpleSasi.getColumnName()).isEqualTo(CqlIdentifier.cqlId("simplesasi"));
+		assertThat(simpleSasi.getTableName()).isNull();
 		assertThat(simpleSasi.isCustom()).isTrue();
 		assertThat(simpleSasi.getUsing()).isEqualTo("org.apache.cassandra.index.sasi.SASIIndex");
 		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
-		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX").doesNotContainKeys("analyzed",
-				"analyzer_class");
+		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX")
+				.doesNotContainKeys("analyzed", "analyzer_class");
 	}
 
 	@Test // DATACASS-306
@@ -96,10 +100,10 @@ public class IndexSpecificationFactoryUnitTests {
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiStandard");
 
 		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
-		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX") //
-				.containsEntry("analyzed", "true") //
-				.containsEntry("tokenization_skip_stop_words", "false") //
-				.containsEntry("analyzer_class", "org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer") //
+		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX")
+				.containsEntry("analyzed", "true")
+				.containsEntry("tokenization_skip_stop_words", "false")
+				.containsEntry("analyzer_class", "org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer")
 				.containsEntry("tokenization_locale", "de");
 	}
 
@@ -109,10 +113,10 @@ public class IndexSpecificationFactoryUnitTests {
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiStandardWithOptions");
 
 		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
-		assertThat(simpleSasi.getOptions()).containsEntry("tokenization_skip_stop_words", "true") //
-				.containsEntry("tokenization_locale", "de") //
-				.containsEntry("tokenization_enable_stemming", "true") //
-				.containsEntry("tokenization_normalize_uppercase", "true") //
+		assertThat(simpleSasi.getOptions()).containsEntry("tokenization_skip_stop_words", "true")
+				.containsEntry("tokenization_locale", "de")
+				.containsEntry("tokenization_enable_stemming", "true")
+				.containsEntry("tokenization_normalize_uppercase", "true")
 				.doesNotContainKey("tokenization_normalize_lowercase");
 	}
 
@@ -122,7 +126,7 @@ public class IndexSpecificationFactoryUnitTests {
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiStandardLowercase");
 
 		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
-		assertThat(simpleSasi.getOptions()).containsEntry("tokenization_normalize_lowercase", "true") //
+		assertThat(simpleSasi.getOptions()).containsEntry("tokenization_normalize_lowercase", "true")
 				.doesNotContainKey("tokenization_normalize_uppercase");
 	}
 
@@ -131,10 +135,10 @@ public class IndexSpecificationFactoryUnitTests {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiNontokenizing");
 
-		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX") //
-				.containsEntry("analyzed", "true") //
-				.containsEntry("case_sensitive", "true") //
-				.containsEntry("analyzer_class", "org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer") //
+		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX")
+				.containsEntry("analyzed", "true")
+				.containsEntry("case_sensitive", "true")
+				.containsEntry("analyzer_class", "org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer")
 				.doesNotContainKeys("normalize_lowercase", "normalize_uppercase");
 	}
 
@@ -143,8 +147,8 @@ public class IndexSpecificationFactoryUnitTests {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiNontokenizingLowercase");
 
-		assertThat(simpleSasi.getOptions()).containsEntry("normalize_lowercase", "true") //
-				.containsEntry("case_sensitive", "false") //
+		assertThat(simpleSasi.getOptions()).containsEntry("normalize_lowercase", "true")
+				.containsEntry("case_sensitive", "false")
 				.doesNotContainKey("normalize_uppercase");
 
 	}

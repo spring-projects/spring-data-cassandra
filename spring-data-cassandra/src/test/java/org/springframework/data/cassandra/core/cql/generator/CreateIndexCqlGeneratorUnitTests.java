@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 
 /**

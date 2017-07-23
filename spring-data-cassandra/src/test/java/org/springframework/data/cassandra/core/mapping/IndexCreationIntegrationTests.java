@@ -15,14 +15,15 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
@@ -85,6 +86,7 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 		Thread.sleep(500); // index creation is async so we do poor man's sync to await completion
 
 		TableMetadata metadata = getMetadata(createTable.getName().toCql());
+
 		assertThat(metadata.getIndex("withsasiindex_firstname_idx")).isNotNull();
 	}
 

@@ -28,6 +28,7 @@ import java.util.Map;
  * @see CachingOption
  */
 public enum TableOption implements Option {
+
 	/**
 	 * {@code comment}
 	 */
@@ -79,52 +80,52 @@ public enum TableOption implements Option {
 
 	@Override
 	public Class<?> getType() {
-		return delegate.getType();
+		return this.delegate.getType();
 	}
 
 	@Override
 	public boolean takesValue() {
-		return delegate.takesValue();
+		return this.delegate.takesValue();
 	}
 
 	@Override
 	public String getName() {
-		return delegate.getName();
+		return this.delegate.getName();
 	}
 
 	@Override
 	public boolean escapesValue() {
-		return delegate.escapesValue();
+		return this.delegate.escapesValue();
 	}
 
 	@Override
 	public boolean quotesValue() {
-		return delegate.quotesValue();
+		return this.delegate.quotesValue();
 	}
 
 	@Override
 	public boolean requiresValue() {
-		return delegate.requiresValue();
+		return this.delegate.requiresValue();
 	}
 
 	@Override
 	public void checkValue(Object value) {
-		delegate.checkValue(value);
+		this.delegate.checkValue(value);
 	}
 
 	@Override
 	public boolean isCoerceable(Object value) {
-		return delegate.isCoerceable(value);
+		return this.delegate.isCoerceable(value);
 	}
 
 	@Override
 	public String toString() {
-		return delegate.toString();
+		return this.delegate.toString();
 	}
 
 	@Override
 	public String toString(Object value) {
-		return delegate.toString(value);
+		return this.delegate.toString(value);
 	}
 
 	/**
@@ -144,7 +145,7 @@ public enum TableOption implements Option {
 		}
 
 		public String getValue() {
-			return value;
+			return this.value;
 		}
 
 		@Override
@@ -174,52 +175,52 @@ public enum TableOption implements Option {
 
 		@Override
 		public Class<?> getType() {
-			return delegate.getType();
+			return this.delegate.getType();
 		}
 
 		@Override
 		public boolean takesValue() {
-			return delegate.takesValue();
+			return this.delegate.takesValue();
 		}
 
 		@Override
 		public String getName() {
-			return delegate.getName();
+			return this.delegate.getName();
 		}
 
 		@Override
 		public boolean escapesValue() {
-			return delegate.escapesValue();
+			return this.delegate.escapesValue();
 		}
 
 		@Override
 		public boolean quotesValue() {
-			return delegate.quotesValue();
+			return this.delegate.quotesValue();
 		}
 
 		@Override
 		public boolean requiresValue() {
-			return delegate.requiresValue();
+			return this.delegate.requiresValue();
 		}
 
 		@Override
 		public void checkValue(Object value) {
-			delegate.checkValue(value);
+			this.delegate.checkValue(value);
 		}
 
 		@Override
 		public boolean isCoerceable(Object value) {
-			return delegate.isCoerceable(value);
+			return this.delegate.isCoerceable(value);
 		}
 
 		@Override
 		public String toString() {
-			return delegate.toString();
+			return this.delegate.toString();
 		}
 
 		@Override
 		public String toString(Object value) {
-			return delegate.toString(value);
+			return this.delegate.toString(value);
 		}
 
 	}
@@ -230,6 +231,7 @@ public enum TableOption implements Option {
 	 * @author Matthew T. Adams
 	 */
 	public enum CompactionOption implements Option {
+
 		/**
 		 * {@code class}
 		 */
@@ -275,52 +277,52 @@ public enum TableOption implements Option {
 
 		@Override
 		public Class<?> getType() {
-			return delegate.getType();
+			return this.delegate.getType();
 		}
 
 		@Override
 		public boolean takesValue() {
-			return delegate.takesValue();
+			return this.delegate.takesValue();
 		}
 
 		@Override
 		public String getName() {
-			return delegate.getName();
+			return this.delegate.getName();
 		}
 
 		@Override
 		public boolean escapesValue() {
-			return delegate.escapesValue();
+			return this.delegate.escapesValue();
 		}
 
 		@Override
 		public boolean quotesValue() {
-			return delegate.quotesValue();
+			return this.delegate.quotesValue();
 		}
 
 		@Override
 		public boolean requiresValue() {
-			return delegate.requiresValue();
+			return this.delegate.requiresValue();
 		}
 
 		@Override
 		public void checkValue(Object value) {
-			delegate.checkValue(value);
+			this.delegate.checkValue(value);
 		}
 
 		@Override
 		public boolean isCoerceable(Object value) {
-			return delegate.isCoerceable(value);
+			return this.delegate.isCoerceable(value);
 		}
 
 		@Override
 		public String toString() {
-			return delegate.toString();
+			return this.delegate.toString();
 		}
 
 		@Override
 		public String toString(Object value) {
-			return delegate.toString(value);
+			return this.delegate.toString(value);
 		}
 	}
 
@@ -330,6 +332,7 @@ public enum TableOption implements Option {
 	 * @author Matthew T. Adams
 	 */
 	public enum CompressionOption implements Option {
+
 		/**
 		 * {@code sstable_compression}
 		 */
@@ -351,52 +354,52 @@ public enum TableOption implements Option {
 
 		@Override
 		public Class<?> getType() {
-			return delegate.getType();
+			return this.delegate.getType();
 		}
 
 		@Override
 		public boolean takesValue() {
-			return delegate.takesValue();
+			return this.delegate.takesValue();
 		}
 
 		@Override
 		public String getName() {
-			return delegate.getName();
+			return this.delegate.getName();
 		}
 
 		@Override
 		public boolean escapesValue() {
-			return delegate.escapesValue();
+			return this.delegate.escapesValue();
 		}
 
 		@Override
 		public boolean quotesValue() {
-			return delegate.quotesValue();
+			return this.delegate.quotesValue();
 		}
 
 		@Override
 		public boolean requiresValue() {
-			return delegate.requiresValue();
+			return this.delegate.requiresValue();
 		}
 
 		@Override
 		public void checkValue(Object value) {
-			delegate.checkValue(value);
+			this.delegate.checkValue(value);
 		}
 
 		@Override
 		public boolean isCoerceable(Object value) {
-			return delegate.isCoerceable(value);
+			return this.delegate.isCoerceable(value);
 		}
 
 		@Override
 		public String toString() {
-			return delegate.toString();
+			return this.delegate.toString();
 		}
 
 		@Override
 		public String toString(Object value) {
-			return delegate.toString(value);
+			return this.delegate.toString(value);
 		}
 	}
 }

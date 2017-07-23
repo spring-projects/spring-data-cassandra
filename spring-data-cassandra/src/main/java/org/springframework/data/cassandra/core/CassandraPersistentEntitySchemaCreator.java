@@ -79,7 +79,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	public void createTables(boolean ifNotExists) {
 
-		createTableSpecifications(ifNotExists).forEach(specification -> cassandraAdminOperations.getCqlOperations()
+		createTableSpecifications(ifNotExists).forEach(specification -> this.cassandraAdminOperations.getCqlOperations()
 				.execute(CreateTableCqlGenerator.toCql(specification)));
 	}
 
@@ -91,8 +91,8 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	protected List<CreateTableSpecification> createTableSpecifications(boolean ifNotExists) {
 
-		return mappingContext.getTableEntities().stream()
-				.map(entity -> mappingContext.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists))
+		return this.mappingContext.getTableEntities().stream()
+				.map(entity -> this.mappingContext.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists))
 				.collect(Collectors.toList());
 	}
 
@@ -103,7 +103,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	public void createIndexes(boolean ifNotExists) {
 
-		createIndexSpecifications(ifNotExists).forEach(specification -> cassandraAdminOperations.getCqlOperations()
+		createIndexSpecifications(ifNotExists).forEach(specification -> this.cassandraAdminOperations.getCqlOperations()
 				.execute(CreateIndexCqlGenerator.toCql(specification)));
 	}
 
@@ -115,10 +115,9 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	protected List<CreateIndexSpecification> createIndexSpecifications(boolean ifNotExists) {
 
-		return mappingContext.getTableEntities() //
-				.stream() //
-				.flatMap(entity -> mappingContext.getCreateIndexSpecificationsFor(entity).stream()) //
-				.peek(it -> it.ifNotExists(ifNotExists)) //
+		return this.mappingContext.getTableEntities().stream()
+				.flatMap(entity -> this.mappingContext.getCreateIndexSpecificationsFor(entity).stream())
+				.peek(it -> it.ifNotExists(ifNotExists))
 				.collect(Collectors.toList());
 	}
 
@@ -129,9 +128,8 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	public void createUserTypes(boolean ifNotExists) {
 
-		createUserTypeSpecifications(ifNotExists) //
-				.forEach(specification -> cassandraAdminOperations.getCqlOperations() //
-						.execute(CreateUserTypeCqlGenerator.toCql(specification)));
+		createUserTypeSpecifications(ifNotExists).forEach(specification ->
+				this.cassandraAdminOperations.getCqlOperations().execute(CreateUserTypeCqlGenerator.toCql(specification)));
 	}
 
 	/**
@@ -142,8 +140,8 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	protected List<CreateUserTypeSpecification> createUserTypeSpecifications(boolean ifNotExists) {
 
-		Collection<? extends CassandraPersistentEntity<?>> entities = new ArrayList<>(
-				mappingContext.getUserDefinedTypeEntities());
+		Collection<? extends CassandraPersistentEntity<?>> entities =
+				new ArrayList<>(this.mappingContext.getUserDefinedTypeEntities());
 
 		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName = entities.stream()
 				.collect(Collectors.toMap(CassandraPersistentEntity::getTableName, entity -> entity));
@@ -151,6 +149,7 @@ public class CassandraPersistentEntitySchemaCreator {
 		List<CreateUserTypeSpecification> specifications = new ArrayList<>();
 
 		Set<CqlIdentifier> created = new HashSet<>();
+
 		entities.forEach(entity -> {
 
 			Set<CqlIdentifier> seen = new LinkedHashSet<>();
@@ -159,12 +158,12 @@ public class CassandraPersistentEntitySchemaCreator {
 			visitUserTypes(entity, seen);
 
 			List<CqlIdentifier> ordered = new ArrayList<>(seen);
+
 			Collections.reverse(ordered);
 
-			specifications.addAll(ordered
-					.stream().filter(created::add).map(identifier -> mappingContext
-							.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
-					.collect(Collectors.toList()));
+			specifications.addAll(ordered.stream().filter(created::add).map(identifier ->
+				this.mappingContext.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
+				.collect(Collectors.toList()));
 		});
 
 		return specifications;
@@ -174,7 +173,7 @@ public class CassandraPersistentEntitySchemaCreator {
 
 		for (CassandraPersistentProperty property : entity) {
 
-			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(property);
+			BasicCassandraPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(property);
 
 			if (persistentEntity == null) {
 				continue;

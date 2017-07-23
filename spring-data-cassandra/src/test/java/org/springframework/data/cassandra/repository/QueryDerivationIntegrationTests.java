@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -25,10 +25,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -50,6 +50,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import org.assertj.core.api.Assertions;
 
 import com.datastax.driver.core.Session;
 
@@ -77,7 +79,6 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		public SchemaAction getSchemaAction() {
 			return SchemaAction.RECREATE_DROP_UNUSED;
 		}
-
 	}
 
 	@Autowired CassandraOperations template;
@@ -95,9 +96,11 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		deleteAllEntities();
 
 		Person person = new Person("Walter", "White");
+
 		person.setNumberOfChildren(2);
 
 		person.setMainAddress(new AddressType("Albuquerque", "USA"));
+
 		person.setAlternativeAddresses(Arrays.asList(new AddressType("Albuquerque", "USA"),
 				new AddressType("New Hampshire", "USA"), new AddressType("Grocery Store", "Mexico")));
 

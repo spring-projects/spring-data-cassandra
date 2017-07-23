@@ -83,8 +83,8 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 			// Can only have one PK
 			if (idProperties.size() != 1) {
-				exceptions
-						.add(new MappingException(String.format("@%s types must have only one primary attribute, if any; Found %s",
+				exceptions.add(new MappingException(
+						String.format("@%s types must have only one primary attribute, if any; Found %s",
 								Table.class.getSimpleName(), idProperties.size())));
 
 				fail(entity, exceptions);
@@ -102,8 +102,8 @@ public class BasicCassandraPersistentEntityMetadataVerifier implements Cassandra
 
 		// We have no PKs & only PK Column(s); ensure at least one is of type PARTITIONED
 		if (!primaryKeyColumns.isEmpty() && partitionKeyColumns.isEmpty()) {
-			exceptions
-					.add(new MappingException(String.format("At least one of the @%s annotations must have a type of PARTITIONED",
+			exceptions.add(new MappingException(
+					String.format("At least one of the @%s annotations must have a type of PARTITIONED",
 							PrimaryKeyColumn.class.getSimpleName())));
 		}
 

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
+import static org.springframework.data.cassandra.core.cql.CqlStringUtils.noNull;
 
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.FieldSpecification;
@@ -60,6 +60,7 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 	}
 
 	private StringBuilder preambleCql(StringBuilder cql) {
+
 		return noNull(cql).append("CREATE TYPE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
 				.append(spec().getName());
 	}
@@ -74,6 +75,7 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 		boolean first = true;
 
 		for (FieldSpecification column : spec().getFields()) {
+
 			if (!first) {
 				cql.append(", ");
 			}

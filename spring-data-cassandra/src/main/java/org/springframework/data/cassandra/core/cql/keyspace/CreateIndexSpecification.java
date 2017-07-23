@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.cqlId;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -94,7 +94,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	public boolean getIfNotExists() {
-		return ifNotExists;
+		return this.ifNotExists;
 	}
 
 	/* (non-Javadoc)
@@ -102,7 +102,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 */
 	@Override
 	public boolean isCustom() {
-		return custom;
+		return this.custom;
 	}
 
 	public CreateIndexSpecification using(String className) {
@@ -123,7 +123,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 */
 	@Override
 	public String getUsing() {
-		return using;
+		return this.using;
 	}
 
 	/* (non-Javadoc)
@@ -131,7 +131,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 */
 	@Override
 	public CqlIdentifier getColumnName() {
-		return columnName;
+		return this.columnName;
 	}
 
 	/**
@@ -186,11 +186,12 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		Assert.notNull(columnFunction, "ColumnFunction must not be null");
 
 		this.columnFunction = columnFunction;
+
 		return this;
 	}
 
 	public ColumnFunction getColumnFunction() {
-		return columnFunction;
+		return this.columnFunction;
 	}
 
 	/**
@@ -204,6 +205,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	public CreateIndexSpecification withOption(String name, String value) {
 
 		this.options.put(name, value);
+
 		return this;
 	}
 
@@ -211,7 +213,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * @return index options map.
 	 */
 	public Map<String, String> getOptions() {
-		return Collections.unmodifiableMap(options);
+		return Collections.unmodifiableMap(this.options);
 	}
 
 	/**
@@ -235,6 +237,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		Assert.notNull(tableName, "CqlIdentifier must not be null");
 
 		this.tableName = tableName;
+
 		return this;
 	}
 
@@ -243,7 +246,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 */
 	@Override
 	public CqlIdentifier getTableName() {
-		return tableName;
+		return this.tableName;
 	}
 
 	/**
@@ -267,6 +270,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 		Assert.notNull(columnName, "CqlIdentifier must not be null");
 
 		this.columnName = columnName;
+
 		return this;
 	}
 

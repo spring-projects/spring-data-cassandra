@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
+import static org.springframework.data.cassandra.core.cql.CqlStringUtils.noNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,13 +75,14 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 
 			List<String> entries = new ArrayList<>(options.size());
 
-			options.forEach((key, value) -> entries
-					.add(String.format("'%s': '%s'", CqlStringUtils.escapeSingle(key), CqlStringUtils.escapeSingle(value))));
+			options.forEach((key, value) -> entries.add(String.format("'%s': '%s'",
+					CqlStringUtils.escapeSingle(key), CqlStringUtils.escapeSingle(value))));
 
 			StringBuilder optionsCql = new StringBuilder(" WITH OPTIONS = ").append("{");
-			optionsCql.append(StringUtils.collectionToDelimitedString(entries, ", "));
 
+			optionsCql.append(StringUtils.collectionToDelimitedString(entries, ", "));
 			optionsCql.append("}");
+
 			cql.append(optionsCql);
 		}
 
@@ -89,5 +90,4 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 
 		return cql;
 	}
-
 }

@@ -97,6 +97,7 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	 */
 	@SuppressWarnings("unchecked")
 	public T with(String name, Object value, boolean escape, boolean quote) {
+
 		if (!(value instanceof Map)) {
 			if (escape) {
 				value = escapeSingle(value);
@@ -105,11 +106,13 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 				value = singleQuote(value);
 			}
 		}
-		options.put(name, value);
+
+		this.options.put(name, value);
+
 		return (T) this;
 	}
 
 	public Map<String, Object> getOptions() {
-		return Collections.unmodifiableMap(options);
+		return Collections.unmodifiableMap(this.options);
 	}
 }

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.cqlId;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
@@ -88,6 +88,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	public BasicCassandraPersistentProperty(Property property, CassandraPersistentEntity<?> owner,
 			SimpleTypeHolder simpleTypeHolder) {
+
 		this(property, owner, simpleTypeHolder, null);
 	}
 
@@ -115,10 +116,10 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		Assert.notNull(context, "ApplicationContext must not be null");
 
-		spelContext = new StandardEvaluationContext();
-		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
-		spelContext.setBeanResolver(new BeanFactoryResolver(context));
-		spelContext.setRootObject(context);
+		this.spelContext = new StandardEvaluationContext();
+		this.spelContext.addPropertyAccessor(new BeanFactoryAccessor());
+		this.spelContext.setBeanResolver(new BeanFactoryResolver(context));
+		this.spelContext.setRootObject(context);
 	}
 
 	/* (non-Javadoc)
@@ -150,11 +151,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
 
-		if (annotation != null) {
-			return annotation.ordering();
-		}
-
-		return null;
+		return (annotation != null ? annotation.ordering() : null);
 	}
 
 	/* (non-Javadoc)
@@ -246,7 +243,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		CqlIdentifier identifier = CqlIdentifier.cqlId(annotation.userTypeName());
-		UserType userType = userTypeResolver.resolveType(identifier);
+
+		UserType userType = this.userTypeResolver.resolveType(identifier);
 
 		if (userType == null) {
 			throw new MappingException(String.format("User type [%s] not found", identifier));
@@ -261,7 +259,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
-					"Only primitive types are allowed inside Collections for property [%1$s] of type [%2$s] in entity [%3$s]",
+				"Only primitive types are allowed inside Collections for property [%1$s] of type [%2$s] in entity [%3$s]",
 					getName(), getType(), getOwner().getName()));
 		}
 
@@ -274,7 +272,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
-					"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
+				"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
 					getName(), getType(), getOwner().getName()));
 		}
 
@@ -283,9 +281,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	private void ensureTypeArguments(int args, int expected) {
 		if (args != expected) {
-			throw new InvalidDataAccessApiUsageException(
-					String.format("Expected [%1$s] typed arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]",
-							expected, getName(), getType(), getOwner().getName()));
+			throw new InvalidDataAccessApiUsageException(String.format(
+				"Expected [%1$s] typed arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]",
+					expected, getName(), getType(), getOwner().getName()));
 		}
 	}
 
@@ -312,7 +310,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	public boolean isPartitionKeyColumn() {
 
 		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
-		return annotation != null && PrimaryKeyType.PARTITIONED.equals(annotation.type());
+
+		return (annotation != null && PrimaryKeyType.PARTITIONED.equals(annotation.type()));
 	}
 
 	/* (non-Javadoc)
@@ -322,7 +321,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	public boolean isClusterKeyColumn() {
 
 		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
-		return annotation != null && PrimaryKeyType.CLUSTERED.equals(annotation.type());
+
+		return (annotation != null && PrimaryKeyType.CLUSTERED.equals(annotation.type()));
 	}
 
 	private CqlIdentifier determineColumnName() {
@@ -333,9 +333,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		String defaultName = getName(); // TODO: replace with naming strategy class
 		String overriddenName = null;
+
 		boolean forceQuote = false;
 
 		if (isIdProperty()) { // then the id is of a simple type (since it's not a composite primary key)
+
 			PrimaryKey primaryKey = findAnnotation(PrimaryKey.class);
 
 			if (primaryKey != null) {
@@ -344,6 +346,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			}
 
 		} else if (isPrimaryKeyColumn()) { // then it's a simple type
+
 			PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
 
 			if (primaryKeyColumn != null) {
@@ -369,7 +372,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		String name = defaultName;
 
 		if (StringUtils.hasText(overriddenName)) {
-			name = (spelContext != null ? SpelUtils.evaluate(overriddenName, spelContext) : overriddenName);
+			name = (this.spelContext != null ? SpelUtils.evaluate(overriddenName, this.spelContext) : overriddenName);
 		}
 
 		return cqlId(name, forceQuote);
@@ -399,6 +402,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		if (changed) {
 
 			CqlIdentifier columnName = getColumnName();
+
 			if (columnName != null) {
 				setColumnName(cqlId(columnName.getUnquoted(), forceQuote));
 			}
@@ -435,11 +439,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
 
-		return Optionals.toStream(Optional.ofNullable(getField()).map(Field::getAnnotatedType), //
-				Optional.ofNullable(getGetter()).map(Method::getAnnotatedReturnType), //
-				Optional.ofNullable(getSetter()).map(it -> it.getParameters()[0].getAnnotatedType())) //
-				.filter(it -> hasAnnotation(it, annotationType, getTypeInformation())) //
-				.findFirst() //
+		return Optionals.toStream(Optional.ofNullable(getField()).map(Field::getAnnotatedType),
+				Optional.ofNullable(getGetter()).map(Method::getAnnotatedReturnType),
+				Optional.ofNullable(getSetter()).map(it -> it.getParameters()[0].getAnnotatedType()))
+				.filter(it -> hasAnnotation(it, annotationType, getTypeInformation()))
+				.findFirst()
 				.orElse(null);
 	}
 
