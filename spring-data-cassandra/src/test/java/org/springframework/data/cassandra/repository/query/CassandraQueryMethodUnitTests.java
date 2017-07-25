@@ -70,6 +70,14 @@ public class CassandraQueryMethodUnitTests {
 		assertThat(queryMethod.isCollectionQuery()).isTrue();
 	}
 
+	@Test // DATACASS-479
+	public void considersManagedEntityAsEntityInformation() throws Exception {
+
+		CassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "findAllBy");
+
+		assertThat(queryMethod.getEntityInformation().getJavaType()).isEqualTo(User.class);
+	}
+
 	private CassandraQueryMethod queryMethod(Class<?> repository, String name, Class<?>... parameters) throws Exception {
 
 		Method method = repository.getMethod(name, parameters);
@@ -82,5 +90,14 @@ public class CassandraQueryMethodUnitTests {
 
 		List<User> method();
 
+		UserProjection findAllBy();
+
+	}
+
+	interface UserProjection {
+
+		String getFirstname();
+
+		String getLastname();
 	}
 }

@@ -105,18 +105,15 @@ public class CassandraQueryMethod extends QueryMethod {
 						mappingContext.getRequiredPersistentEntity(domainClass));
 
 			} else {
-				CassandraPersistentEntity<?> entity = mappingContext.getPersistentEntity(returnedObjectType);
+
+				CassandraPersistentEntity<?> returnedEntity = mappingContext.getPersistentEntity(returnedObjectType);
 				CassandraPersistentEntity<?> managedEntity = mappingContext.getRequiredPersistentEntity(domainClass);
 
-				CassandraPersistentEntity<?> returnedEntity =
-						entity != null && entity.getType().isInterface() ? entity : managedEntity;
+				returnedEntity = returnedEntity == null || returnedEntity.getType().isInterface() ? managedEntity
+						: returnedEntity;
 
-				// TODO collectionEntity?
-				CassandraPersistentEntity<?> collectionEntity =
-						domainClass.isAssignableFrom(returnedObjectType) ? returnedEntity : managedEntity;
-
-				this.entityMetadata =
-						new SimpleCassandraEntityMetadata<>((Class<Object>) returnedEntity.getType(), collectionEntity);
+				this.entityMetadata = new SimpleCassandraEntityMetadata<>((Class<Object>) returnedEntity.getType(),
+						managedEntity);
 			}
 		}
 

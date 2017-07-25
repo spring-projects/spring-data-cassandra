@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -30,7 +30,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -85,6 +84,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-7
 	public void shouldDeriveSimpleQuery() {
+
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo';");
@@ -92,6 +92,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-7
 	public void shouldDeriveSimpleQueryWithoutNames() {
+
 		String query = deriveQueryFromMethod("findPersonBy");
 
 		assertThat(query).isEqualTo("SELECT * FROM person;");
@@ -99,6 +100,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-7
 	public void shouldDeriveAndQuery() {
+
 		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';");
@@ -106,9 +108,18 @@ public class PartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-7
 	public void usesDynamicProjection() {
+
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
 		assertThat(query).isEqualTo("SELECT * FROM person;");
+	}
+
+	@Test // DATACASS-479
+	public void usesProjectionQueryHiddenField() {
+
+		String query = deriveQueryFromMethod("findPersonProjectedByNickname", "foo");
+
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE nickname='foo';");
 	}
 
 	@Test // DATACASS-357
@@ -181,11 +192,10 @@ public class PartTreeCassandraQueryUnitTests {
 
 		PartTreeCassandraQuery partTreeQuery = createQueryForMethod(repositoryInterface, method, types);
 
-		CassandraParameterAccessor accessor =
-				new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(), args);
+		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
+				args);
 
-		return partTreeQuery.createQuery(
-				new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
+		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
 	}
 
 	private PartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface, String methodName,
@@ -238,7 +248,7 @@ public class PartTreeCassandraQueryUnitTests {
 		@AllowFiltering
 		Person findByFirstname(String firstname);
 
-		PersonProjection findPersonProjectedBy();
+		PersonProjection findPersonProjectedByNickname(String nickname);
 
 		<T> T findDynamicallyProjectedBy(Class<T> type);
 
