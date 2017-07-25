@@ -1,6 +1,26 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.0.RC1 (2017-07-25)
+-----------------------------------------
+* DATACASS-476 - Inherit Project Reactor version from dependency management.
+* DATACASS-475 - Simplify logic in afterPropertiesSet for Cassandra CQL Cluster and Session FactoryBeans.
+* DATACASS-474 - Remove reactive Template API methods accepting Publisher of entities.
+* DATACASS-473 - Adapt to API changes in mapping subsystem.
+* DATACASS-472 - Upgrade to Cassandra driver 3.3.0.
+* DATACASS-471 - Fix unit tests after API changes in Spring Data Commons.
+* DATACASS-469 - Remove CassandraOperations.selectBySimpleIds.
+* DATACASS-468 - Move o.s.d.cql into o.s.d.cassandra.core.cql.
+* DATACASS-466 - Revisit Template API return types.
+* DATACASS-464 - Release 2.0 RC1 (Kay).
+* DATACASS-451 - Adapt to deprecated RxJava 1 CRUD repositories.
+* DATACASS-376 - Support ALLOW FILTERING using derived query methods.
+* DATACASS-375 - UUID should map to Cassandra's uuid type and not timeuuid.
+* DATACASS-362 - Allow composite primary key use for selectOneById.
+* DATACASS-306 - Add support SSTable Attached Secondary Index (SASI) creation.
+* DATACASS-213 - Add index creation to table creation.
+
+
 Changes in version 1.5.5.RELEASE (2017-07-24)
 ---------------------------------------------
 * DATACASS-471 - Fix unit tests after API changes in Spring Data Commons.
