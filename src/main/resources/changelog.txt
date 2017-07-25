@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.0.RC2 (2017-07-25)
+-----------------------------------------
+* DATACASS-479 - Projecting query methods use interface type for query derivation.
+* DATACASS-478 - Release 2.0 RC2 (Kay).
+
+
 Changes in version 2.0.0.RC1 (2017-07-25)
 -----------------------------------------
 * DATACASS-476 - Inherit Project Reactor version from dependency management.
