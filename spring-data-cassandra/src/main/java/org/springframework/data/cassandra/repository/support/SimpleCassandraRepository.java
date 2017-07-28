@@ -91,7 +91,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		List<S> result = new ArrayList<S>();
+		List<S> result = new ArrayList<>();
 
 		for (S entity : entities) {
 

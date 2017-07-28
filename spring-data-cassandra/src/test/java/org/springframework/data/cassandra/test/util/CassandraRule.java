@@ -429,14 +429,10 @@ public class CassandraRule extends ExternalResource {
 			this.cluster = cluster;
 			this.session = session;
 
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-
-				@Override
-				public void run() {
-					session.close();
-					cluster.close();
-				}
-			});
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				session.close();
+				cluster.close();
+			}));
 		}
 	}
 }

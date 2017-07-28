@@ -200,7 +200,7 @@ public class StringBasedCassandraQueryUnitTests {
 		SimpleStatement actual = cassandraQuery.createQuery(accessor);
 
 		assertThat(actual.toString()).isEqualTo("SELECT * FROM person WHERE lastname IN (?);");
-		assertThat(actual.getObject(0)).isEqualTo(new HashSet<String>(Arrays.asList("White", "Heisenberg")));
+		assertThat(actual.getObject(0)).isEqualTo(new HashSet<>(Arrays.asList("White", "Heisenberg")));
 	}
 
 	@Test // DATACASS-117

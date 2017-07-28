@@ -298,7 +298,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 	private CreateTableSpecification getCreateTableSpecificationFor(Class<?> persistentEntityClass) {
 
-		CassandraCustomConversions customConversions = new CassandraCustomConversions(Collections.EMPTY_LIST);
+		CassandraCustomConversions customConversions = new CassandraCustomConversions(Collections.emptyList());
 		ctx.setCustomConversions(customConversions);
 
 		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(persistentEntityClass);

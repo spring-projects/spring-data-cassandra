@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.cqlId;
-import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.createTable;
-import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.getDataTypeFor;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -95,7 +95,7 @@ public class CassandraMappingContext
 	public CassandraMappingContext() {
 
 		setCustomConversions(
-				new CustomConversions(StoreConversions.of(CassandraSimpleTypeHolder.HOLDER), Collections.EMPTY_LIST));
+				new CustomConversions(StoreConversions.of(CassandraSimpleTypeHolder.HOLDER), Collections.emptyList()));
 		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
 	}
 
