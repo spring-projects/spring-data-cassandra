@@ -38,7 +38,8 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 
 	private final List<MonoProcessor<?>> subscriptions;
 
-	public ReactiveCassandraParameterAccessor(CassandraQueryMethod method, Object[] values) {
+	@SuppressWarnings("ConstantConditions")
+	ReactiveCassandraParameterAccessor(CassandraQueryMethod method, Object[] values) {
 
 		super(method, values);
 
@@ -62,7 +63,7 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ParametersParameterAccessor#getValue(int)
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "ConstantConditions" })
 	@Override
 	protected <T> T getValue(int index) {
 		return (subscriptions.get(index) != null ? (T) subscriptions.get(index).block() : super.getValue(index));

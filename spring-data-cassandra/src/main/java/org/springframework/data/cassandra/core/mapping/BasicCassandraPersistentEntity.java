@@ -32,6 +32,7 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -52,9 +53,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
-	private ApplicationContext context;
-
-	private StandardEvaluationContext spelContext;
+	private @Nullable StandardEvaluationContext spelContext;
 
 	private Optional<Boolean> forceQuote = Optional.empty();
 
@@ -92,10 +91,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return determineName(annotation.value(), annotation.forceQuote());
 		}
 
-		return determineDefaultName();
-	}
-
-	CqlIdentifier determineDefaultName() {
 		return cqlId(getType().getSimpleName(), false);
 	}
 
@@ -105,7 +100,11 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return cqlId(getType().getSimpleName(), forceQuote);
 		}
 
-		return cqlId(spelContext == null ? value : SpelUtils.evaluate(value, spelContext), forceQuote);
+		String name = spelContext == null ? value : SpelUtils.evaluate(value, spelContext);
+
+		Assert.state(name != null, () -> String.format("Cannot determine default name for %s", this));
+
+		return cqlId(name, forceQuote);
 	}
 
 	/* (non-Javadoc)
@@ -140,9 +139,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		super.verify();
 
-		if (verifier != null) {
-			verifier.verify(this);
-		}
+		verifier.verify(this);
 
 		if (!tableName.isPresent()) {
 			setTableName(determineTableName());
@@ -157,7 +154,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		Assert.notNull(context, "ApplicationContext must not be null");
 
-		this.context = context;
 		spelContext = new StandardEvaluationContext();
 		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
 		spelContext.setBeanResolver(new BeanFactoryResolver(context));
@@ -223,6 +219,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#getUserType()
 	 */
 	@Override
+	@Nullable
 	public UserType getUserType() {
 		return null;
 	}

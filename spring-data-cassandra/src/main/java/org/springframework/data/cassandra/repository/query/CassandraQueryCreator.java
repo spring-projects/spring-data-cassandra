@@ -104,6 +104,8 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 
 		CassandraPersistentProperty property = path.getLeafProperty();
 
+		Assert.state(property != null && path.toDotPath() != null, "Leaf property must not be null");
+
 		return from(part, property, Criteria.where(path.toDotPath()), (PotentiallyConvertingIterator) iterator);
 	}
 
@@ -199,22 +201,18 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 
 	private Object like(Type type, Object value) {
 
-		if (value != null) {
-			switch (type) {
-				case LIKE:
-					return value;
-				case CONTAINING:
-					return "%" + value + "%";
-				case STARTING_WITH:
-					return value + "%";
-				case ENDING_WITH:
-					return "%" + value;
-			}
-
-			throw new IllegalArgumentException(String.format("Part Type [%s] not supported with like queries", type));
+		switch (type) {
+			case LIKE:
+				return value;
+			case CONTAINING:
+				return "%" + value + "%";
+			case STARTING_WITH:
+				return value + "%";
+			case ENDING_WITH:
+				return "%" + value;
 		}
 
-		return null;
+		throw new IllegalArgumentException(String.format("Part Type [%s] not supported with like queries", type));
 	}
 
 	private Object[] nextAsArray(CassandraPersistentProperty property, PotentiallyConvertingIterator iterator) {

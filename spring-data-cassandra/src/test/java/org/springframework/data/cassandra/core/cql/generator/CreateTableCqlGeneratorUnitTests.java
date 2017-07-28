@@ -128,7 +128,7 @@ public class CreateTableCqlGeneratorUnitTests {
 
 		@Override
 		public CreateTableSpecification specification() {
-			return CreateTableSpecification.createTable().name(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
+			return CreateTableSpecification.createTable(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
 					.column(column1, columnType1);
 		}
 
@@ -154,7 +154,7 @@ public class CreateTableCqlGeneratorUnitTests {
 
 		@Override
 		public CreateTableSpecification specification() {
-			return CreateTableSpecification.createTable().name(name).partitionKeyColumn(partKey0, partKeyType0)
+			return CreateTableSpecification.createTable(name).partitionKeyColumn(partKey0, partKeyType0)
 					.partitionKeyColumn(partKey1, partKeyType1).column(column0, columnType0);
 		}
 
@@ -188,7 +188,7 @@ public class CreateTableCqlGeneratorUnitTests {
 
 		@Override
 		public CreateTableSpecification specification() {
-			return CreateTableSpecification.createTable().name(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
+			return CreateTableSpecification.createTable(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
 					.partitionKeyColumn(partitionKey1, partitionKeyType1).column(column1, columnType1)
 					.with(TableOption.READ_REPAIR_CHANCE, readRepairChance);
 		}
@@ -243,7 +243,7 @@ public class CreateTableCqlGeneratorUnitTests {
 			cachingMap.put(CachingOption.KEYS, KeyCachingOption.ALL);
 			cachingMap.put(CachingOption.ROWS_PER_PARTITION, "NONE");
 
-			return CreateTableSpecification.createTable().name(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
+			return CreateTableSpecification.createTable(name).partitionKeyColumn(partitionKey0, partitionKeyType0)
 					.partitionKeyColumn(partitionKey1, partitionKeyType1).column(column1, columnType1)
 					.with(TableOption.COMPACT_STORAGE).with(TableOption.READ_REPAIR_CHANCE, readRepairChance)
 					.with(TableOption.COMPACTION, compactionMap).with(TableOption.COMPRESSION, compressionMap)
@@ -306,7 +306,7 @@ public class CreateTableCqlGeneratorUnitTests {
 
 		@Override
 		public CreateTableSpecification specification() {
-			return CreateTableSpecification.createTable().name(tableName).partitionKeyColumn(cqlId("pk"), DataType.text());
+			return CreateTableSpecification.createTable(tableName).partitionKeyColumn(cqlId("pk"), DataType.text());
 		}
 
 		/**

@@ -29,9 +29,7 @@ import org.springframework.util.Assert;
  */
 public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecification<T>> {
 
-	public abstract StringBuilder toCql(StringBuilder cql);
-
-	private UserTypeNameSpecification<T> specification;
+	private final UserTypeNameSpecification<T> specification;
 
 	/**
 	 * Create a new {@link UserTypeNameCqlGenerator}.
@@ -39,20 +37,13 @@ public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecificati
 	 * @param specification must not be {@literal null}.
 	 */
 	public UserTypeNameCqlGenerator(UserTypeNameSpecification<T> specification) {
-		setSpecification(specification);
-	}
-
-	/**
-	 * Sets the {@link UserTypeNameSpecification}.
-	 *
-	 * @param specification must not be {@literal null}.
-	 */
-	protected final void setSpecification(UserTypeNameSpecification<T> specification) {
 
 		Assert.notNull(specification, "UserTypeNameSpecification must not be null");
 
 		this.specification = specification;
 	}
+
+	public abstract StringBuilder toCql(StringBuilder cql);
 
 	@SuppressWarnings("unchecked")
 	public T getSpecification() {
@@ -67,6 +58,6 @@ public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecificati
 	}
 
 	public String toCql() {
-		return toCql(null).toString();
+		return toCql(new StringBuilder()).toString();
 	}
 }

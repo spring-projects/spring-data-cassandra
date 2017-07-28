@@ -28,11 +28,33 @@ import com.datastax.driver.core.DataType;
  */
 public class AlterColumnSpecification extends ColumnTypeChangeSpecification {
 
-	public AlterColumnSpecification(String name, DataType type) {
-		super(name, type);
+	/**
+	 * Create a new {@link AlterColumnSpecification} for the given {@code name} and {@link DataType}
+	 *
+	 * @param name must not be empty or {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
+	public static AlterColumnSpecification alterColumn(String name, DataType type) {
+		return new AlterColumnSpecification(CqlIdentifier.cqlId(name), type);
 	}
 
-	public AlterColumnSpecification(CqlIdentifier name, DataType type) {
+	/**
+	 * Create a new {@link AlterColumnSpecification} for the given {@code name} and {@link DataType}
+	 *
+	 * @param name must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
+	public static AlterColumnSpecification alterColumn(CqlIdentifier name, DataType type) {
+		return new AlterColumnSpecification(name, type);
+	}
+
+	/**
+	 * Create a new {@link AlterColumnSpecification} for the given {@code name} and {@link DataType}
+	 *
+	 * @param name must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
+	private AlterColumnSpecification(CqlIdentifier name, DataType type) {
 		super(name, type);
 	}
 }

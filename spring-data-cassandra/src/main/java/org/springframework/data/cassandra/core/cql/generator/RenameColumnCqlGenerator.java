@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnChangeSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.RenameColumnSpecification;
 
@@ -53,7 +51,7 @@ public class RenameColumnCqlGenerator extends ColumnChangeCqlGenerator<RenameCol
 	 * @see org.springframework.data.cassandra.core.cql.generator.ColumnChangeCqlGenerator#toCql(java.lang.StringBuilder)
 	 */
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append(keyword).append(' ').append(spec().getName()).append(" TO ")
+		return cql.append(keyword).append(' ').append(spec().getName()).append(" TO ")
 				.append(spec().getTargetName());
 	}
 }

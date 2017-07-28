@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.lang.Nullable;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.driver.core.PreparedStatement;
@@ -41,9 +42,6 @@ import com.datastax.driver.core.Statement;
  * @see CqlOperations
  */
 public interface AsyncCqlOperations {
-
-	// TODO many of these data access operations could be implemented as default methods, in terms of other data access
-	// operations
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with a plain com.datastax.driver.core.Session
@@ -70,7 +68,7 @@ public interface AsyncCqlOperations {
 	/**
 	 * Issue a single CQL execute, typically a DDL statement, insert, update or delete statement.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @return boolean value whether the statement was applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
@@ -80,7 +78,7 @@ public interface AsyncCqlOperations {
 	 * Issue a single CQL operation (such as an insert, update or delete statement) via a prepared statement, binding the
 	 * given arguments.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
 	 * @return boolean value whether the statement was applied.
@@ -93,14 +91,14 @@ public interface AsyncCqlOperations {
 	 * using a {@link AsyncPreparedStatementCreator} as this method will create the {@link PreparedStatement}: The
 	 * {@link PreparedStatementBinder} just needs to set parameters.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @return boolean value whether the statement was applied.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	ListenableFuture<Boolean> execute(String cql, PreparedStatementBinder preparedStatementBinder)
+	ListenableFuture<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb)
 			throws DataAccessException;
 
 	/**
@@ -111,7 +109,7 @@ public interface AsyncCqlOperations {
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}
 	 * @throws DataAccessException if there is any problem TODO: Lambda-usage clashes with execute(cql,
@@ -125,7 +123,7 @@ public interface AsyncCqlOperations {
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
 	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@literal null} as argument array.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param resultSetExtractor object that will extract all rows of results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the ResultSetExtractor.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -138,9 +136,9 @@ public interface AsyncCqlOperations {
 	 * {@link RowCallbackHandler}.
 	 * <p>
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
-	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@code null} as argument array.
+	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@literal null} as argument array.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query
 	 * @see #query(String, RowCallbackHandler, Object[])
@@ -153,7 +151,7 @@ public interface AsyncCqlOperations {
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
 	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@literal null} as argument array.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query
@@ -165,7 +163,7 @@ public interface AsyncCqlOperations {
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, reading the
 	 * {@link ResultSet} with a {@link ResultSetExtractor}.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
@@ -179,7 +177,7 @@ public interface AsyncCqlOperations {
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, reading the
 	 * {@link ResultSet} on a per-row basis with a {@link RowCallbackHandler}.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type)
@@ -192,7 +190,7 @@ public interface AsyncCqlOperations {
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, mapping each
 	 * row to a Java object via a {@link RowMapper}.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param rowMapper object that will map one object per row
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type)
@@ -204,15 +202,15 @@ public interface AsyncCqlOperations {
 	/**
 	 * Query using a prepared statement, reading the {@link ResultSet} with a {@link ResultSetExtractor}.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem
 	 */
-	<T> ListenableFuture<T> query(String cql, PreparedStatementBinder preparedStatementBinder,
+	<T> ListenableFuture<T> query(String cql, @Nullable PreparedStatementBinder psb,
 			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
@@ -220,29 +218,29 @@ public interface AsyncCqlOperations {
 	 * knows how to bind values to the query, reading the {@link ResultSet} on a per-row basis with a
 	 * {@link RowCallbackHandler}.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	ListenableFuture<Void> query(String cql, PreparedStatementBinder preparedStatementBinder,
+	ListenableFuture<Void> query(String cql, @Nullable PreparedStatementBinder psb,
 			RowCallbackHandler rowCallbackHandler) throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a {@link PreparedStatementBinder} implementation that
 	 * knows how to bind values to the query, mapping each row to a Java object via a {@link RowMapper}.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<List<T>> query(String cql, PreparedStatementBinder preparedStatementBinder,
+	<T> ListenableFuture<List<T>> query(String cql, @Nullable PreparedStatementBinder psb,
 			RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
@@ -255,7 +253,7 @@ public interface AsyncCqlOperations {
 	 * using the column name as the key). Each item in the {@link List} will be of the form returned by this interface's
 	 * queryForMap() methods.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @return a {@link List} that contains a {@link Map} per row.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForList(String, Object[])
@@ -270,7 +268,7 @@ public interface AsyncCqlOperations {
 	 * using the column name as the key). Each item in the {@link List} will be of the form returned by this interface's
 	 * queryForMap() methods.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
 	 * @return a {@link List} that contains a {@link Map} per row
@@ -288,7 +286,7 @@ public interface AsyncCqlOperations {
 	 * The results will be mapped to a {@link List} (one item for each row) of result objects, each of them matching the
 	 * specified element type.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param elementType the required type of element in the result {@link List} (for example, {@code Integer.class}),
 	 *          must not be {@literal null}.
 	 * @return a {@link List} of objects that match the specified element type.
@@ -305,7 +303,7 @@ public interface AsyncCqlOperations {
 	 * The results will be mapped to a {@link List} (one item for each row) of result objects, each of them matching the
 	 * specified element type.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param elementType the required type of element in the result {@link List} (for example, {@code Integer.class}),
 	 *          must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
@@ -328,7 +326,7 @@ public interface AsyncCqlOperations {
 	 * The query is expected to be a single row query; the result row will be mapped to a Map (one entry for each column,
 	 * using the column name as the key).
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @return the result Map (one entry for each column, using the column name as the key), must not be {@literal null}.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -345,7 +343,7 @@ public interface AsyncCqlOperations {
 	 * The query is expected to be a single row query; the result row will be mapped to a Map (one entry for each column,
 	 * using the column name as the key).
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
 	 * @return the result Map (one entry for each column, using the column name as the key).
@@ -366,7 +364,7 @@ public interface AsyncCqlOperations {
 	 * This method is useful for running static CQL with a known outcome. The query is expected to be a single row/single
 	 * column query; the returned result will be directly mapped to the corresponding object type.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
 	 * @return the result object of the required type, or {@link Mono#empty()} in case of CQL NULL.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row, or does not return
@@ -383,7 +381,7 @@ public interface AsyncCqlOperations {
 	 * The query is expected to be a single row/single column query; the returned result will be directly mapped to the
 	 * corresponding object type.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the PreparedStatement to guess the corresponding CQL
 	 *          type)
@@ -402,7 +400,7 @@ public interface AsyncCqlOperations {
 	 * {@link PreparedStatement}, use the overloaded {@link #queryForObject(String, RowMapper, Object...)} method with
 	 * {@literal null} as argument array.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the single mapped object.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row.
@@ -415,7 +413,7 @@ public interface AsyncCqlOperations {
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, mapping a
 	 * single result row to a Java object via a {@link RowMapper}.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type)
@@ -434,7 +432,7 @@ public interface AsyncCqlOperations {
 	 * <p>
 	 * The results will be mapped to an {@link ResultSet}.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @return a {@link ResultSet} representation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForResultSet(String, Object[])
@@ -447,7 +445,7 @@ public interface AsyncCqlOperations {
 	 * <p>
 	 * The results will be mapped to an {@link ResultSet}.
 	 *
-	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
 	 * @return a {@link ResultSet} representation.
@@ -489,7 +487,7 @@ public interface AsyncCqlOperations {
 	 * {@link RowCallbackHandler}.
 	 * <p>
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
-	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@code null} as argument array.
+	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@literal null} as argument array.
 	 *
 	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
@@ -522,7 +520,7 @@ public interface AsyncCqlOperations {
 	 * using the column name as the key). Each item in the {@link List} will be of the form returned by this interface's
 	 * queryForMap() methods.
 	 *
-	 * @param statement static CQL {@link Statement} to execute, must not be empty or {@literal null}.
+	 * @param statement static CQL {@link Statement} to execute, must not be {@literal null} or empty.
 	 * @return a {@link List} that contains a {@link Map} per row.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForList(String, Object[])
@@ -693,15 +691,15 @@ public interface AsyncCqlOperations {
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem
 	 */
 	<T> ListenableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
-			PreparedStatementBinder preparedStatementBinder, ResultSetExtractor<T> resultSetExtractor)
+			@Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException;
 
 	/**
@@ -710,14 +708,14 @@ public interface AsyncCqlOperations {
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	ListenableFuture<Void> query(AsyncPreparedStatementCreator preparedStatementCreator,
-			PreparedStatementBinder preparedStatementBinder, RowCallbackHandler rowCallbackHandler)
+			@Nullable PreparedStatementBinder psb, RowCallbackHandler rowCallbackHandler)
 			throws DataAccessException;
 
 	/**
@@ -726,14 +724,13 @@ public interface AsyncCqlOperations {
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> ListenableFuture<List<T>> query(AsyncPreparedStatementCreator preparedStatementCreator,
-			PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper) throws DataAccessException;
-
+			@Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException;
 }

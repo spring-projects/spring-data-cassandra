@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.TupleValue;
@@ -44,10 +46,11 @@ public abstract class RowUtils {
 	 *
 	 * @param row is the {@link Row} holding the data
 	 * @param index is the column index
-	 * @param requiredType the required value type (may be {@code null})
+	 * @param requiredType the required value type (may be {@literal null})
 	 * @return the value object
 	 */
-	public static Object getRowValue(Row row, int index, Class<?> requiredType) {
+	@Nullable
+	public static Object getRowValue(Row row, int index, @Nullable Class<?> requiredType) {
 
 		if (requiredType == null) {
 			return row.getObject(index);

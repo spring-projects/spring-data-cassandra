@@ -48,5 +48,4 @@ public @interface Query {
 	 * @since 2.0
 	 */
 	boolean allowFiltering() default false;
-
 }

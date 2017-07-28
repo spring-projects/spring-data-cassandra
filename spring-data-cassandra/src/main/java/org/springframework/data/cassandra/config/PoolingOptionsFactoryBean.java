@@ -23,6 +23,7 @@ import java.util.concurrent.Executor;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.driver.core.HostDistance;
@@ -39,7 +40,7 @@ import com.datastax.driver.core.PoolingOptions;
  * @see org.springframework.beans.factory.InitializingBean
  * @see com.datastax.driver.core.PoolingOptions
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({ "unused", "WeakerAccess" })
 public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, InitializingBean {
 
 	private static final PoolingOptions DEFAULT = new PoolingOptions();
@@ -56,26 +57,26 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		GET_MAX_QUEUE_SIZE = Optional.ofNullable(ReflectionUtils.findMethod(PoolingOptions.class, "getMaxQueueSize"));
 	}
 
-	private Executor initializationExecutor;
+	private @Nullable Executor initializationExecutor;
 
 	private int heartbeatIntervalSeconds;
 	private int idleTimeoutSeconds;
-	private Integer localCoreConnections;
-	private Integer localMaxConnections;
-	private Integer localMaxSimultaneousRequests;
-	private Integer localMinSimultaneousRequests;
+	private @Nullable Integer localCoreConnections;
+	private @Nullable Integer localMaxConnections;
+	private @Nullable Integer localMaxSimultaneousRequests;
+	private @Nullable Integer localMinSimultaneousRequests;
 
 	// Deprecated since Cassandra Driver 3.1.1
 	private int poolTimeoutMilliseconds;
 
 	// Available since Cassandra Driver 3.1.1
 	private int maxQueueSize;
-	private Integer remoteCoreConnections;
-	private Integer remoteMaxConnections;
-	private Integer remoteMaxSimultaneousRequests;
-	private Integer remoteMinSimultaneousRequests;
+	private @Nullable Integer remoteCoreConnections;
+	private @Nullable Integer remoteMaxConnections;
+	private @Nullable Integer remoteMaxSimultaneousRequests;
+	private @Nullable Integer remoteMinSimultaneousRequests;
 
-	private PoolingOptions poolingOptions;
+	private @Nullable PoolingOptions poolingOptions;
 
 	/*
 	 * (non-Javadoc)
@@ -137,7 +138,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 * @see PoolingOptionsFactoryBean.LocalHostDistancePoolingOptions
 	 */
 	protected HostDistancePoolingOptions newLocalHostDistancePoolingOptions() {
-		return LocalHostDistancePoolingOptions.create(getLocalCoreConnections(), getLocalMaxConnections(),
+		return new LocalHostDistancePoolingOptions(getLocalCoreConnections(), getLocalMaxConnections(),
 				getLocalMaxSimultaneousRequests(), getLocalMinSimultaneousRequests());
 	}
 
@@ -153,7 +154,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 * @see PoolingOptionsFactoryBean.RemoteHostDistancePoolingOptions
 	 */
 	protected HostDistancePoolingOptions newRemoteHostDistancePoolingOptions() {
-		return RemoteHostDistancePoolingOptions.create(getRemoteCoreConnections(), getRemoteMaxConnections(),
+		return new RemoteHostDistancePoolingOptions(getRemoteCoreConnections(), getRemoteMaxConnections(),
 				getRemoteMaxSimultaneousRequests(), getRemoteMinSimultaneousRequests());
 	}
 
@@ -260,6 +261,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code initializationExecutor}.
 	 */
+	@Nullable
 	public Executor getInitializationExecutor() {
 		return initializationExecutor;
 	}
@@ -305,7 +307,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param localCoreConnections core number of local connections per host.
 	 */
-	public void setLocalCoreConnections(Integer localCoreConnections) {
+	public void setLocalCoreConnections(@Nullable Integer localCoreConnections) {
 		this.localCoreConnections = localCoreConnections;
 	}
 
@@ -314,6 +316,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code localCoreConnections).
 	 */
+	@Nullable
 	public Integer getLocalCoreConnections() {
 		return localCoreConnections;
 	}
@@ -323,7 +326,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param localMaxConnections max number of local connections per host.
 	 */
-	public void setLocalMaxConnections(Integer localMaxConnections) {
+	public void setLocalMaxConnections(@Nullable Integer localMaxConnections) {
 		this.localMaxConnections = localMaxConnections;
 	}
 
@@ -332,6 +335,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code localMaxConnections}.
 	 */
+	@Nullable
 	public Integer getLocalMaxConnections() {
 		return localMaxConnections;
 	}
@@ -341,7 +345,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param localMaxSimultaneousRequests max number of requests for local connections.
 	 */
-	public void setLocalMaxSimultaneousRequests(Integer localMaxSimultaneousRequests) {
+	public void setLocalMaxSimultaneousRequests(@Nullable Integer localMaxSimultaneousRequests) {
 		this.localMaxSimultaneousRequests = localMaxSimultaneousRequests;
 	}
 
@@ -350,6 +354,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code localMaxSimultaneousRequests}.
 	 */
+	@Nullable
 	public Integer getLocalMaxSimultaneousRequests() {
 		return localMaxSimultaneousRequests;
 	}
@@ -360,7 +365,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param localMinSimultaneousRequests threshold triggering the creation of local connections to a host.
 	 */
-	public void setLocalMinSimultaneousRequests(Integer localMinSimultaneousRequests) {
+	public void setLocalMinSimultaneousRequests(@Nullable Integer localMinSimultaneousRequests) {
 		this.localMinSimultaneousRequests = localMinSimultaneousRequests;
 	}
 
@@ -370,6 +375,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code localMinSimultaneousRequests}.
 	 */
+	@Nullable
 	public Integer getLocalMinSimultaneousRequests() {
 		return localMinSimultaneousRequests;
 	}
@@ -379,7 +385,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param remoteCoreConnections core number of remote connections per host.
 	 */
-	public void setRemoteCoreConnections(Integer remoteCoreConnections) {
+	public void setRemoteCoreConnections(@Nullable Integer remoteCoreConnections) {
 		this.remoteCoreConnections = remoteCoreConnections;
 	}
 
@@ -388,6 +394,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code remoteCoreConnections).
 	 */
+	@Nullable
 	public Integer getRemoteCoreConnections() {
 		return remoteCoreConnections;
 	}
@@ -397,7 +404,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param remoteMaxConnections max number of remote connections per host.
 	 */
-	public void setRemoteMaxConnections(Integer remoteMaxConnections) {
+	public void setRemoteMaxConnections(@Nullable Integer remoteMaxConnections) {
 		this.remoteMaxConnections = remoteMaxConnections;
 	}
 
@@ -406,6 +413,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code remoteMaxConnections}.
 	 */
+	@Nullable
 	public Integer getRemoteMaxConnections() {
 		return remoteMaxConnections;
 	}
@@ -415,7 +423,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param remoteMaxSimultaneousRequests max number of requests for local connections.
 	 */
-	public void setRemoteMaxSimultaneousRequests(Integer remoteMaxSimultaneousRequests) {
+	public void setRemoteMaxSimultaneousRequests(@Nullable Integer remoteMaxSimultaneousRequests) {
 		this.remoteMaxSimultaneousRequests = remoteMaxSimultaneousRequests;
 	}
 
@@ -424,6 +432,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code remoteMaxSimultaneousRequests}.
 	 */
+	@Nullable
 	public Integer getRemoteMaxSimultaneousRequests() {
 		return remoteMaxSimultaneousRequests;
 	}
@@ -434,7 +443,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @param remoteMinSimultaneousRequests threshold triggering the creation of remote connections to a host.
 	 */
-	public void setRemoteMinSimultaneousRequests(Integer remoteMinSimultaneousRequests) {
+	public void setRemoteMinSimultaneousRequests(@Nullable Integer remoteMinSimultaneousRequests) {
 		this.remoteMinSimultaneousRequests = remoteMinSimultaneousRequests;
 	}
 
@@ -444,6 +453,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 *
 	 * @return the {@code remoteMinSimultaneousRequests}.
 	 */
+	@Nullable
 	public Integer getRemoteMinSimultaneousRequests() {
 		return remoteMinSimultaneousRequests;
 	}
@@ -457,10 +467,10 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	 */
 	protected static abstract class HostDistancePoolingOptions {
 
-		private final Integer coreConnectionsPerHost;
-		private final Integer maxConnectionsPerHost;
-		private final Integer maxRequestsPerConnection;
-		private final Integer newConnectionThreshold;
+		private final @Nullable Integer coreConnectionsPerHost;
+		private final @Nullable Integer maxConnectionsPerHost;
+		private final @Nullable Integer maxRequestsPerConnection;
+		private final @Nullable Integer newConnectionThreshold;
 
 		/**
 		 * Constructs an instance of {@link HostDistancePoolingOptions} with {@link PoolingOptions} connection settings
@@ -471,8 +481,9 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * @param maxRequestsPerConnection maximum number of requests per connection.
 		 * @param newConnectionThreshold threshold that triggers the creation of a new connection to a host.
 		 */
-		protected HostDistancePoolingOptions(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
-				Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
+		protected HostDistancePoolingOptions(@Nullable Integer coreConnectionsPerHost,
+				@Nullable Integer maxConnectionsPerHost, @Nullable Integer maxRequestsPerConnection,
+				@Nullable Integer newConnectionThreshold) {
 
 			this.coreConnectionsPerHost = coreConnectionsPerHost;
 			this.maxConnectionsPerHost = maxConnectionsPerHost;
@@ -492,12 +503,10 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * (non-Javadoc)
 		 * @see com.datastax.driver.core.PoolingOptions#setCoreConnectionsPerHost(HostDistance, int)
 		 */
-		PoolingOptions setCoreConnectionsPerHost(PoolingOptions poolingOptions) {
+		void setCoreConnectionsPerHost(PoolingOptions poolingOptions) {
 			if (coreConnectionsPerHost != null) {
 				poolingOptions.setCoreConnectionsPerHost(getHostDistance(), coreConnectionsPerHost);
 			}
-
-			return poolingOptions;
 		}
 
 		/**
@@ -507,6 +516,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * @see com.datastax.driver.core.PoolingOptions#getCoreConnectionsPerHost(HostDistance)
 		 * @see #getHostDistance()
 		 */
+		@Nullable
 		protected Integer getCoreConnectionsPerHost() {
 			return coreConnectionsPerHost;
 		}
@@ -515,12 +525,10 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * (non-Javadoc)
 		 * @see com.datastax.driver.core.PoolingOptions#setMaxConnectionsPerHost(HostDistance, int)
 		 */
-		PoolingOptions setMaxConnectionsPerHost(PoolingOptions poolingOptions) {
+		void setMaxConnectionsPerHost(PoolingOptions poolingOptions) {
 			if (maxConnectionsPerHost != null) {
 				poolingOptions.setMaxConnectionsPerHost(getHostDistance(), maxConnectionsPerHost);
 			}
-
-			return poolingOptions;
 		}
 
 		/**
@@ -530,6 +538,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * @see com.datastax.driver.core.PoolingOptions#getMaxConnectionsPerHost(HostDistance)
 		 * @see #getHostDistance()
 		 */
+		@Nullable
 		protected Integer getMaxConnectionsPerHost() {
 			return maxConnectionsPerHost;
 		}
@@ -538,12 +547,10 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * (non-Javadoc)
 		 * @see com.datastax.driver.core.PoolingOptions#setMaxRequestsPerConnection(HostDistance, int)
 		 */
-		PoolingOptions setMaxRequestsPerConnection(PoolingOptions poolingOptions) {
+		void setMaxRequestsPerConnection(PoolingOptions poolingOptions) {
 			if (maxRequestsPerConnection != null) {
 				poolingOptions.setMaxRequestsPerConnection(getHostDistance(), maxRequestsPerConnection);
 			}
-
-			return poolingOptions;
 		}
 
 		/**
@@ -553,6 +560,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * @see com.datastax.driver.core.PoolingOptions#getMaxRequestsPerConnection(HostDistance)
 		 * @see #getHostDistance()
 		 */
+		@Nullable
 		protected Integer getMaxRequestsPerConnection() {
 			return maxRequestsPerConnection;
 		}
@@ -564,7 +572,8 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 *
 		 * @see com.datastax.driver.core.PoolingOptions#setNewConnectionThreshold(HostDistance, int)
 		 */
-		PoolingOptions setNewConnectionThreshold(PoolingOptions poolingOptions) {
+		void setNewConnectionThreshold(PoolingOptions poolingOptions) {
+
 			if (newConnectionThreshold != null) {
 				int currentNewConnectionThreshold = poolingOptions.getNewConnectionThreshold(getHostDistance());
 
@@ -572,8 +581,6 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 					poolingOptions.setNewConnectionThreshold(getHostDistance(), newConnectionThreshold);
 				}
 			}
-
-			return poolingOptions;
 		}
 
 		/**
@@ -583,6 +590,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * @see com.datastax.driver.core.PoolingOptions#getNewConnectionThreshold(HostDistance)
 		 * @see #getHostDistance()
 		 */
+		@Nullable
 		protected Integer getNewConnectionThreshold() {
 			return newConnectionThreshold;
 		}
@@ -612,22 +620,6 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	static class LocalHostDistancePoolingOptions extends HostDistancePoolingOptions {
 
 		/**
-		 * Creates an instance of {@link LocalHostDistancePoolingOptions} initialized with {@link PoolingOptions} based on
-		 * {@link HostDistance#LOCAL}.
-		 *
-		 * @param coreConnectionsPerHost core number of connections per host.
-		 * @param maxConnectionsPerHost maximum number of connections per host.
-		 * @param maxRequestsPerConnection maximum number of requests per connection.
-		 * @param newConnectionThreshold threshold that triggers the creation of a new connection to a host.
-		 */
-		static LocalHostDistancePoolingOptions create(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
-				Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
-
-			return new LocalHostDistancePoolingOptions(coreConnectionsPerHost, maxConnectionsPerHost,
-					maxRequestsPerConnection, newConnectionThreshold);
-		}
-
-		/**
 		 * Constructs an instance of {@link LocalHostDistancePoolingOptions} initialized with {@link PoolingOptions} based
 		 * on {@link HostDistance#LOCAL}.
 		 *
@@ -636,8 +628,8 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * @param maxRequestsPerConnection maximum number of requests per connection.
 		 * @param newConnectionThreshold threshold that triggers the creation of a new connection to a host.
 		 */
-		LocalHostDistancePoolingOptions(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
-				Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
+		LocalHostDistancePoolingOptions(@Nullable Integer coreConnectionsPerHost, @Nullable Integer maxConnectionsPerHost,
+				@Nullable Integer maxRequestsPerConnection, @Nullable Integer newConnectionThreshold) {
 
 			super(coreConnectionsPerHost, maxConnectionsPerHost, maxRequestsPerConnection, newConnectionThreshold);
 		}
@@ -663,22 +655,6 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 	static class RemoteHostDistancePoolingOptions extends HostDistancePoolingOptions {
 
 		/**
-		 * Creates an instance of {@link RemoteHostDistancePoolingOptions} initialized with {@link PoolingOptions} based on
-		 * {@link HostDistance#REMOTE}.
-		 *
-		 * @param coreConnectionsPerHost core number of connections per host.
-		 * @param maxConnectionsPerHost maximum number of connections per host.
-		 * @param maxRequestsPerConnection maximum number of requests per connection.
-		 * @param newConnectionThreshold threshold that triggers the creation of a new connection to a host.
-		 */
-		static RemoteHostDistancePoolingOptions create(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
-				Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
-
-			return new RemoteHostDistancePoolingOptions(coreConnectionsPerHost, maxConnectionsPerHost,
-					maxRequestsPerConnection, newConnectionThreshold);
-		}
-
-		/**
 		 * Constructs an instance of {@link RemoteHostDistancePoolingOptions} initialized with {@link PoolingOptions} based
 		 * on {@link HostDistance#REMOTE}.
 		 *
@@ -687,8 +663,8 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		 * @param maxRequestsPerConnection maximum number of requests per connection.
 		 * @param newConnectionThreshold threshold that triggers the creation of a new connection to a host.
 		 */
-		RemoteHostDistancePoolingOptions(Integer coreConnectionsPerHost, Integer maxConnectionsPerHost,
-				Integer maxRequestsPerConnection, Integer newConnectionThreshold) {
+		RemoteHostDistancePoolingOptions(@Nullable Integer coreConnectionsPerHost, @Nullable Integer maxConnectionsPerHost,
+				@Nullable Integer maxRequestsPerConnection, @Nullable Integer newConnectionThreshold) {
 
 			super(coreConnectionsPerHost, maxConnectionsPerHost, maxRequestsPerConnection, newConnectionThreshold);
 		}

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Interface to represent option types.
  *
@@ -66,10 +68,10 @@ public interface Option {
 	 * First ensures that the given value is coerceable into the type expected by this option, then returns the result of
 	 * {@link Object#toString()} called on the given value. If this option is escaping quotes ({@link #escapesValue()} is
 	 * {@code true}), then single quotes will be escaped, and if this option is quoting values ( {@link #quotesValue()} is
-	 * {@code true}), then the value will be surrounded by single quotes. Given {@code null}, returns <code>null</code>.
+	 * {@code true}), then the value will be surrounded by single quotes. Given {@literal null}, returns an empty string.
 	 *
 	 * @see #escapesValue()
 	 * @see #quotesValue()
 	 */
-	String toString(Object value);
+	String toString(@Nullable Object value);
 }

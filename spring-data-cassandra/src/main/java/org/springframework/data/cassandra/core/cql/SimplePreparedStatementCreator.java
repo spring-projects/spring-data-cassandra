@@ -44,6 +44,7 @@ public class SimplePreparedStatementCreator implements PreparedStatementCreator,
 	public SimplePreparedStatementCreator(String cql) {
 
 		Assert.notNull(cql, "CQL is required to create a PreparedStatement");
+
 		this.cql = cql;
 	}
 

@@ -47,7 +47,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	 * Create a new {@link CachedPreparedStatementCreator}.
 	 *
 	 * @param cache must not be {@literal null}.
-	 * @param statement may be {@literal null} of {@code cql} is provided.
+	 * @param statement must not be {@literal null}.
 	 */
 	protected CachedPreparedStatementCreator(PreparedStatementCache cache, RegularStatement statement) {
 

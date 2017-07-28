@@ -71,9 +71,8 @@ public class QueryOptionsUtilUnitTests {
 	@Test // DATACASS-202
 	public void addPreparedStatementOptionsShouldAddOurQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
-
-		queryOptions.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
+		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE)
+				.consistencyLevel(ConsistencyLevel.LOCAL_QUORUM).build();
 
 		QueryOptionsUtil.addPreparedStatementOptions(mockPreparedStatement, queryOptions);
 
@@ -97,9 +96,8 @@ public class QueryOptionsUtilUnitTests {
 	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldAddOurQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
-
-		queryOptions.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
+		QueryOptions queryOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE)
+				.consistencyLevel(ConsistencyLevel.LOCAL_QUORUM).build();
 
 		QueryOptionsUtil.addQueryOptions(mockStatement, queryOptions);
 

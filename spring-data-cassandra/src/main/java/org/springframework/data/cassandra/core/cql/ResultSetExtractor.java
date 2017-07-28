@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.cql;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.exceptions.DriverException;
@@ -52,5 +53,6 @@ public interface ResultSetExtractor<T> {
 	 *           there's no need to catch {@link DriverException})
 	 * @throws DataAccessException in case of custom exceptions
 	 */
+	@Nullable
 	T extractData(ResultSet resultSet) throws DriverException, DataAccessException;
 }

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.noNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,18 +33,16 @@ import org.springframework.util.StringUtils;
  */
 public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSpecification> {
 
-	public static String toCql(CreateIndexSpecification specification) {
-		return new CreateIndexCqlGenerator(specification).toCql();
-	}
-
 	public CreateIndexCqlGenerator(CreateIndexSpecification specification) {
 		super(specification);
 	}
 
+	public static String toCql(CreateIndexSpecification specification) {
+		return new CreateIndexCqlGenerator(specification).toCql();
+	}
+
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-
-		cql = noNull(cql);
 
 		cql.append("CREATE").append(spec().isCustom() ? " CUSTOM" : "").append(" INDEX")
 				.append(spec().getIfNotExists() ? " IF NOT EXISTS" : "");

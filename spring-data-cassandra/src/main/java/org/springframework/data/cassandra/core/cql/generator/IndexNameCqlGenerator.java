@@ -28,13 +28,9 @@ public abstract class IndexNameCqlGenerator<T extends IndexNameSpecification<T>>
 
 	public abstract StringBuilder toCql(StringBuilder cql);
 
-	private IndexNameSpecification<T> specification;
+	private final IndexNameSpecification<T> specification;
 
 	public IndexNameCqlGenerator(IndexNameSpecification<T> specification) {
-		setSpecification(specification);
-	}
-
-	protected void setSpecification(IndexNameSpecification<T> specification) {
 
 		Assert.notNull(specification, "IndexNameSpecification must not be null");
 		this.specification = specification;
@@ -53,6 +49,6 @@ public abstract class IndexNameCqlGenerator<T extends IndexNameSpecification<T>>
 	}
 
 	public String toCql() {
-		return toCql(null).toString();
+		return toCql(new StringBuilder()).toString();
 	}
 }

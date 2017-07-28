@@ -41,19 +41,19 @@ public class OptionUnitTests {
 
 	@Test
 	public void testOptionWithNullType() {
-		new DefaultOption("opt", null, true, true, true);
-		new DefaultOption("opt", null, false, true, true);
+		new DefaultOption("opt", Void.class, true, true, true);
+		new DefaultOption("opt", Void.class, false, true, true);
 	}
 
 	@Test
 	public void testOptionWithNullTypeIsCoerceable() {
-		Option op = new DefaultOption("opt", null, true, true, true);
+		Option op = new DefaultOption("opt", Void.class, true, true, true);
 		assertThat(op.isCoerceable("")).isTrue();
-		assertThat(op.isCoerceable(null)).isTrue();
 	}
 
 	@Test
 	public void testOptionValueCoercion() {
+
 		String name = "my_option";
 		Class<?> type = String.class;
 		boolean requires = true;
@@ -77,7 +77,6 @@ public class OptionUnitTests {
 			assertThat(op.toString(value)).isEqualTo(expected);
 		}
 		assertThat(op.isCoerceable("x")).isFalse();
-		assertThat(op.isCoerceable(null)).isTrue();
 
 		type = Long.class;
 		escapes = false;
@@ -90,28 +89,25 @@ public class OptionUnitTests {
 			assertThat(op.toString(value)).isEqualTo(expected);
 		}
 		assertThat(op.isCoerceable("x")).isFalse();
-		assertThat(op.isCoerceable(null)).isTrue();
 
 		type = Double.class;
 		escapes = false;
 		quotes = false;
 		op = new DefaultOption(name, type, requires, escapes, quotes);
 
-		String[] expecteds = new String[] { "1", "1.0", "1.0", "1", "1.0", null };
-		Object[] values = new Object[] { 1, 1.0F, 1.0D, "1", "1.0", null };
+		String[] expecteds = new String[] { "1", "1.0", "1.0", "1", "1.0" };
+		Object[] values = new Object[] { 1, 1.0F, 1.0D, "1", "1.0" };
 		for (int i = 0; i < values.length; i++) {
 			assertThat(op.isCoerceable(values[i])).isTrue();
 			assertThat(op.toString(values[i])).isEqualTo(expecteds[i]);
 		}
 		assertThat(op.isCoerceable("x")).isFalse();
-		assertThat(op.isCoerceable(null)).isTrue();
 
 		type = RetentionPolicy.class;
 		escapes = false;
 		quotes = false;
 		op = new DefaultOption(name, type, requires, escapes, quotes);
 
-		assertThat(op.isCoerceable(null)).isTrue();
 		assertThat(op.isCoerceable(RetentionPolicy.CLASS)).isTrue();
 		assertThat(op.isCoerceable("CLASS")).isTrue();
 		assertThat(op.isCoerceable("x")).isFalse();

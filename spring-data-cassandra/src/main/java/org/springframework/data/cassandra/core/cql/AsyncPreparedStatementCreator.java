@@ -36,6 +36,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  *
  * @author Mark Paluch
  * @since 2.0
+ * @see AsyncCqlTemplate#execute(AsyncPreparedStatementCreator, PreparedStatementCallback)
  */
 @FunctionalInterface
 public interface AsyncPreparedStatementCreator {

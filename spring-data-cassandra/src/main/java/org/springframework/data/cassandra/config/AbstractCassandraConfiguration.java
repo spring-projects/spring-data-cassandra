@@ -34,6 +34,10 @@ import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+
+import com.datastax.driver.core.Session;
 
 /**
  * Base class for Spring Data Cassandra configuration using JavaConfig.
@@ -47,7 +51,21 @@ import org.springframework.data.mapping.context.MappingContext;
 public abstract class AbstractCassandraConfiguration extends AbstractClusterConfiguration
 		implements BeanClassLoaderAware {
 
-	private ClassLoader beanClassLoader;
+	private @Nullable ClassLoader beanClassLoader;
+
+	/**
+	 * Returns the initialized {@link Session} instance.
+	 *
+	 * @return the {@link Session}.
+	 * @throws IllegalStateException if the session factory is not initialized.
+	 */
+	protected Session getRequiredSession() {
+
+		CassandraSessionFactoryBean factoryBean = session();
+		Assert.state(factoryBean.getObject() != null, "Session factory not initialized");
+
+		return factoryBean.getObject();
+	}
 
 	/**
 	 * Creates a {@link CassandraSessionFactoryBean} that provides a Cassandra {@link com.datastax.driver.core.Session}.
@@ -55,8 +73,6 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 * {@link #getKeyspaceName() configured keyspace}.
 	 *
 	 * @return the {@link CassandraSessionFactoryBean}.
-	 * @throws ClassNotFoundException if an error occurs initializing the initial entity set, see
-	 *           {@link #cassandraMapping()}
 	 * @see #cluster()
 	 * @see #cassandraConverter()
 	 * @see #getKeyspaceName()
@@ -65,11 +81,11 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 * @see #getShutdownScripts()
 	 */
 	@Bean
-	public CassandraSessionFactoryBean session() throws ClassNotFoundException {
+	public CassandraSessionFactoryBean session() {
 
 		CassandraSessionFactoryBean session = new CassandraSessionFactoryBean();
 
-		session.setCluster(cluster().getObject());
+		session.setCluster(getRequiredCluster());
 		session.setConverter(cassandraConverter());
 		session.setKeyspaceName(getKeyspaceName());
 		session.setSchemaAction(getSchemaAction());
@@ -84,13 +100,11 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 * {@link org.springframework.data.cassandra.core.CassandraTemplate}.
 	 *
 	 * @return {@link SessionFactory} used to initialize the Template API.
-	 * @throws ClassNotFoundException if an error occurs initializing the initial entity set, see
-	 *           {@link #cassandraMapping()}
 	 * @since 2.0
 	 */
 	@Bean
-	public SessionFactory sessionFactory() throws ClassNotFoundException {
-		return new DefaultSessionFactory(session().getObject());
+	public SessionFactory sessionFactory() {
+		return new DefaultSessionFactory(getRequiredSession());
 	}
 
 	/**
@@ -98,19 +112,21 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 * {@link #customConversions()}.
 	 *
 	 * @return {@link CassandraConverter} used to convert Java and Cassandra value types during the mapping process.
-	 * @throws ClassNotFoundException if an error occurs initializing the initial entity set, see
-	 *           {@link #cassandraMapping()}
 	 * @see #cassandraMapping()
 	 * @see #customConversions()
 	 */
 	@Bean
-	public CassandraConverter cassandraConverter() throws ClassNotFoundException {
+	public CassandraConverter cassandraConverter() {
 
-		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter(cassandraMapping());
+		try {
+			MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter(cassandraMapping());
 
-		mappingCassandraConverter.setCustomConversions(customConversions());
+			mappingCassandraConverter.setCustomConversions(customConversions());
 
-		return mappingCassandraConverter;
+			return mappingCassandraConverter;
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/**
@@ -138,14 +154,17 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
 
-		mappingContext.setBeanClassLoader(beanClassLoader);
+		if (beanClassLoader != null) {
+			mappingContext.setBeanClassLoader(beanClassLoader);
+		}
+
 		mappingContext.setInitialEntitySet(getInitialEntitySet());
 
 		CustomConversions customConversions = customConversions();
 
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
-		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(cluster().getObject(), getKeyspaceName()));
+		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(getRequiredCluster(), getKeyspaceName()));
 
 		return mappingContext;
 	}
@@ -156,7 +175,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 * of entity classes.
 	 *
 	 * @return {@link Set} of initial entity classes.
-	 * @throws ClassNotFoundException
+	 * @throws ClassNotFoundException if the entity scan fails.
 	 * @see #getEntityBasePackages()
 	 * @see CassandraEntityClassScanner
 	 * @since 2.0
@@ -201,4 +220,5 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	public SchemaAction getSchemaAction() {
 		return SchemaAction.NONE;
 	}
+
 }

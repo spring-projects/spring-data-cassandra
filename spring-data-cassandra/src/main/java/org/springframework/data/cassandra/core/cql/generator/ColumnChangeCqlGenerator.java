@@ -31,7 +31,9 @@ public abstract class ColumnChangeCqlGenerator<T extends ColumnChangeSpecificati
 	private ColumnChangeSpecification specification;
 
 	public ColumnChangeCqlGenerator(ColumnChangeSpecification specification) {
-		setSpecification(specification);
+
+		Assert.notNull(specification, "ColumnChangeSpecification must not be null");
+		this.specification = specification;
 	}
 
 	protected void setSpecification(ColumnChangeSpecification specification) {

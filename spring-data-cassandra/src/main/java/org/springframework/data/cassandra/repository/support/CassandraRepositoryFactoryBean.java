@@ -15,11 +15,13 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -33,7 +35,7 @@ import org.springframework.util.Assert;
 public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
-	private CassandraTemplate cassandraTemplate;
+	private @Nullable CassandraOperations cassandraOperations;
 
 	/**
 	 * Create a new {@link CassandraRepositoryFactoryBean} for the given repository interface.
@@ -46,7 +48,10 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
-		return new CassandraRepositoryFactory(cassandraTemplate);
+
+		Assert.state(cassandraOperations != null, "CassandraOperations must not be null");
+
+		return new CassandraRepositoryFactory(cassandraOperations);
 	}
 
 	/**
@@ -56,7 +61,8 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 	 *          on Apache Cassandra.
 	 */
 	public void setCassandraTemplate(CassandraTemplate cassandraTemplate) {
-		this.cassandraTemplate = cassandraTemplate;
+
+		this.cassandraOperations = cassandraTemplate;
 		setMappingContext(cassandraTemplate.getConverter().getMappingContext());
 	}
 
@@ -68,6 +74,6 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 
 		super.afterPropertiesSet();
 
-		Assert.notNull(cassandraTemplate, "CassandraTemplate must not be null!");
+		Assert.notNull(cassandraOperations, "CassandraOperations must not be null!");
 	}
 }

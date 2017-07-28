@@ -66,6 +66,7 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 	 * @param beanManager The BeanManager instance.
 	 */
 	void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+
 		for (Map.Entry<Class<?>, Set<Annotation>> entry : getRepositoryTypes()) {
 
 			Class<?> repositoryType = entry.getKey();
@@ -95,5 +96,4 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 		return new CassandraRepositoryBean<>(cassandraOperationsBean, qualifiers, repositoryType, beanManager,
 				getCustomImplementationDetector());
 	}
-
 }

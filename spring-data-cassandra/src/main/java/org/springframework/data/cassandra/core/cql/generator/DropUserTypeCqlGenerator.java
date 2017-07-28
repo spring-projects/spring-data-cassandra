@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecification;
 
 /**
@@ -29,10 +27,6 @@ import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecific
  */
 public class DropUserTypeCqlGenerator extends UserTypeNameCqlGenerator<DropUserTypeSpecification> {
 
-	public static String toCql(DropUserTypeSpecification specification) {
-		return new DropUserTypeCqlGenerator(specification).toCql();
-	}
-
 	/**
 	 * Create a new {@link DropUserTypeCqlGenerator} for a given {@link DropUserTypeSpecification}.
 	 *
@@ -42,13 +36,17 @@ public class DropUserTypeCqlGenerator extends UserTypeNameCqlGenerator<DropUserT
 		super(specification);
 	}
 
+	public static String toCql(DropUserTypeSpecification specification) {
+		return new DropUserTypeCqlGenerator(specification).toCql();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.cql.generator.UserTypeNameCqlGenerator#toCql(java.lang.StringBuilder)
 	 */
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("DROP TYPE").append(spec().getIfExists() ? " IF EXISTS " : " ").append(spec().getName())
+		return cql.append("DROP TYPE").append(spec().getIfExists() ? " IF EXISTS " : " ").append(spec().getName())
 				.append(";");
 	}
 }

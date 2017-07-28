@@ -78,8 +78,7 @@ public class CompositeKeyCrudIntegrationTests extends AbstractKeyspaceCreatingIn
 
 		assertThat(correlationEntities).hasSize(2);
 
-		QueryOptions queryOptions = new QueryOptions();
-		queryOptions.setConsistencyLevel(ConsistencyLevel.ONE);
+		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(ConsistencyLevel.ONE).build();
 
 		operations.delete(correlationEntity1, queryOptions);
 		operations.delete(correlationEntity2, queryOptions);

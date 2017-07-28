@@ -26,6 +26,7 @@ import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.Statement;
@@ -39,6 +40,7 @@ import com.datastax.driver.core.Statement;
 @FunctionalInterface
 interface CassandraQueryExecution {
 
+	@Nullable
 	Object execute(Statement statement, Class<?> type);
 
 	/**
@@ -132,9 +134,13 @@ interface CassandraQueryExecution {
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
+		@Nullable
 		@Override
 		public Object execute(Statement statement, Class<?> type) {
-			return converter.convert(delegate.execute(statement, type));
+
+			Object result = delegate.execute(statement, type);
+
+			return result != null ? converter.convert(result) : null;
 		}
 	}
 
@@ -154,7 +160,7 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
 		 */
 		@Override
-		public Object convert(Object source) {
+		public Object convert(@Nullable Object source) {
 
 			ReturnedType returnedType = processor.getReturnedType();
 

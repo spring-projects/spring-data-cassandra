@@ -27,6 +27,7 @@ import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.Statement;
 
@@ -113,6 +114,7 @@ public interface CassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
+	@Nullable
 	<T> T selectOne(String cql, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
@@ -151,6 +153,7 @@ public interface CassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
+	@Nullable
 	<T> T selectOne(Statement statement, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
@@ -190,6 +193,7 @@ public interface CassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @since 2.0
 	 */
+	@Nullable
 	<T> T selectOne(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
@@ -246,6 +250,7 @@ public interface CassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
+	@Nullable
 	<T> T selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
 
 	/**
@@ -260,9 +265,10 @@ public interface CassandraOperations {
 	 * Insert the given entity applying {@link WriteOptions} and return the entity if the insert was applied.
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
-	 * @param options may be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
+	 * @see InsertOptions#empty()
 	 */
 	WriteResult insert(Object entity, InsertOptions options) throws DataAccessException;
 
@@ -278,9 +284,10 @@ public interface CassandraOperations {
 	 * Update the given entity applying {@link WriteOptions} and return the entity if the update was applied.
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
-	 * @param options may be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
+	 * @see UpdateOptions#empty()
 	 */
 	WriteResult update(Object entity, UpdateOptions options) throws DataAccessException;
 
@@ -296,9 +303,10 @@ public interface CassandraOperations {
 	 * Delete the given entity applying {@link QueryOptions} and return the entity if the delete was applied.
 	 *
 	 * @param entity must not be {@literal null}.
-	 * @param options may be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
+	 * @see QueryOptions#empty()
 	 */
 	WriteResult delete(Object entity, QueryOptions options) throws DataAccessException;
 
@@ -320,5 +328,4 @@ public interface CassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	void truncate(Class<?> entityClass) throws DataAccessException;
-
 }

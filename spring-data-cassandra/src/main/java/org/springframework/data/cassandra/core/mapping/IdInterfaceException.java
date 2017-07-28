@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.mapping;
 import java.lang.reflect.Method;
 
 import org.springframework.data.mapping.MappingException;
+import org.springframework.lang.Nullable;
 
 /**
  * Exception thrown on incorrect mapping of an Id interface.
@@ -30,13 +31,14 @@ public class IdInterfaceException extends MappingException {
 	private static final long serialVersionUID = -1635695314254522703L;
 
 	private final String idInterfaceName;
-	private final String method;
 
-	public IdInterfaceException(Class<?> idInterface, Method method, String message) {
+	private final @Nullable String method;
+
+	public IdInterfaceException(Class<?> idInterface, @Nullable Method method, String message) {
 		this(idInterface.getClass().getName(), method == null ? null : method.toString(), message);
 	}
 
-	public IdInterfaceException(String idInterfaceName, String method, String message) {
+	public IdInterfaceException(String idInterfaceName, @Nullable String method, String message) {
 		super(message);
 		this.idInterfaceName = idInterfaceName;
 		this.method = method;
@@ -46,6 +48,7 @@ public class IdInterfaceException extends MappingException {
 		return idInterfaceName;
 	}
 
+	@Nullable
 	public String getMethod() {
 		return method;
 	}

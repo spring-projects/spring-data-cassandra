@@ -15,9 +15,14 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.lang.Nullable;
+
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.policies.RetryPolicy;
 
 /**
  * Extension to {@link WriteOptions} for use with {@code INSERT} operations.
@@ -27,12 +32,26 @@ import org.springframework.data.cassandra.core.cql.WriteOptions;
  */
 public class InsertOptions extends WriteOptions {
 
+	private static final InsertOptions EMPTY = new InsertOptionsBuilder().build();
+
 	private boolean ifNotExists;
 
+	private InsertOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
+			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl, boolean ifNotExists) {
+
+		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl);
+		this.ifNotExists = ifNotExists;
+	}
+
 	/**
-	 * Creates new {@link InsertOptions}.
+	 * Create default {@link InsertOptions}.
+	 *
+	 * @return default {@link InsertOptions}.
+	 * @since 2.0
 	 */
-	InsertOptions() {}
+	public static InsertOptions empty() {
+		return EMPTY;
+	}
 
 	/**
 	 * Create a new {@link InsertOptionsBuilder}.
@@ -62,73 +81,52 @@ public class InsertOptions extends WriteOptions {
 
 		private InsertOptionsBuilder() {}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
-		 */
 		@Override
 		public InsertOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {
 			return (InsertOptionsBuilder) super.consistencyLevel(consistencyLevel);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#retryPolicy(org.springframework.data.cassandra.core.cql.RetryPolicy)
-		 */
 		@Override
 		public InsertOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
 			return (InsertOptionsBuilder) super.retryPolicy(driverRetryPolicy);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#fetchSize(int)
-		 */
 		@Override
 		public InsertOptionsBuilder fetchSize(int fetchSize) {
 			return (InsertOptionsBuilder) super.fetchSize(fetchSize);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#readTimeout(long)
-		 */
 		@Override
 		public InsertOptionsBuilder readTimeout(long readTimeout) {
 			return (InsertOptionsBuilder) super.readTimeout(readTimeout);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
-		 */
 		@Override
+		@Deprecated
 		public InsertOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 			return (InsertOptionsBuilder) super.readTimeout(readTimeout, timeUnit);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#tracing(boolean)
-		 */
+		@Override
+		public InsertOptionsBuilder readTimeout(Duration readTimeout) {
+			return (InsertOptionsBuilder) super.readTimeout(readTimeout);
+		}
+
+		@Override
+		public InsertOptionsBuilder ttl(Duration ttl) {
+			return (InsertOptionsBuilder) super.ttl(ttl);
+		}
+
 		@Override
 		public InsertOptionsBuilder tracing(boolean tracing) {
 			return (InsertOptionsBuilder) super.tracing(tracing);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#withTracing()
-		 */
 		@Override
 		public InsertOptionsBuilder withTracing() {
 			return (InsertOptionsBuilder) super.withTracing();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
-		 */
 		public InsertOptionsBuilder ttl(int ttl) {
 			return (InsertOptionsBuilder) super.ttl(ttl);
 		}
@@ -161,12 +159,7 @@ public class InsertOptions extends WriteOptions {
 		 * @return a new {@link InsertOptions} with the configured values
 		 */
 		public InsertOptions build() {
-
-			InsertOptions insertOptions = applyOptions(new InsertOptions());
-
-			insertOptions.ifNotExists = this.ifNotExists;
-
-			return insertOptions;
+			return new InsertOptions(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, ifNotExists);
 		}
 	}
 }

@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.query.Update.AddToOp.Mode;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -65,7 +66,8 @@ public class Update {
 		Assert.notNull(assignmentOps, "Update operations must not be null");
 
 		Map<ColumnName, AssignmentOp> updateOperations = assignmentOps instanceof Collection<?>
-				? new LinkedHashMap<>(((Collection<?>) assignmentOps).size()) : new LinkedHashMap<>();
+				? new LinkedHashMap<>(((Collection<?>) assignmentOps).size())
+				: new LinkedHashMap<>();
 
 		assignmentOps.forEach(assignmentOp -> updateOperations.put(assignmentOp.getColumnName(), assignmentOp));
 
@@ -85,11 +87,11 @@ public class Update {
 	 * Set the {@code columnName} to {@code value}.
 	 *
 	 * @param columnName must not be {@literal null}.
-	 * @param value value to set on column with name.
+	 * @param value value to set on column with name, may be {@literal null}.
 	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
 	 *         assignment.
 	 */
-	public Update set(String columnName, Object value) {
+	public Update set(String columnName, @Nullable Object value) {
 		return add(new SetOp(ColumnName.from(columnName), value));
 	}
 
@@ -550,14 +552,15 @@ public class Update {
 	 */
 	public static class SetOp extends AssignmentOp {
 
-		private final Object value;
+		private final @Nullable Object value;
 
-		public SetOp(ColumnName columnName, Object value) {
+		public SetOp(ColumnName columnName, @Nullable Object value) {
 
 			super(columnName);
 			this.value = value;
 		}
 
+		@Nullable
 		public Object getValue() {
 			return value;
 		}

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.exceptions.DriverException;
@@ -27,14 +29,14 @@ import com.datastax.driver.core.exceptions.DriverException;
  */
 public class ArgumentPreparedStatementBinder implements PreparedStatementBinder {
 
-	private final Object[] args;
+	private final @Nullable Object[] args;
 
 	/**
 	 * Create a new {@link ArgumentPreparedStatementBinder} for the given arguments.
 	 *
 	 * @param args the arguments to set. May be empty or {@link null} if no arguments are provided.
 	 */
-	public ArgumentPreparedStatementBinder(Object[] args) {
+	public ArgumentPreparedStatementBinder(@Nullable Object[] args) {
 		this.args = args;
 	}
 

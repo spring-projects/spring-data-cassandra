@@ -48,7 +48,7 @@ public interface AsyncSessionCallback<T> {
 	 * template.
 	 *
 	 * @param session active Cassandra Session, must not be {@literal null}.
-	 * @return a result object, or {@code null} if none.
+	 * @return a result object, or {@code ListenableFuture<Void>} if none.
 	 * @throws DriverException if thrown by a Session method, to be auto-converted to a {@link DataAccessException}.
 	 * @throws DataAccessException in case of custom exceptions.
 	 * @see AsyncCqlTemplate#queryForObject(String, Class)

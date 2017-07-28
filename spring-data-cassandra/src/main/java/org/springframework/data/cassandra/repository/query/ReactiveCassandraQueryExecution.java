@@ -97,6 +97,7 @@ interface ReactiveCassandraQueryExecution {
 		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
+		@SuppressWarnings("ConstantConditions")
 		@Override
 		public Object execute(Statement statement, Class<?> type) {
 			return converter.convert(delegate.execute(statement, type));
@@ -128,7 +129,7 @@ interface ReactiveCassandraQueryExecution {
 				return source;
 			}
 
-			if (source != null && returnedType.isInstance(source)) {
+			if (returnedType.isInstance(source)) {
 				return source;
 			}
 

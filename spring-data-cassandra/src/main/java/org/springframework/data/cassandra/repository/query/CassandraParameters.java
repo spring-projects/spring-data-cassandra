@@ -29,7 +29,7 @@ import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
-import org.springframework.util.Assert;
+import org.springframework.lang.Nullable;
 
 /**
  * Custom extension of {@link Parameters} discovering additional properties of query method parameters.
@@ -75,7 +75,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	 */
 	static class CassandraParameter extends Parameter {
 
-		private final CassandraType cassandraType;
+		private final @Nullable CassandraType cassandraType;
 		private final Class<?> parameterType;
 
 		protected CassandraParameter(MethodParameter parameter) {
@@ -85,14 +85,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 			AnnotatedParameter annotatedParameter = new AnnotatedParameter(parameter);
 
 			if (AnnotatedElementUtils.hasAnnotation(annotatedParameter, CassandraType.class)) {
-				CassandraType cassandraType = AnnotatedElementUtils.findMergedAnnotation(annotatedParameter,
-						CassandraType.class);
-
-				Assert.notNull(cassandraType.type(),
-						String.format("You must specify the type() when annotating method parameters with @%s",
-								CassandraType.class.getSimpleName()));
-
-				this.cassandraType = cassandraType;
+				this.cassandraType = AnnotatedElementUtils.findMergedAnnotation(annotatedParameter, CassandraType.class);
 			} else {
 				this.cassandraType = null;
 			}
@@ -106,6 +99,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 *
 		 * @return the {@link CassandraType} or {@literal null}.
 		 */
+		@Nullable
 		public CassandraType getCassandraType() {
 			return cassandraType;
 		}
@@ -174,6 +168,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 * @inheritDoc
 		 */
 		@Override
+		@Nullable
 		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
 			return methodParameter.getParameterAnnotation(annotationClass);
 		}

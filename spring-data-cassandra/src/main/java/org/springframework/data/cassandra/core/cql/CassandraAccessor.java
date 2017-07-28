@@ -25,6 +25,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ConsistencyLevel;
@@ -59,7 +60,7 @@ public class CassandraAccessor implements InitializingBean {
 	/** Logger available to subclasses */
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	protected CqlExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+	private CqlExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	/**
 	 * If this variable is set to a non-negative value, it will be used for setting the {@code fetchSize} property on
@@ -71,15 +72,15 @@ public class CassandraAccessor implements InitializingBean {
 	 * If this variable is set to a value, it will be used for setting the {@code consistencyLevel} property on statements
 	 * used for query processing.
 	 */
-	private com.datastax.driver.core.ConsistencyLevel consistencyLevel;
+	private @Nullable com.datastax.driver.core.ConsistencyLevel consistencyLevel;
 
 	/**
 	 * If this variable is set to a value, it will be used for setting the {@code retryPolicy} property on statements used
 	 * for query processing.
 	 */
-	private com.datastax.driver.core.policies.RetryPolicy retryPolicy;
+	private @Nullable com.datastax.driver.core.policies.RetryPolicy retryPolicy;
 
-	private SessionFactory sessionFactory;
+	private @Nullable SessionFactory sessionFactory;
 
 	/**
 	 * Ensures the Cassandra {@link Session} and exception translator has been propertly set.
@@ -97,13 +98,14 @@ public class CassandraAccessor implements InitializingBean {
 	 * @see Statement#setConsistencyLevel(ConsistencyLevel)
 	 * @see RetryPolicy
 	 */
-	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
+	public void setConsistencyLevel(@Nullable ConsistencyLevel consistencyLevel) {
 		this.consistencyLevel = consistencyLevel;
 	}
 
 	/**
 	 * @return the {@link ConsistencyLevel} specified for this template.
 	 */
+	@Nullable
 	public ConsistencyLevel getConsistencyLevel() {
 		return this.consistencyLevel;
 	}
@@ -118,6 +120,7 @@ public class CassandraAccessor implements InitializingBean {
 	public void setExceptionTranslator(CqlExceptionTranslator exceptionTranslator) {
 
 		Assert.notNull(exceptionTranslator, "CQLExceptionTranslator must not be null");
+
 		this.exceptionTranslator = exceptionTranslator;
 	}
 
@@ -129,9 +132,6 @@ public class CassandraAccessor implements InitializingBean {
 	 * @see CqlExceptionTranslator
 	 */
 	public CqlExceptionTranslator getExceptionTranslator() {
-
-		Assert.state(this.exceptionTranslator != null, "CQLExceptionTranslator was not properly initialized");
-
 		return this.exceptionTranslator;
 	}
 
@@ -160,13 +160,14 @@ public class CassandraAccessor implements InitializingBean {
 	 * @see Statement#setRetryPolicy(RetryPolicy)
 	 * @see RetryPolicy
 	 */
-	public void setRetryPolicy(RetryPolicy retryPolicy) {
+	public void setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
 	}
 
 	/**
 	 * @return the {@link RetryPolicy} specified for this template.
 	 */
+	@Nullable
 	public RetryPolicy getRetryPolicy() {
 		return this.retryPolicy;
 	}
@@ -224,6 +225,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * @since 2.0
 	 * @see SessionFactory
 	 */
+	@Nullable
 	public SessionFactory getSessionFactory() {
 		return this.sessionFactory;
 	}
@@ -300,6 +302,7 @@ public class CassandraAccessor implements InitializingBean {
 	 *      exception hierarchy</a>
 	 * @see DataAccessException
 	 */
+	@Nullable
 	protected DataAccessException translateExceptionIfPossible(DriverException ex) {
 
 		Assert.notNull(ex, "DriverException must not be null");
@@ -316,7 +319,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
 	 *
 	 * @param task readable text describing the task being attempted
-	 * @param cql CQL query or update that caused the problem (may be {@code null})
+	 * @param cql CQL query or update that caused the problem (may be {@literal null})
 	 * @param ex the offending {@link DriverException}
 	 * @return the DataAccessException, wrapping the {@code DriverException}
 	 * @see org.springframework.dao.DataAccessException#getRootCause()
@@ -324,7 +327,7 @@ public class CassandraAccessor implements InitializingBean {
 	 *      "http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions">Consistent
 	 *      exception hierarchy</a>
 	 */
-	protected DataAccessException translate(String task, String cql, DriverException ex) {
+	protected DataAccessException translate(String task, @Nullable String cql, DriverException ex) {
 
 		Assert.notNull(ex, "DriverException must not be null");
 
@@ -410,10 +413,12 @@ public class CassandraAccessor implements InitializingBean {
 	 * Determine CQL from potential provider object.
 	 *
 	 * @param cqlProvider object that's potentially a {@link CqlProvider}
-	 * @return the CQL string, or {@code null}
+	 * @return the CQL string, or {@literal null}
 	 * @see CqlProvider
 	 */
-	protected static String toCql(Object cqlProvider) {
+	@Nullable
+	protected static String toCql(@Nullable Object cqlProvider) {
+
 		return Optional.ofNullable(cqlProvider) //
 				.filter(o -> o instanceof CqlProvider) //
 				.map(o -> (CqlProvider) o) //
@@ -433,10 +438,10 @@ public class CassandraAccessor implements InitializingBean {
 		}
 
 		/* (non-Javadoc)
-		 *
-		  @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
+		 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
 		 */
 		@Override
+		@Nullable
 		public Object extractData(ResultSet resultSet) {
 
 			StreamSupport.stream(resultSet.spliterator(), false).forEach(rowCallbackHandler::processRow);

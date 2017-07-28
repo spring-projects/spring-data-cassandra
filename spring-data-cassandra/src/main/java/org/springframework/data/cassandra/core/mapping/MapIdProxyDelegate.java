@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -45,12 +46,14 @@ class MapIdProxyDelegate implements InvocationHandler {
 	private MapId delegate = new BasicMapId();
 	private Class<?> idInterface;
 
-	public MapIdProxyDelegate(Class<?> idInterface) {
+	MapIdProxyDelegate(Class<?> idInterface) {
 		this.idInterface = idInterface;
 	}
 
+	@Nullable
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
 		if (isMapIdMethod(method)) {
 			return method.invoke(delegate, args);
 		}
@@ -69,11 +72,12 @@ class MapIdProxyDelegate implements InvocationHandler {
 		return invokeGetter(method);
 	}
 
-	public boolean isMapIdMethod(Method method) {
+	private boolean isMapIdMethod(Method method) {
 		return MAP_ID_SIGNATURES.containsKey(new Signature(method, true));
 	}
 
-	public Object invokeGetter(Method method) {
+	private Object invokeGetter(Method method) {
+
 		String name = method.getName();
 		if (name.startsWith("get")) {
 			if (name.length() == 3) {
@@ -86,7 +90,8 @@ class MapIdProxyDelegate implements InvocationHandler {
 		return delegate.get(name);
 	}
 
-	public void invokeSetter(Method method, Object value) {
+	private void invokeSetter(Method method, @Nullable Object value) {
+
 		String name = method.getName();
 		int minLength = 1;
 		boolean isSet = name.startsWith("set");
@@ -111,73 +116,74 @@ class MapIdProxyDelegate implements InvocationHandler {
 
 		delegate.put(name, value);
 	}
-}
 
-class Signature {
-	String name;
-	Class<?>[] argTypes;
-	Class<?> returnType;
+	static class Signature {
+		private String name;
+		private @Nullable Class<?>[] argTypes;
+		private @Nullable Class<?> returnType;
 
-	Signature(Method method, boolean includeReturnType) {
-		this(method.getName(), method.getParameterTypes(), includeReturnType ? method.getReturnType() : null);
-	}
+		Signature(Method method, boolean includeReturnType) {
+			this(method.getName(), method.getParameterTypes(), includeReturnType ? method.getReturnType() : null);
+		}
 
-	Signature(String name, Class<?>[] argTypes, Class<?> returnType) {
-		this.name = name;
-		this.argTypes = argTypes;
-		this.returnType = returnType;
-	}
+		Signature(String name, Class<?>[] argTypes, @Nullable Class<?> returnType) {
 
-	@Override
-	public String toString() {
-		return String.format("%s %s(%s)", returnType, name, Arrays.toString(argTypes));
-	}
+			this.name = name;
+			this.argTypes = argTypes;
+			this.returnType = returnType;
+		}
 
-	@Override
-	public boolean equals(Object that) {
-		if (that == null) {
-			return false;
+		@Override
+		public String toString() {
+			return String.format("%s %s(%s)", returnType, name, Arrays.toString(argTypes));
 		}
-		if (this == that) {
-			return true;
-		}
-		if (!(that instanceof Signature)) {
-			return false;
-		}
-		Signature that_ = (Signature) that;
-		if (!this.name.equals(that_.name)) {
-			return false;
-		}
-		if ((this.argTypes == null && that_.argTypes != null) || (this.argTypes != null && that_.argTypes == null)) {
-			return false;
-		}
-		if (this.argTypes != null) {
-			if (this.argTypes.length != that_.argTypes.length) {
+
+		@Override
+		public boolean equals(Object that) {
+			if (that == null) {
 				return false;
 			}
-			for (int i = 0; i < this.argTypes.length; i++) {
-				if (!this.argTypes[i].equals(that_.argTypes[i])) {
+			if (this == that) {
+				return true;
+			}
+			if (!(that instanceof Signature)) {
+				return false;
+			}
+			Signature that_ = (Signature) that;
+			if (!this.name.equals(that_.name)) {
+				return false;
+			}
+			if ((this.argTypes == null && that_.argTypes != null) || (this.argTypes != null && that_.argTypes == null)) {
+				return false;
+			}
+			if (this.argTypes != null) {
+				if (this.argTypes.length != that_.argTypes.length) {
 					return false;
 				}
+				for (int i = 0; i < this.argTypes.length; i++) {
+					if (!this.argTypes[i].equals(that_.argTypes[i])) {
+						return false;
+					}
+				}
 			}
+			if (this.returnType == null) {
+				return that_.returnType == null;
+			}
+			return this.returnType.equals(that_.returnType);
 		}
-		if (this.returnType == null) {
-			return that_.returnType == null;
-		}
-		return this.returnType.equals(that_.returnType);
-	}
 
-	@Override
-	public int hashCode() {
-		int hash = 37 ^ name.hashCode();
-		if (argTypes != null) {
-			for (Class<?> c : argTypes) {
-				hash ^= c.hashCode();
+		@Override
+		public int hashCode() {
+			int hash = 37 ^ name.hashCode();
+			if (argTypes != null) {
+				for (Class<?> c : argTypes) {
+					hash ^= c.hashCode();
+				}
 			}
+			if (returnType != null) {
+				hash ^= returnType.hashCode();
+			}
+			return hash;
 		}
-		if (returnType != null) {
-			hash ^= returnType.hashCode();
-		}
-		return hash;
 	}
 }

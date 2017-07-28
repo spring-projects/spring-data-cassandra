@@ -16,23 +16,26 @@
 package org.springframework.data.cassandra;
 
 import org.springframework.dao.QueryTimeoutException;
+import org.springframework.lang.Nullable;
 
 /**
  * Spring data access exception for a Cassandra write timeout.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraWriteTimeoutException extends QueryTimeoutException {
 
 	private static final long serialVersionUID = -4374826375213670718L;
 
-	private String writeType;
+	private @Nullable String writeType;
 
-	public CassandraWriteTimeoutException(String writeType, String msg, Throwable cause) {
+	public CassandraWriteTimeoutException(@Nullable String writeType, String msg, Throwable cause) {
 		super(msg, cause);
 		this.writeType = writeType;
 	}
 
+	@Nullable
 	public String getWriteType() {
 		return writeType;
 	}

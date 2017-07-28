@@ -54,7 +54,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	public StringBasedCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations,
 			SpelExpressionParser expressionParser, EvaluationContextProvider evaluationContextProvider) {
 
-		this(queryMethod.getAnnotatedQuery(), queryMethod, operations, expressionParser, evaluationContextProvider);
+		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser, evaluationContextProvider);
 	}
 
 	/**

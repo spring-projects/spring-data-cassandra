@@ -120,16 +120,6 @@ public class ConvertingParameterAccessorUnitTests {
 
 	@Test // DATACASS-7
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void shouldProvideTypeBasedOnValue() {
-
-		when(mockParameterAccessor.getDataType(0)).thenReturn(null);
-		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) LocalDate.class);
-
-		assertThat(convertingParameterAccessor.getDataType(0)).isEqualTo(DataType.date());
-	}
-
-	@Test // DATACASS-7
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldProvideTypeBasedOnPropertyType() {
 
 		when(mockProperty.getDataType()).thenReturn(DataType.varchar());

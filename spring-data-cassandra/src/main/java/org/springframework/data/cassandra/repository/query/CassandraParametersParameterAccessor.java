@@ -22,6 +22,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.DataType;
 
@@ -54,6 +55,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#findCassandraType(int)
 	 */
+	@Nullable
 	public CassandraType findCassandraType(int index) {
 		return getParameters().getParameter(index).getCassandraType();
 	}

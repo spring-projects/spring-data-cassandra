@@ -17,11 +17,15 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
 
+import lombok.EqualsAndHashCode;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.CqlStringUtils;
+import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
+import org.springframework.lang.Nullable;
 
 /**
  * Abstract builder class to support the construction of table specifications that have table options, that is, those
@@ -36,15 +40,14 @@ import org.springframework.data.cassandra.core.cql.CqlStringUtils;
  * @author John McPeek
  * @param <T> The subtype of the {@link KeyspaceOptionsSpecification}.
  */
+@EqualsAndHashCode(callSuper = true)
 public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpecification<T>>
 		extends KeyspaceActionSpecification<KeyspaceOptionsSpecification<T>> {
 
 	protected Map<String, Object> options = new LinkedHashMap<>();
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public T name(String name) {
-		return (T) super.name(name);
+	protected KeyspaceOptionsSpecification(KeyspaceIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -53,7 +56,7 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 	 * @return this
 	 */
 	public T with(KeyspaceOption option) {
-		return with(option, null);
+		return with(option.getName(), null, option.escapesValue(), option.quotesValue());
 	}
 
 	/**
@@ -74,13 +77,13 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 	/**
 	 * Adds the given option by name to this keyspaces's options.
 	 * <p/>
-	 * Options that have {@code null} values are considered single string options where the name of the option is the
+	 * Options that have {@literal null} values are considered single string options where the name of the option is the
 	 * string to be used. Otherwise, the result of {@link Object#toString()} is considered to be the value of the option
 	 * with the given name. The value, after conversion to string, may have embedded single quotes escaped according to
 	 * parameter {@code escape} and may be single-quoted according to parameter <code>quote</code>.
 	 *
 	 * @param name The name of the option
-	 * @param value The value of the option. If {@code null}, the value is ignored and the option is considered to be
+	 * @param value The value of the option. If {@literal null}, the value is ignored and the option is considered to be
 	 *          composed of only the name, otherwise the value's {@link Object#toString()} value is used.
 	 * @param escape Whether to escape the value via {@link CqlStringUtils#escapeSingle(Object)}. Ignored if given value
 	 *          is an instance of a {@link Map}.
@@ -89,7 +92,8 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 	 * @return this
 	 */
 	@SuppressWarnings("unchecked")
-	public T with(String name, Object value, boolean escape, boolean quote) {
+	public T with(String name, @Nullable Object value, boolean escape, boolean quote) {
+
 		if (!(value instanceof Map)) {
 			if (escape) {
 				value = escapeSingle(value);

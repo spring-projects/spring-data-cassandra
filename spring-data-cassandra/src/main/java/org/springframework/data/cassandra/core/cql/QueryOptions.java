@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import java.util.Optional;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ConsistencyLevel;
@@ -33,30 +34,53 @@ import com.datastax.driver.core.policies.RetryPolicy;
  */
 public class QueryOptions {
 
-	private ConsistencyLevel consistencyLevel;
+	private static final QueryOptions EMPTY = QueryOptions.builder().build();
 
-	private RetryPolicy retryPolicy;
+	private final @Nullable ConsistencyLevel consistencyLevel;
 
-	private Boolean tracing;
+	private final @Nullable RetryPolicy retryPolicy;
 
-	private Integer fetchSize;
+	private final @Nullable Boolean tracing;
 
-	private Long readTimeout;
+	private final @Nullable Integer fetchSize;
 
-	/**
-	 * Creates new {@link QueryOptions}.
-	 */
-	public QueryOptions() {}
+	private final Duration readTimeout;
+
+	protected QueryOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
+			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout) {
+
+		this.consistencyLevel = consistencyLevel;
+		this.retryPolicy = retryPolicy;
+		this.tracing = tracing;
+		this.fetchSize = fetchSize;
+		this.readTimeout = readTimeout;
+	}
 
 	/**
 	 * Creates new {@link QueryOptions} for the given {@link ConsistencyLevel} and {@link RetryPolicy}.
 	 *
 	 * @param consistencyLevel the consistency level, may be {@literal null}.
 	 * @param retryPolicy the retry policy, may be {@literal null}.
+	 * @deprecated since 2.0, use {@link #builder()}.
 	 */
-	public QueryOptions(ConsistencyLevel consistencyLevel, RetryPolicy retryPolicy) {
-		setConsistencyLevel(consistencyLevel);
-		setRetryPolicy(retryPolicy);
+	@Deprecated
+	public QueryOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy) {
+
+		this.consistencyLevel = consistencyLevel;
+		this.retryPolicy = retryPolicy;
+		this.tracing = false;
+		this.fetchSize = null;
+		this.readTimeout = Duration.ofMillis(-1);
+	}
+
+	/**
+	 * Create default {@link QueryOptions}.
+	 *
+	 * @return default {@link QueryOptions}.
+	 * @since 2.0
+	 */
+	public static QueryOptions empty() {
+		return EMPTY;
 	}
 
 	/**
@@ -70,110 +94,44 @@ public class QueryOptions {
 	}
 
 	/**
-	 * Sets the driver {@link ConsistencyLevel}. Setting both ({@link ConsistencyLevel} and {@link ConsistencyLevel driver
-	 * ConsistencyLevel}) consistency levels is not supported.
-	 *
-	 * @param consistencyLevel the driver {@link ConsistencyLevel} to set.
-	 * @since 1.5
-	 */
-	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
-		this.consistencyLevel = consistencyLevel;
-	}
-
-	/**
 	 * @return the the driver {@link ConsistencyLevel}
 	 * @since 1.5
 	 */
+	@Nullable
 	protected ConsistencyLevel getConsistencyLevel() {
 		return this.consistencyLevel;
-	}
-
-	/**
-	 * Sets the {@link RetryPolicy}. Setting both ({@link RetryPolicy} and {@link RetryPolicy driver RetryPolicy}) retry
-	 * policies is not supported.
-	 *
-	 * @param retryPolicy the driver {@link RetryPolicy} to set.
-	 * @since 1.5
-	 * @throws IllegalStateException if the {@link RetryPolicy} is set
-	 */
-	public void setRetryPolicy(RetryPolicy retryPolicy) {
-		this.retryPolicy = retryPolicy;
 	}
 
 	/**
 	 * @return the driver {@link RetryPolicy}
 	 * @since 1.5
 	 */
+	@Nullable
 	protected RetryPolicy getRetryPolicy() {
 		return this.retryPolicy;
-	}
-
-	/**
-	 * Sets the query fetch size for {@link com.datastax.driver.core.ResultSet} chunks.
-	 * <p>
-	 * The fetch size controls how much resulting rows will be retrieved simultaneously (the goal being to avoid loading
-	 * too much results in memory for queries yielding large results). Please note that while value as low as 1 can be
-	 * used, it is *highly* discouraged to use such a low value in practice as it will yield very poor performance.
-	 *
-	 * @param fetchSize the number of rows to fetch per chunking request. To disable chunking of the result set, use
-	 *          {@code fetchSize == Integer.MAX_VALUE}. Negative values are not allowed.
-	 * @since 1.5
-	 * @see com.datastax.driver.core.QueryOptions#getFetchSize()
-	 * @see com.datastax.driver.core.Cluster.Builder#withQueryOptions(com.datastax.driver.core.QueryOptions)
-	 */
-	public void setFetchSize(int fetchSize) {
-
-		Assert.isTrue(fetchSize >= 0, "FetchSize must be greater than equal to zero");
-
-		this.fetchSize = fetchSize;
 	}
 
 	/**
 	 * @return the number of rows to fetch per chunking request. May be {@literal null} if not set.
 	 * @since 1.5
 	 */
+	@Nullable
 	protected Integer getFetchSize() {
 		return fetchSize;
-	}
-
-	/**
-	 * Sets the read timeout in milliseconds. Overrides the default per-host read timeout (
-	 * {@link SocketOptions#getReadTimeoutMillis()}).
-	 *
-	 * @param readTimeout the read timeout in milliseconds. Negative values are not allowed. If it is {@code 0}, the read
-	 *          timeout will be disabled for this statement.
-	 * @since 1.5
-	 * @see SocketOptions#getReadTimeoutMillis()
-	 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
-	 */
-	public void setReadTimeout(long readTimeout) {
-
-		Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
-
-		this.readTimeout = readTimeout;
 	}
 
 	/**
 	 * @return the read timeout in milliseconds. May be {@literal null} if not set.
 	 * @since 1.5
 	 */
-	protected Long getReadTimeout() {
+	protected Duration getReadTimeout() {
 		return this.readTimeout;
-	}
-
-	/**
-	 * Enables statement tracing.
-	 *
-	 * @param tracing {@literal true} to enable statement tracing to the executed statements.
-	 * @since 1.5
-	 */
-	public void setTracing(boolean tracing) {
-		this.tracing = tracing;
 	}
 
 	/**
 	 * @return whether to enable tracing. May be {@literal null} if not set.
 	 */
+	@Nullable
 	protected Boolean getTracing() {
 		return this.tracing;
 	}
@@ -186,15 +144,15 @@ public class QueryOptions {
 	 */
 	public static class QueryOptionsBuilder {
 
-		private ConsistencyLevel consistencyLevel;
+		protected @Nullable ConsistencyLevel consistencyLevel;
 
-		private RetryPolicy retryPolicy;
+		protected @Nullable RetryPolicy retryPolicy;
 
-		private Boolean tracing;
+		protected @Nullable Boolean tracing;
 
-		private Integer fetchSize;
+		protected @Nullable Integer fetchSize;
 
-		private Long readTimeout;
+		protected Duration readTimeout = Duration.ofMillis(-1);
 
 		QueryOptionsBuilder() {}
 
@@ -261,12 +219,7 @@ public class QueryOptions {
 		 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
 		 */
 		public QueryOptionsBuilder readTimeout(long readTimeout) {
-
-			Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
-
-			this.readTimeout = readTimeout;
-
-			return this;
+			return readTimeout(Duration.ofMillis(readTimeout));
 		}
 
 		/**
@@ -278,13 +231,33 @@ public class QueryOptions {
 		 * @return {@code this} {@link QueryOptionsBuilder}
 		 * @see SocketOptions#getReadTimeoutMillis()
 		 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
+		 * @deprecated since 2.0, use {@link #readTimeout(Duration)}.
 		 */
+		@Deprecated
 		public QueryOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
 			Assert.notNull(timeUnit, "TimeUnit must not be null");
 
-			this.readTimeout = timeUnit.toMillis(readTimeout);
+			return readTimeout(Duration.ofMillis(timeUnit.toMillis(readTimeout)));
+		}
+
+		/**
+		 * Sets the read timeout. Overrides the default per-host read timeout.
+		 *
+		 * @param readTimeout the read timeout. Negative values are not allowed. If it is {@code 0}, the read timeout will
+		 *          be disabled for this statement.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 * @see SocketOptions#getReadTimeoutMillis()
+		 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
+		 * @since 2.0
+		 */
+		public QueryOptionsBuilder readTimeout(Duration readTimeout) {
+
+			Assert.isTrue(!readTimeout.isZero() && !readTimeout.isNegative(),
+					"ReadTimeout must be greater than equal to zero");
+
+			this.readTimeout = readTimeout;
 
 			return this;
 		}
@@ -317,21 +290,7 @@ public class QueryOptions {
 		 * @return a new {@link QueryOptions} with the configured values
 		 */
 		public QueryOptions build() {
-			return applyOptions(new QueryOptions());
-		}
-
-		protected <T> T applyOptions(T options) {
-
-			QueryOptions queryOptions = (QueryOptions) options;
-
-			queryOptions.setConsistencyLevel(consistencyLevel);
-			queryOptions.setRetryPolicy(retryPolicy);
-
-			Optional.ofNullable(this.fetchSize).ifPresent(queryOptions::setFetchSize);
-			Optional.ofNullable(this.readTimeout).ifPresent(queryOptions::setReadTimeout);
-			Optional.ofNullable(this.tracing).ifPresent(queryOptions::setTracing);
-
-			return options;
+			return new QueryOptions(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout);
 		}
 	}
 }

@@ -18,10 +18,10 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -32,20 +32,27 @@ import org.springframework.util.Assert;
  */
 public class DefaultOption implements Option {
 
-	private String name;
+	private final String name;
 
-	private Class<?> type;
+	private final Class<?> type;
 
-	private boolean requiresValue;
+	private final boolean requiresValue;
 
-	private boolean escapesValue;
+	private final boolean escapesValue;
 
-	private boolean quotesValue;
+	private final boolean quotesValue;
 
 	public DefaultOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
 
-		setName(name);
-		setType(type);
+		Assert.hasText(name, "Name must not be null or empty");
+		Assert.notNull(type, "Type must not be null");
+
+		if (type.isInterface() && !(Map.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type))) {
+			throw new IllegalArgumentException("given type [" + type.getName() + "] must be a class, Map or Collection");
+		}
+
+		this.name = name;
+		this.type = type;
 
 		this.requiresValue = requiresValue;
 		this.escapesValue = escapesValue;
@@ -53,24 +60,10 @@ public class DefaultOption implements Option {
 
 	}
 
-	protected void setName(String name) {
-
-		Assert.hasText(name, "Name must not be null or empty");
-		this.name = name;
-	}
-
-	protected void setType(Class<?> type) {
-		if (type != null) {
-			if (type.isInterface() && !(Map.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type))) {
-				throw new IllegalArgumentException("given type [" + type.getName() + "] must be a class, Map or Collection");
-			}
-		}
-		this.type = type;
-	}
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public boolean isCoerceable(Object value) {
-		if (value == null || type == null) {
+
+		if (getType().equals(Void.class)) {
 			return true;
 		}
 
@@ -88,9 +81,7 @@ public class DefaultOption implements Option {
 				String name = value instanceof Enum ? name = ((Enum) value).name() : value.toString();
 				Enum.valueOf((Class<? extends Enum>) type, name);
 				return true;
-			} catch (NullPointerException x) {
-				return false;
-			} catch (IllegalArgumentException x) {
+			} catch (IllegalArgumentException | NullPointerException x) {
 				return false;
 			}
 		}
@@ -103,7 +94,7 @@ public class DefaultOption implements Option {
 			}
 			ctor.newInstance(value.toString());
 			return true;
-		} catch (InstantiationException e) {} catch (IllegalAccessException e) {} catch (IllegalArgumentException e) {} catch (InvocationTargetException e) {} catch (NoSuchMethodException e) {} catch (SecurityException e) {}
+		} catch (Exception e) {}
 		return false;
 	}
 
@@ -125,7 +116,7 @@ public class DefaultOption implements Option {
 	 * @see org.springframework.data.cassandra.core.cql.keyspace.Option#takesValue()
 	 */
 	public boolean takesValue() {
-		return type != null;
+		return type != Void.class;
 	}
 
 	/* (non-Javadoc)
@@ -152,7 +143,7 @@ public class DefaultOption implements Option {
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.cql.keyspace.Option#checkValue(java.lang.Object)
 	 */
-	public void checkValue(Object value) {
+	public void checkValue(@Nullable Object value) {
 		if (takesValue()) {
 			if (value == null) {
 				if (requiresValue) {
@@ -166,7 +157,7 @@ public class DefaultOption implements Option {
 			}
 			// else value is not coerceable into the expected type
 			throw new IllegalArgumentException(
-					"Option [" + getName() + "] takes value coerceable to type [" + getType().getName() + "]");
+					"Option [" + getName() + "] takes value coerceable to type [" + getType() + "]");
 		}
 		// else this option doesn't take a value
 		if (value != null) {
@@ -174,10 +165,12 @@ public class DefaultOption implements Option {
 		}
 	}
 
-	public String toString(Object value) {
+	public String toString(@Nullable Object value) {
+
 		if (value == null) {
-			return null;
+			return "";
 		}
+
 		checkValue(value);
 
 		String string = value.toString();

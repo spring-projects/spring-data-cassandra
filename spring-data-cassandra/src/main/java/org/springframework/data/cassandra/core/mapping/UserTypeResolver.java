@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.UserType;
 
@@ -34,5 +35,6 @@ public interface UserTypeResolver {
 	 * @param typeName must not be {@literal null}.
 	 * @return the type or {@literal null}, if not found.
 	 */
+	@Nullable
 	UserType resolveType(CqlIdentifier typeName);
 }

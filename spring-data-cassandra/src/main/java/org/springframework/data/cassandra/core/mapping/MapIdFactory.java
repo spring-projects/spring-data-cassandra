@@ -59,6 +59,7 @@ public class MapIdFactory {
 	 * @see IdInterfaceValidator#validate(Class)
 	 */
 	public static <T> T id(Class<T> idInterface, ClassLoader loader) {
+
 		if (MapId.class.equals(idInterface)) {
 			return (T) new BasicMapId();
 		}

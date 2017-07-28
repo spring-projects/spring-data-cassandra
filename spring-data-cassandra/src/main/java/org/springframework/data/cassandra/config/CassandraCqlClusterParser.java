@@ -30,6 +30,7 @@ import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceAttributes;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -205,7 +206,7 @@ class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 	 * @param element {@link Element} to parse.
 	 * @param builder The {@link BeanDefinitionBuilder} to add the replication to
 	 */
-	private void parseReplication(Element element, BeanDefinitionBuilder builder) {
+	private void parseReplication(@Nullable Element element, BeanDefinitionBuilder builder) {
 
 		ManagedList<String> networkTopologyDataCenters = new ManagedList<>();
 		ManagedList<String> networkTopologyReplicationFactors = new ManagedList<>();

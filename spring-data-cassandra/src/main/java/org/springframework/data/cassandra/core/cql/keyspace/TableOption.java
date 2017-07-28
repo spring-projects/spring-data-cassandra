@@ -36,7 +36,7 @@ public enum TableOption implements Option {
 	/**
 	 * {@code COMPACT STORAGE}
 	 */
-	COMPACT_STORAGE("COMPACT STORAGE", null, false, false, false),
+	COMPACT_STORAGE("COMPACT STORAGE", Void.class, false, false, false),
 	/**
 	 * {@code compaction}. Value is a <code>Map&lt;CompactionOption,Object&gt;</code>.
 	 *
@@ -46,7 +46,7 @@ public enum TableOption implements Option {
 	/**
 	 * {@code compression}. Value is a <code>Map&lt;CompressionOption,Object&gt;</code>.
 	 *
-	 * @see {@link CompressionOption}
+	 * @see CompressionOption
 	 */
 	COMPRESSION("compression", Map.class, true, false, false),
 	/**

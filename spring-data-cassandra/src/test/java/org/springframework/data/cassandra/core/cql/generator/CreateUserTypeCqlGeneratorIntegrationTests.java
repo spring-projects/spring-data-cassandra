@@ -60,8 +60,7 @@ public class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspace
 	public void createUserTypeIfNotExists() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
-				.createType() //
-				.name("address").ifNotExists().field("zip", DataType.ascii()) //
+				.createType("address").ifNotExists().field("zip", DataType.ascii()) //
 				.field("city", DataType.varchar());
 
 		session.execute(toCql(spec));
@@ -75,8 +74,7 @@ public class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspace
 	public void createNestedUserType() {
 
 		CreateUserTypeSpecification addressSpec = CreateUserTypeSpecification //
-				.createType() //
-				.name("address").ifNotExists().field("zip", DataType.ascii()) //
+				.createType("address").ifNotExists().field("zip", DataType.ascii()) //
 				.field("city", DataType.varchar());
 
 		session.execute(toCql(addressSpec));
@@ -85,8 +83,7 @@ public class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspace
 		UserType address = keyspace.getUserType("address");
 
 		CreateUserTypeSpecification personSpec = CreateUserTypeSpecification //
-				.createType() //
-				.name("person").ifNotExists().field("address", address.copy(true)) //
+				.createType("person").ifNotExists().field("address", address.copy(true)) //
 				.field("city", DataType.varchar());
 
 		session.execute(toCql(personSpec));

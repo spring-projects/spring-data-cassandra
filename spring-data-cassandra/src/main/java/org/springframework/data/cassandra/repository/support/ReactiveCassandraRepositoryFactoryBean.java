@@ -20,6 +20,7 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -29,14 +30,14 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.0
  * @see org.springframework.data.repository.reactive.ReactiveSortingRepository
- * @see org.springframework.data.repository.reactive.RxJava1SortingRepository
+ * @see org.springframework.data.repository.reactive.RxJava2SortingRepository
  */
 public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
 	private boolean mappingContextConfigured = false;
 
-	private ReactiveCassandraOperations operations;
+	private @Nullable ReactiveCassandraOperations operations;
 
 	/**
 	 * Create a new {@link ReactiveCassandraRepositoryFactoryBean} for the given repository interface.
@@ -73,6 +74,9 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 	 */
 	@Override
 	protected final RepositoryFactorySupport createRepositoryFactory() {
+
+		Assert.state(operations != null, "ReactiveCassandraOperations must not be null");
+
 		return getFactoryInstance(operations);
 	}
 

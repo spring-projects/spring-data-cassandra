@@ -25,9 +25,7 @@ import org.springframework.util.Assert;
  * Keyspace identifiers are converted to lower case. To render, use any of the methods {@link #toCql()},
  * {@link #toCql(StringBuilder)}, or {@link #toString()}.
  *
- * @see #KeyspaceIdentifier(String)
  * @see #toCql()
- * @see #toCql(StringBuilder)
  * @see #toString()
  * @author Matthew T. Adams
  */
@@ -35,6 +33,25 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 
 	public static final String REGEX = "(?i)[a-z][\\w]{0,47}";
 	public static final Pattern PATTERN = Pattern.compile(REGEX);
+
+	private final String identifier;
+
+	/**
+	 * Create a new {@link KeyspaceIdentifier}.
+	 */
+	private KeyspaceIdentifier(CharSequence identifier) {
+
+		Assert.notNull(identifier, "Identifier must not be null");
+
+		String string = identifier.toString();
+		Assert.hasText(string, "Identifier must not be empty");
+
+		if (!isIdentifier(string)) {
+			throw new IllegalArgumentException(
+					String.format("given string [%s] is not a valid keyspace identifier", identifier));
+		}
+		this.identifier = string.toLowerCase();
+	}
 
 	/**
 	 * Factory method for {@link KeyspaceIdentifier}. Convenient if imported statically.
@@ -50,32 +67,6 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 		return PATTERN.matcher(chars).matches() && !ReservedKeyword.isReserved(chars);
 	}
 
-	private String identifier;
-
-	/**
-	 * Create a new {@link KeyspaceIdentifier}.
-	 */
-	public KeyspaceIdentifier(CharSequence identifier) {
-		setIdentifier(identifier);
-	}
-
-	/**
-	 * Tests & sets the given identifier.
-	 */
-	private void setIdentifier(CharSequence identifier) {
-
-		Assert.notNull(identifier, "Identifier must not be null");
-
-		String string = identifier.toString();
-		Assert.hasText(string, "Identifier must not be empty");
-
-		if (!isIdentifier(string)) {
-			throw new IllegalArgumentException(
-					String.format("given string [%s] is not a valid keyspace identifier", identifier));
-		}
-		this.identifier = string.toLowerCase();
-	}
-
 	/**
 	 * Renders this identifier appropriately.
 	 */
@@ -85,10 +76,10 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 
 	/**
 	 * Appends the rendering of this identifier to the given {@link StringBuilder}, then returns that
-	 * {@link StringBuilder}. If {@code null} is given, a new {@link StringBuilder} is created, appended to, and returned.
+	 * {@link StringBuilder}. If {@literal null} is given, a new {@link StringBuilder} is created, appended to, and
+	 * returned.
 	 */
 	public StringBuilder toCql(StringBuilder sb) {
-		sb = sb == null ? new StringBuilder() : sb;
 		return sb.append(toCql());
 	}
 

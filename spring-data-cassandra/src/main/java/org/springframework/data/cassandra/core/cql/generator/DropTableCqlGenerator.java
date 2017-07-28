@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
 
 /**
@@ -36,7 +34,7 @@ public class DropTableCqlGenerator extends TableNameCqlGenerator<DropTableSpecif
 
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("DROP TABLE ")
+		return cql.append("DROP TABLE ")
 				// .append(spec().getIfExists() ? "IF EXISTS " : "")
 				.append(spec().getName()).append(";");
 	}

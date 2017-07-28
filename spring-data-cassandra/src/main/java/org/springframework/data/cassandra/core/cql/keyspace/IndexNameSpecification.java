@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -33,7 +34,15 @@ public abstract class IndexNameSpecification<T extends IndexNameSpecification<T>
 	/**
 	 * The name of the index.
 	 */
-	private CqlIdentifier name;
+	private @Nullable CqlIdentifier name;
+
+	protected IndexNameSpecification() {}
+
+	protected IndexNameSpecification(CqlIdentifier name) {
+
+		Assert.notNull(name, "CqlIdentifier must not be null");
+		this.name = name;
+	}
 
 	/**
 	 * Sets the index name.
@@ -54,6 +63,7 @@ public abstract class IndexNameSpecification<T extends IndexNameSpecification<T>
 		return (T) this;
 	}
 
+	@Nullable
 	public CqlIdentifier getName() {
 		return this.name;
 	}

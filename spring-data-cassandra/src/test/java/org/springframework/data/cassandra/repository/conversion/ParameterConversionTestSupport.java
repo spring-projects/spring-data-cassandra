@@ -65,7 +65,7 @@ abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbedded
 		}
 
 		@Override
-		public CassandraSessionFactoryBean session() throws ClassNotFoundException {
+		public CassandraSessionFactoryBean session() {
 
 			Cluster cluster = cluster().getObject();
 			Session session = cluster.connect(getKeyspaceName());

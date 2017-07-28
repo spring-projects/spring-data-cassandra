@@ -19,10 +19,10 @@ import java.util.Collections;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityInstantiators;
+import org.springframework.util.Assert;
 
 /**
  * Base class for {@link CassandraConverter} implementations. Sets up a {@link ConversionService} and populates basic
@@ -36,32 +36,36 @@ import org.springframework.data.convert.EntityInstantiators;
  */
 public abstract class AbstractCassandraConverter implements CassandraConverter, InitializingBean {
 
-	protected final ConversionService conversionService;
+	private final ConversionService conversionService;
 
-	protected CustomConversions conversions = new CassandraCustomConversions(Collections.emptyList());
+	private CustomConversions conversions = new CassandraCustomConversions(Collections.emptyList());
 
-	protected EntityInstantiators instantiators = new EntityInstantiators();
+	EntityInstantiators instantiators = new EntityInstantiators();
 
 	/**
 	 * Create a new {@link AbstractCassandraConverter} using the given {@link ConversionService}.
 	 */
-	public AbstractCassandraConverter(ConversionService conversionService) {
-		this.conversionService = conversionService == null ? new DefaultConversionService() : conversionService;
+	protected AbstractCassandraConverter(ConversionService conversionService) {
+
+		Assert.notNull(conversionService, "ConversionService must not be null");
+
+		this.conversionService = conversionService;
 	}
 
 	/**
 	 * Registers {@link EntityInstantiators} to customize entity instantiation.
 	 *
-	 * @param instantiators
+	 * @param instantiators must not be {@literal null}.
 	 */
 	public void setInstantiators(EntityInstantiators instantiators) {
-		this.instantiators = instantiators == null ? new EntityInstantiators() : instantiators;
+
+		Assert.notNull(instantiators, "EntityInstantiators must not be null");
+
+		this.instantiators = instantiators;
 	}
 
 	/**
 	 * Registers the given custom conversions with the converter.
-	 *
-	 * @param conversions
 	 */
 	public void setCustomConversions(CustomConversions conversions) {
 		this.conversions = conversions;

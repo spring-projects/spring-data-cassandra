@@ -39,14 +39,6 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API to alter a type. Convenient if imported
 	 * statically.
 	 */
-	public static AlterUserTypeSpecification alterType() {
-		return new AlterUserTypeSpecification();
-	}
-
-	/**
-	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API to alter a type. Convenient if imported
-	 * statically.
-	 */
 	public static AlterUserTypeSpecification alterType(String typeName) {
 		return alterType(CqlIdentifier.cqlId(typeName));
 	}
@@ -55,8 +47,12 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API to alter a type. Convenient if imported
 	 * statically.
 	 */
-	public static AlterUserTypeSpecification alterType(CqlIdentifier typeName) {
-		return alterType().name(typeName);
+	private static AlterUserTypeSpecification alterType(CqlIdentifier typeName) {
+		return new AlterUserTypeSpecification(typeName);
+	}
+
+	private AlterUserTypeSpecification(CqlIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -79,7 +75,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	 */
 	public AlterUserTypeSpecification add(CqlIdentifier field, DataType type) {
 
-		changes.add(new AddColumnSpecification(field, type));
+		changes.add(AddColumnSpecification.addColumn(field, type));
 
 		return this;
 	}
@@ -104,7 +100,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	 */
 	public AlterUserTypeSpecification alter(CqlIdentifier field, DataType type) {
 
-		changes.add(new AlterColumnSpecification(field, type));
+		changes.add(AlterColumnSpecification.alterColumn(field, type));
 
 		return this;
 	}

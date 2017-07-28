@@ -37,7 +37,8 @@ public class ResultSetToByteBufferConverter extends AbstractResultSetConverter<B
 	protected ByteBuffer doConvertSingleValue(Object object) {
 
 		if (!(object instanceof ByteBuffer)) {
-			doThrow("value");
+			throw new IllegalArgumentException(
+					String.format("Cannot convert %s to desired type [%s]", "value", getType().getName()));
 		}
 
 		return (ByteBuffer) object;

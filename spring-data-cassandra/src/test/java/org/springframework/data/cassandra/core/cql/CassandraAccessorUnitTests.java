@@ -39,10 +39,9 @@ public class CassandraAccessorUnitTests {
 
 	private CassandraAccessor cassandraAccessor;
 
-	@Mock private CassandraExceptionTranslator mockExceptionTranslator;
-
 	@Rule public ExpectedException exception = ExpectedException.none();
 
+	@Mock private CassandraExceptionTranslator mockExceptionTranslator;
 	@Mock private Session mockSession;
 
 	@Before
@@ -77,11 +76,6 @@ public class CassandraAccessorUnitTests {
 		} catch (IllegalArgumentException e) {
 			assertThat(e).hasMessageContaining("must not be null");
 		}
-	}
-
-	@Test // DATACASS-286
-	public void getUninitializedExceptionTranslatorReturnsDefault() {
-		assertThat(cassandraAccessor.getExceptionTranslator()).isEqualTo(cassandraAccessor.exceptionTranslator);
 	}
 
 	@Test // DATACASS-286

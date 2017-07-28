@@ -28,14 +28,16 @@ import org.w3c.dom.Element;
  * Ensures that a {@link CassandraMappingBeanFactoryPostProcessor} is registered.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
+@Deprecated
 class CassandraMappingXmlBeanFactoryPostProcessorRegistrar {
 
 	/**
 	 * Ensures that a {@link CassandraMappingBeanFactoryPostProcessor} is registered. This method is a no-op if one is
 	 * already registered.
 	 */
-	public static void ensureRegistration(Element element, ParserContext parserContext) {
+	static void ensureRegistration(Element element, ParserContext parserContext) {
 
 		BeanDefinitionRegistry registry = parserContext.getRegistry();
 		if (!(registry instanceof GenericApplicationContext)) {

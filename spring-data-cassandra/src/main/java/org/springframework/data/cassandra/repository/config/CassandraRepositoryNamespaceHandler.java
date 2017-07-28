@@ -16,13 +16,13 @@
 package org.springframework.data.cassandra.repository.config;
 
 import org.springframework.data.cassandra.config.CassandraNamespaceHandler;
-import org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension;
 import org.springframework.data.repository.config.RepositoryBeanDefinitionParser;
 
 /**
  * Namespace handler for spring-data-cassandra.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 class CassandraRepositoryNamespaceHandler extends CassandraNamespaceHandler {
 
@@ -32,7 +32,7 @@ class CassandraRepositoryNamespaceHandler extends CassandraNamespaceHandler {
 	 */
 	@Override
 	public void init() {
-		
+
 		super.init();
 
 		registerBeanDefinitionParser("repositories",

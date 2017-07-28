@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
@@ -56,6 +57,7 @@ public interface CqlOperations {
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
+	@Nullable
 	<T> T execute(SessionCallback<T> action) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
@@ -95,7 +97,7 @@ public interface CqlOperations {
 	 * @return boolean value whether the statement was applied.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	boolean execute(String cql, PreparedStatementBinder psb) throws DataAccessException;
+	boolean execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException;
 
 	/**
 	 * Execute a CQL data access operation, implemented as callback action working on a CQL {@link PreparedStatement}.
@@ -110,6 +112,7 @@ public interface CqlOperations {
 	 * @return a result object returned by the action, or {@literal null}
 	 * @throws DataAccessException if there is any problem
 	 */
+	@Nullable
 	<T> T execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException;
 
 	/**
@@ -124,6 +127,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, ResultSetExtractor, Object...)
 	 */
+	@Nullable
 	<T> T query(String cql, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
@@ -131,7 +135,7 @@ public interface CqlOperations {
 	 * {@link RowCallbackHandler}.
 	 * <p>
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
-	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@code null} as argument array.
+	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@literal null} as argument array.
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
@@ -165,6 +169,7 @@ public interface CqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
+	@Nullable
 	<T> T query(String cql, ResultSetExtractor<T> resultSetExtractor, Object... args) throws DataAccessException;
 
 	/**
@@ -196,14 +201,15 @@ public interface CqlOperations {
 	 * Query using a prepared statement, reading the {@link ResultSet} with a {@link ResultSetExtractor}.
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem
 	 */
-	<T> T query(String cql, PreparedStatementBinder preparedStatementBinder, ResultSetExtractor<T> resultSetExtractor)
+	@Nullable
+	<T> T query(String cql, @Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException;
 
 	/**
@@ -212,13 +218,13 @@ public interface CqlOperations {
 	 * {@link RowCallbackHandler}.
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	void query(String cql, PreparedStatementBinder preparedStatementBinder, RowCallbackHandler rowCallbackHandler)
+	void query(String cql, @Nullable PreparedStatementBinder psb, RowCallbackHandler rowCallbackHandler)
 			throws DataAccessException;
 
 	/**
@@ -226,14 +232,14 @@ public interface CqlOperations {
 	 * knows how to bind values to the query, mapping each row to a Java object via a {@link RowMapper}.
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> query(String cql, PreparedStatementBinder preparedStatementBinder, RowMapper<T> rowMapper)
+	<T> List<T> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
 			throws DataAccessException;
 
 	/**
@@ -364,6 +370,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class, Object[])
 	 */
+	@Nullable
 	<T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
 
 	/**
@@ -383,6 +390,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class)
 	 */
+	@Nullable
 	<T> T queryForObject(String cql, Class<T> requiredType, Object... args) throws DataAccessException;
 
 	/**
@@ -502,6 +510,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, ResultSetExtractor, Object...)
 	 */
+	@Nullable
 	<T> T query(Statement statement, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
@@ -509,7 +518,7 @@ public interface CqlOperations {
 	 * {@link RowCallbackHandler}.
 	 * <p>
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
-	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@code null} as argument array.
+	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@literal null} as argument array.
 	 *
 	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
@@ -605,6 +614,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class, Object[])
 	 */
+	@Nullable
 	<T> T queryForObject(Statement statement, Class<T> requiredType) throws DataAccessException;
 
 	/**
@@ -621,6 +631,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, RowMapper, Object[])
 	 */
+	@Nullable
 	<T> T queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
@@ -684,6 +695,7 @@ public interface CqlOperations {
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem
 	 */
+	@Nullable
 	<T> T execute(PreparedStatementCreator preparedStatementCreator, PreparedStatementCallback<T> action)
 			throws DataAccessException;
 
@@ -696,6 +708,7 @@ public interface CqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}
 	 * @throws DataAccessException if there is any problem
 	 */
+	@Nullable
 	<T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException;
 
@@ -729,14 +742,15 @@ public interface CqlOperations {
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem
 	 */
-	<T> T query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
+	@Nullable
+	<T> T query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
 			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
@@ -745,13 +759,13 @@ public interface CqlOperations {
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	void query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
+	void query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
 			RowCallbackHandler rowCallbackHandler) throws DataAccessException;
 
 	/**
@@ -760,14 +774,14 @@ public interface CqlOperations {
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
-	 * @param preparedStatementBinder object that knows how to set values on the prepared statement. If this is
-	 *          {@literal null}, the CQL will be assumed to contain no bind parameters. Even if there are no bind
-	 *          parameters, this object may be used to set fetch size and other performance options.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> query(PreparedStatementCreator preparedStatementCreator, PreparedStatementBinder preparedStatementBinder,
+	<T> List<T> query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
 			RowMapper<T> rowMapper) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
@@ -788,8 +802,7 @@ public interface CqlOperations {
 	 *
 	 * @param hostMapper The implementation to use for host mapping.
 	 * @return Collection generated by the provided HostMapper.
-	 * @throws DataAccessException
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> Collection<T> describeRing(HostMapper<T> hostMapper) throws DataAccessException;
-
 }

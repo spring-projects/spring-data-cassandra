@@ -15,18 +15,20 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import lombok.EqualsAndHashCode;
+
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.data.cassandra.util.MapBuilder;
 
-public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKeyspaceSpecification> {
+@EqualsAndHashCode(callSuper = true)
+public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<CreateKeyspaceSpecification>
+		implements KeyspaceDescriptor {
 
-	/**
-	 * Entry point into the {@link CreateKeyspaceSpecification}'s fluent API to create a keyspace. Convenient if imported
-	 * statically.
-	 */
-	public static CreateKeyspaceSpecification createKeyspace() {
-		return new CreateKeyspaceSpecification();
+	private boolean ifNotExists = false;
+
+	private CreateKeyspaceSpecification(KeyspaceIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -34,7 +36,7 @@ public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKey
 	 * statically.
 	 */
 	public static CreateKeyspaceSpecification createKeyspace(String name) {
-		return new CreateKeyspaceSpecification(name);
+		return new CreateKeyspaceSpecification(KeyspaceIdentifier.ksId(name));
 	}
 
 	/**
@@ -43,18 +45,6 @@ public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKey
 	 */
 	public static CreateKeyspaceSpecification createKeyspace(KeyspaceIdentifier name) {
 		return new CreateKeyspaceSpecification(name);
-	}
-
-	private boolean ifNotExists = false;
-
-	public CreateKeyspaceSpecification() {}
-
-	public CreateKeyspaceSpecification(String name) {
-		name(name);
-	}
-
-	public CreateKeyspaceSpecification(KeyspaceIdentifier name) {
-		name(name);
 	}
 
 	/**
@@ -106,27 +96,17 @@ public class CreateKeyspaceSpecification extends KeyspaceSpecification<CreateKey
 	}
 
 	@Override
-	public CreateKeyspaceSpecification name(String name) {
-		return (CreateKeyspaceSpecification) super.name(name);
-	}
-
-	@Override
-	public CreateKeyspaceSpecification name(KeyspaceIdentifier name) {
-		return (CreateKeyspaceSpecification) super.name(name);
-	}
-
-	@Override
 	public CreateKeyspaceSpecification with(KeyspaceOption option) {
-		return (CreateKeyspaceSpecification) super.with(option);
+		return super.with(option);
 	}
 
 	@Override
 	public CreateKeyspaceSpecification with(KeyspaceOption option, Object value) {
-		return (CreateKeyspaceSpecification) super.with(option, value);
+		return super.with(option, value);
 	}
 
 	@Override
 	public CreateKeyspaceSpecification with(String name, Object value, boolean escape, boolean quote) {
-		return (CreateKeyspaceSpecification) super.with(name, value, escape, quote);
+		return super.with(name, value, escape, quote);
 	}
 }

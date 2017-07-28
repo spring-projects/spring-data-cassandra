@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -34,7 +35,7 @@ import org.springframework.util.Assert;
  */
 public class MapBuilder<K, V> implements Map<K, V> {
 
-	private Map<K, V> map;
+	private final Map<K, V> map;
 
 	/**
 	 * Create a new {@link MapBuilder}.
@@ -131,6 +132,7 @@ public class MapBuilder<K, V> implements Map<K, V> {
 	 * @see java.util.Map#get(java.lang.Object)
 	 */
 	@Override
+	@Nullable
 	public V get(Object key) {
 		return map.get(key);
 	}
@@ -147,6 +149,7 @@ public class MapBuilder<K, V> implements Map<K, V> {
 	 * @see java.util.Map#remove(java.lang.Object)
 	 */
 	@Override
+	@Nullable
 	public V remove(Object key) {
 		return map.remove(key);
 	}

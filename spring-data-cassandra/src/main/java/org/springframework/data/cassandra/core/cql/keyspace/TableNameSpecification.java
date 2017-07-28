@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.cqlId;
-
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
@@ -24,32 +22,19 @@ import org.springframework.util.Assert;
  * Abstract builder class to support the construction of table specifications.
  *
  * @author Matthew T. Adams
- * @param <T> The subtype of the {@link TableNameSpecification}
  */
-public abstract class TableNameSpecification<T extends TableNameSpecification<T>> {
+public abstract class TableNameSpecification {
 
 	/**
 	 * The name of the table.
 	 */
-	private CqlIdentifier name;
+	private final CqlIdentifier name;
 
-	/**
-	 * Sets the table name.
-	 *
-	 * @return this
-	 */
-	public T name(String name) {
-		return name(cqlId(name));
-	}
-
-	@SuppressWarnings("unchecked")
-	public T name(CqlIdentifier name) {
+	protected TableNameSpecification(CqlIdentifier name) {
 
 		Assert.notNull(name, "CqlIdentifier must not be null");
 
 		this.name = name;
-
-		return (T) this;
 	}
 
 	public CqlIdentifier getName() {

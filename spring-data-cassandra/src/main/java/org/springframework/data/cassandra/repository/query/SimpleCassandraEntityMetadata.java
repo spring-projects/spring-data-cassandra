@@ -38,7 +38,7 @@ class SimpleCassandraEntityMetadata<T> implements CassandraEntityMetadata<T> {
 	 * @param type must not be {@literal null}.
 	 * @param entity must not be {@literal null} or empty.
 	 */
-	public SimpleCassandraEntityMetadata(Class<T> type, CassandraPersistentEntity<?> entity) {
+	SimpleCassandraEntityMetadata(Class<T> type, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(type, "Type must not be null");
 		Assert.notNull(entity, "Collection entity must not be null or empty");

@@ -81,7 +81,7 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		public CreateKeyspaceSpecification specification() {
 			keyspace = name;
 
-			return CreateKeyspaceSpecification.createKeyspace().name(keyspace)
+			return CreateKeyspaceSpecification.createKeyspace(keyspace)
 					.with(KeyspaceOption.REPLICATION, replicationMap).with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 		}
 
@@ -106,7 +106,7 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		public CreateKeyspaceSpecification specification() {
 			keyspace = name;
 
-			return CreateKeyspaceSpecification.createKeyspace().name(keyspace);
+			return CreateKeyspaceSpecification.createKeyspace(keyspace);
 		}
 
 		@Test
@@ -134,7 +134,7 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 			replicationMap.put(new DefaultOption("dc1", Long.class, false, false, true), 2);
 			replicationMap.put(new DefaultOption("dc2", Long.class, false, false, true), 3);
 
-			return CreateKeyspaceSpecification.createKeyspace().name(keyspace)
+			return CreateKeyspaceSpecification.createKeyspace(keyspace)
 					.with(KeyspaceOption.REPLICATION, replicationMap).with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 		}
 

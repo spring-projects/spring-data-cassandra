@@ -77,11 +77,11 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 
 	@Override
 	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-		return Collections.singletonList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
+		return Collections.singletonList(createKeyspace(getKeyspaceName()).withSimpleReplication());
 	}
 
 	@Override
 	protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
-		return Collections.singletonList(DropKeyspaceSpecification.dropKeyspace().name(getKeyspaceName()));
+		return Collections.singletonList(DropKeyspaceSpecification.dropKeyspace(getKeyspaceName()));
 	}
 }

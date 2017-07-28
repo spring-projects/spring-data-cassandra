@@ -40,11 +40,12 @@ import com.datastax.driver.core.DataType;
 public class AlterTableSpecification extends TableOptionsSpecification<AlterTableSpecification> {
 
 	/**
-	 * Entry point into the {@link AlterTableSpecification}'s fluent API to alter a table. Convenient if imported
-	 * statically.
+	 * The list of column changes.
 	 */
-	public static AlterTableSpecification alterTable() {
-		return new AlterTableSpecification();
+	private List<ColumnChangeSpecification> changes = new ArrayList<>();
+
+	private AlterTableSpecification(CqlIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -52,7 +53,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * statically.
 	 */
 	public static AlterTableSpecification alterTable(CqlIdentifier tableName) {
-		return new AlterTableSpecification().name(tableName);
+		return new AlterTableSpecification(tableName);
 	}
 
 	/**
@@ -60,13 +61,8 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * statically.
 	 */
 	public static AlterTableSpecification alterTable(String tableName) {
-		return new AlterTableSpecification().name(tableName);
+		return new AlterTableSpecification(CqlIdentifier.cqlId(tableName));
 	}
-
-	/**
-	 * The list of column changes.
-	 */
-	private List<ColumnChangeSpecification> changes = new ArrayList<>();
 
 	/*
 	 * Adds a {@code DROP} to the list of column changes.
@@ -75,7 +71,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}
 	 */
 	public AlterTableSpecification drop(String column) {
-		changes.add(new DropColumnSpecification(column));
+		changes.add(DropColumnSpecification.dropColumn(column));
 		return this;
 	}
 
@@ -87,7 +83,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}
 	 */
 	public AlterTableSpecification add(String column, DataType type) {
-		changes.add(new AddColumnSpecification(column, type));
+		changes.add(AddColumnSpecification.addColumn(column, type));
 		return this;
 	}
 
@@ -111,7 +107,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}
 	 */
 	public AlterTableSpecification alter(String column, DataType type) {
-		changes.add(new AlterColumnSpecification(column, type));
+		changes.add(AlterColumnSpecification.alterColumn(column, type));
 		return this;
 	}
 

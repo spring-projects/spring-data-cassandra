@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.converter;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,11 +39,7 @@ public class ResultSetToListOfStringConverter extends AbstractResultSetConverter
 	 */
 	@Override
 	protected List<String> doConvertSingleValue(Object object) {
-
-		List<String> list = new ArrayList<>();
-
-		list.add(object == null ? null : object.toString());
-		return list;
+		return Collections.singletonList(object.toString());
 	}
 
 	/* (non-Javadoc)

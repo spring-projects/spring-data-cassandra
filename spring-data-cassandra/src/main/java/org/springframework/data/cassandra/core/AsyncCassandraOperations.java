@@ -240,9 +240,10 @@ public interface AsyncCassandraOperations {
 	 * Insert the given entity applying {@link WriteOptions} and return the entity if the insert was applied.
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
-	 * @param options may be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
+	 * @see InsertOptions#empty()
 	 */
 	ListenableFuture<WriteResult> insert(Object entity, InsertOptions options) throws DataAccessException;
 
@@ -259,9 +260,10 @@ public interface AsyncCassandraOperations {
 	 * Update the given entity applying {@link WriteOptions} and return the entity if the update was applied.
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
-	 * @param options may be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
+	 * @see UpdateOptions#empty()
 	 */
 	ListenableFuture<WriteResult> update(Object entity, UpdateOptions options) throws DataAccessException;
 
@@ -278,9 +280,10 @@ public interface AsyncCassandraOperations {
 	 * Delete the given entity applying {@link QueryOptions} and return the entity if the delete was applied.
 	 *
 	 * @param entity must not be {@literal null}.
-	 * @param options may be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
+	 * @see QueryOptions#empty()
 	 */
 	ListenableFuture<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
 
@@ -303,5 +306,4 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	ListenableFuture<Void> truncate(Class<?> entityClass) throws DataAccessException;
-
 }

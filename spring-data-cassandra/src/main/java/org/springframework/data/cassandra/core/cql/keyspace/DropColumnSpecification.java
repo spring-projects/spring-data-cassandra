@@ -25,15 +25,11 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 public class DropColumnSpecification extends ColumnChangeSpecification {
 
 	public static DropColumnSpecification dropColumn(String name) {
-		return new DropColumnSpecification(name);
+		return new DropColumnSpecification(CqlIdentifier.cqlId(name));
 	}
 
 	public static DropColumnSpecification dropColumn(CqlIdentifier name) {
 		return new DropColumnSpecification(name);
-	}
-
-	public DropColumnSpecification(String name) {
-		super(name);
 	}
 
 	public DropColumnSpecification(CqlIdentifier name) {

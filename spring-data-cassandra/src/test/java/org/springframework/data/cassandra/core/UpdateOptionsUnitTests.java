@@ -15,7 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+
+import java.time.Duration;
 
 import org.junit.Test;
 
@@ -34,7 +36,7 @@ public class UpdateOptionsUnitTests {
 				.withIfExists() //
 				.build();
 
-		assertThat(updateOptions.getTtl()).isEqualTo(10);
+		assertThat(updateOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
 		assertThat(updateOptions.isIfExists()).isTrue();
 	}
 }

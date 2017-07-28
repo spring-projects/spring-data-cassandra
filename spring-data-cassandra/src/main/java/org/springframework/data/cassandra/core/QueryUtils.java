@@ -46,7 +46,7 @@ class QueryUtils {
 	 * @param entityWriter the {@link EntityWriter} to write insert values.
 	 * @return The Query object to run with session.execute();
 	 */
-	public static Insert createInsertQuery(String tableName, Object objectToUpdate, WriteOptions options,
+	static Insert createInsertQuery(String tableName, Object objectToUpdate, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
 		Assert.hasText(tableName, "TableName must not be empty");
@@ -75,11 +75,11 @@ class QueryUtils {
 	 *
 	 * @param tableName the table name, must not be empty and not {@literal null}.
 	 * @param objectToUpdate the object to update, must not be {@literal null}.
-	 * @param options optional {@link WriteOptions} to apply to the {@link Update} statement, may be {@literal null}.
+	 * @param options optional {@link WriteOptions} to apply to the {@link Update} statement.
 	 * @param entityWriter the {@link EntityWriter} to write update assignments and where clauses.
 	 * @return The Query object to run with session.execute();
 	 */
-	public static Update createUpdateQuery(String tableName, Object objectToUpdate, WriteOptions options,
+	static Update createUpdateQuery(String tableName, Object objectToUpdate, WriteOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
 		Assert.hasText(tableName, "TableName must not be empty");
@@ -108,11 +108,11 @@ class QueryUtils {
 	 *
 	 * @param tableName the table name, must not be empty and not {@literal null}.
 	 * @param objectToDelete the object to delete, must not be {@literal null}.
-	 * @param options optional {@link QueryOptions} to apply to the {@link Delete} statement, may be {@literal null}.
+	 * @param options optional {@link QueryOptions} to apply to the {@link Delete} statement.
 	 * @param entityWriter the {@link EntityWriter} to write delete where clauses.
 	 * @return The Query object to run with session.execute();
 	 */
-	public static Delete createDeleteQuery(String tableName, Object objectToDelete, QueryOptions options,
+	static Delete createDeleteQuery(String tableName, Object objectToDelete, QueryOptions options,
 			EntityWriter<Object, Object> entityWriter) {
 
 		Assert.hasText(tableName, "TableName must not be empty");

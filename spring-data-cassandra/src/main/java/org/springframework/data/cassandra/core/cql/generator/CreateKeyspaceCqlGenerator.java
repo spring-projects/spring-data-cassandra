@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
@@ -30,20 +28,18 @@ import org.springframework.data.cassandra.core.cql.keyspace.Option;
  * @author Matthew T. Adams
  * @author Alex Shvid
  */
-public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeyspaceSpecification> {
-
-	public static String toCql(CreateKeyspaceSpecification specification) {
-		return new CreateKeyspaceCqlGenerator(specification).toCql();
-	}
+public class CreateKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<CreateKeyspaceSpecification> {
 
 	public CreateKeyspaceCqlGenerator(CreateKeyspaceSpecification specification) {
 		super(specification);
 	}
 
+	public static String toCql(CreateKeyspaceSpecification specification) {
+		return new CreateKeyspaceCqlGenerator(specification).toCql();
+	}
+
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-
-		cql = noNull(cql);
 
 		preambleCql(cql);
 		optionsCql(cql);
@@ -53,14 +49,13 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeysp
 		return cql;
 	}
 
-	protected StringBuilder preambleCql(StringBuilder cql) {
-		return noNull(cql).append("CREATE KEYSPACE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
+	private void preambleCql(StringBuilder cql) {
+		cql.append("CREATE KEYSPACE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
 				.append(spec().getName());
 	}
 
 	@SuppressWarnings("unchecked")
-	protected StringBuilder optionsCql(StringBuilder cql) {
-		cql = noNull(cql);
+	private void optionsCql(StringBuilder cql) {
 
 		cql.append(" ");
 
@@ -115,7 +110,5 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceCqlGenerator<CreateKeysp
 			}
 		}
 		// end options
-
-		return cql;
 	}
 }

@@ -129,5 +129,4 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
 	CassandraBatchOperations delete(Iterable<?> entities);
-
 }

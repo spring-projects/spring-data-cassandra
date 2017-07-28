@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.Map;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -94,6 +95,7 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 	 * @param index is the column index.
 	 * @return the Object returned
 	 */
+	@Nullable
 	protected Object getColumnValue(Row row, int index) {
 		return row.getObject(index);
 	}

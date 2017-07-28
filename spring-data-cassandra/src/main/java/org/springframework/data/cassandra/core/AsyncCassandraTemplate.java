@@ -40,6 +40,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -417,7 +418,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 */
 	@Override
 	public <T> ListenableFuture<T> insert(T entity) {
-		return new MappingListenableFutureAdapter<>(insert(entity, null), writeResult -> entity);
+		return new MappingListenableFutureAdapter<>(insert(entity, InsertOptions.empty()), writeResult -> entity);
 	}
 
 	/*
@@ -428,6 +429,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	public ListenableFuture<WriteResult> insert(Object entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(options, "InsertOptions must not be null");
 
 		Insert insert = QueryUtils.createInsertQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
@@ -441,7 +443,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 */
 	@Override
 	public <T> ListenableFuture<T> update(T entity) {
-		return new MappingListenableFutureAdapter<>(update(entity, null), writeResult -> entity);
+		return new MappingListenableFutureAdapter<>(update(entity, UpdateOptions.empty()), writeResult -> entity);
 	}
 
 	/*
@@ -452,6 +454,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	public ListenableFuture<WriteResult> update(Object entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(options, "UpdateOptions must not be null");
 
 		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
@@ -465,7 +468,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	 */
 	@Override
 	public <T> ListenableFuture<T> delete(T entity) {
-		return new MappingListenableFutureAdapter<>(delete(entity, null), writeResult -> entity);
+		return new MappingListenableFutureAdapter<>(delete(entity, QueryOptions.empty()), writeResult -> entity);
 	}
 
 	/*
@@ -476,6 +479,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 	public ListenableFuture<WriteResult> delete(Object entity, QueryOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(options, "QueryOptions must not be null");
 
 		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
@@ -528,7 +532,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		}
 
 		@Override
-		protected T adapt(S adapteeResult) throws ExecutionException {
+		protected T adapt(@Nullable S adapteeResult) throws ExecutionException {
 			return mapper.apply(adapteeResult);
 		}
 	}

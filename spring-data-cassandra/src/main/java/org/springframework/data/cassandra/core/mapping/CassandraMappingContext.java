@@ -51,6 +51,7 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -78,11 +79,11 @@ public class CassandraMappingContext
 
 	private Mapping mapping = new Mapping();
 
-	private UserTypeResolver userTypeResolver;
+	private @Nullable UserTypeResolver userTypeResolver;
 
-	private ApplicationContext context;
+	private @Nullable ApplicationContext context;
 
-	private ClassLoader beanClassLoader;
+	private @Nullable ClassLoader beanClassLoader;
 
 	// useful caches
 	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
@@ -110,21 +111,19 @@ public class CassandraMappingContext
 
 	private void processMappingOverrides() {
 
-		this.mapping.getEntityMappings().stream()
-				.filter(Objects::nonNull)
-				.forEach(entityMapping -> {
+		this.mapping.getEntityMappings().stream().filter(Objects::nonNull).forEach(entityMapping -> {
 
-					Class<?> entityClass = getEntityClass(entityMapping.getEntityClassName());
-					CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
+			Class<?> entityClass = getEntityClass(entityMapping.getEntityClassName());
+			CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
-					String entityTableName = entityMapping.getTableName();
+			String entityTableName = entityMapping.getTableName();
 
-					if (StringUtils.hasText(entityTableName)) {
-						entity.setTableName(cqlId(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
-					}
+			if (StringUtils.hasText(entityTableName)) {
+				entity.setTableName(cqlId(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
+			}
 
-					processMappingOverrides(entity, entityMapping);
-				});
+			processMappingOverrides(entity, entityMapping);
+		});
 	}
 
 	private Class<?> getEntityClass(String entityClassName) {
@@ -138,8 +137,8 @@ public class CassandraMappingContext
 
 	private static void processMappingOverrides(CassandraPersistentEntity<?> entity, EntityMapping entityMapping) {
 
-		entityMapping.getPropertyMappings().forEach((key, propertyMapping) ->
-				processMappingOverride(entity, propertyMapping));
+		entityMapping.getPropertyMappings()
+				.forEach((key, propertyMapping) -> processMappingOverride(entity, propertyMapping));
 	}
 
 	private static void processMappingOverride(CassandraPersistentEntity<?> entity, PropertyMapping mapping) {
@@ -292,6 +291,8 @@ public class CassandraMappingContext
 		BasicCassandraPersistentEntity<T> entity;
 
 		if (userDefinedType != null) {
+			Assert.state(this.userTypeResolver != null, "UserTypeResolver must not be null");
+
 			entity = new CassandraUserTypePersistentEntity<>(typeInformation, this.verifier, this.userTypeResolver);
 
 		} else {
@@ -351,12 +352,9 @@ public class CassandraMappingContext
 
 	private boolean hasReferencedUserType(CqlIdentifier identifier) {
 
-		return getPersistentEntities().stream()
-				.flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
+		return getPersistentEntities().stream().flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
 				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class))))
-				.map(CassandraType::userTypeName)
-				.filter(StringUtils::hasText)
-				.map(CqlIdentifier::cqlId)
+				.map(CassandraType::userTypeName).filter(StringUtils::hasText).map(CqlIdentifier::cqlId)
 				.anyMatch(identifier::equals);
 	}
 
@@ -373,7 +371,7 @@ public class CassandraMappingContext
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		CreateTableSpecification specification = createTable().name(entity.getTableName());
+		CreateTableSpecification specification = createTable(entity.getTableName());
 
 		for (CassandraPersistentProperty property : entity) {
 
@@ -506,10 +504,8 @@ public class CassandraMappingContext
 		}
 
 		return this.customConversions.getCustomWriteTarget(property.getType())
-				.map(CassandraSimpleTypeHolder::getDataTypeFor)
-				.orElseGet(() -> this.customConversions.getCustomWriteTarget(property.getActualType())
-						.filter(it -> !property.isMapLike())
-						.map(it -> {
+				.map(CassandraSimpleTypeHolder::getDataTypeFor).orElseGet(() -> this.customConversions
+						.getCustomWriteTarget(property.getActualType()).filter(it -> !property.isMapLike()).map(it -> {
 
 							if (property.isCollectionLike()) {
 
@@ -545,6 +541,7 @@ public class CassandraMappingContext
 		return entity != null && entity.isUserDefinedType() ? dataTypeProvider.getDataType(entity) : getDataType(type);
 	}
 
+	@Nullable
 	private DataType getUserDataType(CassandraPersistentProperty property, DataTypeProvider dataTypeProvider,
 			CassandraPersistentEntity<?> persistentEntity) {
 
@@ -580,8 +577,7 @@ public class CassandraMappingContext
 	 */
 	public DataType getDataType(Class<?> type) {
 
-		return this.customConversions.getCustomWriteTarget(type)
-				.map(CassandraSimpleTypeHolder::getDataTypeFor)
+		return this.customConversions.getCustomWriteTarget(type).map(CassandraSimpleTypeHolder::getDataTypeFor)
 				.orElseGet(() -> getDataTypeFor(type));
 	}
 

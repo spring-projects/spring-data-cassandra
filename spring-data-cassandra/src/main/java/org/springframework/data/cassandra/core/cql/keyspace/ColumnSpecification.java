@@ -16,13 +16,13 @@
 package org.springframework.data.cassandra.core.cql.keyspace;
 
 import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
 import static org.springframework.data.cassandra.core.cql.Ordering.*;
 import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.DataType;
@@ -45,28 +45,31 @@ public class ColumnSpecification {
 	 */
 	public static final Ordering DEFAULT_ORDERING = ASCENDING;
 
-	private CqlIdentifier name;
+	private final CqlIdentifier name;
 
-	private DataType type; // TODO: determining if we should be coupling this to Datastax Java Driver type?
+	private @Nullable DataType type;
 
-	private PrimaryKeyType keyType;
+	private @Nullable PrimaryKeyType keyType;
 
-	private Ordering ordering;
+	private @Nullable Ordering ordering;
+
+	private ColumnSpecification(CqlIdentifier name) {
+		this.name = name;
+	}
 
 	/**
 	 * Sets the column's name.
 	 *
 	 * @return this
 	 */
-	public ColumnSpecification name(String name) {
+	public static ColumnSpecification name(String name) {
 		return name(cqlId(name));
 	}
 
-	public ColumnSpecification name(CqlIdentifier name) {
+	public static ColumnSpecification name(CqlIdentifier name) {
 
 		Assert.notNull(name, "CqlIdentifier must not be null");
-		this.name = name;
-		return this;
+		return new ColumnSpecification(name);
 	}
 
 	/**
@@ -81,7 +84,7 @@ public class ColumnSpecification {
 
 	/**
 	 * Identifies this column as a primary key column that is also part of a partition key. Sets the column's
-	 * {@link #keyType} to {@link PrimaryKeyType#PARTITIONED} and its {@link #ordering} to {@code null}.
+	 * {@link #keyType} to {@link PrimaryKeyType#PARTITIONED} and its {@link #ordering} to {@literal null}.
 	 *
 	 * @return this
 	 */
@@ -91,8 +94,8 @@ public class ColumnSpecification {
 
 	/**
 	 * Toggles the identification of this column as a primary key column that also is or is part of a partition key. Sets
-	 * {@link #ordering} to {@code null} and, if the given boolean is <code>true</code>, then sets the column's
-	 * {@link #keyType} to {@link PrimaryKeyType#PARTITIONED}, else sets it to {@code null}.
+	 * {@link #ordering} to {@literal null} and, if the given boolean is <code>true</code>, then sets the column's
+	 * {@link #keyType} to {@link PrimaryKeyType#PARTITIONED}, else sets it to {@literal null}.
 	 *
 	 * @return this
 	 */
@@ -125,7 +128,7 @@ public class ColumnSpecification {
 	/**
 	 * Toggles the identification of this column as a clustered key column. If the given boolean is {@code true}, then
 	 * sets the column's {@link #keyType} to {@link PrimaryKeyType#PARTITIONED} and {@link #ordering} to the given
-	 * {@link Ordering} , else sets both {@link #keyType} and {@link #ordering} to {@code null}.
+	 * {@link Ordering} , else sets both {@link #keyType} and {@link #ordering} to {@literal null}.
 	 *
 	 * @return this
 	 */
@@ -159,24 +162,27 @@ public class ColumnSpecification {
 		return name;
 	}
 
+	@Nullable
 	public DataType getType() {
 		return type;
 	}
 
+	@Nullable
 	public PrimaryKeyType getKeyType() {
 		return keyType;
 	}
 
+	@Nullable
 	public Ordering getOrdering() {
 		return ordering;
 	}
 
 	public String toCql() {
-		return toCql(null).toString();
+		return toCql(new StringBuilder()).toString();
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append(name).append(" ").append(type);
+		return cql.append(name).append(" ").append(type);
 	}
 
 	/* (non-Javadoc)
@@ -184,7 +190,7 @@ public class ColumnSpecification {
 	 */
 	@Override
 	public String toString() {
-		return toCql(null).append(" /* keyType=").append(keyType).append(", ordering=").append(ordering).append(" */ ")
-				.toString();
+		return toCql(new StringBuilder()).append(" /* keyType=").append(keyType).append(", ordering=").append(ordering)
+				.append(" */ ").toString();
 	}
 }

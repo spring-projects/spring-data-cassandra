@@ -18,10 +18,7 @@ package org.springframework.data.cassandra.core;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -286,8 +283,8 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query,
-				getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
+		return select(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
+				entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -299,8 +296,8 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return stream(getStatementFactory().select(query,
-				getMappingContext().getRequiredPersistentEntity(entityClass)), entityClass);
+		return stream(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
+				entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -325,8 +322,8 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(update, "Update must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getCqlOperations().execute(getStatementFactory().update(query, update,
-				getMappingContext().getRequiredPersistentEntity(entityClass)));
+		return getCqlOperations().execute(
+				getStatementFactory().update(query, update, getMappingContext().getRequiredPersistentEntity(entityClass)));
 	}
 
 	/* (non-Javadoc)
@@ -338,8 +335,8 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getCqlOperations().execute(getStatementFactory().delete(query,
-				getMappingContext().getRequiredPersistentEntity(entityClass)));
+		return getCqlOperations()
+				.execute(getStatementFactory().delete(query, getMappingContext().getRequiredPersistentEntity(entityClass)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -358,7 +355,9 @@ public class CassandraTemplate implements CassandraOperations {
 		Select select = QueryBuilder.select().countAll()
 				.from(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
-		return getCqlOperations().queryForObject(select, Long.class);
+		Long count = getCqlOperations().queryForObject(select, Long.class);
+
+		return count != null ? count : 0L;
 	}
 
 	/*
@@ -405,7 +404,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void insert(Object entity) {
-		insert(entity, null);
+		insert(entity, InsertOptions.empty());
 	}
 
 	/*
@@ -416,10 +415,11 @@ public class CassandraTemplate implements CassandraOperations {
 	public WriteResult insert(Object entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(options, "InsertOptions must not be null");
 
-		Insert insert = QueryUtils.createInsertQuery(
-				getTableName(entity.getClass()).toCql(), entity, options, converter);
+		Insert insert = QueryUtils.createInsertQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
 
+		// noinspection ConstantConditions
 		return getCqlOperations().execute(new StatementCallback(insert));
 	}
 
@@ -429,7 +429,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void update(Object entity) {
-		update(entity, null);
+		update(entity, UpdateOptions.empty());
 	}
 
 	/*
@@ -440,10 +440,11 @@ public class CassandraTemplate implements CassandraOperations {
 	public WriteResult update(Object entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(options, "UpdateOptions must not be null");
 
-		Update update = QueryUtils.createUpdateQuery(
-				getTableName(entity.getClass()).toCql(), entity, options, converter);
+		Update update = QueryUtils.createUpdateQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
 
+		// noinspection ConstantConditions
 		return getCqlOperations().execute(new StatementCallback(update));
 	}
 
@@ -453,7 +454,7 @@ public class CassandraTemplate implements CassandraOperations {
 	 */
 	@Override
 	public void delete(Object entity) {
-		delete(entity, null);
+		delete(entity, QueryOptions.empty());
 	}
 
 	/*
@@ -464,10 +465,11 @@ public class CassandraTemplate implements CassandraOperations {
 	public WriteResult delete(Object entity, QueryOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(options, "QueryOptions must not be null");
 
-		Delete delete = QueryUtils.createDeleteQuery(
-				getTableName(entity.getClass()).toCql(), entity, options, converter);
+		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity.getClass()).toCql(), entity, options, converter);
 
+		// noinspection ConstantConditions
 		return getCqlOperations().execute(new StatementCallback(delete));
 	}
 
@@ -499,8 +501,8 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Truncate truncate = QueryBuilder.truncate(
-				getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Truncate truncate = QueryBuilder
+				.truncate(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
 
 		getCqlOperations().execute(truncate);
 	}
@@ -526,19 +528,6 @@ public class CassandraTemplate implements CassandraOperations {
 	@Override
 	public CassandraBatchOperations batchOps() {
 		return new CassandraBatchTemplate(this);
-	}
-
-	private <T> List<T> toList(Iterable<T> iterable) {
-
-		if (iterable instanceof List) {
-			return (List<T>) iterable;
-		}
-
-		if (iterable instanceof Collection) {
-			return new ArrayList<>((Collection<T>) iterable);
-		}
-
-		return StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
 	}
 
 	@Value

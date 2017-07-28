@@ -185,7 +185,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * Returns a new {@link Columns} consisting of the {@link ColumnName}s of the current {@link Columns} combined with
 	 * the given ones. Existing {@link ColumnName}s are overwritten if specified within {@code columns}.
 	 *
-	 * @param columns can be {@literal null}.
+	 * @param columns must not be {@literal null}.
 	 * @return a new {@link Columns} with the merged result of the configured and given {@link Columns}.
 	 */
 	public Columns and(Columns columns) {

@@ -38,6 +38,10 @@ public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends U
 
 	private final List<FieldSpecification> fields = new ArrayList<>();
 
+	protected UserTypeSpecification(CqlIdentifier name) {
+		super(name);
+	}
+
 	/**
 	 * Adds the given field to the type.
 	 *
@@ -59,7 +63,7 @@ public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends U
 	@SuppressWarnings("unchecked")
 	public T field(CqlIdentifier name, DataType type) {
 
-		fields.add(new FieldSpecification().name(name).type(type));
+		fields.add(FieldSpecification.of(name, type));
 
 		return (T) this;
 	}

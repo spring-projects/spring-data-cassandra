@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.query;
 
 import lombok.EqualsAndHashCode;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -51,7 +52,7 @@ public interface CriteriaDefinition {
 
 		private final Operator operator;
 
-		private final Object value;
+		private final @Nullable Object value;
 
 		/**
 		 * Create a new {@link Predicate} given {@code operator} and {@code value}.
@@ -59,7 +60,7 @@ public interface CriteriaDefinition {
 		 * @param operator must not be {@literal null}.
 		 * @param value the match value.
 		 */
-		public Predicate(Operator operator, Object value) {
+		public Predicate(Operator operator, @Nullable Object value) {
 
 			Assert.notNull(operator, "Operator must not be null");
 
@@ -77,6 +78,7 @@ public interface CriteriaDefinition {
 		/**
 		 * @return the match value.
 		 */
+		@Nullable
 		public Object getValue() {
 			return value;
 		}

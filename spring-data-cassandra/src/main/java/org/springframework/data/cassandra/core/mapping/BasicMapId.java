@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -84,7 +85,7 @@ public class BasicMapId implements MapId {
 	 * @see org.springframework.data.cassandra.core.mapping.MapId#with(java.lang.String, java.io.Object)
 	 */
 	@Override
-	public BasicMapId with(String name, Object value) {
+	public BasicMapId with(String name, @Nullable Object value) {
 		put(name, value);
 		return this;
 	}

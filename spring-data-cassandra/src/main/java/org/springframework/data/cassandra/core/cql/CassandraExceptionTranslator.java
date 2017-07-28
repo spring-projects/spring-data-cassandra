@@ -27,6 +27,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.*;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -59,6 +60,7 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
 	 */
 	@Override
+	@Nullable
 	public DataAccessException translateExceptionIfPossible(RuntimeException exception) {
 
 		if (exception instanceof DataAccessException) {
@@ -76,7 +78,7 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 	 * @see org.springframework.data.cassandra.cql.CQLExceptionTranslator#translate(java.lang.String, java.lang.String, com.datastax.driver.core.exceptions.DriverException)
 	 */
 	@Override
-	public DataAccessException translate(String task, String cql, DriverException exception) {
+	public DataAccessException translate(@Nullable String task, @Nullable String cql, DriverException exception) {
 
 		String message = buildMessage(task, cql, exception);
 
@@ -183,11 +185,11 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 	 * {@link org.springframework.dao.DataAccessException} class.
 	 *
 	 * @param task readable text describing the task being attempted
-	 * @param cql the CQL statement that caused the problem (may be {@code null})
+	 * @param cql the CQL statement that caused the problem (may be {@literal null})
 	 * @param ex the offending {@code DriverException}
 	 * @return the message {@code String} to use
 	 */
-	protected String buildMessage(String task, String cql, DriverException ex) {
+	protected String buildMessage(@Nullable String task, @Nullable String cql, DriverException ex) {
 
 		if (StringUtils.hasText(task) || StringUtils.hasText(cql)) {
 			return task + "; CQL [" + cql + "]; " + ex.getMessage();

@@ -46,8 +46,8 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * @see DefaultBridgedReactiveSession
 	 */
 	@Bean
-	public ReactiveSession reactiveSession() throws Exception {
-		return new DefaultBridgedReactiveSession(session().getObject(), Schedulers.elastic());
+	public ReactiveSession reactiveSession() {
+		return new DefaultBridgedReactiveSession(getRequiredSession(), Schedulers.elastic());
 	}
 
 	/**
@@ -59,7 +59,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * @see #reactiveCassandraTemplate()
 	 */
 	@Bean
-	public ReactiveSessionFactory reactiveSessionFactory() throws Exception {
+	public ReactiveSessionFactory reactiveSessionFactory() {
 		return new DefaultReactiveSessionFactory(reactiveSession());
 	}
 
@@ -71,7 +71,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * @see #cassandraConverter()
 	 */
 	@Bean
-	public ReactiveCassandraOperations reactiveCassandraTemplate() throws Exception {
+	public ReactiveCassandraOperations reactiveCassandraTemplate() {
 		return new ReactiveCassandraTemplate(reactiveSessionFactory(), cassandraConverter());
 	}
 
@@ -82,7 +82,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * @see #reactiveSessionFactory()
 	 */
 	@Bean
-	public ReactiveCqlOperations reactiveCqlTemplate() throws Exception {
+	public ReactiveCqlOperations reactiveCqlTemplate() {
 		return new ReactiveCqlTemplate(reactiveSessionFactory());
 	}
 }

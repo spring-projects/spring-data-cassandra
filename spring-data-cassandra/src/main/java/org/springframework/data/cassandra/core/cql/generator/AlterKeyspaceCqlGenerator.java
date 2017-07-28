@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.keyspace.AlterKeyspaceSpecification;
@@ -29,17 +27,16 @@ import org.springframework.data.cassandra.core.cql.keyspace.Option;
  */
 public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<AlterKeyspaceSpecification> {
 
-	public static String toCql(AlterKeyspaceSpecification specification) {
-		return new AlterKeyspaceCqlGenerator(specification).toCql();
-	}
-
 	public AlterKeyspaceCqlGenerator(AlterKeyspaceSpecification specification) {
 		super(specification);
 	}
 
+	public static String toCql(AlterKeyspaceSpecification specification) {
+		return new AlterKeyspaceCqlGenerator(specification).toCql();
+	}
+
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-		cql = noNull(cql);
 
 		preambleCql(cql);
 		optionsCql(cql);
@@ -49,13 +46,12 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 		return cql;
 	}
 
-	protected StringBuilder preambleCql(StringBuilder cql) {
-		return noNull(cql).append("ALTER KEYSPACE ").append(spec().getName()).append(" ");
+	private void preambleCql(StringBuilder cql) {
+		cql.append("ALTER KEYSPACE ").append(spec().getName()).append(" ");
 	}
 
 	@SuppressWarnings("unchecked")
-	protected StringBuilder optionsCql(StringBuilder cql) {
-		cql = noNull(cql);
+	private void optionsCql(StringBuilder cql) {
 
 		// begin options clause
 		Map<String, Object> options = spec().getOptions();
@@ -97,7 +93,5 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 			}
 		}
 		// end options
-
-		return cql;
 	}
 }

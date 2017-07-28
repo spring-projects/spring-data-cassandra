@@ -44,10 +44,6 @@ public enum RowToMapConverter implements Converter<Row, Map<String, Object>> {
 	@Override
 	public Map<String, Object> convert(Row row) {
 
-		if (row == null) {
-			return null;
-		}
-
 		ColumnDefinitions cols = row.getColumnDefinitions();
 		Map<String, Object> map = new HashMap<>(cols.size());
 

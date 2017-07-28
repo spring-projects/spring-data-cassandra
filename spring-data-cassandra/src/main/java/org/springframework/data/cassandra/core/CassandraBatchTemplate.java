@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.util.Assert;
 
@@ -34,8 +35,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  */
 class CassandraBatchTemplate implements CassandraBatchOperations {
 
-	private static final WriteOptions EMPTY = new WriteOptions();
-
 	private AtomicBoolean executed = new AtomicBoolean();
 
 	private final Batch batch;
@@ -47,7 +46,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 *
 	 * @param operations must not be {@literal null}.
 	 */
-	public CassandraBatchTemplate(CassandraOperations operations) {
+	CassandraBatchTemplate(CassandraOperations operations) {
 
 		Assert.notNull(operations, "CassandraOperations must not be null");
 
@@ -65,9 +64,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 			return WriteResult.of(operations.getCqlOperations().queryForResultSet(batch));
 		}
 
-		assertNotExecuted();
-
-		return null; // code won't reach this line
+		throw new IllegalStateException("This Cassandra Batch was already executed");
 	}
 
 	/* (non-Javadoc)
@@ -99,7 +96,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 */
 	@Override
 	public CassandraBatchOperations insert(Iterable<?> entities) {
-		return insert(entities, EMPTY);
+		return insert(entities, InsertOptions.empty());
 	}
 
 	/* (non-Javadoc)
@@ -137,7 +134,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 */
 	@Override
 	public CassandraBatchOperations update(Iterable<?> entities) {
-		return update(entities, EMPTY);
+		return update(entities, UpdateOptions.empty());
 	}
 
 	/* (non-Javadoc)
@@ -181,7 +178,8 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 		for (Object entity : entities) {
 			Assert.notNull(entity, "Entity must not be null");
-			batch.add(QueryUtils.createDeleteQuery(getTableName(entity), entity, null, operations.getConverter()));
+			batch.add(
+					QueryUtils.createDeleteQuery(getTableName(entity), entity, QueryOptions.empty(), operations.getConverter()));
 		}
 
 		return this;

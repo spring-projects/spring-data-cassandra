@@ -126,6 +126,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	@Override
 	public KeyspaceMetadata getKeyspaceMetadata() {
 
+		// noinspection ConstantConditions
 		return getCqlOperations().execute((SessionCallback<KeyspaceMetadata>) session -> {
 
 			KeyspaceMetadata keyspaceMetadata = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());

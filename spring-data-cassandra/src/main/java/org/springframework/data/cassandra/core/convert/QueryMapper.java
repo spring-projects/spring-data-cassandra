@@ -46,22 +46,18 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentPropertyPath;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
  * Map {@link org.springframework.data.cassandra.core.query.Query} to CQL-specific data types.
  *
  * @author Mark Paluch
- * @see org.springframework.data.cassandra.core.query.ColumnName
- * @see org.springframework.data.cassandra.core.query.Columns
- * @see org.springframework.data.cassandra.core.query.Criteria
- * @see org.springframework.data.cassandra.core.query.Filter
- * @see org.springframework.data.domain.Sort
- * @see org.springframework.data.mapping.PersistentProperty
- * @see org.springframework.data.mapping.PropertyPath
- * @see org.springframework.data.mapping.context.MappingContext
- * @see org.springframework.data.mapping.context.PersistentPropertyPath
- * @see org.springframework.data.util.TypeInformation
+ * @see ColumnName
+ * @see Columns
+ * @see Criteria
+ * @see Filter
+ * @see Sort
  * @since 2.0
  */
 public class QueryMapper {
@@ -131,7 +127,7 @@ public class QueryMapper {
 
 			Object value = predicate.getValue();
 			TypeInformation<?> typeInformation = getTypeInformation(field, value);
-			Object mappedValue = getConverter().convertToColumnType(value, typeInformation);
+			Object mappedValue = value != null ? getConverter().convertToColumnType(value, typeInformation) : null;
 
 			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue);
 
@@ -328,18 +324,13 @@ public class QueryMapper {
 		}
 	}
 
-	/**
-	 * @param entity
-	 * @param key
-	 * @return
-	 */
 	protected Field createPropertyField(CassandraPersistentEntity<?> entity, ColumnName key) {
-		return Optional.ofNullable(entity).<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
+		return Optional.of(entity).<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
 				.orElseGet(() -> new Field(key));
 	}
 
 	@SuppressWarnings("unchecked")
-	TypeInformation<?> getTypeInformation(Field field, Object value) {
+	TypeInformation<?> getTypeInformation(Field field, @Nullable Object value) {
 
 		if (field.getProperty().isPresent()) {
 			return field.getProperty().get().getTypeInformation();
@@ -366,7 +357,7 @@ public class QueryMapper {
 		 *
 		 * @param name must not be {@literal null} or empty.
 		 */
-		public Field(ColumnName name) {
+		Field(ColumnName name) {
 			Assert.notNull(name, "Name must not be null!");
 			this.name = name;
 		}
@@ -385,8 +376,6 @@ public class QueryMapper {
 		 * Returns the underlying {@link CassandraPersistentProperty} backing the field. For path traversals this will be
 		 * the property that represents the value to handle. This means it'll be the leaf property for plain paths or the
 		 * association property in case we refer to an association somewhere in the path.
-		 *
-		 * @return
 		 */
 		public Optional<CassandraPersistentProperty> getProperty() {
 			return Optional.empty();
@@ -394,8 +383,6 @@ public class QueryMapper {
 
 		/**
 		 * Returns the key to be used in the mapped document eventually.
-		 *
-		 * @return
 		 */
 		public ColumnName getMappedKey() {
 			return name;
@@ -412,7 +399,7 @@ public class QueryMapper {
 		private final CassandraPersistentEntity<?> entity;
 		private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 		private final Optional<PersistentPropertyPath<CassandraPersistentProperty>> path;
-		private final CassandraPersistentProperty property;
+		private final @Nullable CassandraPersistentProperty property;
 		private final Optional<CassandraPersistentProperty> optionalProperty;
 
 		/**
@@ -440,7 +427,7 @@ public class QueryMapper {
 		 */
 		public MetadataBackedField(ColumnName name, CassandraPersistentEntity<?> entity,
 				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
-				CassandraPersistentProperty property) {
+				@Nullable CassandraPersistentProperty property) {
 
 			super(name);
 

@@ -97,10 +97,7 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 		DomUtils.getChildElementsByTagName(element, "entity").forEach(entity -> {
 
 			EntityMapping entityMapping = parseEntity(entity);
-
-			if (entityMapping != null) {
-				mappings.add(entityMapping);
-			}
+			mappings.add(entityMapping);
 		});
 
 		List<Element> userTypeResolvers = DomUtils.getChildElementsByTagName(element, "user-type-resolver");

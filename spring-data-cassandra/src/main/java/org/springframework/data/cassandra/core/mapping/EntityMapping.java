@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -38,7 +39,7 @@ public class EntityMapping {
 	/**
 	 * The name of the entity's class.
 	 */
-	private String entityClassName;
+	private @Nullable String entityClassName;
 
 	/**
 	 * Whether to force the table name to be quoted.
@@ -60,6 +61,7 @@ public class EntityMapping {
 		setForceQuote(forceQuote);
 	}
 
+	@Nullable
 	public String getEntityClassName() {
 		return entityClassName;
 	}
@@ -84,7 +86,7 @@ public class EntityMapping {
 		return Collections.unmodifiableMap(propertyMappings);
 	}
 
-	public void setPropertyMappings(Map<String, PropertyMapping> propertyMappings) {
+	public void setPropertyMappings(@Nullable Map<String, PropertyMapping> propertyMappings) {
 		this.propertyMappings = (propertyMappings != null ? new HashMap<>(propertyMappings) : Collections.emptyMap());
 	}
 

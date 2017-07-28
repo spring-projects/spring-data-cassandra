@@ -22,8 +22,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 import com.datastax.driver.core.AuthProvider;
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.NettyOptions;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolVersion;
@@ -47,6 +50,20 @@ import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
  */
 @Configuration
 public abstract class AbstractClusterConfiguration {
+
+	/**
+	 * Returns the initialized {@link Cluster} instance.
+	 *
+	 * @return the {@link Cluster}.
+	 * @throws IllegalStateException if the cluster factory is not initialized.
+	 */
+	protected Cluster getRequiredCluster() {
+
+		CassandraClusterFactoryBean factoryBean = cluster();
+		Assert.state(factoryBean.getObject() != null, "Cluster factory not initialized");
+
+		return factoryBean.getObject();
+	}
 
 	/**
 	 * Creates a {@link CassandraClusterFactoryBean} that provides a Cassandra {@link com.datastax.driver.core.Cluster}.
@@ -97,6 +114,7 @@ public abstract class AbstractClusterConfiguration {
 	 * @return the {@link AddressTranslator}; may be {@literal null}.
 	 * @since 1.5
 	 */
+	@Nullable
 	protected AddressTranslator getAddressTranslator() {
 		return null;
 	}
@@ -106,6 +124,7 @@ public abstract class AbstractClusterConfiguration {
 	 *
 	 * @return the {@link AuthProvider}, may be {@literal null}.
 	 */
+	@Nullable
 	protected AuthProvider getAuthProvider() {
 		return null;
 	}
@@ -116,6 +135,7 @@ public abstract class AbstractClusterConfiguration {
 	 * @return the {@link ClusterBuilderConfigurer}; may be {@literal null}.
 	 * @since 1.5
 	 */
+	@Nullable
 	protected ClusterBuilderConfigurer getClusterBuilderConfigurer() {
 		return null;
 	}
@@ -126,6 +146,7 @@ public abstract class AbstractClusterConfiguration {
 	 * @return the cluster name; may be {@literal null}.
 	 * @since 1.5
 	 */
+	@Nullable
 	protected String getClusterName() {
 		return null;
 	}
@@ -135,6 +156,7 @@ public abstract class AbstractClusterConfiguration {
 	 *
 	 * @return the {@link CompressionType}, may be {@literal null}.
 	 */
+	@Nullable
 	protected CompressionType getCompressionType() {
 		return null;
 	}
@@ -154,6 +176,7 @@ public abstract class AbstractClusterConfiguration {
 	 *
 	 * @return the {@link LoadBalancingPolicy}, may be {@literal null}.
 	 */
+	@Nullable
 	protected LoadBalancingPolicy getLoadBalancingPolicy() {
 		return null;
 	}
@@ -180,7 +203,7 @@ public abstract class AbstractClusterConfiguration {
 	/**
 	 * Returns the {@link NettyOptions}. Defaults to {@link NettyOptions#DEFAULT_INSTANCE}.
 	 *
-	 * @return
+	 * @return the {@link NettyOptions} to customize netty behavior.
 	 * @since 1.5
 	 */
 	protected NettyOptions getNettyOptions() {
@@ -192,6 +215,7 @@ public abstract class AbstractClusterConfiguration {
 	 *
 	 * @return the {@link PoolingOptions}, may be {@literal null}.
 	 */
+	@Nullable
 	protected PoolingOptions getPoolingOptions() {
 		return null;
 	}
@@ -207,12 +231,13 @@ public abstract class AbstractClusterConfiguration {
 	}
 
 	/**
-	 * Returns the {@link ProtocolVersion}.
+	 * Returns the {@link ProtocolVersion}. Defaults to {@link ProtocolVersion#NEWEST_SUPPORTED}
 	 *
-	 * @return the {@link ProtocolVersion}, may be {@literal null}.
+	 * @return the {@link ProtocolVersion}.
+	 * @see ProtocolVersion#NEWEST_SUPPORTED.
 	 */
 	protected ProtocolVersion getProtocolVersion() {
-		return null;
+		return ProtocolVersion.NEWEST_SUPPORTED;
 	}
 
 	/**
@@ -221,6 +246,7 @@ public abstract class AbstractClusterConfiguration {
 	 * @return the {@link QueryOptions}, may be {@literal null}.
 	 * @since 1.5
 	 */
+	@Nullable
 	protected QueryOptions getQueryOptions() {
 		return null;
 	}
@@ -230,6 +256,7 @@ public abstract class AbstractClusterConfiguration {
 	 *
 	 * @return the {@link ReconnectionPolicy}, may be {@literal null}.
 	 */
+	@Nullable
 	protected ReconnectionPolicy getReconnectionPolicy() {
 		return null;
 	}
@@ -239,6 +266,7 @@ public abstract class AbstractClusterConfiguration {
 	 *
 	 * @return the {@link RetryPolicy}, may be {@literal null}.
 	 */
+	@Nullable
 	protected RetryPolicy getRetryPolicy() {
 		return null;
 	}
@@ -249,6 +277,7 @@ public abstract class AbstractClusterConfiguration {
 	 * @return the {@link SpeculativeExecutionPolicy}; may be {@literal null}.
 	 * @since 1.5
 	 */
+	@Nullable
 	protected SpeculativeExecutionPolicy getSpeculativeExecutionPolicy() {
 		return null;
 	}
@@ -258,6 +287,7 @@ public abstract class AbstractClusterConfiguration {
 	 *
 	 * @return the {@link SocketOptions}, may be {@literal null}.
 	 */
+	@Nullable
 	protected SocketOptions getSocketOptions() {
 		return null;
 	}
@@ -268,6 +298,7 @@ public abstract class AbstractClusterConfiguration {
 	 * @return the {@link TimestampGenerator}; may be {@literal null}.
 	 * @since 1.5
 	 */
+	@Nullable
 	protected TimestampGenerator getTimestampGenerator() {
 		return null;
 	}

@@ -32,6 +32,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecif
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -42,16 +43,16 @@ import org.springframework.util.Assert;
  * @author David Webb
  */
 public class KeyspaceActionSpecificationFactoryBean
-		implements FactoryBean<Set<KeyspaceActionSpecification<?>>>, InitializingBean, DisposableBean {
+		implements FactoryBean<Set<KeyspaceActionSpecification>>, InitializingBean, DisposableBean {
 
-	private KeyspaceAction action;
+	private @Nullable KeyspaceAction action;
 
-	private String name;
+	private @Nullable String name;
 
 	private List<String> networkTopologyDataCenters = new LinkedList<>();
 
 	private List<String> networkTopologyReplicationFactors = new LinkedList<>();
-	private ReplicationStrategy replicationStrategy;
+	private @Nullable ReplicationStrategy replicationStrategy;
 
 	private long replicationFactor;
 
@@ -59,7 +60,7 @@ public class KeyspaceActionSpecificationFactoryBean
 
 	private boolean ifNotExists = false;
 
-	private Set<KeyspaceActionSpecification<?>> specs = new HashSet<>();
+	private Set<KeyspaceActionSpecification> specs = new HashSet<>();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
@@ -68,10 +69,10 @@ public class KeyspaceActionSpecificationFactoryBean
 	public void destroy() {
 		action = null;
 		name = null;
-		networkTopologyDataCenters = null;
-		networkTopologyReplicationFactors = null;
+		networkTopologyDataCenters = new LinkedList<>();
+		networkTopologyReplicationFactors = new LinkedList<>();
 		replicationStrategy = null;
-		specs = null;
+		specs = new HashSet<>();
 	}
 
 	/* (non-Javadoc)
@@ -102,8 +103,8 @@ public class KeyspaceActionSpecificationFactoryBean
 	 */
 	private CreateKeyspaceSpecification generateCreateKeyspaceSpecification() {
 
-		CreateKeyspaceSpecification create = new CreateKeyspaceSpecification();
-		create.name(name).ifNotExists(ifNotExists).with(KeyspaceOption.DURABLE_WRITES, durableWrites);
+		CreateKeyspaceSpecification create = CreateKeyspaceSpecification.createKeyspace(name).ifNotExists(ifNotExists)
+				.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 
 		Map<Option, Object> replicationStrategyMap = new HashMap<>();
 		replicationStrategyMap.put(new DefaultOption("class", String.class, true, false, true),
@@ -133,16 +134,14 @@ public class KeyspaceActionSpecificationFactoryBean
 	 * @return The {@link DropKeyspaceSpecification}
 	 */
 	private DropKeyspaceSpecification generateDropKeyspaceSpecification() {
-		DropKeyspaceSpecification drop = new DropKeyspaceSpecification();
-		drop.name(getName());
-		return drop;
+		return DropKeyspaceSpecification.dropKeyspace(getName());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
 	@Override
-	public Set<KeyspaceActionSpecification<?>> getObject() throws Exception {
+	public Set<KeyspaceActionSpecification> getObject() {
 		return specs;
 	}
 
@@ -165,6 +164,7 @@ public class KeyspaceActionSpecificationFactoryBean
 	/**
 	 * @return Returns the name.
 	 */
+	@Nullable
 	public String getName() {
 		return name;
 	}
@@ -193,6 +193,7 @@ public class KeyspaceActionSpecificationFactoryBean
 	/**
 	 * @return Returns the action.
 	 */
+	@Nullable
 	public KeyspaceAction getAction() {
 		return action;
 	}
@@ -221,6 +222,7 @@ public class KeyspaceActionSpecificationFactoryBean
 	/**
 	 * @return Returns the replicationStrategy.
 	 */
+	@Nullable
 	public ReplicationStrategy getReplicationStrategy() {
 		return replicationStrategy;
 	}

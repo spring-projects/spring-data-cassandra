@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import java.util.Map;
 
 public enum KeyspaceOption implements Option {
+
 	REPLICATION("replication", Map.class, true, false, false),
 
 	DURABLE_WRITES("durable_writes", Boolean.class, false, false, false);

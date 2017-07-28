@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.config;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
@@ -30,8 +31,9 @@ import com.datastax.driver.core.Session;
  */
 public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>, InitializingBean {
 
-	private CqlTemplate template;
-	private Session session;
+	private @Nullable CqlTemplate template;
+
+	private @Nullable Session session;
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+
 /**
  * Builder class that supports the construction of {@code DROP INDEX} specifications.
  *
@@ -23,31 +25,23 @@ package org.springframework.data.cassandra.core.cql.keyspace;
  */
 public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpecification> {
 
-	// private boolean ifExists;
+	private DropIndexSpecification(CqlIdentifier name) {
+		super(name);
+	}
 
 	/**
 	 * Entry point into the {@link DropIndexSpecification}'s fluent API to drop a table. Convenient if imported
 	 * statically.
 	 */
-	public static DropIndexSpecification dropIndex() {
-		return new DropIndexSpecification();
+	public static DropIndexSpecification dropIndex(String name) {
+		return new DropIndexSpecification(CqlIdentifier.cqlId(name));
 	}
 
-	/*
-	 * In CQL 3.1 this is supported so we can uncomment the exposure then.
-	 * In the meantime, it will always be false and tests will pass.
+	/**
+	 * Entry point into the {@link DropIndexSpecification}'s fluent API to drop a table. Convenient if imported
+	 * statically.
 	 */
-
-	// public DropIndexSpecification ifExists() {
-	// return ifExists(true);
-	// }
-	//
-	// public DropIndexSpecification ifExists(boolean ifExists) {
-	// this.ifExists = ifExists;
-	// return this;
-	// }
-	//
-	// public boolean getIfExists() {
-	// return ifExists;
-	// }
+	public static DropIndexSpecification dropIndex(CqlIdentifier name) {
+		return new DropIndexSpecification(name);
+	}
 }

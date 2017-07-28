@@ -56,7 +56,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 			ReactiveCassandraOperations operations, SpelExpressionParser expressionParser,
 			EvaluationContextProvider evaluationContextProvider) {
 
-		this(queryMethod.getAnnotatedQuery(), queryMethod, operations, expressionParser, evaluationContextProvider);
+		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser, evaluationContextProvider);
 	}
 
 	/**

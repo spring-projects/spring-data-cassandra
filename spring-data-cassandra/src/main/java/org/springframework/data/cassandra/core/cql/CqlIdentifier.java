@@ -35,7 +35,6 @@ import com.datastax.driver.core.TableMetadata;
  * @author Mark Paluch
  * @author John Blum
  * @see #toCql()
- * @see #toCql(StringBuilder)
  * @see #toString()
  */
 public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializable {
@@ -50,18 +49,18 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 	public static final Pattern QUOTED = Pattern.compile(QUOTED_REGEX);
 
-	private String identifier;
+	private final String identifier;
 
-	private String unquoted;
+	private final String unquoted;
 
-	private boolean quoted;
+	private final boolean quoted;
 
 	/**
 	 * Create a new {@link CqlIdentifier} without force-quoting it. It may end up quoted, depending on its value.
 	 *
 	 * @see #cqlId(CharSequence)
 	 */
-	public CqlIdentifier(CharSequence identifier) {
+	private CqlIdentifier(CharSequence identifier) {
 		this(identifier, false);
 	}
 
@@ -78,8 +77,25 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see #cqlId(CharSequence, boolean)
 	 * @see #quotedCqlId(CharSequence)
 	 */
-	public CqlIdentifier(CharSequence identifier, boolean forceQuote) {
-		setIdentifier(identifier, forceQuote);
+	private CqlIdentifier(CharSequence identifier, boolean forceQuote) {
+
+		Assert.notNull(identifier, "Identifier must not be null");
+
+		String string = identifier.toString();
+
+		Assert.hasText(string, "Identifier must not be empty");
+
+		if (forceQuote || isQuotedIdentifier(string)) {
+			this.unquoted = string;
+			this.identifier = "\"" + string + "\"";
+			this.quoted = true;
+		} else if (isUnquotedIdentifier(string)) {
+			this.identifier = this.unquoted = string.toLowerCase();
+			this.quoted = false;
+		} else {
+			throw new IllegalArgumentException(
+					String.format("given string [%s] is not a valid quoted or unquoted identifier", identifier));
+		}
 	}
 
 	/**
@@ -124,29 +140,6 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	}
 
 	/**
-	 * Tests & sets the given identifier.
-	 */
-	private void setIdentifier(CharSequence identifier, boolean forceQuoting) {
-
-		Assert.notNull(identifier, "Identifier must not be null");
-
-		String string = identifier.toString();
-
-		Assert.hasText(string, "Identifier must not be empty");
-
-		if (forceQuoting || isQuotedIdentifier(string)) {
-			this.unquoted = string;
-			this.identifier = "\"" + string + "\"";
-			quoted = true;
-		} else if (isUnquotedIdentifier(string)) {
-			this.identifier = this.unquoted = string.toLowerCase();
-		} else {
-			throw new IllegalArgumentException(
-					String.format("given string [%s] is not a valid quoted or unquoted identifier", identifier));
-		}
-	}
-
-	/**
 	 * Returns the identifier <em>without</em> encasing quotes, regardless of the value of {@link #isQuoted()}. For
 	 * example, if {@link #isQuoted()} is {@code true}, then this value will be the same as {@link #toCql()} and
 	 * {@link #toString()}.
@@ -167,10 +160,11 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 	/**
 	 * Appends the rendering of this identifier to the given {@link StringBuilder}, then returns that
-	 * {@link StringBuilder}. If {@code null} is given, a new {@link StringBuilder} is created, appended to, and returned.
+	 * {@link StringBuilder}. If {@literal null} is given, a new {@link StringBuilder} is created, appended to, and
+	 * returned.
 	 */
 	public StringBuilder toCql(StringBuilder builder) {
-		return (builder != null ? builder : new StringBuilder()).append(toCql());
+		return builder.append(toCql());
 	}
 
 	/**
@@ -211,7 +205,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 		if (quoted != that.quoted)
 			return false;
-		return identifier != null ? identifier.equals(that.identifier) : that.identifier == null;
+		return identifier.equals(that.identifier);
 	}
 
 	/* (non-Javadoc)
@@ -220,7 +214,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	@Override
 	public int hashCode() {
 
-		int result = identifier != null ? identifier.hashCode() : 0;
+		int result = identifier.hashCode();
 		result = 31 * result + (quoted ? 1 : 0);
 		return result;
 	}

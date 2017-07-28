@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.cassandra.SessionFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
@@ -38,17 +39,17 @@ import com.datastax.driver.core.Session;
  */
 public abstract class AbstractRoutingSessionFactory implements SessionFactory, InitializingBean {
 
-	private Map<Object, Object> targetSessionFactories;
+	private @Nullable Map<Object, Object> targetSessionFactories;
 
-	private Object defaultTargetSessionFactory;
+	private @Nullable Object defaultTargetSessionFactory;
 
 	private boolean lenientFallback = true;
 
 	private SessionFactoryLookup sessionFactoryLookup = new MapSessionFactoryLookup();
 
-	private Map<Object, SessionFactory> resolvedSessionFactories;
+	private @Nullable Map<Object, SessionFactory> resolvedSessionFactories;
 
-	private SessionFactory resolvedDefaultSessionFactory;
+	private @Nullable SessionFactory resolvedDefaultSessionFactory;
 
 	/**
 	 * Specify the map of target session factories, with the lookup key as key.
@@ -61,6 +62,9 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 	 * {@link #determineCurrentLookupKey()}.
 	 */
 	public void setTargetSessionFactories(Map<Object, Object> targetSessionFactories) {
+
+		Assert.notNull(targetSessionFactories, "Target SessionFactories must not be null");
+
 		this.targetSessionFactories = targetSessionFactories;
 	}
 
@@ -74,6 +78,9 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 	 * match the {@link #determineCurrentLookupKey()} current lookup key.
 	 */
 	public void setDefaultTargetSessionFactory(Object defaultTargetSessionFactory) {
+
+		Assert.notNull(defaultTargetSessionFactory, "Default target SessionFactory must not be null");
+
 		this.defaultTargetSessionFactory = defaultTargetSessionFactory;
 	}
 
@@ -85,7 +92,7 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 	 * {@link SessionFactory} map - simply falling back to the default {@link SessionFactory} in that case.
 	 * <p>
 	 * Switch this flag to {@literal false} if you would prefer the fallback to only apply if the lookup key was
-	 * {@code null}. Lookup keys without a {@link SessionFactory} entry will then lead to an
+	 * {@literal null}. Lookup keys without a {@link SessionFactory} entry will then lead to an
 	 * {@link IllegalStateException}.
 	 *
 	 * @param lenientFallback {@literal true} to accepting lookup keys without a corresponding entry in the target.
@@ -107,7 +114,7 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 	 * @param sessionFactoryLookup the {@link SessionFactoryLookup}. Defaults to {@link MapSessionFactoryLookup} if
 	 *          {@literal null}.
 	 */
-	public void setSessionFactoryLookup(SessionFactoryLookup sessionFactoryLookup) {
+	public void setSessionFactoryLookup(@Nullable SessionFactoryLookup sessionFactoryLookup) {
 		this.sessionFactoryLookup = (sessionFactoryLookup != null ? sessionFactoryLookup : new MapSessionFactoryLookup());
 	}
 
@@ -174,10 +181,10 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 		} else if (sessionFactory instanceof String) {
 			return this.sessionFactoryLookup.getSessionFactory((String) sessionFactory);
 		} else {
-			throw new IllegalArgumentException(String
-					.format(
-							"Illegal session factory value. Only [org.springframework.data.cassandra.core.cql.session.SessionFactory]"
-							+ " and String supported: %s", sessionFactory));
+			throw new IllegalArgumentException(String.format(
+					"Illegal session factory value. Only [org.springframework.data.cassandra.core.cql.session.SessionFactory]"
+							+ " and String supported: %s",
+					sessionFactory));
 		}
 	}
 
@@ -214,5 +221,6 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 	 *
 	 * @return the current lookup key. The returned key needs to match the stored lookup key type.
 	 */
+	@Nullable
 	protected abstract Object determineCurrentLookupKey();
 }

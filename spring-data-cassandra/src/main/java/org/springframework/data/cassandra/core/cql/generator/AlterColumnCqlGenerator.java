@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import org.springframework.data.cassandra.core.cql.keyspace.AlterColumnSpecification;
 
 /**
@@ -33,7 +31,7 @@ public class AlterColumnCqlGenerator extends ColumnChangeCqlGenerator<AlterColum
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("ALTER ").append(spec().getName()).append(" TYPE ")
+		return cql.append("ALTER ").append(spec().getName()).append(" TYPE ")
 				.append(spec().getType().asFunctionParameterString());
 	}
 }

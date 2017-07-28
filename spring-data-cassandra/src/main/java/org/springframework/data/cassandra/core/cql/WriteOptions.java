@@ -15,7 +15,11 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.policies.RetryPolicy;
@@ -30,20 +34,19 @@ import com.datastax.driver.core.policies.RetryPolicy;
  */
 public class WriteOptions extends QueryOptions {
 
-	private Integer ttl;
+	private static final WriteOptions EMPTY = new WriteOptionsBuilder().build();
 
-	/**
-	 * Creates new {@link WriteOptions}.
-	 */
-	public WriteOptions() {}
+	private final Duration ttl;
 
 	/**
 	 * Creates new {@link WriteOptions} for the given {@link ConsistencyLevel} and {@link RetryPolicy}.
 	 *
 	 * @param consistencyLevel the consistency level, may be {@literal null}.
 	 * @param retryPolicy the retry policy, may be {@literal null}.
+	 * @deprecated since 2.0, use {@link #builder()} or {@link #empty()}.
 	 */
-	public WriteOptions(ConsistencyLevel consistencyLevel, RetryPolicy retryPolicy) {
+	@Deprecated
+	public WriteOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy) {
 		this(consistencyLevel, retryPolicy, null);
 	}
 
@@ -53,10 +56,32 @@ public class WriteOptions extends QueryOptions {
 	 * @param consistencyLevel the consistency level, may be {@literal null}.
 	 * @param retryPolicy the retry policy, may be {@literal null}.
 	 * @param ttl the ttl, may be {@literal null}.
+	 * @deprecated since 2.0, use {@link #builder()}.
 	 */
-	public WriteOptions(ConsistencyLevel consistencyLevel, RetryPolicy retryPolicy, Integer ttl) {
+	@Deprecated
+	public WriteOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
+			@Nullable Integer ttl) {
+
 		super(consistencyLevel, retryPolicy);
-		setTtl(ttl);
+
+		this.ttl = ttl == null ? Duration.ofMillis(-1) : Duration.ofSeconds(ttl);
+	}
+
+	protected WriteOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
+			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl) {
+
+		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout);
+		this.ttl = ttl;
+	}
+
+	/**
+	 * Create default {@link WriteOptions}.
+	 *
+	 * @return default {@link WriteOptions}.
+	 * @since 2.0
+	 */
+	public static WriteOptions empty() {
+		return EMPTY;
 	}
 
 	/**
@@ -72,17 +97,8 @@ public class WriteOptions extends QueryOptions {
 	/**
 	 * @return the time to live, if set.
 	 */
-	public Integer getTtl() {
+	public Duration getTtl() {
 		return this.ttl;
-	}
-
-	/**
-	 * Sets the time to live for write operations.
-	 *
-	 * @param ttl the ttl to set.
-	 */
-	public void setTtl(Integer ttl) {
-		this.ttl = ttl;
 	}
 
 	/**
@@ -93,7 +109,7 @@ public class WriteOptions extends QueryOptions {
 	 */
 	public static class WriteOptionsBuilder extends QueryOptionsBuilder {
 
-		private Integer ttl;
+		protected Duration ttl = Duration.ofMillis(-1);
 
 		protected WriteOptionsBuilder() {}
 
@@ -138,8 +154,14 @@ public class WriteOptions extends QueryOptions {
 		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
 		 */
 		@Override
+		@Deprecated
 		public WriteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 			return (WriteOptionsBuilder) super.readTimeout(readTimeout, timeUnit);
+		}
+
+		@Override
+		public WriteOptionsBuilder readTimeout(Duration readTimeout) {
+			return (WriteOptionsBuilder) super.readTimeout(readTimeout);
 		}
 
 		/*
@@ -161,13 +183,34 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		/**
-		 * Sets the time to live for write operations.
+		 * Sets the time to live in seconds for write operations.
 		 *
 		 * @param ttl the time to live.
 		 * @return {@code this} {@link WriteOptionsBuilder}
 		 */
 		public WriteOptionsBuilder ttl(int ttl) {
+
+			Assert.isTrue(ttl >= 0, "TTL must be greater than equal to zero");
+
+			this.ttl = Duration.ofSeconds(ttl);
+
+			return this;
+		}
+
+		/**
+		 * Sets the time to live in seconds for write operations.
+		 *
+		 * @param ttl the time to live.
+		 * @return {@code this} {@link WriteOptionsBuilder}
+		 * @since 2.0
+		 */
+		public WriteOptionsBuilder ttl(Duration ttl) {
+
+			Assert.notNull(ttl, "TTL must not be null");
+			Assert.isTrue(!ttl.isNegative(), "TTL must be greater than equal to zero");
+
 			this.ttl = ttl;
+
 			return this;
 		}
 
@@ -177,17 +220,7 @@ public class WriteOptions extends QueryOptions {
 		 * @return a new {@link WriteOptions} with the configured values
 		 */
 		public WriteOptions build() {
-			return applyOptions(new WriteOptions());
-		}
-
-		@Override
-		protected <T> T applyOptions(T queryOptions) {
-
-			WriteOptions writeOptions = (WriteOptions) queryOptions;
-
-			writeOptions.setTtl(this.ttl);
-
-			return super.applyOptions(queryOptions);
+			return new WriteOptions(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl);
 		}
 	}
 }

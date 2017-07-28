@@ -29,12 +29,8 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification<DropUse
 
 	private boolean ifExists;
 
-	/**
-	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API to drop a type. Convenient if imported
-	 * statically.
-	 */
-	public static DropUserTypeSpecification dropType() {
-		return new DropUserTypeSpecification();
+	private DropUserTypeSpecification(CqlIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -44,7 +40,7 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification<DropUse
 	 * @param typeName The name of the type to drop.
 	 */
 	public static DropUserTypeSpecification dropType(String typeName) {
-		return dropType(CqlIdentifier.cqlId(typeName));
+		return new DropUserTypeSpecification(CqlIdentifier.cqlId(typeName));
 	}
 
 	/**
@@ -54,7 +50,7 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification<DropUse
 	 * @param typeName The name of the type to drop.
 	 */
 	public static DropUserTypeSpecification dropType(CqlIdentifier typeName) {
-		return dropType().name(typeName);
+		return new DropUserTypeSpecification(typeName);
 	}
 
 	/**

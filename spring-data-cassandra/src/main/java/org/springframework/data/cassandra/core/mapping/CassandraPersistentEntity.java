@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.UserType;
 
@@ -28,8 +28,7 @@ import com.datastax.driver.core.UserType;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public interface CassandraPersistentEntity<T>
-		extends PersistentEntity<T, CassandraPersistentProperty>, ApplicationContextAware {
+public interface CassandraPersistentEntity<T> extends PersistentEntity<T, CassandraPersistentProperty> {
 
 	/**
 	 * Returns whether this entity represents a composite primary key.
@@ -67,5 +66,6 @@ public interface CassandraPersistentEntity<T>
 	 * @since 1.5
 	 * @see UserDefinedType
 	 */
+	@Nullable
 	UserType getUserType();
 }

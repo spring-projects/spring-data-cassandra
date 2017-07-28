@@ -15,62 +15,68 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.driver.core.DataType;
 
 public class CqlStringUtils {
 
-	protected static final String DOUBLE_QUOTE = "\"";
-	protected static final String DOUBLE_DOUBLE_QUOTE = "\"\"";
-	protected static final String DOUBLE_SINGLE_QUOTE = "\'\'";
-	protected static final String SINGLE_QUOTE = "\'";
-	protected static final String EMPTY_STRING = "";
-	protected static final String TYPE_PARAMETER_PREFIX = "<";
-	protected static final String TYPE_PARAMETER_SUFFIX = ">";
-
-	public static StringBuilder noNull(StringBuilder builder) {
-		return (builder == null ? new StringBuilder() : builder);
-	}
+	private static final String DOUBLE_QUOTE = "\"";
+	private static final String DOUBLE_DOUBLE_QUOTE = "\"\"";
+	private static final String DOUBLE_SINGLE_QUOTE = "\'\'";
+	private static final String SINGLE_QUOTE = "\'";
+	private static final String EMPTY_STRING = "";
+	private static final String TYPE_PARAMETER_PREFIX = "<";
+	private static final String TYPE_PARAMETER_SUFFIX = ">";
 
 	/**
 	 * Renders the given string as a legal Cassandra string column or table option value, by escaping single quotes and
-	 * encasing the result in single quotes. Given {@code null}, returns <code>null</code>.
+	 * encasing the result in single quotes. Given {@literal null}, returns <code>null</code>.
 	 */
-	public static String valuize(String candidate) {
+	@Nullable
+	public static String valuize(@Nullable String candidate) {
 		return (candidate != null ? singleQuote(escapeSingle(candidate)) : null);
 	}
 
 	/**
-	 * Doubles single quote characters (' -&gt; ''). Given {@code null}, returns <code>null</code>.
+	 * Doubles single quote characters (' -&gt; ''). Given {@literal null}, returns <code>null</code>.
 	 */
-	public static String escapeSingle(Object thing) {
+	@Nullable
+	public static String escapeSingle(@Nullable Object thing) {
 		return (thing == null ? null : thing.toString().replace(SINGLE_QUOTE, DOUBLE_SINGLE_QUOTE));
 	}
 
 	/**
-	 * Doubles double quote characters (" -&gt; ""). Given {@code null}, returns <code>null</code>.
+	 * Doubles double quote characters (" -&gt; ""). Given {@literal null}, returns <code>null</code>.
 	 */
-	public static String escapeDouble(Object thing) {
+	@Nullable
+	public static String escapeDouble(@Nullable Object thing) {
 		return (thing == null ? null : thing.toString().replace(DOUBLE_QUOTE, DOUBLE_DOUBLE_QUOTE));
 	}
 
 	/**
-	 * Surrounds given object's {@link Object#toString()} with single quotes. Given {@code null}, returns {@code null}.
+	 * Surrounds given object's {@link Object#toString()} with single quotes. Given {@literal null}, returns
+	 * {@literal null}.
 	 */
-	public static String singleQuote(Object thing) {
+	@Nullable
+	public static String singleQuote(@Nullable Object thing) {
 		return (thing == null ? null : SINGLE_QUOTE.concat(thing.toString()).concat(SINGLE_QUOTE));
 	}
 
 	/**
-	 * Surrounds given object's {@link Object#toString()} with double quotes. Given {@code null}, returns {@code null}.
+	 * Surrounds given object's {@link Object#toString()} with double quotes. Given {@literal null}, returns
+	 * {@literal null}.
 	 */
-	public static String doubleQuote(Object thing) {
+	@Nullable
+	public static String doubleQuote(@Nullable Object thing) {
 		return (thing == null ? null : DOUBLE_QUOTE.concat(thing.toString()).concat(DOUBLE_QUOTE));
 	}
 
 	/**
 	 * Removed single quotes from quoted String option values
 	 */
-	public static String removeSingleQuotes(Object thing) {
+	@Nullable
+	public static String removeSingleQuotes(@Nullable Object thing) {
 		return (thing == null ? null : thing.toString().replaceAll(SINGLE_QUOTE, EMPTY_STRING));
 	}
 
@@ -105,11 +111,13 @@ public class CqlStringUtils {
 		return builder.append(TYPE_PARAMETER_SUFFIX).toString();
 	}
 
-	public static String unquote(String value) {
+	@Nullable
+	public static String unquote(@Nullable String value) {
 		return unquote(value, "\"");
 	}
 
-	public static String unquote(String value, String quoteChar) {
+	@Nullable
+	public static String unquote(@Nullable String value, String quoteChar) {
 
 		if (value == null) {
 			return null;

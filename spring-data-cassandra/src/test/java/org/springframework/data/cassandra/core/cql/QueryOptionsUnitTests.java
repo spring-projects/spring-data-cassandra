@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.cql;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -48,7 +49,7 @@ public class QueryOptionsUnitTests {
 		assertThat(queryOptions.getClass()).isEqualTo(QueryOptions.class);
 		assertThat(queryOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
 		assertThat(queryOptions.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
-		assertThat(queryOptions.getReadTimeout()).isEqualTo(1000);
+		assertThat(queryOptions.getReadTimeout()).isEqualTo(Duration.ofSeconds(1));
 		assertThat(queryOptions.getFetchSize()).isEqualTo(10);
 		assertThat(queryOptions.getTracing()).isTrue();
 	}

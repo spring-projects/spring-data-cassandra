@@ -21,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.FailureCallback;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -38,6 +39,7 @@ import org.springframework.util.concurrent.SuccessCallback;
 class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture<T> {
 
 	private final ListenableFuture<T> adaptee;
+
 	private final ListenableFuture<T> future;
 
 	/**
@@ -47,7 +49,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 	 * @param adaptee must not be {@literal null}.
 	 * @param persistenceExceptionTranslator must not be {@literal null}.
 	 */
-	public ExceptionTranslatingListenableFutureAdapter(ListenableFuture<T> adaptee,
+	ExceptionTranslatingListenableFutureAdapter(ListenableFuture<T> adaptee,
 			PersistenceExceptionTranslator persistenceExceptionTranslator) {
 
 		Assert.notNull(adaptee, "ListenableFuture must not be null");
@@ -65,7 +67,7 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		listenableFuture.addCallback(new ListenableFutureCallback<T>() {
 
 			@Override
-			public void onSuccess(T result) {
+			public void onSuccess(@Nullable T result) {
 				settableFuture.set(result);
 			}
 

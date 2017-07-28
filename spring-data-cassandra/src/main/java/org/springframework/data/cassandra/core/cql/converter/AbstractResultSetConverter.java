@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.ResultSet;
 
@@ -59,6 +60,7 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	/**
 	 * @return surrogate value if the {@link ResultSet} is {@literal null}.
 	 */
+	@Nullable
 	protected T getNullResultSetValue() {
 		return null;
 	}
@@ -66,6 +68,7 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	/**
 	 * @return surrogate value if the {@link ResultSet} is {@link ResultSet#isExhausted() exhausted}.
 	 */
+	@Nullable
 	protected T getExhaustedResultSetValue() {
 		return null;
 	}
@@ -73,15 +76,15 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	@Override
 	public T convert(ResultSet source) {
 
-		if (source == null) {
-			return getNullResultSetValue();
-		}
-
 		if (source.isExhausted()) {
 			return getExhaustedResultSetValue();
 		}
 
 		List<Map<String, Object>> list = converter.convert(source);
+
+		if (list == null) {
+			return getNullResultSetValue();
+		}
 
 		if (list.size() == 1) {
 
@@ -97,8 +100,9 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	 * or throws {@link IllegalArgumentException}. This default implementation simply throws.
 	 */
 	protected T doConvertResultSet(List<Map<String, Object>> resultSet) {
-		doThrow("result set");
-		return null;
+
+		throw new IllegalArgumentException(
+				String.format("Cannot convert %s to desired type [%s]", "result set", getType().getName()));
 	}
 
 	/**
@@ -106,12 +110,8 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	 * {@link IllegalArgumentException}. This default implementation simply throws.
 	 */
 	protected T doConvertSingleRow(Map<String, Object> row) {
-		doThrow("row");
-		return null;
-	}
 
-	void doThrow(String string) {
 		throw new IllegalArgumentException(
-				String.format("Cannot convert %s to desired type [%s]", string, getType().getName()));
+				String.format("Cannot convert %s to desired type [%s]", "row", getType().getName()));
 	}
 }

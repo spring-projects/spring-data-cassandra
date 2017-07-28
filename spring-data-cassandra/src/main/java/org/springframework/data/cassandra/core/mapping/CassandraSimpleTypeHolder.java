@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
@@ -90,9 +91,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		Map<Name, DataType> nameToDataType = new HashMap<>(16);
 
-		DataType.allPrimitiveTypes().forEach(dataType -> {
-			nameToDataType.put(dataType.getName(), dataType);
-		});
+		DataType.allPrimitiveTypes().forEach(dataType -> nameToDataType.put(dataType.getName(), dataType));
 
 		return nameToDataType;
 	}
@@ -159,7 +158,8 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 * @param javaClass must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	public static DataType getDataTypeFor(Class<?> javaClass) {
-		return (javaClass.isEnum() ?  DataType.varchar() : classToDataType.get(javaClass));
+		return (javaClass.isEnum() ? DataType.varchar() : classToDataType.get(javaClass));
 	}
 }

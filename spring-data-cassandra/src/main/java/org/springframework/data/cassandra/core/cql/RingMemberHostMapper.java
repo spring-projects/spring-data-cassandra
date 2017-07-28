@@ -29,7 +29,6 @@ import com.datastax.driver.core.exceptions.DriverException;
  *
  * @author David Webb
  * @author Mark Paluch
- * @param <T>
  */
 public enum RingMemberHostMapper implements HostMapper<RingMember> {
 

@@ -44,10 +44,6 @@ public enum RowToListConverter implements Converter<Row, List<Object>> {
 	@Override
 	public List<Object> convert(Row row) {
 
-		if (row == null) {
-			return null;
-		}
-
 		ColumnDefinitions cols = row.getColumnDefinitions();
 		return cols.asList().stream() //
 				.map(Definition::getName).map(name -> row.isNull(name) ? null : row.getObject(name)) //

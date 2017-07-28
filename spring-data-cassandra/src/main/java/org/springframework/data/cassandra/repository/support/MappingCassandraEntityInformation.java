@@ -22,6 +22,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentProper
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -57,16 +58,15 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
+	@Nullable
 	public ID getId(T entity) {
 
 		Assert.notNull(entity, "Entity must not be null");
 
 		CassandraPersistentProperty idProperty = entityMetadata.getIdProperty();
 
-		if (idProperty != null) {
-			return (ID) entityMetadata.getIdentifierAccessor(entity).getIdentifier();
-		}
-		return (ID) converter.getId(entity, entityMetadata);
+		return idProperty != null ? (ID) entityMetadata.getIdentifierAccessor(entity).getIdentifier()
+				: (ID) converter.getId(entity, entityMetadata);
 	}
 
 	/* (non-Javadoc)
@@ -77,7 +77,7 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 	public Class<ID> getIdType() {
 
 		if (entityMetadata.getIdProperty() != null) {
-			return (Class<ID>) entityMetadata.getIdProperty().getType();
+			return (Class<ID>) entityMetadata.getRequiredIdProperty().getType();
 		}
 
 		return (Class<ID>) MapId.class;

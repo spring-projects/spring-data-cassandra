@@ -21,6 +21,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.exceptions.DriverException;
@@ -44,7 +45,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 
 	private CqlExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
-	private ReactiveSessionFactory sessionFactory;
+	private @Nullable ReactiveSessionFactory sessionFactory;
 
 	/**
 	 * Sets the {@link ReactiveSessionFactory} to use.
@@ -63,6 +64,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 *
 	 * @return the configured {@link ReactiveSessionFactory}.
 	 */
+	@Nullable
 	public ReactiveSessionFactory getSessionFactory() {
 		return sessionFactory;
 	}
@@ -97,9 +99,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 */
 	@Override
 	public void afterPropertiesSet() {
-
-		Assert.notNull(sessionFactory != null, "ReactiveSessionFactory must not be null");
-		Assert.notNull(exceptionTranslator != null, "CassandraExceptionTranslator must not be null");
+		Assert.notNull(sessionFactory, "ReactiveSessionFactory must not be null");
 	}
 
 	/**
@@ -117,6 +117,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 *      exception hierarchy</a>
 	 * @see DataAccessException
 	 */
+	@Nullable
 	protected DataAccessException translateExceptionIfPossible(DriverException ex) {
 
 		Assert.notNull(ex, "DriverException must not be null");
@@ -133,7 +134,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 * subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
 	 *
 	 * @param task readable text describing the task being attempted
-	 * @param cql CQL query or update that caused the problem (may be {@code null})
+	 * @param cql CQL query or update that caused the problem (may be {@literal null})
 	 * @param ex the offending {@link DriverException}
 	 * @return the DataAccessException, wrapping the {@code DriverException}
 	 * @see org.springframework.dao.DataAccessException#getRootCause()
@@ -141,7 +142,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 *      "http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions">Consistent
 	 *      exception hierarchy</a>
 	 */
-	protected DataAccessException translate(String task, String cql, DriverException ex) {
+	protected DataAccessException translate(String task, @Nullable String cql, DriverException ex) {
 
 		Assert.notNull(ex, "DriverException must not be null");
 

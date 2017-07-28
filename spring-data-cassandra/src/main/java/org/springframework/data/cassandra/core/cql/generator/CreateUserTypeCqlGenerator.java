@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.noNull;
-
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.FieldSpecification;
 import org.springframework.util.Assert;
@@ -31,10 +29,6 @@ import org.springframework.util.Assert;
  */
 public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateUserTypeSpecification> {
 
-	public static String toCql(CreateUserTypeSpecification specification) {
-		return new CreateUserTypeCqlGenerator(specification).toCql();
-	}
-
 	/**
 	 * Create a new {@link CreateUserTypeCqlGenerator} for a given {@link CreateUserTypeSpecification}.
 	 *
@@ -42,6 +36,10 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 	 */
 	public CreateUserTypeCqlGenerator(CreateUserTypeSpecification specification) {
 		super(specification);
+	}
+
+	public static String toCql(CreateUserTypeSpecification specification) {
+		return new CreateUserTypeCqlGenerator(specification).toCql();
 	}
 
 	/*
@@ -61,13 +59,11 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 
 	private StringBuilder preambleCql(StringBuilder cql) {
 
-		return noNull(cql).append("CREATE TYPE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
+		return cql.append("CREATE TYPE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
 				.append(spec().getName());
 	}
 
 	private StringBuilder columns(StringBuilder cql) {
-
-		cql = noNull(cql);
 
 		// begin columns
 		cql.append(" (");

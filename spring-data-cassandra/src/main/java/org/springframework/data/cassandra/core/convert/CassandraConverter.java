@@ -22,6 +22,7 @@ import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityConverter;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 
 /**
  * Central Cassandra specific converter interface from Object to Row.
@@ -61,6 +62,7 @@ public interface CassandraConverter
 	 * @param entity must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	Object getId(Object object, CassandraPersistentEntity<?> entity);
 
 	/**
@@ -76,7 +78,7 @@ public interface CassandraConverter
 	 * Converts the given object into a value Cassandra will be able to store natively in a column.
 	 *
 	 * @param value {@link Object} to convert; must not be {@literal null}.
-	 * @param typeInformation {@link TypeInformation} used to describe the object type; may be {@literal null}.
+	 * @param typeInformation {@link TypeInformation} used to describe the object type; must not be {@literal null}.
 	 * @return the result of the conversion.
 	 * @since 1.5
 	 */
@@ -85,10 +87,9 @@ public interface CassandraConverter
 	/**
 	 * Converts and writes a {@code source} object into a {@code sink} using the given {@link CassandraPersistentEntity}.
 	 *
-	 * @param source the source, may be {@literal null}.
+	 * @param source the source, must not be {@literal null}.
 	 * @param sink must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 */
 	void write(Object source, Object sink, CassandraPersistentEntity<?> entity);
-
 }

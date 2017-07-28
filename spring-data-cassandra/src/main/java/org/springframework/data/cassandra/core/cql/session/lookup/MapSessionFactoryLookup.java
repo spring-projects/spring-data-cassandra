@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.cassandra.SessionFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -65,11 +66,11 @@ public class MapSessionFactoryLookup implements SessionFactoryLookup {
 	 * Set the {@link Map} of {@link SessionFactory session factories}; the keys are {@link String Strings}, the values
 	 * are actual {@link SessionFactory} instances.
 	 * <p>
-	 * If the supplied {@link Map} is {@code null}, then this method call effectively has no effect.
+	 * If the supplied {@link Map} is {@literal null}, then this method call effectively has no effect.
 	 *
 	 * @param sessionFactories {@link Map} of {@link SessionFactory session factories}.
 	 */
-	public void setSessionFactories(Map<String, SessionFactory> sessionFactories) {
+	public void setSessionFactories(@Nullable Map<String, SessionFactory> sessionFactories) {
 		if (sessionFactories != null) {
 			this.sessionFactories.putAll(sessionFactories);
 		}

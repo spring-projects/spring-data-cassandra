@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlStringUtils;
+import org.springframework.lang.Nullable;
 
 /**
  * Abstract builder class to support the construction of table specifications that have table options, that is, those
@@ -35,23 +36,15 @@ import org.springframework.data.cassandra.core.cql.CqlStringUtils;
  * are introduced without having to update the code immediately.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  * @param <T> The subtype of the {@link TableOptionsSpecification}.
  */
-public abstract class TableOptionsSpecification<T extends TableOptionsSpecification<T>>
-		extends TableNameSpecification<TableOptionsSpecification<T>> {
+public abstract class TableOptionsSpecification<T extends TableOptionsSpecification<T>> extends TableNameSpecification {
 
-	protected Map<String, Object> options = new LinkedHashMap<>();
+	private final Map<String, Object> options = new LinkedHashMap<>();
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public T name(String name) {
-		return (T) super.name(name);
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public T name(CqlIdentifier name) {
-		return (T) super.name(name);
+	protected TableOptionsSpecification(CqlIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -60,7 +53,7 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	 * @return this
 	 */
 	public T with(TableOption option) {
-		return with(option, null);
+		return with(option.getName(), null, option.escapesValue(), option.quotesValue());
 	}
 
 	/**
@@ -81,13 +74,13 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	/**
 	 * Adds the given option by name to this table's options.
 	 * <p/>
-	 * Options that have {@code null} values are considered single string options where the name of the option is the
+	 * Options that have {@literal null} values are considered single string options where the name of the option is the
 	 * string to be used. Otherwise, the result of {@link Object#toString()} is considered to be the value of the option
 	 * with the given name. The value, after conversion to string, may have embedded single quotes escaped according to
 	 * parameter {@code escape} and may be single-quoted according to parameter <code>quote</code>.
 	 *
 	 * @param name The name of the option
-	 * @param value The value of the option. If {@code null}, the value is ignored and the option is considered to be
+	 * @param value The value of the option. If {@literal null}, the value is ignored and the option is considered to be
 	 *          composed of only the name, otherwise the value's {@link Object#toString()} value is used.
 	 * @param escape Whether to escape the value via {@link CqlStringUtils#escapeSingle(Object)}. Ignored if given value
 	 *          is an instance of a {@link Map}.
@@ -96,7 +89,7 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	 * @return this
 	 */
 	@SuppressWarnings("unchecked")
-	public T with(String name, Object value, boolean escape, boolean quote) {
+	public T with(String name, @Nullable Object value, boolean escape, boolean quote) {
 
 		if (!(value instanceof Map)) {
 			if (escape) {

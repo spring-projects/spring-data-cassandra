@@ -140,7 +140,7 @@ abstract class CassandraConverters {
 
 			private final Class<T> targetType;
 
-			public RowToNumber(Class<T> targetType) {
+			RowToNumber(Class<T> targetType) {
 				this.targetType = targetType;
 			}
 

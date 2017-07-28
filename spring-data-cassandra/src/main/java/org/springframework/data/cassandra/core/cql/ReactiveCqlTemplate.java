@@ -29,6 +29,7 @@ import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.BoundStatement;
@@ -95,13 +96,13 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * If this variable is set to a value, it will be used for setting the {@code retryPolicy} property on statements used
 	 * for query processing.
 	 */
-	private RetryPolicy retryPolicy;
+	private @Nullable RetryPolicy retryPolicy;
 
 	/**
 	 * If this variable is set to a value, it will be used for setting the {@code consistencyLevel} property on statements
 	 * used for query processing.
 	 */
-	private com.datastax.driver.core.ConsistencyLevel consistencyLevel;
+	private @Nullable com.datastax.driver.core.ConsistencyLevel consistencyLevel;
 
 	/**
 	 * Construct a new {@link ReactiveCqlTemplate Note: The {@link ReactiveSessionFactory} has to be set before using the
@@ -132,6 +133,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 *          be {@literal null}.
 	 */
 	public ReactiveCqlTemplate(ReactiveSessionFactory reactiveSessionFactory) {
+
 		setSessionFactory(reactiveSessionFactory);
 		afterPropertiesSet();
 	}
@@ -145,13 +147,14 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @see Statement#setConsistencyLevel(ConsistencyLevel)
 	 * @see RetryPolicy
 	 */
-	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
+	public void setConsistencyLevel(@Nullable ConsistencyLevel consistencyLevel) {
 		this.consistencyLevel = consistencyLevel;
 	}
 
 	/**
 	 * @return the {@link ConsistencyLevel} specified for this {@link ReactiveCqlTemplate}.
 	 */
+	@Nullable
 	public ConsistencyLevel getConsistencyLevel() {
 		return consistencyLevel;
 	}
@@ -183,13 +186,14 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @see Statement#setRetryPolicy(RetryPolicy)
 	 * @see RetryPolicy
 	 */
-	public void setRetryPolicy(RetryPolicy retryPolicy) {
+	public void setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
 	}
 
 	/**
 	 * @return the {@link RetryPolicy} specified for this {@link ReactiveCqlTemplate}.
 	 */
+	@Nullable
 	public RetryPolicy getRetryPolicy() {
 		return retryPolicy;
 	}
@@ -479,8 +483,9 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @return an arbitrary result object, as returned by the {@link ReactiveResultSetExtractor}
 	 * @throws DataAccessException if there is any problem
 	 */
-	public <T> Flux<T> query(ReactivePreparedStatementCreator psc, PreparedStatementBinder preparedStatementBinder,
-			ReactiveResultSetExtractor<T> rse) throws DataAccessException {
+	public <T> Flux<T> query(ReactivePreparedStatementCreator psc,
+			@Nullable PreparedStatementBinder preparedStatementBinder, ReactiveResultSetExtractor<T> rse)
+			throws DataAccessException {
 
 		Assert.notNull(psc, "ReactivePreparedStatementCreator must not be null");
 		Assert.notNull(rse, "ReactiveResultSetExtractor object must not be null");
@@ -506,7 +511,6 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Override
 	public <T> Flux<T> query(ReactivePreparedStatementCreator psc, ReactiveResultSetExtractor<T> rse)
 			throws DataAccessException {
-
 		return query(psc, null, rse);
 	}
 
@@ -514,9 +518,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.ReactiveResultSetExtractor)
 	 */
 	@Override
-	public <T> Flux<T> query(String cql, PreparedStatementBinder psb, ReactiveResultSetExtractor<T> rse)
+	public <T> Flux<T> query(String cql, @Nullable PreparedStatementBinder psb, ReactiveResultSetExtractor<T> rse)
 			throws DataAccessException {
-
 		return query(new SimpleReactivePreparedStatementCreator(cql), psb, rse);
 	}
 
@@ -540,7 +543,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.RowMapper)
 	 */
 	@Override
-	public <T> Flux<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> Flux<T> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
+			throws DataAccessException {
 		return query(cql, psb, new ReactiveRowMapperResultSetExtractor<>(rowMapper));
 	}
 
@@ -548,8 +552,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#query(org.springframework.data.cassandra.core.cql.ReactivePreparedStatementCreator, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.RowMapper)
 	 */
 	@Override
-	public <T> Flux<T> query(ReactivePreparedStatementCreator psc, PreparedStatementBinder psb, RowMapper<T> rowMapper)
-			throws DataAccessException {
+	public <T> Flux<T> query(ReactivePreparedStatementCreator psc, @Nullable PreparedStatementBinder psb,
+			RowMapper<T> rowMapper) throws DataAccessException {
 
 		return query(psc, psb, new ReactiveRowMapperResultSetExtractor<>(rowMapper));
 	}
@@ -636,7 +640,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#execute(java.lang.String, org.springframework.data.cassandra.core.cql.PreparedStatementBinder)
 	 */
 	@Override
-	public Mono<Boolean> execute(String cql, PreparedStatementBinder psb) throws DataAccessException {
+	public Mono<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException {
 		return query(new SimpleReactivePreparedStatementCreator(cql), psb, resultSet -> Mono.just(resultSet.wasApplied()))
 				.next();
 	}
@@ -699,7 +703,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * Create a reusable {@link Mono} given a {@link ReactiveStatementCallback} without exception translation.
 	 *
 	 * @param callback must not be {@literal null}.
-	 * @return a reusable {@link Mono} wrapping the {@link ReactiveStatementCallback }.
+	 * @return a reusable {@link Mono} wrapping the {@link ReactiveStatementCallback}.
 	 */
 	protected <T> Mono<T> createMono(Statement statement, ReactiveStatementCallback<T> callback) {
 
@@ -731,11 +735,11 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * Exception translation {@link Function} intended for {@link Mono#otherwise(Function)} usage.
 	 *
 	 * @param task readable text describing the task being attempted
-	 * @param cql CQL query or update that caused the problem (may be {@code null})
+	 * @param cql CQL query or update that caused the problem (may be {@literal null})
 	 * @return the exception translation {@link Function}
 	 * @see CqlProvider
 	 */
-	protected Function<Throwable, Throwable> translateException(String task, String cql) {
+	protected Function<Throwable, Throwable> translateException(String task, @Nullable String cql) {
 		return throwable -> throwable instanceof DriverException ? translate(task, cql, (DriverException) throwable)
 				: throwable;
 	}
@@ -828,17 +832,23 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	private ReactiveSession getSession() {
-		return getSessionFactory().getSession();
+
+		ReactiveSessionFactory sessionFactory = getSessionFactory();
+
+		Assert.state(sessionFactory != null, "SessionFactory is null");
+
+		return sessionFactory.getSession();
 	}
 
 	/**
 	 * Determine CQL from potential provider object.
 	 *
 	 * @param cqlProvider object that's potentially a {@link CqlProvider}
-	 * @return the CQL string, or {@code null}
+	 * @return the CQL string, or {@literal null}
 	 * @see CqlProvider
 	 */
-	private static String getCql(Object cqlProvider) {
+	@Nullable
+	private static String getCql(@Nullable Object cqlProvider) {
 
 		return Optional.ofNullable(cqlProvider) //
 				.filter(o -> o instanceof CqlProvider) //
@@ -847,7 +857,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 				.orElse(null);
 	}
 
-	private class SimpleReactivePreparedStatementCreator implements ReactivePreparedStatementCreator, CqlProvider {
+	class SimpleReactivePreparedStatementCreator implements ReactivePreparedStatementCreator, CqlProvider {
 
 		private final String cql;
 

@@ -48,21 +48,4 @@ public enum SchemaAction {
 	 * Drop <em>all</em> tables in the keyspace, then create each table as necessary.
 	 */
 	RECREATE_DROP_UNUSED
-
-	// TODO:
-	// /**
-	// * Alter or create each table and column as necessary, leaving unused tables and columns untouched.
-	// */
-	// UPDATE,
-	//
-	// /**
-	// * Alter or create each table and column as necessary, removing unused tables and columns.
-	// */
-	// UPDATE_DROP_UNUNSED,
-	//
-	// /**
-	// * Validate that each required table and column exists. Fail if any required table or column does not exists.
-	// */
-	// VALIDATE
-
 }

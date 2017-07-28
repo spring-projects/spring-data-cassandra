@@ -34,8 +34,8 @@ public class AddColumnSpecification extends ColumnTypeChangeSpecification {
 	 * @param name must not be empty or {@literal null}.
 	 * @param type must not be {@literal null}.
 	 */
-	public AddColumnSpecification(String name, DataType type) {
-		super(name, type);
+	public static AddColumnSpecification addColumn(String name, DataType type) {
+		return new AddColumnSpecification(CqlIdentifier.cqlId(name), type);
 	}
 
 	/**
@@ -44,7 +44,17 @@ public class AddColumnSpecification extends ColumnTypeChangeSpecification {
 	 * @param name must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 */
-	public AddColumnSpecification(CqlIdentifier name, DataType type) {
+	public static AddColumnSpecification addColumn(CqlIdentifier name, DataType type) {
+		return new AddColumnSpecification(name, type);
+	}
+
+	/**
+	 * Create a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
+	 *
+	 * @param name must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
+	private AddColumnSpecification(CqlIdentifier name, DataType type) {
 		super(name, type);
 	}
 }

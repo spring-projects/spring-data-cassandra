@@ -22,6 +22,7 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
@@ -34,11 +35,11 @@ import com.datastax.driver.core.Session;
  */
 public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTemplate>, InitializingBean {
 
-	protected SessionFactory sessionFactory;
+	protected @Nullable SessionFactory sessionFactory;
 
-	protected CqlOperations cqlOperations;
+	protected @Nullable CqlOperations cqlOperations;
 
-	protected CassandraConverter converter;
+	protected @Nullable CassandraConverter converter;
 
 	/*
 	 * (non-Javadoc)

@@ -46,7 +46,7 @@ public class DropTableCqlGeneratorUnitTests {
 		public String name = "mytable";
 
 		public DropTableSpecification specification() {
-			return DropTableSpecification.dropTable().name(name);
+			return DropTableSpecification.dropTable(name);
 		}
 
 		public DropTableCqlGenerator generator() {

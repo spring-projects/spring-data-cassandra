@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
-
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
@@ -33,26 +31,16 @@ public abstract class ColumnTypeChangeSpecification extends ColumnChangeSpecific
 	private final DataType type;
 
 	/**
-	 * Create a new {@link ColumnTypeChangeSpecification} for the given {@code name} and {@link type}
-	 *
-	 * @param name must not be empty or {@literal null}.
-	 * @param type must not be {@literal null}.
-	 */
-	public ColumnTypeChangeSpecification(String name, DataType type) {
-		this(cqlId(name), type);
-	}
-
-	/**
-	 * Create a new {@link ColumnTypeChangeSpecification} for the given {@code name} and {@link type}
+	 * Create a new {@link ColumnTypeChangeSpecification} for the given {@code name} and {@link DataType}
 	 *
 	 * @param name must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 */
 	public ColumnTypeChangeSpecification(CqlIdentifier name, DataType type) {
+
 		super(name);
 
 		Assert.notNull(type, "DataType must not be null");
-
 		this.type = type;
 	}
 

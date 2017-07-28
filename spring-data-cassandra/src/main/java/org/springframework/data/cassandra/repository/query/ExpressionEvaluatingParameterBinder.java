@@ -24,6 +24,7 @@ import org.springframework.data.repository.query.Parameter;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -46,7 +47,7 @@ class ExpressionEvaluatingParameterBinder {
 	 * @param expressionParser must not be {@literal null}.
 	 * @param evaluationContextProvider must not be {@literal null}.
 	 */
-	public ExpressionEvaluatingParameterBinder(SpelExpressionParser expressionParser,
+	ExpressionEvaluatingParameterBinder(SpelExpressionParser expressionParser,
 			EvaluationContextProvider evaluationContextProvider) {
 
 		Assert.notNull(expressionParser, "ExpressionParser must not be null");
@@ -88,6 +89,7 @@ class ExpressionEvaluatingParameterBinder {
 	 * @param binding must not be {@literal null}.
 	 * @return the value used for the given {@link ParameterBinding}.
 	 */
+	@Nullable
 	private Object getParameterValueForBinding(CassandraParameterAccessor parameterAccessor,
 			CassandraParameters parameters, ParameterBinding binding) {
 
@@ -120,6 +122,7 @@ class ExpressionEvaluatingParameterBinder {
 	 * @param parameterValues must not be {@literal null}.
 	 * @return the value of the {@code expressionString} evaluation.
 	 */
+	@Nullable
 	private Object evaluateExpression(String expressionString, CassandraParameters parameters, Object[] parameterValues) {
 
 		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(parameters, parameterValues);
@@ -162,7 +165,7 @@ class ExpressionEvaluatingParameterBinder {
 		 *
 		 * @return never {@literal null}.
 		 */
-		public List<ParameterBinding> getBindings() {
+		List<ParameterBinding> getBindings() {
 			return Collections.unmodifiableList(bindings);
 		}
 
@@ -171,7 +174,7 @@ class ExpressionEvaluatingParameterBinder {
 		 *
 		 * @return the {@link CassandraParameters} associated with the {@link CassandraQueryMethod}.
 		 */
-		public CassandraParameters getParameters() {
+		CassandraParameters getParameters() {
 			return queryMethod.getParameters();
 		}
 
@@ -180,7 +183,7 @@ class ExpressionEvaluatingParameterBinder {
 		 *
 		 * @return the {@link CassandraQueryMethod} used in the expression evaluation context.
 		 */
-		public CassandraQueryMethod getQueryMethod() {
+		CassandraQueryMethod getQueryMethod() {
 			return queryMethod;
 		}
 	}
@@ -194,49 +197,52 @@ class ExpressionEvaluatingParameterBinder {
 
 		private final boolean quoted;
 		private final int parameterIndex;
-		private final String expression;
-		private final String parameterName;
+		private final @Nullable String expression;
+		private final @Nullable String parameterName;
 
-		private ParameterBinding(int parameterIndex, boolean quoted, String expression, String parameterName) {
+		private ParameterBinding(int parameterIndex, boolean quoted, @Nullable String expression,
+				@Nullable String parameterName) {
 			this.parameterIndex = parameterIndex;
 			this.quoted = quoted;
 			this.expression = expression;
 			this.parameterName = parameterName;
 		}
 
-		public static ParameterBinding expression(String expression, boolean quoted) {
+		static ParameterBinding expression(String expression, boolean quoted) {
 			return new ParameterBinding(-1, quoted, expression, null);
 		}
 
-		public static ParameterBinding indexed(int parameterIndex) {
+		static ParameterBinding indexed(int parameterIndex) {
 			return new ParameterBinding(parameterIndex, false, null, null);
 		}
 
-		public static ParameterBinding named(String name) {
+		static ParameterBinding named(String name) {
 			return new ParameterBinding(-1, false, null, name);
 		}
 
-		public boolean isNamed() {
+		boolean isNamed() {
 			return (parameterName != null);
 		}
 
-		public int getParameterIndex() {
+		int getParameterIndex() {
 			return parameterIndex;
 		}
 
-		public String getParameter() {
+		String getParameter() {
 			return ("?" + (isExpression() ? "expr" : "") + parameterIndex);
 		}
 
-		public String getExpression() {
+		@Nullable
+		String getExpression() {
 			return expression;
 		}
 
-		public boolean isExpression() {
+		boolean isExpression() {
 			return (this.expression != null);
 		}
 
-		public String getParameterName() {
+		@Nullable
+		String getParameterName() {
 			return parameterName;
 		}
 	}

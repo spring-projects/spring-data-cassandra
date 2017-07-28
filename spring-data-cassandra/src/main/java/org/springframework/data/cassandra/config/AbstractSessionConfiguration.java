@@ -20,6 +20,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
+import org.springframework.util.Assert;
+
+import com.datastax.driver.core.Session;
 
 /**
  * Spring {@link @Configuration} class used to configure a Cassandra client application
@@ -36,6 +39,20 @@ import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory
 public abstract class AbstractSessionConfiguration extends AbstractClusterConfiguration {
 
 	/**
+	 * Returns the initialized {@link Session} instance.
+	 *
+	 * @return the {@link Session}.
+	 * @throws IllegalStateException if the session factory is not initialized.
+	 */
+	protected Session getRequiredSession() {
+
+		CassandraCqlSessionFactoryBean factoryBean = session();
+		Assert.state(factoryBean.getObject() != null, "Session factory not initialized");
+
+		return factoryBean.getObject();
+	}
+
+	/**
 	 * Creates a {@link CassandraCqlSessionFactoryBean} that provides a Cassandra
 	 * {@link com.datastax.driver.core.Session}.
 	 *
@@ -48,7 +65,7 @@ public abstract class AbstractSessionConfiguration extends AbstractClusterConfig
 
 		CassandraCqlSessionFactoryBean bean = new CassandraCqlSessionFactoryBean();
 
-		bean.setCluster(cluster().getObject());
+		bean.setCluster(getRequiredCluster());
 		bean.setKeyspaceName(getKeyspaceName());
 
 		return bean;
@@ -63,7 +80,7 @@ public abstract class AbstractSessionConfiguration extends AbstractClusterConfig
 	 */
 	@Bean
 	public SessionFactory sessionFactory() {
-		return new DefaultSessionFactory(session().getObject());
+		return new DefaultSessionFactory(getRequiredSession());
 	}
 
 	/**

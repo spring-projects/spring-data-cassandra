@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Interface to be implemented by objects that can provide CQL strings.
  * <p>
@@ -35,5 +37,6 @@ public interface CqlProvider {
 	 *
 	 * @return the CQL string, or {@literal null}.
 	 */
+	@Nullable
 	String getCql();
 }

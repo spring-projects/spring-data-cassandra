@@ -28,6 +28,7 @@ import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ParameterValueProvider;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -82,14 +83,14 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 		Object dto = instantiator.createInstance(targetEntity, new ParameterValueProvider() {
 
 			@Override
+			@Nullable
 			public Object getParameterValue(Parameter parameter) {
 
-				// TODO: Fix generics
-				if (parameter != null) {
-					return sourceAccessor.getProperty(sourceEntity.getRequiredPersistentProperty(parameter.getName()));
+				if (parameter.getName() == null) {
+					throw new IllegalArgumentException(String.format("Parameter %s does not have a name", parameter));
 				}
 
-				return null;
+				return sourceAccessor.getProperty(sourceEntity.getRequiredPersistentProperty(parameter.getName()));
 			}
 		});
 
@@ -99,7 +100,7 @@ class DtoInstantiatingConverter implements Converter<Object, Object> {
 
 		targetEntity.doWithProperties((SimplePropertyHandler) property -> {
 
-			if (!constructor.isConstructorParameter(property)) {
+			if (constructor != null && !constructor.isConstructorParameter(property)) {
 				return;
 			}
 

@@ -72,7 +72,7 @@ public class KeyspaceCreatingJavaConfigIntegrationTests extends AbstractKeyspace
 		protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
 			ArrayList<CreateKeyspaceSpecification> list = new ArrayList<>();
 
-			CreateKeyspaceSpecification specification = CreateKeyspaceSpecification.createKeyspace().name(getKeyspaceName());
+			CreateKeyspaceSpecification specification = CreateKeyspaceSpecification.createKeyspace(getKeyspaceName());
 			specification.with(KeyspaceOption.REPLICATION, KeyspaceAttributes.newSimpleReplication(1L));
 
 			list.add(specification);

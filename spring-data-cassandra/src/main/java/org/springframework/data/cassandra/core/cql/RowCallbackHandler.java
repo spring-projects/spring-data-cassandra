@@ -39,15 +39,15 @@ import com.datastax.driver.core.exceptions.DriverException;
 public interface RowCallbackHandler {
 
 	/**
-	 * Implementations must implement this method to process each row of data in the {@link ResultSet}. This method is
-	 * only supposed to extract values of the current row.
+	 * Implementations must implement this method to process each row of data in the
+	 * {@link com.datastax.driver.core.ResultSet}. This method is only supposed to extract values of the current row.
 	 * <p>
 	 * Exactly what the implementation chooses to do is up to it: A trivial implementation might simply count rows, while
 	 * another implementation might build an XML document.
 	 *
 	 * @param row the {@link Row} to process (pre-initialized for the current row).
 	 * @throws DriverException if a {@link DriverException} is encountered getting column values (that is, there's no need
-	 *           to catch {@link DriverException})
+	 *           to catch {@link DriverException}).
 	 */
 	void processRow(Row row) throws DriverException;
 }

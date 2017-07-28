@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.cqlId;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -40,13 +41,13 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 	private boolean custom = false;
 
-	private CqlIdentifier tableName;
+	private @Nullable CqlIdentifier tableName;
 
-	private CqlIdentifier columnName;
+	private @Nullable CqlIdentifier columnName;
 
 	private ColumnFunction columnFunction = ColumnFunction.NONE;
 
-	private String using;
+	private @Nullable String using;
 
 	private Map<String, String> options = new LinkedHashMap<>();
 

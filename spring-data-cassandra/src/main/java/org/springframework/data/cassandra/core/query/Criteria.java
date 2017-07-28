@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -34,7 +35,7 @@ public class Criteria implements CriteriaDefinition {
 
 	private final ColumnName columnName;
 
-	private Predicate predicate;
+	private @Nullable Predicate predicate;
 
 	private Criteria(ColumnName columnName, Predicate predicate) {
 
@@ -82,10 +83,10 @@ public class Criteria implements CriteriaDefinition {
 	/**
 	 * Create a criterion using equality.
 	 *
-	 * @param value the value to match against.
+	 * @param value the value to match against, may be {@literal null}.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition is(Object value) {
+	public CriteriaDefinition is(@Nullable Object value) {
 
 		this.predicate = new Predicate(Operators.EQ, value);
 		return this;
@@ -231,6 +232,7 @@ public class Criteria implements CriteriaDefinition {
 	/**
 	 * @return the {@link Predicate}.
 	 */
+	@SuppressWarnings({ "ConstantConditions", "NullableProblems" }) // Predicate not accessible when in null state.
 	public Predicate getPredicate() {
 		return predicate;
 	}
@@ -256,8 +258,7 @@ public class Criteria implements CriteriaDefinition {
 
 	protected boolean simpleCriteriaEquals(CriteriaDefinition left, CriteriaDefinition right) {
 
-		boolean keyEqual = left.getColumnName() == null ? right.getColumnName() == null
-				: left.getColumnName().equals(right.getColumnName());
+		boolean keyEqual = left.getColumnName().equals(right.getColumnName());
 		boolean criteriaEqual = left.getPredicate().equals(right.getPredicate());
 
 		return keyEqual && criteriaEqual;

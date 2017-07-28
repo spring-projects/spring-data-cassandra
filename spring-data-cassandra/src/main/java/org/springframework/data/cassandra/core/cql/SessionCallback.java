@@ -47,7 +47,7 @@ public interface SessionCallback<T> {
 	 * template.
 	 *
 	 * @param session active Cassandra Session, must not be {@literal null}.
-	 * @return a result object, or {@code null} if none.
+	 * @return a result object, or {@literal null} if none.
 	 * @throws DriverException if thrown by a Session method, to be auto-converted to a {@link DataAccessException}.
 	 * @throws DataAccessException in case of custom exceptions.
 	 * @see CqlTemplate#queryForObject(String, Class)

@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.cql;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
@@ -36,7 +37,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author Mark Paluch
  * @see AsyncCqlTemplate#execute(String, PreparedStatementCallback)
  * @see AsyncCqlTemplate#execute(AsyncPreparedStatementCreator, PreparedStatementCallback)
- * @see CqlTemplate#execute(String, PreparedStatementCallback)
+ * @see CqlTemplate#execute(String, PreparedStatementCallback)}
  * @see CqlTemplate#execute(PreparedStatementCreator, PreparedStatementCallback)
  */
 @FunctionalInterface
@@ -58,10 +59,11 @@ public interface PreparedStatementCallback<T> {
 	 * @throws DriverException if thrown by a session method, to be auto-converted to a {@link DataAccessException}.
 	 * @throws DataAccessException in case of custom exceptions.
 	 * @see AsyncCqlTemplate#queryForObject(String, Class, Object...)
-	 * @see AsyncCqlTemplate#queryForList(String, Class, Object...)
+	 * @see AsyncCqlOperations#queryForList(String, Class, Object...)
 	 * @see CqlTemplate#queryForObject(String, Class, Object...)
 	 * @see CqlTemplate#queryForList(String, Object...)
 	 */
+	@Nullable
 	T doInPreparedStatement(Session session, PreparedStatement preparedStatement)
 			throws DriverException, DataAccessException;
 }

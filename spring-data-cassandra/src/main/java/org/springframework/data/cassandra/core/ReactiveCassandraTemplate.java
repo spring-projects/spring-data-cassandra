@@ -17,10 +17,10 @@ package org.springframework.data.cassandra.core;
 
 import lombok.NonNull;
 import lombok.Value;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import org.reactivestreams.Publisher;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
@@ -43,8 +43,6 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-
-import org.reactivestreams.Publisher;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
@@ -378,7 +376,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 */
 	@Override
 	public <T> Mono<T> insert(T entity) {
-		return insert(entity, null).map(writeResult -> entity);
+		return insert(entity, InsertOptions.empty()).map(writeResult -> entity);
 	}
 
 	/*
@@ -389,6 +387,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	public Mono<WriteResult> insert(Object entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(options, "InsertOptions must not be null");
 
 		Insert insert = QueryUtils.createInsertQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
@@ -401,7 +400,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 */
 	@Override
 	public <T> Mono<T> update(T entity) {
-		return update(entity, null).map(writeResult -> entity);
+		return update(entity, UpdateOptions.empty()).map(writeResult -> entity);
 	}
 
 	/*
@@ -412,6 +411,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	public Mono<WriteResult> update(Object entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(options, "UpdateOptions must not be null");
 
 		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, converter);
 
@@ -424,7 +424,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 */
 	@Override
 	public <T> Mono<T> delete(T entity) {
-		return delete(entity, null).map(reactiveWriteResult -> entity);
+		return delete(entity, QueryOptions.empty()).map(reactiveWriteResult -> entity);
 	}
 
 	/*
@@ -435,6 +435,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	public Mono<WriteResult> delete(Object entity, QueryOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(options, "QueryOptions must not be null");
 
 		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity).toCql(), entity, options, getConverter());
 

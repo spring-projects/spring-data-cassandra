@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.convert;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.PropertyAccessor;
 import org.springframework.expression.TypedValue;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.Row;
 
@@ -38,12 +39,16 @@ enum RowReaderPropertyAccessor implements PropertyAccessor {
 	}
 
 	@Override
-	public boolean canRead(EvaluationContext context, Object target, String name) {
-		return ((Row) target).getColumnDefinitions().contains(name);
+	public boolean canRead(EvaluationContext context, @Nullable Object target, String name) {
+		return target != null && ((Row) target).getColumnDefinitions().contains(name);
 	}
 
 	@Override
-	public TypedValue read(EvaluationContext context, Object target, String name) {
+	public TypedValue read(EvaluationContext context, @Nullable Object target, String name) {
+
+		if (target == null) {
+			return TypedValue.NULL;
+		}
 
 		Row row = (Row) target;
 
@@ -55,12 +60,12 @@ enum RowReaderPropertyAccessor implements PropertyAccessor {
 	}
 
 	@Override
-	public boolean canWrite(EvaluationContext context, Object target, String name) {
+	public boolean canWrite(EvaluationContext context, @Nullable Object target, String name) {
 		return false;
 	}
 
 	@Override
-	public void write(EvaluationContext context, Object target, String name, Object newValue) {
+	public void write(EvaluationContext context, @Nullable Object target, String name, @Nullable Object newValue) {
 		throw new UnsupportedOperationException();
 	}
 }

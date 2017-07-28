@@ -15,9 +15,14 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.lang.Nullable;
+
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.policies.RetryPolicy;
 
 /**
  * Extension to {@link WriteOptions} for use with {@code UPDATE} operations.
@@ -27,12 +32,26 @@ import org.springframework.data.cassandra.core.cql.WriteOptions;
  */
 public class UpdateOptions extends WriteOptions {
 
+	private static final UpdateOptions EMPTY = new UpdateOptionsBuilder().build();
+
 	private boolean ifExists;
 
+	private UpdateOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
+			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl, boolean ifExists) {
+
+		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl);
+		this.ifExists = ifExists;
+	}
+
 	/**
-	 * Creates new {@link UpdateOptions}.
+	 * Create default {@link UpdateOptions}.
+	 *
+	 * @return default {@link UpdateOptions}.
+	 * @since 2.0
 	 */
-	UpdateOptions() {}
+	public static UpdateOptions empty() {
+		return EMPTY;
+	}
 
 	/**
 	 * Create a new {@link UpdateOptionsBuilder}.
@@ -62,73 +81,52 @@ public class UpdateOptions extends WriteOptions {
 
 		private UpdateOptionsBuilder() {}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
-		 */
 		@Override
 		public UpdateOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {
 			return (UpdateOptionsBuilder) super.consistencyLevel(consistencyLevel);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#retryPolicy(org.springframework.data.cassandra.core.cql.RetryPolicy)
-		 */
 		@Override
 		public UpdateOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
 			return (UpdateOptionsBuilder) super.retryPolicy(driverRetryPolicy);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#fetchSize(int)
-		 */
 		@Override
 		public UpdateOptionsBuilder fetchSize(int fetchSize) {
 			return (UpdateOptionsBuilder) super.fetchSize(fetchSize);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#readTimeout(long)
-		 */
 		@Override
 		public UpdateOptionsBuilder readTimeout(long readTimeout) {
 			return (UpdateOptionsBuilder) super.readTimeout(readTimeout);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
-		 */
 		@Override
+		@Deprecated
 		public UpdateOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 			return (UpdateOptionsBuilder) super.readTimeout(readTimeout, timeUnit);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#tracing(boolean)
-		 */
+		@Override
+		public UpdateOptionsBuilder readTimeout(Duration readTimeout) {
+			return (UpdateOptionsBuilder) super.readTimeout(readTimeout);
+		}
+
+		@Override
+		public UpdateOptionsBuilder ttl(Duration ttl) {
+			return (UpdateOptionsBuilder) super.ttl(ttl);
+		}
+
 		@Override
 		public UpdateOptionsBuilder tracing(boolean tracing) {
 			return (UpdateOptionsBuilder) super.tracing(tracing);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#withTracing()
-		 */
 		@Override
 		public UpdateOptionsBuilder withTracing() {
 			return (UpdateOptionsBuilder) super.withTracing();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
-		 */
 		public UpdateOptionsBuilder ttl(int ttl) {
 			return (UpdateOptionsBuilder) super.ttl(ttl);
 		}
@@ -161,12 +159,7 @@ public class UpdateOptions extends WriteOptions {
 		 * @return a new {@link UpdateOptions} with the configured values
 		 */
 		public UpdateOptions build() {
-
-			UpdateOptions insertOptions = applyOptions(new UpdateOptions());
-
-			insertOptions.ifExists = this.ifExists;
-
-			return insertOptions;
+			return new UpdateOptions(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, ifExists);
 		}
 	}
 }

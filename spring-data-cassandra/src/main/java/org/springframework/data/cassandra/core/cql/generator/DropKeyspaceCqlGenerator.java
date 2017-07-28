@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 
 /**
@@ -36,7 +34,7 @@ public class DropKeyspaceCqlGenerator extends KeyspaceNameCqlGenerator<DropKeysp
 
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("DROP KEYSPACE ").append(spec().getIfExists() ? "IF EXISTS " : "")
+		return cql.append("DROP KEYSPACE ").append(spec().getIfExists() ? "IF EXISTS " : "")
 				.append(spec().getName()).append(";");
 	}
 }

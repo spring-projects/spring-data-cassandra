@@ -65,7 +65,7 @@ public class TableLifecycleIntegrationTests extends AbstractKeyspaceCreatingInte
 
 		@Override
 		public DropTableSpecification specification() {
-			return DropTableSpecification.dropTable().name(createTableTest.specification.getName());
+			return DropTableSpecification.dropTable(createTableTest.specification.getName());
 		}
 
 		@Override

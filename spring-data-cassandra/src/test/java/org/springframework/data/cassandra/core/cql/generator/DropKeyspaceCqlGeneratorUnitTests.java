@@ -49,7 +49,7 @@ public class DropKeyspaceCqlGeneratorUnitTests {
 
 		@Override
 		public DropKeyspaceSpecification specification() {
-			return DropKeyspaceSpecification.dropKeyspace().name(name);
+			return DropKeyspaceSpecification.dropKeyspace(name);
 		}
 
 		@Override

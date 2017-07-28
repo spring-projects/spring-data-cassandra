@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import org.springframework.data.cassandra.core.cql.keyspace.DropIndexSpecification;
 
 /**
@@ -37,7 +35,7 @@ public class DropIndexCqlGenerator extends IndexNameCqlGenerator<DropIndexSpecif
 
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append("DROP INDEX ")
+		return cql.append("DROP INDEX ")
 				// .append(spec().getIfExists() ? "IF EXISTS " : "")
 				.append(spec().getName()).append(";");
 	}

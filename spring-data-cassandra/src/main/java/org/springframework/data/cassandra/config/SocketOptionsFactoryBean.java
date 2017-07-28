@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.config;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.SocketOptions;
 
@@ -27,18 +28,19 @@ import com.datastax.driver.core.SocketOptions;
  * @author Matthew T. Adams
  * @author David Webb
  */
+@SuppressWarnings({ "unused", "WeakerAccess" })
 public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, InitializingBean, DisposableBean {
 
-	private Integer connectTimeoutMillis;
-	private Boolean keepAlive;
-	private Integer readTimeoutMillis;
-	private Boolean reuseAddress;
-	private Integer soLinger;
-	private Boolean tcpNoDelay;
-	private Integer receiveBufferSize;
-	private Integer sendBufferSize;
+	private @Nullable Integer connectTimeoutMillis;
+	private @Nullable Boolean keepAlive;
+	private @Nullable Integer readTimeoutMillis;
+	private @Nullable Boolean reuseAddress;
+	private @Nullable Integer soLinger;
+	private @Nullable Boolean tcpNoDelay;
+	private @Nullable Integer receiveBufferSize;
+	private @Nullable Integer sendBufferSize;
 
-	private SocketOptions socketOptions;
+	private @Nullable SocketOptions socketOptions;
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
@@ -122,57 +124,64 @@ public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, Ini
 		return true;
 	}
 
+	@Nullable
 	public Boolean getKeepAlive() {
 		return keepAlive;
 	}
 
-	public void setKeepAlive(Boolean keepAlive) {
+	public void setKeepAlive(@Nullable Boolean keepAlive) {
 		this.keepAlive = keepAlive;
 	}
 
+	@Nullable
 	public Boolean getReuseAddress() {
 		return reuseAddress;
 	}
 
-	public void setReuseAddress(Boolean reuseAddress) {
+	public void setReuseAddress(@Nullable Boolean reuseAddress) {
 		this.reuseAddress = reuseAddress;
 	}
 
+	@Nullable
 	public Integer getSoLinger() {
 		return soLinger;
 	}
 
-	public void setSoLinger(Integer soLinger) {
+	public void setSoLinger(@Nullable Integer soLinger) {
 		this.soLinger = soLinger;
 	}
 
+	@Nullable
 	public Boolean getTcpNoDelay() {
 		return tcpNoDelay;
 	}
 
-	public void setTcpNoDelay(Boolean tcpNoDelay) {
+	public void setTcpNoDelay(@Nullable Boolean tcpNoDelay) {
 		this.tcpNoDelay = tcpNoDelay;
 	}
 
+	@Nullable
 	public Integer getReceiveBufferSize() {
 		return receiveBufferSize;
 	}
 
-	public void setReceiveBufferSize(Integer receiveBufferSize) {
+	public void setReceiveBufferSize(@Nullable Integer receiveBufferSize) {
 		this.receiveBufferSize = receiveBufferSize;
 	}
 
+	@Nullable
 	public Integer getSendBufferSize() {
 		return sendBufferSize;
 	}
 
-	public void setSendBufferSize(Integer sendBufferSize) {
+	public void setSendBufferSize(@Nullable Integer sendBufferSize) {
 		this.sendBufferSize = sendBufferSize;
 	}
 
 	/**
 	 * @return Returns the connectTimeoutMillis.
 	 */
+	@Nullable
 	public Integer getConnectTimeoutMillis() {
 		return connectTimeoutMillis;
 	}
@@ -180,13 +189,14 @@ public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, Ini
 	/**
 	 * @param connectTimeoutMillis The connectTimeoutMillis to set.
 	 */
-	public void setConnectTimeoutMillis(Integer connectTimeoutMillis) {
+	public void setConnectTimeoutMillis(@Nullable Integer connectTimeoutMillis) {
 		this.connectTimeoutMillis = connectTimeoutMillis;
 	}
 
 	/**
 	 * @return Returns the readTimeoutMillis.
 	 */
+	@Nullable
 	public Integer getReadTimeoutMillis() {
 		return readTimeoutMillis;
 	}
@@ -194,7 +204,7 @@ public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, Ini
 	/**
 	 * @param readTimeoutMillis The readTimeoutMillis to set.
 	 */
-	public void setReadTimeoutMillis(Integer readTimeoutMillis) {
+	public void setReadTimeoutMillis(@Nullable Integer readTimeoutMillis) {
 		this.readTimeoutMillis = readTimeoutMillis;
 	}
 

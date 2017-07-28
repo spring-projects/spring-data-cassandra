@@ -42,13 +42,11 @@ public abstract class QueryOptionsUtil {
 
 		Assert.notNull(preparedStatement, "PreparedStatement must not be null");
 
-		if (queryOptions != null) {
-			if (queryOptions.getConsistencyLevel() != null) {
-				preparedStatement.setConsistencyLevel(queryOptions.getConsistencyLevel());
-			}
-			if (queryOptions.getRetryPolicy() != null) {
-				preparedStatement.setRetryPolicy(queryOptions.getRetryPolicy());
-			}
+		if (queryOptions.getConsistencyLevel() != null) {
+			preparedStatement.setConsistencyLevel(queryOptions.getConsistencyLevel());
+		}
+		if (queryOptions.getRetryPolicy() != null) {
+			preparedStatement.setRetryPolicy(queryOptions.getRetryPolicy());
 		}
 
 		return preparedStatement;
@@ -65,29 +63,27 @@ public abstract class QueryOptionsUtil {
 
 		Assert.notNull(statement, "Statement must not be null");
 
-		if (queryOptions != null) {
-			if (queryOptions.getConsistencyLevel() != null) {
-				statement.setConsistencyLevel(queryOptions.getConsistencyLevel());
-			}
+		if (queryOptions.getConsistencyLevel() != null) {
+			statement.setConsistencyLevel(queryOptions.getConsistencyLevel());
+		}
 
-			if (queryOptions.getRetryPolicy() != null) {
-				statement.setRetryPolicy(queryOptions.getRetryPolicy());
-			}
+		if (queryOptions.getRetryPolicy() != null) {
+			statement.setRetryPolicy(queryOptions.getRetryPolicy());
+		}
 
-			if (queryOptions.getFetchSize() != null) {
-				statement.setFetchSize(queryOptions.getFetchSize());
-			}
+		if (queryOptions.getFetchSize() != null) {
+			statement.setFetchSize(queryOptions.getFetchSize());
+		}
 
-			if (queryOptions.getReadTimeout() != null) {
-				statement.setReadTimeoutMillis(queryOptions.getReadTimeout().intValue());
-			}
+		if (!queryOptions.getReadTimeout().isNegative()) {
+			statement.setReadTimeoutMillis(Math.toIntExact(queryOptions.getReadTimeout().toMillis()));
+		}
 
-			if (queryOptions.getTracing() != null) {
-				if (queryOptions.getTracing()) {
-					statement.enableTracing();
-				} else {
-					statement.disableTracing();
-				}
+		if (queryOptions.getTracing() != null) {
+			if (queryOptions.getTracing()) {
+				statement.enableTracing();
+			} else {
+				statement.disableTracing();
 			}
 		}
 
@@ -105,12 +101,10 @@ public abstract class QueryOptionsUtil {
 
 		Assert.notNull(insert, "Insert must not be null");
 
-		if (writeOptions != null) {
-			addQueryOptions(insert, writeOptions);
+		addQueryOptions(insert, writeOptions);
 
-			if (writeOptions.getTtl() != null) {
-				insert.using(QueryBuilder.ttl(writeOptions.getTtl()));
-			}
+		if (!writeOptions.getTtl().isNegative()) {
+			insert.using(QueryBuilder.ttl(Math.toIntExact(writeOptions.getTtl().getSeconds())));
 		}
 
 		return insert;
@@ -127,12 +121,10 @@ public abstract class QueryOptionsUtil {
 
 		Assert.notNull(update, "Update must not be null");
 
-		if (writeOptions != null) {
-			addQueryOptions(update, writeOptions);
+		addQueryOptions(update, writeOptions);
 
-			if (writeOptions.getTtl() != null) {
-				update.using(QueryBuilder.ttl(writeOptions.getTtl()));
-			}
+		if (!writeOptions.getTtl().isNegative()) {
+			update.using(QueryBuilder.ttl(Math.toIntExact(writeOptions.getTtl().getSeconds())));
 		}
 
 		return update;

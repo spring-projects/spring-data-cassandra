@@ -120,11 +120,12 @@ public class UpdateMapper extends QueryMapper {
 
 		Object rawValue = updateOp.getValue();
 
-		Object value = rawValue;
-
 		if (updateOp instanceof SetAtKeyOp) {
 
 			SetAtKeyOp op = (SetAtKeyOp) updateOp;
+
+			Assert.state(op.getValue() != null,
+					() -> String.format("SetAtKeyOp for %s attempts to set null", field.getProperty()));
 
 			Optional<? extends TypeInformation<?>> typeInformation = field.getProperty()
 					.map(PersistentProperty::getTypeInformation);
@@ -141,11 +142,14 @@ public class UpdateMapper extends QueryMapper {
 			return new SetAtKeyOp(field.getMappedKey(), mappedKey, mappedValue);
 		}
 
-		TypeInformation<?> typeInformation = getTypeInformation(field, value);
+		TypeInformation<?> typeInformation = getTypeInformation(field, rawValue);
 
 		if (updateOp instanceof SetAtIndexOp) {
 
 			SetAtIndexOp op = (SetAtIndexOp) updateOp;
+
+			Assert.state(op.getValue() != null,
+					() -> String.format("SetAtIndexOp for %s attempts to set null", field.getProperty()));
 
 			Object mappedValue = getConverter().convertToColumnType(op.getValue(), typeInformation);
 
@@ -169,7 +173,7 @@ public class UpdateMapper extends QueryMapper {
 			}
 		}
 
-		Object mappedValue = getConverter().convertToColumnType(value, typeInformation);
+		Object mappedValue = rawValue == null ? null : getConverter().convertToColumnType(rawValue, typeInformation);
 
 		return new SetOp(field.getMappedKey(), mappedValue);
 	}

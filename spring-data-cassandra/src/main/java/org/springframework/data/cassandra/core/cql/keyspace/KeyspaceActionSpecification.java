@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.KeyspaceIdentifier.*;
+import lombok.EqualsAndHashCode;
 
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.util.Assert;
@@ -27,68 +27,22 @@ import org.springframework.util.Assert;
  * @author David Webb
  * @param <T> The subtype of the {@link KeyspaceActionSpecification}
  */
+@EqualsAndHashCode
 public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecification<T>> {
 
 	/**
 	 * The name of the keyspace.
 	 */
-	private KeyspaceIdentifier name;
+	private final KeyspaceIdentifier name;
 
-	/**
-	 * Sets the keyspace name.
-	 *
-	 * @return this
-	 */
-	public T name(String name) {
-		return name(ksId(name));
-	}
-
-	/**
-	 * Sets the keyspace name.
-	 *
-	 * @return this
-	 */
-	@SuppressWarnings("unchecked")
-	public T name(KeyspaceIdentifier name) {
+	protected KeyspaceActionSpecification(KeyspaceIdentifier name) {
 
 		Assert.notNull(name, "KeyspaceIdentifier must not be null");
 
 		this.name = name;
-		return (T) this;
 	}
 
 	public KeyspaceIdentifier getName() {
 		return name;
-	}
-
-	/**
-	 * Equality incorporates the exact type to distinguish between instances based on this type.
-	 *
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object o) {
-
-		if (this == o)
-			return true;
-		if (!(o instanceof KeyspaceActionSpecification) || !getClass().equals(o.getClass()))
-			return false;
-
-		KeyspaceActionSpecification<?> that = (KeyspaceActionSpecification<?>) o;
-
-		return name != null ? name.equals(that.name) : that.name == null;
-	}
-
-	/**
-	 * Hash code incorporates the exact type to distinguish between instances based on this type.
-	 *
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-
-		int result = name != null ? name.hashCode() : 0;
-		result = 31 * result + (getClass().hashCode());
-		return result;
 	}
 }

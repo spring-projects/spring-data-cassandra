@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.mapping;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.UserType;
@@ -36,7 +37,7 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 
 	private final Object lock = new Object();
 
-	private volatile UserType userType;
+	private volatile @Nullable UserType userType;
 
 	/**
 	 * Create a new {@link CassandraUserTypePersistentEntity}.

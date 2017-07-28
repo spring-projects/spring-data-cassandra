@@ -19,6 +19,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Attr;
@@ -29,11 +30,6 @@ import org.w3c.dom.Element;
  *
  * @author John Blum
  * @author Mark Paluch
- * @see org.springframework.beans.factory.config.BeanDefinition
- * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
- * @see org.springframework.beans.factory.xml.ParserContext
- * @see org.w3c.dom.Attr
- * @see org.w3c.dom.Element
  */
 abstract class ParsingUtils {
 
@@ -129,7 +125,7 @@ abstract class ParsingUtils {
 	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
 	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, Element element,
-			String attributeName, String defaultValue) {
+			String attributeName, @Nullable String defaultValue) {
 
 		addProperty(builder, propertyName, element.getAttribute(attributeName), defaultValue, false, false);
 	}
@@ -233,7 +229,7 @@ abstract class ParsingUtils {
 	 * @see BeanDefinitionBuilder#addPropertyValue(String, Object)
 	 */
 	public static BeanDefinitionBuilder addProperty(BeanDefinitionBuilder builder, String propertyName, String value,
-			String defaultValue, boolean required, boolean reference) {
+			@Nullable String defaultValue, boolean required, boolean reference) {
 
 		Assert.notNull(builder, "BeanDefinitionBuilder must not be null");
 		Assert.hasText(propertyName, "Property name must not be null");

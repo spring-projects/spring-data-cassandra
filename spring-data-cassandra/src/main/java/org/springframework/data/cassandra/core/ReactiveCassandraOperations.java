@@ -186,9 +186,10 @@ public interface ReactiveCassandraOperations {
 	 * Insert the given entity applying {@link WriteOptions} and emit the entity if the insert was applied.
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
-	 * @param options may be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @see InsertOptions#empty()
 	 */
 	Mono<WriteResult> insert(Object entity, InsertOptions options) throws DataAccessException;
 
@@ -205,9 +206,10 @@ public interface ReactiveCassandraOperations {
 	 * Update the given entity applying {@link WriteOptions} and emit the entity if the update was applied.
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
-	 * @param options may be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @see UpdateOptions#empty()
 	 */
 	Mono<WriteResult> update(Object entity, UpdateOptions options) throws DataAccessException;
 
@@ -224,9 +226,10 @@ public interface ReactiveCassandraOperations {
 	 * Delete the given entity applying {@link QueryOptions} and emit the entity if the delete was applied.
 	 *
 	 * @param entity must not be {@literal null}.
-	 * @param options may be {@literal null}.
+	 * @param options must not be {@literal null}.
 	 * @return the {@link WriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @see QueryOptions#empty()
 	 */
 	Mono<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
 
@@ -264,5 +267,4 @@ public interface ReactiveCassandraOperations {
 	 * @see ReactiveCqlOperations
 	 */
 	ReactiveCqlOperations getReactiveCqlOperations();
-
 }

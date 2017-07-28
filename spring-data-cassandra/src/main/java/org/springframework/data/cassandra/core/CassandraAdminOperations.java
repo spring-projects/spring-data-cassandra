@@ -78,5 +78,4 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @since 1.5
 	 */
 	void dropUserType(CqlIdentifier typeName);
-
 }

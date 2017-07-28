@@ -28,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
@@ -100,10 +101,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public DataType getDataType(int index) {
-
-		DataType dataType = delegate.getDataType(index);
-
-		return (dataType != null ? dataType : converter.getMappingContext().getDataType(getParameterType(index)));
+		return delegate.getDataType(index);
 	}
 
 	/* (non-Javadoc)
@@ -138,7 +136,8 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Object potentiallyConvert(int index, Object bindableValue) {
+	@Nullable
+	private Object potentiallyConvert(int index, @Nullable Object bindableValue) {
 
 		if (bindableValue == null) {
 			return null;
@@ -148,14 +147,15 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Object potentiallyConvert(int index, Object bindableValue, CassandraPersistentProperty property) {
+	@Nullable
+	private Object potentiallyConvert(int index, @Nullable Object bindableValue, CassandraPersistentProperty property) {
 
 		return (bindableValue == null ? null
 				: converter.convertToColumnType(bindableValue, findTypeInformation(index, bindableValue, property)));
 	}
 
 	private TypeInformation<?> findTypeInformation(int index, Object bindableValue,
-			CassandraPersistentProperty property) {
+			@Nullable CassandraPersistentProperty property) {
 
 		if (delegate.findCassandraType(index) != null) {
 			TypeCodec<?> typeCodec = CodecRegistry.DEFAULT_INSTANCE.codecFor(getDataType(index, property));
@@ -182,7 +182,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 * @param property {@link CassandraPersistentProperty}.
 	 * @return the {@link DataType}
 	 */
-	DataType getDataType(int index, CassandraPersistentProperty property) {
+	DataType getDataType(int index, @Nullable CassandraPersistentProperty property) {
 
 		CassandraType cassandraType = delegate.findCassandraType(index);
 
@@ -268,6 +268,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 * (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
+		@Nullable
 		public Object next() {
 			return potentiallyConvert(index++, delegate.next());
 		}
@@ -283,6 +284,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator#nextConverted(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
 		 */
+		@Nullable
 		@Override
 		public Object nextConverted(CassandraPersistentProperty property) {
 			return potentiallyConvert(index++, delegate.next(), property);
@@ -301,7 +303,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 *
 		 * @return the converted object, may be {@literal null}.
 		 */
+		@Nullable
 		Object nextConverted(CassandraPersistentProperty property);
-
 	}
 }

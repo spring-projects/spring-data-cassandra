@@ -46,7 +46,7 @@ public class DropIndexCqlGeneratorUnitTests {
 		public String name = "myindex";
 
 		public DropIndexSpecification specification() {
-			return DropIndexSpecification.dropIndex().name(name);
+			return DropIndexSpecification.dropIndex(name);
 		}
 
 		public DropIndexCqlGenerator generator() {
@@ -67,7 +67,7 @@ public class DropIndexCqlGeneratorUnitTests {
 		public String name = "myindex";
 
 		public DropIndexSpecification specification() {
-			return DropIndexSpecification.dropIndex().name(name)
+			return DropIndexSpecification.dropIndex(name)
 			// .ifExists()
 			;
 		}

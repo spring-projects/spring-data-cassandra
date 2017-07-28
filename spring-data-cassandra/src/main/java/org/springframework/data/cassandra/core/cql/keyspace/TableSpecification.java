@@ -60,6 +60,10 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 */
 	private List<ColumnSpecification> nonKeyColumns = new ArrayList<>();
 
+	protected TableSpecification(CqlIdentifier name) {
+		super(name);
+	}
+
 	/**
 	 * Adds the given non-key column to the table. Must be specified after all primary key columns.
 	 *
@@ -226,7 +230,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 		Assert.notNull(optionalKeyType, "PrimaryKeyType must not be null");
 		Assert.notNull(optionalOrdering, "Ordering must not be null");
 
-		ColumnSpecification column = new ColumnSpecification().name(name).type(type);
+		ColumnSpecification column = ColumnSpecification.name(name).type(type);
 
 		optionalKeyType.ifPresent(keyType -> {
 

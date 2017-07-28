@@ -40,11 +40,10 @@ public abstract class KeyspaceOptionsCqlGenerator<T extends KeyspaceOptionsSpeci
 		return (T) getSpecification();
 	}
 
-	protected StringBuilder optionValueMap(Map<Option, Object> valueMap, StringBuilder cql) {
-		cql = noNull(cql);
+	void optionValueMap(Map<Option, Object> valueMap, StringBuilder cql) {
 
-		if (valueMap == null || valueMap.isEmpty()) {
-			return cql;
+		if (valueMap.isEmpty()) {
+			return;
 		}
 		// else option value is a non-empty map
 
@@ -73,6 +72,6 @@ public abstract class KeyspaceOptionsCqlGenerator<T extends KeyspaceOptionsSpeci
 		}
 		cql.append(" }");
 
-		return cql;
+		return;
 	}
 }

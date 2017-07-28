@@ -51,10 +51,6 @@ public class ResultSetToArrayConverter implements Converter<ResultSet, Object[]>
 	@Override
 	public Object[] convert(ResultSet resultSet) {
 
-		if (resultSet == null) {
-			return null;
-		}
-
 		List<Object[]> list = new ArrayList<>();
 		for (Row row : resultSet) {
 			list.add(rowConverter.convert(row));

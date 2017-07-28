@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import org.springframework.data.cassandra.core.cql.keyspace.AddColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.AlterColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.AlterUserTypeSpecification;
@@ -37,10 +35,6 @@ import org.springframework.util.Assert;
  */
 public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUserTypeSpecification> {
 
-	public static String toCql(AlterUserTypeSpecification specification) {
-		return new AlterUserTypeCqlGenerator(specification).toCql();
-	}
-
 	/**
 	 * Create a new {@link AlterUserTypeCqlGenerator} for a {@link AlterUserTypeSpecification}.
 	 *
@@ -48,6 +42,10 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 	 */
 	public AlterUserTypeCqlGenerator(AlterUserTypeSpecification specification) {
 		super(specification);
+	}
+
+	public static String toCql(AlterUserTypeSpecification specification) {
+		return new AlterUserTypeCqlGenerator(specification).toCql();
 	}
 
 	/*
@@ -66,11 +64,10 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 	}
 
 	private StringBuilder preambleCql(StringBuilder cql) {
-		return noNull(cql).append("ALTER TYPE ").append(spec().getName()).append(' ');
+		return cql.append("ALTER TYPE ").append(spec().getName()).append(' ');
 	}
 
 	private StringBuilder changesCql(StringBuilder cql) {
-		cql = noNull(cql);
 
 		boolean first = true;
 		boolean lastChangeWasRename = false;

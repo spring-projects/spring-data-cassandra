@@ -48,6 +48,7 @@ public class RenameColumnSpecification extends ColumnChangeSpecification {
 	 * @param to must not be {@literal null}.
 	 */
 	RenameColumnSpecification(CqlIdentifier from, CqlIdentifier to) {
+
 		super(from);
 
 		Assert.notNull(to, "Target name must not be null");

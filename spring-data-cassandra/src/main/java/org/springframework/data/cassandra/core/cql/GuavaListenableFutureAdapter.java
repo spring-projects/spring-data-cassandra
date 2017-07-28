@@ -21,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.FailureCallback;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -41,6 +42,7 @@ import com.google.common.util.concurrent.Futures;
 public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 
 	private final com.google.common.util.concurrent.ListenableFuture<T> adaptee;
+
 	private final ListenableFuture<T> future;
 
 	/**
@@ -68,7 +70,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 
 		Futures.addCallback(guavaFuture, new FutureCallback<T>() {
 			@Override
-			public void onSuccess(T result) {
+			public void onSuccess(@Nullable T result) {
 				settableFuture.set(result);
 			}
 

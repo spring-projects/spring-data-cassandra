@@ -67,13 +67,9 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address RENAME zip TO zap AND city TO county;");
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-172
-	public void generationFailsIfNameIsNotSet() {
-		toCql(AlterUserTypeSpecification.alterType());
-	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-172
 	public void generationFailsWithoutFields() {
-		toCql(AlterUserTypeSpecification.alterType().name("hello"));
+		toCql(AlterUserTypeSpecification.alterType("hello"));
 	}
 }

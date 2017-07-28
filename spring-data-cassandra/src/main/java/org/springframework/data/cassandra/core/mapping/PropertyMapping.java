@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -26,14 +27,17 @@ import org.springframework.util.ObjectUtils;
  */
 public class PropertyMapping {
 
-	private String columnName;
+	private @Nullable String columnName;
 
-	private String forceQuote;
+	private @Nullable String forceQuote;
 
 	private String propertyName;
 
 	public PropertyMapping(String propertyName) {
-		setPropertyName(propertyName);
+
+		Assert.notNull(propertyName, "Property name must not be null");
+
+		this.propertyName = propertyName;
 	}
 
 	public PropertyMapping(String propertyName, String columnName) {
@@ -41,11 +45,15 @@ public class PropertyMapping {
 	}
 
 	public PropertyMapping(String propertyName, String columnName, String forceQuote) {
-		setPropertyName(propertyName);
+
+		Assert.notNull(propertyName, "Property name must not be null");
+		this.propertyName = propertyName;
+
 		setColumnName(columnName);
 		setForceQuote(forceQuote);
 	}
 
+	@Nullable
 	public String getColumnName() {
 		return columnName;
 	}
@@ -56,6 +64,7 @@ public class PropertyMapping {
 		this.columnName = columnName;
 	}
 
+	@Nullable
 	public String getForceQuote() {
 		return forceQuote;
 	}
@@ -66,12 +75,6 @@ public class PropertyMapping {
 
 	public String getPropertyName() {
 		return propertyName;
-	}
-
-	public void setPropertyName(String propertyName) {
-
-		Assert.notNull(propertyName, "Property name must not be null");
-		this.propertyName = propertyName;
 	}
 
 	/* (non-Javadoc)

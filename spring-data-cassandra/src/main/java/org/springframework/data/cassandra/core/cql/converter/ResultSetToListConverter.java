@@ -59,10 +59,6 @@ public class ResultSetToListConverter implements Converter<ResultSet, List<Map<S
 	@Override
 	public List<Map<String, Object>> convert(ResultSet resultSet) {
 
-		if (resultSet == null) {
-			return null;
-		}
-
 		List<Map<String, Object>> list = new ArrayList<>();
 		for (Row row : resultSet) {
 			list.add(rowConverter.convert(row));

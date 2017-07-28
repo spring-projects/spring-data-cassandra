@@ -72,7 +72,7 @@ class CassandraOperationsProducer {
 
 		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(cluster.connect(), cassandraConverter);
 
-		CreateKeyspaceSpecification createKeyspaceSpecification = new CreateKeyspaceSpecification(KEYSPACE_NAME)
+		CreateKeyspaceSpecification createKeyspaceSpecification = CreateKeyspaceSpecification.createKeyspace(KEYSPACE_NAME)
 				.ifNotExists();
 		cassandraTemplate.getCqlOperations().execute(CreateKeyspaceCqlGenerator.toCql(createKeyspaceSpecification));
 		cassandraTemplate.getCqlOperations().execute("USE " + KEYSPACE_NAME);

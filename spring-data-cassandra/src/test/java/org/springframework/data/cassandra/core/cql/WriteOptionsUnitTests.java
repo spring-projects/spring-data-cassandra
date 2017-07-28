@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.cql;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -43,10 +44,10 @@ public class WriteOptionsUnitTests {
 				.withTracing()//
 				.build(); //
 
-		assertThat(writeOptions.getTtl()).isEqualTo(123);
+		assertThat(writeOptions.getTtl()).isEqualTo(Duration.ofSeconds(123));
 		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
 		assertThat(writeOptions.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
-		assertThat(writeOptions.getReadTimeout()).isEqualTo(1);
+		assertThat(writeOptions.getReadTimeout()).isEqualTo(Duration.ofMillis(1));
 		assertThat(writeOptions.getFetchSize()).isEqualTo(10);
 		assertThat(writeOptions.getTracing()).isTrue();
 	}
@@ -56,7 +57,7 @@ public class WriteOptionsUnitTests {
 
 		WriteOptions writeOptions = WriteOptions.builder().readTimeout(1, TimeUnit.MINUTES).build();
 
-		assertThat(writeOptions.getReadTimeout()).isEqualTo(60L * 1000L);
+		assertThat(writeOptions.getReadTimeout()).isEqualTo(Duration.ofSeconds(60));
 		assertThat(writeOptions.getFetchSize()).isNull();
 		assertThat(writeOptions.getTracing()).isNull();
 	}

@@ -29,32 +29,13 @@ import org.springframework.util.Assert;
  */
 public abstract class UserTypeNameSpecification<T extends UserTypeNameSpecification<T>> {
 
-	private CqlIdentifier name;
+	private final CqlIdentifier name;
 
-	/**
-	 * Sets the type name.
-	 *
-	 * @param name must not be empty or {@literal null}.
-	 * @return this
-	 */
-	public T name(String name) {
-		return name(CqlIdentifier.cqlId(name));
-	}
-
-	/**
-	 * Sets the type name.
-	 *
-	 * @param name must not be {@literal null}.
-	 * @return this
-	 */
-	@SuppressWarnings("unchecked")
-	public T name(CqlIdentifier name) {
+	protected UserTypeNameSpecification(CqlIdentifier name) {
 
 		Assert.notNull(name, "Name must not be null");
 
 		this.name = name;
-
-		return (T) this;
 	}
 
 	/**

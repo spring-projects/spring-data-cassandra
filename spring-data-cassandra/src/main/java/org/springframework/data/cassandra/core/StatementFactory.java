@@ -140,8 +140,8 @@ public class StatementFactory {
 
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(query.getColumns(), entity);
 
-		Sort sort = Optional.ofNullable(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
-				.orElse(null);
+		Sort sort = Optional.of(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
+				.orElse(Sort.unsorted());
 
 		Select select = select(selectors, entity.getTableName(), filter, sort);
 
@@ -178,7 +178,7 @@ public class StatementFactory {
 			select.where(toClause(criteriaDefinition));
 		}
 
-		if (sort != null) {
+		if (sort.isSorted()) {
 			List<Ordering> orderings = new ArrayList<>();
 
 			for (Order order : sort) {
@@ -412,7 +412,7 @@ public class StatementFactory {
 					return QueryBuilder.in(columnName, (List<?>) predicate.getValue());
 				}
 
-				if (predicate.getValue().getClass().isArray()) {
+				if (predicate.getValue() != null && predicate.getValue().getClass().isArray()) {
 					return QueryBuilder.in(columnName, (Object[]) predicate.getValue());
 				}
 
@@ -422,9 +422,13 @@ public class StatementFactory {
 				return QueryBuilder.like(columnName, predicate.getValue());
 
 			case "CONTAINS":
+				Assert.state(predicate.getValue() != null,
+						() -> String.format("CONTAINS value for column %s is null", columnName));
 				return QueryBuilder.contains(columnName, predicate.getValue());
 
 			case "CONTAINS KEY":
+				Assert.state(predicate.getValue() != null,
+						() -> String.format("CONTAINS KEY value for column %s is null", columnName));
 				return QueryBuilder.containsKey(columnName, predicate.getValue());
 		}
 

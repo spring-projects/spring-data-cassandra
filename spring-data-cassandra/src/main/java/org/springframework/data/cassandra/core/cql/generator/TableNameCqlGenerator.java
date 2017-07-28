@@ -24,21 +24,17 @@ import org.springframework.util.Assert;
  * @param <T> subtype of TableNameSpecification.
  * @author Mark Paluch
  */
-public abstract class TableNameCqlGenerator<T extends TableNameSpecification<T>> {
+public abstract class TableNameCqlGenerator<T extends TableNameSpecification> {
 
-	public abstract StringBuilder toCql(StringBuilder cql);
+	private TableNameSpecification specification;
 
-	private TableNameSpecification<T> specification;
-
-	public TableNameCqlGenerator(TableNameSpecification<T> specification) {
-		setSpecification(specification);
-	}
-
-	protected void setSpecification(TableNameSpecification<T> specification) {
+	public TableNameCqlGenerator(TableNameSpecification specification) {
 
 		Assert.notNull(specification, "TableNameSpecification must not be null");
 		this.specification = specification;
 	}
+
+	public abstract StringBuilder toCql(StringBuilder cql);
 
 	@SuppressWarnings("unchecked")
 	public T getSpecification() {
@@ -53,6 +49,6 @@ public abstract class TableNameCqlGenerator<T extends TableNameSpecification<T>>
 	}
 
 	public String toCql() {
-		return toCql(null).toString();
+		return toCql(new StringBuilder()).toString();
 	}
 }

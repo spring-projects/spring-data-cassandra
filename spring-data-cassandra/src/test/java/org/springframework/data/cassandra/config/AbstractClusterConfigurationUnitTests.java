@@ -214,8 +214,8 @@ public class AbstractClusterConfigurationUnitTests {
 	@Test // DATACASS-226
 	public void shouldSetKeyspaceCreations() {
 
-		final List<CreateKeyspaceSpecification> specification = Collections
-				.singletonList(CreateKeyspaceSpecification.createKeyspace());
+		List<CreateKeyspaceSpecification> specification = Collections
+				.singletonList(CreateKeyspaceSpecification.createKeyspace("foo"));
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
 			@Override
 			protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
@@ -229,8 +229,8 @@ public class AbstractClusterConfigurationUnitTests {
 	@Test // DATACASS-226
 	public void shouldSetKeyspaceDrops() {
 
-		final List<DropKeyspaceSpecification> specification = Collections
-				.singletonList(DropKeyspaceSpecification.dropKeyspace());
+		List<DropKeyspaceSpecification> specification = Collections
+				.singletonList(DropKeyspaceSpecification.dropKeyspace("foo"));
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
 			@Override
 			protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
@@ -244,7 +244,7 @@ public class AbstractClusterConfigurationUnitTests {
 	@Test // DATACASS-226
 	public void shouldSetStartupScripts() {
 
-		final List<String> scripts = Collections.singletonList("USE BLUE_METH; CREATE TABLE...");
+		List<String> scripts = Collections.singletonList("USE BLUE_METH; CREATE TABLE...");
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
 			@Override
 			protected List<String> getStartupScripts() {
@@ -258,7 +258,7 @@ public class AbstractClusterConfigurationUnitTests {
 	@Test // DATACASS-226
 	public void shouldSetShutdownScripts() {
 
-		final List<String> scripts = Collections.singletonList("USE BLUE_METH; DROP TABLE...");
+		List<String> scripts = Collections.singletonList("USE BLUE_METH; DROP TABLE...");
 		AbstractClusterConfiguration clusterConfiguration = new AbstractClusterConfiguration() {
 			@Override
 			protected List<String> getShutdownScripts() {

@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.convert;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Row;
@@ -55,6 +56,7 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	/* (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
 	 */
+	@Nullable
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T getPropertyValue(CassandraPersistentProperty property) {

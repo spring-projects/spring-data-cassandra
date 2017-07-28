@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -28,12 +30,10 @@ import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.core.cql.CassandraExceptionTranslator;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -45,6 +45,7 @@ import com.datastax.driver.core.Session;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author John Blum
+ * @author Mark Paluch
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
@@ -60,15 +61,15 @@ public class CassandraCqlSessionFactoryBean
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	protected final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
-	private Cluster cluster;
+	private @Nullable Cluster cluster;
 
 	private List<String> startupScripts = Collections.emptyList();
 
 	private List<String> shutdownScripts = Collections.emptyList();
 
-	private Session session;
+	private @Nullable Session session;
 
-	private String keyspaceName;
+	private @Nullable String keyspaceName;
 
 	/*
 	 * (non-Javadoc)
@@ -83,7 +84,7 @@ public class CassandraCqlSessionFactoryBean
 	}
 
 	/* (non-Javadoc) */
-	Session connect(String keyspaceName) {
+	Session connect(@Nullable String keyspaceName) {
 		return (StringUtils.hasText(keyspaceName) ? getCluster().connect(keyspaceName) : getCluster().connect());
 	}
 
@@ -178,7 +179,9 @@ public class CassandraCqlSessionFactoryBean
 	 * @see #getCluster()
 	 */
 	public void setCluster(Cluster cluster) {
+
 		Assert.notNull(cluster, "Cluster must not be null");
+
 		this.cluster = cluster;
 	}
 
@@ -191,18 +194,20 @@ public class CassandraCqlSessionFactoryBean
 	 * @see #setCluster(Cluster)
 	 */
 	protected Cluster getCluster() {
+
 		Assert.state(this.cluster != null, "Cluster was not properly initialized");
+
 		return this.cluster;
 	}
 
 	/**
-	 * Sets the name of the Cassandra Keyspace to connect to. Passing {@code null}, an empty String, or whitespace will
+	 * Sets the name of the Cassandra Keyspace to connect to. Passing {@literal null}, an empty String, or whitespace will
 	 * cause the Cassandra System Keyspace to be used.
 	 *
 	 * @param keyspaceName a String indicating the name of the Keyspace in which to connect.
 	 * @see #getKeyspaceName()
 	 */
-	public void setKeyspaceName(String keyspaceName) {
+	public void setKeyspaceName(@Nullable String keyspaceName) {
 		this.keyspaceName = keyspaceName;
 	}
 
@@ -212,6 +217,7 @@ public class CassandraCqlSessionFactoryBean
 	 * @return the name of the Cassandra Keyspace to connect to as a String.
 	 * @see #setKeyspaceName(String)
 	 */
+	@Nullable
 	protected String getKeyspaceName() {
 		return this.keyspaceName;
 	}
@@ -235,7 +241,7 @@ public class CassandraCqlSessionFactoryBean
 	/**
 	 * Sets CQL scripts to be executed immediately after the session is connected.
 	 */
-	public void setStartupScripts(List<String> scripts) {
+	public void setStartupScripts(@Nullable List<String> scripts) {
 		this.startupScripts = (scripts != null ? new ArrayList<>(scripts) : Collections.emptyList());
 	}
 
@@ -249,7 +255,7 @@ public class CassandraCqlSessionFactoryBean
 	/**
 	 * Sets CQL scripts to be executed immediately before the session is shutdown.
 	 */
-	public void setShutdownScripts(List<String> scripts) {
+	public void setShutdownScripts(@Nullable List<String> scripts) {
 		this.shutdownScripts = (scripts != null ? new ArrayList<>(scripts) : Collections.emptyList());
 	}
 

@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.convert;
 import java.util.List;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
@@ -40,6 +41,7 @@ public class ColumnReader {
 	private final CodecRegistry codecRegistry;
 
 	public ColumnReader(Row row) {
+
 		this.row = row;
 		this.columns = row.getColumnDefinitions();
 		this.codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
@@ -48,6 +50,7 @@ public class ColumnReader {
 	/**
 	 * Returns the row's column value.
 	 */
+	@Nullable
 	public Object get(CqlIdentifier name) {
 		return get(name.toCql());
 	}
@@ -55,6 +58,7 @@ public class ColumnReader {
 	/**
 	 * Returns the row's column value.
 	 */
+	@Nullable
 	public Object get(String name) {
 		int indexOf = getColumnIndex(name);
 		return get(indexOf);
@@ -66,6 +70,7 @@ public class ColumnReader {
 	 * @param index
 	 * @return
 	 */
+	@Nullable
 	public Object get(int index) {
 
 		if (row.isNull(index)) {
@@ -89,6 +94,7 @@ public class ColumnReader {
 		return row.getObject(index);
 	}
 
+	@Nullable
 	public Object getCollection(int i, DataType type) {
 
 		List<DataType> collectionTypes = type.getTypeArguments();
@@ -131,6 +137,7 @@ public class ColumnReader {
 	 *
 	 * @throws ClassCastException if the value cannot be converted to the requested type.
 	 */
+	@Nullable
 	public <T> T get(CqlIdentifier name, Class<T> requestedType) {
 		return get(getColumnIndex(name.toCql()), requestedType);
 	}
@@ -140,6 +147,7 @@ public class ColumnReader {
 	 *
 	 * @throws ClassCastException if the value cannot be converted to the requested type.
 	 */
+	@Nullable
 	public <T> T get(String name, Class<T> requestedType) {
 		return get(columns.getIndexOf(name), requestedType);
 	}
@@ -149,6 +157,7 @@ public class ColumnReader {
 	 *
 	 * @throws ClassCastException if the value cannot be converted to the requested type.
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
 	public <T> T get(int i, Class<T> requestedType) {
 

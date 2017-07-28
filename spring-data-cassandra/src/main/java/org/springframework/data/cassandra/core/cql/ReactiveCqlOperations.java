@@ -24,6 +24,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.ReactiveResultSet;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
@@ -47,10 +48,10 @@ public interface ReactiveCqlOperations {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Execute a CQL data access operation, implemented as callback action working on a {@link ReactiveSession}. This
-	 * allows for implementing arbitrary data access operations, within Spring's managed CQL environment: that is,
-	 * converting CQL {@link com.datastax.driver.core.exceptions.DriverException}s into Spring's
-	 * {@link DataAccessException} hierarchy.
+	 * Execute a CQL data access operation, implemented as callback action working on a
+	 * {@link org.springframework.data.cassandra.ReactiveSession}. This allows for implementing arbitrary data access
+	 * operations, within Spring's managed CQL environment: that is, converting CQL
+	 * {@link com.datastax.driver.core.exceptions.DriverException}s into Spring's {@link DataAccessException} hierarchy.
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
 	 *
@@ -409,8 +410,8 @@ public interface ReactiveCqlOperations {
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
 	 *
-	 * @param psc object that can create a {@link PreparedStatement} given a {@link ReactiveSession}, must not be
-	 *          {@literal null}.
+	 * @param psc object that can create a {@link PreparedStatement} given a
+	 *          {@link org.springframework.data.cassandra.ReactiveSession}, must not be {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem
@@ -436,8 +437,8 @@ public interface ReactiveCqlOperations {
 	/**
 	 * Query using a prepared statement, reading the {@link ReactiveResultSet} with a {@link ReactiveResultSetExtractor}.
 	 *
-	 * @param psc object that can create a {@link PreparedStatement} given a {@link ReactiveSession}, must not be
-	 *          {@literal null}.
+	 * @param psc object that can create a {@link PreparedStatement} given a
+	 *          {@link org.springframework.data.cassandra.ReactiveSession}, must not be {@literal null}.
 	 * @param rse object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ReactiveResultSetExtractor}
 	 * @throws DataAccessException if there is any problem
@@ -455,7 +456,7 @@ public interface ReactiveCqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link ReactiveResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem
 	 */
-	<T> Flux<T> query(String cql, PreparedStatementBinder psb, ReactiveResultSetExtractor<T> rse)
+	<T> Flux<T> query(String cql, @Nullable PreparedStatementBinder psb, ReactiveResultSetExtractor<T> rse)
 			throws DataAccessException;
 
 	/**
@@ -471,7 +472,7 @@ public interface ReactiveCqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem
 	 */
-	<T> Flux<T> query(ReactivePreparedStatementCreator psc, PreparedStatementBinder psb,
+	<T> Flux<T> query(ReactivePreparedStatementCreator psc, @Nullable PreparedStatementBinder psb,
 			ReactiveResultSetExtractor<T> rse) throws DataAccessException;
 
 	/**
@@ -490,8 +491,8 @@ public interface ReactiveCqlOperations {
 	/**
 	 * Query using a prepared statement, mapping each row to a Java object via a {@link RowMapper}.
 	 *
-	 * @param psc object that can create a {@link PreparedStatement} given a {@link ReactiveSession}, must not be
-	 *          {@literal null}.
+	 * @param psc object that can create a {@link PreparedStatement} given a
+	 *          {@link org.springframework.data.cassandra.ReactiveSession}, must not be {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link Flux}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -510,7 +511,8 @@ public interface ReactiveCqlOperations {
 	 * @return the result {@link Flux}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> Flux<T> query(String cql, PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException;
+	<T> Flux<T> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values
@@ -525,7 +527,7 @@ public interface ReactiveCqlOperations {
 	 * @return the result {@link Flux}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> Flux<T> query(ReactivePreparedStatementCreator psc, PreparedStatementBinder psb, RowMapper<T> rowMapper)
+	<T> Flux<T> query(ReactivePreparedStatementCreator psc, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
 			throws DataAccessException;
 
 	/**
@@ -682,7 +684,7 @@ public interface ReactiveCqlOperations {
 	 * @return boolean value whether the statement was applied.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	Mono<Boolean> execute(String cql, PreparedStatementBinder psb) throws DataAccessException;
+	Mono<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException;
 
 	/**
 	 * Issue a single CQL operation (such as an insert, update or delete statement) via a prepared statement, binding the

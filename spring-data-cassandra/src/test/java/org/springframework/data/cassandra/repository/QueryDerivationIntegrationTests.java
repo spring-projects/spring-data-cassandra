@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -25,10 +25,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -50,8 +50,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.assertj.core.api.Assertions;
 
 import com.datastax.driver.core.Session;
 
@@ -121,7 +119,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Test // DATACASS-7
 	public void shouldFindByLastnameAndDynamicSort() {
 
-		List<Person> result = personRepository.findByLastname("White", new Sort("firstname"));
+		List<Person> result = personRepository.findByLastname("White", Sort.by("firstname"));
 
 		assertThat(result).contains(flynn, skyler, walter);
 	}

@@ -21,6 +21,7 @@ import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCr
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -40,9 +41,9 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	protected static final boolean DEFAULT_DROP_TABLES = false;
 	protected static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
 
-	private CassandraAdminOperations admin;
+	private @Nullable CassandraAdminOperations admin;
 
-	private CassandraConverter converter;
+	private @Nullable CassandraConverter converter;
 
 	private SchemaAction schemaAction = SchemaAction.NONE;
 
@@ -107,6 +108,7 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	/**
 	 * @return the {@link CassandraConverter}.
 	 */
+	@Nullable
 	public CassandraConverter getConverter() {
 		return this.converter;
 	}
@@ -114,6 +116,7 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	/**
 	 * @return the {@link CassandraMappingContext}.
 	 */
+	@Nullable
 	protected CassandraMappingContext getMappingContext() {
 		return getConverter().getMappingContext();
 	}

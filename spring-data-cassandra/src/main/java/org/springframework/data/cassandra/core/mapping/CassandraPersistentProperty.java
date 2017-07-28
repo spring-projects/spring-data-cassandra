@@ -23,6 +23,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.DataType;
 
@@ -47,6 +48,7 @@ public interface CassandraPersistentProperty
 	 * The ordering (ascending or descending) for the column. Valid only for primary key columns; returns null for
 	 * non-primary key columns.
 	 */
+	@Nullable
 	Ordering getPrimaryKeyOrdering();
 
 	/**
@@ -114,5 +116,6 @@ public interface CassandraPersistentProperty
 	 * @return the annotated type or {@literal null}.
 	 * @since 2.0
 	 */
+	@Nullable
 	AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType);
 }

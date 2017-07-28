@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition.Operator;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.TypeCodec;
@@ -44,10 +45,11 @@ abstract class SerializationUtils {
 	 * but falling back to the given object's {@link Object#toString()} method if it's not serializable. Useful for
 	 * printing raw {@link Criteria}s containing complex values before actually converting them into Mongo native types.
 	 *
-	 * @param criteria
-	 * @return
+	 * @param criteria may be {@literal null}.
+	 * @return may be {@literal null}.
 	 */
-	public static String serializeToCqlSafely(CriteriaDefinition criteria) {
+	@Nullable
+	public static String serializeToCqlSafely(@Nullable CriteriaDefinition criteria) {
 
 		if (criteria == null) {
 			return null;
@@ -65,10 +67,11 @@ abstract class SerializationUtils {
 	 * but falling back to the given object's {@link Object#toString()} method if it's not serializable. Useful for
 	 * printing raw {@link Criteria}s containing complex values before actually converting them into Mongo native types.
 	 *
-	 * @param value value to serialize to CQL.
-	 * @return the value as a serialized CQL {@link String}.
+	 * @param value value to serialize to CQL, may be {@literal null}.
+	 * @return the value as a serialized CQL {@link String}, may be {@literal null}.
 	 */
-	public static String serializeToCqlSafely(Object value) {
+	@Nullable
+	public static String serializeToCqlSafely(@Nullable Object value) {
 
 		if (value == null) {
 			return null;
@@ -89,7 +92,7 @@ abstract class SerializationUtils {
 		}
 	}
 
-	private static String serialize(Object value) {
+	private static String serialize(@Nullable Object value) {
 
 		if (value == null) {
 			return "null";

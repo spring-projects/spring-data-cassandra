@@ -51,6 +51,7 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -86,7 +87,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private final CassandraMappingContext mappingContext;
 
-	private ClassLoader beanClassLoader;
+	private @Nullable ClassLoader beanClassLoader;
 
 	private SpELContext spELContext;
 
@@ -151,6 +152,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param row must not be {@literal null}.
 	 * @return the converted valued.
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
 	public <R> R readRow(Class<R> type, Row row) {
 
@@ -302,24 +304,22 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@Override
 	public Object convertToColumnType(Object value, TypeInformation<?> typeInformation) {
 
+		Assert.notNull(value, "Value must not be null");
 		Assert.notNull(typeInformation, "TypeInformation must not be null");
 
-		if (value == null) {
-			return null;
-		}
-
+		// noinspection ConstantConditions
 		return value.getClass().isArray() ? value : getWriteValue(value, typeInformation);
 	}
 
 	@Override
 	public void write(Object source, Object sink) {
 
-		if (source != null) {
-			Class<?> beanClassLoaderClass = transformClassToBeanClassLoaderClass(source.getClass());
-			CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(beanClassLoaderClass);
+		Assert.notNull(source, "Value must not be null");
 
-			write(source, sink, entity);
-		}
+		Class<?> beanClassLoaderClass = transformClassToBeanClassLoaderClass(source.getClass());
+		CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(beanClassLoaderClass);
+
+		write(source, sink, entity);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -335,9 +335,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@SuppressWarnings("unchecked")
 	public void write(Object source, Object sink, CassandraPersistentEntity<?> entity) {
 
-		if (source == null) {
-			return;
-		}
+		Assert.notNull(source, "Value must not be null");
 
 		if (entity == null) {
 			throw new MappingException("No mapping metadata found for " + source.getClass());
@@ -360,11 +358,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	protected void writeInsertFromObject(final Object object, final Insert insert, CassandraPersistentEntity<?> entity) {
+	protected void writeInsertFromObject(Object object, Insert insert, CassandraPersistentEntity<?> entity) {
 		writeInsertFromWrapper(getConvertingAccessor(object, entity), insert, entity);
 	}
 
-	private void writeMapFromWrapper(final ConvertingPropertyAccessor accessor, final Map<String, Object> insert,
+	private void writeMapFromWrapper(ConvertingPropertyAccessor accessor, Map<String, Object> insert,
 			CassandraPersistentEntity<?> entity) {
 
 		for (CassandraPersistentProperty property : entity) {
@@ -379,6 +377,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 				if (log.isDebugEnabled()) {
 					log.debug("Property is a compositeKey");
+				}
+
+				if (value == null) {
+					continue;
 				}
 
 				CassandraPersistentEntity<?> compositePrimaryKey = mappingContext.getRequiredPersistentEntity(property);
@@ -410,6 +412,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 				if (log.isDebugEnabled()) {
 					log.debug("Property is a compositeKey");
+				}
+
+				if (value == null) {
+					continue;
 				}
 
 				CassandraPersistentEntity<?> compositePrimaryKey = mappingContext.getRequiredPersistentEntity(property);
@@ -445,7 +451,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 				CassandraPersistentEntity<?> compositePrimaryKey = mappingContext.getRequiredPersistentEntity(property);
 
+				if (value == null) {
+					continue;
+				}
+
 				writeUpdateFromWrapper(getConvertingAccessor(value, compositePrimaryKey), update, compositePrimaryKey);
+
 				continue;
 			}
 
@@ -696,6 +707,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param accessor the property accessor
 	 * @return the return value, may be {@literal null}.
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
 	private <T> T getWriteValue(CassandraPersistentProperty property, ConvertingPropertyAccessor accessor) {
 		return (T) getWriteValue(accessor.getProperty(property, (Class<T>) getTargetType(property)),
@@ -710,8 +722,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param typeInformation the type information.
 	 * @return the return value, may be {@literal null}.
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
-	private Object getWriteValue(Object value, TypeInformation<?> typeInformation) {
+	private Object getWriteValue(@Nullable Object value, @Nullable TypeInformation<?> typeInformation) {
 
 		if (value == null) {
 			return null;
@@ -735,7 +748,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		TypeInformation<?> type = typeInformation != null ? typeInformation
 				: ClassTypeInformation.from((Class) value.getClass());
 
-		TypeInformation<?> actualType = type.getActualType();
+		TypeInformation<?> actualType = type.getRequiredActualType();
 
 		if (value instanceof Collection) {
 
@@ -771,7 +784,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @see CassandraType
 	 */
 	@SuppressWarnings("unchecked")
-	private Object getPotentiallyConvertedSimpleValue(Object value, Class<?> requestedTargetType) {
+	@Nullable
+	private Object getPotentiallyConvertedSimpleValue(@Nullable Object value, @Nullable Class<?> requestedTargetType) {
 
 		if (value == null) {
 			return null;
@@ -800,8 +814,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param target must not be {@literal null}.
 	 * @return the converted value.
 	 */
+	@Nullable
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Object getPotentiallyConvertedSimpleRead(Object value, Class<?> target) {
+	private Object getPotentiallyConvertedSimpleRead(@Nullable Object value, @Nullable Class<?> target) {
 
 		if (value == null || target == null || target.isAssignableFrom(value.getClass())) {
 			return value;
@@ -847,6 +862,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param property the property.
 	 * @return the return value, may be {@literal null}.
 	 */
+	@Nullable
 	@SuppressWarnings("unchecked")
 	protected Object getReadValue(CassandraValueProvider row, CassandraPersistentProperty property) {
 
@@ -899,6 +915,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param sourceValue must not be {@literal null}.
 	 * @return the converted {@link Collection} or array, will never be {@literal null}.
 	 */
+	@Nullable
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Object readCollectionOrArray(TypeInformation<?> targetType, Collection<?> sourceValue) {
 
@@ -917,7 +934,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return getPotentiallyConvertedSimpleRead(items, collectionType);
 		}
 
-		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(componentType);
+		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(rawComponentType);
 
 		if (entity != null && entity.isUserDefinedType()) {
 
@@ -961,7 +978,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		/* (non-Javadoc)
 		 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
 		 */
+		@Nullable
 		@Override
+		@SuppressWarnings("unchecked")
 		public <T> T getPropertyValue(CassandraPersistentProperty property) {
 			return (T) getReadValue(parent, property);
 		}

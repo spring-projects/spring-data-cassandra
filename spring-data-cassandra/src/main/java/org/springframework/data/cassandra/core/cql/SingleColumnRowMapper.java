@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.cql;
 
 import org.springframework.dao.TypeMismatchDataAccessException;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.NumberUtils;
 
@@ -41,7 +42,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  */
 public class SingleColumnRowMapper<T> implements RowMapper<T> {
 
-	private Class<?> requiredType;
+	private @Nullable Class<?> requiredType;
 
 	/**
 	 * Create a new {@link SingleColumnRowMapper} for bean-style configuration.
@@ -119,13 +120,14 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 *
 	 * @param row is the {@link Row} holding the data, must not be {@literal null}.
 	 * @param index is the column index
-	 * @param requiredType the type that each result object is expected to match (or {@code null} if none specified).
+	 * @param requiredType the type that each result object is expected to match (or {@literal null} if none specified).
 	 * @return the Object value.
 	 * @throws DriverException in case of extraction failure
 	 * @see RowUtils#getRowValue(Row, int, Class)
 	 * @see #getColumnValue(Row, int)
 	 */
-	protected Object getColumnValue(Row row, int index, Class<?> requiredType) throws DriverException {
+	@Nullable
+	protected Object getColumnValue(Row row, int index, @Nullable Class<?> requiredType) throws DriverException {
 
 		if (requiredType != null) {
 			return RowUtils.getRowValue(row, index, requiredType);
@@ -148,6 +150,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * @throws DriverException in case of extraction failure.
 	 * @see RowUtils#getRowValue(Row, int, Class)
 	 */
+	@Nullable
 	protected Object getColumnValue(Row row, int index) {
 		return RowUtils.getRowValue(row, index, null);
 	}
@@ -160,8 +163,8 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * the value will be converted into a Number, either through number conversion or through String parsing (depending on
 	 * the value type).
 	 *
-	 * @param value the column value as extracted from {@code getColumnValue()} (never {@code null})
-	 * @param requiredType the type that each result object is expected to match (never {@code null})
+	 * @param value the column value as extracted from {@code getColumnValue()} (never {@literal null})
+	 * @param requiredType the type that each result object is expected to match (never {@literal null})
 	 * @return the converted value
 	 * @see #getColumnValue(Row, int, Class)
 	 */

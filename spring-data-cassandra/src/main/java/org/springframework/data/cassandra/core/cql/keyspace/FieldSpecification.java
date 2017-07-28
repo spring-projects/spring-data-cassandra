@@ -15,9 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
@@ -34,55 +31,45 @@ import com.datastax.driver.core.DataType;
  */
 public class FieldSpecification {
 
-	private CqlIdentifier name;
-	private DataType type;
+	private final CqlIdentifier name;
+	private final DataType type;
 
-	/**
-	 * Sets the field name.
-	 *
-	 * @param name must not be empty or {@literal null}.
-	 * @return {@code this} {@link FieldSpecification}.
-	 */
-	public FieldSpecification name(String name) {
-		return name(cqlId(name));
-	}
-
-	/**
-	 * Sets the field name.
-	 *
-	 * @param name must not be {@literal null}.
-	 * @return {@code this} {@link FieldSpecification}.
-	 */
-	public FieldSpecification name(CqlIdentifier name) {
+	private FieldSpecification(CqlIdentifier name, DataType type) {
 
 		Assert.notNull(name, "CqlIdentifier must not be null");
+		Assert.notNull(type, "DataType must not be null");
 
 		this.name = name;
-
-		return this;
+		this.type = type;
 	}
 
 	/**
-	 * Sets the column's type.
+	 * Create a new {@link FieldSpecification} for the given {@code name} and {@link DataType}
 	 *
-	 * @param type The data type of the field, must not be {@literal null}.
-	 * @return {@code this} {@link FieldSpecification}.
+	 * @param name must not be empty or {@literal null}.
+	 * @param type must not be {@literal null}.
 	 */
-	public FieldSpecification type(DataType type) {
+	public static FieldSpecification of(String name, DataType type) {
+		return new FieldSpecification(CqlIdentifier.cqlId(name), type);
+	}
 
-		Assert.notNull(type, "DataType must not be null");
-
-		this.type = type;
-
-		return this;
+	/**
+	 * Create a new {@link FieldSpecification} given {@link CqlIdentifier name} and {@link DataType}.
+	 *
+	 * @param name must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	public static FieldSpecification of(CqlIdentifier name, DataType type) {
+		return new FieldSpecification(name, type);
 	}
 
 	public String toCql() {
-		return toCql(null).toString();
+		return toCql(new StringBuilder()).toString();
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return noNull(cql).append(name).append(" ").append(type);
+		return cql.append(name).append(" ").append(type);
 	}
 
 	/*
@@ -91,6 +78,6 @@ public class FieldSpecification {
 	 */
 	@Override
 	public String toString() {
-		return toCql(null).toString();
+		return toCql(new StringBuilder()).toString();
 	}
 }

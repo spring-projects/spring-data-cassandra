@@ -28,13 +28,9 @@ public abstract class KeyspaceNameCqlGenerator<T extends KeyspaceActionSpecifica
 
 	public abstract StringBuilder toCql(StringBuilder cql);
 
-	private KeyspaceActionSpecification<T> specification;
+	private final KeyspaceActionSpecification<T> specification;
 
 	public KeyspaceNameCqlGenerator(KeyspaceActionSpecification<T> specification) {
-		setSpecification(specification);
-	}
-
-	protected void setSpecification(KeyspaceActionSpecification<T> specification) {
 
 		Assert.notNull(specification, "KeyspaceActionSpecification must not be null");
 		this.specification = specification;
@@ -53,6 +49,6 @@ public abstract class KeyspaceNameCqlGenerator<T extends KeyspaceActionSpecifica
 	}
 
 	public String toCql() {
-		return toCql(null).toString();
+		return toCql(new StringBuilder()).toString();
 	}
 }

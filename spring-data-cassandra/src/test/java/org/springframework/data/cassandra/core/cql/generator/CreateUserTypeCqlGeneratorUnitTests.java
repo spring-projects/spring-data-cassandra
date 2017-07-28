@@ -55,20 +55,14 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 	public void createUserTypeIfNotExists() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
-				.createType() //
-				.name("address").ifNotExists().field("zip", DataType.ascii()) //
+				.createType("address").ifNotExists().field("zip", DataType.ascii()) //
 				.field("city", DataType.varchar());
 
 		assertThat(toCql(spec)).isEqualTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city varchar);");
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-172
-	public void generationFailsIfNameIsNotSet() {
-		toCql(CreateUserTypeSpecification.createType());
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACASS-172
 	public void generationFailsWithoutFields() {
-		toCql(CreateUserTypeSpecification.createType().name("hello"));
+		toCql(CreateUserTypeSpecification.createType("hello"));
 	}
 }

@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.data.cassandra.core.mapping.UnsupportedCassandraOperationException;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.exceptions.DriverException;
 
@@ -40,12 +42,15 @@ public interface CqlExceptionTranslator extends PersistenceExceptionTranslator {
 	 * subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
 	 *
 	 * @param task readable text describing the task being attempted.
-	 * @param cql CQL query or update that caused the problem (may be {@code null}).
+	 * @param cql CQL query or update that caused the problem (may be {@literal null}).
 	 * @param ex the offending {@link DriverException}.
 	 * @return the DataAccessException, wrapping the {@link DriverException}.
 	 * @see org.springframework.dao.DataAccessException#getRootCause()
 	 */
-	default DataAccessException translate(String task, String cql, DriverException ex) {
-		return translateExceptionIfPossible(ex);
+	default DataAccessException translate(@Nullable String task, @Nullable String cql, DriverException ex) {
+
+		DataAccessException translated = translateExceptionIfPossible(ex);
+		return translated == null ? new UnsupportedCassandraOperationException("Cannot translate exception", ex)
+				: translated;
 	}
 }

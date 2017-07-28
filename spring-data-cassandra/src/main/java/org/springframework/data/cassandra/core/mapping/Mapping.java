@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.lang.Nullable;
+
 public class Mapping {
 
 	private Set<EntityMapping> entityMappings = new HashSet<>();
@@ -27,7 +29,7 @@ public class Mapping {
 		return Collections.unmodifiableSet(entityMappings);
 	}
 
-	public void setEntityMappings(Set<EntityMapping> mappings) {
+	public void setEntityMappings(@Nullable Set<EntityMapping> mappings) {
 
 		if (mappings == null) {
 			entityMappings.clear();

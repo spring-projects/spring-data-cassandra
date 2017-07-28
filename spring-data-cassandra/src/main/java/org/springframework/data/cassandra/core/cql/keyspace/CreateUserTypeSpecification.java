@@ -29,12 +29,8 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 
 	private boolean ifNotExists;
 
-	/**
-	 * Entry point into the {@link CreateUserTypeSpecification}'s fluent API to create a type. Convenient if imported
-	 * statically.
-	 */
-	public static CreateUserTypeSpecification createType() {
-		return new CreateUserTypeSpecification();
+	public CreateUserTypeSpecification(CqlIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -42,7 +38,7 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 	 * statically.
 	 */
 	public static CreateUserTypeSpecification createType(CqlIdentifier name) {
-		return createType().name(name);
+		return new CreateUserTypeSpecification(name);
 	}
 
 	/**
@@ -50,7 +46,7 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 	 * statically.
 	 */
 	public static CreateUserTypeSpecification createType(String name) {
-		return createType(CqlIdentifier.cqlId(name));
+		return new CreateUserTypeSpecification(CqlIdentifier.cqlId(name));
 	}
 
 	/**

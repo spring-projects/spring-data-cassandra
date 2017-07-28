@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.data.cassandra.repository.query.ExpressionEvaluatingParameterBinder.BindingContext;
 import org.springframework.data.cassandra.repository.query.ExpressionEvaluatingParameterBinder.ParameterBinding;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -50,7 +51,7 @@ class StringBasedQuery {
 	 * @param query must not be empty.
 	 * @param parameterBinder must not be {@literal null}.
 	 */
-	public StringBasedQuery(String query, ExpressionEvaluatingParameterBinder parameterBinder) {
+	StringBasedQuery(String query, ExpressionEvaluatingParameterBinder parameterBinder) {
 
 		Assert.hasText(query, "Query must not be empty");
 		Assert.notNull(parameterBinder, "ExpressionEvaluatingParameterBinder must not be null");
@@ -62,8 +63,7 @@ class StringBasedQuery {
 
 	}
 
-	/* (non-Javadoc) */
-	protected ExpressionEvaluatingParameterBinder getParameterBinder() {
+	private ExpressionEvaluatingParameterBinder getParameterBinder() {
 		return this.parameterBinder;
 	}
 
@@ -79,7 +79,7 @@ class StringBasedQuery {
 	 * @param queryMethod must not be {@literal null}.
 	 * @return the bound String query containing formatted parameters.
 	 */
-	public SimpleStatement bindQuery(CassandraParameterAccessor parameterAccessor, CassandraQueryMethod queryMethod) {
+	SimpleStatement bindQuery(CassandraParameterAccessor parameterAccessor, CassandraQueryMethod queryMethod) {
 
 		Assert.notNull(parameterAccessor, "CassandraParameterAccessor must not be null");
 		Assert.notNull(queryMethod, "CassandraQueryMethod must not be null");
@@ -236,6 +236,7 @@ class StringBasedQuery {
 			return result.append(input.subSequence(currentPosition, input.length())).toString();
 		}
 
+		@Nullable
 		private static Matcher findNextBindingOrExpression(String input, int position) {
 
 			List<Matcher> matchers = new ArrayList<>();

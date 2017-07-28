@@ -29,6 +29,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -51,7 +52,7 @@ public class CassandraQueryMethod extends QueryMethod {
 
 	private final Optional<Query> query;
 
-	private CassandraEntityMetadata<?> entityMetadata;
+	private @Nullable CassandraEntityMetadata<?> entityMetadata;
 
 	/**
 	 * Create a new {@link CassandraQueryMethod} from the given {@link Method}.
@@ -148,16 +149,29 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * Returns the query string declared in a {@link Query} annotation or {@literal null} if neither the annotation found
 	 * nor the attribute was specified.
 	 *
-	 * @return
+	 * @return the query string or {@literal null} if no query string present.
 	 */
+	@Nullable
 	public String getAnnotatedQuery() {
 		return query.map(Query::value).orElse(null);
 	}
 
 	/**
-	 * Returns the {@link Query} annotation that is applied to the method or {@code null} if none available.
+	 * Returns the required query string declared in a {@link Query} annotation or throws {@link IllegalStateException} if
+	 * neither the annotation found nor the attribute was specified.
 	 *
-	 * @return
+	 * @return the query string.
+	 * @throws IllegalStateException in case query method has no annotated query.
+	 */
+	public String getRequiredAnnotatedQuery() {
+		return query.map(Query::value)
+				.orElseThrow(() -> new IllegalStateException("Query method " + this + " has no annotated query"));
+	}
+
+	/**
+	 * Returns the {@link Query} annotation that is applied to the method or {@literal null} if none available.
+	 *
+	 * @return the optional query annotation.
 	 */
 	Optional<Query> getQueryAnnotation() {
 		return query;
@@ -179,6 +193,8 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @return true is the method returns a {@link ResultSet}.
 	 */
 	public boolean isResultSetQuery() {
-		return ResultSet.class.isAssignableFrom(getReturnType().getActualType().getType());
+
+		TypeInformation<?> actualType = getReturnType().getActualType();
+		return actualType != null && ResultSet.class.isAssignableFrom(actualType.getType());
 	}
 }

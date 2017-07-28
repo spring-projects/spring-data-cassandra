@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.DriverException;
 
@@ -46,5 +48,6 @@ public interface RowMapper<T> {
 	 * @throws DriverException if a {@link DriverException} is encountered getting column values (that is, there's no need
 	 *           to catch {@link DriverException})
 	 */
+	@Nullable
 	T mapRow(Row row, int rowNum) throws DriverException;
 }

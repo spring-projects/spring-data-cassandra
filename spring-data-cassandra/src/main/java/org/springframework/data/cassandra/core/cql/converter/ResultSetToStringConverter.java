@@ -36,7 +36,7 @@ public class ResultSetToStringConverter extends AbstractResultSetConverter<Strin
 	 */
 	@Override
 	protected String doConvertSingleValue(Object object) {
-		return object == null ? null : object.toString();
+		return object.toString();
 	}
 
 	/* (non-Javadoc)

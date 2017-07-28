@@ -36,6 +36,7 @@ import org.springframework.data.cassandra.core.cql.generator.DropKeyspaceCqlGene
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -89,39 +90,39 @@ public class CassandraClusterFactoryBean
 
 	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
-	private Cluster cluster;
-	private ClusterBuilderConfigurer clusterBuilderConfigurer;
+	private @Nullable Cluster cluster;
+	private @Nullable ClusterBuilderConfigurer clusterBuilderConfigurer;
 
-	private AddressTranslator addressTranslator;
-	private AuthProvider authProvider;
-	private CompressionType compressionType;
-	private Host.StateListener hostStateListener;
-	private LatencyTracker latencyTracker;
+	private @Nullable AddressTranslator addressTranslator;
+	private @Nullable AuthProvider authProvider;
+	private @Nullable CompressionType compressionType;
+	private @Nullable Host.StateListener hostStateListener;
+	private @Nullable LatencyTracker latencyTracker;
 
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<>();
-	private Set<KeyspaceActionSpecification<?>> keyspaceSpecifications = new HashSet<>();
+	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
 
 	private List<String> startupScripts = new ArrayList<>();
 	private List<String> shutdownScripts = new ArrayList<>();
 
-	private LoadBalancingPolicy loadBalancingPolicy;
-	private NettyOptions nettyOptions;
-	private PoolingOptions poolingOptions;
-	private ProtocolVersion protocolVersion;
-	private QueryOptions queryOptions;
-	private ReconnectionPolicy reconnectionPolicy;
-	private RetryPolicy retryPolicy;
-	private SpeculativeExecutionPolicy speculativeExecutionPolicy;
-	private SocketOptions socketOptions;
-	private SSLOptions sslOptions;
-	private TimestampGenerator timestampGenerator;
+	private @Nullable LoadBalancingPolicy loadBalancingPolicy;
+	private NettyOptions nettyOptions = NettyOptions.DEFAULT_INSTANCE;
+	private @Nullable PoolingOptions poolingOptions;
+	private @Nullable ProtocolVersion protocolVersion;
+	private @Nullable QueryOptions queryOptions;
+	private @Nullable ReconnectionPolicy reconnectionPolicy;
+	private @Nullable RetryPolicy retryPolicy;
+	private @Nullable SpeculativeExecutionPolicy speculativeExecutionPolicy;
+	private @Nullable SocketOptions socketOptions;
+	private @Nullable SSLOptions sslOptions;
+	private @Nullable TimestampGenerator timestampGenerator;
 
-	private String beanName;
-	private String clusterName;
+	private @Nullable String beanName;
+	private @Nullable String clusterName;
 	private String contactPoints = DEFAULT_CONTACT_POINTS;
-	private String password;
-	private String username;
+	private @Nullable String password;
+	private @Nullable String username;
 
 	/*
 	 * (non-Javadoc)
@@ -142,7 +143,7 @@ public class CassandraClusterFactoryBean
 
 		Optional.ofNullable(addressTranslator).ifPresent(clusterBuilder::withAddressTranslator);
 		Optional.ofNullable(loadBalancingPolicy).ifPresent(clusterBuilder::withLoadBalancingPolicy);
-		Optional.ofNullable(nettyOptions).ifPresent(clusterBuilder::withNettyOptions);
+		clusterBuilder.withNettyOptions(nettyOptions);
 		Optional.ofNullable(poolingOptions).ifPresent(clusterBuilder::withPoolingOptions);
 		Optional.ofNullable(protocolVersion).ifPresent(clusterBuilder::withProtocolVersion);
 		Optional.ofNullable(queryOptions).ifPresent(clusterBuilder::withQueryOptions);
@@ -186,7 +187,7 @@ public class CassandraClusterFactoryBean
 		Optional.ofNullable(latencyTracker).ifPresent(cluster::register);
 
 		generateSpecificationsFromFactoryBeans();
-		executeSpecsAndScripts(keyspaceCreations, startupScripts);
+		executeSpecsAndScripts(keyspaceCreations, startupScripts, cluster);
 	}
 
 	/*
@@ -198,8 +199,9 @@ public class CassandraClusterFactoryBean
 	}
 
 	/* (non-Javadoc) */
+	@Nullable
 	private String resolveClusterName() {
-		return (StringUtils.hasText(clusterName) ? clusterName : beanName);
+		return StringUtils.hasText(clusterName) ? clusterName : beanName;
 	}
 
 	/*
@@ -207,9 +209,13 @@ public class CassandraClusterFactoryBean
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
 	 */
 	@Override
-	public void destroy() throws Exception {
-		executeSpecsAndScripts(keyspaceDrops, shutdownScripts);
-		cluster.close();
+	public void destroy() {
+
+		if (cluster != null) {
+
+			executeSpecsAndScripts(keyspaceDrops, shutdownScripts, cluster);
+			cluster.close();
+		}
 	}
 
 	/*
@@ -266,8 +272,8 @@ public class CassandraClusterFactoryBean
 		});
 	}
 
-	protected void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification<?>> kepspaceActionSpecifications,
-			List<String> scripts) {
+	protected void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification> kepspaceActionSpecifications,
+			List<String> scripts, Cluster cluster) {
 
 		if (!CollectionUtils.isEmpty(kepspaceActionSpecifications) || !CollectionUtils.isEmpty(scripts)) {
 
@@ -288,7 +294,7 @@ public class CassandraClusterFactoryBean
 		}
 	}
 
-	private String toCql(KeyspaceActionSpecification<?> keyspaceActionSpecification) {
+	private String toCql(KeyspaceActionSpecification keyspaceActionSpecification) {
 
 		return (keyspaceActionSpecification instanceof CreateKeyspaceSpecification
 				? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) keyspaceActionSpecification).toCql()
@@ -329,7 +335,7 @@ public class CassandraClusterFactoryBean
 	 *
 	 * @param compressionType the {@link CompressionType} used by the new cluster.
 	 */
-	public void setCompressionType(CompressionType compressionType) {
+	public void setCompressionType(@Nullable CompressionType compressionType) {
 		this.compressionType = compressionType;
 	}
 
@@ -338,7 +344,7 @@ public class CassandraClusterFactoryBean
 	 *
 	 * @param poolingOptions the {@link PoolingOptions} used by the new cluster.
 	 */
-	public void setPoolingOptions(PoolingOptions poolingOptions) {
+	public void setPoolingOptions(@Nullable PoolingOptions poolingOptions) {
 		this.poolingOptions = poolingOptions;
 	}
 
@@ -348,7 +354,7 @@ public class CassandraClusterFactoryBean
 	 * @param protocolVersion the {@link ProtocolVersion} used by the new cluster.
 	 * @since 1.4
 	 */
-	public void setProtocolVersion(ProtocolVersion protocolVersion) {
+	public void setProtocolVersion(@Nullable ProtocolVersion protocolVersion) {
 		this.protocolVersion = protocolVersion;
 	}
 
@@ -357,7 +363,7 @@ public class CassandraClusterFactoryBean
 	 *
 	 * @param socketOptions the {@link SocketOptions} used by the new cluster.
 	 */
-	public void setSocketOptions(SocketOptions socketOptions) {
+	public void setSocketOptions(@Nullable SocketOptions socketOptions) {
 		this.socketOptions = socketOptions;
 	}
 
@@ -366,7 +372,7 @@ public class CassandraClusterFactoryBean
 	 *
 	 * @param queryOptions the {@link QueryOptions} used by the new cluster.
 	 */
-	public void setQueryOptions(QueryOptions queryOptions) {
+	public void setQueryOptions(@Nullable QueryOptions queryOptions) {
 		this.queryOptions = queryOptions;
 	}
 
@@ -375,7 +381,7 @@ public class CassandraClusterFactoryBean
 	 *
 	 * @param authProvider the {@link AuthProvider} used by the new cluster.
 	 */
-	public void setAuthProvider(AuthProvider authProvider) {
+	public void setAuthProvider(@Nullable AuthProvider authProvider) {
 		this.authProvider = authProvider;
 	}
 
@@ -394,7 +400,7 @@ public class CassandraClusterFactoryBean
 	 *
 	 * @param loadBalancingPolicy the {@link LoadBalancingPolicy} used by the new cluster.
 	 */
-	public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
+	public void setLoadBalancingPolicy(@Nullable LoadBalancingPolicy loadBalancingPolicy) {
 		this.loadBalancingPolicy = loadBalancingPolicy;
 	}
 
@@ -403,7 +409,7 @@ public class CassandraClusterFactoryBean
 	 *
 	 * @param reconnectionPolicy the {@link ReconnectionPolicy} used by the new cluster.
 	 */
-	public void setReconnectionPolicy(ReconnectionPolicy reconnectionPolicy) {
+	public void setReconnectionPolicy(@Nullable ReconnectionPolicy reconnectionPolicy) {
 		this.reconnectionPolicy = reconnectionPolicy;
 	}
 
@@ -412,7 +418,7 @@ public class CassandraClusterFactoryBean
 	 *
 	 * @param retryPolicy the {@link RetryPolicy} used by the new cluster.
 	 */
-	public void setRetryPolicy(RetryPolicy retryPolicy) {
+	public void setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
 	}
 
@@ -499,14 +505,14 @@ public class CassandraClusterFactoryBean
 	/**
 	 * @param keyspaceSpecifications The {@link KeyspaceActionSpecification} to set.
 	 */
-	public void setKeyspaceSpecifications(Set<KeyspaceActionSpecification<?>> keyspaceSpecifications) {
+	public void setKeyspaceSpecifications(Set<KeyspaceActionSpecification> keyspaceSpecifications) {
 		this.keyspaceSpecifications = keyspaceSpecifications;
 	}
 
 	/**
 	 * @return the {@link KeyspaceActionSpecification} associated with this factory.
 	 */
-	public Set<KeyspaceActionSpecification<?>> getKeyspaceSpecifications() {
+	public Set<KeyspaceActionSpecification> getKeyspaceSpecifications() {
 		return keyspaceSpecifications;
 	}
 
@@ -576,7 +582,7 @@ public class CassandraClusterFactoryBean
 	 * @see com.datastax.driver.core.policies.AddressTranslator
 	 * @since 1.5
 	 */
-	public void setAddressTranslator(AddressTranslator addressTranslator) {
+	public void setAddressTranslator(@Nullable AddressTranslator addressTranslator) {
 		this.addressTranslator = addressTranslator;
 	}
 
@@ -590,7 +596,7 @@ public class CassandraClusterFactoryBean
 	 *          {@link com.datastax.driver.core.Cluster.Builder}.
 	 * @see org.springframework.data.cql.config.ClusterBuilderConfigurer
 	 */
-	public void setClusterBuilderConfigurer(ClusterBuilderConfigurer clusterBuilderConfigurer) {
+	public void setClusterBuilderConfigurer(@Nullable ClusterBuilderConfigurer clusterBuilderConfigurer) {
 		this.clusterBuilderConfigurer = clusterBuilderConfigurer;
 	}
 
@@ -601,7 +607,7 @@ public class CassandraClusterFactoryBean
 	 * @see com.datastax.driver.core.Cluster.Builder#withClusterName(String)
 	 * @since 1.5
 	 */
-	public void setClusterName(String clusterName) {
+	public void setClusterName(@Nullable String clusterName) {
 		this.clusterName = clusterName;
 	}
 
@@ -625,7 +631,7 @@ public class CassandraClusterFactoryBean
 	 * @see com.datastax.driver.core.policies.SpeculativeExecutionPolicy
 	 * @since 1.5
 	 */
-	public void setSpeculativeExecutionPolicy(SpeculativeExecutionPolicy speculativeExecutionPolicy) {
+	public void setSpeculativeExecutionPolicy(@Nullable SpeculativeExecutionPolicy speculativeExecutionPolicy) {
 		this.speculativeExecutionPolicy = speculativeExecutionPolicy;
 	}
 
@@ -637,7 +643,7 @@ public class CassandraClusterFactoryBean
 	 * @see com.datastax.driver.core.TimestampGenerator
 	 * @since 1.5
 	 */
-	public void setTimestampGenerator(TimestampGenerator timestampGenerator) {
+	public void setTimestampGenerator(@Nullable TimestampGenerator timestampGenerator) {
 		this.timestampGenerator = timestampGenerator;
 	}
 

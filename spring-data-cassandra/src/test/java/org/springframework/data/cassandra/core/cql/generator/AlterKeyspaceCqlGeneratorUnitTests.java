@@ -74,7 +74,7 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 			replicationMap.put(new DefaultOption("dc1", Long.class, false, false, true), 2);
 			replicationMap.put(new DefaultOption("dc2", Long.class, false, false, true), 3);
 
-			return AlterKeyspaceSpecification.alterKeyspace().name(name).with(KeyspaceOption.REPLICATION, replicationMap)
+			return AlterKeyspaceSpecification.alterKeyspace(name).with(KeyspaceOption.REPLICATION, replicationMap)
 					.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 		}
 
@@ -107,7 +107,7 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 			replicationMap.put(new DefaultOption("dc1", Long.class, false, false, true), 2);
 			replicationMap.put(new DefaultOption("dc2", Long.class, false, false, true), 3);
 
-			return AlterKeyspaceSpecification.alterKeyspace().name(name).with(KeyspaceOption.REPLICATION, replicationMap);
+			return AlterKeyspaceSpecification.alterKeyspace(name).with(KeyspaceOption.REPLICATION, replicationMap);
 		}
 
 		@Override

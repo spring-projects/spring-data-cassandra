@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
-
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
@@ -28,16 +26,7 @@ import org.springframework.util.Assert;
  */
 public abstract class ColumnChangeSpecification {
 
-	protected CqlIdentifier name;
-
-	/**
-	 * Create a new {@link ColumnChangeSpecification}.
-	 *
-	 * @param name must not be empty or {@literal null}.
-	 */
-	protected ColumnChangeSpecification(String name) {
-		this(cqlId(name));
-	}
+	protected final CqlIdentifier name;
 
 	/**
 	 * Create a new {@link ColumnChangeSpecification}.
@@ -45,15 +34,6 @@ public abstract class ColumnChangeSpecification {
 	 * @param name must not be {@literal null}.
 	 */
 	protected ColumnChangeSpecification(CqlIdentifier name) {
-		setName(name);
-	}
-
-	/**
-	 * Sets the column name.
-	 *
-	 * @param name must not be {@literal null}.
-	 */
-	protected void setName(CqlIdentifier name) {
 
 		Assert.notNull(name, "Name must not be null");
 		this.name = name;

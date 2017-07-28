@@ -15,16 +15,15 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import lombok.EqualsAndHashCode;
+
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 
+@EqualsAndHashCode(callSuper = true)
 public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<AlterKeyspaceSpecification> {
 
-	/**
-	 * Entry point into the {@link AlterKeyspaceSpecification}'s fluent API to alter a keyspace. Convenient if imported
-	 * statically.
-	 */
-	public static AlterKeyspaceSpecification alterKeyspace() {
-		return new AlterKeyspaceSpecification();
+	private AlterKeyspaceSpecification(KeyspaceIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -35,14 +34,11 @@ public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<Alt
 		return new AlterKeyspaceSpecification(name);
 	}
 
-	public AlterKeyspaceSpecification() {}
-
-	public AlterKeyspaceSpecification(String name) {
-		name(name);
+	/**
+	 * Entry point into the {@link AlterKeyspaceSpecification}'s fluent API to alter a keyspace. Convenient if imported
+	 * statically.
+	 */
+	public static AlterKeyspaceSpecification alterKeyspace(String name) {
+		return new AlterKeyspaceSpecification(KeyspaceIdentifier.ksId(name));
 	}
-
-	public AlterKeyspaceSpecification(KeyspaceIdentifier name) {
-		name(name);
-	}
-
 }

@@ -38,6 +38,7 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 	private static final List<Object> STORE_CONVERTERS;
 
 	static {
+
 		List<Object> converters = new ArrayList<>();
 
 		converters.addAll(CassandraConverters.getConvertersToRegister());

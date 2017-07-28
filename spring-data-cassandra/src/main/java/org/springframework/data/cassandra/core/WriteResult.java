@@ -35,7 +35,6 @@ import com.datastax.driver.core.Row;
 public class WriteResult {
 
 	private final boolean wasApplied;
-
 	private final List<ExecutionInfo> executionInfo;
 	private final List<Row> rows;
 

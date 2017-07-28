@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
 import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
 
 import java.util.ArrayList;
@@ -25,6 +24,8 @@ import java.util.Map;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
+import org.springframework.data.cassandra.core.cql.keyspace.TableSpecification;
+import org.springframework.util.StringUtils;
 
 /**
  * CQL generator for generating a {@code CREATE TABLE} statement.
@@ -32,20 +33,23 @@ import org.springframework.data.cassandra.core.cql.keyspace.Option;
  * @author Matthew T. Adams
  * @author Alex Shvid
  */
-public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecification> {
-
-	public static String toCql(CreateTableSpecification specification) {
-		return new CreateTableCqlGenerator(specification).toCql();
-	}
+public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpecification<CreateTableSpecification>> {
 
 	public CreateTableCqlGenerator(CreateTableSpecification specification) {
 		super(specification);
 	}
 
+	public static String toCql(CreateTableSpecification specification) {
+		return new CreateTableCqlGenerator(specification).toCql();
+	}
+
+	@Override
+	protected CreateTableSpecification spec() {
+		return (CreateTableSpecification) super.spec();
+	}
+
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
-
-		cql = noNull(cql);
 
 		preambleCql(cql);
 		columnsAndOptionsCql(cql);
@@ -55,15 +59,12 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 		return cql;
 	}
 
-	protected StringBuilder preambleCql(StringBuilder cql) {
-		return noNull(cql).append("CREATE TABLE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
-				.append(spec().getName());
+	private void preambleCql(StringBuilder cql) {
+		cql.append("CREATE TABLE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "").append(spec().getName());
 	}
 
 	@SuppressWarnings("unchecked")
-	protected StringBuilder columnsAndOptionsCql(StringBuilder cql) {
-
-		cql = noNull(cql);
+	private void columnsAndOptionsCql(StringBuilder cql) {
 
 		// begin columns
 		cql.append(" (");
@@ -112,17 +113,18 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 		// begin option clause
 		Map<String, Object> options = spec().getOptions();
 
-		if (ordering != null || !options.isEmpty()) {
+		if (!options.isEmpty()) {
 
 			// option preamble
 			boolean first = true;
 			cql.append(" WITH ");
 			// end option preamble
 
-			if (ordering != null) {
+			if (StringUtils.hasText(ordering)) {
 				cql.append(ordering);
 				first = false;
 			}
+
 			if (!options.isEmpty()) {
 				for (String name : options.keySet()) {
 					// append AND if we're not on first option
@@ -153,17 +155,16 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 			}
 		}
 		// end options
-
-		return cql;
 	}
 
 	private static StringBuilder createOrderingClause(List<ColumnSpecification> columns) {
-		StringBuilder ordering = null;
+
+		StringBuilder ordering = new StringBuilder();
 		boolean first = true;
 		for (ColumnSpecification col : columns) {
 
 			if (col.getOrdering() != null) { // then ordering specified
-				if (ordering == null) { // then initialize ordering clause
+				if (StringUtils.isEmpty(ordering)) { // then initialize ordering clause
 					ordering = new StringBuilder().append("CLUSTERING ORDER BY (");
 				}
 				if (first) {
@@ -174,9 +175,11 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 				ordering.append(col.getName()).append(" ").append(col.getOrdering().cql());
 			}
 		}
-		if (ordering != null) { // then end ordering option
+
+		if (StringUtils.hasText(ordering)) { // then end ordering option
 			ordering.append(")");
 		}
+
 		return ordering;
 	}
 
@@ -192,7 +195,5 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 			str.append(col.getName());
 
 		}
-
 	}
-
 }

@@ -15,16 +15,17 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import lombok.EqualsAndHashCode;
+
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 
+@EqualsAndHashCode(callSuper = true)
 public class DropKeyspaceSpecification extends KeyspaceActionSpecification<DropKeyspaceSpecification> {
 
-	/**
-	 * Entry point into the {@link DropKeyspaceSpecification}'s fluent API to drop a keyspace. Convenient if imported
-	 * statically.
-	 */
-	public static DropKeyspaceSpecification dropKeyspace() {
-		return new DropKeyspaceSpecification();
+	private boolean ifExists;
+
+	private DropKeyspaceSpecification(KeyspaceIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -40,19 +41,7 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification<DropK
 	 * statically.
 	 */
 	public static DropKeyspaceSpecification dropKeyspace(String name) {
-		return new DropKeyspaceSpecification(name);
-	}
-
-	private boolean ifExists;
-
-	public DropKeyspaceSpecification() {}
-
-	public DropKeyspaceSpecification(String name) {
-		name(name);
-	}
-
-	public DropKeyspaceSpecification(KeyspaceIdentifier name) {
-		name(name);
+		return new DropKeyspaceSpecification(KeyspaceIdentifier.ksId(name));
 	}
 
 	public DropKeyspaceSpecification ifExists() {

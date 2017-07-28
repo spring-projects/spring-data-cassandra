@@ -27,12 +27,8 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 
 	private boolean ifNotExists = false;
 
-	/**
-	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
-	 * statically.
-	 */
-	public static CreateTableSpecification createTable() {
-		return new CreateTableSpecification();
+	private CreateTableSpecification(CqlIdentifier name) {
+		super(name);
 	}
 
 	/**
@@ -40,7 +36,7 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	 * statically.
 	 */
 	public static CreateTableSpecification createTable(CqlIdentifier name) {
-		return new CreateTableSpecification().name(name);
+		return new CreateTableSpecification(name);
 	}
 
 	/**
@@ -48,12 +44,7 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	 * statically.
 	 */
 	public static CreateTableSpecification createTable(String name) {
-		return new CreateTableSpecification().name(name);
-	}
-
-	@Override
-	public CreateTableSpecification name(CqlIdentifier name) {
-		return (CreateTableSpecification) super.name(name);
+		return new CreateTableSpecification(CqlIdentifier.cqlId(name));
 	}
 
 	/**
@@ -77,11 +68,6 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 
 	public boolean getIfNotExists() {
 		return this.ifNotExists;
-	}
-
-	@Override
-	public CreateTableSpecification name(String name) {
-		return (CreateTableSpecification) super.name(name);
 	}
 
 	@Override
