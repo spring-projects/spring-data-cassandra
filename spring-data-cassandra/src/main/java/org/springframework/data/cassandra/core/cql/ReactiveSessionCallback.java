@@ -48,9 +48,10 @@ public interface ReactiveSessionCallback<T> {
 	 * application exception: it gets propagated to the caller of the template.
 	 *
 	 * @param session active Cassandra session.
-	 * @return a result object publisher
-	 * @throws DriverException if thrown by a session method, to be auto-converted to a DataAccessException
-	 * @throws DataAccessException in case of custom exceptions
+	 * @return a result object publisher.
+	 * @throws DriverException if thrown by a session method, to be auto-converted to a {@link DataAccessException}.
+	 * @throws DataAccessException in case of custom exceptions.
+	 * @see ReactiveCqlTemplate#execute(ReactivePreparedStatementCreator, ReactivePreparedStatementCallback)
 	 */
 	Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException;
 }

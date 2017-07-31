@@ -35,7 +35,7 @@ public interface SessionFactoryLookup {
 	 * their backing store.
 	 *
 	 * @param sessionFactoryName the name of the {@link SessionFactory}.
-	 * @return the {@link SessionFactory} (never {@code null})
+	 * @return the {@link SessionFactory} (never {@code null}).
 	 * @throws SessionFactoryLookupFailureException if the lookup failed.
 	 */
 	SessionFactory getSessionFactory(String sessionFactoryName) throws SessionFactoryLookupFailureException;

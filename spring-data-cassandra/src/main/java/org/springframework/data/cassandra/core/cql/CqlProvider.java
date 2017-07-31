@@ -27,6 +27,7 @@ package org.springframework.data.cassandra.core.cql;
  * @see ReactivePreparedStatementCreator
  * @see ReactiveStatementCallback
  */
+@FunctionalInterface
 public interface CqlProvider {
 
 	/**

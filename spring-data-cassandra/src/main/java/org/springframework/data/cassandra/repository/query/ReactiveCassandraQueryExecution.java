@@ -36,6 +36,7 @@ import com.datastax.driver.core.Statement;
  * @author Mark Paluch
  * @since 2.0
  */
+@FunctionalInterface
 interface ReactiveCassandraQueryExecution {
 
 	Object execute(Statement statement, Class<?> type);

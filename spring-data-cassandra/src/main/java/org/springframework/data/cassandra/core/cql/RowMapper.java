@@ -33,6 +33,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @see RowCallbackHandler
  * @see ResultSetExtractor
  */
+@FunctionalInterface
 public interface RowMapper<T> {
 
 	/**

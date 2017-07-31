@@ -39,10 +39,10 @@ public interface CqlExceptionTranslator extends PersistenceExceptionTranslator {
 	 * other resource APIs as well. That said, a {@code getRootCause() instanceof DataAccessException} check (and
 	 * subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
 	 *
-	 * @param task readable text describing the task being attempted
-	 * @param cql CQL query or update that caused the problem (may be {@code null})
-	 * @param ex the offending {@link DriverException}
-	 * @return the DataAccessException, wrapping the {@code DriverException}
+	 * @param task readable text describing the task being attempted.
+	 * @param cql CQL query or update that caused the problem (may be {@code null}).
+	 * @param ex the offending {@link DriverException}.
+	 * @return the DataAccessException, wrapping the {@link DriverException}.
 	 * @see org.springframework.dao.DataAccessException#getRootCause()
 	 */
 	default DataAccessException translate(String task, String cql, DriverException ex) {

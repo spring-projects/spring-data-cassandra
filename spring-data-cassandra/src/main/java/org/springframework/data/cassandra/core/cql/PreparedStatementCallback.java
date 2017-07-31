@@ -35,10 +35,11 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author David Webb
  * @author Mark Paluch
  * @see AsyncCqlTemplate#execute(String, PreparedStatementCallback)
- * @see AsyncCqlTemplate#execute(PreparedStatementCreator, PreparedStatementCallback)
+ * @see AsyncCqlTemplate#execute(AsyncPreparedStatementCreator, PreparedStatementCallback)
  * @see CqlTemplate#execute(String, PreparedStatementCallback)
  * @see CqlTemplate#execute(PreparedStatementCreator, PreparedStatementCallback)
  */
+@FunctionalInterface
 public interface PreparedStatementCallback<T> {
 
 	/**
@@ -53,8 +54,8 @@ public interface PreparedStatementCallback<T> {
 	 *
 	 * @param session active Cassandra session, must not be {@literal null}.
 	 * @param preparedStatement the {@link PreparedStatement}, must not be {@literal null}.
-	 * @return a result object publisher.
-	 * @throws DriverException if thrown by a session method, to be auto-converted to a DataAccessException.
+	 * @return a result object.
+	 * @throws DriverException if thrown by a session method, to be auto-converted to a {@link DataAccessException}.
 	 * @throws DataAccessException in case of custom exceptions.
 	 * @see AsyncCqlTemplate#queryForObject(String, Class, Object...)
 	 * @see AsyncCqlTemplate#queryForList(String, Class, Object...)

@@ -28,6 +28,7 @@ package org.springframework.data.cassandra;
  * @see org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory
  * @see org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate
  */
+@FunctionalInterface
 public interface ReactiveSessionFactory {
 
 	/**

@@ -30,6 +30,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author Mark Paluch
  * @see CqlTemplate
  */
+@FunctionalInterface
 public interface HostMapper<T> {
 
 	/**
@@ -42,5 +43,4 @@ public interface HostMapper<T> {
 	 *           catch {@link DriverException}).
 	 */
 	Collection<T> mapHosts(Iterable<Host> hosts) throws DriverException;
-
 }

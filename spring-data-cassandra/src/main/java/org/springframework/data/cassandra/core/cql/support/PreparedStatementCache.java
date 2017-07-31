@@ -64,5 +64,4 @@ public interface PreparedStatementCache {
 	 */
 	PreparedStatement getPreparedStatement(Session session, RegularStatement statement,
 			Supplier<PreparedStatement> preparer);
-
 }

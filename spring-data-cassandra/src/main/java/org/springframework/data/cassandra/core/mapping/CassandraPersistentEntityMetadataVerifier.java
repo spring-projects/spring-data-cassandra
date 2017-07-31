@@ -23,13 +23,13 @@ import org.springframework.data.mapping.MappingException;
  * @author David Webb
  * @author Mark Paluch
  */
+@FunctionalInterface
 public interface CassandraPersistentEntityMetadataVerifier {
 
 	/**
 	 * Performs verification on the Persistent Entity to ensure all markers and marker combinations are valid.
 	 *
-	 * @param entity
+	 * @param entity the entity to verify, must not be {@literal null}.
 	 */
 	void verify(CassandraPersistentEntity<?> entity) throws MappingException;
-
 }

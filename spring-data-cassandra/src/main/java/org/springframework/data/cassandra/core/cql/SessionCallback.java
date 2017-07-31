@@ -32,7 +32,9 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author Mark Paluch
  * @see CqlTemplate#execute(SessionCallback)
  * @see CqlTemplate#query
+ * @see CqlTemplate#execute(String)
  */
+@FunctionalInterface
 public interface SessionCallback<T> {
 
 	/**

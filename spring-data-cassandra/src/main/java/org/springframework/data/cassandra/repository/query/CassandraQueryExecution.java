@@ -36,6 +36,7 @@ import com.datastax.driver.core.Statement;
  * @author Mark Paluch
  * @since 1.5
  */
+@FunctionalInterface
 interface CassandraQueryExecution {
 
 	Object execute(Statement statement, Class<?> type);

@@ -38,6 +38,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @see AsyncCqlTemplate#query(AsyncPreparedStatementCreator, PreparedStatementBinder, ResultSetExtractor)
  * @see ReactiveCqlTemplate#query(String, PreparedStatementBinder, ReactiveResultSetExtractor)
  */
+@FunctionalInterface
 public interface PreparedStatementBinder {
 
 	/**

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.config;
 
 import com.datastax.driver.core.Cluster;
@@ -22,9 +21,11 @@ import com.datastax.driver.core.Cluster;
  * Configuration callback class to allow a user to apply additional configuration logic to the {@link Cluster.Builder}.
  *
  * @author John Blum
+ * @author Mark Paluch
+ * @since 1.5
  * @see com.datastax.driver.core.Cluster
- * @since 1.0.0
  */
+@FunctionalInterface
 public interface ClusterBuilderConfigurer {
 
 	/**
@@ -35,5 +36,4 @@ public interface ClusterBuilderConfigurer {
 	 * @see com.datastax.driver.core.Cluster.Builder
 	 */
 	Cluster.Builder configure(Cluster.Builder clusterBuilder);
-
 }

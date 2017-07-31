@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.0
  */
+@FunctionalInterface
 public interface Filter extends Iterable<CriteriaDefinition> {
 
 	/**

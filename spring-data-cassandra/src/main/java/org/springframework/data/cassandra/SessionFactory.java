@@ -32,6 +32,7 @@ import com.datastax.driver.core.Session;
  * @author Mark Paluch
  * @since 2.0
  */
+@FunctionalInterface
 public interface SessionFactory {
 
 	/**

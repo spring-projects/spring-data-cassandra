@@ -25,6 +25,7 @@ import com.datastax.driver.core.UserType;
  * @author Mark Paluch
  * @since 1.5
  */
+@FunctionalInterface
 public interface UserTypeResolver {
 
 	/**

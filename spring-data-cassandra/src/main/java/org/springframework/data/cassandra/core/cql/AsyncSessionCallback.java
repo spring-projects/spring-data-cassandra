@@ -33,7 +33,9 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author Mark Paluch
  * @see AsyncCqlTemplate#execute(AsyncSessionCallback)
  * @see AsyncCqlTemplate#query
+ * @see AsyncCqlTemplate#execute(String)
  */
+@FunctionalInterface
 public interface AsyncSessionCallback<T> {
 
 	/**
@@ -53,5 +55,4 @@ public interface AsyncSessionCallback<T> {
 	 * @see AsyncCqlTemplate#queryForResultSet(String)
 	 */
 	ListenableFuture<T> doInSession(Session session) throws DriverException, DataAccessException;
-
 }

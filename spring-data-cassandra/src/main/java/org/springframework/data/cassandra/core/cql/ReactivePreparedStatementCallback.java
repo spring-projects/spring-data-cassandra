@@ -38,6 +38,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @see ReactiveCqlTemplate#execute(ReactivePreparedStatementCreator, ReactivePreparedStatementCallback)
  * @see ReactiveCqlTemplate#execute(String, ReactivePreparedStatementCallback)
  */
+@FunctionalInterface
 public interface ReactivePreparedStatementCallback<T> {
 
 	/**
@@ -53,7 +54,7 @@ public interface ReactivePreparedStatementCallback<T> {
 	 * @param session active Cassandra session, must not be {@literal null}.
 	 * @param ps the {@link PreparedStatement}, must not be {@literal null}.
 	 * @return a result object publisher.
-	 * @throws DriverException if thrown by a session method, to be auto-converted to a DataAccessException.
+	 * @throws DriverException if thrown by a session method, to be auto-converted to a {@link DataAccessException}.
 	 * @throws DataAccessException in case of custom exceptions.
 	 * @see ReactiveCqlTemplate#queryForObject(String, Class, Object...)
 	 * @see ReactiveCqlTemplate#queryForFlux(String, Object...)

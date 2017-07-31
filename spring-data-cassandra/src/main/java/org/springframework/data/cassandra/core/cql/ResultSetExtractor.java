@@ -34,24 +34,23 @@ import com.datastax.driver.core.exceptions.DriverException;
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
- * @since April 24, 2003
  * @see AsyncCqlTemplate
  * @see CqlTemplate
  * @see RowCallbackHandler
  * @see RowMapper
  */
+@FunctionalInterface
 public interface ResultSetExtractor<T> {
 
 	/**
 	 * Implementations must implement this method to process the entire {@link ResultSet}.
 	 *
 	 * @param resultSet {@link ResultSet} to extract data from.
-	 * @return an arbitrary result object, or {@code null} if none (the extractor will typically be stateful in the latter
-	 *         case).
+	 * @return an arbitrary result object, or {@literal null} if none (the extractor will typically be stateful in the
+	 *         latter case).
 	 * @throws DriverException if a {@link DriverException} is encountered getting column values or navigating (that is,
 	 *           there's no need to catch {@link DriverException})
 	 * @throws DataAccessException in case of custom exceptions
 	 */
 	T extractData(ResultSet resultSet) throws DriverException, DataAccessException;
-
 }

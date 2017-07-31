@@ -37,6 +37,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author Mark Paluch
  * @since 2.0
  */
+@FunctionalInterface
 public interface AsyncPreparedStatementCreator {
 
 	/**
@@ -45,10 +46,9 @@ public interface AsyncPreparedStatementCreator {
 	 * re-preparing on the entire cluster.
 	 *
 	 * @param session Session to use to create statement, must not be {@literal null}.
-	 * @return a prepared statement
+	 * @return a prepared statement.
 	 * @throws DriverException there is no need to catch DriverException that may be thrown in the implementation of this
-	 *           method. The {@link CqlTemplate} class will handle them.
+	 *           method. The {@link AsyncCqlTemplate} class will handle them.
 	 */
 	ListenableFuture<PreparedStatement> createPreparedStatement(Session session) throws DriverException;
-
 }

@@ -33,13 +33,13 @@ import com.datastax.driver.core.exceptions.DriverException;
  * Note: {@link ReactiveResultSetExtractor} object is typically stateless and thus reusable, as long as it doesn't
  * access stateful resources or keep result state within the object.
  *
- * @param <T>
  * @author Mark Paluch
  * @since 2.0
  * @see ReactiveCqlTemplate
  * @see RowCallbackHandler
  * @see RowMapper
  */
+@FunctionalInterface
 public interface ReactiveResultSetExtractor<T> {
 
 	/**

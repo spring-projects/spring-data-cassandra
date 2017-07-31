@@ -45,7 +45,7 @@ public interface RowCallbackHandler {
 	 * Exactly what the implementation chooses to do is up to it: A trivial implementation might simply count rows, while
 	 * another implementation might build an XML document.
 	 *
-	 * @param row the {@link Row} to process (pre-initialized for the current row)
+	 * @param row the {@link Row} to process (pre-initialized for the current row).
 	 * @throws DriverException if a {@link DriverException} is encountered getting column values (that is, there's no need
 	 *           to catch {@link DriverException})
 	 */

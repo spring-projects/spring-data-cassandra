@@ -32,13 +32,14 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @see CqlTemplate#execute(PreparedStatementCreator, PreparedStatementCallback)
  * @see CqlTemplate#query(PreparedStatementCreator, RowCallbackHandler)
  */
+@FunctionalInterface
 public interface PreparedStatementCreator {
 
 	/**
 	 * Create a statement in this session. Allows implementations to use {@link PreparedStatement}.
 	 *
-	 * @param session {@link Session} to use to create statement
-	 * @return a prepared statement
+	 * @param session {@link Session} to use to create statement.
+	 * @return a prepared statement.
 	 * @throws DriverException there is no need to catch {@link DriverException} that may be thrown in the implementation
 	 *           of this method. The {@link CqlTemplate} class will handle them.
 	 */
