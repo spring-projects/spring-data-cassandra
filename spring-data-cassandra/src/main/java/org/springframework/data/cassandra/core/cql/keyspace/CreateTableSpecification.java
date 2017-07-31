@@ -16,9 +16,10 @@
 package org.springframework.data.cassandra.core.cql.keyspace;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.lang.Nullable;
 
 /**
- * Builder class to construct a {@code CREATE TABLE} specification.
+ * Object to configure a {@code CREATE TABLE} specification.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
@@ -32,19 +33,25 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	}
 
 	/**
-	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link CreateTableSpecification}'s fluent API given {@code tableName} to create a table.
+	 * Convenient if imported statically.
+	 *
+	 * @param tableName must not be {@literal null} or empty.
+	 * @return a new {@link CreateTableSpecification}.
 	 */
-	public static CreateTableSpecification createTable(CqlIdentifier name) {
-		return new CreateTableSpecification(name);
+	public static CreateTableSpecification createTable(String tableName) {
+		return new CreateTableSpecification(CqlIdentifier.cqlId(tableName));
 	}
 
 	/**
-	 * Entry point into the {@link CreateTableSpecification}'s fluent API to create a table. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link CreateTableSpecification}'s fluent API given {@code tableName} to create a table.
+	 * Convenient if imported statically.
+	 *
+	 * @param tableName must not be {@literal null}.
+	 * @return a new {@link CreateTableSpecification}.
 	 */
-	public static CreateTableSpecification createTable(String name) {
-		return new CreateTableSpecification(CqlIdentifier.cqlId(name));
+	public static CreateTableSpecification createTable(CqlIdentifier tableName) {
+		return new CreateTableSpecification(tableName);
 	}
 
 	/**
@@ -62,7 +69,9 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	 * @return this
 	 */
 	public CreateTableSpecification ifNotExists(boolean ifNotExists) {
+
 		this.ifNotExists = ifNotExists;
+
 		return this;
 	}
 
@@ -70,18 +79,30 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 		return this.ifNotExists;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cql.keyspace.TableOptionsSpecification#with(org.springframework.data.cassandra.core.cql.keyspace.TableOption)
+	 */
 	@Override
 	public CreateTableSpecification with(TableOption option) {
 		return (CreateTableSpecification) super.with(option);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cql.keyspace.TableOptionsSpecification#with(org.springframework.data.cassandra.core.cql.keyspace.TableOption, java.lang.Object)
+	 */
 	@Override
 	public CreateTableSpecification with(TableOption option, Object value) {
 		return (CreateTableSpecification) super.with(option, value);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cql.keyspace.TableOptionsSpecification#with(java.lang.String, java.lang.Object, boolean, boolean)
+	 */
 	@Override
-	public CreateTableSpecification with(String name, Object value, boolean escape, boolean quote) {
+	public CreateTableSpecification with(String name, @Nullable Object value, boolean escape, boolean quote) {
 		return (CreateTableSpecification) super.with(name, value, escape, quote);
 	}
 }

@@ -21,14 +21,14 @@ import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.util.Assert;
 
 /**
- * Abstract builder class to support the construction of keyspace specifications.
+ * Base value object to support the construction of keyspace specifications.
  *
  * @author John McPeek
  * @author David Webb
  * @param <T> The subtype of the {@link KeyspaceActionSpecification}
  */
 @EqualsAndHashCode
-public abstract class KeyspaceActionSpecification<T extends KeyspaceActionSpecification<T>> {
+public abstract class KeyspaceActionSpecification {
 
 	/**
 	 * The name of the keyspace.

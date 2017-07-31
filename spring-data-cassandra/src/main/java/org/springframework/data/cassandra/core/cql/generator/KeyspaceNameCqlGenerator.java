@@ -24,13 +24,13 @@ import org.springframework.util.Assert;
  * @param <T> subtype of {@link KeyspaceActionSpecification}.
  * @author Mark Paluch
  */
-public abstract class KeyspaceNameCqlGenerator<T extends KeyspaceActionSpecification<T>> {
+public abstract class KeyspaceNameCqlGenerator<T extends KeyspaceActionSpecification> {
 
 	public abstract StringBuilder toCql(StringBuilder cql);
 
-	private final KeyspaceActionSpecification<T> specification;
+	private final KeyspaceActionSpecification specification;
 
-	public KeyspaceNameCqlGenerator(KeyspaceActionSpecification<T> specification) {
+	public KeyspaceNameCqlGenerator(KeyspaceActionSpecification specification) {
 
 		Assert.notNull(specification, "KeyspaceActionSpecification must not be null");
 		this.specification = specification;

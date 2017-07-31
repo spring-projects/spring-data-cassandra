@@ -20,7 +20,7 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import com.datastax.driver.core.DataType;
 
 /**
- * Value object for altering a column.
+ * Value object representing a specification to alter a column.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
@@ -28,33 +28,31 @@ import com.datastax.driver.core.DataType;
  */
 public class AlterColumnSpecification extends ColumnTypeChangeSpecification {
 
-	/**
-	 * Create a new {@link AlterColumnSpecification} for the given {@code name} and {@link DataType}
-	 *
-	 * @param name must not be empty or {@literal null}.
-	 * @param type must not be {@literal null}.
-	 */
-	public static AlterColumnSpecification alterColumn(String name, DataType type) {
-		return new AlterColumnSpecification(CqlIdentifier.cqlId(name), type);
+	private AlterColumnSpecification(CqlIdentifier name, DataType type) {
+		super(name, type);
 	}
 
 	/**
-	 * Create a new {@link AlterColumnSpecification} for the given {@code name} and {@link DataType}
+	 * Entry point into the {@link AlterColumnSpecification}'s fluent API given {@code name} and {@link DataType} to alter
+	 * a column. Convenient if imported statically.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @param type must not be {@literal null}.
+	 * @return a new {@link AlterColumnSpecification}.
+	 */
+	public static AlterColumnSpecification alterColumn(String name, DataType type) {
+		return alterColumn(CqlIdentifier.cqlId(name), type);
+	}
+
+	/**
+	 * Entry point into the {@link AlterColumnSpecification}'s fluent API given {@code name} and {@link DataType} to alter
+	 * a column. Convenient if imported statically.
 	 *
 	 * @param name must not be {@literal null}.
 	 * @param type must not be {@literal null}.
+	 * @return a new {@link AlterColumnSpecification}.
 	 */
 	public static AlterColumnSpecification alterColumn(CqlIdentifier name, DataType type) {
 		return new AlterColumnSpecification(name, type);
-	}
-
-	/**
-	 * Create a new {@link AlterColumnSpecification} for the given {@code name} and {@link DataType}
-	 *
-	 * @param name must not be {@literal null}.
-	 * @param type must not be {@literal null}.
-	 */
-	private AlterColumnSpecification(CqlIdentifier name, DataType type) {
-		super(name, type);
 	}
 }

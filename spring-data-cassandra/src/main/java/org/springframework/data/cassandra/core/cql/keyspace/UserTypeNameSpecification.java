@@ -19,16 +19,18 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
 /**
- * Abstract builder class to support the construction of user type specifications.
+ * Base value object builder class to construction of user type specifications.
  *
  * @author Fabio J. Mendes
  * @author Mark Paluch
- * @param <T> Subtype of {@link UserTypeNameSpecification}.
  * @since 1.5
  * @see CqlIdentifier
  */
-public abstract class UserTypeNameSpecification<T extends UserTypeNameSpecification<T>> {
+public abstract class UserTypeNameSpecification {
 
+	/**
+	 * User type name.
+	 */
 	private final CqlIdentifier name;
 
 	protected UserTypeNameSpecification(CqlIdentifier name) {

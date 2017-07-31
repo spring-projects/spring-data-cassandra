@@ -20,7 +20,13 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.data.cassandra.util.MapBuilder;
+import org.springframework.lang.Nullable;
 
+/**
+ * Object to configure a {@code CREATE KEYSPACE} specification.
+ *
+ * @author Mark Paluch
+ */
 @EqualsAndHashCode(callSuper = true)
 public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<CreateKeyspaceSpecification>
 		implements KeyspaceDescriptor {
@@ -32,16 +38,22 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 	}
 
 	/**
-	 * Entry point into the {@link CreateKeyspaceSpecification}'s fluent API to create a keyspace. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link CreateKeyspaceSpecification}'s fluent API given {@code name} to create a keyspace.
+	 * Convenient if imported statically.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @return a new {@link CreateKeyspaceSpecification}.
 	 */
 	public static CreateKeyspaceSpecification createKeyspace(String name) {
 		return new CreateKeyspaceSpecification(KeyspaceIdentifier.ksId(name));
 	}
 
 	/**
-	 * Entry point into the {@link CreateKeyspaceSpecification}'s fluent API to create a keyspace. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link CreateKeyspaceSpecification}'s fluent API given {@code name} to create a keyspace.
+	 * Convenient if imported statically.
+	 *
+	 * @param name must not be {@literal null}.
+	 * @return a new {@link CreateKeyspaceSpecification}.
 	 */
 	public static CreateKeyspaceSpecification createKeyspace(KeyspaceIdentifier name) {
 		return new CreateKeyspaceSpecification(name);
@@ -70,11 +82,22 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 		return ifNotExists;
 	}
 
+	/**
+	 * Configure simple replication with a replication factor of {@code 1}.
+	 *
+	 * @return this.
+	 */
 	public CreateKeyspaceSpecification withSimpleReplication() {
 		return withSimpleReplication(1);
 	}
 
+	/**
+	 * Configure simple replication with a {@code replicationFactor}.
+	 *
+	 * @return this.
+	 */
 	public CreateKeyspaceSpecification withSimpleReplication(long replicationFactor) {
+
 		return with(KeyspaceOption.REPLICATION,
 				MapBuilder.map(Option.class, Object.class)
 						.entry(new DefaultOption("class", String.class, true, false, true),
@@ -82,6 +105,11 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 						.entry(new DefaultOption("replication_factor", Long.class, true, false, false), replicationFactor).build());
 	}
 
+	/**
+	 * Configure datacenter replication given {@link DataCenterReplication}.
+	 *
+	 * @return this.
+	 */
 	public CreateKeyspaceSpecification withNetworkReplication(DataCenterReplication... dcrs) {
 
 		MapBuilder<Option, Object> builder = MapBuilder.map(Option.class, Object.class).entry(
@@ -95,18 +123,27 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 		return with(KeyspaceOption.REPLICATION, builder.build());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOptionsSpecification#with(org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption)
+	 */
 	@Override
 	public CreateKeyspaceSpecification with(KeyspaceOption option) {
 		return super.with(option);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOptionsSpecification#with(org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption, java.lang.Object)
+	 */
 	@Override
 	public CreateKeyspaceSpecification with(KeyspaceOption option, Object value) {
 		return super.with(option, value);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOptionsSpecification#with(java.lang.String, java.lang.Object, boolean, boolean)
+	 */
 	@Override
-	public CreateKeyspaceSpecification with(String name, Object value, boolean escape, boolean quote) {
+	public CreateKeyspaceSpecification with(String name, @Nullable Object value, boolean escape, boolean quote) {
 		return super.with(name, value, escape, quote);
 	}
 }

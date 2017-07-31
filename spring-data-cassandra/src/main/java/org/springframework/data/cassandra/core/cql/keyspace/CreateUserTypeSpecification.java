@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
 /**
- * Builder class to construct a {@code CREATE TYPE} specification.
+ * Object to configure a {@code CREATE TYPE} specification.
  *
  * @author Fabio J. Mendes
  * @author Mark Paluch
@@ -29,24 +29,30 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 
 	private boolean ifNotExists;
 
-	public CreateUserTypeSpecification(CqlIdentifier name) {
+	private CreateUserTypeSpecification(CqlIdentifier name) {
 		super(name);
 	}
 
 	/**
-	 * Entry point into the {@link CreateUserTypeSpecification}'s fluent API to create a type. Convenient if imported
-	 * statically.
-	 */
-	public static CreateUserTypeSpecification createType(CqlIdentifier name) {
-		return new CreateUserTypeSpecification(name);
-	}
-
-	/**
-	 * Entry point into the {@link CreateUserTypeSpecification}'s fluent API to create a type. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link CreateUserTypeSpecification}'s fluent API given {@code name} to create a type.
+	 * Convenient if imported statically.
+	 *
+	 * @param name must not {@literal null} or empty.
+	 * @return a new {@link CreateUserTypeSpecification}.
 	 */
 	public static CreateUserTypeSpecification createType(String name) {
 		return new CreateUserTypeSpecification(CqlIdentifier.cqlId(name));
+	}
+
+	/**
+	 * Entry point into the {@link CreateUserTypeSpecification}'s fluent API given {@code name} to create a type.
+	 * Convenient if imported statically.
+	 *
+	 * @param name must not {@literal null}.
+	 * @return a new {@link CreateUserTypeSpecification}.
+	 */
+	public static CreateUserTypeSpecification createType(CqlIdentifier name) {
+		return new CreateUserTypeSpecification(name);
 	}
 
 	/**

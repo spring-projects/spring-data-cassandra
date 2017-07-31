@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Builder class to construct a {@code CREATE INDEX} specification.
+ * Object to configure a {@code CREATE INDEX} specification.
  *
  * @author Matthew T. Adams
  * @author David Webb
@@ -49,7 +49,13 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 	private @Nullable String using;
 
-	private Map<String, String> options = new LinkedHashMap<>();
+	private final Map<String, String> options = new LinkedHashMap<>();
+
+	private CreateIndexSpecification() {}
+
+	private CreateIndexSpecification(CqlIdentifier name) {
+		super(name);
+	}
 
 	/**
 	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
@@ -60,19 +66,25 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/**
-	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API given {@code indexName} to create a index.
+	 * Convenient if imported statically.
+	 *
+	 * @param indexName must not be {@literal null} or empty.
+	 * @return a new {@link CreateIndexSpecification}.
 	 */
-	public static CreateIndexSpecification createIndex(CqlIdentifier name) {
-		return new CreateIndexSpecification().name(name);
+	public static CreateIndexSpecification createIndex(String indexName) {
+		return createIndex(CqlIdentifier.cqlId(indexName));
 	}
 
 	/**
-	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API given {@code indexName} to create a index.
+	 * Convenient if imported statically.
+	 *
+	 * @param indexName must not be {@literal null}.
+	 * @return a new {@link CreateIndexSpecification}.
 	 */
-	public static CreateIndexSpecification createIndex(String name) {
-		return new CreateIndexSpecification().name(name);
+	public static CreateIndexSpecification createIndex(CqlIdentifier indexName) {
+		return new CreateIndexSpecification(indexName);
 	}
 
 	/**
@@ -90,7 +102,9 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * @return this
 	 */
 	public CreateIndexSpecification ifNotExists(boolean ifNotExists) {
+
 		this.ifNotExists = ifNotExists;
+
 		return this;
 	}
 
@@ -123,6 +137,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * @see org.springframework.data.cassandra.core.cql.keyspace.IndexDescriptor#getUsing()
 	 */
 	@Override
+	@Nullable
 	public String getUsing() {
 		return this.using;
 	}

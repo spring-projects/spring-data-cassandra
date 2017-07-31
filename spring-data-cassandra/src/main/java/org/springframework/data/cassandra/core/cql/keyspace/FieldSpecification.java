@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.DataType;
 
 /**
- * Builder class to specify fields.
+ * Base value object class to specify user type fields.
  * <p/>
  * A {@link FieldSpecification} consists of a name and a {@link DataType}.
  *
@@ -46,7 +46,7 @@ public class FieldSpecification {
 	/**
 	 * Create a new {@link FieldSpecification} for the given {@code name} and {@link DataType}
 	 *
-	 * @param name must not be empty or {@literal null}.
+	 * @param name must not be {@literal null} or empty.
 	 * @param type must not be {@literal null}.
 	 */
 	public static FieldSpecification of(String name, DataType type) {

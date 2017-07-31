@@ -18,9 +18,10 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
 /**
- * Builder class that supports the construction of {@code DROP TABLE} specifications.
+ * Object to configure a {@code DROP TABLE} specification.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class DropTableSpecification extends TableNameSpecification {
 
@@ -29,22 +30,24 @@ public class DropTableSpecification extends TableNameSpecification {
 	}
 
 	/**
-	 * Entry point into the {@link DropTableSpecification}'s fluent API to drop a table. Convenient if imported
-	 * statically. This static method is shorter than the no-arg form, which would be {@code dropTable().name(tableName)}.
+	 * Entry point into the {@link DropTableSpecification}'s fluent API {@code tableName} to drop a table. Convenient if
+	 * imported statically.
 	 *
-	 * @param tableName The name of the table to drop.
+	 * @param tableName must not be {@literal null} or empty.
+	 * @return a new {@link DropTableSpecification}.
 	 */
-	public static DropTableSpecification dropTable(CqlIdentifier tableName) {
-		return new DropTableSpecification(tableName);
+	public static DropTableSpecification dropTable(String tableName) {
+		return dropTable(CqlIdentifier.cqlId(tableName));
 	}
 
 	/**
-	 * Entry point into the {@link DropTableSpecification}'s fluent API to drop a table. Convenient if imported
-	 * statically. This static method is shorter than the no-arg form, which would be {@code dropTable().name(tableName)}.
+	 * Entry point into the {@link DropTableSpecification}'s fluent API given {@code tableName} to drop a table.
+	 * Convenient if imported statically.
 	 *
-	 * @param tableName The name of the table to drop.
+	 * @param tableName must not be {@literal null}.
+	 * @return a new {@link DropTableSpecification}.
 	 */
-	public static DropTableSpecification dropTable(String tableName) {
-		return new DropTableSpecification(CqlIdentifier.cqlId(tableName));
+	public static DropTableSpecification dropTable(CqlIdentifier tableName) {
+		return new DropTableSpecification(tableName);
 	}
 }

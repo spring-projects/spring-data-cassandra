@@ -34,8 +34,8 @@ public class RenameColumnSpecification extends ColumnChangeSpecification {
 	/**
 	 * Create a new {@link ColumnChangeSpecification}.
 	 *
-	 * @param from must not be empty or {@literal null}.
-	 * @param to must not be empty or {@literal null}.
+	 * @param from must not be {@literal null} or empty.
+	 * @param to must not be {@literal null} or empty.
 	 */
 	RenameColumnSpecification(String from, String to) {
 		this(cqlId(from), cqlId(to));

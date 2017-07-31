@@ -26,15 +26,15 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import com.datastax.driver.core.DataType;
 
 /**
- * Builder class to support the construction of user type specifications that have columns. This class can also be used
- * as a standalone {@link UserTypeSpecification}.
+ * Object to support the configuration of user type specifications that have columns. This class can also be used as a
+ * standalone {@link UserTypeSpecification}.
  *
  * @author Fabio J. Mendes
  * @author Mark Paluch
  * @since 1.5
  * @see CqlIdentifier
  */
-public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends UserTypeNameSpecification<T> {
+public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends UserTypeNameSpecification {
 
 	private final List<FieldSpecification> fields = new ArrayList<>();
 
@@ -45,7 +45,7 @@ public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends U
 	/**
 	 * Adds the given field to the type.
 	 *
-	 * @param name must not be empty or {@literal null}.
+	 * @param name must not be {@literal null} or empty.
 	 * @param type The data type of the field.
 	 * @return {@code this} specification.
 	 */

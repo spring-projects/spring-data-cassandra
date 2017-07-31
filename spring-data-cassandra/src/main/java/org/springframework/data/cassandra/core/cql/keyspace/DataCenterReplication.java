@@ -15,29 +15,35 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import lombok.ToString;
+
 /**
- * Simple data structure to be used when setting the replication factor for a given data center.
+ * Value object representing replication factor for a given data center.
+ *
+ * @author Mark Paluch
  */
+@ToString
 public class DataCenterReplication {
 
-	/**
-	 * Creates a new {@link DataCenterReplication} given {@code dataCenter} and {@code replicationFactor}.
-	 *
-	 * @param dataCenter must not be {@literal null}.
-	 * @param replicationFactor
-	 * @return
-	 */
-	public static DataCenterReplication of(String dataCenter, long replicationFactor) {
-		return new DataCenterReplication(dataCenter, replicationFactor);
-	}
-
 	private final String dataCenter;
+
 	private final long replicationFactor;
 
 	private DataCenterReplication(String dataCenter, long replicationFactor) {
 
 		this.dataCenter = dataCenter;
 		this.replicationFactor = replicationFactor;
+	}
+
+	/**
+	 * Creates a new {@link DataCenterReplication} given {@code dataCenter} and {@code replicationFactor}.
+	 *
+	 * @param dataCenter must not be {@literal null}.
+	 * @param replicationFactor the replication factor.
+	 * @return {@link DataCenterReplication} for {@code dataCenter} and {@code replicationFactor}.
+	 */
+	public static DataCenterReplication of(String dataCenter, long replicationFactor) {
+		return new DataCenterReplication(dataCenter, replicationFactor);
 	}
 
 	/**
@@ -52,16 +58,5 @@ public class DataCenterReplication {
 	 */
 	public long getReplicationFactor() {
 		return replicationFactor;
-	}
-
-	@Override
-	public String toString() {
-
-		StringBuffer sb = new StringBuffer();
-		sb.append(getClass().getSimpleName());
-		sb.append(" [dataCenter='").append(dataCenter).append('\'');
-		sb.append(", replicationFactor=").append(replicationFactor);
-		sb.append(']');
-		return sb.toString();
 	}
 }

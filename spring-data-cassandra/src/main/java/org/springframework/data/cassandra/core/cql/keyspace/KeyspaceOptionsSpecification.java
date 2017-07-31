@@ -42,7 +42,7 @@ import org.springframework.lang.Nullable;
  */
 @EqualsAndHashCode(callSuper = true)
 public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpecification<T>>
-		extends KeyspaceActionSpecification<KeyspaceOptionsSpecification<T>> {
+		extends KeyspaceActionSpecification {
 
 	protected Map<String, Object> options = new LinkedHashMap<>();
 

@@ -18,10 +18,11 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
 /**
- * Builder class that supports the construction of {@code DROP INDEX} specifications.
+ * Value object representing a {@code DROP INDEX} specification.
  *
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpecification> {
 
@@ -30,18 +31,22 @@ public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpec
 	}
 
 	/**
-	 * Entry point into the {@link DropIndexSpecification}'s fluent API to drop a table. Convenient if imported
-	 * statically.
+	 * Create a new {@link DropIndexSpecification} for the given {@code indexName}.
+	 *
+	 * @param indexName must not be {@literal null} or empty.
+	 * @return a new {@link DropIndexSpecification}.
 	 */
-	public static DropIndexSpecification dropIndex(String name) {
-		return new DropIndexSpecification(CqlIdentifier.cqlId(name));
+	public static DropIndexSpecification dropIndex(String indexName) {
+		return dropIndex(CqlIdentifier.cqlId(indexName));
 	}
 
 	/**
-	 * Entry point into the {@link DropIndexSpecification}'s fluent API to drop a table. Convenient if imported
-	 * statically.
+	 * Create a new {@link DropIndexSpecification} for the given {@code indexName}.
+	 *
+	 * @param indexName must not be {@literal null}.
+	 * @return a new {@link DropIndexSpecification}.
 	 */
-	public static DropIndexSpecification dropIndex(CqlIdentifier name) {
-		return new DropIndexSpecification(name);
+	public static DropIndexSpecification dropIndex(CqlIdentifier indexName) {
+		return new DropIndexSpecification(indexName);
 	}
 }

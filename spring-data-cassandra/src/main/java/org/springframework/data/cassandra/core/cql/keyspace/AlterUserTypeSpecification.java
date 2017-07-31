@@ -24,41 +24,47 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import com.datastax.driver.core.DataType;
 
 /**
- * Builder class to construct an {@code ALTER TYPE} specification.
+ * Object to configure a {@code ALTER TYPE} specification.
  *
  * @author Fabio J. Mendes
  * @author Mark Paluch
  * @since 1.5
  * @see CqlIdentifier
  */
-public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterUserTypeSpecification> {
+public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 
 	private final List<ColumnChangeSpecification> changes = new ArrayList<>();
-
-	/**
-	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API to alter a type. Convenient if imported
-	 * statically.
-	 */
-	public static AlterUserTypeSpecification alterType(String typeName) {
-		return alterType(CqlIdentifier.cqlId(typeName));
-	}
-
-	/**
-	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API to alter a type. Convenient if imported
-	 * statically.
-	 */
-	private static AlterUserTypeSpecification alterType(CqlIdentifier typeName) {
-		return new AlterUserTypeSpecification(typeName);
-	}
 
 	private AlterUserTypeSpecification(CqlIdentifier name) {
 		super(name);
 	}
 
 	/**
+	 * Entry point into the {@link AlterColumnSpecification}'s fluent API given {@code typeName} to alter a user type.
+	 * Convenient if imported statically.
+	 *
+	 * @param typeName must not be {@literal null} or empty.
+	 * @return a new {@link AlterUserTypeSpecification}.
+	 */
+	public static AlterUserTypeSpecification alterType(String typeName) {
+		return alterType(CqlIdentifier.cqlId(typeName));
+	}
+
+	/**
+	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API given {@code typeName} to alter a type.
+	 * Convenient if imported statically.
+	 *
+	 * @param typeName must not be {@literal null} or empty.
+	 * @return a new {@link AlterUserTypeSpecification}.
+	 */
+	private static AlterUserTypeSpecification alterType(CqlIdentifier typeName) {
+		return new AlterUserTypeSpecification(typeName);
+	}
+
+	/**
 	 * Adds an {@literal ADD} to the list of field changes.
 	 *
-	 * @param field must not be empty or {@literal null}.
+	 * @param field must not be {@literal null} or empty.
 	 * @param type must not be {@literal null}.
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
@@ -74,16 +80,13 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification add(CqlIdentifier field, DataType type) {
-
-		changes.add(AddColumnSpecification.addColumn(field, type));
-
-		return this;
+		return add(AddColumnSpecification.addColumn(field, type));
 	}
 
 	/**
 	 * Adds an {@literal ALTER} to the list of field changes.
 	 *
-	 * @param field must not be empty or {@literal null}.
+	 * @param field must not be {@literal null} or empty.
 	 * @param type must not be {@literal null}.
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
@@ -99,17 +102,14 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification alter(CqlIdentifier field, DataType type) {
-
-		changes.add(AlterColumnSpecification.alterColumn(field, type));
-
-		return this;
+		return add(AlterColumnSpecification.alterColumn(field, type));
 	}
 
 	/**
 	 * Adds an {@literal RENAME} to the list of field changes.
 	 *
-	 * @param from must not be empty or {@literal null}.
-	 * @param to must not be empty or {@literal null}.
+	 * @param from must not be {@literal null} or empty.
+	 * @param to must not be {@literal null} or empty.
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification rename(String from, String to) {
@@ -120,12 +120,16 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification<AlterU
 	 * Adds an {@literal RENAME} to the list of field changes.
 	 *
 	 * @param from must not be {@literal null}.
-	 * @param to must not be empty or {@literal null}.
+	 * @param to must not be {@literal null} or empty.
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification rename(CqlIdentifier from, CqlIdentifier to) {
+		return add(new RenameColumnSpecification(from, to));
+	}
 
-		changes.add(new RenameColumnSpecification(from, to));
+	private AlterUserTypeSpecification add(ColumnChangeSpecification specification) {
+
+		changes.add(specification);
 
 		return this;
 	}

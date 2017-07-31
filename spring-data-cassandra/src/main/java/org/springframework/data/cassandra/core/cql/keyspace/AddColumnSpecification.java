@@ -20,7 +20,7 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import com.datastax.driver.core.DataType;
 
 /**
- * Specification to add a column.
+ * Value object representing a specification to add a column.
  *
  * @author Matthew Adams
  * @author Mark Paluch
@@ -28,33 +28,29 @@ import com.datastax.driver.core.DataType;
  */
 public class AddColumnSpecification extends ColumnTypeChangeSpecification {
 
-	/**
-	 * Create a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
-	 *
-	 * @param name must not be empty or {@literal null}.
-	 * @param type must not be {@literal null}.
-	 */
-	public static AddColumnSpecification addColumn(String name, DataType type) {
-		return new AddColumnSpecification(CqlIdentifier.cqlId(name), type);
+	private AddColumnSpecification(CqlIdentifier name, DataType type) {
+		super(name, type);
 	}
 
 	/**
-	 * Create a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
+	 * Create a new {@link AddColumnSpecification} for the given {@code name} and {@link DataType}.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @param type must not be {@literal null}.
+	 * @return a new {@link AddColumnSpecification}.
+	 */
+	public static AddColumnSpecification addColumn(String name, DataType type) {
+		return addColumn(CqlIdentifier.cqlId(name), type);
+	}
+
+	/**
+	 * Create a new {@link AddColumnSpecification} for the given {@code name} and {@link DataType}.
 	 *
 	 * @param name must not be {@literal null}.
 	 * @param type must not be {@literal null}.
+	 * @return a new {@link AddColumnSpecification}.
 	 */
 	public static AddColumnSpecification addColumn(CqlIdentifier name, DataType type) {
 		return new AddColumnSpecification(name, type);
-	}
-
-	/**
-	 * Create a new {@link AddColumnSpecification} for the given {@code name} and {@link type}
-	 *
-	 * @param name must not be {@literal null}.
-	 * @param type must not be {@literal null}.
-	 */
-	private AddColumnSpecification(CqlIdentifier name, DataType type) {
-		super(name, type);
 	}
 }

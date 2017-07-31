@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.DataType;
 
 /**
- * Builder class to specify columns.
+ * Object to configure a CQL column specification.
  * <p/>
  * Use {@link #name(String)} and {@link #type(String)} to set the name and type of the column, respectively. To specify
  * a clustered {@code PRIMARY KEY} column, use {@link #clustered()} or {@link #clustered(Ordering)}. To specify that the
@@ -37,6 +37,7 @@ import com.datastax.driver.core.DataType;
  *
  * @author Matthew T. Adams
  * @author Alex Shvid
+ * @author Mark Paluch
  */
 public class ColumnSpecification {
 
@@ -58,17 +59,25 @@ public class ColumnSpecification {
 	}
 
 	/**
-	 * Sets the column's name.
+	 * Create a new {@link ColumnSpecification} for the given {@code name}.
 	 *
-	 * @return this
+	 * @param name must not be {@literal null} or empty.
+	 * @return a new {@link ColumnSpecification} for {@code name}.
 	 */
 	public static ColumnSpecification name(String name) {
 		return name(cqlId(name));
 	}
 
+	/**
+	 * Create a new {@link ColumnSpecification} for the given {@code name}.
+	 *
+	 * @param name must not be {@literal null}.
+	 * @return a new {@link ColumnSpecification} for {@code name}.
+	 */
 	public static ColumnSpecification name(CqlIdentifier name) {
 
 		Assert.notNull(name, "CqlIdentifier must not be null");
+
 		return new ColumnSpecification(name);
 	}
 
@@ -78,7 +87,11 @@ public class ColumnSpecification {
 	 * @return this
 	 */
 	public ColumnSpecification type(DataType type) {
+
+		Assert.notNull(type, "DataType must not be null!");
+
 		this.type = type;
+
 		return this;
 	}
 
@@ -100,8 +113,10 @@ public class ColumnSpecification {
 	 * @return this
 	 */
 	public ColumnSpecification partitioned(boolean partitioned) {
+
 		this.keyType = partitioned ? PARTITIONED : null;
 		this.ordering = null;
+
 		return this;
 	}
 
@@ -133,8 +148,10 @@ public class ColumnSpecification {
 	 * @return this
 	 */
 	public ColumnSpecification clustered(Ordering order, boolean primary) {
+
 		this.keyType = primary ? CLUSTERED : null;
 		this.ordering = primary ? order : null;
+
 		return this;
 	}
 
@@ -143,8 +160,10 @@ public class ColumnSpecification {
 	 *
 	 * @return this
 	 */
-	ColumnSpecification keyType(PrimaryKeyType keyType) {
+	public ColumnSpecification keyType(PrimaryKeyType keyType) {
+
 		this.keyType = keyType;
+
 		return this;
 	}
 
@@ -153,8 +172,10 @@ public class ColumnSpecification {
 	 *
 	 * @return this
 	 */
-	ColumnSpecification ordering(Ordering ordering) {
+	public ColumnSpecification ordering(Ordering ordering) {
+
 		this.ordering = ordering;
+
 		return this;
 	}
 

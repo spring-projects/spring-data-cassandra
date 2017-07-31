@@ -15,10 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
-
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 
 /**
@@ -33,7 +32,7 @@ public class CreateIndexCqlGeneratorUnitTests {
 	@Test // DATACASS-213
 	public void createIndex() {
 
-		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().name("myindex").tableName("mytable")
+		CreateIndexSpecification spec = CreateIndexSpecification.createIndex("myindex").tableName("mytable")
 				.columnName("column");
 
 		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX myindex ON mytable (column);");
@@ -42,7 +41,7 @@ public class CreateIndexCqlGeneratorUnitTests {
 	@Test // DATACASS-213
 	public void createCustomIndex() {
 
-		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().name("myindex").tableName("mytable")
+		CreateIndexSpecification spec = CreateIndexSpecification.createIndex("myindex").tableName("mytable")
 				.columnName("column").using("indexclass");
 
 		assertThat(CreateIndexCqlGenerator.toCql(spec))

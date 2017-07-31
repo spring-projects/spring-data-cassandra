@@ -18,21 +18,32 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
 /**
- * A specification to drop a column.
+ * Value object representing a specification to drop a column.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class DropColumnSpecification extends ColumnChangeSpecification {
 
-	public static DropColumnSpecification dropColumn(String name) {
-		return new DropColumnSpecification(CqlIdentifier.cqlId(name));
+	private DropColumnSpecification(CqlIdentifier name) {
+		super(name);
 	}
 
+	/**
+	 * Create a new {@link DropColumnSpecification} for the given {@code name}.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 */
+	public static DropColumnSpecification dropColumn(String name) {
+		return dropColumn(CqlIdentifier.cqlId(name));
+	}
+
+	/**
+	 * Create a new {@link DropColumnSpecification} for the given {@code name}.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 */
 	public static DropColumnSpecification dropColumn(CqlIdentifier name) {
 		return new DropColumnSpecification(name);
-	}
-
-	public DropColumnSpecification(CqlIdentifier name) {
-		super(name);
 	}
 }

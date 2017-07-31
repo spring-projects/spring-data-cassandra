@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.cql.keyspace;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.lang.Nullable;
 
 /**
  * Describes an index.
@@ -28,6 +29,7 @@ public interface IndexDescriptor {
 	/**
 	 * Returns the name of the index.
 	 */
+	@Nullable
 	CqlIdentifier getName();
 
 	/**
@@ -37,6 +39,7 @@ public interface IndexDescriptor {
 
 	CqlIdentifier getColumnName();
 
+	@Nullable
 	String getUsing();
 
 	boolean isCustom();

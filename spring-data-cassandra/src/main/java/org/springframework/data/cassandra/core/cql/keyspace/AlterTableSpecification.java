@@ -24,7 +24,7 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import com.datastax.driver.core.DataType;
 
 /**
- * Builder class to construct an {@code ALTER TABLE} specification.
+ * Object to configure a {@code ALTER TABLE} specification.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
@@ -49,65 +49,121 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	}
 
 	/**
-	 * Entry point into the {@link AlterTableSpecification}'s fluent API to alter a table. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link AlterTableSpecification}'s fluent API given {@code tableName} to alter a table.
+	 * Convenient if imported statically.
+	 *
+	 * @param tableName must not be {@literal null} or empty.
+	 * @return a new {@link AlterTableSpecification}.
+	 */
+	public static AlterTableSpecification alterTable(String tableName) {
+		return alterTable(CqlIdentifier.cqlId(tableName));
+	}
+
+	/**
+	 * Entry point into the {@link AlterTableSpecification}'s fluent API given {@code tableName} to alter a table.
+	 * Convenient if imported statically.
+	 *
+	 * @param tableName must not be {@literal null}.
+	 * @return a new {@link AlterTableSpecification}.
 	 */
 	public static AlterTableSpecification alterTable(CqlIdentifier tableName) {
 		return new AlterTableSpecification(tableName);
 	}
 
 	/**
-	 * Entry point into the {@link AlterTableSpecification}'s fluent API to alter a table. Convenient if imported
-	 * statically.
-	 */
-	public static AlterTableSpecification alterTable(String tableName) {
-		return new AlterTableSpecification(CqlIdentifier.cqlId(tableName));
-	}
-
-	/*
-	 * Adds a {@code DROP} to the list of column changes.
+	 * Adds an {@code ADD} to the list of column changes.
 	 *
-	 * @param column must not be empty or {@literal null}
-	 * @return {@literal this} {@link AlterTableSpecification}
+	 * @param column must not be {@literal null} or empty.
+	 * @param type must not be {@literal null}.
+	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
-	public AlterTableSpecification drop(String column) {
-		changes.add(DropColumnSpecification.dropColumn(column));
-		return this;
+	public AlterTableSpecification add(String column, DataType type) {
+		return add(CqlIdentifier.cqlId(column), type);
 	}
 
 	/**
 	 * Adds an {@code ADD} to the list of column changes.
 	 *
-	 * @param column must not be empty or {@literal null}
-	 * @param type must not be {@literal null}
-	 * @return {@literal this} {@link AlterTableSpecification}
+	 * @param column must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return {@literal this} {@link AlterTableSpecification}.
+	 * @since 2.0
 	 */
-	public AlterTableSpecification add(String column, DataType type) {
-		changes.add(AddColumnSpecification.addColumn(column, type));
-		return this;
+	public AlterTableSpecification add(CqlIdentifier column, DataType type) {
+		return add(AddColumnSpecification.addColumn(column, type));
+	}
+
+	/*
+	 * Adds a {@code DROP} to the list of column changes.
+	 *
+	 * @param column must not be {@literal null} or empty.
+	 * @return {@literal this} {@link AlterTableSpecification}.
+	 */
+	public AlterTableSpecification drop(String column) {
+		return drop(CqlIdentifier.cqlId(column));
+	}
+
+	/*
+	 * Adds a {@code DROP} to the list of column changes.
+	 *
+	 * @param column must not be {@literal null} or empty.
+	 * @return {@literal this} {@link AlterTableSpecification}.
+	 * @since 2.0
+	 */
+	public AlterTableSpecification drop(CqlIdentifier column) {
+		return add(DropColumnSpecification.dropColumn(column));
 	}
 
 	/**
 	 * Adds a {@code RENAME} to the list of column changes.
 	 *
-	 * @param from must not be empty or {@literal null}
-	 * @param to must not be empty or {@literal null}
-	 * @return {@literal this} {@link AlterTableSpecification}
+	 * @param from must not be {@literal null} or empty.
+	 * @param to must not be {@literal null} or empty.
+	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification rename(String from, String to) {
-		changes.add(new RenameColumnSpecification(from, to));
-		return this;
+		return rename(CqlIdentifier.cqlId(from), CqlIdentifier.cqlId(to));
+	}
+
+	/**
+	 * Adds a {@code RENAME} to the list of column changes.
+	 *
+	 * @param from must not be {@literal null}.
+	 * @param to must not be {@literal null}.
+	 * @return {@literal this} {@link AlterTableSpecification}.
+	 * @since 2.0
+	 */
+	public AlterTableSpecification rename(CqlIdentifier from, CqlIdentifier to) {
+		return add(new RenameColumnSpecification(from, to));
 	}
 
 	/**
 	 * Adds an {@literal ALTER} to the list of column changes.
 	 *
-	 * @param column must not be empty or {@literal null}
+	 * @param column must not be {@literal null} or empty
 	 * @param type must not be {@literal null}
-	 * @return {@literal this} {@link AlterTableSpecification}
+	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification alter(String column, DataType type) {
-		changes.add(AlterColumnSpecification.alterColumn(column, type));
+		return alter(CqlIdentifier.cqlId(column), type);
+	}
+
+	/**
+	 * Adds an {@literal ALTER} to the list of column changes.
+	 *
+	 * @param column must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return {@literal this} {@link AlterTableSpecification}.
+	 * @since 2.0
+	 */
+	public AlterTableSpecification alter(CqlIdentifier column, DataType type) {
+		return add(AlterColumnSpecification.alterColumn(column, type));
+	}
+
+	private AlterTableSpecification add(ColumnChangeSpecification specification) {
+
+		changes.add(specification);
+
 		return this;
 	}
 
@@ -117,5 +173,4 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	public List<ColumnChangeSpecification> getChanges() {
 		return Collections.unmodifiableList(changes);
 	}
-
 }

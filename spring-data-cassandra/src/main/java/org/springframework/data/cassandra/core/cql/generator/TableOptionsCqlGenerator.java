@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
-
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
@@ -41,37 +39,6 @@ public abstract class TableOptionsCqlGenerator<T extends TableOptionsSpecificati
 	}
 
 	void optionValueMap(Map<Option, Object> valueMap, StringBuilder cql) {
-
-		if (valueMap.isEmpty()) {
-			return;
-		}
-		// else option value is a non-empty map
-
-		// append { 'name' : 'value', ... }
-		cql.append("{ ");
-		boolean mapFirst = true;
-		for (Map.Entry<Option, Object> entry : valueMap.entrySet()) {
-			if (mapFirst) {
-				mapFirst = false;
-			} else {
-				cql.append(", ");
-			}
-
-			Option option = entry.getKey();
-			cql.append(singleQuote(option.getName())); // entries in map keys are always quoted
-			cql.append(" : ");
-			Object entryValue = entry.getValue();
-			entryValue = entryValue == null ? "" : entryValue.toString();
-			if (option.escapesValue()) {
-				entryValue = escapeSingle(entryValue);
-			}
-			if (option.quotesValue()) {
-				entryValue = singleQuote(entryValue);
-			}
-			cql.append(entryValue);
-		}
-		cql.append(" }");
-
-		return;
+		cql.append(OptionRenderUtil.render(valueMap));
 	}
 }

@@ -18,14 +18,14 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
 /**
- * Builder class that supports the construction of {@code DROP TYPE} specifications.
+ * Object to configure a {@code DROP TYPE} specification.
  *
  * @author Fabio J. Mendes
  * @author Mark Paluch
  * @since 1.5
  * @see CqlIdentifier
  */
-public class DropUserTypeSpecification extends UserTypeNameSpecification<DropUserTypeSpecification> {
+public class DropUserTypeSpecification extends UserTypeNameSpecification {
 
 	private boolean ifExists;
 
@@ -34,23 +34,25 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification<DropUse
 	}
 
 	/**
-	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API to drop a type. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API given {@code name} to drop a type. Convenient
+	 * if imported statically.
 	 *
-	 * @param typeName The name of the type to drop.
+	 * @param name must not be {@link null} or empty.
+	 * @return a new {@link DropUserTypeSpecification}.
 	 */
-	public static DropUserTypeSpecification dropType(String typeName) {
-		return new DropUserTypeSpecification(CqlIdentifier.cqlId(typeName));
+	public static DropUserTypeSpecification dropType(String name) {
+		return new DropUserTypeSpecification(CqlIdentifier.cqlId(name));
 	}
 
 	/**
-	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API to drop a type. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API given {@code name} to drop a type. Convenient
+	 * if imported statically.
 	 *
-	 * @param typeName The name of the type to drop.
+	 * @param name must not be {@link null} or empty.
+	 * @return a new {@link DropUserTypeSpecification}.
 	 */
-	public static DropUserTypeSpecification dropType(CqlIdentifier typeName) {
-		return new DropUserTypeSpecification(typeName);
+	public static DropUserTypeSpecification dropType(CqlIdentifier name) {
+		return new DropUserTypeSpecification(name);
 	}
 
 	/**

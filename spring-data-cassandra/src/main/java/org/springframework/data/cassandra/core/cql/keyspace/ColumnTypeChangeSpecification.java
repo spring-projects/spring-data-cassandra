@@ -36,11 +36,12 @@ public abstract class ColumnTypeChangeSpecification extends ColumnChangeSpecific
 	 * @param name must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 */
-	public ColumnTypeChangeSpecification(CqlIdentifier name, DataType type) {
+	protected ColumnTypeChangeSpecification(CqlIdentifier name, DataType type) {
 
 		super(name);
 
 		Assert.notNull(type, "DataType must not be null");
+
 		this.type = type;
 	}
 

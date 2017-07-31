@@ -27,16 +27,16 @@ import org.springframework.util.Assert;
  * @since 1.5
  * @see UserTypeNameSpecification
  */
-public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecification<T>> {
+public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecification> {
 
-	private final UserTypeNameSpecification<T> specification;
+	private final UserTypeNameSpecification specification;
 
 	/**
 	 * Create a new {@link UserTypeNameCqlGenerator}.
 	 *
 	 * @param specification must not be {@literal null}.
 	 */
-	public UserTypeNameCqlGenerator(UserTypeNameSpecification<T> specification) {
+	public UserTypeNameCqlGenerator(UserTypeNameSpecification specification) {
 
 		Assert.notNull(specification, "UserTypeNameSpecification must not be null");
 

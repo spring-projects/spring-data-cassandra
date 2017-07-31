@@ -19,6 +19,11 @@ import lombok.EqualsAndHashCode;
 
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 
+/**
+ * Object to configure a {@code ALTER KEYSPACE} specification.
+ *
+ * @author Mark Paluch
+ */
 @EqualsAndHashCode(callSuper = true)
 public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<AlterKeyspaceSpecification> {
 
@@ -27,18 +32,24 @@ public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<Alt
 	}
 
 	/**
-	 * Entry point into the {@link AlterKeyspaceSpecification}'s fluent API to alter a keyspace. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link AlterKeyspaceSpecification}'s fluent API given {@code name} to alter a keyspace.
+	 * Convenient if imported statically.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @return a new {@link AlterKeyspaceSpecification}.
 	 */
-	public static AlterKeyspaceSpecification alterKeyspace(KeyspaceIdentifier name) {
-		return new AlterKeyspaceSpecification(name);
+	public static AlterKeyspaceSpecification alterKeyspace(String name) {
+		return alterKeyspace(KeyspaceIdentifier.ksId(name));
 	}
 
 	/**
-	 * Entry point into the {@link AlterKeyspaceSpecification}'s fluent API to alter a keyspace. Convenient if imported
-	 * statically.
+	 * Entry point into the {@link AlterKeyspaceSpecification}'s fluent API given {@code name} to alter a keyspace.
+	 * Convenient if imported statically.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @return a new {@link AlterKeyspaceSpecification}.
 	 */
-	public static AlterKeyspaceSpecification alterKeyspace(String name) {
-		return new AlterKeyspaceSpecification(KeyspaceIdentifier.ksId(name));
+	public static AlterKeyspaceSpecification alterKeyspace(KeyspaceIdentifier name) {
+		return new AlterKeyspaceSpecification(name);
 	}
 }

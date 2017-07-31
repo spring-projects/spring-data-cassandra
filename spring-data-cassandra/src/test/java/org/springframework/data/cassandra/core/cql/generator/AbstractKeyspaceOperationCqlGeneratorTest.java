@@ -30,7 +30,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecif
  * @param <S> The type of the {@link TableNameSpecification}
  * @param <G> The type of the {@link TableNameCqlGenerator}
  */
-public abstract class AbstractKeyspaceOperationCqlGeneratorTest<S extends KeyspaceActionSpecification<?>, G extends KeyspaceNameCqlGenerator<?>> {
+public abstract class AbstractKeyspaceOperationCqlGeneratorTest<S extends KeyspaceActionSpecification, G extends KeyspaceNameCqlGenerator<?>> {
 
 	public abstract S specification();
 

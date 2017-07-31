@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.DataType;
 
 /**
- * Builder class to support the construction of table specifications that have columns. This class can also be used as a
+ * Object to support the configuration of table specifications that have columns. This class can also be used as a
  * standalone {@link TableDescriptor}, independent of {@link CreateTableSpecification}.
  *
  * @author Matthew T. Adams

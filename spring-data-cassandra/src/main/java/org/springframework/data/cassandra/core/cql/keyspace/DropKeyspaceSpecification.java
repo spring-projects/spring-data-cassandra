@@ -19,8 +19,13 @@ import lombok.EqualsAndHashCode;
 
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 
+/**
+ * Object to configure a {@code DROP KEYSPACE} specification.
+ *
+ * @author Mark Paluch
+ */
 @EqualsAndHashCode(callSuper = true)
-public class DropKeyspaceSpecification extends KeyspaceActionSpecification<DropKeyspaceSpecification> {
+public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
 
 	private boolean ifExists;
 
@@ -29,27 +34,43 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification<DropK
 	}
 
 	/**
-	 * Entry point into the {@link DropKeyspaceSpecification}'s fluent API to drop a keyspace. Convenient if imported
-	 * statically.
+	 * Create a new {@link DropKeyspaceSpecification} for the given {@code name}.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @return a new {@link DropKeyspaceSpecification}.
+	 */
+	public static DropKeyspaceSpecification dropKeyspace(String name) {
+		return new DropKeyspaceSpecification(KeyspaceIdentifier.ksId(name));
+	}
+
+	/**
+	 * Create a new {@link DropKeyspaceSpecification} for the given {@code name}.
+	 *
+	 * @param name must not be {@literal null}.
+	 * @return a new {@link DropKeyspaceSpecification}.
 	 */
 	public static DropKeyspaceSpecification dropKeyspace(KeyspaceIdentifier name) {
 		return new DropKeyspaceSpecification(name);
 	}
 
 	/**
-	 * Entry point into the {@link DropKeyspaceSpecification}'s fluent API to drop a keyspace. Convenient if imported
-	 * statically.
+	 * Causes the inclusion of an {@code IF EXISTS} clause.
+	 *
+	 * @return this
 	 */
-	public static DropKeyspaceSpecification dropKeyspace(String name) {
-		return new DropKeyspaceSpecification(KeyspaceIdentifier.ksId(name));
-	}
-
 	public DropKeyspaceSpecification ifExists() {
 		return ifExists(true);
 	}
 
+	/**
+	 * Toggles the inclusion of an {@code IF EXISTS} clause.
+	 *
+	 * @return this
+	 */
 	public DropKeyspaceSpecification ifExists(boolean ifExists) {
+
 		this.ifExists = ifExists;
+
 		return this;
 	}
 
