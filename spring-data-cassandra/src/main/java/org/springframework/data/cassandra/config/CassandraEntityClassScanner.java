@@ -44,14 +44,16 @@ import org.springframework.util.StringUtils;
 public class CassandraEntityClassScanner {
 
 	private Set<String> entityBasePackages = new HashSet<>();
+
 	private Set<Class<?>> entityBasePackageClasses = new HashSet<>();
+
 	private @Nullable ClassLoader beanClassLoader;
 
 	/**
 	 * Scan one or more base packages for entity classes. Classes are loaded using the current class loader.
 	 *
 	 * @param entityBasePackages must not be {@literal null}.
-	 * @return
+	 * @return {@link Set} containing all discovered entity classes.
 	 * @throws ClassNotFoundException
 	 */
 	public static Set<Class<?>> scan(String... entityBasePackages) throws ClassNotFoundException {
@@ -62,8 +64,8 @@ public class CassandraEntityClassScanner {
 	 * Scan one or more base packages for entity classes. Classes are loaded using the current class loader.
 	 *
 	 * @param entityBasePackageClasses must not be {@literal null}.
-	 * @return
-	 * @throws ClassNotFoundException
+	 * @return {@link Set} containing all discovered entity classes.
+	 * @throws ClassNotFoundException if a discovered class could not be loaded via.
 	 */
 	public static Set<Class<?>> scan(Class<?>... entityBasePackageClasses) throws ClassNotFoundException {
 		return new CassandraEntityClassScanner(entityBasePackageClasses).scanForEntityClasses();
@@ -73,8 +75,8 @@ public class CassandraEntityClassScanner {
 	 * Scan one or more base packages for entity classes. Classes are loaded using the current class loader.
 	 *
 	 * @param entityBasePackages must not be {@literal null}.
-	 * @return
-	 * @throws ClassNotFoundException
+	 * @return {@link Set} containing all discovered entity classes.
+	 * @throws ClassNotFoundException if a discovered class could not be loaded via.
 	 */
 	public static Set<Class<?>> scan(Collection<String> entityBasePackages) throws ClassNotFoundException {
 		return new CassandraEntityClassScanner(entityBasePackages).scanForEntityClasses();
@@ -85,8 +87,8 @@ public class CassandraEntityClassScanner {
 	 *
 	 * @param entityBasePackages must not be {@literal null}.
 	 * @param entityBasePackageClasses must not be {@literal null}.
-	 * @return
-	 * @throws ClassNotFoundException
+	 * @return {@link Set} containing all discovered entity classes.
+	 * @throws ClassNotFoundException if a discovered class could not be loaded via.
 	 */
 	public static Set<Class<?>> scan(Collection<String> entityBasePackages, Collection<Class<?>> entityBasePackageClasses)
 			throws ClassNotFoundException {
@@ -185,7 +187,7 @@ public class CassandraEntityClassScanner {
 	 *
 	 * @see #getEntityBasePackages()
 	 * @return {@code Set<Class<?>>} representing the annotated entity classes found.
-	 * @throws ClassNotFoundException
+	 * @throws ClassNotFoundException if a discovered class could not be loaded via.
 	 */
 	public Set<Class<?>> scanForEntityClasses() throws ClassNotFoundException {
 

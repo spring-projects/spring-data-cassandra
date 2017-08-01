@@ -41,7 +41,7 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return a new {@link DropUserTypeSpecification}.
 	 */
 	public static DropUserTypeSpecification dropType(String name) {
-		return new DropUserTypeSpecification(CqlIdentifier.cqlId(name));
+		return new DropUserTypeSpecification(CqlIdentifier.of(name));
 	}
 
 	/**

@@ -164,11 +164,8 @@ class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 			}
 		}
 
-		builder.addPropertyValue("keyspaceSpecifications",
-				newKeyspaceSetFlattenerBeanDefinition(element, parserContext, keyspaceActionSpecificationBeanDefinitions));
-
+		builder.addPropertyValue("keyspaceActions", keyspaceActionSpecificationBeanDefinitions);
 		builder.addPropertyValue("poolingOptions", getSourceBeanDefinition(poolingOptionsBuilder, parserContext, element));
-
 		builder.addPropertyValue("startupScripts", startupScripts);
 		builder.addPropertyValue("shutdownScripts", shutdownScripts);
 	}
@@ -227,26 +224,6 @@ class CassandraCqlClusterParser extends AbstractBeanDefinitionParser {
 
 		builder.addPropertyValue("networkTopologyDataCenters", networkTopologyDataCenters);
 		builder.addPropertyValue("networkTopologyReplicationFactors", networkTopologyReplicationFactors);
-	}
-
-	/**
-	 * Create the Single Factory Bean that will flatten all Set<Set<KeyspaceActionSpecificationFactoryBean>>
-	 *
-	 * @param element {@link Element} to parse.
-	 * @param parserContext XML parser context and state.
-	 * @param keyspaceActionSpecificationBeanDefinitions The List of Definitions to flatten
-	 * @return A single level List of KeyspaceActionSpecifications
-	 */
-	private Object newKeyspaceSetFlattenerBeanDefinition(Element element, ParserContext parserContext,
-			ManagedSet<BeanDefinition> keyspaceActionSpecificationBeanDefinitions) {
-
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder
-				.genericBeanDefinition(MultiLevelSetFlattenerFactoryBean.class);
-
-		// TODO: introduce a typed reference instead of Set of Sets.
-		builder.addPropertyValue("multiLevelSet", keyspaceActionSpecificationBeanDefinitions);
-
-		return getSourceBeanDefinition(builder, parserContext, element);
 	}
 
 	/**

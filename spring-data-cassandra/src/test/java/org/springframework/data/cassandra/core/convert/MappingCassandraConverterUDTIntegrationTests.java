@@ -492,7 +492,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		@Override
 		public UDTValue convert(Currency source) {
-			UserType userType = userTypeResolver.resolveType(CqlIdentifier.cqlId("currency"));
+			UserType userType = userTypeResolver.resolveType(CqlIdentifier.of("currency"));
 			UDTValue udtValue = userType.newValue();
 			udtValue.setString("currency", source.getCurrencyCode());
 			return udtValue;

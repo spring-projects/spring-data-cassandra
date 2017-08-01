@@ -33,6 +33,7 @@ import org.w3c.dom.NamedNodeMap;
  *
  * @author David Webb
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParser {
 
@@ -52,26 +53,8 @@ class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
+
 		return StringUtils.hasText(id) ? id : DefaultCqlBeanNames.SESSION;
-	}
-
-	/**
-	 * Parse the given element. This method is intended to be overridden by subclasses so that any elements not known to
-	 * this class can be properly parsed. The default implementation throws {@link IllegalStateException}.
-	 */
-	protected void parseUnhandledElement(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		throw new IllegalStateException(String.format("encountered unhandled element [%s]", element.getLocalName()));
-	}
-
-	/**
-	 * Parse the given session element attribute. This method is intended to be overridden by subclasses so that any
-	 * attributes not known to this class can be properly parsed. The default implementation throws
-	 * {@link IllegalStateException}.
-	 */
-	protected void parseUnhandledSessionElementAttribute(Attr attribute, ParserContext parserContext,
-			BeanDefinitionBuilder builder) {
-		throw new IllegalStateException(
-				String.format("encountered unhandled session element attribute [%s]", attribute.getName()));
 	}
 
 	/* (non-Javadoc)
@@ -90,7 +73,7 @@ class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParser {
 		addRequiredPropertyReference(builder, "cluster", DefaultCqlBeanNames.CLUSTER);
 	}
 
-	protected void parseSessionAttributes(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	private void parseSessionAttributes(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
 		NamedNodeMap attributes = element.getAttributes();
 		int length = attributes.getLength();
@@ -114,8 +97,7 @@ class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	protected void parseSessionChildElements(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder) {
+	private void parseSessionChildElements(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
 		for (Element child : DomUtils.getChildElements(element)) {
 
@@ -124,8 +106,20 @@ class CassandraCqlSessionParser extends AbstractSingleBeanDefinitionParser {
 			} else if ("shutdown-cql".equals(child.getLocalName())) {
 				builder.addPropertyValue("shutdownScripts", DomUtils.getTextValue(child));
 			} else {
-				parseUnhandledElement(child, parserContext, builder);
+				throw new IllegalStateException(String.format("encountered unhandled element [%s]", child.getLocalName()));
 			}
 		}
+	}
+
+	/**
+	 * Parse the given session element attribute. This method is intended to be overridden by subclasses so that any
+	 * attributes not known to this class can be properly parsed. The default implementation throws
+	 * {@link IllegalStateException}.
+	 */
+	protected void parseUnhandledSessionElementAttribute(Attr attribute, ParserContext parserContext,
+			BeanDefinitionBuilder builder) {
+
+		throw new IllegalStateException(
+				String.format("encountered unhandled session element attribute [%s]", attribute.getName()));
 	}
 }

@@ -41,7 +41,6 @@ class BeanDefinitionUtils {
 	 * @param type The required {@link BeanDefinition}'s type.
 	 * @param includeNonSingletons Whether to include beans with scope other than {@code singleton}
 	 * @param allowEagerInit Whether to allow eager initialization of beans.
-	 * @param required Whether to allow the return of null if none were found.
 	 * @return The {@link BeanDefinitionHolder}s -- never returns null.
 	 * @see BeanFactoryUtils#beanNamesForTypeIncludingAncestors(ListableBeanFactory, Class, boolean, boolean)
 	 */

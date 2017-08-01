@@ -35,6 +35,8 @@ import com.datastax.driver.core.UDTValue;
  */
 public abstract class RowUtils {
 
+	private RowUtils() {}
+
 	/**
 	 * Retrieve a CQL column value from a {@link Row}, using the specified value type.
 	 * <p>

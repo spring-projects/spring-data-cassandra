@@ -43,8 +43,6 @@ public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecificati
 		this.specification = specification;
 	}
 
-	public abstract StringBuilder toCql(StringBuilder cql);
-
 	@SuppressWarnings("unchecked")
 	public T getSpecification() {
 		return (T) specification;
@@ -60,4 +58,6 @@ public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecificati
 	public String toCql() {
 		return toCql(new StringBuilder()).toString();
 	}
+
+	public abstract StringBuilder toCql(StringBuilder cql);
 }

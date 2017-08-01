@@ -17,21 +17,12 @@ package org.springframework.data.cassandra.repository.query;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingConverter;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingExecution;
@@ -48,8 +39,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 
 /**
@@ -85,27 +74,8 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		this.instantiators = new EntityInstantiators();
 	}
 
-	/**
-	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.core.mapping.CassandraMappingContext} handles type
-	 *             conversion.
-	 */
-	@Deprecated
-	public void setConversionService(ConversionService conversionService) {
-		throw new UnsupportedOperationException("setConversionService(ConversionService) is not supported anymore. "
-				+ "Please use CassandraMappingContext instead");
-	}
-
-	/**
-	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.core.mapping.CassandraMappingContext} handles type
-	 *             conversion.
-	 */
-	@Deprecated
-	public ConversionService getConversionService() {
-		return getOperations().getConverter().getConversionService();
-	}
-
 	/* (non-Javadoc) */
-	protected EntityInstantiators getEntityInstantiators() {
+	private EntityInstantiators getEntityInstantiators() {
 		return this.instantiators;
 	}
 
@@ -166,84 +136,6 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 			return new StreamExecution(getOperations(), resultProcessing);
 		} else {
 			return new SingleEntityExecution(getOperations());
-		}
-	}
-
-	/**
-	 * Creates a string query using the given {@link ParameterAccessor}.
-	 *
-	 * @param resultSet
-	 * @param declaredReturnType
-	 * @param returnedUnwrappedObjectType
-	 * @return
-	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.core.mapping.CassandraMappingContext} handles type
-	 *             conversion.
-	 */
-	@Deprecated
-	public Object getCollectionOfEntity(ResultSet resultSet, Class<?> declaredReturnType,
-			Class<?> returnedUnwrappedObjectType) {
-
-		Collection<Object> results;
-
-		if (ClassUtils.isAssignable(SortedSet.class, declaredReturnType)) {
-			results = new TreeSet<>();
-		} else if (ClassUtils.isAssignable(Set.class, declaredReturnType)) {
-			results = new HashSet<>();
-		} else { // List.class, Collection.class, or array
-			results = new ArrayList<>();
-		}
-
-		CassandraConverter converter = getOperations().getConverter();
-
-		for (Row row : resultSet) {
-			results.add(converter.read(returnedUnwrappedObjectType, row));
-		}
-
-		return results;
-	}
-
-	/**
-	 * @param resultSet
-	 * @param type
-	 * @return
-	 * @deprecated as of 1.5, {@link org.springframework.data.cassandra.core.mapping.CassandraMappingContext} handles type
-	 *             conversion.
-	 */
-	@Deprecated
-	public Object getSingleEntity(ResultSet resultSet, Class<?> type) {
-
-		Object result = (resultSet.isExhausted() ? null : getOperations().getConverter().read(type, resultSet.one()));
-
-		warnIfMoreResults(resultSet);
-
-		return result;
-	}
-
-	private void warnIfMoreResults(ResultSet resultSet) {
-
-		if (log.isWarnEnabled() && !resultSet.isExhausted()) {
-			int count = 0;
-
-			while (resultSet.one() != null) {
-				count++;
-			}
-
-			log.warn("ignoring extra {} row{}", count, count == 1 ? "" : "s");
-		}
-	}
-
-	@Deprecated
-	protected void warnIfMoreResults(Iterator<Row> iterator) {
-
-		if (log.isWarnEnabled() && iterator.hasNext()) {
-			int count = 0;
-
-			while (iterator.hasNext()) {
-				count++;
-				iterator.next();
-			}
-
-			log.warn("ignoring extra {} row{}", count, count == 1 ? "" : "s");
 		}
 	}
 

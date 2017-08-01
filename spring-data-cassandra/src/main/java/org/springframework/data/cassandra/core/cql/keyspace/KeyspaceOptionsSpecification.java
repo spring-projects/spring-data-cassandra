@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
+import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
 
 import lombok.EqualsAndHashCode;
 
@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.data.cassandra.core.cql.CqlStringUtils;
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.lang.Nullable;
 

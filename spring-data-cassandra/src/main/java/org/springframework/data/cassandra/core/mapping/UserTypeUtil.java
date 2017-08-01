@@ -85,10 +85,10 @@ class UserTypeUtil {
 	private static CqlIdentifier getTypeName(DataType dataType) {
 
 		if (dataType instanceof UserType) {
-			return CqlIdentifier.cqlId(((UserType) dataType).getTypeName());
+			return CqlIdentifier.of(((UserType) dataType).getTypeName());
 		}
 
-		return cqlId(dataType.asFunctionParameterString());
+		return of(dataType.asFunctionParameterString());
 	}
 
 	private static boolean isNonFrozenUdt(DataType dataType) {

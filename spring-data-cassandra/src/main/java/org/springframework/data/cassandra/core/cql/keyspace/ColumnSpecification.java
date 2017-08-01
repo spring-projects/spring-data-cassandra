@@ -65,7 +65,7 @@ public class ColumnSpecification {
 	 * @return a new {@link ColumnSpecification} for {@code name}.
 	 */
 	public static ColumnSpecification name(String name) {
-		return name(cqlId(name));
+		return name(of(name));
 	}
 
 	/**

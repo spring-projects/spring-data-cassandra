@@ -44,9 +44,13 @@ import com.google.common.reflect.TypeToken;
  */
 public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
+	/**
+	 * Set of Cassandra simple types.
+	 */
 	public static final Set<Class<?>> CASSANDRA_SIMPLE_TYPES;
 
 	private static final Map<Class<?>, DataType> classToDataType;
+
 	private static final Map<DataType.Name, DataType> nameToDataType;
 
 	static {
@@ -146,17 +150,18 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 * Returns the {@link DataType} for a {@link DataType.Name}.
 	 *
 	 * @param name must not be {@literal null}.
-	 * @return
+	 * @return the {@link DataType} for {@link DataType.Name}.
 	 */
 	public static DataType getDataTypeFor(DataType.Name name) {
 		return nameToDataType.get(name);
 	}
 
 	/**
-	 * Returns the default {@link DataType} for a {@link Class}.
+	 * Returns the default {@link DataType} for a {@link Class}. This method resolves only simple types to a Cassandra
+	 * {@link DataType}. Other types are resolved to {@literal null}.
 	 *
 	 * @param javaClass must not be {@literal null}.
-	 * @return
+	 * @return the {@link DataType} for {@code javaClass} if resolvable, otherwise {@literal null}.
 	 */
 	@Nullable
 	public static DataType getDataTypeFor(Class<?> javaClass) {

@@ -152,7 +152,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param row must not be {@literal null}.
 	 * @return the converted valued.
 	 */
-	@Nullable
 	@SuppressWarnings("unchecked")
 	public <R> R readRow(Class<R> type, Row row) {
 
@@ -268,7 +267,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		propertyAccessor.setProperty(property, getReadValue(valueProvider, property));
 	}
 
-	@SuppressWarnings("unused")
 	protected Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
 			CassandraValueProvider propertyProvider) {
 
@@ -293,7 +291,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter#convertToColumnType(java.lang.Object)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public Object convertToColumnType(Object obj) {
 		return convertToColumnType(obj, ClassTypeInformation.from(obj.getClass()));
 	}
@@ -358,7 +355,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	protected void writeInsertFromObject(Object object, Insert insert, CassandraPersistentEntity<?> entity) {
+	private void writeInsertFromObject(Object object, Insert insert, CassandraPersistentEntity<?> entity) {
 		writeInsertFromWrapper(getConvertingAccessor(object, entity), insert, entity);
 	}
 
@@ -498,7 +495,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private Collection<Clause> getWhereClauses(Object source, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(source, "Id source must not be null");
@@ -547,6 +543,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				QueryBuilder.eq(idProperty.getColumnName().toCql(), getPotentiallyConvertedSimpleValue(id, targetType)));
 	}
 
+	@Nullable
 	private Object extractId(Object source, CassandraPersistentEntity<?> entity) {
 
 		if (ClassUtils.isAssignableValue(entity.getType(), source)) {

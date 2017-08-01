@@ -36,8 +36,8 @@ import com.datastax.driver.core.TypeCodec;
  */
 public class ColumnReader {
 
-	protected Row row;
-	protected ColumnDefinitions columns;
+	private final Row row;
+	private final ColumnDefinitions columns;
 	private final CodecRegistry codecRegistry;
 
 	public ColumnReader(Row row) {
@@ -60,8 +60,7 @@ public class ColumnReader {
 	 */
 	@Nullable
 	public Object get(String name) {
-		int indexOf = getColumnIndex(name);
-		return get(indexOf);
+		return get(getColumnIndex(name));
 	}
 
 	/**
@@ -95,7 +94,7 @@ public class ColumnReader {
 	}
 
 	@Nullable
-	public Object getCollection(int i, DataType type) {
+	private Object getCollection(int i, DataType type) {
 
 		List<DataType> collectionTypes = type.getTypeArguments();
 
@@ -111,7 +110,6 @@ public class ColumnReader {
 			if (type.equals(DataType.set(valueType))) {
 				return row.getSet(i, typeCodec.getJavaType().getRawType());
 			}
-
 		}
 
 		// Map
@@ -158,7 +156,6 @@ public class ColumnReader {
 	 * @throws ClassCastException if the value cannot be converted to the requested type.
 	 */
 	@Nullable
-	@SuppressWarnings("unchecked")
 	public <T> T get(int i, Class<T> requestedType) {
 
 		Object o = get(i);
@@ -167,7 +164,7 @@ public class ColumnReader {
 			return null;
 		}
 
-		return (T) o;
+		return requestedType.cast(o);
 	}
 
 	private int getColumnIndex(String name) {
@@ -178,5 +175,4 @@ public class ColumnReader {
 		}
 		return indexOf;
 	}
-
 }

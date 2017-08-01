@@ -46,10 +46,10 @@ public class ColumnNameUnitTests {
 	@Test // DATACASS-343
 	public void cqlBasedShouldEqual() {
 
-		ColumnName first = ColumnName.from(CqlIdentifier.cqlId("foo"));
-		ColumnName second = ColumnName.from(CqlIdentifier.cqlId("Foo"));
+		ColumnName first = ColumnName.from(CqlIdentifier.of("foo"));
+		ColumnName second = ColumnName.from(CqlIdentifier.of("Foo"));
 
-		ColumnName different = ColumnName.from(CqlIdentifier.cqlId("Foo", true));
+		ColumnName different = ColumnName.from(CqlIdentifier.of("Foo", true));
 
 		assertThat(first).isEqualTo(second);
 		assertThat(first.equals(second)).isTrue();
@@ -64,8 +64,8 @@ public class ColumnNameUnitTests {
 	public void stringAndCqlComparisonShouldEqual() {
 
 		ColumnName first = ColumnName.from("foo");
-		ColumnName second = ColumnName.from(CqlIdentifier.cqlId("foo"));
-		ColumnName different = ColumnName.from(CqlIdentifier.cqlId("one", true));
+		ColumnName second = ColumnName.from(CqlIdentifier.of("foo"));
+		ColumnName different = ColumnName.from(CqlIdentifier.of("one", true));
 
 		assertThat(first).isEqualTo(second);
 		assertThat(first.equals(second)).isTrue();

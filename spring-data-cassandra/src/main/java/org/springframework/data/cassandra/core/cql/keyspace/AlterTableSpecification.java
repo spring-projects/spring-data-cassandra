@@ -56,7 +56,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return a new {@link AlterTableSpecification}.
 	 */
 	public static AlterTableSpecification alterTable(String tableName) {
-		return alterTable(CqlIdentifier.cqlId(tableName));
+		return alterTable(CqlIdentifier.of(tableName));
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification add(String column, DataType type) {
-		return add(CqlIdentifier.cqlId(column), type);
+		return add(CqlIdentifier.of(column), type);
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification drop(String column) {
-		return drop(CqlIdentifier.cqlId(column));
+		return drop(CqlIdentifier.of(column));
 	}
 
 	/*
@@ -122,7 +122,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification rename(String from, String to) {
-		return rename(CqlIdentifier.cqlId(from), CqlIdentifier.cqlId(to));
+		return rename(CqlIdentifier.of(from), CqlIdentifier.of(to));
 	}
 
 	/**
@@ -145,7 +145,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification alter(String column, DataType type) {
-		return alter(CqlIdentifier.cqlId(column), type);
+		return alter(CqlIdentifier.of(column), type);
 	}
 
 	/**

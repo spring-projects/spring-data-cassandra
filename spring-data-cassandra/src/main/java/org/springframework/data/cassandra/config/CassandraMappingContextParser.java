@@ -76,7 +76,7 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 		parseMapping(element, builder);
 	}
 
-	protected void parseMapping(Element element, BeanDefinitionBuilder builder) {
+	private void parseMapping(Element element, BeanDefinitionBuilder builder) {
 
 		String packages = element.getAttribute("entity-base-packages");
 
@@ -119,7 +119,7 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 		builder.addPropertyValue("mapping", mapping);
 	}
 
-	protected EntityMapping parseEntity(Element entity) {
+	private EntityMapping parseEntity(Element entity) {
 
 		String className = entity.getAttribute("class");
 
@@ -136,8 +136,6 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 			forceQuote = String.valueOf(Boolean.parseBoolean(table.getAttribute("force-quote")));
 		}
 
-		// TODO: parse future entity mappings here, like table options
-
 		Map<String, PropertyMapping> propertyMappings = parsePropertyMappings(entity);
 
 		EntityMapping entityMapping = new EntityMapping(className, tableName, forceQuote);
@@ -146,7 +144,7 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 		return entityMapping;
 	}
 
-	protected BeanDefinition parseUserTypeResolver(Element entity) {
+	private BeanDefinition parseUserTypeResolver(Element entity) {
 
 		String keyspaceName = entity.getAttribute("keyspace-name");
 
@@ -161,7 +159,7 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 		return builder.getBeanDefinition();
 	}
 
-	protected Map<String, PropertyMapping> parsePropertyMappings(Element entity) {
+	private Map<String, PropertyMapping> parsePropertyMappings(Element entity) {
 
 		Map<String, PropertyMapping> propertyMappings = new HashMap<>();
 

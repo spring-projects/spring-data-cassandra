@@ -310,7 +310,7 @@ public class StringBasedCassandraQueryUnitTests {
 		UserType addressType = UserTypeBuilder.forName("address").withField("city", DataType.varchar())
 				.withField("country", DataType.varchar()).build();
 
-		when(userTypeResolver.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(addressType);
+		when(userTypeResolver.resolveType(CqlIdentifier.of("address"))).thenReturn(addressType);
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", AddressType.class);
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,

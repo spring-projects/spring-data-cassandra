@@ -312,7 +312,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	private ColumnSpecification getColumn(String columnName, CreateTableSpecification specification) {
 
 		for (ColumnSpecification columnSpecification : specification.getColumns()) {
-			if (columnSpecification.getName().equals(CqlIdentifier.cqlId(columnName))) {
+			if (columnSpecification.getName().equals(CqlIdentifier.of(columnName))) {
 				return columnSpecification;
 			}
 		}

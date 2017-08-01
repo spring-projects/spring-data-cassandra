@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
+import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
 
 import java.util.Map;
 
@@ -23,8 +23,9 @@ import org.springframework.data.cassandra.core.cql.keyspace.Option;
 
 /**
  * @author Mark Paluch
+ * @since 2.0
  */
-public class OptionRenderUtil {
+class OptionRenderUtil {
 
 	static String render(Map<Option, Object> valueMap) {
 

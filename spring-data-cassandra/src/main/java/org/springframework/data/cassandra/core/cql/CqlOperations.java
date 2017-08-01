@@ -370,7 +370,6 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class, Object[])
 	 */
-	@Nullable
 	<T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
 
 	/**
@@ -390,7 +389,6 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class)
 	 */
-	@Nullable
 	<T> T queryForObject(String cql, Class<T> requiredType, Object... args) throws DataAccessException;
 
 	/**
@@ -614,7 +612,6 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class, Object[])
 	 */
-	@Nullable
 	<T> T queryForObject(Statement statement, Class<T> requiredType) throws DataAccessException;
 
 	/**
@@ -631,7 +628,6 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, RowMapper, Object[])
 	 */
-	@Nullable
 	<T> T queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**

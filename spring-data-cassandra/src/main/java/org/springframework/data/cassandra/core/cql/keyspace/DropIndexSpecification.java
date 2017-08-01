@@ -37,7 +37,7 @@ public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpec
 	 * @return a new {@link DropIndexSpecification}.
 	 */
 	public static DropIndexSpecification dropIndex(String indexName) {
-		return dropIndex(CqlIdentifier.cqlId(indexName));
+		return dropIndex(CqlIdentifier.of(indexName));
 	}
 
 	/**

@@ -68,7 +68,7 @@ public class CassandraPersistentEntitySchemaDropper {
 		this.cassandraAdminOperations.getKeyspaceMetadata().getTables()
 				.stream()
 				.map(AbstractTableMetadata::getName)
-				.map(CqlIdentifier::cqlId)
+				.map(CqlIdentifier::of)
 				.filter(table -> dropUnused || this.mappingContext.usesTable(table))
 				.forEach(this.cassandraAdminOperations::dropTable);
 	}
@@ -87,7 +87,7 @@ public class CassandraPersistentEntitySchemaDropper {
 
 		this.cassandraAdminOperations.getKeyspaceMetadata().getUserTypes().forEach(userType -> {
 
-			CqlIdentifier typeName = CqlIdentifier.cqlId(userType.getTypeName());
+			CqlIdentifier typeName = CqlIdentifier.of(userType.getTypeName());
 
 			if (canRecreate.contains(typeName)) {
 				this.cassandraAdminOperations.dropUserType(typeName);

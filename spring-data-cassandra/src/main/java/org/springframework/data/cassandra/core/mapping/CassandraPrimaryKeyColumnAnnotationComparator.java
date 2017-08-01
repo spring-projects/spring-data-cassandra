@@ -17,9 +17,6 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.util.Comparator;
 
-import org.springframework.data.cassandra.core.cql.Ordering;
-import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-
 /**
  * {@link Comparator} implementation that uses, in order, the...
  * <ul>
@@ -32,9 +29,6 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
  * @author Matthew T. Adams
  * @author John Blum
  * @author Mark Paluch
- * @see PrimaryKeyType#compare(PrimaryKeyType, PrimaryKeyType)
- * @see Ordering#compare(Ordering, Ordering)
- * @see java.util.Comparator
  * @see org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn
  */
 public enum CassandraPrimaryKeyColumnAnnotationComparator implements Comparator<PrimaryKeyColumn> {
@@ -42,13 +36,7 @@ public enum CassandraPrimaryKeyColumnAnnotationComparator implements Comparator<
 	/**
 	 * Comparator instance.
 	 */
-	INSTANCE,
-
-	/**
-	 * @deprecated as of 1.5, use {@link #INSTANCE}
-	 */
-	@Deprecated
-	IT;
+	INSTANCE;
 
 	/* (non-Javadoc)
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
@@ -58,7 +46,7 @@ public enum CassandraPrimaryKeyColumnAnnotationComparator implements Comparator<
 
 		int comparison = left.type().compareTo(right.type());
 
-		comparison = (comparison != 0 ? comparison : Integer.valueOf(left.ordinal()).compareTo(right.ordinal()));
+		comparison = (comparison != 0 ? comparison : Integer.compare(left.ordinal(), right.ordinal()));
 		comparison = (comparison != 0 ? comparison : left.name().compareTo(right.name()));
 		comparison = (comparison != 0 ? comparison : left.ordering().compareTo(right.ordering()));
 

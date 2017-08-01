@@ -50,7 +50,7 @@ public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends U
 	 * @return {@code this} specification.
 	 */
 	public T field(String name, DataType type) {
-		return field(cqlId(name), type);
+		return field(of(name), type);
 	}
 
 	/**

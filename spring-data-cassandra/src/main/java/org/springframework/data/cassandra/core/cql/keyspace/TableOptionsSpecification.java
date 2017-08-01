@@ -15,14 +15,13 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
+import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
-import org.springframework.data.cassandra.core.cql.CqlStringUtils;
 import org.springframework.lang.Nullable;
 
 /**

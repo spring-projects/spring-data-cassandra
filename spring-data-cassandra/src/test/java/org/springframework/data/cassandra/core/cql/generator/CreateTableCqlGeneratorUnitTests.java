@@ -120,9 +120,9 @@ public class CreateTableCqlGeneratorUnitTests {
 
 	public static class BasicTest extends CreateTableTest {
 
-		public CqlIdentifier name = cqlId("mytable");
+		public CqlIdentifier name = of("mytable");
 		public DataType partitionKeyType0 = DataType.text();
-		public CqlIdentifier partitionKey0 = cqlId("partitionKey0");
+		public CqlIdentifier partitionKey0 = of("partitionKey0");
 		public DataType columnType1 = DataType.text();
 		public String column1 = "column1";
 
@@ -144,12 +144,12 @@ public class CreateTableCqlGeneratorUnitTests {
 
 	public static class CompositePartitionKeyTest extends CreateTableTest {
 
-		public CqlIdentifier name = cqlId("composite_partition_key_table");
+		public CqlIdentifier name = of("composite_partition_key_table");
 		public DataType partKeyType0 = DataType.text();
-		public CqlIdentifier partKey0 = cqlId("partKey0");
+		public CqlIdentifier partKey0 = of("partKey0");
 		public DataType partKeyType1 = DataType.text();
-		public CqlIdentifier partKey1 = cqlId("partKey1");
-		public CqlIdentifier column0 = cqlId("column0");
+		public CqlIdentifier partKey1 = of("partKey1");
+		public CqlIdentifier column0 = of("column0");
 		public DataType columnType0 = DataType.text();
 
 		@Override
@@ -177,13 +177,13 @@ public class CreateTableCqlGeneratorUnitTests {
 	 */
 	public static class ReadRepairChanceTest extends CreateTableTest {
 
-		public CqlIdentifier name = cqlId("mytable");
+		public CqlIdentifier name = of("mytable");
 		public DataType partitionKeyType0 = DataType.text();
-		public CqlIdentifier partitionKey0 = cqlId("partitionKey0");
+		public CqlIdentifier partitionKey0 = of("partitionKey0");
 		public DataType partitionKeyType1 = DataType.timestamp();
-		public CqlIdentifier partitionKey1 = cqlId("create_timestamp");
+		public CqlIdentifier partitionKey1 = of("create_timestamp");
 		public DataType columnType1 = DataType.text();
-		public CqlIdentifier column1 = cqlId("column1");
+		public CqlIdentifier column1 = of("column1");
 		public Double readRepairChance = 0.5;
 
 		@Override
@@ -212,13 +212,13 @@ public class CreateTableCqlGeneratorUnitTests {
 	 */
 	public static class MultipleOptionsTest extends CreateTableTest {
 
-		public CqlIdentifier name = cqlId("timeseries_table");
+		public CqlIdentifier name = of("timeseries_table");
 		public DataType partitionKeyType0 = DataType.timeuuid();
-		public CqlIdentifier partitionKey0 = cqlId("tid");
+		public CqlIdentifier partitionKey0 = of("tid");
 		public DataType partitionKeyType1 = DataType.timestamp();
-		public CqlIdentifier partitionKey1 = cqlId("create_timestamp");
+		public CqlIdentifier partitionKey1 = of("create_timestamp");
 		public DataType columnType1 = DataType.text();
-		public CqlIdentifier column1 = cqlId("data_point");
+		public CqlIdentifier column1 = of("data_point");
 		public Double readRepairChance = 0.5;
 		public Double dcLocalReadRepairChance = 0.7;
 		public Double bloomFilterFpChance = 0.001;
@@ -306,7 +306,7 @@ public class CreateTableCqlGeneratorUnitTests {
 
 		@Override
 		public CreateTableSpecification specification() {
-			return CreateTableSpecification.createTable(tableName).partitionKeyColumn(cqlId("pk"), DataType.text());
+			return CreateTableSpecification.createTable(tableName).partitionKeyColumn(of("pk"), DataType.text());
 		}
 
 		/**
@@ -315,7 +315,7 @@ public class CreateTableCqlGeneratorUnitTests {
 		 */
 		public void test() {
 			prepare();
-			assertPreamble(cqlId(tableName), cql);
+			assertPreamble(of(tableName), cql);
 		}
 	}
 }

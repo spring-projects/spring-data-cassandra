@@ -81,7 +81,7 @@ public class CassandraMappingContextUnitTests {
 		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
 		assertThat(mappingContext.getTableEntities()).hasSize(1);
 		assertThat(mappingContext.getPersistentEntities()).hasSize(1);
-		assertThat(mappingContext.usesTable(CqlIdentifier.cqlId(tableMetadata.getName()))).isTrue();
+		assertThat(mappingContext.usesTable(CqlIdentifier.of(tableMetadata.getName()))).isTrue();
 	}
 
 	@Test // DATACASS-248
@@ -309,15 +309,15 @@ public class CassandraMappingContextUnitTests {
 
 		CreateIndexSpecification firstname = getSpecificationFor("first_name", specifications);
 
-		assertThat(firstname.getColumnName()).isEqualTo(CqlIdentifier.cqlId("first_name"));
-		assertThat(firstname.getTableName()).isEqualTo(CqlIdentifier.cqlId("indexedtype"));
-		assertThat(firstname.getName()).isEqualTo(CqlIdentifier.cqlId("my_index"));
+		assertThat(firstname.getColumnName()).isEqualTo(CqlIdentifier.of("first_name"));
+		assertThat(firstname.getTableName()).isEqualTo(CqlIdentifier.of("indexedtype"));
+		assertThat(firstname.getName()).isEqualTo(CqlIdentifier.of("my_index"));
 		assertThat(firstname.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
 
 		CreateIndexSpecification phoneNumbers = getSpecificationFor("phoneNumbers", specifications);
 
-		assertThat(phoneNumbers.getColumnName()).isEqualTo(CqlIdentifier.cqlId("phoneNumbers"));
-		assertThat(phoneNumbers.getTableName()).isEqualTo(CqlIdentifier.cqlId("indexedtype"));
+		assertThat(phoneNumbers.getColumnName()).isEqualTo(CqlIdentifier.of("phoneNumbers"));
+		assertThat(phoneNumbers.getTableName()).isEqualTo(CqlIdentifier.of("indexedtype"));
 		assertThat(phoneNumbers.getName()).isNull();
 		assertThat(phoneNumbers.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
 	}
@@ -330,16 +330,16 @@ public class CassandraMappingContextUnitTests {
 
 		CreateIndexSpecification entries = getSpecificationFor("last_name", specifications);
 
-		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.cqlId("last_name"));
-		assertThat(entries.getTableName()).isEqualTo(CqlIdentifier.cqlId("compositekeyentity"));
-		assertThat(entries.getName()).isEqualTo(CqlIdentifier.cqlId("my_index"));
+		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.of("last_name"));
+		assertThat(entries.getTableName()).isEqualTo(CqlIdentifier.of("compositekeyentity"));
+		assertThat(entries.getName()).isEqualTo(CqlIdentifier.of("my_index"));
 		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
 	}
 
 	private static CreateIndexSpecification getSpecificationFor(String column,
 			List<CreateIndexSpecification> specifications) {
 
-		return specifications.stream().filter(it -> it.getColumnName().equals(CqlIdentifier.cqlId(column))).findFirst()
+		return specifications.stream().filter(it -> it.getColumnName().equals(CqlIdentifier.of(column))).findFirst()
 				.orElseThrow(() -> new NoSuchElementException(column));
 	}
 
@@ -446,7 +446,7 @@ public class CassandraMappingContextUnitTests {
 
 	@Test // DATACASS-172, DATACASS-455
 	public void usesTypeShouldNotReportTypeUsage() {
-		assertThat(mappingContext.usesUserType(CqlIdentifier.cqlId("mappedudt"))).isFalse();
+		assertThat(mappingContext.usesUserType(CqlIdentifier.of("mappedudt"))).isFalse();
 	}
 
 	@Test // DATACASS-172, DATACASS-455
@@ -458,7 +458,7 @@ public class CassandraMappingContextUnitTests {
 
 		mappingContext.getRequiredPersistentEntity(WithUdt.class);
 
-		assertThat(mappingContext.usesUserType(CqlIdentifier.cqlId("mappedudt"))).isTrue();
+		assertThat(mappingContext.usesUserType(CqlIdentifier.of("mappedudt"))).isTrue();
 	}
 
 	@Test // DATACASS-172, DATACASS-455
@@ -470,7 +470,7 @@ public class CassandraMappingContextUnitTests {
 
 		mappingContext.getRequiredPersistentEntity(MappedUdt.class);
 
-		assertThat(mappingContext.usesUserType(CqlIdentifier.cqlId("mappedudt"))).isTrue();
+		assertThat(mappingContext.usesUserType(CqlIdentifier.of("mappedudt"))).isTrue();
 	}
 
 	@Test // DATACASS-172
@@ -518,7 +518,7 @@ public class CassandraMappingContextUnitTests {
 		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
 		assertThat(mappingContext.getTableEntities()).isEmpty();
 		assertThat(mappingContext.getPersistentEntities()).isEmpty();
-		assertThat(mappingContext.usesTable(CqlIdentifier.cqlId(tableMetadata.getName()))).isFalse();
+		assertThat(mappingContext.usesTable(CqlIdentifier.of(tableMetadata.getName()))).isFalse();
 	}
 
 	@Table

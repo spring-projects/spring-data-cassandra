@@ -50,7 +50,7 @@ abstract class CassandraConverters {
 	/**
 	 * Returns the converters to be registered.
 	 */
-	public static Collection<Object> getConvertersToRegister() {
+	static Collection<Object> getConvertersToRegister() {
 
 		List<Object> converters = new ArrayList<>();
 

@@ -108,9 +108,9 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 		CassandraPersistentProperty stringOne = key.getRequiredPersistentProperty("stringOne");
 
 		assertThat(stringZero.getColumnName().toCql()).isEqualTo("\"stringZero\"");
-		assertThat(stringZero.getColumnName()).isEqualTo(quotedCqlId("stringZero"));
+		assertThat(stringZero.getColumnName()).isEqualTo(quoted("stringZero"));
 		assertThat(stringOne.getColumnName().toCql()).isEqualTo("\"stringOne\"");
-		assertThat(stringOne.getColumnName()).isEqualTo(quotedCqlId("stringOne"));
+		assertThat(stringOne.getColumnName()).isEqualTo(quoted("stringOne"));
 	}
 
 	@PrimaryKeyClass
@@ -139,8 +139,8 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 		CassandraPersistentProperty stringZero = key.getRequiredPersistentProperty("stringZero");
 		CassandraPersistentProperty stringOne = key.getRequiredPersistentProperty("stringOne");
 
-		assertThat(stringZero.getColumnName()).isEqualTo(CqlIdentifier.cqlId("stringZero"));
-		assertThat(stringOne.getColumnName()).isEqualTo(CqlIdentifier.cqlId("stringOne"));
+		assertThat(stringZero.getColumnName()).isEqualTo(CqlIdentifier.of("stringZero"));
+		assertThat(stringOne.getColumnName()).isEqualTo(CqlIdentifier.of("stringOne"));
 		assertThat(stringZero.getColumnName().toCql()).isEqualTo("stringzero");
 		assertThat(stringOne.getColumnName().toCql()).isEqualTo("stringone");
 	}
@@ -172,8 +172,8 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 		CassandraPersistentProperty stringOne = key.getRequiredPersistentProperty("stringOne");
 
 		assertThat(stringZero.getColumnName()) //
-				.isEqualTo(CqlIdentifier.cqlId("TheFirstKeyField", true)) //
-				.isNotEqualTo(CqlIdentifier.cqlId("TheFirstKeyField"));
+				.isEqualTo(CqlIdentifier.of("TheFirstKeyField", true)) //
+				.isNotEqualTo(CqlIdentifier.of("TheFirstKeyField"));
 
 		assertThat(stringZero.getColumnName().toCql()).isEqualTo("\"" + EXPLICIT_KEY_0 + "\"");
 		assertThat(stringOne.getColumnName().toCql()).isEqualTo("\"" + EXPLICIT_KEY_1 + "\"");

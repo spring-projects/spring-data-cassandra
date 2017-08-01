@@ -134,7 +134,7 @@ public class PartTreeCassandraQueryUnitTests {
 	@Test // DATACASS-172
 	public void shouldDeriveSimpleQueryWithMappedUDT() {
 
-		when(userTypeResolverMock.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userTypeMock);
+		when(userTypeResolverMock.resolveType(CqlIdentifier.of("address"))).thenReturn(userTypeMock);
 		when(userTypeMock.newValue()).thenReturn(udtValueMock);
 
 		String query = deriveQueryFromMethod("findByMainAddress", new AddressType());

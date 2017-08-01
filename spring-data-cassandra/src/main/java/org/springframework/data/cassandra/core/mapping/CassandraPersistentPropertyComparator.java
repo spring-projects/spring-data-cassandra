@@ -42,13 +42,7 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 	/**
 	 * Comparator instance.
 	 */
-	INSTANCE,
-
-	/**
-	 * @deprecated as of 1.5, use {@link #INSTANCE}
-	 */
-	@Deprecated
-	IT;
+	INSTANCE;
 
 	/* (non-Javadoc)
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)

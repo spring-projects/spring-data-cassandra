@@ -28,13 +28,7 @@ public enum CassandraColumnAnnotationComparator implements Comparator<Column> {
 	/**
 	 * Comparator instance.
 	 */
-	INSTANCE,
-
-	/**
-	 * @deprecated as of 1.5, use {@link #INSTANCE}
-	 */
-	@Deprecated
-	IT;
+	INSTANCE;
 
 	@Override
 	public int compare(Column left, Column right) {

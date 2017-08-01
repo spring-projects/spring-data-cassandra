@@ -89,7 +89,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 
 		DirectFieldAccessor dfa = new DirectFieldAccessor(entitySpy);
 
-		entitySpy.setTableName(CqlIdentifier.cqlId("Messages", false));
+		entitySpy.setTableName(CqlIdentifier.of("Messages", false));
 
 		assertThat((Optional) dfa.getPropertyValue("forceQuote")).isNotPresent();
 
@@ -129,7 +129,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(TableWithComposedAnnotation.class));
 
-		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.cqlId("mytable", true));
+		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.of("mytable", true));
 	}
 
 	@Test // DATACASS-259

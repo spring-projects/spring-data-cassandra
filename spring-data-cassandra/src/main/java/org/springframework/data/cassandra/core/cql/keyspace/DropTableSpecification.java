@@ -37,7 +37,7 @@ public class DropTableSpecification extends TableNameSpecification {
 	 * @return a new {@link DropTableSpecification}.
 	 */
 	public static DropTableSpecification dropTable(String tableName) {
-		return dropTable(CqlIdentifier.cqlId(tableName));
+		return dropTable(CqlIdentifier.of(tableName));
 	}
 
 	/**

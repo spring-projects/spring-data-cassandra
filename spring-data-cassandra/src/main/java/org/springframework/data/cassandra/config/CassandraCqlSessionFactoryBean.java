@@ -59,7 +59,8 @@ public class CassandraCqlSessionFactoryBean
 		implements FactoryBean<Session>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
-	protected final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
+
+	private final PersistenceExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	private @Nullable Cluster cluster;
 
@@ -140,10 +141,6 @@ public class CassandraCqlSessionFactoryBean
 		}
 	}
 
-	/**
-	 * @param session
-	 * @return
-	 */
 	CqlOperations newCqlOperations(Session session) {
 		return new CqlTemplate(session);
 	}

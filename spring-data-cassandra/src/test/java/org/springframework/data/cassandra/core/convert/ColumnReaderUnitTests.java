@@ -71,7 +71,7 @@ public class ColumnReaderUnitTests {
 		when(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
 		try {
-			underTest.get(CqlIdentifier.cqlId(NON_EXISTENT_COLUMN));
+			underTest.get(CqlIdentifier.of(NON_EXISTENT_COLUMN));
 			fail("Expected illegal argument exception");
 		} catch (IllegalArgumentException e) {
 			assertThat(e.getMessage()).isEqualTo("Column does not exist in Cassandra table: " + NON_EXISTENT_COLUMN);
@@ -84,7 +84,7 @@ public class ColumnReaderUnitTests {
 		when(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
 		try {
-			underTest.get(CqlIdentifier.cqlId(NON_EXISTENT_COLUMN), String.class);
+			underTest.get(CqlIdentifier.of(NON_EXISTENT_COLUMN), String.class);
 			fail("Expected illegal argument exception");
 		} catch (IllegalArgumentException e) {
 			assertThat(e.getMessage()).isEqualTo("Column does not exist in Cassandra table: " + NON_EXISTENT_COLUMN);

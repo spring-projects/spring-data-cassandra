@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.junit.Test;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.model.Property;
@@ -64,7 +63,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedColumnAnnotation.class, "column");
 
-		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("mycolumn", true));
+		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.of("mycolumn", true));
 	}
 
 	@Test // DATACASS-259
@@ -73,7 +72,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class,
 				"column");
 
-		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("primary-key", true));
+		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.of("primary-key", true));
 		assertThat(persistentProperty.isIdProperty()).isTrue();
 	}
 
@@ -83,7 +82,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyColumnAnnotation.class,
 				"column");
 
-		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.cqlId("mycolumn", true));
+		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.of("mycolumn", true));
 		assertThat(persistentProperty.isPrimaryKeyColumn()).isTrue();
 	}
 

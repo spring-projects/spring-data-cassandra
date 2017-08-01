@@ -36,6 +36,7 @@ import org.springframework.util.Assert;
  * @author David Webb
  * @author Mark Paluch
  */
+@SuppressWarnings({ "unused", "WeakerAccess" })
 public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<KeyspaceActions>, InitializingBean {
 
 	private KeyspaceAction action = KeyspaceAction.NONE;
@@ -236,5 +237,4 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 	public void setReplicationFactor(int replicationFactor) {
 		this.replicationFactor = replicationFactor;
 	}
-
 }

@@ -66,7 +66,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	/**
 	 * Creates a {@link CassandraAdminTemplate}.
 	 *
-	 * @return
+	 * @return the {@link ReactiveCassandraOperations}.
 	 * @see #reactiveSessionFactory()
 	 * @see #cassandraConverter()
 	 */
@@ -78,7 +78,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	/**
 	 * Creates a {@link ReactiveCqlTemplate} using the configured {@link ReactiveSessionFactory}.
 	 *
-	 * @return
+	 * @return the {@link ReactiveCqlOperations}.
 	 * @see #reactiveSessionFactory()
 	 */
 	@Bean

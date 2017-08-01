@@ -35,7 +35,7 @@ public class DropColumnSpecification extends ColumnChangeSpecification {
 	 * @param name must not be {@literal null} or empty.
 	 */
 	public static DropColumnSpecification dropColumn(String name) {
-		return dropColumn(CqlIdentifier.cqlId(name));
+		return dropColumn(CqlIdentifier.of(name));
 	}
 
 	/**

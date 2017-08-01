@@ -15,7 +15,8 @@
  */
 package org.springframework.data.cassandra.config;
 
-import org.springframework.beans.factory.DisposableBean;
+import java.util.Optional;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.lang.Nullable;
@@ -27,17 +28,25 @@ import com.datastax.driver.core.SocketOptions;
  *
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 @SuppressWarnings({ "unused", "WeakerAccess" })
-public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, InitializingBean, DisposableBean {
+public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, InitializingBean {
 
 	private @Nullable Integer connectTimeoutMillis;
+
 	private @Nullable Boolean keepAlive;
+
 	private @Nullable Integer readTimeoutMillis;
+
 	private @Nullable Boolean reuseAddress;
+
 	private @Nullable Integer soLinger;
+
 	private @Nullable Boolean tcpNoDelay;
+
 	private @Nullable Integer receiveBufferSize;
+
 	private @Nullable Integer sendBufferSize;
 
 	private @Nullable SocketOptions socketOptions;
@@ -59,69 +68,21 @@ public class SocketOptionsFactoryBean implements FactoryBean<SocketOptions>, Ini
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
-	 */
-	@Override
-	public void destroy() throws Exception {
-
-		connectTimeoutMillis = null;
-		keepAlive = null;
-		readTimeoutMillis = null;
-		reuseAddress = null;
-		soLinger = null;
-		tcpNoDelay = null;
-		receiveBufferSize = null;
-		sendBufferSize = null;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		socketOptions = new SocketOptions();
+		this.socketOptions = new SocketOptions();
 
-		if (connectTimeoutMillis != null) {
-			socketOptions.setConnectTimeoutMillis(connectTimeoutMillis);
-		}
-
-		if (keepAlive != null) {
-			socketOptions.setKeepAlive(keepAlive);
-		}
-
-		if (readTimeoutMillis != null) {
-			socketOptions.setReadTimeoutMillis(readTimeoutMillis);
-		}
-
-		if (reuseAddress != null) {
-			socketOptions.setReuseAddress(reuseAddress);
-		}
-
-		if (soLinger != null) {
-			socketOptions.setSoLinger(soLinger);
-		}
-
-		if (tcpNoDelay != null) {
-			socketOptions.setTcpNoDelay(tcpNoDelay);
-		}
-
-		if (receiveBufferSize != null) {
-			socketOptions.setReceiveBufferSize(receiveBufferSize);
-		}
-
-		if (sendBufferSize != null) {
-			socketOptions.setSendBufferSize(sendBufferSize);
-		}
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
-	@Override
-	public boolean isSingleton() {
-		return true;
+		Optional.ofNullable(this.connectTimeoutMillis).ifPresent(this.socketOptions::setConnectTimeoutMillis);
+		Optional.ofNullable(this.readTimeoutMillis).ifPresent(this.socketOptions::setReadTimeoutMillis);
+		Optional.ofNullable(this.keepAlive).ifPresent(this.socketOptions::setKeepAlive);
+		Optional.ofNullable(this.reuseAddress).ifPresent(this.socketOptions::setReuseAddress);
+		Optional.ofNullable(this.soLinger).ifPresent(this.socketOptions::setSoLinger);
+		Optional.ofNullable(this.tcpNoDelay).ifPresent(this.socketOptions::setTcpNoDelay);
+		Optional.ofNullable(this.receiveBufferSize).ifPresent(this.socketOptions::setReceiveBufferSize);
+		Optional.ofNullable(this.sendBufferSize).ifPresent(this.socketOptions::setSendBufferSize);
 	}
 
 	@Nullable

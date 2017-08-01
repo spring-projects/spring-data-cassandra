@@ -58,7 +58,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	/**
 	 * Create a new {@link CqlIdentifier} without force-quoting it. It may end up quoted, depending on its value.
 	 *
-	 * @see #cqlId(CharSequence)
+	 * @see #of(CharSequence)
 	 */
 	private CqlIdentifier(CharSequence identifier) {
 		this(identifier, false);
@@ -74,8 +74,8 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * <li>If the given identifier is illegal, an {@link IllegalArgumentException} is thrown.</li>
 	 * </ul>
 	 *
-	 * @see #cqlId(CharSequence, boolean)
-	 * @see #quotedCqlId(CharSequence)
+	 * @see #of(CharSequence, boolean)
+	 * @see #quoted(CharSequence)
 	 */
 	private CqlIdentifier(CharSequence identifier, boolean forceQuote) {
 
@@ -102,7 +102,9 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * Factory method for {@link CqlIdentifier}. Convenient if imported statically.
 	 *
 	 * @see #CqlIdentifier(CharSequence)
+	 * @deprecated since 2.0, use {@link #of(CharSequence)}
 	 */
+	@Deprecated
 	public static CqlIdentifier cqlId(CharSequence identifier) {
 		return new CqlIdentifier(identifier);
 	}
@@ -111,8 +113,28 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * Factory method for {@link CqlIdentifier}. Convenient if imported statically.
 	 *
 	 * @see #CqlIdentifier(CharSequence, boolean)
+	 * @deprecated since 2.0, use {@link #of(CharSequence, boolean)}
 	 */
+	@Deprecated
 	public static CqlIdentifier cqlId(CharSequence identifier, boolean forceQuote) {
+		return new CqlIdentifier(identifier, forceQuote);
+	}
+
+	/**
+	 * Factory method for {@link CqlIdentifier}.
+	 *
+	 * @since 2.0
+	 */
+	public static CqlIdentifier of(CharSequence identifier) {
+		return new CqlIdentifier(identifier);
+	}
+
+	/**
+	 * Factory method for {@link CqlIdentifier}.
+	 *
+	 * @since 2.0
+	 */
+	public static CqlIdentifier of(CharSequence identifier, boolean forceQuote) {
 		return new CqlIdentifier(identifier, forceQuote);
 	}
 
@@ -120,8 +142,18 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * Factory method for a force-quoted {@link CqlIdentifier}. Convenient if imported statically.
 	 *
 	 * @see #CqlIdentifier(CharSequence, boolean)
+	 * @deprecated since 2.0, use {@link #quoted(CharSequence)}.
 	 */
 	public static CqlIdentifier quotedCqlId(CharSequence identifier) {
+		return new CqlIdentifier(identifier, true);
+	}
+
+	/**
+	 * Factory method for a force-quoted {@link CqlIdentifier}.
+	 *
+	 * @since 2.0.
+	 */
+	public static CqlIdentifier quoted(CharSequence identifier) {
 		return new CqlIdentifier(identifier, true);
 	}
 

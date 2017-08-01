@@ -41,7 +41,7 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 	 * @return a new {@link CreateUserTypeSpecification}.
 	 */
 	public static CreateUserTypeSpecification createType(String name) {
-		return new CreateUserTypeSpecification(CqlIdentifier.cqlId(name));
+		return new CreateUserTypeSpecification(CqlIdentifier.of(name));
 	}
 
 	/**

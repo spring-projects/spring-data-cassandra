@@ -60,7 +60,7 @@ public interface CassandraConverter
 	 *
 	 * @param object must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
-	 * @return
+	 * @return the id value or {@literal null}, if the id is not set.
 	 */
 	@Nullable
 	Object getId(Object object, CassandraPersistentEntity<?> entity);

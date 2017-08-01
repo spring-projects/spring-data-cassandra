@@ -37,15 +37,6 @@ abstract class ParsingUtils {
 	 * Convenience method delegating to
 	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
 	 */
-	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, Attr attribute) {
-
-		addProperty(builder, propertyName, attribute.getValue(), null, false, true);
-	}
-
-	/**
-	 * Convenience method delegating to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
-	 */
 	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, Attr attribute,
 			String defaultValue) {
 
@@ -70,34 +61,6 @@ abstract class ParsingUtils {
 			String attributeName, String defaultValue) {
 
 		addProperty(builder, propertyName, element.getAttribute(attributeName), defaultValue, false, true);
-	}
-
-	/**
-	 * Convenience method delegating to
-	 * {@link ParsingUtils#addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
-	 */
-	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, String value) {
-
-		addProperty(builder, propertyName, value, null, false, true);
-	}
-
-	/**
-	 * Convenience method delegating to
-	 * {@link ParsingUtils#addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
-	 */
-	public static void addOptionalPropertyReference(BeanDefinitionBuilder builder, String propertyName, String value,
-			String defaultValue) {
-
-		addProperty(builder, propertyName, value, defaultValue, false, true);
-	}
-
-	/**
-	 * Convenience method delegating to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
-	 */
-	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, Attr attribute) {
-
-		addProperty(builder, propertyName, attribute.getValue(), null, false, false);
 	}
 
 	/**
@@ -128,34 +91,6 @@ abstract class ParsingUtils {
 			String attributeName, @Nullable String defaultValue) {
 
 		addProperty(builder, propertyName, element.getAttribute(attributeName), defaultValue, false, false);
-	}
-
-	/**
-	 * Convenience method delegating to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
-	 */
-	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, String value) {
-
-		addProperty(builder, propertyName, value, null, false, false);
-	}
-
-	/**
-	 * Convenience method delegating to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
-	 */
-	public static void addOptionalPropertyValue(BeanDefinitionBuilder builder, String propertyName, String value,
-			String defaultValue) {
-
-		addProperty(builder, propertyName, value, defaultValue, false, false);
-	}
-
-	/**
-	 * Convenience method delegating to
-	 * {@link #addProperty(BeanDefinitionBuilder, String, String, String, boolean, boolean)}.
-	 */
-	public static void addRequiredPropertyReference(BeanDefinitionBuilder builder, String propertyName, Attr attribute) {
-
-		addProperty(builder, propertyName, attribute.getValue(), null, true, true);
 	}
 
 	/**

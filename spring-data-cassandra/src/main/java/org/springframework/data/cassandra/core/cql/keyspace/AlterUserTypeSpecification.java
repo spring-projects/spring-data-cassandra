@@ -47,7 +47,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return a new {@link AlterUserTypeSpecification}.
 	 */
 	public static AlterUserTypeSpecification alterType(String typeName) {
-		return alterType(CqlIdentifier.cqlId(typeName));
+		return alterType(CqlIdentifier.of(typeName));
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification add(String field, DataType type) {
-		return add(CqlIdentifier.cqlId(field), type);
+		return add(CqlIdentifier.of(field), type);
 	}
 
 	/**
@@ -91,7 +91,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification alter(String field, DataType type) {
-		return alter(CqlIdentifier.cqlId(field), type);
+		return alter(CqlIdentifier.of(field), type);
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification rename(String from, String to) {
-		return rename(CqlIdentifier.cqlId(from), CqlIdentifier.cqlId(to));
+		return rename(CqlIdentifier.of(from), CqlIdentifier.of(to));
 	}
 
 	/**

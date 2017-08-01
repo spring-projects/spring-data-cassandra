@@ -221,7 +221,7 @@ public abstract class AbstractClusterConfiguration {
 	}
 
 	/**
-	 * Returns the Cassandra port. Defaults to {@code 9042}
+	 * Returns the Cassandra port. Defaults to {@code 9042}.
 	 *
 	 * @return the Cassandra port
 	 * @see CassandraClusterFactoryBean#DEFAULT_PORT
@@ -231,7 +231,7 @@ public abstract class AbstractClusterConfiguration {
 	}
 
 	/**
-	 * Returns the {@link ProtocolVersion}. Defaults to {@link ProtocolVersion#NEWEST_SUPPORTED}
+	 * Returns the {@link ProtocolVersion}. Defaults to {@link ProtocolVersion#NEWEST_SUPPORTED}.
 	 *
 	 * @return the {@link ProtocolVersion}.
 	 * @see ProtocolVersion#NEWEST_SUPPORTED.

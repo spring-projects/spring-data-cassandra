@@ -355,7 +355,7 @@ public class Columns implements Iterable<ColumnName> {
 		 * @return the aliased {@link ColumnSelector}.
 		 */
 		public ColumnSelector as(String alias) {
-			return as(CqlIdentifier.cqlId(alias));
+			return as(CqlIdentifier.of(alias));
 		}
 
 		/**
@@ -421,7 +421,7 @@ public class Columns implements Iterable<ColumnName> {
 		 * @return the aliased {@link ColumnSelector}.
 		 */
 		public FunctionCall as(String alias) {
-			return as(CqlIdentifier.cqlId(alias));
+			return as(CqlIdentifier.of(alias));
 		}
 
 		/**

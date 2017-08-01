@@ -41,7 +41,7 @@ public class AlterColumnSpecification extends ColumnTypeChangeSpecification {
 	 * @return a new {@link AlterColumnSpecification}.
 	 */
 	public static AlterColumnSpecification alterColumn(String name, DataType type) {
-		return alterColumn(CqlIdentifier.cqlId(name), type);
+		return alterColumn(CqlIdentifier.of(name), type);
 	}
 
 	/**

@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import java.util.Map;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Enumeration that represents all known table options. If a table option is not listed here, but is supported by
  * Cassandra, use the method {@link CreateTableSpecification#with(String, Object, boolean, boolean)} to write the raw
@@ -124,7 +126,7 @@ public enum TableOption implements Option {
 	}
 
 	@Override
-	public String toString(Object value) {
+	public String toString(@Nullable Object value) {
 		return this.delegate.toString(value);
 	}
 
@@ -219,7 +221,7 @@ public enum TableOption implements Option {
 		}
 
 		@Override
-		public String toString(Object value) {
+		public String toString(@Nullable Object value) {
 			return this.delegate.toString(value);
 		}
 
@@ -321,7 +323,7 @@ public enum TableOption implements Option {
 		}
 
 		@Override
-		public String toString(Object value) {
+		public String toString(@Nullable Object value) {
 			return this.delegate.toString(value);
 		}
 	}
@@ -398,7 +400,7 @@ public enum TableOption implements Option {
 		}
 
 		@Override
-		public String toString(Object value) {
+		public String toString(@Nullable Object value) {
 			return this.delegate.toString(value);
 		}
 	}

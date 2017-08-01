@@ -26,8 +26,6 @@ import org.springframework.util.Assert;
  */
 public abstract class IndexNameCqlGenerator<T extends IndexNameSpecification<T>> {
 
-	public abstract StringBuilder toCql(StringBuilder cql);
-
 	private final IndexNameSpecification<T> specification;
 
 	public IndexNameCqlGenerator(IndexNameSpecification<T> specification) {
@@ -51,4 +49,6 @@ public abstract class IndexNameCqlGenerator<T extends IndexNameSpecification<T>>
 	public String toCql() {
 		return toCql(new StringBuilder()).toString();
 	}
+
+	public abstract StringBuilder toCql(StringBuilder cql);
 }

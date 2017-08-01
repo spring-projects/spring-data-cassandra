@@ -119,7 +119,7 @@ public class CassandraMappingContext
 			String entityTableName = entityMapping.getTableName();
 
 			if (StringUtils.hasText(entityTableName)) {
-				entity.setTableName(cqlId(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
+				entity.setTableName(of(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
 			}
 
 			processMappingOverrides(entity, entityMapping);
@@ -150,7 +150,7 @@ public class CassandraMappingContext
 		property.setForceQuote(forceQuote);
 
 		if (StringUtils.hasText(mapping.getColumnName())) {
-			property.setColumnName(cqlId(mapping.getColumnName(), forceQuote));
+			property.setColumnName(of(mapping.getColumnName(), forceQuote));
 		}
 	}
 
@@ -354,7 +354,7 @@ public class CassandraMappingContext
 
 		return getPersistentEntities().stream().flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
 				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class))))
-				.map(CassandraType::userTypeName).filter(StringUtils::hasText).map(CqlIdentifier::cqlId)
+				.map(CassandraType::userTypeName).filter(StringUtils::hasText).map(CqlIdentifier::of)
 				.anyMatch(identifier::equals);
 	}
 

@@ -37,17 +37,17 @@ import org.springframework.util.StringUtils;
 public class CreateIndexSpecification extends IndexNameSpecification<CreateIndexSpecification>
 		implements IndexDescriptor {
 
-	private boolean ifNotExists = false;
-
-	private boolean custom = false;
-
 	private @Nullable CqlIdentifier tableName;
 
 	private @Nullable CqlIdentifier columnName;
 
+	private boolean ifNotExists = false;
+
 	private ColumnFunction columnFunction = ColumnFunction.NONE;
 
 	private @Nullable String using;
+
+	private boolean custom = false;
 
 	private final Map<String, String> options = new LinkedHashMap<>();
 
@@ -73,7 +73,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * @return a new {@link CreateIndexSpecification}.
 	 */
 	public static CreateIndexSpecification createIndex(String indexName) {
-		return createIndex(CqlIdentifier.cqlId(indexName));
+		return createIndex(CqlIdentifier.of(indexName));
 	}
 
 	/**
@@ -85,6 +85,72 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 */
 	public static CreateIndexSpecification createIndex(CqlIdentifier indexName) {
 		return new CreateIndexSpecification(indexName);
+	}
+
+	/**
+	 * Sets the table name.
+	 *
+	 * @param tableName must not be {@literal null} or empty.
+	 * @return this
+	 */
+	public CreateIndexSpecification tableName(String tableName) {
+		return tableName(of(tableName));
+	}
+
+	/**
+	 * Sets the table name.
+	 *
+	 * @param tableName must not be {@literal null}.
+	 * @return this
+	 */
+	public CreateIndexSpecification tableName(CqlIdentifier tableName) {
+
+		Assert.notNull(tableName, "CqlIdentifier must not be null");
+
+		this.tableName = tableName;
+
+		return this;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cql.keyspace.IndexDescriptor#getTableName()
+	 */
+	@Override
+	public CqlIdentifier getTableName() {
+		return this.tableName;
+	}
+
+	/**
+	 * Sets the column name.
+	 *
+	 * @param columnName must not be {@literal null} or empty.
+	 * @return this
+	 */
+	public CreateIndexSpecification columnName(String columnName) {
+		return columnName(of(columnName));
+	}
+
+	/**
+	 * Sets the column name.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return this
+	 */
+	public CreateIndexSpecification columnName(CqlIdentifier columnName) {
+
+		Assert.notNull(columnName, "CqlIdentifier must not be null");
+
+		this.columnName = columnName;
+
+		return this;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cql.keyspace.IndexDescriptor#getColumnName()
+	 */
+	@Override
+	public CqlIdentifier getColumnName() {
+		return this.columnName;
 	}
 
 	/**
@@ -140,14 +206,6 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	@Nullable
 	public String getUsing() {
 		return this.using;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.IndexDescriptor#getColumnName()
-	 */
-	@Override
-	public CqlIdentifier getColumnName() {
-		return this.columnName;
 	}
 
 	/**
@@ -230,64 +288,6 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 */
 	public Map<String, String> getOptions() {
 		return Collections.unmodifiableMap(this.options);
-	}
-
-	/**
-	 * Sets the table name.
-	 *
-	 * @param tableName must not be {@literal null} or empty.
-	 * @return this
-	 */
-	public CreateIndexSpecification tableName(String tableName) {
-		return tableName(cqlId(tableName));
-	}
-
-	/**
-	 * Sets the table name.
-	 *
-	 * @param tableName must not be {@literal null}.
-	 * @return this
-	 */
-	public CreateIndexSpecification tableName(CqlIdentifier tableName) {
-
-		Assert.notNull(tableName, "CqlIdentifier must not be null");
-
-		this.tableName = tableName;
-
-		return this;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.IndexDescriptor#getTableName()
-	 */
-	@Override
-	public CqlIdentifier getTableName() {
-		return this.tableName;
-	}
-
-	/**
-	 * Sets the column name.
-	 *
-	 * @param columnName must not be {@literal null} or empty.
-	 * @return this
-	 */
-	public CreateIndexSpecification columnName(String columnName) {
-		return columnName(cqlId(columnName));
-	}
-
-	/**
-	 * Sets the column name.
-	 *
-	 * @param columnName must not be {@literal null}.
-	 * @return this
-	 */
-	public CreateIndexSpecification columnName(CqlIdentifier columnName) {
-
-		Assert.notNull(columnName, "CqlIdentifier must not be null");
-
-		this.columnName = columnName;
-
-		return this;
 	}
 
 	/**

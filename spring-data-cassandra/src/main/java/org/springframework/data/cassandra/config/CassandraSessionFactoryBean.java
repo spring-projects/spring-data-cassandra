@@ -58,7 +58,7 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 
 		super.afterPropertiesSet();
 
-		this.admin = new CassandraAdminTemplate(getObject(), this.converter);
+		this.admin = new CassandraAdminTemplate(getSession(), this.converter);
 
 		performSchemaAction();
 	}
@@ -116,9 +116,13 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	/**
 	 * @return the {@link CassandraMappingContext}.
 	 */
-	@Nullable
 	protected CassandraMappingContext getMappingContext() {
-		return getConverter().getMappingContext();
+
+		CassandraConverter converter = getConverter();
+
+		Assert.state(converter != null, "CassandraConverter was not properly initialized");
+
+		return converter.getMappingContext();
 	}
 
 	/**
@@ -154,8 +158,8 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 
 	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists) {
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(getMappingContext(), getCassandraAdminOperations());
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(
+				getMappingContext(), getCassandraAdminOperations());
 
 		if (drop) {
 
@@ -175,6 +179,9 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	 * @return the {@link CassandraAdminOperations}.
 	 */
 	protected CassandraAdminOperations getCassandraAdminOperations() {
+
+		Assert.state(this.admin != null, "CassandraAdminOperations was not properly initialized");
+
 		return this.admin;
 	}
 }

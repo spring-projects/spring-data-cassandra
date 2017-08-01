@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
-
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
@@ -30,16 +28,6 @@ import org.springframework.util.Assert;
 public class RenameColumnSpecification extends ColumnChangeSpecification {
 
 	private final CqlIdentifier targetName;
-
-	/**
-	 * Create a new {@link ColumnChangeSpecification}.
-	 *
-	 * @param from must not be {@literal null} or empty.
-	 * @param to must not be {@literal null} or empty.
-	 */
-	RenameColumnSpecification(String from, String to) {
-		this(cqlId(from), cqlId(to));
-	}
 
 	/**
 	 * Create a new {@link ColumnChangeSpecification}.

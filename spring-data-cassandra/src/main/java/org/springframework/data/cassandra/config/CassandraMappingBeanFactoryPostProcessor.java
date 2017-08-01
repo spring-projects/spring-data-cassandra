@@ -173,7 +173,7 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanFactoryPost
 		return converter;
 	}
 
-	private BeanDefinitionHolder registerDefaultTemplate(BeanDefinitionRegistry registry, String sessionBeanName,
+	private void registerDefaultTemplate(BeanDefinitionRegistry registry, String sessionBeanName,
 			String converterBeanName) {
 
 		BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(CassandraTemplate.class) //
@@ -183,8 +183,6 @@ public class CassandraMappingBeanFactoryPostProcessor implements BeanFactoryPost
 
 		BeanDefinitionHolder template = new BeanDefinitionHolder(beanDefinition, DefaultBeanNames.DATA_TEMPLATE);
 		registry.registerBeanDefinition(template.getBeanName(), template.getBeanDefinition());
-
-		return template;
 	}
 
 	private Collection<String> getNames(Class<?>[] types) {

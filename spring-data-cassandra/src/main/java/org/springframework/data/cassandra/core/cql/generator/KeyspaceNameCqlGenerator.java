@@ -26,8 +26,6 @@ import org.springframework.util.Assert;
  */
 public abstract class KeyspaceNameCqlGenerator<T extends KeyspaceActionSpecification> {
 
-	public abstract StringBuilder toCql(StringBuilder cql);
-
 	private final KeyspaceActionSpecification specification;
 
 	public KeyspaceNameCqlGenerator(KeyspaceActionSpecification specification) {
@@ -51,4 +49,6 @@ public abstract class KeyspaceNameCqlGenerator<T extends KeyspaceActionSpecifica
 	public String toCql() {
 		return toCql(new StringBuilder()).toString();
 	}
+
+	public abstract StringBuilder toCql(StringBuilder cql);
 }

@@ -114,7 +114,7 @@ public class PoolingOptionsFactoryBean implements FactoryBean<PoolingOptions>, I
 		return GET_MAX_QUEUE_SIZE.map(method -> {
 
 			Integer defaultMaxQueueSize = (Integer) invokeMethod(method, poolingOptions);
-			return defaultMaxQueueSize.intValue() == maxQueueSize;
+			return defaultMaxQueueSize != null && defaultMaxQueueSize == maxQueueSize;
 		}).orElse(false);
 	}
 

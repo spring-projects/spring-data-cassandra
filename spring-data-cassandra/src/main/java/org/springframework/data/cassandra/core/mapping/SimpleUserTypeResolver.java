@@ -33,6 +33,7 @@ import com.datastax.driver.core.UserType;
 public class SimpleUserTypeResolver implements UserTypeResolver {
 
 	private final String keyspaceName;
+
 	private final Cluster cluster;
 
 	/**

@@ -22,21 +22,16 @@ import org.springframework.util.Assert;
  * Base class for column change CQL generators.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  * @param <T> The corresponding {@link ColumnChangeSpecification} type for this CQL generator.
  */
 public abstract class ColumnChangeCqlGenerator<T extends ColumnChangeSpecification> {
 
 	public abstract StringBuilder toCql(StringBuilder cql);
 
-	private ColumnChangeSpecification specification;
+	private final ColumnChangeSpecification specification;
 
 	public ColumnChangeCqlGenerator(ColumnChangeSpecification specification) {
-
-		Assert.notNull(specification, "ColumnChangeSpecification must not be null");
-		this.specification = specification;
-	}
-
-	protected void setSpecification(ColumnChangeSpecification specification) {
 
 		Assert.notNull(specification, "ColumnChangeSpecification must not be null");
 		this.specification = specification;

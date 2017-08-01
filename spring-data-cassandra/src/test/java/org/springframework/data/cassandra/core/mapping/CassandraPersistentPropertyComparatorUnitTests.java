@@ -160,8 +160,8 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		when(left.isPrimaryKeyColumn()).thenReturn(true);
 		when(right.isCompositePrimaryKey()).thenReturn(true);
 		when(right.isPrimaryKeyColumn()).thenReturn(false);
-		when(left.getColumnName()).thenReturn(CqlIdentifier.cqlId("left"));
-		when(right.getColumnName()).thenReturn(CqlIdentifier.cqlId("right"));
+		when(left.getColumnName()).thenReturn(CqlIdentifier.of("left"));
+		when(right.getColumnName()).thenReturn(CqlIdentifier.of("right"));
 
 		assertThat(INSTANCE.compare(left, right)).isLessThan(0);
 

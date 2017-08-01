@@ -167,7 +167,7 @@ abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbedded
 
 		public UDTValue convert(Phone source) {
 
-			UserType userType = userTypeResolver.resolveType(CqlIdentifier.cqlId("phone"));
+			UserType userType = userTypeResolver.resolveType(CqlIdentifier.of("phone"));
 			UDTValue udtValue = userType.newValue();
 			udtValue.setString("number", source.getNumber());
 

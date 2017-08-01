@@ -50,7 +50,7 @@ public class FieldSpecification {
 	 * @param type must not be {@literal null}.
 	 */
 	public static FieldSpecification of(String name, DataType type) {
-		return new FieldSpecification(CqlIdentifier.cqlId(name), type);
+		return new FieldSpecification(CqlIdentifier.of(name), type);
 	}
 
 	/**

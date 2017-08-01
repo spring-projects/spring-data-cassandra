@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import java.util.Map;
 
+import org.springframework.lang.Nullable;
+
 public enum KeyspaceOption implements Option {
 
 	REPLICATION("replication", Map.class, true, false, false),
@@ -65,7 +67,7 @@ public enum KeyspaceOption implements Option {
 		return delegate.toString();
 	}
 
-	public String toString(Object value) {
+	public String toString(@Nullable Object value) {
 		return delegate.toString(value);
 	}
 

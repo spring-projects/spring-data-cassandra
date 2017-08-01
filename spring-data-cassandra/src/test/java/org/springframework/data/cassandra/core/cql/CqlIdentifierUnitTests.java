@@ -34,7 +34,7 @@ public class CqlIdentifierUnitTests {
 		String[] ids = new String[] { "foo", "Foo", "FOO", "a_", "a1" };
 
 		for (String id : ids) {
-			CqlIdentifier cqlId = cqlId(id);
+			CqlIdentifier cqlId = of(id);
 			assertThat(cqlId.isQuoted()).isFalse();
 			assertThat(cqlId.toCql()).isEqualTo(id.toLowerCase());
 		}
@@ -46,7 +46,7 @@ public class CqlIdentifierUnitTests {
 		String[] ids = new String[] { "foo", "Foo", "FOO", "a_", "a1" };
 
 		for (String id : ids) {
-			CqlIdentifier cqlId = quotedCqlId(id);
+			CqlIdentifier cqlId = quoted(id);
 			assertThat(cqlId.isQuoted()).isTrue();
 			assertThat(cqlId.toCql()).isEqualTo("\"" + id + "\"");
 		}
@@ -56,11 +56,11 @@ public class CqlIdentifierUnitTests {
 	public void testReservedWordsEndUpQuoted() {
 
 		for (ReservedKeyword id : ReservedKeyword.values()) {
-			CqlIdentifier cqlId = cqlId(id.name());
+			CqlIdentifier cqlId = of(id.name());
 			assertThat(cqlId.isQuoted()).isTrue();
 			assertThat(cqlId.toCql()).isEqualTo("\"" + id.name() + "\"");
 
-			cqlId = cqlId(id.name().toLowerCase());
+			cqlId = of(id.name().toLowerCase());
 			assertThat(cqlId.isQuoted()).isTrue();
 			assertThat(cqlId.toCql()).isEqualTo("\"" + id.name().toLowerCase() + "\"");
 		}
@@ -71,7 +71,7 @@ public class CqlIdentifierUnitTests {
 		String[] illegals = new String[] { null, "", "a ", "a a", "a\"", "a'", "a''", "\"\"", "''", "-", "a-", "_", "_a" };
 		for (String illegal : illegals) {
 			try {
-				cqlId(illegal);
+				of(illegal);
 				fail(String.format("identifier [%s] should have caused IllegalArgumentException", illegal));
 			} catch (IllegalArgumentException x) {
 				// :)

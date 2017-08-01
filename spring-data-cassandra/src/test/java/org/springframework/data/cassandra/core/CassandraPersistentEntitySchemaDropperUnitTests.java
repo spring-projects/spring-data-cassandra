@@ -84,9 +84,9 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 
 		schemaDropper.dropUserTypes(true);
 
-		verify(operations).dropUserType(CqlIdentifier.cqlId("universetype"));
-		verify(operations).dropUserType(CqlIdentifier.cqlId("moontype"));
-		verify(operations).dropUserType(CqlIdentifier.cqlId("planettype"));
+		verify(operations).dropUserType(CqlIdentifier.of("universetype"));
+		verify(operations).dropUserType(CqlIdentifier.of("moontype"));
+		verify(operations).dropUserType(CqlIdentifier.of("planettype"));
 		verify(operations).getKeyspaceMetadata();
 		verifyNoMoreInteractions(operations);
 	}
@@ -104,8 +104,8 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 
 		schemaDropper.dropUserTypes(false);
 
-		verify(operations).dropUserType(CqlIdentifier.cqlId("universetype"));
-		verify(operations).dropUserType(CqlIdentifier.cqlId("moontype"));
+		verify(operations).dropUserType(CqlIdentifier.of("universetype"));
+		verify(operations).dropUserType(CqlIdentifier.of("moontype"));
 		verify(operations).getKeyspaceMetadata();
 		verifyNoMoreInteractions(operations);
 	}
@@ -123,8 +123,8 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 
 		schemaDropper.dropTables(true);
 
-		verify(operations).dropTable(CqlIdentifier.cqlId("person"));
-		verify(operations).dropTable(CqlIdentifier.cqlId("contact"));
+		verify(operations).dropTable(CqlIdentifier.of("person"));
+		verify(operations).dropTable(CqlIdentifier.of("contact"));
 		verify(operations).getKeyspaceMetadata();
 		verifyNoMoreInteractions(operations);
 	}
@@ -142,7 +142,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 
 		schemaDropper.dropTables(false);
 
-		verify(operations).dropTable(CqlIdentifier.cqlId("person"));
+		verify(operations).dropTable(CqlIdentifier.of("person"));
 		verify(operations).getKeyspaceMetadata();
 		verifyNoMoreInteractions(operations);
 	}

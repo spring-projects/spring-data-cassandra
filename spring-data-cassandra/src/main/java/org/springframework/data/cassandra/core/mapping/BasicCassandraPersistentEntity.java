@@ -91,20 +91,20 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return determineName(annotation.value(), annotation.forceQuote());
 		}
 
-		return cqlId(getType().getSimpleName(), false);
+		return of(getType().getSimpleName(), false);
 	}
 
 	CqlIdentifier determineName(String value, boolean forceQuote) {
 
 		if (!StringUtils.hasText(value)) {
-			return cqlId(getType().getSimpleName(), forceQuote);
+			return of(getType().getSimpleName(), forceQuote);
 		}
 
 		String name = spelContext == null ? value : SpelUtils.evaluate(value, spelContext);
 
 		Assert.state(name != null, () -> String.format("Cannot determine default name for %s", this));
 
-		return cqlId(name, forceQuote);
+		return of(name, forceQuote);
 	}
 
 	/* (non-Javadoc)
@@ -171,7 +171,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		this.forceQuote = Optional.of(forceQuote);
 
 		if (changed) {
-			setTableName(cqlId(getTableName().getUnquoted(), forceQuote));
+			setTableName(of(getTableName().getUnquoted(), forceQuote));
 		}
 	}
 

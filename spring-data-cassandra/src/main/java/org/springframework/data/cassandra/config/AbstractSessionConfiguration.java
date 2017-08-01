@@ -89,5 +89,4 @@ public abstract class AbstractSessionConfiguration extends AbstractClusterConfig
 	 * @return must not be {@literal null}.
 	 */
 	protected abstract String getKeyspaceName();
-
 }

@@ -24,10 +24,7 @@ import org.springframework.data.cassandra.core.cql.CqlTemplate;
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
- * @see AbstractClusterConfiguration
  * @see AbstractSessionConfiguration
- * @see com.datastax.driver.core.Session
- * @see com.datastax.driver.core.Cluster
  * @see CqlTemplate
  */
 public abstract class AbstractCqlTemplateConfiguration extends AbstractSessionConfiguration {

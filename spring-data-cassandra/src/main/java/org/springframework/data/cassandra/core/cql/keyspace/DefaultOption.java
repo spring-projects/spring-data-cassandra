@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlStringUtils.*;
+import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
 
 import java.lang.reflect.Constructor;
 import java.util.Collection;

@@ -34,8 +34,6 @@ public abstract class TableNameCqlGenerator<T extends TableNameSpecification> {
 		this.specification = specification;
 	}
 
-	public abstract StringBuilder toCql(StringBuilder cql);
-
 	@SuppressWarnings("unchecked")
 	public T getSpecification() {
 		return (T) specification;
@@ -51,4 +49,6 @@ public abstract class TableNameCqlGenerator<T extends TableNameSpecification> {
 	public String toCql() {
 		return toCql(new StringBuilder()).toString();
 	}
+
+	public abstract StringBuilder toCql(StringBuilder cql);
 }

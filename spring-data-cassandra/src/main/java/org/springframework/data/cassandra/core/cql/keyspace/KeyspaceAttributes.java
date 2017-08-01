@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
@@ -34,6 +33,10 @@ public class KeyspaceAttributes {
 	public static final long DEFAULT_REPLICATION_FACTOR = 1;
 	public static final boolean DEFAULT_DURABLE_WRITES = true;
 
+	private ReplicationStrategy replicationStrategy = DEFAULT_REPLICATION_STRATEGY;
+	private long replicationFactor = DEFAULT_REPLICATION_FACTOR;
+	private boolean durableWrites = DEFAULT_DURABLE_WRITES;
+
 	/**
 	 * Returns a map of {@link Option}s suitable as the value of a {@link KeyspaceOption#REPLICATION} option with
 	 * replication strategy class "SimpleStrategy" and with a replication factor of one.
@@ -47,6 +50,7 @@ public class KeyspaceAttributes {
 	 * replication strategy class "SimpleStrategy" and with a replication factor equal to that given.
 	 */
 	public static Map<Option, Object> newSimpleReplication(long replicationFactor) {
+
 		return MapBuilder.map(Option.class, Object.class)
 				.entry(new DefaultOption("class", String.class, true, false, true),
 						ReplicationStrategy.SIMPLE_STRATEGY.getValue())
@@ -71,11 +75,6 @@ public class KeyspaceAttributes {
 		return builder.build();
 	}
 
-	private ReplicationStrategy replicationStrategy = DEFAULT_REPLICATION_STRATEGY;
-	private long replicationFactor = DEFAULT_REPLICATION_FACTOR;
-	private boolean durableWrites = DEFAULT_DURABLE_WRITES;
-	private Map<String, Long> replicasPerNodeByDataCenter = new HashMap<>();
-
 	public ReplicationStrategy getReplicationStrategy() {
 		return replicationStrategy;
 	}
@@ -98,9 +97,5 @@ public class KeyspaceAttributes {
 
 	public void setDurableWrites(boolean durableWrites) {
 		this.durableWrites = durableWrites;
-	}
-
-	public void addReplicasPerNode(String dataCenter, long replicasPerNode) {
-		replicasPerNodeByDataCenter.put(dataCenter, replicasPerNode);
 	}
 }

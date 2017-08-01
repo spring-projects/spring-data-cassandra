@@ -221,7 +221,7 @@ public class QueryMapperUnitTests {
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
-		assertThat(mappedCriteriaDefinition.getColumnName()).isEqualTo(ColumnName.from(CqlIdentifier.cqlId("first_name")));
+		assertThat(mappedCriteriaDefinition.getColumnName()).isEqualTo(ColumnName.from(CqlIdentifier.of("first_name")));
 		assertThat(mappedCriteriaDefinition.getColumnName().toString()).isEqualTo("first_name");
 	}
 

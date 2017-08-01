@@ -18,12 +18,9 @@ package org.springframework.data.cassandra.core.convert;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.Jsr310Converters;
-import org.springframework.util.ClassUtils;
 
 /**
  * Helper class to register JodaTime specific {@link Converter} implementations in case the library is present on the
@@ -32,11 +29,7 @@ import org.springframework.util.ClassUtils;
  * @author Mark Paluch
  * @since 1.5
  */
-@SuppressWarnings("Since15")
 public abstract class CassandraJsr310Converters {
-
-	private static final boolean JAVA_8_IS_PRESENT = ClassUtils.isPresent("java.time.LocalDateTime",
-			Jsr310Converters.class.getClassLoader());
 
 	private CassandraJsr310Converters() {}
 
@@ -46,10 +39,6 @@ public abstract class CassandraJsr310Converters {
 	 * @return
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
-
-		if (!JAVA_8_IS_PRESENT) {
-			return Collections.emptySet();
-		}
 
 		List<Converter<?, ?>> converters = new ArrayList<>();
 

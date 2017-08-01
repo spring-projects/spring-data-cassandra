@@ -40,7 +40,7 @@ public class AddColumnSpecification extends ColumnTypeChangeSpecification {
 	 * @return a new {@link AddColumnSpecification}.
 	 */
 	public static AddColumnSpecification addColumn(String name, DataType type) {
-		return addColumn(CqlIdentifier.cqlId(name), type);
+		return addColumn(CqlIdentifier.of(name), type);
 	}
 
 	/**

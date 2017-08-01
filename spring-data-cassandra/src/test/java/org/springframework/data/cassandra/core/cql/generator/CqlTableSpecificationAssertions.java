@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.cassandra.core.cql.CqlStringUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.TableDescriptor;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;

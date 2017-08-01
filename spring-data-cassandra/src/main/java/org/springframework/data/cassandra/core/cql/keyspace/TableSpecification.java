@@ -72,7 +72,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @param type The data type of the column, must not be {@literal null}.
 	 */
 	public T column(String name, DataType type) {
-		return column(cqlId(name), type);
+		return column(of(name), type);
 	}
 
 	/**
@@ -95,7 +95,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @return this
 	 */
 	public T partitionKeyColumn(String name, DataType type) {
-		return partitionKeyColumn(cqlId(name), type);
+		return partitionKeyColumn(of(name), type);
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @return this
 	 */
 	public T clusteredKeyColumn(String name, DataType type) {
-		return clusteredKeyColumn(cqlId(name), type);
+		return clusteredKeyColumn(of(name), type);
 	}
 
 	/**
@@ -198,7 +198,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 		Assert.notNull(keyType, "PrimaryKeyType must not be null");
 		Assert.notNull(ordering, "Ordering must not be null");
 
-		return column(cqlId(name), type, Optional.of(keyType), Optional.of(ordering));
+		return column(of(name), type, Optional.of(keyType), Optional.of(ordering));
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 		Assert.notNull(keyType, "PrimaryKeyType must not be null");
 		Assert.notNull(ordering, "Ordering must not be null");
 
-		return column(cqlId(name), type, Optional.of(keyType), ordering);
+		return column(of(name), type, Optional.of(keyType), ordering);
 	}
 
 	@SuppressWarnings("unchecked")

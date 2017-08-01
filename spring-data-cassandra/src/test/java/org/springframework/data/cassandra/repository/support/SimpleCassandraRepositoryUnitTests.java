@@ -70,7 +70,7 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		when(cassandraOperations.getConverter()).thenReturn(converter);
 		when(cassandraOperations.getCqlOperations()).thenReturn(cqlOperations);
-		when(userTypeResolver.resolveType(CqlIdentifier.cqlId("address"))).thenReturn(userType);
+		when(userTypeResolver.resolveType(CqlIdentifier.of("address"))).thenReturn(userType);
 	}
 
 	@Test // DATACASS-428

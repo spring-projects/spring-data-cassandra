@@ -314,7 +314,7 @@ public class QueryMapper {
 			}
 
 			if (column.getColumnName().isPresent()) {
-				return column.getColumnName().map(CqlIdentifier::cqlId);
+				return column.getColumnName().map(CqlIdentifier::of);
 			}
 
 			return column.getCqlIdentifier();
@@ -324,7 +324,7 @@ public class QueryMapper {
 		}
 	}
 
-	protected Field createPropertyField(CassandraPersistentEntity<?> entity, ColumnName key) {
+	Field createPropertyField(CassandraPersistentEntity<?> entity, ColumnName key) {
 		return Optional.of(entity).<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
 				.orElseGet(() -> new Field(key));
 	}
@@ -397,9 +397,13 @@ public class QueryMapper {
 	protected static class MetadataBackedField extends Field {
 
 		private final CassandraPersistentEntity<?> entity;
+
 		private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
 		private final Optional<PersistentPropertyPath<CassandraPersistentProperty>> path;
+
 		private final @Nullable CassandraPersistentProperty property;
+
 		private final Optional<CassandraPersistentProperty> optionalProperty;
 
 		/**

@@ -40,7 +40,7 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	 * @return a new {@link CreateTableSpecification}.
 	 */
 	public static CreateTableSpecification createTable(String tableName) {
-		return new CreateTableSpecification(CqlIdentifier.cqlId(tableName));
+		return new CreateTableSpecification(CqlIdentifier.of(tableName));
 	}
 
 	/**

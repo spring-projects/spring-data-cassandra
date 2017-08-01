@@ -41,7 +41,7 @@ public class UserTypeBuilder {
 	}
 
 	public static UserTypeBuilder forName(String typeName) {
-		return forName(CqlIdentifier.cqlId(typeName));
+		return forName(CqlIdentifier.of(typeName));
 	}
 
 	public static UserTypeBuilder forName(CqlIdentifier typeName) {

@@ -249,7 +249,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		Assert.state(this.userTypeResolver != null, "UserTypeResolver is null");
 
-		CqlIdentifier identifier = CqlIdentifier.cqlId(annotation.userTypeName());
+		CqlIdentifier identifier = CqlIdentifier.of(annotation.userTypeName());
 
 		UserType userType = this.userTypeResolver.resolveType(identifier);
 
@@ -371,7 +371,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			name = (this.spelContext != null ? SpelUtils.evaluate(overriddenName, this.spelContext) : overriddenName);
 		}
 
-		return name == null ? null : cqlId(name, forceQuote);
+		return name == null ? null : of(name, forceQuote);
 	}
 
 	/* (non-Javadoc)
@@ -398,7 +398,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		if (changed) {
 
 			CqlIdentifier columnName = getColumnName();
-			setColumnName(cqlId(columnName.getUnquoted(), forceQuote));
+			setColumnName(of(columnName.getUnquoted(), forceQuote));
 		}
 	}
 
