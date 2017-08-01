@@ -40,7 +40,7 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
 	 * @return a new {@link DropKeyspaceSpecification}.
 	 */
 	public static DropKeyspaceSpecification dropKeyspace(String name) {
-		return new DropKeyspaceSpecification(KeyspaceIdentifier.ksId(name));
+		return new DropKeyspaceSpecification(KeyspaceIdentifier.of(name));
 	}
 
 	/**

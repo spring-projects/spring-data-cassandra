@@ -39,7 +39,7 @@ public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<Alt
 	 * @return a new {@link AlterKeyspaceSpecification}.
 	 */
 	public static AlterKeyspaceSpecification alterKeyspace(String name) {
-		return alterKeyspace(KeyspaceIdentifier.ksId(name));
+		return alterKeyspace(KeyspaceIdentifier.of(name));
 	}
 
 	/**

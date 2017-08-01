@@ -55,8 +55,19 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 
 	/**
 	 * Factory method for {@link KeyspaceIdentifier}. Convenient if imported statically.
+	 *
+	 * @deprecated since 2.0, use {@link #of(CharSequence)}.
 	 */
 	public static KeyspaceIdentifier ksId(CharSequence identifier) {
+		return new KeyspaceIdentifier(identifier);
+	}
+
+	/**
+	 * Factory method for {@link KeyspaceIdentifier}. Convenient if imported statically.
+	 *
+	 * @since 2.0
+	 */
+	public static KeyspaceIdentifier of(CharSequence identifier) {
 		return new KeyspaceIdentifier(identifier);
 	}
 
@@ -114,7 +125,7 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 		}
 
 		KeyspaceIdentifier other = (that instanceof KeyspaceIdentifier) ? (KeyspaceIdentifier) that
-				: ksId((CharSequence) that);
+				: of((CharSequence) that);
 
 		return this.identifier.equals(other.identifier);
 	}

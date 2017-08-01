@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,29 @@
  */
 package org.springframework.data.cassandra.config;
 
+import lombok.Value;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
+
 /**
- * Available actions for Keyspace Specifications.
+ * Collection of {@link KeyspaceActionSpecification}s. Wraps none, one or multiple keyspace actions (creates, drops).
  *
- * @author David Webb
  * @author Mark Paluch
+ * @since 2.0
  */
-public enum KeyspaceAction {
-	NONE, CREATE, CREATE_DROP, ALTER
+@Value
+public class KeyspaceActions {
+
+	private final List<KeyspaceActionSpecification> actions;
+
+	public KeyspaceActions(KeyspaceActionSpecification... actions) {
+		this(Arrays.asList(actions));
+	}
+
+	public KeyspaceActions(List<KeyspaceActionSpecification> actions) {
+		this.actions = actions;
+	}
 }

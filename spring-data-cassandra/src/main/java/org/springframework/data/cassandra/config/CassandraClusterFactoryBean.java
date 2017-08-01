@@ -16,7 +16,10 @@
 package org.springframework.data.cassandra.config;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -52,6 +55,34 @@ import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
 
 /**
  * {@link org.springframework.beans.factory.FactoryBean} for configuring a Cassandra {@link Cluster}.
+ * <p>
+ * This factory bean allows configuration and creation of {@link Cluster} bean. Most options default to {@literal null}.
+ * Unsupported options are configured via {@link ClusterBuilderConfigurer}.
+ * <p/>
+ * The factory bean initializes keyspaces, if configured, accoording to its lifecycle. Keyspaces can be created after
+ * {@link #afterPropertiesSet() initialization} and dropped when this factory is {@link #destroy() destroyed}. Keyspace
+ * actions can be configured via {@link #setKeyspaceActions(List) XML} and {@link #setKeyspaceCreations(List)
+ * programatically}. Additional {@link #getStartupScripts()} and {@link #getShutdownScripts()} are executed after
+ * running keyspace actions.
+ * <p/>
+ * <strong>XML configuration</strong>
+ *
+ * <pre class="code">
+     <cql:cluster contact-points="…"
+				  port="${build.cassandra.native_transport_port}" compression="SNAPPY" netty-options-ref="nettyOptions">
+		<cql:local-pooling-options
+				min-simultaneous-requests="26" max-simultaneous-requests="101"
+				core-connections="3" max-connections="9"/>
+		<cql:remote-pooling-options
+				min-simultaneous-requests="25" max-simultaneous-requests="100"
+				core-connections="1" max-connections="2"/>
+		<cql:socket-options connect-timeout-millis="5000"
+							 keep-alive="true" reuse-address="true" so-linger="60" tcp-no-delay="true"
+							 receive-buffer-size="65536" send-buffer-size="65536"/>
+		<cql:keyspace name="${cassandra.keyspace}" action="CREATE_DROP"
+					   durable-writes="true"/>
+	</cass:cluster>
+ * </pre>
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
@@ -102,6 +133,7 @@ public class CassandraClusterFactoryBean
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<>();
 	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
+	private List<KeyspaceActions> keyspaceActions = new ArrayList<>();
 
 	private List<String> startupScripts = new ArrayList<>();
 	private List<String> shutdownScripts = new ArrayList<>();
@@ -260,7 +292,13 @@ public class CassandraClusterFactoryBean
 	 */
 	private void generateSpecificationsFromFactoryBeans() {
 
-		keyspaceSpecifications.forEach(keyspaceActionSpecification -> {
+		generateSpecifications(keyspaceSpecifications);
+		keyspaceActions.forEach(actions -> generateSpecifications(actions.getActions()));
+	}
+
+	private void generateSpecifications(Collection<KeyspaceActionSpecification> specifications) {
+
+		specifications.forEach(keyspaceActionSpecification -> {
 
 			if (keyspaceActionSpecification instanceof CreateKeyspaceSpecification) {
 				keyspaceCreations.add((CreateKeyspaceSpecification) keyspaceActionSpecification);
@@ -272,17 +310,17 @@ public class CassandraClusterFactoryBean
 		});
 	}
 
-	protected void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification> kepspaceActionSpecifications,
+	private void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification> keyspaceActionSpecifications,
 			List<String> scripts, Cluster cluster) {
 
-		if (!CollectionUtils.isEmpty(kepspaceActionSpecifications) || !CollectionUtils.isEmpty(scripts)) {
+		if (!CollectionUtils.isEmpty(keyspaceActionSpecifications) || !CollectionUtils.isEmpty(scripts)) {
 
 			Session session = cluster.connect();
 
 			try {
 				CqlTemplate template = new CqlTemplate(session);
 
-				kepspaceActionSpecifications
+				keyspaceActionSpecifications
 						.forEach(keyspaceActionSpecification -> template.execute(toCql(keyspaceActionSpecification)));
 
 				scripts.forEach(template::execute);
@@ -430,6 +468,23 @@ public class CassandraClusterFactoryBean
 	}
 
 	/**
+	 * @return the {@link List} of {@link KeyspaceActions}.
+	 */
+	public List<KeyspaceActions> getKeyspaceActions() {
+		return Collections.unmodifiableList(keyspaceActions);
+	}
+
+	/**
+	 * Set a {@link List} of {@link KeyspaceActions} to be executed on initialization. Keyspace actions may contain create
+	 * and drop specifications.
+	 *
+	 * @param keyspaceActions the {@link List} of {@link KeyspaceActions}.
+	 */
+	public void setKeyspaceActions(List<KeyspaceActions> keyspaceActions) {
+		this.keyspaceActions = new ArrayList<>(keyspaceActions);
+	}
+
+	/**
 	 * Set a {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications} that are executed when
 	 * this factory is {@link #afterPropertiesSet() initialized}. {@link CreateKeyspaceSpecification Create keyspace
 	 * specifications} are executed on a system session with no keyspace set, before executing
@@ -438,14 +493,14 @@ public class CassandraClusterFactoryBean
 	 * @param specifications the {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
 	 */
 	public void setKeyspaceCreations(List<CreateKeyspaceSpecification> specifications) {
-		this.keyspaceCreations = specifications;
+		this.keyspaceCreations = new ArrayList<>(specifications);
 	}
 
 	/**
 	 * @return {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
 	 */
 	public List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-		return keyspaceCreations;
+		return Collections.unmodifiableList(keyspaceCreations);
 	}
 
 	/**
@@ -456,14 +511,14 @@ public class CassandraClusterFactoryBean
 	 * @param specifications the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
 	 */
 	public void setKeyspaceDrops(List<DropKeyspaceSpecification> specifications) {
-		this.keyspaceDrops = specifications;
+		this.keyspaceDrops = new ArrayList<>(specifications);
 	}
 
 	/**
 	 * @return the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
 	 */
 	public List<DropKeyspaceSpecification> getKeyspaceDrops() {
-		return keyspaceDrops;
+		return Collections.unmodifiableList(keyspaceDrops);
 	}
 
 	/**
@@ -474,14 +529,14 @@ public class CassandraClusterFactoryBean
 	 * @param scripts the scripts to execute on startup
 	 */
 	public void setStartupScripts(List<String> scripts) {
-		this.startupScripts = scripts;
+		this.startupScripts = new ArrayList<>(scripts);
 	}
 
 	/**
 	 * @return the startup scripts
 	 */
 	public List<String> getStartupScripts() {
-		return startupScripts;
+		return Collections.unmodifiableList(startupScripts);
 	}
 
 	/**
@@ -492,28 +547,28 @@ public class CassandraClusterFactoryBean
 	 * @param scripts the scripts to execute on shutdown
 	 */
 	public void setShutdownScripts(List<String> scripts) {
-		this.shutdownScripts = scripts;
+		this.shutdownScripts = new ArrayList<>(scripts);
 	}
 
 	/**
 	 * @return the shutdown scripts
 	 */
 	public List<String> getShutdownScripts() {
-		return shutdownScripts;
+		return Collections.unmodifiableList(shutdownScripts);
 	}
 
 	/**
 	 * @param keyspaceSpecifications The {@link KeyspaceActionSpecification} to set.
 	 */
 	public void setKeyspaceSpecifications(Set<KeyspaceActionSpecification> keyspaceSpecifications) {
-		this.keyspaceSpecifications = keyspaceSpecifications;
+		this.keyspaceSpecifications = new LinkedHashSet<>(keyspaceSpecifications);
 	}
 
 	/**
 	 * @return the {@link KeyspaceActionSpecification} associated with this factory.
 	 */
 	public Set<KeyspaceActionSpecification> getKeyspaceSpecifications() {
-		return keyspaceSpecifications;
+		return Collections.unmodifiableSet(keyspaceSpecifications);
 	}
 
 	/**

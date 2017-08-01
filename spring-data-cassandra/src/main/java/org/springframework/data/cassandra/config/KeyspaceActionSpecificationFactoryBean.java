@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,16 @@
  */
 package org.springframework.data.cassandra.config;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
-import org.springframework.data.cassandra.core.cql.keyspace.DefaultOption;
-import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
+import org.springframework.data.cassandra.config.KeyspaceActionSpecificationFactory.KeyspaceActionSpecificationFactoryBuilder;
+import org.springframework.data.cassandra.core.cql.keyspace.DataCenterReplication;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
-import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
-import org.springframework.data.cassandra.core.cql.keyspace.Option;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -41,39 +34,27 @@ import org.springframework.util.Assert;
  * {@link KeyspaceActionSpecification} required to satisfy the configuration action.
  *
  * @author David Webb
+ * @author Mark Paluch
  */
-public class KeyspaceActionSpecificationFactoryBean
-		implements FactoryBean<Set<KeyspaceActionSpecification>>, InitializingBean, DisposableBean {
+public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<KeyspaceActions>, InitializingBean {
 
-	private @Nullable KeyspaceAction action;
+	private KeyspaceAction action = KeyspaceAction.NONE;
 
 	private @Nullable String name;
 
 	private List<String> networkTopologyDataCenters = new LinkedList<>();
 
 	private List<String> networkTopologyReplicationFactors = new LinkedList<>();
-	private @Nullable ReplicationStrategy replicationStrategy;
 
-	private long replicationFactor;
+	private ReplicationStrategy replicationStrategy = ReplicationStrategy.SIMPLE_STRATEGY;
+
+	private int replicationFactor;
 
 	private boolean durableWrites = false;
 
 	private boolean ifNotExists = false;
 
-	private Set<KeyspaceActionSpecification> specs = new HashSet<>();
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
-	 */
-	@Override
-	public void destroy() {
-		action = null;
-		name = null;
-		networkTopologyDataCenters = new LinkedList<>();
-		networkTopologyReplicationFactors = new LinkedList<>();
-		replicationStrategy = null;
-		specs = new HashSet<>();
-	}
+	private @Nullable KeyspaceActions actions;
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -84,65 +65,45 @@ public class KeyspaceActionSpecificationFactoryBean
 		Assert.hasText(name, "Keyspace Name is required for a Keyspace Action");
 		Assert.notNull(action, "Keyspace Action is required for a Keyspace Action");
 
-		switch (action) {
-			case CREATE_DROP:
-				specs.add(generateDropKeyspaceSpecification());
-			case CREATE:
-				// Assert.notNull(replicationStrategy, "Replication Strategy is required to create a Keyspace");
-				specs.add(generateCreateKeyspaceSpecification());
-				break;
-			case ALTER:
-				break;
-		}
-	}
-
-	/**
-	 * Generate a {@link CreateKeyspaceSpecification} for the keyspace.
-	 *
-	 * @return The {@link CreateKeyspaceSpecification}
-	 */
-	private CreateKeyspaceSpecification generateCreateKeyspaceSpecification() {
-
-		CreateKeyspaceSpecification create = CreateKeyspaceSpecification.createKeyspace(name).ifNotExists(ifNotExists)
-				.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
-
-		Map<Option, Object> replicationStrategyMap = new HashMap<>();
-		replicationStrategyMap.put(new DefaultOption("class", String.class, true, false, true),
-				replicationStrategy.getValue());
+		KeyspaceActionSpecificationFactoryBuilder builder = KeyspaceActionSpecificationFactory.builder(name)
+				.durableWrites(durableWrites);
 
 		if (replicationStrategy == ReplicationStrategy.SIMPLE_STRATEGY) {
-			replicationStrategyMap.put(new DefaultOption("replication_factor", Long.class, true, false, false),
-					replicationFactor);
+			builder.simpleReplication(replicationFactor);
 		}
 
 		if (replicationStrategy == ReplicationStrategy.NETWORK_TOPOLOGY_STRATEGY) {
+
 			int i = 0;
 			for (String datacenter : networkTopologyDataCenters) {
-				replicationStrategyMap.put(new DefaultOption(datacenter, Long.class, true, false, false),
-						networkTopologyReplicationFactors.get(i++));
+				builder.withDataCenter(
+						DataCenterReplication.of(datacenter, Integer.parseInt(networkTopologyReplicationFactors.get(i++))));
 			}
 		}
 
-		create.with(KeyspaceOption.REPLICATION, replicationStrategyMap);
+		KeyspaceActionSpecificationFactory factory = builder.build();
 
-		return create;
-	}
-
-	/**
-	 * Generate a {@link DropKeyspaceSpecification} for the keyspace.
-	 *
-	 * @return The {@link DropKeyspaceSpecification}
-	 */
-	private DropKeyspaceSpecification generateDropKeyspaceSpecification() {
-		return DropKeyspaceSpecification.dropKeyspace(getName());
+		switch (action) {
+			case NONE:
+				this.actions = new KeyspaceActions();
+				break;
+			case CREATE_DROP:
+				this.actions = new KeyspaceActions(factory.create(ifNotExists), factory.drop(ifNotExists));
+				break;
+			case CREATE:
+				this.actions = new KeyspaceActions(factory.create(ifNotExists));
+				break;
+			default:
+				throw new IllegalStateException(String.format("KeyspaceAction %s not supported", action));
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
 	@Override
-	public Set<KeyspaceActionSpecification> getObject() {
-		return specs;
+	public KeyspaceActions getObject() {
+		return actions;
 	}
 
 	/* (non-Javadoc)
@@ -272,7 +233,7 @@ public class KeyspaceActionSpecificationFactoryBean
 	/**
 	 * @param replicationFactor The replicationFactor to set.
 	 */
-	public void setReplicationFactor(long replicationFactor) {
+	public void setReplicationFactor(int replicationFactor) {
 		this.replicationFactor = replicationFactor;
 	}
 

@@ -45,7 +45,7 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 	 * @return a new {@link CreateKeyspaceSpecification}.
 	 */
 	public static CreateKeyspaceSpecification createKeyspace(String name) {
-		return new CreateKeyspaceSpecification(KeyspaceIdentifier.ksId(name));
+		return new CreateKeyspaceSpecification(KeyspaceIdentifier.of(name));
 	}
 
 	/**
