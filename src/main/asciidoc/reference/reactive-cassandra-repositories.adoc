@@ -1,0 +1,122 @@
+[[cassandra.reactive.repositories]]
+= Reactive Cassandra repositories
+
+[[cassandra.reactive.repositories.intro]]
+== Introduction
+
+This chapter will point out the specialties for reactive repository support for Apache Cassandra. This builds on the core repository support explained in <<cassandra.repositories>>. So make sure you've got a sound understanding of the basic concepts explained there.
+
+Reactive usage splits into two phases: Composition and execution. Calling repository methods lets you compose a reactive sequence by obtaining ``Publisher``s and applying operators. No I/O happens until now. Passing the reactive sequence to a reactive execution infrastructure (such as http://docs.spring.io/spring-framework/docs/{springVersion}/spring-framework-reference/web.html#web-reactive[Spring WebFlux] or http://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]) will subscribe to the publisher and initiate the actual execution.
+
+[[cassandra.reactive.repositories.libraries]]
+== Reactive Composition Libraries
+
+The reactive space offers various reactive composition libraries. The most common libraries are https://github.com/ReactiveX/RxJava[RxJava] and https://projectreactor.io/[Project Reactor].
+
+Spring Data Apache Cassandra is built on top of the https://github.com/datastax/java-driver[DataStax Cassandra] driver. It's not a reactive driver but the asynchronous capabilities allow adoption and exposing `Publisher` APIs to provide maximal interoperability relying on the http://www.reactive-streams.org/[Reactive Streams] initiative. Static APIs such as `ReactiveCassandraOperations` are provided by using Project Reactor's `Flux` and `Mono` types. Project Reactor offers various adapters to convert reactive wrapper types  (`Flux` to `Observable` and vice versa) but conversion can easily clutter your code.
+
+Spring Data's Repository abstraction is a dynamic API, mostly defined by you and your requirements, as you're declaring query methods. Reactive Cassandra repositories can be either implemented using RxJava or Project Reactor wrapper types by simply extending from one of the library-specific repository interfaces:
+
+* `ReactiveCrudRepository`
+* `ReactiveSortingRepository`
+* `RxJava2CrudRepository`
+* `RxJava2SortingRepository`
+
+Spring Data converts reactive wrapper types behind the scenes so that you can stick to your favorite composition library.
+
+[[cassandra.reactive.repositories.usage]]
+== Usage
+
+To access domain entities stored in Apache Cassandra, you can leverage Spring Data's sophisticated Repository support
+that eases implementing DAOs quite significantly. To do so, simply create an interface for your Repository:
+
+.Sample Person entity
+====
+[source,java]
+----
+@Table
+public class Person {
+
+  @Id
+  private String id;
+  private String firstname;
+  private String lastname;
+
+  // … getters and setters omitted
+}
+----
+====
+
+We have a simple domain object here. Note that the entity has a property named `id` of type `String`.
+The default serialization mechanism used in `CassandraTemplate` (which is backing the Repository support)
+regards properties named id as row id.
+
+.Basic repository interface to persist Person entities
+====
+[source]
+----
+public interface ReactivePersonRepository extends ReactiveSortingRepository<Person, Long> {
+
+  @AllowFiltering
+  Flux<Person> findByFirstname(String firstname);
+
+  @AllowFiltering
+  Flux<Person> findByFirstname(Publisher<String> firstname);
+
+  @AllowFiltering
+  Mono<Person> findByFirstnameAndLastname(String firstname, String lastname);
+}
+----
+====
+
+For JavaConfig use the `@EnableReactiveCassandraRepositories` annotation. The annotation carries the very same attributes like the namespace element. If no base package is configured the infrastructure will scan the package of the annotated configuration class.
+
+.JavaConfig for repositories
+====
+[source,java]
+----
+@Configuration
+@EnableReactiveCassandraRepositories
+class ApplicationConfig extends AbstractReactiveCassandraConfiguration {
+
+  @Override
+  protected String getKeyspaceName() {
+    return "keyspace";
+  }
+
+  public String[] getEntityBasePackages() {
+    return new String[] { "com.oreilly.springdata.cassandra" };
+  }
+}
+----
+====
+
+As our domain repository extends `ReactiveSortingRepository` it provides you with CRUD operations as well as methods for sorted access to the entities. Working with the repository instance is just a matter of dependency injecting it into a client.
+
+.Sorted access to Person entities
+====
+[source,java]
+----
+public class PersonRepositoryTests {
+
+    @Autowired ReactivePersonRepository repository;
+
+    @Test
+    public void sortsElementsCorrectly() {
+        Flux<Person> people = repository.findAll(Sort.by(new Order(ASC, "lastname")));
+    }
+}
+----
+====
+
+[[cassandra.reactive.repositories.features]]
+== Features
+
+Spring Data's Reactive Cassandra support comes with the same set of features as <<cassandra.repositories,imperative repositories>>.
+
+Following features are supported:
+
+* Query Methods using <<cassandra.repositories.queries,String queries and Query Derivation>>
+* <<projections>>
+
+NOTE: Query methods must return a reactive type. Resolved types (`User` vs. `Mono<User>`) are not supported.
