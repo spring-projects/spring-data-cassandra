@@ -1,16 +1,26 @@
 [[new-features]]
 = New & Noteworthy
 
+This section summarizes changes and features for each release.
+
 [[new-features.2-0-0]]
 == What's new in Spring Data for Apache Cassandra 2.0
+
+* Upgrade to Java 8.
+* <<cassandra.reactive,Reactive Apache Cassandra support>>.
+* Merge of Spring CQL and Spring Data for Apache Cassandra into a single module and package relocations from `org.springframework.cql` to `org.springframework.data.cassandra`.
+* Revised `CqlTemplate` and `AsyncCqlTemplate`/`CassandraTemplate` and `AsyncCassandraTemplate` implementations.
+* Routing capabilities via `SessionFactory` and `AbstractRoutingSessionFactory`.
 * `Update` and `Query` objects.
 * CRUD repository interface renaming: `CassandraRepository` using `MapId` is now renamed to `MapIdCassandraRepository`. `TypedIdCassandraRepository` is renamed to `CassandraRepository`.
 * Lightweight transactions via `InsertOptions` and `UpdateOptions` using the Template API.
 * Merge of Spring CQL into Spring Data Cassandra.
-* Index creation on application startup via `@Indexed`.
+* Index creation on application startup via `@Indexed` and `@SASI`.
+* New annotation for `@AllowFiltering`.
 
 [[new-features.1-5-0]]
 == What's new in Spring Data for Apache Cassandra 1.5
+
 * Assert compatibility with Cassandra 3.0 and Cassandra Java Driver 3.0.
 * Configurable `ProtocolVersion` and `QueryOptions` on `Cluster` level.
 * Support for `Optional` as query method result and argument.

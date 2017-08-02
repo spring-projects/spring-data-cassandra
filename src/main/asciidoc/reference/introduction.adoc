@@ -1,9 +1,80 @@
-[float]
-= Document Structure
+= Introduction
 
 This part of the reference documentation explains the core functionality offered by Spring Data for Apache Cassandra.
 
 <<cassandra.core>> introduces the Cassandra module feature set.
 
-<<cassandra.repositories>> introduces the repository support for Cassandra.
+<<cassandra.reactive>> explains reactive Cassandra specifics.
+
+<<cassandra.repositories>> introduce repository support for Cassandra.
+
+[[cassandra.modules]]
+== Spring CQL and Spring Data for Apache Cassandra modules
+
+Spring Data for Apache Cassandra allows interaction on CQL and entity-level.
+
+The value-add provided by the Spring Data Cassandra abstraction is perhaps best shown by the sequence of actions
+outlined in the table below. The table shows what actions Spring will take care of and which actions are
+the responsibility of you, the application developer.
+
+[[cassandra.modules.who-does-what]]
+.Spring Data for Apache Cassandra (CQL Core)- who does what?
+|===
+| Action| Spring| You
+
+| Define connection parameters.
+|
+| X
+
+| Open the connection.
+| X
+|
+
+| Specify the CQL statement.
+|
+| X
+
+| Declare parameters and provide parameter values
+|
+| X
+
+| Prepare and execute the statement.
+| X
+|
+
+| Set up the loop to iterate through the results (if any).
+| X
+|
+
+| Do the work for each iteration.
+|
+| X
+
+| Process any exception.
+| X
+|
+
+| Close the Session.
+| X
+|
+|===
+
+The CQL core takes care of all the low-level details that can make Cassandra and CQL such a tedious API to develop with.
+Using mapped entity objects allows schema generation, object mapping and Repository support.
+
+[[cassandra.choose-style]]
+=== Choosing an approach for Cassandra database access
+
+You can choose among several approaches to form the basis for your Cassandra database access. Spring's support
+for Apache Cassandra comes in different flavors. Once you start using one of these approaches, you can still mix
+and match to include a feature from a different approach.
+
+* <<cassandra.cql-template,__CqlTemplate__>> and <<cassandra.reactive.cql-template,__ReactiveCqlTemplate__>> are the classic Spring CQL approach and the most popular. This is the "lowest level" approach and components like `CassandraTemplate` use `CqlTemplate` under the covers.
+* <<cassandra.template,__CassandraTemplate__>> wraps a `CqlTemplate` to provide query result to object mapping and the use of `SELECT`, `INSERT`,
+`UPDATE` and `DELETE` methods instead of writing CQL statements. This approach provides better documentation and ease of use.
+* <<cassandra.reactive.template,__ReactiveCassandraTemplate__>> wraps a `ReactiveCqlTemplate` to provide query result to object mapping and the use of `SELECT`, `INSERT`,
+`UPDATE` and `DELETE` methods instead of writing CQL statements. This approach provides better documentation and ease of use.
+* __Repository Abstraction__  allows you to create Repository declarations in your data access layer. The goal of
+Spring Data's Repository abstraction is to significantly reduce the amount of boilerplate code required to implement
+data access layers for various persistence stores.
 
