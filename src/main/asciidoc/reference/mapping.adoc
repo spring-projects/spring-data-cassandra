@@ -318,11 +318,10 @@ public class Person {
     return ssn;
   }
 
-// other getters/setters ommitted
+  // other getters/setters ommitted
 }
 ----
 ====
-
 
 .Mapped User-Defined type `Address`
 ====
@@ -334,14 +333,14 @@ public class Address {
   private String city;
 
   @CassandraType(type = Name.VARCHAR)
-  private String city;
+  private String street;
 
   private Set<String> zipcodes;
 
   @CassandraType(type = Name.SET, typeArguments = Name.BIGINT)
   private List<Long> timestamps;
 
-// other getters/setters ommitted
+  // other getters/setters ommitted
 }
 ----
 ====
