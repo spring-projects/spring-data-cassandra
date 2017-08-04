@@ -84,6 +84,9 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 			nameToDataType.put(dataType.getName(), dataType);
 		}
 
+		nameToDataType.put(Name.VARCHAR, DataType.varchar());
+		nameToDataType.put(Name.TEXT, DataType.text());
+
 		return nameToDataType;
 	}
 
