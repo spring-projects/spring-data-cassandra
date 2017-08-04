@@ -97,7 +97,7 @@ public interface ReactiveCqlOperations {
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link Flux}, containing mapped objects.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
 	<T> Flux<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException;
@@ -230,7 +230,7 @@ public interface ReactiveCqlOperations {
 	 *
 	 * @param statementPublisher defining a {@link Publisher} of CQL statements that will be executed.
 	 * @return an array of the number of rows affected by each statement
-	 * @throws DataAccessException if there is any problem executing the batch
+	 * @throws DataAccessException if there is any problem executing the batch.
 	 */
 	Flux<Boolean> execute(Publisher<String> statementPublisher) throws DataAccessException;
 
@@ -270,7 +270,7 @@ public interface ReactiveCqlOperations {
 	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link Flux}, containing mapped objects.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
 	<T> Flux<T> query(Statement statement, RowMapper<T> rowMapper) throws DataAccessException;
@@ -414,7 +414,7 @@ public interface ReactiveCqlOperations {
 	 *          {@link org.springframework.data.cassandra.ReactiveSession}, must not be {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}.
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> Flux<T> execute(ReactivePreparedStatementCreator psc, ReactivePreparedStatementCallback<T> action)
 			throws DataAccessException;
@@ -430,7 +430,7 @@ public interface ReactiveCqlOperations {
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> Flux<T> execute(String cql, ReactivePreparedStatementCallback<T> action) throws DataAccessException;
 
@@ -441,7 +441,7 @@ public interface ReactiveCqlOperations {
 	 *          {@link org.springframework.data.cassandra.ReactiveSession}, must not be {@literal null}.
 	 * @param rse object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ReactiveResultSetExtractor}
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> Flux<T> query(ReactivePreparedStatementCreator psc, ReactiveResultSetExtractor<T> rse) throws DataAccessException;
 
@@ -454,7 +454,7 @@ public interface ReactiveCqlOperations {
 	 *          set fetch size and other performance options.
 	 * @param rse object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ReactiveResultSetExtractor}.
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> Flux<T> query(String cql, @Nullable PreparedStatementBinder psb, ReactiveResultSetExtractor<T> rse)
 			throws DataAccessException;
@@ -470,7 +470,7 @@ public interface ReactiveCqlOperations {
 	 *          set fetch size and other performance options.
 	 * @param rse object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> Flux<T> query(ReactivePreparedStatementCreator psc, @Nullable PreparedStatementBinder psb,
 			ReactiveResultSetExtractor<T> rse) throws DataAccessException;
@@ -682,7 +682,7 @@ public interface ReactiveCqlOperations {
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
 	 *          set fetch size and other performance options.
 	 * @return boolean value whether the statement was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	Mono<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException;
 
@@ -694,7 +694,7 @@ public interface ReactiveCqlOperations {
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
 	 * @return boolean value whether the statement was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	Mono<Boolean> execute(String cql, Object... args) throws DataAccessException;
 
@@ -706,7 +706,7 @@ public interface ReactiveCqlOperations {
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
 	 * @return boolean value whether the statement was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	Flux<Boolean> execute(String cql, Publisher<Object[]> args) throws DataAccessException;
 }

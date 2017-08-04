@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 import java.util.Map;
 
@@ -82,7 +80,7 @@ public interface AsyncCqlOperations {
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
 	 * @return boolean value whether the statement was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	ListenableFuture<Boolean> execute(String cql, Object... args) throws DataAccessException;
 
@@ -96,7 +94,7 @@ public interface AsyncCqlOperations {
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
 	 *          set fetch size and other performance options.
 	 * @return boolean value whether the statement was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	ListenableFuture<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb)
 			throws DataAccessException;
@@ -112,8 +110,8 @@ public interface AsyncCqlOperations {
 	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}
-	 * @throws DataAccessException if there is any problem TODO: Lambda-usage clashes with execute(cql,
-	 *           PreparedStatementBinder)
+	 * @throws DataAccessException if there is any problem executing the query. TODO: Lambda-usage clashes with
+	 *           execute(cql, PreparedStatementBinder)
 	 */
 	<T> ListenableFuture<T> execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException;
 
@@ -140,7 +138,7 @@ public interface AsyncCqlOperations {
 	 *
 	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowCallbackHandler, Object[])
 	 */
 	ListenableFuture<Void> query(String cql, RowCallbackHandler rowCallbackHandler) throws DataAccessException;
@@ -154,7 +152,7 @@ public interface AsyncCqlOperations {
 	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
 	<T> ListenableFuture<List<T>> query(String cql, RowMapper<T> rowMapper) throws DataAccessException;
@@ -208,7 +206,7 @@ public interface AsyncCqlOperations {
 	 *          set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> ListenableFuture<T> query(String cql, @Nullable PreparedStatementBinder psb,
 			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
@@ -366,7 +364,7 @@ public interface AsyncCqlOperations {
 	 *
 	 * @param cql static CQL to execute, must not be {@literal null} or empty.
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
-	 * @return the result object of the required type, or {@link Mono#empty()} in case of CQL NULL.
+	 * @return the result object of the required type, or {@literal null} in case of CQL NULL.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row, or does not return
 	 *           exactly one column in that row.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -385,7 +383,7 @@ public interface AsyncCqlOperations {
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the PreparedStatement to guess the corresponding CQL
 	 *          type)
-	 * @return the result object of the required type, or {@link Mono#empty()} in case of CQL NULL.
+	 * @return the result object of the required type, or {@literal null} in case of CQL NULL.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row, or does not return
 	 *           exactly one column in that row.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -491,7 +489,7 @@ public interface AsyncCqlOperations {
 	 *
 	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowCallbackHandler, Object[])
 	 */
 	ListenableFuture<Void> query(Statement statement, RowCallbackHandler rowCallbackHandler) throws DataAccessException;
@@ -505,7 +503,7 @@ public interface AsyncCqlOperations {
 	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
 	<T> ListenableFuture<List<T>> query(Statement statement, RowMapper<T> rowMapper) throws DataAccessException;
@@ -577,7 +575,7 @@ public interface AsyncCqlOperations {
 	 *
 	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
-	 * @return the result object of the required type, or {@link Mono#empty()} in case of CQL NULL.
+	 * @return the result object of the required type, or {@literal null} in case of CQL NULL.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row, or does not return
 	 *           exactly one column in that row.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -627,7 +625,7 @@ public interface AsyncCqlOperations {
 	 *
 	 * @param preparedStatementCreator object that provides CQL and any necessary parameters, must not be {@literal null}.
 	 * @return boolean value whether the statement was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	// TODO: Interferes with execute(session callback lambda)
 	ListenableFuture<Boolean> execute(AsyncPreparedStatementCreator preparedStatementCreator) throws DataAccessException;
@@ -644,7 +642,7 @@ public interface AsyncCqlOperations {
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}.
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> ListenableFuture<T> execute(AsyncPreparedStatementCreator preparedStatementCreator,
 			PreparedStatementCallback<T> action) throws DataAccessException;
@@ -656,7 +654,7 @@ public interface AsyncCqlOperations {
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> ListenableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
@@ -696,7 +694,7 @@ public interface AsyncCqlOperations {
 	 *          set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> ListenableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			@Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor)

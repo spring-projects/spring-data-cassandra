@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import reactor.core.publisher.Mono;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +79,7 @@ public interface CqlOperations {
 	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
 	 *          CQL type).
 	 * @return boolean value whether the statement was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	boolean execute(String cql, Object... args) throws DataAccessException;
 
@@ -95,7 +93,7 @@ public interface CqlOperations {
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
 	 *          set fetch size and other performance options.
 	 * @return boolean value whether the statement was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	boolean execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException;
 
@@ -110,7 +108,7 @@ public interface CqlOperations {
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	@Nullable
 	<T> T execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException;
@@ -139,7 +137,7 @@ public interface CqlOperations {
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowCallbackHandler, Object[])
 	 */
 	void query(String cql, RowCallbackHandler rowCallbackHandler) throws DataAccessException;
@@ -153,7 +151,7 @@ public interface CqlOperations {
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
 	<T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException;
@@ -206,7 +204,7 @@ public interface CqlOperations {
 	 *          set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	@Nullable
 	<T> T query(String cql, @Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor)
@@ -364,7 +362,7 @@ public interface CqlOperations {
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
-	 * @return the result object of the required type, or {@link Mono#empty()} in case of CQL NULL.
+	 * @return the result object of the required type, or {@literal null} in case of CQL NULL.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row, or does not return
 	 *           exactly one column in that row.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -383,7 +381,7 @@ public interface CqlOperations {
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
 	 * @param args arguments to bind to the query (leaving it to the PreparedStatement to guess the corresponding CQL
 	 *          type)
-	 * @return the result object of the required type, or {@link Mono#empty()} in case of CQL NULL.
+	 * @return the result object of the required type, or {@literal null} in case of CQL NULL.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row, or does not return
 	 *           exactly one column in that row.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -520,7 +518,7 @@ public interface CqlOperations {
 	 *
 	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowCallbackHandler, Object[])
 	 */
 	void query(Statement statement, RowCallbackHandler rowCallbackHandler) throws DataAccessException;
@@ -534,7 +532,7 @@ public interface CqlOperations {
 	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
-	 * @throws DataAccessException if there is any problem executing the query
+	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
 	<T> List<T> query(Statement statement, RowMapper<T> rowMapper) throws DataAccessException;
@@ -606,7 +604,7 @@ public interface CqlOperations {
 	 *
 	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
 	 * @param requiredType the type that the result object is expected to match, must not be {@literal null}.
-	 * @return the result object of the required type, or {@link Mono#empty()} in case of CQL NULL.
+	 * @return the result object of the required type, or {@literal null} in case of CQL NULL.
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row, or does not return
 	 *           exactly one column in that row.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -672,7 +670,7 @@ public interface CqlOperations {
 	 *
 	 * @param psc object that provides CQL and any necessary parameters, must not be {@literal null}.
 	 * @return boolean value whether the statement was applied.
-	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	// TODO: Interferes with execute(session callback lambda)
 	boolean execute(PreparedStatementCreator psc) throws DataAccessException;
@@ -689,7 +687,7 @@ public interface CqlOperations {
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}.
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	@Nullable
 	<T> T execute(PreparedStatementCreator preparedStatementCreator, PreparedStatementCallback<T> action)
@@ -702,7 +700,7 @@ public interface CqlOperations {
 	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	@Nullable
 	<T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor)
@@ -743,7 +741,7 @@ public interface CqlOperations {
 	 *          set fetch size and other performance options.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
-	 * @throws DataAccessException if there is any problem
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	@Nullable
 	<T> T query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
@@ -789,6 +787,7 @@ public interface CqlOperations {
 	 * Cassandra Ring topology.
 	 *
 	 * @return The list of ring tokens that are active in the cluster
+	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	List<RingMember> describeRing() throws DataAccessException;
 
