@@ -732,6 +732,10 @@ All CQL issued by this class is logged at the `DEBUG` level under the category c
 name of the template instance (typically `CqlTemplate`, but it may be different if you are using a custom subclass of the
 `CqlTemplate` class).
 
+You can control fetch size, consistency level and retry policy defaults by configuring these parameters
+on the CQL API instances `CqlTemplate`, `AsyncCqlTemplate`, and `ReactiveCqlTemplate`. Defaults apply if the particular
+query option is not set.
+
 NOTE: `CqlTemplate` comes in different execution model flavors. The basic `CqlTemplate` uses a blocking execution model.
 You can use `AsyncCqlTemplate` for asynchronous execution and synchronization with ``Future``s or
 `ReactiveCqlTemplate` for reactive execution.

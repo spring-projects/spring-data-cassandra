@@ -57,6 +57,8 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 	private final EntityInstantiators instantiators;
 
+	QueryMethodStatementFactory queryMethodStatementFactory;
+
 	/**
 	 * Create a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
@@ -72,6 +74,7 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 		this.queryMethod = queryMethod;
 		this.operations = operations;
 		this.instantiators = new EntityInstantiators();
+		this.queryMethodStatementFactory = new QueryMethodStatementFactory(queryMethod);
 	}
 
 	/* (non-Javadoc) */

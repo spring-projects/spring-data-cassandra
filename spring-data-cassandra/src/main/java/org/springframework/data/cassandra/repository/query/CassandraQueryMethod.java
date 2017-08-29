@@ -22,6 +22,7 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.repository.Consistency;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
@@ -34,6 +35,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 
 /**
@@ -51,6 +53,8 @@ public class CassandraQueryMethod extends QueryMethod {
 	private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
 
 	private final Optional<Query> query;
+
+	private final Optional<Consistency> consistency;
 
 	private @Nullable CassandraEntityMetadata<?> entityMetadata;
 
@@ -74,6 +78,7 @@ public class CassandraQueryMethod extends QueryMethod {
 		this.method = method;
 		this.mappingContext = mappingContext;
 		this.query = Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(method, Query.class));
+		this.consistency = Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(method, Consistency.class));
 	}
 
 	/**
@@ -154,6 +159,26 @@ public class CassandraQueryMethod extends QueryMethod {
 	@Nullable
 	public String getAnnotatedQuery() {
 		return query.map(Query::value).orElse(null);
+	}
+
+	/**
+	 * @return whether the method has an annotated {@link com.datastax.driver.core.ConsistencyLevel}.
+	 * @since 2.0
+	 */
+	public boolean hasConsistencyLevel() {
+		return consistency.isPresent();
+	}
+
+	/**
+	 * Returns the {@link ConsistencyLevel} in a {@link Query} annotation or throws {@link IllegalStateException} if the
+	 * annotation was not found.
+	 *
+	 * @return the {@link ConsistencyLevel}.
+	 * @throws IllegalStateException if the required annotation was not found.
+	 */
+	public ConsistencyLevel getRequiredAnnotatedConsistencyLevel() throws IllegalStateException {
+		return consistency.map(Consistency::value)
+				.orElseThrow(() -> new IllegalStateException("No @Consistency annotation found"));
 	}
 
 	/**

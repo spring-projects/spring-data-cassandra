@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.lang.Nullable;
@@ -69,4 +70,13 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 	 * @since 1.5
 	 */
 	Object[] getValues();
+
+	/**
+	 * Returns the {@link QueryOptions} associated of the associated query method.
+	 *
+	 * @return the {@link QueryOptions} or {@literal null} if none.
+	 * @since 2.0
+	 */
+	@Nullable
+	QueryOptions getQueryOptions();
 }

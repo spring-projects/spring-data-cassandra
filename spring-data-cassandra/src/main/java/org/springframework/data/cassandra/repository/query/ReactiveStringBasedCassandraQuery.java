@@ -15,11 +15,9 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.Statement;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.repository.query.EvaluationContextProvider;
-import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
@@ -37,8 +35,6 @@ import com.datastax.driver.core.SimpleStatement;
  * @see org.springframework.data.cassandra.repository.Query
  */
 public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandraQuery {
-
-	private static final Logger LOG = LoggerFactory.getLogger(ReactiveStringBasedCassandraQuery.class);
 
 	private final StringBasedQuery stringBasedQuery;
 
@@ -91,17 +87,6 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 */
 	@Override
 	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
-
-		try {
-			SimpleStatement boundQuery = getStringBasedQuery().bindQuery(parameterAccessor, getQueryMethod());
-
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", boundQuery));
-			}
-
-			return boundQuery;
-		} catch (RuntimeException e) {
-			throw QueryCreationException.create(getQueryMethod(), e);
-		}
+		return queryMethodStatementFactory.select(getStringBasedQuery(), parameterAccessor);
 	}
 }

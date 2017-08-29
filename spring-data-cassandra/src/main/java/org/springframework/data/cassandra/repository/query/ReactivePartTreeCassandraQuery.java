@@ -21,9 +21,7 @@ import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.PartTree;
 
@@ -96,30 +94,6 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	 */
 	@Override
 	protected Statement createQuery(CassandraParameterAccessor parameterAccessor) {
-
-		CassandraQueryCreator queryCreator = new CassandraQueryCreator(getTree(), parameterAccessor, getMappingContext());
-
-		Query query = queryCreator.createQuery();
-
-		try {
-
-			if (getTree().isLimiting()) {
-				query = query.limit(getTree().getMaxResults());
-			}
-
-			if (getQueryMethod().getQueryAnnotation().map(org.springframework.data.cassandra.repository.Query::allowFiltering)
-					.orElse(false)) {
-
-				query = query.withAllowFiltering();
-			}
-
-			CassandraPersistentEntity<?> persistentEntity = getMappingContext()
-					.getRequiredPersistentEntity(getQueryMethod().getDomainClass());
-
-			return getStatementFactory().select(query, persistentEntity);
-
-		} catch (RuntimeException e) {
-			throw QueryCreationException.create(getQueryMethod(), e);
-		}
+		return queryMethodStatementFactory.select(statementFactory, getTree(), getMappingContext(), parameterAccessor);
 	}
 }

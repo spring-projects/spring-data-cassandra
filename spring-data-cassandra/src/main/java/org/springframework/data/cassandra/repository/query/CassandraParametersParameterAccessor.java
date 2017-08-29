@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.repository.query.ParameterAccessor;
@@ -98,5 +99,28 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	@Override
 	public Object[] getValues() {
 		return values.toArray();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mongodb.repository.query.CassandraParameterAccessor#getQueryOptions()
+	 */
+	@Nullable
+	@Override
+	public QueryOptions getQueryOptions() {
+
+		int queryOptionsIndex = getParameters().getQueryOptionsIndex();
+
+		if (queryOptionsIndex == -1) {
+			return null;
+		}
+
+		Object value = getValue(queryOptionsIndex);
+
+		if (value == null) {
+			return null;
+		}
+
+		return (QueryOptions) value;
 	}
 }
