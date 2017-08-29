@@ -84,11 +84,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		return potentiallyConvert(index, delegate.getBindableValue(index), null);
 	}
 
-	@Override
-	public CassandraType findCassandraType(int index) {
-		return delegate.findCassandraType(index);
-	}
-
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getDataType(int)
 	 */
@@ -99,6 +94,15 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 		return (dataType != null ? dataType : converter.getMappingContext().getDataType(getParameterType(index)));
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#findCassandraType(int)
+	 */
+	@Override
+	public CassandraType findCassandraType(int index) {
+		return delegate.findCassandraType(index);
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getParameterType(int)
