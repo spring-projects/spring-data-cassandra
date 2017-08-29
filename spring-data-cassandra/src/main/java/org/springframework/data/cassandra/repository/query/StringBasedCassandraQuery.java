@@ -72,7 +72,6 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider));
 	}
 
-	/* (non-Javadoc) */
 	protected StringBasedQuery getStringBasedQuery() {
 		return this.stringBasedQuery;
 	}
@@ -82,6 +81,6 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 */
 	@Override
 	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
-		return queryMethodStatementFactory.select(getStringBasedQuery(), parameterAccessor);
+		return getQueryStatementCreator().select(getStringBasedQuery(), parameterAccessor);
 	}
 }

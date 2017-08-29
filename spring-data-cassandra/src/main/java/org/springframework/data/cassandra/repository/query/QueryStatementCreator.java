@@ -36,16 +36,28 @@ import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 
 /**
+ * Creates {@link Statement}s for {@link CassandraQueryMethod query methods} based on {@link PartTree} and
+ * {@link StringBasedQuery}.
+ *
  * @author Mark Paluch
  * @since 2.0
  */
 @RequiredArgsConstructor
-class QueryMethodStatementFactory {
+class QueryStatementCreator {
 
-	private static final Logger LOG = LoggerFactory.getLogger(QueryMethodStatementFactory.class);
+	private static final Logger LOG = LoggerFactory.getLogger(QueryStatementCreator.class);
 
 	private final CassandraQueryMethod queryMethod;
 
+	/**
+	 * Create a {@literal SELECT} {@link Statement} from a {@link PartTree} and apply query options.
+	 *
+	 * @param statementFactory must not be {@literal null}.
+	 * @param tree must not be {@literal null}.
+	 * @param mappingContext must not be {@literal null}.
+	 * @param parameterAccessor must not be {@literal null}.
+	 * @return the {@literal SELECT} {@link Statement}.
+	 */
 	Statement select(StatementFactory statementFactory, PartTree tree,
 			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
 			CassandraParameterAccessor parameterAccessor) {
@@ -91,6 +103,13 @@ class QueryMethodStatementFactory {
 		}
 	}
 
+	/**
+	 * Create a {@link Statement} from a {@link StringBasedQuery} and apply query options.
+	 *
+	 * @param stringBasedQuery must not be {@literal null}.
+	 * @param parameterAccessor must not be {@literal null}.
+	 * @return the {@link Statement}.
+	 */
 	SimpleStatement select(StringBasedQuery stringBasedQuery, CassandraParameterAccessor parameterAccessor) {
 
 		try {

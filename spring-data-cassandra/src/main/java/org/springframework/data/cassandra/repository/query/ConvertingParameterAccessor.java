@@ -90,6 +90,14 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getDataType(int)
+	 */
+	@Override
+	public DataType getDataType(int index) {
+		return delegate.getDataType(index);
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#findCassandraType(int)
 	 */
 	@Override
@@ -97,13 +105,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		return delegate.findCassandraType(index);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getDataType(int)
-	 */
-	@Override
-	public DataType getDataType(int index) {
-		return delegate.getDataType(index);
-	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getParameterType(int)

@@ -26,7 +26,6 @@ import org.springframework.data.cassandra.repository.query.ReactiveCassandraQuer
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingConverter;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SingleEntityExecution;
-import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -40,15 +39,9 @@ import com.datastax.driver.core.Statement;
  * @author Mark Paluch
  * @since 2.0
  */
-public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery {
-
-	private final ReactiveCassandraQueryMethod method;
+public abstract class AbstractReactiveCassandraQuery extends CassandraRepositoryQuerySupport {
 
 	private final ReactiveCassandraOperations operations;
-
-	private final EntityInstantiators instantiators;
-
-	QueryMethodStatementFactory queryMethodStatementFactory;
 
 	/**
 	 * Create a new {@link AbstractReactiveCassandraQuery} from the given {@link CassandraQueryMethod} and
@@ -59,18 +52,15 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 	 */
 	public AbstractReactiveCassandraQuery(ReactiveCassandraQueryMethod method, ReactiveCassandraOperations operations) {
 
-		Assert.notNull(method, "ReactiveCassandraQueryMethod must not be null");
+		super(method);
+
 		Assert.notNull(operations, "ReactiveCassandraOperations must not be null");
 
-		this.method = method;
 		this.operations = operations;
-		this.instantiators = new EntityInstantiators();
-		this.queryMethodStatementFactory = new QueryMethodStatementFactory(method);
 	}
 
-	/* (non-Javadoc) */
-	protected EntityInstantiators getEntityInstantiators() {
-		return this.instantiators;
+	protected ReactiveCassandraOperations getReactiveCassandraOperations() {
+		return this.operations;
 	}
 
 	/*
@@ -79,12 +69,7 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 	 */
 	@Override
 	public ReactiveCassandraQueryMethod getQueryMethod() {
-		return this.method;
-	}
-
-	/* (non-Javadoc) */
-	protected ReactiveCassandraOperations getReactiveCassandraOperations() {
-		return this.operations;
+		return (ReactiveCassandraQueryMethod) super.getQueryMethod();
 	}
 
 	/*
@@ -97,6 +82,13 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 		return (getQueryMethod().hasReactiveWrapperParameter() ? executeDeferred(parameters)
 				: execute(new ReactiveCassandraParameterAccessor(getQueryMethod(), parameters)));
 	}
+
+	/**
+	 * Creates a string query using the given {@link ParameterAccessor}
+	 *
+	 * @param accessor must not be {@literal null}.
+	 */
+	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
 
 	@SuppressWarnings("unchecked")
 	private Object executeDeferred(Object[] parameters) {
@@ -127,13 +119,6 @@ public abstract class AbstractReactiveCassandraQuery implements RepositoryQuery 
 
 		return queryExecution.execute(statement, resultType);
 	}
-
-	/**
-	 * Creates a string query using the given {@link ParameterAccessor}
-	 *
-	 * @param accessor must not be {@literal null}.
-	 */
-	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
 
 	/**
 	 * Returns the execution instance to use.

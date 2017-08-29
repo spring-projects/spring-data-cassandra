@@ -94,6 +94,7 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	 */
 	@Override
 	protected Statement createQuery(CassandraParameterAccessor parameterAccessor) {
-		return queryMethodStatementFactory.select(statementFactory, getTree(), getMappingContext(), parameterAccessor);
+		return getQueryStatementCreator().select(getStatementFactory(), getTree(), getMappingContext(),
+				parameterAccessor);
 	}
 }

@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import com.datastax.driver.core.Statement;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -77,7 +76,6 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider));
 	}
 
-	/* (non-Javadoc) */
 	protected StringBasedQuery getStringBasedQuery() {
 		return this.stringBasedQuery;
 	}
@@ -87,6 +85,6 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 */
 	@Override
 	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
-		return queryMethodStatementFactory.select(getStringBasedQuery(), parameterAccessor);
+		return getQueryStatementCreator().select(getStringBasedQuery(), parameterAccessor);
 	}
 }

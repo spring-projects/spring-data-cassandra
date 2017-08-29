@@ -15,12 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import lombok.RequiredArgsConstructor;
-
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
@@ -29,15 +23,11 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryExecuti
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultSetQuery;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SingleEntityExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.StreamExecution;
-import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
-import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.Statement;
 
@@ -47,17 +37,9 @@ import com.datastax.driver.core.Statement;
  * @author Mark Paluch
  * @author John Blum
  */
-public abstract class AbstractCassandraQuery implements RepositoryQuery {
-
-	protected static Logger log = LoggerFactory.getLogger(AbstractCassandraQuery.class);
-
-	private final CassandraQueryMethod queryMethod;
+public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySupport {
 
 	private final CassandraOperations operations;
-
-	private final EntityInstantiators instantiators;
-
-	QueryMethodStatementFactory queryMethodStatementFactory;
 
 	/**
 	 * Create a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
@@ -68,31 +50,15 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	 */
 	public AbstractCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations) {
 
-		Assert.notNull(queryMethod, "CassandraQueryMethod must not be null");
+		super(queryMethod);
+
 		Assert.notNull(operations, "CassandraOperations must not be null");
 
-		this.queryMethod = queryMethod;
 		this.operations = operations;
-		this.instantiators = new EntityInstantiators();
-		this.queryMethodStatementFactory = new QueryMethodStatementFactory(queryMethod);
 	}
 
-	/* (non-Javadoc) */
-	private EntityInstantiators getEntityInstantiators() {
-		return this.instantiators;
-	}
-
-	/* (non-Javadoc) */
 	protected CassandraOperations getOperations() {
 		return this.operations;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
-	 */
-	@Override
-	public CassandraQueryMethod getQueryMethod() {
-		return this.queryMethod;
 	}
 
 	/* (non-Javadoc)
@@ -121,6 +87,13 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	}
 
 	/**
+	 * Creates a {@link Statement} using the given {@link ParameterAccessor}
+	 *
+	 * @param accessor must not be {@literal null}.
+	 */
+	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
+
+	/**
 	 * Returns the execution instance to use.
 	 *
 	 * @param resultProcessing must not be {@literal null}. @return
@@ -139,49 +112,6 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 			return new StreamExecution(getOperations(), resultProcessing);
 		} else {
 			return new SingleEntityExecution(getOperations());
-		}
-	}
-
-	/**
-	 * Creates a {@link Statement} using the given {@link ParameterAccessor}
-	 *
-	 * @param accessor must not be {@literal null}.
-	 */
-	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
-
-	@RequiredArgsConstructor
-	private class CassandraReturnedType {
-
-		private final ReturnedType returnedType;
-		private final CustomConversions customConversions;
-
-		boolean isProjecting() {
-
-			if (!returnedType.isProjecting()) {
-				return false;
-			}
-
-			// Spring Data Cassandra allows List<Map<String, Object> and Map<String, Object> declarations
-			// on query methods so we don't want to let projection kick in
-			if (ClassUtils.isAssignable(Map.class, returnedType.getReturnedType())) {
-				return false;
-			}
-
-			// Type conversion using registered conversions is handled on template level
-			if (customConversions.hasCustomWriteTarget(returnedType.getReturnedType())) {
-				return false;
-			}
-
-			// Don't apply projection on Cassandra simple types
-			return !customConversions.isSimpleType(returnedType.getReturnedType());
-		}
-
-		Class<?> getDomainType() {
-			return returnedType.getDomainType();
-		}
-
-		Class<?> getReturnedType() {
-			return returnedType.getReturnedType();
 		}
 	}
 }

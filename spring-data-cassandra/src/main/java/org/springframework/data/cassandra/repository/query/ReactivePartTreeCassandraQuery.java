@@ -94,6 +94,6 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	 */
 	@Override
 	protected Statement createQuery(CassandraParameterAccessor parameterAccessor) {
-		return queryMethodStatementFactory.select(statementFactory, getTree(), getMappingContext(), parameterAccessor);
+		return getQueryStatementCreator().select(statementFactory, getTree(), getMappingContext(), parameterAccessor);
 	}
 }
