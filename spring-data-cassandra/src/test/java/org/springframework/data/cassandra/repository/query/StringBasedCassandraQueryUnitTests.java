@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,10 +36,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.repository.Consistency;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.support.UserTypeBuilder;
 import org.springframework.data.projection.ProjectionFactory;
@@ -335,6 +338,36 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(stringQuery.getObject(0).toString()).isEqualTo("udtValue");
 	}
 
+	@Test // DATACASS-146
+	public void shouldApplyQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder().fetchSize(777).build();
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", QueryOptions.class, String.class);
+		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod(), queryOptions, "Matthews");
+
+		SimpleStatement actual = cassandraQuery.createQuery(accessor);
+
+		assertThat(actual.toString()).isEqualTo("SELECT * FROM person WHERE lastname = ?;");
+		assertThat(actual.getObject(0)).isEqualTo("Matthews");
+		assertThat(actual.getFetchSize()).isEqualTo(777);
+	}
+
+	@Test // DATACASS-146
+	public void shouldApplyConsistencyLevel() {
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
+		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod(), "Matthews");
+
+		SimpleStatement actual = cassandraQuery.createQuery(accessor);
+
+		assertThat(actual.toString()).isEqualTo("SELECT * FROM person WHERE lastname = ?;");
+		assertThat(actual.getObject(0)).isEqualTo("Matthews");
+		assertThat(actual.getConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_ONE);
+	}
+
 	private StringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
 
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
@@ -347,7 +380,11 @@ public class StringBasedCassandraQueryUnitTests {
 	private interface SampleRepository extends Repository<Person, String> {
 
 		@Query("SELECT * FROM person WHERE lastname = ?0;")
+		@Consistency(ConsistencyLevel.LOCAL_ONE)
 		Person findByLastname(String lastname);
+
+		@Query("SELECT * FROM person WHERE lastname = ?0;")
+		Person findByLastname(QueryOptions queryOptions, String lastname);
 
 		@Query("SELECT * FROM person WHERE lastname = ?0 or firstname = ?0;")
 		Person findByLastnameUsedTwice(String lastname);

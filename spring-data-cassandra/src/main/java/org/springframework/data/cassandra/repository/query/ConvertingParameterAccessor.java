@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
@@ -89,14 +90,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#findCassandraType(int)
-	 */
-	@Override
-	public CassandraType findCassandraType(int index) {
-		return delegate.findCassandraType(index);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getDataType(int)
 	 */
 	@Override
@@ -105,11 +98,29 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#findCassandraType(int)
+	 */
+	@Override
+	public CassandraType findCassandraType(int index) {
+		return delegate.findCassandraType(index);
+	}
+
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getParameterType(int)
 	 */
 	@Override
 	public Class<?> getParameterType(int index) {
 		return delegate.getParameterType(index);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getQueryOptions()
+	 */
+	@Nullable
+	@Override
+	public QueryOptions getQueryOptions() {
+		return delegate.getQueryOptions();
 	}
 
 	/* (non-Javadoc)

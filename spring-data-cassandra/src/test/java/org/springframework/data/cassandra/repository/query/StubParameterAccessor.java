@@ -20,10 +20,12 @@ import java.util.Iterator;
 import java.util.Optional;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
+import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
@@ -62,6 +64,12 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	@Override
 	public Class<?> getParameterType(int index) {
 		return values[index].getClass();
+	}
+
+	@Nullable
+	@Override
+	public QueryOptions getQueryOptions() {
+		return null;
 	}
 
 	@Override

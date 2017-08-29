@@ -34,12 +34,14 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.AllowFiltering;
+import org.springframework.data.cassandra.repository.Consistency;
 import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.projection.ProjectionFactory;
@@ -47,6 +49,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.util.ClassUtils;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
@@ -176,6 +179,26 @@ public class PartTreeCassandraQueryUnitTests {
 		assertThat(query.toString()).isEqualTo("SELECT * FROM person WHERE firstname='foo' ALLOW FILTERING;");
 	}
 
+	@Test // DATACASS-146
+	public void shouldApplyQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder().fetchSize(777).build();
+		Statement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
+				new Class[] { QueryOptions.class, String.class }, queryOptions, "Walter");
+
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person WHERE firstname='Walter';");
+		assertThat(statement.getFetchSize()).isEqualTo(777);
+	}
+
+	@Test // DATACASS-146
+	public void shouldApplyConsistencyLevel() {
+
+		Statement statement = deriveQueryFromMethod(Repo.class, "findPersonBy", new Class[0]);
+
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person;");
+		assertThat(statement.getConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_ONE);
+	}
+
 	private String deriveQueryFromMethod(String method, Object... args) {
 
 		Class<?>[] types = new Class<?>[args.length];
@@ -210,9 +233,7 @@ public class PartTreeCassandraQueryUnitTests {
 					new DefaultRepositoryMetadata(repositoryInterface), factory, mappingContext);
 
 			return new PartTreeCassandraQuery(queryMethod, mockCassandraOperations);
-		} catch (NoSuchMethodException e) {
-			throw new IllegalArgumentException(e.getMessage(), e);
-		} catch (SecurityException e) {
+		} catch (NoSuchMethodException | SecurityException e) {
 			throw new IllegalArgumentException(e.getMessage(), e);
 		}
 	}
@@ -233,8 +254,9 @@ public class PartTreeCassandraQueryUnitTests {
 
 		Person findPersonByFirstnameAndLastname(String firstname, String lastname);
 
-		Person findByAge(Integer age);
+		Person findByFirstname(QueryOptions queryOptions, String firstname);
 
+		@Consistency(ConsistencyLevel.LOCAL_ONE)
 		Person findPersonBy();
 
 		Person findByMainAddress(AddressType address);
@@ -251,7 +273,6 @@ public class PartTreeCassandraQueryUnitTests {
 		PersonProjection findPersonProjectedByNickname(String nickname);
 
 		<T> T findDynamicallyProjectedBy(Class<T> type);
-
 	}
 
 	interface PersonProjection {

@@ -18,11 +18,13 @@ package org.springframework.data.cassandra.repository.query;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
 import org.springframework.data.repository.query.Parameter;
@@ -39,6 +41,8 @@ import org.springframework.lang.Nullable;
  */
 public class CassandraParameters extends Parameters<CassandraParameters, CassandraParameter> {
 
+	private final @Nullable Integer queryOptionsIndex;
+
 	/**
 	 * Create a new {@link CassandraParameters} instance from the given {@link Method}
 	 *
@@ -46,10 +50,16 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	 */
 	public CassandraParameters(Method method) {
 		super(method);
+
+		List<Class<?>> parameterTypes = Arrays.asList(method.getParameterTypes());
+
+		this.queryOptionsIndex = parameterTypes.indexOf(QueryOptions.class);
 	}
 
-	private CassandraParameters(List<CassandraParameter> originals) {
+	private CassandraParameters(List<CassandraParameter> originals, @Nullable Integer queryOptionsIndex) {
 		super(originals);
+
+		this.queryOptionsIndex = queryOptionsIndex;
 	}
 
 	/* (non-Javadoc)
@@ -65,7 +75,17 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	 */
 	@Override
 	protected CassandraParameters createFrom(List<CassandraParameter> parameters) {
-		return new CassandraParameters(parameters);
+		return new CassandraParameters(parameters, queryOptionsIndex);
+	}
+
+	/**
+	 * Returns the index of the {@link QueryOptions} parameter to be applied to queries.
+	 *
+	 * @return
+	 * @since 2.0
+	 */
+	public int getQueryOptionsIndex() {
+		return queryOptionsIndex != null ? queryOptionsIndex : -1;
 	}
 
 	/**
@@ -78,7 +98,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		private final @Nullable CassandraType cassandraType;
 		private final Class<?> parameterType;
 
-		protected CassandraParameter(MethodParameter parameter) {
+		CassandraParameter(MethodParameter parameter) {
 
 			super(parameter);
 
@@ -91,6 +111,14 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 			}
 
 			parameterType = potentiallyUnwrapParameterType(parameter);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.repository.query.Parameter#isSpecialParameter()
+		 */
+		@Override
+		public boolean isSpecialParameter() {
+			return super.isSpecialParameter() || QueryOptions.class.isAssignableFrom(getType());
 		}
 
 		/**
