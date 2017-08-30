@@ -15,21 +15,20 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
+import org.reactivestreams.Publisher;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
-
-import org.reactivestreams.Publisher;
 
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -73,8 +72,17 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		return operations.getReactiveCqlOperations().execute(createFullInsert(entity)).map(it -> entity);
+		return operations.getReactiveCqlOperations().execute(createInsert(entity)).map(it -> entity);
+	}
 
+	/**
+	 * Create a {@link Insert} statement containing all properties including these with {@literal null} values.
+	 *
+	 * @param entity the entity, must not be {@literal null}.
+	 * @return the constructed {@link Insert} statement.
+	 */
+	protected <S extends T> Insert createInsert(S entity) {
+		return InsertUtil.createInsert(operations.getConverter(), entity);
 	}
 
 	/* (non-Javadoc)
@@ -97,7 +105,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
 		return Flux.from(entityStream)
-				.flatMap(entity -> operations.getReactiveCqlOperations().execute(createFullInsert(entity)).map(it -> entity));
+				.flatMap(entity -> operations.getReactiveCqlOperations().execute(createInsert(entity)).map(it -> entity));
 	}
 
 	/* (non-Javadoc)
@@ -288,25 +296,5 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
 		return Flux.from(entityStream).flatMap(operations::delete).then();
-	}
-
-	private <S extends T> Insert createFullInsert(S entity) {
-
-		CassandraConverter converter = operations.getConverter();
-
-		CassandraPersistentEntity<?> persistentEntity =
-				converter.getMappingContext().getRequiredPersistentEntity(entity.getClass());
-
-		Map<String, Object> toInsert = new LinkedHashMap<>();
-
-		converter.write(entity, toInsert, persistentEntity);
-
-		Insert insert = QueryBuilder.insertInto(persistentEntity.getTableName().toCql());
-
-		for (Entry<String, Object> entry : toInsert.entrySet()) {
-			insert.value(entry.getKey(), entry.getValue());
-		}
-
-		return insert;
 	}
 }
