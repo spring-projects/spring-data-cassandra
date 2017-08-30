@@ -17,10 +17,13 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.nio.ByteBuffer;
 import java.util.EnumSet;
+import java.util.UUID;
 
 import org.junit.Test;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 
 /**
@@ -43,5 +46,42 @@ public class CassandraSimpleTypeHolderUnitTests {
 
 			assertThat(CassandraSimpleTypeHolder.getDataTypeFor(name)).as("SimpleType for %s", name).isNotNull();
 		}
+	}
+
+	@Test // DATACASS-128
+	public void mapStringToVarchar() {
+
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Name.VARCHAR)).isSameAs(DataType.varchar());
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Name.TEXT)).isSameAs(DataType.text());
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Name.ASCII)).isSameAs(DataType.ascii());
+
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(String.class)).isSameAs(DataType.text());
+	}
+
+	@Test // DATACASS-128
+	public void mapLongToBigint() {
+
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Name.BIGINT)).isSameAs(DataType.bigint());
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Name.COUNTER)).isSameAs(DataType.counter());
+
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Long.class)).isSameAs(DataType.bigint());
+	}
+
+	@Test // DATACASS-128
+	public void mapByteBufferToBlob() {
+
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Name.BLOB)).isSameAs(DataType.blob());
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Name.CUSTOM)).isNull();
+
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(ByteBuffer.class)).isSameAs(DataType.blob());
+	}
+
+	@Test // DATACASS-128
+	public void mapUuidToUuid() {
+
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Name.UUID)).isSameAs(DataType.uuid());
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(Name.TIMEUUID)).isSameAs(DataType.timeuuid());
+
+		assertThat(CassandraSimpleTypeHolder.getDataTypeFor(UUID.class)).isSameAs(DataType.uuid());
 	}
 }
