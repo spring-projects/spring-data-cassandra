@@ -76,7 +76,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Insert insert = createFullInsert(entity);
+		Insert insert = createInsert(entity);
 
 		operations.getCqlOperations().execute(insert);
 
@@ -96,30 +96,20 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		for (S entity : entities) {
 
 			result.add(entity);
-			operations.getCqlOperations().execute(createFullInsert(entity));
+			operations.getCqlOperations().execute(createInsert(entity));
 		}
 
 		return result;
 	}
 
-	private <S extends T> Insert createFullInsert(S entity) {
-
-		CassandraConverter converter = operations.getConverter();
-
-		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
-				.getRequiredPersistentEntity(entity.getClass());
-
-		Map<String, Object> toInsert = new LinkedHashMap<>();
-
-		converter.write(entity, toInsert, persistentEntity);
-
-		Insert insert = QueryBuilder.insertInto(persistentEntity.getTableName().toCql());
-
-		for (Entry<String, Object> entry : toInsert.entrySet()) {
-			insert.value(entry.getKey(), entry.getValue());
-		}
-
-		return insert;
+	/**
+	 * Create a {@link Insert} statement containing all properties including these with {@literal null} values.
+	 *
+	 * @param entity the entity, must not be {@literal null}.
+	 * @return the constructed {@link Insert} statement.
+	 */
+	protected <S extends T> Insert createInsert(S entity) {
+		return InsertUtil.createInsert(operations.getConverter(), entity);
 	}
 
 	/* (non-Javadoc)
