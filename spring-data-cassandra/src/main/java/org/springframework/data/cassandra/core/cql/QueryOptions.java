@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.cql;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import lombok.EqualsAndHashCode;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -32,6 +33,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author David Webb
  * @author Mark Paluch
  */
+@EqualsAndHashCode
 public class QueryOptions {
 
 	private static final QueryOptions EMPTY = QueryOptions.builder().build();
@@ -91,6 +93,16 @@ public class QueryOptions {
 	 */
 	public static QueryOptionsBuilder builder() {
 		return new QueryOptionsBuilder();
+	}
+
+	/**
+	 * Create a new {@link QueryOptionsBuilder} to mutate properties of this {@link QueryOptions}.
+	 *
+	 * @return a new {@link QueryOptionsBuilder} initialized with this {@link QueryOptions}.
+	 * @since 2.0
+	 */
+	public QueryOptionsBuilder mutate() {
+		return new QueryOptionsBuilder(this);
 	}
 
 	/**
@@ -155,6 +167,15 @@ public class QueryOptions {
 		protected Duration readTimeout = Duration.ofMillis(-1);
 
 		QueryOptionsBuilder() {}
+
+		QueryOptionsBuilder(QueryOptions queryOptions) {
+
+			this.consistencyLevel = queryOptions.consistencyLevel;
+			this.retryPolicy = queryOptions.retryPolicy;
+			this.tracing = queryOptions.tracing;
+			this.fetchSize = queryOptions.fetchSize;
+			this.readTimeout = queryOptions.readTimeout;
+		}
 
 		/**
 		 * Sets the {@link ConsistencyLevel} to use.

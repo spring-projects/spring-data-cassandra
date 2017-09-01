@@ -39,4 +39,18 @@ public class InsertOptionsUnitTests {
 		assertThat(insertOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
 		assertThat(insertOptions.isIfNotExists()).isTrue();
 	}
+
+	@Test // DATACASS-56
+	public void buildInsertOptionsMutate() {
+
+		InsertOptions insertOptions = InsertOptions.builder() //
+				.ttl(10) //
+				.withIfNotExists() //
+				.build();
+
+		InsertOptions mutated = insertOptions.mutate().ttl(Duration.ofSeconds(5)).build();
+
+		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(5));
+		assertThat(mutated.isIfNotExists()).isTrue();
+	}
 }
