@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import lombok.EqualsAndHashCode;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.lang.Nullable;
 
@@ -30,6 +31,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author Mark Paluch
  * @since 2.0
  */
+@EqualsAndHashCode(callSuper = true)
 public class UpdateOptions extends WriteOptions {
 
 	private static final UpdateOptions EMPTY = new UpdateOptionsBuilder().build();
@@ -63,6 +65,16 @@ public class UpdateOptions extends WriteOptions {
 	}
 
 	/**
+	 * Create a new {@link UpdateOptionsBuilder} to mutate properties of this {@link UpdateOptions}.
+	 *
+	 * @return a new {@link UpdateOptionsBuilder} initialized with this {@link UpdateOptions}.
+	 */
+	@Override
+	public UpdateOptionsBuilder mutate() {
+		return new UpdateOptionsBuilder(this);
+	}
+
+	/**
 	 * @return {@literal true} to apply {@code IF EXISTS} to {@code UPDATE} operations.
 	 */
 	public boolean isIfExists() {
@@ -80,6 +92,12 @@ public class UpdateOptions extends WriteOptions {
 		private boolean ifExists;
 
 		private UpdateOptionsBuilder() {}
+
+		private UpdateOptionsBuilder(UpdateOptions updateOptions) {
+
+			super(updateOptions);
+			this.ifExists = updateOptions.ifExists;
+		}
 
 		@Override
 		public UpdateOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {

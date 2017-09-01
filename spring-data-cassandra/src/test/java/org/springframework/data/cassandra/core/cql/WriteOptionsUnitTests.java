@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 import org.junit.Test;
 
 import com.datastax.driver.core.ConsistencyLevel;
@@ -76,5 +77,27 @@ public class WriteOptionsUnitTests {
 		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
 
 		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
+	}
+
+	@Test // DATACASS-56
+	public void buildWriteOptionsMutate() {
+
+		WriteOptions writeOptions = WriteOptions.builder() //
+				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY) //
+				.ttl(123) //
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
+				.readTimeout(1)//
+				.fetchSize(10)//
+				.withTracing()//
+				.build(); //
+
+		WriteOptions mutated = writeOptions.mutate().retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build();
+
+		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(123));
+		assertThat(mutated.getRetryPolicy()).isEqualTo(DowngradingConsistencyRetryPolicy.INSTANCE);
+		assertThat(mutated.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
+		assertThat(mutated.getReadTimeout()).isEqualTo(Duration.ofMillis(1));
+		assertThat(mutated.getFetchSize()).isEqualTo(10);
+		assertThat(mutated.getTracing()).isTrue();
 	}
 }
