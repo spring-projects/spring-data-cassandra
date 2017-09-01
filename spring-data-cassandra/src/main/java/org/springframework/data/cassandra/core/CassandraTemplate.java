@@ -28,6 +28,7 @@ import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.QueryMapper;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.cql.CassandraAccessor;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.CqlProvider;
@@ -39,6 +40,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -150,7 +152,6 @@ public class CassandraTemplate implements CassandraOperations {
 		return this.converter;
 	}
 
-	/* (non-Javadoc) */
 	private static MappingCassandraConverter newConverter() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
@@ -235,8 +236,7 @@ public class CassandraTemplate implements CassandraOperations {
 	// Methods dealing with com.datastax.driver.core.Statement
 	// -------------------------------------------------------------------------
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
 	@Override
@@ -246,6 +246,22 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		return getCqlOperations().query(statement, (row, rowNum) -> getConverter().read(entityClass, row));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#slice(com.datastax.driver.core.Statement, java.lang.Class)
+	 */
+	@Override
+	public <T> Slice<T> slice(Statement statement, Class<T> entityClass) {
+
+		Assert.notNull(statement, "Statement must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		ResultSet resultSet = getCqlOperations().queryForResultSet(statement);
+		CassandraConverter converter = getConverter();
+
+		return QueryUtils.readSlice(resultSet, (row, rowNum) -> converter.read(entityClass, row), 0,
+				getEffectiveFetchSize(statement));
 	}
 
 	/* (non-Javadoc)
@@ -261,8 +277,7 @@ public class CassandraTemplate implements CassandraOperations {
 				.map(row -> getConverter().read(entityClass, row));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
 	@Override
@@ -284,6 +299,19 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		return select(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
+				entityClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#slice(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public <T> Slice<T> slice(Query query, Class<T> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		return slice(statementFactory.select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
 				entityClass);
 	}
 
@@ -512,13 +540,31 @@ public class CassandraTemplate implements CassandraOperations {
 	// -------------------------------------------------------------------------
 
 	/*
-	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableName(java.lang.Class)
 	 */
 	@Override
 	public CqlIdentifier getTableName(Class<?> entityClass) {
 		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entityClass)).getTableName();
+	}
+
+	@SuppressWarnings("ConstantConditions")
+	private int getEffectiveFetchSize(Statement statement) {
+
+		if (statement.getFetchSize() > 0) {
+			return statement.getFetchSize();
+		}
+
+		if (getCqlOperations() instanceof CassandraAccessor) {
+
+			CassandraAccessor accessor = (CassandraAccessor) getCqlOperations();
+			if (accessor.getFetchSize() != -1) {
+				return accessor.getFetchSize();
+			}
+		}
+
+		return getCqlOperations().execute(
+				(SessionCallback<Integer>) session -> session.getCluster().getConfiguration().getQueryOptions().getFetchSize());
 	}
 
 	/*

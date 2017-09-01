@@ -17,12 +17,16 @@ package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
@@ -31,6 +35,7 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -253,6 +258,42 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(deleted).isTrue();
 
 		assertThat(getUser(user.getId())).isNull();
+	}
+
+	@Test // DATACASS-56
+	public void shouldPageRequests() {
+
+		Set<String> expectedIds = new LinkedHashSet<>();
+
+		for (int i = 0; i < 100; i++) {
+
+			User user = new User("heisenberg" + i, "Walter", "White");
+			expectedIds.add(user.getId());
+			template.insert(user);
+		}
+
+		Set<String> ids = new HashSet<>();
+
+		Query query = Query.empty();
+		Slice<User> slice = getUninterruptibly(
+				template.slice(query.pageRequest(CassandraPageRequest.first(10)), User.class));
+		int iterations = 0;
+		do {
+
+			iterations++;
+			assertThat(slice).hasSize(10);
+
+			slice.stream().map(User::getId).forEach(ids::add);
+
+			if (slice.hasNext()) {
+				slice = getUninterruptibly(template.slice(query.pageRequest(slice.nextPageable()), User.class));
+			} else {
+				break;
+			}
+		} while (!slice.getContent().isEmpty());
+
+		assertThat(ids).containsAll(expectedIds);
+		assertThat(iterations).isEqualTo(10);
 	}
 
 	private User getUser(String id) {

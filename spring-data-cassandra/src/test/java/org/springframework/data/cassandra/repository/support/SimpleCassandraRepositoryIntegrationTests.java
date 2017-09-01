@@ -31,9 +31,11 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -151,6 +153,16 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		List<User> Users = repository.findAllById(Arrays.asList(dave.getId(), boyd.getId()));
 
 		assertThat(Users).hasSize(2);
+	}
+
+	@Test // DATACASS-56
+	public void findAllWithPaging() {
+
+		Slice<User> slice = repository.findAll(CassandraPageRequest.first(2));
+
+		assertThat(slice).hasSize(2);
+
+		assertThat(repository.findAll(slice.nextPageable())).hasSize(2);
 	}
 
 	@Test // DATACASS-396

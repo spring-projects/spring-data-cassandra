@@ -77,14 +77,13 @@ public class CassandraQueryMethod extends QueryMethod {
 	}
 
 	/**
-	 * Validates that this query is not a page or slice query.
+	 * Validates that this query is not a page query.
 	 */
 	@SuppressWarnings("unused")
 	public void verify(Method method, RepositoryMetadata metadata) {
 
-		// TODO: support Page & Slice queries
-		if (isSliceQuery() || isPageQuery()) {
-			throw new InvalidDataAccessApiUsageException("Slice and Page queries are not supported");
+		if (isPageQuery()) {
+			throw new InvalidDataAccessApiUsageException("Page queries are not supported. Use a Slice query.");
 		}
 	}
 

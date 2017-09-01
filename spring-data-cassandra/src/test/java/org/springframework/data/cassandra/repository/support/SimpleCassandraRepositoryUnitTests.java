@@ -34,10 +34,14 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.domain.Sort.Direction;
 
 import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -137,6 +141,23 @@ public class SimpleCassandraRepositoryUnitTests {
 		repository.insert(person);
 
 		verify(cassandraOperations).insert(person);
+	}
+
+	@Test // DATACASS-56
+	public void shouldSelectWithPaging() {
+
+		CassandraPageRequest pageRequest = CassandraPageRequest.first(10, Direction.ASC, "foo");
+
+		repository = new SimpleCassandraRepository<Object, String>(
+				new MappingCassandraEntityInformation(
+						converter.getMappingContext().getRequiredPersistentEntity(SimplePerson.class), converter),
+				cassandraOperations);
+
+		repository.findAll(pageRequest);
+
+		verify(cassandraOperations).slice(
+				Query.empty().sort(pageRequest.getSort()).queryOptions(QueryOptions.builder().fetchSize(10).build()),
+				SimplePerson.class);
 	}
 
 	@Data

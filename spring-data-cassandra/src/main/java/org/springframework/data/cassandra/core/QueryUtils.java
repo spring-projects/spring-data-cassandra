@@ -15,12 +15,23 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
+import org.springframework.data.cassandra.core.cql.RowMapper;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.convert.EntityWriter;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.PagingState;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -126,5 +137,31 @@ class QueryUtils {
 		entityWriter.write(objectToDelete, where);
 
 		return delete;
+	}
+
+	/**
+	 * Read a {@link Slice} of data from the {@link ResultSet} for a {@link Pageable}.
+	 *
+	 * @param resultSet must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @param page
+	 * @param pageSize
+	 * @return the resulting {@link Slice}.
+	 */
+	static <T> Slice<T> readSlice(ResultSet resultSet, RowMapper<T> mapper, int page, int pageSize) {
+
+		int toRead = resultSet.getAvailableWithoutFetching();
+		List<T> result = new ArrayList<>(toRead);
+
+		for (int i = 0; i < toRead; i++) {
+
+			T element = mapper.mapRow(resultSet.one(), i);
+			result.add(element);
+		}
+
+		PagingState pagingState = resultSet.getExecutionInfo().getPagingState();
+		CassandraPageRequest pageRequest = CassandraPageRequest.of(PageRequest.of(page, pageSize), pagingState);
+
+		return new SliceImpl<>(result, pageRequest, pagingState != null);
 	}
 }
