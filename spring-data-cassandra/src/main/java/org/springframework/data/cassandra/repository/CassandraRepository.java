@@ -19,7 +19,10 @@ import java.util.List;
 
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Persistable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
@@ -39,26 +42,33 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface CassandraRepository<T, ID> extends CrudRepository<T, ID> {
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#saveAll(java.lang.Iterable)
 	 */
 	@Override
 	<S extends T> List<S> saveAll(Iterable<S> entites);
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#findAll()
 	 */
 	@Override
 	List<T> findAll();
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#findAllById(java.lang.Iterable)
 	 */
 	@Override
 	List<T> findAllById(Iterable<ID> ids);
+
+	/**
+	 * Returns a {@link Slice} of entities meeting the paging restriction provided in the {@code Pageable} object.
+	 *
+	 * @param pageable must not be {@literal null}.
+	 * @return a {@link Slice} of entities.
+	 * @since 2.0
+	 * @see CassandraPageRequest
+	 */
+	Slice<T> findAll(Pageable pageable);
 
 	/**
 	 * Inserts the given entity. Assumes the instance to be new to be able to apply insertion optimizations. Use the

@@ -111,7 +111,7 @@ class ApplicationConfig extends AbstractCassandraConfiguration {
 As our domain Repository extends `CrudRepository` it provides you with basic CRUD operations.
 Working with the Repository instance is just a matter of injecting the Repository as a dependency into a client.
 
-.Paging access to Person entities
+.Basic access to Person entities
 ====
 [source,java]
 ----
@@ -131,6 +131,35 @@ public class PersonRepositoryTests {
 ----
 ====
 
+Cassandra repositories support paging and sorting for paginated and sorted access to the entities. Cassandra paging requires a paging state to forward-only navigate through pages. A `Slice` keeps track of the current paging state and allows creation of a `Pageable` to request the next page.
+
+.Paging access to Person entities
+====
+[source,java]
+----
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
+public class PersonRepositoryTests {
+
+    @Autowired PersonRepository repository;
+
+    @Test
+    public void readsPagesCorrectly() {
+
+      Slice<Person> firstBatch = repository.findAll(CassandraPageRequest.first(10));
+
+      assertThat(firstBatch).hasSize(10);
+
+      Page<Person> nextBatch = repository.findAll(firstBatch.nextPageable());
+
+      // …
+    }
+}
+----
+====
+
+NOTE: Cassandra repositories do not extend `PagingAndSortingRepository` because classic paging patterns using limit/offset are not applicable to Cassandra.
+
 The sample creates an application context with Spring's unit test support, which will perform annotation-based
 dependency injection into the test class. Inside the test cases (test methods) we simply use the Repository to query
 the data store. We invoke the Repository query method that requests the all `Person` instances.
@@ -147,26 +176,30 @@ the Apache Cassandra database. Defining such a query is just a matter of declari
 ----
 public interface PersonRepository extends CrudRepository<Person, String> {
 
-    List<Person> findByLastname(String lastname);                        <1>
+    List<Person> findByLastname(String lastname);                           <1>
 
-    List<Person> findByFirstname(String firstname, Sort sort);           <2>
+    Slice<Person> findByFirstname(String firstname, Pageable pageRequest);  <2>
 
-    List<Person> findByFirstname(String firstname, QueryOptions opts);   <3>
+    List<Person> findByFirstname(String firstname, QueryOptions opts);      <3>
 
-    Person findByShippingAddress(Address address);                       <4>
+    List<Person> findByFirstname(String firstname, Sort sort);              <4>
 
-    Stream<Person> findAllBy();                                          <5>
+    Person findByShippingAddress(Address address);                          <5>
+
+    Stream<Person> findAllBy();                                             <6>
+>>>>>>> 18c314d... DATACASS-56 - Cassandra paging support.
 }
 ----
 <1> The method shows a query for all people with the given `lastname`. The query will be derived from parsing
 the method name for constraints which can be concatenated with `And`. Thus the method name will result in
 a query expression of `SELECT * from person WHERE lastname = 'lastname'`.
-<2> Applies dynamic sorting to a query. Just add a `Sort` parameter to your method signature and Spring Data.
-will automatically apply ordering to the query accordingly.
+<2> Applies pagination to a query. Just equip your method signature with a `Pageable` parameter and let the method return a `Slice` instance and we will automatically page the query accordingly.
 <3> Passing a `QueryOptions` object will apply the query options to the resulting query before it's execution.
-<4> Shows that you can query based on properties which are not a primitive type using registered `Converter`'s.
+<4> Applies dynamic sorting to a query. Just add a `Sort` parameter to your method signature and Spring Data
+will automatically apply ordering to the query accordingly.
+<5> Shows that you can query based on properties which are not a primitive type using registered `Converter`'s
 in `CustomConversions`.
-<5> Uses a Java 8 `Stream` which reads and converts individual elements while iterating the stream.
+<6> Uses a Java 8 `Stream` which reads and converts individual elements while iterating the stream.
 ====
 
 NOTE: Querying non-primary key properties requires secondary indexes.

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-import static org.springframework.util.ObjectUtils.nullSafeHashCode;
+import static org.springframework.util.ObjectUtils.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +26,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.util.Assert;
@@ -192,6 +193,34 @@ public class Query implements Filter {
 	}
 
 	/**
+	 * Create a {@link Query} initialized with a {@link PageRequest} to fetch the first page of results or advance in
+	 * paging along with sorting. Reads (and overrides, if set) {@link Pageable#getPageSize() page size} into
+	 * {@link QueryOptions#getFetchSize()} and sets {@link PagingState} and {@link Sort}.
+	 *
+	 * @param pageable must not be {@literal null}.
+	 * @return a new {@link Query} object containing the former settings with {@link PageRequest} applied.
+	 * @see CassandraPageRequest
+	 */
+	public Query pageRequest(Pageable pageable) {
+
+		Assert.notNull(pageable, "Pageable must not be null");
+
+		CassandraPageRequest.validatePageable(pageable);
+
+		PagingState pagingState = this.pagingState.orElse(null);
+
+		if (pageable instanceof CassandraPageRequest) {
+			pagingState = ((CassandraPageRequest) pageable).getPagingState();
+		}
+
+		QueryOptions queryOptions = this.queryOptions.map(QueryOptions::mutate).orElse(QueryOptions.builder())
+				.fetchSize(pageable.getPageSize()).build();
+
+		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(pageable.getSort()),
+				Optional.ofNullable(pagingState), Optional.of(queryOptions), this.limit, this.allowFiltering);
+	}
+
+	/**
 	 * Set the {@link PagingState} to skip rows.
 	 *
 	 * @param pagingState must not be {@literal null}.
@@ -257,8 +286,8 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@code allowFiltering} applied.
 	 */
 	public Query withAllowFiltering() {
-		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions,
-				this.limit, true);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions, this.limit,
+				true);
 	}
 
 	/**

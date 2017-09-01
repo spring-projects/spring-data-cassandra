@@ -23,8 +23,10 @@ import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.AsyncCqlOperations;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.data.domain.Slice;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.driver.core.Statement;
@@ -111,6 +113,18 @@ public interface AsyncCassandraOperations {
 	<T> ListenableFuture<List<T>> select(Statement statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
+	 * Execute a {@code SELECT} query with paging and convert the resulting items to a {@link Slice} of entities. A sliced
+	 * query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
+	 *
+	 * @param statement the CQL statement, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the converted results
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @see CassandraPageRequest
+	 */
+	<T> ListenableFuture<Slice<T>> slice(Statement statement, Class<T> entityClass) throws DataAccessException;
+
+	/**
 	 * Execute a {@code SELECT} query and convert the resulting items notifying {@link Consumer} for each entity.
 	 *
 	 * @param statement must not be {@literal null}.
@@ -146,6 +160,17 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> ListenableFuture<List<T>> select(Query query, Class<T> entityClass) throws DataAccessException;
+
+	/**
+	 * Execute a {@code SELECT} query with paging and convert the resulting items to a {@link Slice} of entities.
+	 *
+	 * @param query the query object used to create a CQL statement, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the converted results
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @see CassandraPageRequest
+	 */
+	<T> ListenableFuture<Slice<T>> slice(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items notifying {@link Consumer} for each entity.
