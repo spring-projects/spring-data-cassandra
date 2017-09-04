@@ -161,8 +161,7 @@ public class CassandraTemplate implements CassandraOperations {
 		return converter;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#CqlOperations()
 	 */
 	@Override
@@ -195,8 +194,7 @@ public class CassandraTemplate implements CassandraOperations {
 	// Methods dealing with static CQL
 	// -------------------------------------------------------------------------
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(java.lang.String, java.lang.Class)
 	 */
 	@Override
@@ -219,8 +217,7 @@ public class CassandraTemplate implements CassandraOperations {
 		return stream(new SimpleStatement(cql), entityClass);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(java.lang.String, java.lang.Class)
 	 */
 	@Override
@@ -371,8 +368,7 @@ public class CassandraTemplate implements CassandraOperations {
 	// Methods dealing with entities
 	// -------------------------------------------------------------------------
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(java.lang.Class)
 	 */
 	@Override
@@ -388,8 +384,7 @@ public class CassandraTemplate implements CassandraOperations {
 		return count != null ? count : 0L;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#exists(java.lang.Object, java.lang.Class)
 	 */
 	@Override
@@ -407,8 +402,7 @@ public class CassandraTemplate implements CassandraOperations {
 		return getCqlOperations().queryForResultSet(select).iterator().hasNext();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOneById(java.lang.Object, java.lang.Class)
 	 */
 	@Override
@@ -426,8 +420,7 @@ public class CassandraTemplate implements CassandraOperations {
 		return selectOne(select, entityClass);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object)
 	 */
 	@Override
@@ -435,8 +428,7 @@ public class CassandraTemplate implements CassandraOperations {
 		insert(entity, InsertOptions.empty());
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
@@ -451,8 +443,7 @@ public class CassandraTemplate implements CassandraOperations {
 		return getCqlOperations().execute(new StatementCallback(insert));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object)
 	 */
 	@Override
@@ -460,8 +451,7 @@ public class CassandraTemplate implements CassandraOperations {
 		update(entity, UpdateOptions.empty());
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
@@ -476,8 +466,7 @@ public class CassandraTemplate implements CassandraOperations {
 		return getCqlOperations().execute(new StatementCallback(update));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object)
 	 */
 	@Override
@@ -485,8 +474,7 @@ public class CassandraTemplate implements CassandraOperations {
 		delete(entity, QueryOptions.empty());
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, org.springframework.data.cassandra.core.cql.QueryOptions)
 	 */
 	@Override
@@ -501,8 +489,7 @@ public class CassandraTemplate implements CassandraOperations {
 		return getCqlOperations().execute(new StatementCallback(delete));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteById(java.lang.Object, java.lang.Class)
 	 */
 	@Override
@@ -520,8 +507,7 @@ public class CassandraTemplate implements CassandraOperations {
 		return getCqlOperations().execute(delete);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#truncate(java.lang.Class)
 	 */
 	@Override
@@ -539,8 +525,7 @@ public class CassandraTemplate implements CassandraOperations {
 	// Implementation hooks and helper methods
 	// -------------------------------------------------------------------------
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableName(java.lang.Class)
 	 */
 	@Override
@@ -567,8 +552,7 @@ public class CassandraTemplate implements CassandraOperations {
 				(SessionCallback<Integer>) session -> session.getCluster().getConfiguration().getQueryOptions().getFetchSize());
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#batchOps()
 	 */
 	@Override

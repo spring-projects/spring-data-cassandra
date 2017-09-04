@@ -42,22 +42,19 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface CassandraRepository<T, ID> extends CrudRepository<T, ID> {
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#saveAll(java.lang.Iterable)
 	 */
 	@Override
 	<S extends T> List<S> saveAll(Iterable<S> entites);
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#findAll()
 	 */
 	@Override
 	List<T> findAll();
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#findAllById(java.lang.Iterable)
 	 */
 	@Override
