@@ -115,10 +115,6 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 	@Override
 	protected CriteriaDefinition and(Part part, CriteriaDefinition base, Iterator<Object> iterator) {
 
-		if (base == null) {
-			return getQueryBuilder().and(create(part, iterator));
-		}
-
 		getQueryBuilder().and(base);
 
 		return create(part, iterator);

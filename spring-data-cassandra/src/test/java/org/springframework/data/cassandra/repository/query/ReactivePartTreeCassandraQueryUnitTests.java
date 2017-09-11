@@ -15,13 +15,17 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import java.lang.reflect.Method;
-
+import com.datastax.driver.core.ConsistencyLevel;
+import org.springframework.data.cassandra.repository.Consistency;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import rx.Single;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,9 +34,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.Person;
@@ -41,8 +45,9 @@ import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+import org.springframework.util.ClassUtils;
 
-import rx.Single;
+import com.datastax.driver.core.Statement;
 
 /**
  * Unit tests for {@link ReactivePartTreeCassandraQuery}.
@@ -70,6 +75,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-335
 	public void shouldDeriveSimpleQuery() {
+
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo';");
@@ -77,6 +83,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-335
 	public void shouldDeriveSimpleQueryWithoutNames() {
+
 		String query = deriveQueryFromMethod("findPersonBy");
 
 		assertThat(query).isEqualTo("SELECT * FROM person;");
@@ -84,6 +91,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-335
 	public void shouldDeriveAndQuery() {
+
 		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';");
@@ -99,9 +107,30 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 	@Test // DATACASS-335
 	public void usesDynamicProjection() {
+
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
 		assertThat(query).isEqualTo("SELECT * FROM person;");
+	}
+
+	@Test // DATACASS-146
+	public void shouldApplyQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder().fetchSize(777).build();
+		Statement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
+				new Class[] { QueryOptions.class, String.class }, queryOptions, "Walter");
+
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person WHERE firstname='Walter';");
+		assertThat(statement.getFetchSize()).isEqualTo(777);
+	}
+
+	@Test // DATACASS-146
+	public void shouldApplyConsistencyLevel() {
+
+		Statement statement = deriveQueryFromMethod(Repo.class, "findPersonBy", new Class[0]);
+
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person;");
+		assertThat(statement.getConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_ONE);
 	}
 
 	private String deriveQueryFromMethod(String method, Object... args) {
@@ -109,29 +138,36 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		Class<?>[] types = new Class<?>[args.length];
 
 		for (int i = 0; i < args.length; i++) {
-			types[i] = args[i].getClass();
+			types[i] = ClassUtils.getUserClass(args[i].getClass());
 		}
 
-		ReactivePartTreeCassandraQuery partTreeQuery = createQueryForMethod(method, types);
-
-		CassandraParameterAccessor accessor =
-				new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(), args);
-
-		return partTreeQuery.createQuery(
-				new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor)).toString();
+		return deriveQueryFromMethod(Repo.class, method, types, args).toString();
 	}
 
-	private ReactivePartTreeCassandraQuery createQueryForMethod(String methodName, Class<?>... paramTypes) {
+	private Statement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,
+			Object... args) {
+
+		ReactivePartTreeCassandraQuery partTreeQuery = createQueryForMethod(repositoryInterface, method, types);
+
+		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
+				args);
+
+		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
+	}
+
+	private ReactivePartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface, String methodName,
+			Class<?>... paramTypes) {
+		Class<?>[] userTypes = Arrays.stream(paramTypes)//
+				.map(it -> it.getName().contains("Mockito") ? it.getSuperclass() : it)//
+				.toArray(size -> new Class<?>[size]);
 		try {
-			Method method = Repo.class.getMethod(methodName, paramTypes);
+			Method method = repositoryInterface.getMethod(methodName, userTypes);
 			ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 			ReactiveCassandraQueryMethod queryMethod = new ReactiveCassandraQueryMethod(method,
-					new DefaultRepositoryMetadata(Repo.class), factory, mappingContext);
+					new DefaultRepositoryMetadata(repositoryInterface), factory, mappingContext);
 
 			return new ReactivePartTreeCassandraQuery(queryMethod, mockCassandraOperations);
-		} catch (NoSuchMethodException e) {
-			throw new IllegalArgumentException(e.getMessage(), e);
-		} catch (SecurityException e) {
+		} catch (NoSuchMethodException | SecurityException e) {
 			throw new IllegalArgumentException(e.getMessage(), e);
 		}
 	}
@@ -146,8 +182,9 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 		Flux<Person> findPersonByFirstnameAndLastname(String firstname, String lastname);
 
-		Flux<Person> findByAge(Integer age);
+		Flux<Person> findByFirstname(QueryOptions queryOptions, String firstname);
 
+		@Consistency(ConsistencyLevel.LOCAL_ONE)
 		Flux<Person> findPersonBy();
 
 		@Query(allowFiltering = true)
@@ -156,7 +193,6 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		Mono<PersonProjection> findPersonProjectedBy();
 
 		<T> Single<T> findDynamicallyProjectedBy(Class<T> type);
-
 	}
 
 	interface PersonProjection {

@@ -20,10 +20,12 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
@@ -49,7 +51,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PossibleRepository.class);
 	CassandraMappingContext context = new CassandraMappingContext();
 
-	@Test // DATACASS-296
+	@Test // DATACASS-296, DATACASS-146
 	public void returnsCassandraSimpleType() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByFirstname", String.class);
@@ -57,6 +59,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 				"firstname");
 
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.varchar());
+		assertThat(accessor.getQueryOptions()).isNull();
 	}
 
 	@Test // DATACASS-296
@@ -97,6 +100,18 @@ public class CassandraParametersParameterAccessorUnitTests {
 		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
 	}
 
+	@Test // DATACASS-146
+	public void shouldProvideQueryOptions() throws Exception {
+
+		QueryOptions options = QueryOptions.builder().retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build();
+
+		Method method = PossibleRepository.class.getMethod("findByFirstname", QueryOptions.class, String.class);
+		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
+				options, "firstname");
+
+		assertThat(accessor.getQueryOptions()).isEqualTo(options);
+	}
+
 	private CassandraQueryMethod getCassandraQueryMethod(Method method) {
 		return new CassandraQueryMethod(method, metadata, projectionFactory, context);
 	}
@@ -110,5 +125,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		List<AllPossibleTypes> findByAnnotatedBpLocalDateTime(@CassandraType(type = Name.DATE) LocalDateTime dateTime);
 
 		List<AllPossibleTypes> findByAnnotatedObject(@CassandraType(type = Name.DATE) Object dateTime);
+
+		List<AllPossibleTypes> findByFirstname(QueryOptions queryOptions, String firstname);
 	}
 }
