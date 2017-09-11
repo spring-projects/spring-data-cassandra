@@ -1,6 +1,17 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.0.RC3 (2017-09-11)
+-----------------------------------------
+* DATACASS-490 - Switch to VM-based TravisCI build.
+* DATACASS-488 - Add explicit type mappings for Name.VARCHAR and Name.TEXT.
+* DATACASS-486 - Duplicate property in UDT reference documentation example.
+* DATACASS-483 - Add @FunctionalInterface to functional interfaces.
+* DATACASS-482 - Introduce nullable annotations.
+* DATACASS-480 - Release 2.0 RC3 (Kay).
+* DATACASS-128 - Improve mapping specifications between Cassandra & Java.
+
+
 Changes in version 1.5.7.RELEASE (2017-09-11)
 ---------------------------------------------
 * DATACASS-490 - Switch to VM-based TravisCI build.
