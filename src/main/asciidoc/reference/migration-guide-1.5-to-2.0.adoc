@@ -1,0 +1,121 @@
+[[cassandra.migration.1.x-to-2.x]]
+= Migration guide from Spring Data Cassandra 1.x to 2.x
+
+Spring Data for Apache Cassandra 2.0 introduces a set of breaking changes when upgrading from earlier versions:
+
+* Merge of Spring CQL and Spring Data Cassandra.
+* Separate asynchronous and synchronous operations in `CqlOperations` and `CassandraOperations` into dedicated interfaces and templates.
+* Revise `CqlTemplate` API to align with `JdbcTemplate`.
+* Remove CassandraOperations.selectBySimpleIds.
+* Better names for CassandraRepository.
+* Remove own `ConsistencyLevel` and `RetryPolicy` types in favor of DataStax `ConsistencyLevel` and `RetryPolicy`.
+* Refactor CQL specifications to value objects/configurators.
+* Refactor `QueryOptions` to immutable objects.
+* Refactor `CassandraPersistentProperty` to single-column.
+
+== Deprecations
+
+* `QueryOptionsBuilder.readTimeout(long, TimeUnit)` in favor of `QueryOptionsBuilder.readTimeout(Duration)`.
+* `CustomConversions` in favor of `CassandraCustomConversions`.
+* `BasicCassandraMappingContext` in favor of `CassandraMappingContext`.
+* `o.s.d.c.core.cql.CachedPreparedStatementCreator` in favor of `o.s.d.c.core.cql.support.CachedPreparedStatementCreator`.
+* `CqlTemplate.getSession()` in favor of `getSessionFactory()`.
+* `CqlIdentifier.cqlId(…)` and `KeyspaceIdentifier.ksId(…)` in favor of `.of(…)` methods.
+* Constructors of `QueryOptions` in favor of their builders.
+* `TypedIdCassandraRepository` in favor of `CassandraRepository`
+
+== Merge of Spring CQL and Spring Data Cassandra
+
+Spring CQL and Spring Data Cassandra are now merged into a single module. The standalone `spring-cql` module is no longer available.
+Find all types merged into `spring-data-cassandra`.
+
+[source,xml,subs="verbatim,attributes"]
+----
+<dependencies>
+
+  <dependency>
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-cassandra</artifactId>
+    <version>{version}</version>
+  </dependency>
+
+</dependencies>
+----
+
+With the merge, we merged all CQL packages into Spring Data Cassandra:
+
+* Moved `o.s.d.cql` into `o.s.d.cassandra.core.cql`.
+* Merge `o.s.d.cql` with `o.s.d.cassandra.config` and flatten XML and Java subpackages.
+* Moved `CassandraExceptionTranslator` and `CqlExceptionTranslator` to `o.s.d.c.core.cql`.
+* Moved Cassandra exceptions `o.s.d.c.support.exception` to `o.s.d.cassandra`
+* Moved `o.s.d.c.convert` to `o.s.d.c.core.convert` (affects converters)
+* Moved `o.s.d.c.mapping` to `o.s.d.c.core.mapping` (affects mapping annotations)
+* Moved `MapId` from `o.s.d.c.repository` to `o.s.d.c.core.mapping`.
+
+== Revised `CqlTemplate`/`CassandraTemplate`
+
+We split `CqlTemplate` and `CassandraTemplate` in two ways:
+
+* `CassandraTemplate` no longer is a `CqlTemplate` but uses an instance which allows
+reuse and fine-grained control over fetchsize, consistency levels and retry policies.
+You can obtain the `CqlOperations` via `CassandraTemplate.getCqlOperations()`. Because of the change,
+dependency injection of `CqlTemplate` requires additional bean setup.
+* `CqlTemplate` now reflects basic CQL operations instead of mixing high-level and low-level API (such as `count(…)` vs. `execute(…)`)
+and the reduced method set is aligned with Spring Frameworks's `JdbcTemplate` with its callback interfaces.
+* Asynchronous methods are re-implemented on `AsyncCqlTemplate` and `AsyncCassandraTemplate` by using
+`ListenableFuture`. We removed `Cancellable` and the various async callback listeners. `ListenableFuture` is a flexible
+approach and allows transition into a `CompletableFuture`.
+
+== Remove CassandraOperations.selectBySimpleIds
+
+The method was removed because it did not support complex Ids. The newly introduced query DSL allows
+mapped and complex id's for single column Id's:
+
+[source,java]
+----
+cassandraTemplate.select(Query.query(Criteria.where("id").in(…)), Person.class)
+----
+
+== Better names for CassandraRepository
+
+We renamed `CassandraRepository` and `TypedIdCassandraRepository` to align naming with other Spring Data modules:
+
+* Rename `CassandraRepository` to `MapIdCassandraRepository`
+* Rename `TypedIdCassandraRepository` to `CassandraRepository`
+* Introduce `TypedIdCassandraRepository` extending `CassandraRepository` as deprecated type to ease migration
+
+== Remove own `ConsistencyLevel` and `RetryPolicy` types in favor of DataStax `ConsistencyLevel` and `RetryPolicy`
+
+Our own `ConsistencyLevel` and `RetryPolicy` are gone now. Please use the types provided by the DataStax driver. Our own
+types restricted the available features and didn't allow native drivers feature usage. These types required an update each time newer functionality was introduced by the driver.
+
+== Refactor CQL specifications to value objects/configurators
+
+CQL specification types are now value types as much as possible (such as `FieldSpecification`, `AlterColumnSpecification`)
+and object are constructed via static factory methods. This allows immutability for simple value objects. Configurator objects
+(such as `AlterTableSpecification`) that operate on mandatory properties like a table name, keyspace name, are initially
+constructed through a a static factory method and allow further configuration until the desired state is created.
+
+== Refactor `QueryOptions` to immutable objects
+
+`QueryOptions` and `WriteOptions` are now immutable and can be created through builders. Methods
+accepting `QueryOptions` enforce non-null objects which are available from static `empty()` factory methods.
+
+[source,java]
+----
+QueryOptions queryOptions = QueryOptions.builder()
+		.consistencyLevel(ConsistencyLevel.ANY)
+		.retryPolicy(FallthroughRetryPolicy.INSTANCE)
+		.readTimeout(Duration.ofSeconds(10))
+		.fetchSize(10)
+		.tracing(true)
+		.build();
+----
+
+== Refactor `CassandraPersistentProperty` to single-column
+
+You are only affected by this change if you operate on the mapping model directly.
+
+`CassandraPersistentProperty` allowed previously multiple column names to be bound for composite primary key use.
+Columns of a `CassandraPersistentProperty` are now reduced to a single column. Resolve composite primary keys mapped
+to a class via `MappingContext.getRequiredPersistentEntity(…)`.

@@ -27,7 +27,10 @@ include::{spring-data-commons-docs}/repositories.adoc[]
 :leveloffset: +1
 include::reference/introduction.adoc[]
 include::reference/cassandra.adoc[]
+include::reference/converters.adoc[]
+include::reference/reactive-cassandra.adoc[]
 include::reference/cassandra-repositories.adoc[]
+include::reference/reactive-cassandra-repositories.adoc[]
 include::reference/mapping.adoc[]
 :leveloffset: -1
 

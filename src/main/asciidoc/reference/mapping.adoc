@@ -22,6 +22,7 @@ maps to `savingsaccount` table name.
 tables fields.
 * The properties of an object are used to convert to and from properties in the table.
 
+
 [[mapping-conversion]]
 == Data mapping and type conversion
 
@@ -225,6 +226,161 @@ public class Person {
 IMPORTANT: The `@Id` annotation tells the mapper which property you want to use for the Cassandra primary key.
 Composite primary keys can require a slightly different data model.
 
+[[cassandra-template.id-handling]]
+=== Working with Primary Keys
+
+Cassandra requires at least one partition key field for a CQL Table. A table can declare additionally one or more
+clustering key fields. When your CQL Table has a composite primary key, you must create a `@PrimaryKeyClass` to define
+the structure of the composite primary key. In this context, composite primary key means one or more partition columns
+optionally combined with one or more clustering columns.
+
+Primary keys can make use of any singular simple Cassandra type or mapped User-Defined Type.
+Collection-typed primary keys are not supported.
+
+==== Simple Primary Key
+
+A simple primary key consists of one partition key field within an entity class. Since it's one field only,
+we safely can assume it's a partition key.
+
+.CQL Table defined in Cassandra
+====
+[source]
+----
+CREATE TABLE user (
+  user_id text,
+  firstname text,
+  lastname text,
+  PRIMARY KEY (user_id))
+;
+----
+====
+
+.Annotated Entity
+====
+[source,java]
+----
+@Table(value = "login_event")
+public class LoginEvent {
+
+  @PrimaryKey("user_id")
+  private String userId;
+
+  private String firstname;
+  private String lastname;
+
+  // getters and setters omitted for brevity
+
+}
+----
+====
+
+==== Composite Key
+
+Composite primary keys (or compound keys) consist of more than one primary key fields. That said, a composite primary key
+can consist of multiple partition keys, a partition key and a clustering key, or a multitude of primary key fields.
+
+Composite keys can be represented in two ways with Spring Data for Apache Cassandra:
+
+1. Embedded in an entity.
+2. By using `@PrimaryKeyClass`.
+
+The simplest form of a composite key is a key with one partition key and one clustering key.
+
+Here is an example of a CQL Table, and the corresponding POJOs that represent the table and it's composite key.
+
+.CQL Table with a Composite Primary Key
+====
+[source]
+----
+CREATE TABLE login_event(
+  person_id text,
+  event_code int,
+  event_time timestamp,
+  ip_address text,
+  PRIMARY KEY (person_id, event_code, event_time))
+  WITH CLUSTERING ORDER BY (event_time DESC)
+;
+----
+====
+
+==== Flat Composite Primary Key
+
+Flat composite primary keys are embedded inside the entity as flat fields. Primary key fields are annotated with
+`@PrimaryKeyColumn` along with other fields in the entity. Selection requires either a query to contain predicates
+for the individual fields or the use of `MapId`.
+
+.Using a flat Composite Primary Key
+====
+[source,java]
+----
+@Table(value = "login_event")
+public class LoginEvent {
+
+  @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+  private String personId;
+
+  @PrimaryKeyColumn(name = "event_code", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+  private int eventCode;
+
+  @PrimaryKeyColumn(name = "event_time", ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+  private Date eventTime;
+
+  @Column("ip_address)
+  private String ipAddress;
+
+  // getters and setters omitted for brevity
+}
+----
+====
+
+==== Primary Key Class
+
+A primary key class is a composite primary key class that is mapped to multiple fields or properties of the entity.
+It's annotated with `@PrimaryKeyClass` and defines `equals` and `hashCode` methods. The semantics of value equality
+for these methods should be consistent with the database equality for the database types to which the key is mapped.
+Primary key classes can be used with Repositories (as the Id type) and to represent an entities' identity
+in a single complex object.
+
+.Composite Primary Key Class
+====
+[source,java]
+----
+@PrimaryKeyClass
+public class LoginEventKey implements Serializable {
+
+  @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+  private String personId;
+
+  @PrimaryKeyColumn(name = "event_code", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+  private int eventCode;
+
+  @PrimaryKeyColumn(name = "event_time", ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+  private Date eventTime;
+
+  // other methods omitted for brevity
+}
+----
+====
+
+.Using a Composite Primary Key
+====
+[source,java]
+----
+@Table(value = "login_event")
+public class LoginEvent {
+
+  @PrimaryKey
+  private LoginEventKey key;
+
+  @Column("ip_address)
+  private String ipAddress;
+
+  // getters and setters omitted for brevity
+}
+----
+====
+
+NOTE: `PrimaryKeyClass` must implement `Serializable` and should provide implementations of `hashCode()` and `equals()`.
 
 [[mapping.usage-annotations]]
 === Mapping annotation overview
