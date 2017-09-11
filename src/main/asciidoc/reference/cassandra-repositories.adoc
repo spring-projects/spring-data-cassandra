@@ -1,5 +1,5 @@
 [[cassandra.repositories]]
-= Cassandra repositories
+= Cassandra Repositories
 
 [[cassandra-repo-intro]]
 == Introduction
@@ -300,3 +300,4 @@ class RepositoryClient {
   }
 }
 ----
+

@@ -6,7 +6,7 @@ David Webb, Matthew Adams, John Blum, Mark Paluch
 :toc-placement!:
 :spring-data-commons-docs: ../../../../spring-data-commons/src/main/asciidoc
 
-(C) 2008-2016 The original author(s).
+(C) 2008-2017 The original author(s).
 
 NOTE: Copies of this document may be made for your own use and for distribution to others, provided that you do not
 charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed
@@ -16,15 +16,18 @@ toc::[]
 include::preface.adoc[]
 
 :leveloffset: +1
+
 include::new-features.adoc[]
 include::{spring-data-commons-docs}/dependencies.adoc[]
 include::{spring-data-commons-docs}/repositories.adoc[]
+
 :leveloffset: -1
 
 [[reference]]
 = Reference Documentation
 
 :leveloffset: +1
+
 include::reference/introduction.adoc[]
 include::reference/cassandra.adoc[]
 include::reference/converters.adoc[]
@@ -32,6 +35,7 @@ include::reference/reactive-cassandra.adoc[]
 include::reference/cassandra-repositories.adoc[]
 include::reference/reactive-cassandra-repositories.adoc[]
 include::reference/mapping.adoc[]
+
 :leveloffset: -1
 
 [[appendix]]
@@ -39,8 +43,10 @@ include::reference/mapping.adoc[]
 
 :numbered!:
 :leveloffset: +1
+
 include::{spring-data-commons-docs}/repository-namespace-reference.adoc[]
 include::{spring-data-commons-docs}/repository-populator-namespace-reference.adoc[]
 include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[]
 include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[]
+
 :leveloffset: -1

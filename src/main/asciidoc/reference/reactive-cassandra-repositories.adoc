@@ -1,21 +1,39 @@
 [[cassandra.reactive.repositories]]
-= Reactive Cassandra repositories
+= Reactive Cassandra Repositories
+
 
 [[cassandra.reactive.repositories.intro]]
 == Introduction
 
-This chapter will point out the specialties for reactive repository support for Apache Cassandra. This builds on the core repository support explained in <<cassandra.repositories>>. So make sure you've got a sound understanding of the basic concepts explained there.
+This chapter will outline the specialties handled by the reactive _Repository_ support for Apache Cassandra.
+This builds on the core _Repository_ infrastructure explained in <<cassandra.repositories>>, so make sure
+you have a good understanding of the basic concepts explained there.
 
-Reactive usage splits into two phases: Composition and execution. Calling repository methods lets you compose a reactive sequence by obtaining ``Publisher``s and applying operators. No I/O happens until now. Passing the reactive sequence to a reactive execution infrastructure (such as http://docs.spring.io/spring-framework/docs/{springVersion}/spring-framework-reference/web.html#web-reactive[Spring WebFlux] or http://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]) will subscribe to the publisher and initiate the actual execution.
+Reactive usage is broken up into two phases: Composition and Execution.
+
+Calling _Repository_ methods lets you compose a reactive sequence by obtaining ``Publisher``s and applying operators.
+No I/O happens until now. Passing the reactive sequence to a reactive execution infrastructure,
+such as http://docs.spring.io/spring-framework/docs/{springVersion}/spring-framework-reference/web.html#web-reactive[Spring WebFlux]
+or http://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]), will subscribe to the publisher and initiate
+the actual execution.
+
 
 [[cassandra.reactive.repositories.libraries]]
 == Reactive Composition Libraries
 
-The reactive space offers various reactive composition libraries. The most common libraries are https://github.com/ReactiveX/RxJava[RxJava] and https://projectreactor.io/[Project Reactor].
+The reactive space offers various reactive composition libraries. The most common libraries are
+https://github.com/ReactiveX/RxJava[RxJava] and https://projectreactor.io/[Project Reactor].
 
-Spring Data Apache Cassandra is built on top of the https://github.com/datastax/java-driver[DataStax Cassandra] driver. It's not a reactive driver but the asynchronous capabilities allow adoption and exposing `Publisher` APIs to provide maximal interoperability relying on the http://www.reactive-streams.org/[Reactive Streams] initiative. Static APIs such as `ReactiveCassandraOperations` are provided by using Project Reactor's `Flux` and `Mono` types. Project Reactor offers various adapters to convert reactive wrapper types  (`Flux` to `Observable` and vice versa) but conversion can easily clutter your code.
+Spring Data for Apache Cassandra is built on top of the https://github.com/datastax/java-driver[DataStax Cassandra Driver].
+The driver is not reactive but the asynchronous capabilities allow us to adopt and expose the `Publisher` APIs
+in order to provide maximum interoperability by relying on the http://www.reactive-streams.org/[Reactive Streams] initiative.
+Static APIs, such as `ReactiveCassandraOperations`, are provided by using Project Reactor's `Flux` and `Mono` types.
+Project Reactor offers various adapters to convert reactive wrapper types (`Flux` to `Observable` and vice versa)
+but conversion can easily clutter your code.
 
-Spring Data's Repository abstraction is a dynamic API, mostly defined by you and your requirements, as you're declaring query methods. Reactive Cassandra repositories can be either implemented using RxJava or Project Reactor wrapper types by simply extending from one of the library-specific repository interfaces:
+Spring Data's _Repository_ abstraction is a dynamic API, mostly defined by you and your requirements,
+as you are declaring query methods. Reactive Cassandra _Repositories_ can be either implemented using RxJava
+or Project Reactor wrapper types by simply extending from one of the library-specific repository interfaces:
 
 * `ReactiveCrudRepository`
 * `ReactiveSortingRepository`
@@ -24,11 +42,12 @@ Spring Data's Repository abstraction is a dynamic API, mostly defined by you and
 
 Spring Data converts reactive wrapper types behind the scenes so that you can stick to your favorite composition library.
 
+
 [[cassandra.reactive.repositories.usage]]
 == Usage
 
-To access domain entities stored in Apache Cassandra, you can leverage Spring Data's sophisticated Repository support
-that eases implementing DAOs quite significantly. To do so, simply create an interface for your Repository:
+To access entities stored in Apache Cassandra, you can leverage Spring Data's sophisticated _Repository_ support,
+which eases implementing DAOs quite significantly. To do so, simply create an interface for your _Repository_:
 
 .Sample Person entity
 ====
@@ -47,9 +66,9 @@ public class Person {
 ----
 ====
 
-We have a simple domain object here. Note that the entity has a property named `id` of type `String`.
-The default serialization mechanism used in `CassandraTemplate` (which is backing the Repository support)
-regards properties named id as row id.
+We have a simple domain object here. Note that the entity has a property named "`id`" of type `String`.
+The default serialization mechanism used in `CassandraTemplate` (which is backing the _Repository_ support)
+regards properties named "id" as the row id.
 
 .Basic repository interface to persist Person entities
 ====
@@ -69,7 +88,9 @@ public interface ReactivePersonRepository extends ReactiveSortingRepository<Pers
 ----
 ====
 
-For JavaConfig use the `@EnableReactiveCassandraRepositories` annotation. The annotation carries the very same attributes like the namespace element. If no base package is configured the infrastructure will scan the package of the annotated configuration class.
+For JavaConfig, use the `@EnableReactiveCassandraRepositories` annotation. The annotation carries the very same attributes
+like the corresponding XML namespace element. If no base package is configured the infrastructure will scan the package
+of the annotated configuration class.
 
 .JavaConfig for repositories
 ====
@@ -91,7 +112,9 @@ class ApplicationConfig extends AbstractReactiveCassandraConfiguration {
 ----
 ====
 
-As our domain repository extends `ReactiveSortingRepository` it provides you with CRUD operations as well as methods for sorted access to the entities. Working with the repository instance is just a matter of dependency injecting it into a client.
+Since our domain _Repository_ extends `ReactiveSortingRepository`, it provides you with CRUD operations
+as well as methods for sorted access to the entities. Working with the _Repository_ instance is just a matter of
+dependency injecting it into a client.
 
 .Sorted access to Person entities
 ====
@@ -112,11 +135,13 @@ public class PersonRepositoryTests {
 [[cassandra.reactive.repositories.features]]
 == Features
 
-Spring Data's Reactive Cassandra support comes with the same set of features as <<cassandra.repositories,imperative repositories>>.
+Spring Data's Reactive Cassandra support comes with the same set of features as
+<<cassandra.repositories,imperative repositories>>.
 
-Following features are supported:
+The following features are supported:
 
 * Query Methods using <<cassandra.repositories.queries,String queries and Query Derivation>>
 * <<projections>>
 
 NOTE: Query methods must return a reactive type. Resolved types (`User` vs. `Mono<User>`) are not supported.
+
