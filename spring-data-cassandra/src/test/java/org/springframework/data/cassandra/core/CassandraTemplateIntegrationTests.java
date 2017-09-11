@@ -20,7 +20,10 @@ import static org.junit.Assume.*;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +32,7 @@ import org.junit.Test;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
@@ -39,6 +43,7 @@ import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 
@@ -390,5 +395,40 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()), UserToken.class);
 
 		assertThat(loadAfterDelete).isNull();
+	}
+
+	@Test // DATACASS-56
+	public void shouldPageRequests() {
+
+		Set<String> expectedIds = new LinkedHashSet<>();
+
+		for (int i = 0; i < 100; i++) {
+
+			User user = new User("heisenberg" + i, "Walter", "White");
+			expectedIds.add(user.getId());
+			template.insert(user);
+		}
+
+		Set<String> ids = new HashSet<>();
+
+		Query query = Query.empty().pageRequest(CassandraPageRequest.first(10));
+		Slice<User> slice = template.slice(query, User.class);
+		int iterations = 0;
+		do {
+
+			iterations++;
+			assertThat(slice).hasSize(10);
+
+			slice.stream().map(User::getId).forEach(ids::add);
+
+			if (slice.hasNext()) {
+				slice = template.slice(query.pageRequest(slice.nextPageable()), User.class);
+			} else {
+				break;
+			}
+		} while (!slice.getContent().isEmpty());
+
+		assertThat(ids).containsAll(expectedIds);
+		assertThat(iterations).isEqualTo(10);
 	}
 }

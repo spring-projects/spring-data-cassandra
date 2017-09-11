@@ -73,4 +73,25 @@ public class QueryOptionsUnitTests {
 
 		assertThat(writeOptions.getRetryPolicy()).isEqualTo(DowngradingConsistencyRetryPolicy.INSTANCE);
 	}
+
+	@Test // DATACASS-56
+	public void buildQueryOptionsMutate() {
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.consistencyLevel(ConsistencyLevel.ANY) //
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
+				.readTimeout(1, TimeUnit.SECONDS)//
+				.fetchSize(10)//
+				.tracing(true)//
+				.build(); //
+
+		QueryOptions mutated = queryOptions.mutate().readTimeout(Duration.ofSeconds(5)).build();
+
+		assertThat(mutated.getClass()).isEqualTo(QueryOptions.class);
+		assertThat(mutated.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
+		assertThat(mutated.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
+		assertThat(mutated.getReadTimeout()).isEqualTo(Duration.ofSeconds(5));
+		assertThat(mutated.getFetchSize()).isEqualTo(10);
+		assertThat(mutated.getTracing()).isTrue();
+	}
 }

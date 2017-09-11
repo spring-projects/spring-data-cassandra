@@ -31,6 +31,8 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
@@ -206,6 +208,17 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		return operations.select(Query.query(where(entityInformation.getIdAttribute()).in(idCollection)),
 				entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.CassandraRepository#findAll(org.springframework.data.domain.Pageable)
+	 */
+	@Override
+	public Slice<T> findAll(Pageable pageable) {
+
+		Assert.notNull(pageable, "Pageable must not be null");
+
+		return operations.slice(Query.empty().pageRequest(pageable), entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)

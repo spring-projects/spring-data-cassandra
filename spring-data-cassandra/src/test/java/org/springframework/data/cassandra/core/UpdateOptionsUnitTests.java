@@ -39,4 +39,18 @@ public class UpdateOptionsUnitTests {
 		assertThat(updateOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
 		assertThat(updateOptions.isIfExists()).isTrue();
 	}
+
+	@Test // DATACASS-56
+	public void buildUpdateOptionsMutate() {
+
+		UpdateOptions updateOptions = UpdateOptions.builder() //
+				.ttl(10) //
+				.withIfExists() //
+				.build();
+
+		UpdateOptions mutated = updateOptions.mutate().ttl(20).build();
+
+		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(20));
+		assertThat(mutated.isIfExists()).isTrue();
+	}
 }

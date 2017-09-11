@@ -28,6 +28,7 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryExecuti
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultSetQuery;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SingleEntityExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SlicedExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.StreamExecution;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityInstantiators;
@@ -106,8 +107,8 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 
 		Statement statement = createQuery(parameterAccessor);
 
-		CassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(resultProcessor,
-				getOperations().getConverter().getMappingContext(), getEntityInstantiators()));
+		CassandraQueryExecution queryExecution = getExecution(parameterAccessor, new ResultProcessingConverter(
+				resultProcessor, getOperations().getConverter().getMappingContext(), getEntityInstantiators()));
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				getOperations().getConverter().getCustomConversions());
@@ -120,15 +121,21 @@ public abstract class AbstractCassandraQuery implements RepositoryQuery {
 	/**
 	 * Returns the execution instance to use.
 	 *
-	 * @param resultProcessing must not be {@literal null}. @return
+	 * @param parameterAccessor must not be {@literal null}.
+	 * @param resultProcessing must not be {@literal null}.
+	 * @return a wrapped {@link CassandraQueryExecution} to execute this query method.
 	 */
-	private CassandraQueryExecution getExecution(Converter<Object, Object> resultProcessing) {
-		return new ResultProcessingExecution(getExecutionToWrap(resultProcessing), resultProcessing);
+	private CassandraQueryExecution getExecution(CassandraParameterAccessor parameterAccessor,
+			Converter<Object, Object> resultProcessing) {
+		return new ResultProcessingExecution(getExecutionToWrap(parameterAccessor, resultProcessing), resultProcessing);
 	}
 
-	private CassandraQueryExecution getExecutionToWrap(Converter<Object, Object> resultProcessing) {
+	private CassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor parameterAccessor,
+			Converter<Object, Object> resultProcessing) {
 
-		if (getQueryMethod().isCollectionQuery()) {
+		if (getQueryMethod().isSliceQuery()) {
+			return new SlicedExecution(getOperations(), parameterAccessor.getPageable());
+		} else if (getQueryMethod().isCollectionQuery()) {
 			return new CollectionExecution(getOperations());
 		} else if (getQueryMethod().isResultSetQuery()) {
 			return new ResultSetQuery(getOperations());

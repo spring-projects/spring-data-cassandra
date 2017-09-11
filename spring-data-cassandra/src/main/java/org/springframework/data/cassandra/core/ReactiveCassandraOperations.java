@@ -44,6 +44,21 @@ import com.datastax.driver.core.Statement;
  */
 public interface ReactiveCassandraOperations {
 
+	/**
+	 * Returns the underlying {@link CassandraConverter}.
+	 *
+	 * @return the underlying {@link CassandraConverter}.
+	 */
+	CassandraConverter getConverter();
+
+	/**
+	 * Expose the underlying {@link ReactiveCqlOperations} to allow CQL operations.
+	 *
+	 * @return the underlying {@link ReactiveCqlOperations}.
+	 * @see ReactiveCqlOperations
+	 */
+	ReactiveCqlOperations getReactiveCqlOperations();
+
 	// -------------------------------------------------------------------------
 	// Methods dealing with static CQL
 	// -------------------------------------------------------------------------
@@ -252,19 +267,4 @@ public interface ReactiveCassandraOperations {
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
 	Mono<Void> truncate(Class<?> entityClass) throws DataAccessException;
-
-	/**
-	 * Returns the underlying {@link CassandraConverter}.
-	 *
-	 * @return the underlying {@link CassandraConverter}.
-	 */
-	CassandraConverter getConverter();
-
-	/**
-	 * Expose the underlying {@link ReactiveCqlOperations} to allow CQL operations.
-	 *
-	 * @return the underlying {@link ReactiveCqlOperations}.
-	 * @see ReactiveCqlOperations
-	 */
-	ReactiveCqlOperations getReactiveCqlOperations();
 }

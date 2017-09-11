@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,6 +38,7 @@ import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.QueryDerivationIntegrationTests.PersonRepository.NumberOfChildren;
@@ -46,6 +48,8 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.cassandra.support.CassandraVersion;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 import org.springframework.test.context.ContextConfiguration;
@@ -298,6 +302,22 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		assertThat(personRepository.findByNicknameContains("eisenber")).isEqualTo(walter);
 	}
 
+	@Test // DATACASS-56
+	public void shouldSelectSliced() {
+
+		List<Person> result = new ArrayList<>();
+
+		Slice<Person> firstPage = personRepository.findAllSlicedByLastname("White", CassandraPageRequest.first(2));
+		Slice<Person> nextPage = personRepository.findAllSlicedByLastname("White", firstPage.nextPageable());
+
+		result.addAll(firstPage.getContent());
+		result.addAll(nextPage.getContent());
+
+		assertThat(firstPage).hasSize(2);
+		assertThat(nextPage).hasSize(1);
+		assertThat(result).contains(walter, skyler, flynn);
+	}
+
 	/**
 	 * @author Mark Paluch
 	 */
@@ -323,6 +343,8 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		Person findByNicknameContains(String contains);
 
 		Person findByNumberOfChildren(NumberOfChildren numberOfChildren);
+
+		Slice<Person> findAllSlicedByLastname(String lastname, Pageable pageable);
 
 		Collection<PersonProjection> findPersonProjectedBy();
 

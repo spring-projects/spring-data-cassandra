@@ -1327,6 +1327,7 @@ The `Query` class has some additional methods used to provide options for the qu
 * `Query` *and* `(CriteriaDefinition criteria)` used to add additional criteria to the query.
 * `Query` *columns* `(Columns columns)` used to define columns to be included in the query results.
 * `Query` *limit* `(long limit)` used to limit the size of the returned results to the provided limit (used for paging).
+* `Query` *pageRequest* `(Pageable pageRequest)` used to associate `Sort`, `PagingState` and `fetchSize` with the query (used for paging).
 * `Query` *pagingState* `(PagingState pagingState)` used to associate a `PagingState` with the query (used for paging).
 * `Query` *queryOptions* `(QueryOptions queryOptions)` used to associate `QueryOptions` with the query.
 * `Query` *sort* `(Sort sort)` used to provide sort definition for the results.
@@ -1340,6 +1341,7 @@ The `Query` class has some additional methods used to provide options for the qu
 The query methods need to specify the target type T that will be returned.
 
 * `List<T>` *select* `(Query query, Class<T> entityClass)` Query for a list of objects of type T from the table.
+* `Slice<T>` *slice* `(Query query, Class<T> entityClass)` Start or continue paging by querying for a `Slice` of objects of type T from the table.
 * `T` *selectOne* `(Query query, Class<T> entityClass)` Query for a single object of type T from the table.
 * `Stream<T>` *stream* `(Query query, Class<T> entityClass)` Query for a stream of objects of type T from the table.
 
