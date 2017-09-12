@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import lombok.EqualsAndHashCode;
+
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.lang.Nullable;
 
@@ -42,7 +43,17 @@ public class UpdateOptions extends WriteOptions {
 			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl, boolean ifExists) {
 
 		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl);
+
 		this.ifExists = ifExists;
+	}
+
+	/**
+	 * Create a new {@link UpdateOptionsBuilder}.
+	 *
+	 * @return a new {@link UpdateOptionsBuilder}.
+	 */
+	public static UpdateOptionsBuilder builder() {
+		return new UpdateOptionsBuilder();
 	}
 
 	/**
@@ -53,15 +64,6 @@ public class UpdateOptions extends WriteOptions {
 	 */
 	public static UpdateOptions empty() {
 		return EMPTY;
-	}
-
-	/**
-	 * Create a new {@link UpdateOptionsBuilder}.
-	 *
-	 * @return a new {@link UpdateOptionsBuilder}.
-	 */
-	public static UpdateOptionsBuilder builder() {
-		return new UpdateOptionsBuilder();
 	}
 
 	/**
@@ -96,6 +98,7 @@ public class UpdateOptions extends WriteOptions {
 		private UpdateOptionsBuilder(UpdateOptions updateOptions) {
 
 			super(updateOptions);
+
 			this.ifExists = updateOptions.ifExists;
 		}
 
@@ -177,7 +180,8 @@ public class UpdateOptions extends WriteOptions {
 		 * @return a new {@link UpdateOptions} with the configured values
 		 */
 		public UpdateOptions build() {
-			return new UpdateOptions(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, ifExists);
+			return new UpdateOptions(this.consistencyLevel, this.retryPolicy, this.tracing,
+					this.fetchSize, this.readTimeout, this.ttl, this.ifExists);
 		}
 	}
 }

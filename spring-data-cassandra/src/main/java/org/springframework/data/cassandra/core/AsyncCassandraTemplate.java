@@ -74,6 +74,7 @@ import com.datastax.driver.core.querybuilder.Update;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @see org.springframework.data.cassandra.core.AsyncCassandraOperations
  * @since 2.0
  */
 public class AsyncCassandraTemplate implements AsyncCassandraOperations {
@@ -267,6 +268,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		ListenableFuture<ResultSet> resultSet = getAsyncCqlOperations().queryForResultSet(statement);
+
 		CassandraConverter converter = getConverter();
 
 		return new MappingListenableFutureAdapter<>(resultSet, rs -> QueryUtils.readSlice(rs,
@@ -325,7 +327,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return slice(statementFactory.select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
+		return slice(this.statementFactory.select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
 				entityClass);
 	}
 
@@ -535,8 +537,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Truncate truncate = QueryBuilder
-				.truncate(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Truncate truncate = QueryBuilder.truncate(getMappingContext().getRequiredPersistentEntity(entityClass)
+				.getTableName().toCql());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(truncate), aBoolean -> null);
 	}
@@ -559,8 +561,9 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations {
 			}
 		}
 
-		return getAsyncCqlOperations().execute((AsyncSessionCallback<Integer>) session -> AsyncResult
-				.forValue(session.getCluster().getConfiguration().getQueryOptions().getFetchSize())).completable().join();
+		return getAsyncCqlOperations().execute((AsyncSessionCallback<Integer>) session ->
+				AsyncResult.forValue(session.getCluster().getConfiguration().getQueryOptions().getFetchSize()))
+			.completable().join();
 	}
 
 	static class MappingListenableFutureAdapter<T, S>

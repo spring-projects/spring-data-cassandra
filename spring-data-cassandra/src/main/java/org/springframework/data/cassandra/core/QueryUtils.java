@@ -151,15 +151,16 @@ class QueryUtils {
 	static <T> Slice<T> readSlice(ResultSet resultSet, RowMapper<T> mapper, int page, int pageSize) {
 
 		int toRead = resultSet.getAvailableWithoutFetching();
+
 		List<T> result = new ArrayList<>(toRead);
 
-		for (int i = 0; i < toRead; i++) {
-
-			T element = mapper.mapRow(resultSet.one(), i);
+		for (int index = 0; index < toRead; index++) {
+			T element = mapper.mapRow(resultSet.one(), index);
 			result.add(element);
 		}
 
 		PagingState pagingState = resultSet.getExecutionInfo().getPagingState();
+
 		CassandraPageRequest pageRequest = CassandraPageRequest.of(PageRequest.of(page, pageSize), pagingState);
 
 		return new SliceImpl<>(result, pageRequest, pagingState != null);

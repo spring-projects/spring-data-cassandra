@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import lombok.EqualsAndHashCode;
+
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.lang.Nullable;
 
@@ -42,7 +43,17 @@ public class InsertOptions extends WriteOptions {
 			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl, boolean ifNotExists) {
 
 		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl);
+
 		this.ifNotExists = ifNotExists;
+	}
+
+	/**
+	 * Create a new {@link InsertOptionsBuilder}.
+	 *
+	 * @return a new {@link InsertOptionsBuilder}.
+	 */
+	public static InsertOptionsBuilder builder() {
+		return new InsertOptionsBuilder();
 	}
 
 	/**
@@ -53,15 +64,6 @@ public class InsertOptions extends WriteOptions {
 	 */
 	public static InsertOptions empty() {
 		return EMPTY;
-	}
-
-	/**
-	 * Create a new {@link InsertOptionsBuilder}.
-	 *
-	 * @return a new {@link InsertOptionsBuilder}.
-	 */
-	public static InsertOptionsBuilder builder() {
-		return new InsertOptionsBuilder();
 	}
 
 	/**
@@ -96,6 +98,7 @@ public class InsertOptions extends WriteOptions {
 		private InsertOptionsBuilder(InsertOptions insertOptions) {
 
 			super(insertOptions);
+
 			this.ifNotExists = insertOptions.ifNotExists;
 		}
 
@@ -177,7 +180,8 @@ public class InsertOptions extends WriteOptions {
 		 * @return a new {@link InsertOptions} with the configured values
 		 */
 		public InsertOptions build() {
-			return new InsertOptions(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, ifNotExists);
+			return new InsertOptions(this.consistencyLevel, this.retryPolicy, this.tracing,
+					this.fetchSize, this.readTimeout, this.ttl, this.ifNotExists);
 		}
 	}
 }

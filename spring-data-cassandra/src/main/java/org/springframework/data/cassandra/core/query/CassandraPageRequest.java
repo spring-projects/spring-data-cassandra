@@ -177,7 +177,7 @@ public class CassandraPageRequest extends PageRequest {
 	 */
 	@Nullable
 	public PagingState getPagingState() {
-		return pagingState;
+		return this.pagingState;
 	}
 
 	/**
@@ -187,7 +187,7 @@ public class CassandraPageRequest extends PageRequest {
 	 * @return {@literal true } if there's a next {@link Pageable} we can access from the current one.
 	 */
 	public boolean hasNext() {
-		return getPagingState() != null && nextAllowed;
+		return (getPagingState() != null && this.nextAllowed);
 	}
 
 	/* (non-Javadoc)
@@ -198,7 +198,8 @@ public class CassandraPageRequest extends PageRequest {
 
 		Assert.state(hasNext(), "Cannot create a next page request without a PagingState");
 
-		return new CassandraPageRequest(getPageNumber() + 1, getPageSize(), getSort(), pagingState, false);
+		return new CassandraPageRequest(getPageNumber() + 1, getPageSize(), getSort(),
+				this.pagingState, false);
 	}
 
 	/* (non-Javadoc)
@@ -216,20 +217,25 @@ public class CassandraPageRequest extends PageRequest {
 	 * @see org.springframework.data.domain.PageRequest#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(@Nullable Object obj) {
 
-		if (this == o)
+		if (this == obj) {
 			return true;
-		if (!(o instanceof CassandraPageRequest))
+		}
+		if (!(obj instanceof CassandraPageRequest)) {
 			return false;
-		if (!super.equals(o))
+		}
+		if (!super.equals(obj)) {
 			return false;
+		}
 
-		CassandraPageRequest that = (CassandraPageRequest) o;
+		CassandraPageRequest that = (CassandraPageRequest) obj;
 
-		if (nextAllowed != that.nextAllowed)
+		if (nextAllowed != that.nextAllowed) {
 			return false;
-		return pagingState != null ? pagingState.equals(that.pagingState) : that.pagingState == null;
+		}
+
+		return (pagingState != null ? pagingState.equals(that.pagingState) : that.pagingState == null);
 	}
 
 	/* (non-Javadoc)
@@ -239,8 +245,10 @@ public class CassandraPageRequest extends PageRequest {
 	public int hashCode() {
 
 		int result = super.hashCode();
+
 		result = 31 * result + (pagingState != null ? pagingState.hashCode() : 0);
 		result = 31 * result + (nextAllowed ? 1 : 0);
+
 		return result;
 	}
 

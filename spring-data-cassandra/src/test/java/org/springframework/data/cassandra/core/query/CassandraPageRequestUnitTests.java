@@ -15,10 +15,12 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.domain.Sort.Order.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.data.domain.Sort.Order.asc;
 
 import org.junit.Test;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -32,8 +34,8 @@ import com.datastax.driver.core.PagingState;
  */
 public class CassandraPageRequestUnitTests {
 
-	PagingState pagingState = PagingState
-			.fromString("001400100c68656973656e62657267313600f07ffffff5006f934c985d6110148e1385ca793a75780004");
+	PagingState pagingState =
+			PagingState.fromString("001400100c68656973656e62657267313600f07ffffff5006f934c985d6110148e1385ca793a75780004");
 
 	@Test // DATACASS-56
 	public void shouldNotAllowNonZeroPageConstruction() {

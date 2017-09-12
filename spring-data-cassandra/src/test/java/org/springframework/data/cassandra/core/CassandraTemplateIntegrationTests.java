@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
@@ -402,9 +403,8 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		Set<String> expectedIds = new LinkedHashSet<>();
 
-		for (int i = 0; i < 100; i++) {
-
-			User user = new User("heisenberg" + i, "Walter", "White");
+		for (int count = 0; count < 100; count++) {
+			User user = new User("heisenberg" + count, "Walter", "White");
 			expectedIds.add(user.getId());
 			template.insert(user);
 		}
@@ -412,11 +412,15 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		Set<String> ids = new HashSet<>();
 
 		Query query = Query.empty().pageRequest(CassandraPageRequest.first(10));
+
 		Slice<User> slice = template.slice(query, User.class);
+
 		int iterations = 0;
+
 		do {
 
 			iterations++;
+
 			assertThat(slice).hasSize(10);
 
 			slice.stream().map(User::getId).forEach(ids::add);

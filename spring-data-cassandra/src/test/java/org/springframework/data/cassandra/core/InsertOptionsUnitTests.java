@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 
@@ -31,9 +31,9 @@ public class InsertOptionsUnitTests {
 	@Test // DATACASS-250
 	public void shouldConfigureInsertOptions() {
 
-		InsertOptions insertOptions = InsertOptions.builder() //
-				.ttl(10) //
-				.withIfNotExists() //
+		InsertOptions insertOptions = InsertOptions.builder()
+				.ttl(10)
+				.withIfNotExists()
 				.build();
 
 		assertThat(insertOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
@@ -43,13 +43,15 @@ public class InsertOptionsUnitTests {
 	@Test // DATACASS-56
 	public void buildInsertOptionsMutate() {
 
-		InsertOptions insertOptions = InsertOptions.builder() //
-				.ttl(10) //
-				.withIfNotExists() //
+		InsertOptions insertOptions = InsertOptions.builder()
+				.ttl(10)
+				.withIfNotExists()
 				.build();
 
 		InsertOptions mutated = insertOptions.mutate().ttl(Duration.ofSeconds(5)).build();
 
+		assertThat(mutated).isNotNull();
+		assertThat(mutated).isNotSameAs(insertOptions);
 		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(5));
 		assertThat(mutated.isIfNotExists()).isTrue();
 	}

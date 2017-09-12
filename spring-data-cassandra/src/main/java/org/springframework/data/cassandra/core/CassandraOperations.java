@@ -134,8 +134,9 @@ public interface CassandraOperations {
 	<T> List<T> select(Statement statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Execute a {@code SELECT} query with paging and convert the resulting items to a {@link Slice} of entities. A sliced
-	 * query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
+	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities.
+	 *
+	 * A sliced query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
 	 *
 	 * @param statement the CQL statement, must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
@@ -186,7 +187,7 @@ public interface CassandraOperations {
 	<T> List<T> select(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Execute a {@code SELECT} query with paging and convert the resulting items to a {@link Slice} of entities.
+	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities.
 	 *
 	 * @param query the query object used to create a CQL statement, must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
@@ -355,4 +356,5 @@ public interface CassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	void truncate(Class<?> entityClass) throws DataAccessException;
+
 }

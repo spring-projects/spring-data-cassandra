@@ -15,7 +15,9 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.util.ObjectUtils.*;
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
+import static org.springframework.util.ObjectUtils.nullSafeHashCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.domain.PageRequest;
@@ -45,19 +46,19 @@ import com.datastax.driver.core.PagingState;
  */
 public class Query implements Filter {
 
-	private final List<CriteriaDefinition> criteriaDefinitions;
+	private final boolean allowFiltering;
 
 	private final Columns columns;
 
-	private final Sort sort;
+	private final List<CriteriaDefinition> criteriaDefinitions;
+
+	private final Optional<Long> limit;
 
 	private final Optional<PagingState> pagingState;
 
 	private final Optional<QueryOptions> queryOptions;
 
-	private final Optional<Long> limit;
-
-	private final boolean allowFiltering;
+	private final Sort sort;
 
 	private Query(List<CriteriaDefinition> criteriaDefinitions, Columns columns, Sort sort,
 			Optional<PagingState> pagingState, Optional<QueryOptions> queryOptions, Optional<Long> limit,
@@ -105,7 +106,7 @@ public class Query implements Filter {
 
 		Assert.notNull(criteriaDefinitions, "CriteriaDefinitions must not be null");
 
-		List<CriteriaDefinition> collect = StreamSupport.stream(criteriaDefinitions.spliterator(), false)
+		List<CriteriaDefinition> collect = stream(criteriaDefinitions.spliterator(), false)
 				.collect(Collectors.toList());
 
 		return new Query(collect, Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -176,13 +177,13 @@ public class Query implements Filter {
 
 		for (Order order : sort) {
 			if (order.isIgnoreCase()) {
-				throw new IllegalArgumentException(String.format("Given sort contained an Order for %s with ignore case; "
-						+ "Apache Cassandra does not support sorting ignoring case currently", order.getProperty()));
+				throw new IllegalArgumentException(String.format("Given sort contained an Order for %s with ignore case;"
+						+ " Apache Cassandra does not support sorting ignoring case currently", order.getProperty()));
 			}
 		}
 
-		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(sort), this.pagingState, this.queryOptions,
-				this.limit, this.allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(sort), this.pagingState,
+				this.queryOptions, this.limit, this.allowFiltering);
 	}
 
 	/**
@@ -286,8 +287,8 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@code allowFiltering} applied.
 	 */
 	public Query withAllowFiltering() {
-		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions, this.limit,
-				true);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions,
+				this.limit, true);
 	}
 
 	/**
@@ -330,8 +331,8 @@ public class Query implements Filter {
 		boolean limitEqual = this.limit == that.limit;
 		boolean allowFilteringEqual = this.allowFiltering == that.allowFiltering;
 
-		return criteriaEqual && columnsEqual && sortEqual && pagingStateEqual && queryOptionsEqual && limitEqual
-				&& allowFilteringEqual;
+		return (criteriaEqual && columnsEqual && sortEqual && pagingStateEqual && queryOptionsEqual && limitEqual
+				&& allowFilteringEqual);
 	}
 
 	/* (non-Javadoc)
@@ -359,8 +360,8 @@ public class Query implements Filter {
 	@Override
 	public String toString() {
 
-		String query = StreamSupport.stream(this.spliterator(), false) //
-				.map(SerializationUtils::serializeToCqlSafely) //
+		String query = stream(this.spliterator(), false)
+				.map(SerializationUtils::serializeToCqlSafely)
 				.collect(Collectors.joining(" AND "));
 
 		return String.format("Query: %s, Columns: %s, Sort: %s, Limit: %d", query, getColumns(), getSort(), getLimit());

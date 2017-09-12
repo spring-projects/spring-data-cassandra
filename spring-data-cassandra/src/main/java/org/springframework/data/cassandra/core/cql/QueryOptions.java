@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import lombok.EqualsAndHashCode;
+
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -38,15 +39,15 @@ public class QueryOptions {
 
 	private static final QueryOptions EMPTY = QueryOptions.builder().build();
 
+	private final @Nullable Boolean tracing;
+
 	private final @Nullable ConsistencyLevel consistencyLevel;
 
-	private final @Nullable RetryPolicy retryPolicy;
-
-	private final @Nullable Boolean tracing;
+	private final Duration readTimeout;
 
 	private final @Nullable Integer fetchSize;
 
-	private final Duration readTimeout;
+	private final @Nullable RetryPolicy retryPolicy;
 
 	protected QueryOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
 			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout) {
@@ -76,16 +77,6 @@ public class QueryOptions {
 	}
 
 	/**
-	 * Create default {@link QueryOptions}.
-	 *
-	 * @return default {@link QueryOptions}.
-	 * @since 2.0
-	 */
-	public static QueryOptions empty() {
-		return EMPTY;
-	}
-
-	/**
 	 * Create a new {@link QueryOptionsBuilder}.
 	 *
 	 * @return a new {@link QueryOptionsBuilder}.
@@ -93,6 +84,16 @@ public class QueryOptions {
 	 */
 	public static QueryOptionsBuilder builder() {
 		return new QueryOptionsBuilder();
+	}
+
+	/**
+	 * Create default {@link QueryOptions}.
+	 *
+	 * @return default {@link QueryOptions}.
+	 * @since 2.0
+	 */
+	public static QueryOptions empty() {
+		return EMPTY;
 	}
 
 	/**
@@ -115,21 +116,12 @@ public class QueryOptions {
 	}
 
 	/**
-	 * @return the driver {@link RetryPolicy}
-	 * @since 1.5
-	 */
-	@Nullable
-	protected RetryPolicy getRetryPolicy() {
-		return this.retryPolicy;
-	}
-
-	/**
 	 * @return the number of rows to fetch per chunking request. May be {@literal null} if not set.
 	 * @since 1.5
 	 */
 	@Nullable
 	protected Integer getFetchSize() {
-		return fetchSize;
+		return this.fetchSize;
 	}
 
 	/**
@@ -138,6 +130,15 @@ public class QueryOptions {
 	 */
 	protected Duration getReadTimeout() {
 		return this.readTimeout;
+	}
+
+	/**
+	 * @return the driver {@link RetryPolicy}
+	 * @since 1.5
+	 */
+	@Nullable
+	protected RetryPolicy getRetryPolicy() {
+		return this.retryPolicy;
 	}
 
 	/**
@@ -156,25 +157,25 @@ public class QueryOptions {
 	 */
 	public static class QueryOptionsBuilder {
 
+		protected @Nullable Boolean tracing;
+
 		protected @Nullable ConsistencyLevel consistencyLevel;
 
-		protected @Nullable RetryPolicy retryPolicy;
-
-		protected @Nullable Boolean tracing;
+		protected Duration readTimeout = Duration.ofMillis(-1);
 
 		protected @Nullable Integer fetchSize;
 
-		protected Duration readTimeout = Duration.ofMillis(-1);
+		protected @Nullable RetryPolicy retryPolicy;
 
 		QueryOptionsBuilder() {}
 
 		QueryOptionsBuilder(QueryOptions queryOptions) {
 
 			this.consistencyLevel = queryOptions.consistencyLevel;
-			this.retryPolicy = queryOptions.retryPolicy;
-			this.tracing = queryOptions.tracing;
 			this.fetchSize = queryOptions.fetchSize;
 			this.readTimeout = queryOptions.readTimeout;
+			this.retryPolicy = queryOptions.retryPolicy;
+			this.tracing = queryOptions.tracing;
 		}
 
 		/**
@@ -311,7 +312,8 @@ public class QueryOptions {
 		 * @return a new {@link QueryOptions} with the configured values
 		 */
 		public QueryOptions build() {
-			return new QueryOptions(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout);
+			return new QueryOptions(this.consistencyLevel, this.retryPolicy, this.tracing,
+					this.fetchSize, this.readTimeout);
 		}
 	}
 }

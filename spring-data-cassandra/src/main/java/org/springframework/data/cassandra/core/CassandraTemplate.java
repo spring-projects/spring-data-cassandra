@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.NonNull;
-import lombok.Value;
-
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import lombok.NonNull;
+import lombok.Value;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.SessionFactory;
@@ -71,6 +71,7 @@ import com.datastax.driver.core.querybuilder.Update;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @see org.springframework.data.cassandra.core.CassandraOperations
  * @since 2.0
  */
 public class CassandraTemplate implements CassandraOperations {
@@ -255,6 +256,7 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		ResultSet resultSet = getCqlOperations().queryForResultSet(statement);
+
 		CassandraConverter converter = getConverter();
 
 		return QueryUtils.readSlice(resultSet, (row, rowNum) -> converter.read(entityClass, row), 0,
@@ -308,7 +310,7 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return slice(statementFactory.select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
+		return slice(this.statementFactory.select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
 				entityClass);
 	}
 
@@ -541,15 +543,14 @@ public class CassandraTemplate implements CassandraOperations {
 		}
 
 		if (getCqlOperations() instanceof CassandraAccessor) {
-
 			CassandraAccessor accessor = (CassandraAccessor) getCqlOperations();
 			if (accessor.getFetchSize() != -1) {
 				return accessor.getFetchSize();
 			}
 		}
 
-		return getCqlOperations().execute(
-				(SessionCallback<Integer>) session -> session.getCluster().getConfiguration().getQueryOptions().getFetchSize());
+		return getCqlOperations().execute((SessionCallback<Integer>) session ->
+				session.getCluster().getConfiguration().getQueryOptions().getFetchSize());
 	}
 
 	/* (non-Javadoc)

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
@@ -265,9 +266,8 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		Set<String> expectedIds = new LinkedHashSet<>();
 
-		for (int i = 0; i < 100; i++) {
-
-			User user = new User("heisenberg" + i, "Walter", "White");
+		for (int count = 0; count < 100; count++) {
+			User user = new User("heisenberg" + count, "Walter", "White");
 			expectedIds.add(user.getId());
 			template.insert(user);
 		}
@@ -275,12 +275,16 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		Set<String> ids = new HashSet<>();
 
 		Query query = Query.empty();
+
 		Slice<User> slice = getUninterruptibly(
 				template.slice(query.pageRequest(CassandraPageRequest.first(10)), User.class));
+
 		int iterations = 0;
+
 		do {
 
 			iterations++;
+
 			assertThat(slice).hasSize(10);
 
 			slice.stream().map(User::getId).forEach(ids::add);
@@ -304,8 +308,8 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		try {
 			return future.get();
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
+		} catch (Exception cause) {
+			throw new IllegalStateException(cause);
 		}
 	}
 }

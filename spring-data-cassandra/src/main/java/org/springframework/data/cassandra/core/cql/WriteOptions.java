@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import lombok.EqualsAndHashCode;
+
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -73,6 +74,7 @@ public class WriteOptions extends QueryOptions {
 			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl) {
 
 		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout);
+
 		this.ttl = ttl;
 	}
 
@@ -129,6 +131,7 @@ public class WriteOptions extends QueryOptions {
 		protected WriteOptionsBuilder(WriteOptions writeOptions) {
 
 			super(writeOptions);
+
 			this.ttl = writeOptions.ttl;
 		}
 
@@ -239,7 +242,8 @@ public class WriteOptions extends QueryOptions {
 		 * @return a new {@link WriteOptions} with the configured values
 		 */
 		public WriteOptions build() {
-			return new WriteOptions(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl);
+			return new WriteOptions(this.consistencyLevel, this.retryPolicy, this.tracing,
+					this.fetchSize, this.readTimeout, this.ttl);
 		}
 	}
 }

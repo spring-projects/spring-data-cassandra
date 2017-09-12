@@ -15,15 +15,14 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 import org.junit.Test;
 
 import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 import com.datastax.driver.core.policies.FallthroughRetryPolicy;
 
 /**
@@ -36,14 +35,14 @@ public class WriteOptionsUnitTests {
 	@Test // DATACASS-202
 	public void buildWriteOptions() {
 
-		WriteOptions writeOptions = WriteOptions.builder() //
-				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY) //
-				.ttl(123) //
-				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
-				.readTimeout(1)//
-				.fetchSize(10)//
-				.withTracing()//
-				.build(); //
+		WriteOptions writeOptions = WriteOptions.builder()
+				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY)
+				.ttl(123)
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE)
+				.readTimeout(1)
+				.fetchSize(10)
+				.withTracing()
+				.build();
 
 		assertThat(writeOptions.getTtl()).isEqualTo(Duration.ofSeconds(123));
 		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
@@ -56,7 +55,7 @@ public class WriteOptionsUnitTests {
 	@Test // DATACASS-202
 	public void buildReadTimeoutOptionsWriteOptions() {
 
-		WriteOptions writeOptions = WriteOptions.builder().readTimeout(1, TimeUnit.MINUTES).build();
+		WriteOptions writeOptions = WriteOptions.builder().readTimeout(Duration.ofMinutes(1)).build();
 
 		assertThat(writeOptions.getReadTimeout()).isEqualTo(Duration.ofSeconds(60));
 		assertThat(writeOptions.getFetchSize()).isNull();
@@ -82,17 +81,19 @@ public class WriteOptionsUnitTests {
 	@Test // DATACASS-56
 	public void buildWriteOptionsMutate() {
 
-		WriteOptions writeOptions = WriteOptions.builder() //
-				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY) //
-				.ttl(123) //
-				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
-				.readTimeout(1)//
-				.fetchSize(10)//
-				.withTracing()//
-				.build(); //
+		WriteOptions writeOptions = WriteOptions.builder()
+				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY)
+				.ttl(123)
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE)
+				.readTimeout(1)
+				.fetchSize(10)
+				.withTracing()
+				.build();
 
 		WriteOptions mutated = writeOptions.mutate().retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build();
 
+		assertThat(mutated).isNotNull();
+		assertThat(mutated).isNotSameAs(writeOptions);
 		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(123));
 		assertThat(mutated.getRetryPolicy()).isEqualTo(DowngradingConsistencyRetryPolicy.INSTANCE);
 		assertThat(mutated.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);

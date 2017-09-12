@@ -15,10 +15,11 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.domain.Sort.Order.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.domain.Sort.Order.asc;
 
 import org.junit.Test;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -73,18 +74,18 @@ public class QueryUnitTests {
 	@Test // DATACASS-56
 	public void shouldApplyPageRequests() {
 
-		PagingState pagingState = PagingState
-				.fromString("001400100c68656973656e62657267313600f07ffffff5006f934c985d6110148e1385ca793a75780004");
+		PagingState pagingState =
+				PagingState.fromString("001400100c68656973656e62657267313600f07ffffff5006f934c985d6110148e1385ca793a75780004");
 
-		CassandraPageRequest pageRequest = CassandraPageRequest.of(PageRequest.of(0, 42, Direction.ASC, "foo"), pagingState)
+		CassandraPageRequest pageRequest =
+			CassandraPageRequest.of(PageRequest.of(0, 42, Direction.ASC, "foo"), pagingState)
 				.next();
 
 		Query query = Query.empty().pageRequest(pageRequest);
 
 		assertThat(query.getSort()).isEqualTo(Sort.by(asc("foo")));
 		assertThat(query.getPagingState()).contains(pagingState);
-		assertThat(query.getQueryOptions()).hasValueSatisfying(actual -> {
-			assertThat(actual).extracting("fetchSize").contains(42);
-		});
+		assertThat(query.getQueryOptions()).hasValueSatisfying(actual ->
+			assertThat(actual).extracting("fetchSize").contains(42));
 	}
 }

@@ -65,8 +65,8 @@ public interface CassandraRepository<T, ID> extends CrudRepository<T, ID> {
 	 *
 	 * @param pageable must not be {@literal null}.
 	 * @return a {@link Slice} of entities.
-	 * @since 2.0
 	 * @see CassandraPageRequest
+	 * @since 2.0
 	 */
 	Slice<T> findAll(Pageable pageable);
 
@@ -91,4 +91,5 @@ public interface CassandraRepository<T, ID> extends CrudRepository<T, ID> {
 	 * @since 2.0
 	 */
 	<S extends T> List<S> insert(Iterable<S> entities);
+
 }
