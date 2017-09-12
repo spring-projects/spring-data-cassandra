@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -37,6 +35,9 @@ import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.querybuilder.Clause;
 
@@ -60,13 +61,13 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, CriteriaDefiniti
 	 * {@link MappingContext}.
 	 *
 	 * @param tree must not be {@literal null}.
-	 * @param accessor must not be {@literal null}.
+	 * @param parameterAccessor must not be {@literal null}.
 	 * @param mappingContext must not be {@literal null}.
 	 */
-	public CassandraQueryCreator(PartTree tree, CassandraParameterAccessor accessor,
+	public CassandraQueryCreator(PartTree tree, CassandraParameterAccessor parameterAccessor,
 			MappingContext<?, CassandraPersistentProperty> mappingContext) {
 
-		super(tree, accessor);
+		super(tree, parameterAccessor);
 
 		Assert.notNull(mappingContext, "CassandraMappingContext must not be null");
 

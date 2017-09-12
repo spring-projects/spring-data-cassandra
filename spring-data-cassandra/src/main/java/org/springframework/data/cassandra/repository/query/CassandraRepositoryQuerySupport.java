@@ -15,12 +15,10 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityInstantiators;
@@ -29,11 +27,15 @@ import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Base class for Cassandra {@link RepositoryQuery} implementations providing common infrastructure such as
  * {@link EntityInstantiators} and {@link QueryStatementCreator}.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.repository.query.RepositoryQuery
  * @since 2.0
  */
 public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery {
@@ -86,31 +88,31 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 
 		boolean isProjecting() {
 
-			if (!returnedType.isProjecting()) {
+			if (!this.returnedType.isProjecting()) {
 				return false;
 			}
 
 			// Spring Data Cassandra allows List<Map<String, Object> and Map<String, Object> declarations
 			// on query methods so we don't want to let projection kick in
-			if (ClassUtils.isAssignable(Map.class, returnedType.getReturnedType())) {
+			if (ClassUtils.isAssignable(Map.class, this.returnedType.getReturnedType())) {
 				return false;
 			}
 
 			// Type conversion using registered conversions is handled on template level
-			if (customConversions.hasCustomWriteTarget(returnedType.getReturnedType())) {
+			if (this.customConversions.hasCustomWriteTarget(this.returnedType.getReturnedType())) {
 				return false;
 			}
 
 			// Don't apply projection on Cassandra simple types
-			return !customConversions.isSimpleType(returnedType.getReturnedType());
+			return !this.customConversions.isSimpleType(this.returnedType.getReturnedType());
 		}
 
 		Class<?> getDomainType() {
-			return returnedType.getDomainType();
+			return this.returnedType.getDomainType();
 		}
 
 		Class<?> getReturnedType() {
-			return returnedType.getReturnedType();
+			return this.returnedType.getReturnedType();
 		}
 	}
 }

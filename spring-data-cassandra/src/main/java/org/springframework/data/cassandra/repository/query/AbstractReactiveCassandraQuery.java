@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.repository.query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.reactivestreams.Publisher;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
@@ -31,12 +30,15 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.util.Assert;
 
+import org.reactivestreams.Publisher;
+
 import com.datastax.driver.core.Statement;
 
 /**
  * Base class for reactive {@link RepositoryQuery} implementations for Cassandra.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.repository.query.CassandraRepositoryQuerySupport
  * @since 2.0
  */
 public abstract class AbstractReactiveCassandraQuery extends CassandraRepositoryQuerySupport {
@@ -78,28 +80,19 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 */
 	@Override
 	public Object execute(Object[] parameters) {
-
-		return (getQueryMethod().hasReactiveWrapperParameter() ? executeDeferred(parameters)
-				: execute(new ReactiveCassandraParameterAccessor(getQueryMethod(), parameters)));
+		return (getQueryMethod().hasReactiveWrapperParameter() ? executeDeferred(parameters) : executeNow(parameters));
 	}
-
-	/**
-	 * Creates a string query using the given {@link ParameterAccessor}
-	 *
-	 * @param accessor must not be {@literal null}.
-	 */
-	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
 
 	@SuppressWarnings("unchecked")
 	private Object executeDeferred(Object[] parameters) {
-
-		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(getQueryMethod(), parameters);
-
-		return (getQueryMethod().isCollectionQuery() ? Flux.defer(() -> (Publisher<Object>) execute(accessor))
-				: Mono.defer(() -> (Mono<Object>) execute(accessor)));
+		return (getQueryMethod().isCollectionQuery() ? Flux.defer(() -> (Publisher<Object>) execute(parameters))
+				: Mono.defer(() -> (Mono<Object>) execute(parameters)));
 	}
 
-	private Object execute(CassandraParameterAccessor parameterAccessor) {
+	private Object executeNow(Object[] parameters) {
+
+		ReactiveCassandraParameterAccessor parameterAccessor =
+			new ReactiveCassandraParameterAccessor(getQueryMethod(), parameters);
 
 		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(
 				getReactiveCassandraOperations().getConverter(), parameterAccessor);
@@ -112,13 +105,25 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		ReactiveCassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(resultProcessor,
 				getReactiveCassandraOperations().getConverter().getMappingContext(), getEntityInstantiators()));
 
-		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
-				getReactiveCassandraOperations().getConverter().getCustomConversions());
-
-		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
+		Class<?> resultType = resolveResultType(resultProcessor);
 
 		return queryExecution.execute(statement, resultType);
 	}
+
+	private Class<?> resolveResultType(ResultProcessor resultProcessor) {
+
+		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
+				getReactiveCassandraOperations().getConverter().getCustomConversions());
+
+		return (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
+	}
+
+	/**
+	 * Creates a string query using the given {@link ParameterAccessor}
+	 *
+	 * @param accessor must not be {@literal null}.
+	 */
+	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
 
 	/**
 	 * Returns the execution instance to use.

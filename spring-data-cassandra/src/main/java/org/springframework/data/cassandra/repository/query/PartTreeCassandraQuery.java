@@ -34,6 +34,7 @@ import com.datastax.driver.core.Statement;
  *
  * @author Matthew Adams
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery
  */
 public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 

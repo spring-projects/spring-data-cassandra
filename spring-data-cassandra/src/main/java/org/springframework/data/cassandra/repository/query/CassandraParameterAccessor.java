@@ -32,6 +32,17 @@ import com.datastax.driver.core.DataType;
 public interface CassandraParameterAccessor extends ParameterAccessor {
 
 	/**
+	 * Returns the {@link CassandraType} for the declared method parameter.
+	 *
+	 * @param index the parameter index
+	 * @return the Cassandra {@link CassandraType} or {@literal null}.
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraType
+	 */
+	@Nullable
+	CassandraType findCassandraType(int index);
+
+	/**
 	 * Returns the Cassandra {@link DataType} for the declared parameter if the type is a
 	 * {@link org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder simple type}. Parameter types may
 	 * be specified using {@link org.springframework.data.cassandra.core.mapping.CassandraType}.
@@ -43,17 +54,6 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraType
 	 */
 	DataType getDataType(int index);
-
-	/**
-	 * Returns the {@link CassandraType} for the declared method parameter.
-	 *
-	 * @param index the parameter index
-	 * @return the Cassandra {@link CassandraType} or {@literal null}.
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraType
-	 */
-	@Nullable
-	CassandraType findCassandraType(int index);
 
 	/**
 	 * The actual parameter type (after unwrapping).
@@ -72,11 +72,12 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 	Object[] getValues();
 
 	/**
-	 * Returns the {@link QueryOptions} associated of the associated query method.
+	 * Returns the {@link QueryOptions} associated with the associated Repository query method.
 	 *
 	 * @return the {@link QueryOptions} or {@literal null} if none.
 	 * @since 2.0
 	 */
 	@Nullable
 	QueryOptions getQueryOptions();
+
 }

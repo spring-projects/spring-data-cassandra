@@ -36,6 +36,7 @@ import com.datastax.driver.core.Statement;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @see org.springframework.data.cassandra.repository.query.CassandraRepositoryQuerySupport
  */
 public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySupport {
 
@@ -78,12 +79,17 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		CassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(resultProcessor,
 				getOperations().getConverter().getMappingContext(), getEntityInstantiators()));
 
+		Class<?> resultType = resolveResultType(resultProcessor);
+
+		return queryExecution.execute(statement, resultType);
+	}
+
+	private Class<?> resolveResultType(ResultProcessor resultProcessor) {
+
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				getOperations().getConverter().getCustomConversions());
 
-		Class<?> resultType = (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
-
-		return queryExecution.execute(statement, resultType);
+		return (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
 	}
 
 	/**

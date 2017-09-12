@@ -15,12 +15,10 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
@@ -30,6 +28,9 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.parser.PartTree;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.SimpleStatement;
@@ -72,7 +73,7 @@ class QueryStatementCreator {
 				query = query.limit(tree.getMaxResults());
 			}
 
-			if (queryMethod.getQueryAnnotation().map(org.springframework.data.cassandra.repository.Query::allowFiltering)
+			if (this.queryMethod.getQueryAnnotation().map(org.springframework.data.cassandra.repository.Query::allowFiltering)
 					.orElse(false)) {
 
 				query = query.withAllowFiltering();
@@ -82,13 +83,14 @@ class QueryStatementCreator {
 
 			if (queryOptions.isPresent()) {
 				query = Optional.ofNullable(parameterAccessor.getQueryOptions()).map(query::queryOptions).orElse(query);
-			} else if (queryMethod.hasConsistencyLevel()) {
-				query = query.queryOptions(
-						QueryOptions.builder().consistencyLevel(queryMethod.getRequiredAnnotatedConsistencyLevel()).build());
+			} else if (this.queryMethod.hasConsistencyLevel()) {
+				query = query.queryOptions(QueryOptions.builder()
+						.consistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel())
+						.build());
 			}
 
-			CassandraPersistentEntity<?> persistentEntity = mappingContext
-					.getRequiredPersistentEntity(queryMethod.getDomainClass());
+			CassandraPersistentEntity<?> persistentEntity =
+					mappingContext.getRequiredPersistentEntity(queryMethod.getDomainClass());
 
 			RegularStatement statement = statementFactory.select(query, persistentEntity);
 
@@ -114,7 +116,7 @@ class QueryStatementCreator {
 
 		try {
 
-			SimpleStatement boundQuery = stringBasedQuery.bindQuery(parameterAccessor, queryMethod);
+			SimpleStatement boundQuery = stringBasedQuery.bindQuery(parameterAccessor, this.queryMethod);
 
 			Optional<QueryOptions> queryOptions = Optional.ofNullable(parameterAccessor.getQueryOptions());
 
@@ -123,8 +125,8 @@ class QueryStatementCreator {
 			if (queryOptions.isPresent()) {
 				queryToUse = Optional.ofNullable(parameterAccessor.getQueryOptions())
 						.map(it -> QueryOptionsUtil.addQueryOptions(boundQuery, it)).orElse(boundQuery);
-			} else if (queryMethod.hasConsistencyLevel()) {
-				queryToUse.setConsistencyLevel(queryMethod.getRequiredAnnotatedConsistencyLevel());
+			} else if (this.queryMethod.hasConsistencyLevel()) {
+				queryToUse.setConsistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel());
 			}
 
 			if (LOG.isDebugEnabled()) {
@@ -133,7 +135,7 @@ class QueryStatementCreator {
 
 			return queryToUse;
 		} catch (RuntimeException e) {
-			throw QueryCreationException.create(queryMethod, e);
+			throw QueryCreationException.create(this.queryMethod, e);
 		}
 	}
 }

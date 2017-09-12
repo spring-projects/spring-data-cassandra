@@ -31,6 +31,7 @@ import com.datastax.driver.core.SimpleStatement;
  * @author Matthew Adams
  * @author Mark Paluch
  * @see org.springframework.data.cassandra.repository.Query
+ * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery
  */
 public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 

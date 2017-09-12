@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -27,12 +27,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import com.datastax.driver.core.ConsistencyLevel;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -55,6 +55,7 @@ import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ReflectionUtils;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.UDTValue;
@@ -85,6 +86,7 @@ public class StringBasedCassandraQueryUnitTests {
 	public void setUp() {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
+
 		mappingContext.setUserTypeResolver(userTypeResolver);
 
 		this.metadata = AbstractRepositoryMetadata.getMetadata(SampleRepository.class);
@@ -344,10 +346,11 @@ public class StringBasedCassandraQueryUnitTests {
 		QueryOptions queryOptions = QueryOptions.builder().fetchSize(777).build();
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", QueryOptions.class, String.class);
-		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
-				cassandraQuery.getQueryMethod(), queryOptions, "Matthews");
 
-		SimpleStatement actual = cassandraQuery.createQuery(accessor);
+		CassandraParametersParameterAccessor parameterAccessor =
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), queryOptions, "Matthews");
+
+		SimpleStatement actual = cassandraQuery.createQuery(parameterAccessor);
 
 		assertThat(actual.toString()).isEqualTo("SELECT * FROM person WHERE lastname = ?;");
 		assertThat(actual.getObject(0)).isEqualTo("Matthews");
@@ -358,10 +361,11 @@ public class StringBasedCassandraQueryUnitTests {
 	public void shouldApplyConsistencyLevel() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
-		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
-				cassandraQuery.getQueryMethod(), "Matthews");
 
-		SimpleStatement actual = cassandraQuery.createQuery(accessor);
+		CassandraParametersParameterAccessor parameterAccessor =
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), "Matthews");
+
+		SimpleStatement actual = cassandraQuery.createQuery(parameterAccessor);
 
 		assertThat(actual.toString()).isEqualTo("SELECT * FROM person WHERE lastname = ?;");
 		assertThat(actual.getObject(0)).isEqualTo("Matthews");
@@ -371,8 +375,10 @@ public class StringBasedCassandraQueryUnitTests {
 	private StringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
 
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
-		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
-				converter.getMappingContext());
+
+		CassandraQueryMethod queryMethod =
+				new CassandraQueryMethod(method, metadata, factory, converter.getMappingContext());
+
 		return new StringBasedCassandraQuery(queryMethod, operations, PARSER,
 				new ExtensionAwareEvaluationContextProvider());
 	}

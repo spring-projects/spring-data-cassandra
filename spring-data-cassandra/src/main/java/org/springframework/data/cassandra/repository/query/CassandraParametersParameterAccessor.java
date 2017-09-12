@@ -49,6 +49,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	public CassandraParametersParameterAccessor(CassandraQueryMethod method, Object... values) {
 
 		super(method.getParameters(), values);
+
 		this.values = Arrays.asList(values);
 	}
 
@@ -98,7 +99,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	 */
 	@Override
 	public Object[] getValues() {
-		return values.toArray();
+		return this.values.toArray();
 	}
 
 	/*
@@ -111,15 +112,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 
 		int queryOptionsIndex = getParameters().getQueryOptionsIndex();
 
-		if (queryOptionsIndex == -1) {
-			return null;
-		}
-
-		Object value = getValue(queryOptionsIndex);
-
-		if (value == null) {
-			return null;
-		}
+		Object value = (queryOptionsIndex != -1 ? getValue(queryOptionsIndex) : null);
 
 		return (QueryOptions) value;
 	}

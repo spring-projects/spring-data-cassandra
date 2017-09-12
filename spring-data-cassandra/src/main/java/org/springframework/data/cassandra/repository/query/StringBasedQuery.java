@@ -113,6 +113,7 @@ class StringBasedQuery {
 			int startIndex = 0;
 			int currentPosition = 0;
 			int parameterIndex = 0;
+
 			Matcher matcher = ARGUMENT_PLACEHOLDER_PATTERN.matcher(input);
 
 			while (currentPosition < input.length()) {
@@ -147,11 +148,12 @@ class StringBasedQuery {
 
 		private static final char CURRLY_BRACE_OPEN = '{';
 		private static final char CURRLY_BRACE_CLOSE = '}';
+
 		private static final Pattern INDEX_PARAMETER_BINDING_PATTERN = Pattern.compile("\\?(\\d+)");
 		private static final Pattern NAMED_PARAMETER_BINDING_PATTERN = Pattern.compile("\\:(\\w+)");
-
 		private static final Pattern INDEX_BASED_EXPRESSION_PATTERN = Pattern.compile("\\?\\#\\{");
 		private static final Pattern NAME_BASED_EXPRESSION_PATTERN = Pattern.compile("\\:\\#\\{");
+
 		private static final String ARGUMENT_PLACEHOLDER = "?_param_?";
 
 		/**
@@ -221,8 +223,7 @@ class StringBasedQuery {
 							.expression(input.substring(exprStart + 3, currentPosition - 1), true));
 				} else {
 					if (matcher.pattern() == INDEX_PARAMETER_BINDING_PATTERN) {
-						bindings
-								.add(ExpressionEvaluatingParameterBinder.ParameterBinding.indexed(Integer.parseInt(matcher.group(1))));
+						bindings.add(ExpressionEvaluatingParameterBinder.ParameterBinding.indexed(Integer.parseInt(matcher.group(1))));
 					} else {
 						bindings.add(ExpressionEvaluatingParameterBinder.ParameterBinding.named(matcher.group(1)));
 					}

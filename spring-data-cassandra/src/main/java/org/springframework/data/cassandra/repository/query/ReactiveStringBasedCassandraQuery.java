@@ -30,8 +30,9 @@ import com.datastax.driver.core.SimpleStatement;
  * index-based and expression parameters that are resolved during query execution.
  *
  * @author Mark Paluch
- * @since 2.0
  * @see org.springframework.data.cassandra.repository.Query
+ * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery
+ * @since 2.0
  */
 public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandraQuery {
 

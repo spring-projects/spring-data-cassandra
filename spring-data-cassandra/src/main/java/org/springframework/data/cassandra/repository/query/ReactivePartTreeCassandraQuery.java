@@ -31,6 +31,7 @@ import com.datastax.driver.core.Statement;
  * Reactive PartTree {@link RepositoryQuery} implementation for Cassandra.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery
  * @since 2.0
  */
 public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQuery {
@@ -94,6 +95,6 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	 */
 	@Override
 	protected Statement createQuery(CassandraParameterAccessor parameterAccessor) {
-		return getQueryStatementCreator().select(statementFactory, getTree(), getMappingContext(), parameterAccessor);
+		return getQueryStatementCreator().select(getStatementFactory(), getTree(), getMappingContext(), parameterAccessor);
 	}
 }

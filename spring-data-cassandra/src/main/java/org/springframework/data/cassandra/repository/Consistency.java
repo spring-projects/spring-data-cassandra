@@ -29,8 +29,9 @@ import com.datastax.driver.core.ConsistencyLevel;
  * Annotation to declare a {@link ConsistencyLevel} for CQL queries executed through query methods.
  *
  * @author Mark Paluch
- * @since 2.0
+ * @see org.springframework.data.annotation.QueryAnnotation
  * @see org.springframework.data.cassandra.core.cql.QueryOptions
+ * @since 2.0
  */
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -39,7 +40,8 @@ import com.datastax.driver.core.ConsistencyLevel;
 public @interface Consistency {
 
 	/**
-	 * @return the {@link ConsistencyLevel} applied to the query executed using a query method.
+	 * @return the {@link ConsistencyLevel} applied to the query executed using a Repository query method.
 	 */
 	ConsistencyLevel value();
+
 }

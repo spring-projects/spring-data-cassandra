@@ -49,14 +49,14 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	 * @param method must not be {@literal null}.
 	 */
 	public CassandraParameters(Method method) {
+
 		super(method);
 
-		List<Class<?>> parameterTypes = Arrays.asList(method.getParameterTypes());
-
-		this.queryOptionsIndex = parameterTypes.indexOf(QueryOptions.class);
+		this.queryOptionsIndex = Arrays.asList(method.getParameterTypes()).indexOf(QueryOptions.class);
 	}
 
 	private CassandraParameters(List<CassandraParameter> originals, @Nullable Integer queryOptionsIndex) {
+
 		super(originals);
 
 		this.queryOptionsIndex = queryOptionsIndex;
@@ -85,7 +85,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	 * @since 2.0
 	 */
 	public int getQueryOptionsIndex() {
-		return queryOptionsIndex != null ? queryOptionsIndex : -1;
+		return (queryOptionsIndex != null ? queryOptionsIndex : -1);
 	}
 
 	/**
@@ -129,7 +129,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 */
 		@Nullable
 		public CassandraType getCassandraType() {
-			return cassandraType;
+			return this.cassandraType;
 		}
 
 		/* (non-Javadoc)
@@ -137,7 +137,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 */
 		@Override
 		public Class<?> getType() {
-			return parameterType;
+			return this.parameterType;
 		}
 
 		/**

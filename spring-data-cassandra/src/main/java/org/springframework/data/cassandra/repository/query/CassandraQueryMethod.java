@@ -101,22 +101,22 @@ public class CassandraQueryMethod extends QueryMethod {
 	@SuppressWarnings("unchecked")
 	public CassandraEntityMetadata<?> getEntityInformation() {
 
-		if (entityMetadata == null) {
+		if (this.entityMetadata == null) {
 
 			Class<?> returnedObjectType = getReturnedObjectType();
 			Class<?> domainClass = getDomainClass();
 
 			if (ClassUtils.isPrimitiveOrWrapper(returnedObjectType)) {
 				this.entityMetadata = new SimpleCassandraEntityMetadata<>((Class<Object>) domainClass,
-						mappingContext.getRequiredPersistentEntity(domainClass));
+						this.mappingContext.getRequiredPersistentEntity(domainClass));
 
 			} else {
 
-				CassandraPersistentEntity<?> returnedEntity = mappingContext.getPersistentEntity(returnedObjectType);
-				CassandraPersistentEntity<?> managedEntity = mappingContext.getRequiredPersistentEntity(domainClass);
+				CassandraPersistentEntity<?> returnedEntity = this.mappingContext.getPersistentEntity(returnedObjectType);
+				CassandraPersistentEntity<?> managedEntity = this.mappingContext.getRequiredPersistentEntity(domainClass);
 
-				returnedEntity = returnedEntity == null || returnedEntity.getType().isInterface() ? managedEntity
-						: returnedEntity;
+				returnedEntity = returnedEntity == null || returnedEntity.getType().isInterface()
+						? managedEntity : returnedEntity;
 
 				this.entityMetadata = new SimpleCassandraEntityMetadata<>((Class<Object>) returnedEntity.getType(),
 						managedEntity);
@@ -147,7 +147,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * Returns whether the method has an annotated query.
 	 */
 	public boolean hasAnnotatedQuery() {
-		return query.map(Query::value).filter(StringUtils::hasText).isPresent();
+		return this.query.map(Query::value).filter(StringUtils::hasText).isPresent();
 	}
 
 	/**
@@ -158,7 +158,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 */
 	@Nullable
 	public String getAnnotatedQuery() {
-		return query.map(Query::value).orElse(null);
+		return this.query.map(Query::value).orElse(null);
 	}
 
 	/**
@@ -177,7 +177,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @throws IllegalStateException if the required annotation was not found.
 	 */
 	public ConsistencyLevel getRequiredAnnotatedConsistencyLevel() throws IllegalStateException {
-		return consistency.map(Consistency::value)
+		return this.consistency.map(Consistency::value)
 				.orElseThrow(() -> new IllegalStateException("No @Consistency annotation found"));
 	}
 
@@ -189,7 +189,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @throws IllegalStateException in case query method has no annotated query.
 	 */
 	public String getRequiredAnnotatedQuery() {
-		return query.map(Query::value)
+		return this.query.map(Query::value)
 				.orElseThrow(() -> new IllegalStateException("Query method " + this + " has no annotated query"));
 	}
 
@@ -199,7 +199,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @return the optional query annotation.
 	 */
 	Optional<Query> getQueryAnnotation() {
-		return query;
+		return this.query;
 	}
 
 	@Override
@@ -211,7 +211,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @return the return type for this {@link QueryMethod}.
 	 */
 	public TypeInformation<?> getReturnType() {
-		return ClassTypeInformation.fromReturnTypeOf(method);
+		return ClassTypeInformation.fromReturnTypeOf(this.method);
 	}
 
 	/**
@@ -220,6 +220,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	public boolean isResultSetQuery() {
 
 		TypeInformation<?> actualType = getReturnType().getActualType();
+
 		return actualType != null && ResultSet.class.isAssignableFrom(actualType.getType());
 	}
 }

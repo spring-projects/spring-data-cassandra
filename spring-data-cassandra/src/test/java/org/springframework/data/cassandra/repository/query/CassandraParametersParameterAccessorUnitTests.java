@@ -15,16 +15,16 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
 import java.util.List;
 
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
@@ -33,10 +33,12 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+
 import org.threeten.bp.LocalDateTime;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 
 /**
  * Unit tests for {@link CassandraParametersParameterAccessor}.

@@ -41,6 +41,7 @@ import com.datastax.driver.core.TypeCodec;
  * convert parameters.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor
  * @since 1.5
  */
 class ConvertingParameterAccessor implements CassandraParameterAccessor {
@@ -62,7 +63,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public Pageable getPageable() {
-		return delegate.getPageable();
+		return this.delegate.getPageable();
 	}
 
 	/* (non-Javadoc)
@@ -70,7 +71,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public Sort getSort() {
-		return delegate.getSort();
+		return this.delegate.getSort();
 	}
 
 	/* (non-Javadoc)
@@ -78,7 +79,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public Optional<Class<?>> getDynamicProjection() {
-		return delegate.getDynamicProjection();
+		return this.delegate.getDynamicProjection();
 	}
 
 	/* (non-Javadoc)
@@ -86,15 +87,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public Object getBindableValue(int index) {
-		return potentiallyConvert(index, delegate.getBindableValue(index));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getDataType(int)
-	 */
-	@Override
-	public DataType getDataType(int index) {
-		return delegate.getDataType(index);
+		return potentiallyConvert(index, this.delegate.getBindableValue(index));
 	}
 
 	/* (non-Javadoc)
@@ -102,7 +95,15 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public CassandraType findCassandraType(int index) {
-		return delegate.findCassandraType(index);
+		return this.delegate.findCassandraType(index);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getDataType(int)
+	 */
+	@Override
+	public DataType getDataType(int index) {
+		return this.delegate.getDataType(index);
 	}
 
 
@@ -111,7 +112,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public Class<?> getParameterType(int index) {
-		return delegate.getParameterType(index);
+		return this.delegate.getParameterType(index);
 	}
 
 	/* (non-Javadoc)
@@ -120,7 +121,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	@Nullable
 	@Override
 	public QueryOptions getQueryOptions() {
-		return delegate.getQueryOptions();
+		return this.delegate.getQueryOptions();
 	}
 
 	/* (non-Javadoc)
@@ -128,14 +129,14 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public boolean hasBindableNullValue() {
-		return delegate.hasBindableNullValue();
+		return this.delegate.hasBindableNullValue();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ParameterAccessor#iterator()
 	 */
 	public Iterator<Object> iterator() {
-		return new ConvertingIterator(delegate.iterator());
+		return new ConvertingIterator(this.delegate.iterator());
 	}
 
 	/* (non-Javadoc)
@@ -143,7 +144,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	@Override
 	public Object[] getValues() {
-		return delegate.getValues();
+		return this.delegate.getValues();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -154,21 +155,23 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			return null;
 		}
 
-		return converter.convertToColumnType(bindableValue, findTypeInformation(index, bindableValue, null));
+		return this.converter.convertToColumnType(bindableValue,
+				findTypeInformation(index, bindableValue, null));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Nullable
 	private Object potentiallyConvert(int index, @Nullable Object bindableValue, CassandraPersistentProperty property) {
 
-		return (bindableValue == null ? null
-				: converter.convertToColumnType(bindableValue, findTypeInformation(index, bindableValue, property)));
+		return (bindableValue == null ? null : this.converter.convertToColumnType(bindableValue,
+				findTypeInformation(index, bindableValue, property)));
 	}
 
 	private TypeInformation<?> findTypeInformation(int index, Object bindableValue,
 			@Nullable CassandraPersistentProperty property) {
 
-		if (delegate.findCassandraType(index) != null) {
+		if (this.delegate.findCassandraType(index) != null) {
+
 			TypeCodec<?> typeCodec = CodecRegistry.DEFAULT_INSTANCE.codecFor(getDataType(index, property));
 
 			if (typeCodec.getJavaType().getType() instanceof Class<?>) {
@@ -195,7 +198,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 */
 	DataType getDataType(int index, @Nullable CassandraPersistentProperty property) {
 
-		CassandraType cassandraType = delegate.findCassandraType(index);
+		CassandraType cassandraType = this.delegate.findCassandraType(index);
 
 		if (cassandraType != null) {
 			return CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type());
@@ -272,7 +275,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext() {
-			return delegate.hasNext();
+			return this.delegate.hasNext();
 		}
 
 		/*
@@ -281,7 +284,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 */
 		@Nullable
 		public Object next() {
-			return potentiallyConvert(index++, delegate.next());
+			return potentiallyConvert(this.index++, this.delegate.next());
 		}
 
 		/*
@@ -289,7 +292,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 * @see java.util.Iterator#remove()
 		 */
 		public void remove() {
-			delegate.remove();
+			this.delegate.remove();
 		}
 
 		/* (non-Javadoc)
@@ -298,7 +301,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		@Nullable
 		@Override
 		public Object nextConverted(CassandraPersistentProperty property) {
-			return potentiallyConvert(index++, delegate.next(), property);
+			return potentiallyConvert(this.index++, this.delegate.next(), property);
 		}
 	}
 
@@ -316,5 +319,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		 */
 		@Nullable
 		Object nextConverted(CassandraPersistentProperty property);
+
 	}
 }
