@@ -15,19 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.springframework.data.cassandra.core.query.Criteria.*;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;

@@ -18,17 +18,12 @@ package org.springframework.data.cassandra.repository.support;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.reactivestreams.Publisher;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
+
+import org.reactivestreams.Publisher;
 
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -81,7 +76,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	 * @param entity the entity, must not be {@literal null}.
 	 * @return the constructed {@link Insert} statement.
 	 */
-	protected <S extends T> Insert createInsert(S entity) {
+	private <S extends T> Insert createInsert(S entity) {
 		return InsertUtil.createInsert(operations.getConverter(), entity);
 	}
 
