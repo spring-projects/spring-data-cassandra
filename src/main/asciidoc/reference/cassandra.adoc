@@ -810,6 +810,33 @@ cqlTemplate.execute(cql);
 [[cassandra.exception]]
 include::exception-translation.adoc[]
 
+[[cassandra.connections]]
+== Controlling Cassandra connections
+
+Applications connect to Apache Cassandra using `Cluster` and `Session` objects. A Cassandra `Session` keeps track of
+multiple connections to the individual nodes and is designed as thread-safe and long-lived object.
+Usually, it's sufficient to use a single `Session` for the whole application.
+
+Spring obtains a Cassandra `Session` through a `SessionFactory`. `SessionFactory` is part of
+Spring Data for Apache Cassandra and is a generalized connection factory.
+It allows a container or a framework to hide connection handling and routing issues from the application code.
+
+Here is an example of how to configure a default `SessionFactory` in Java code:
+
+[source,java]
+----
+Session session = … // get hold of a Cassandra Session
+
+CqlTemplate template = new CqlTemplate();
+template.setSessionFactory(new DefaultSessionFactory(session));
+----
+
+`CqlTemplate` and other Template API implementations obtain a `Session` for each operation. Sessions are not closed
+after invoking the desired operation due to their long-lived nature. Resource disposal responsibility lies in the using
+container or framework.
+
+You can find various `SessionFactory` implementations within the package `org.springframework.data.cassandra.core.cql.session`.
+
 [[cassandra.template]]
 == Introduction to `CassandraTemplate`
 
