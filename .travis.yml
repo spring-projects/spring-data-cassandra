@@ -5,14 +5,12 @@ jdk:
 
 env:
   global:
-    - CASSANDRA_VERSION=3.10
+    - CASSANDRA_VERSION=3.11.0
   matrix:
     - PROFILE=ci
     - PROFILE=spring5-next
-    - CASSANDRA_VERSION=2.2.8
+    - CASSANDRA_VERSION=2.2.10
     - CASSANDRA_VERSION=3.0.10
-    - CASSANDRA_VERSION=3.2.1
-    - CASSANDRA_VERSION=3.9
 
 addons:
   apt:
