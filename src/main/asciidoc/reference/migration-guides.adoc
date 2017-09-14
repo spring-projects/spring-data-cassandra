@@ -1,0 +1,5 @@
+= Appendix E: Migration Guides
+
+:leveloffset: +1
+include::migration-guide-1.5-to-2.0.adoc[]
+:leveloffset: -1

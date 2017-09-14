@@ -187,7 +187,6 @@ public interface PersonRepository extends CrudRepository<Person, String> {
     Person findByShippingAddress(Address address);                          <5>
 
     Stream<Person> findAllBy();                                             <6>
->>>>>>> 18c314d... DATACASS-56 - Cassandra paging support.
 }
 ----
 <1> The method shows a query for all people with the given `lastname`. The query will be derived from parsing
@@ -267,6 +266,7 @@ NOTE: Querying non-primary key properties requires secondary indexes.
 
 include::../{spring-data-commons-docs}/repository-projections.adoc[leveloffset=+2]
 
+[[cassandra.repositories.queries.options]]
 === Query options
 
 You can specify query options for query methods by passing a `QueryOptions` object

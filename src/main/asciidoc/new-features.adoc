@@ -15,9 +15,13 @@ to `org.springframework.data.cassandra`.
 * Introduced `Update` and `Query` objects.
 * Renamed CRUD _Repository_ interface: `CassandraRepository` using `MapId` is now renamed to `MapIdCassandraRepository`.
 `TypedIdCassandraRepository` is renamed to `CassandraRepository`.
-* Added lightweight transaction support via `InsertOptions` and `UpdateOptions` using the Template API.
-* Added support for Index creation on application startup via `@Indexed` and `@SASI`.
+* <<cassandra.repositories.queries,Pagination>> via `PagingState` and `CassandraPageRequest`.
+* Interface and DTO projections in Repository query methods.
+* Lightweight transaction support via `InsertOptions` and `UpdateOptions` using the Template API.
+* <<cassandra.repositories.queries.options,Query options>> for Repository query methods.
 * Introduced new annotation for `@AllowFiltering`.
+* Index creation on application startup via `@Indexed` and `@SASI`.
+* Tooling support for null-safety via Spring's `@NonNullApi` and `@Nullable` annotations.
 
 [[new-features.1-5-0]]
 == What's new in Spring Data for Apache Cassandra 1.5

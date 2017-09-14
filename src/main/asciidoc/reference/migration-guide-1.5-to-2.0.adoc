@@ -1,5 +1,5 @@
 [[cassandra.migration.1.x-to-2.x]]
-= Migration guide from Spring Data Cassandra 1.x to 2.x
+= Migration Guide from Spring Data Cassandra 1.x to 2.x
 
 Spring Data for Apache Cassandra 2.0 introduces a set of breaking changes when upgrading from earlier versions:
 
