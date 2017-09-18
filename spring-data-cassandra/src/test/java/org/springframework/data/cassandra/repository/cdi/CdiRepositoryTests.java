@@ -19,8 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
 
-import org.apache.webbeans.cditest.CdiTestContainer;
-import org.apache.webbeans.cditest.CdiTestContainerLoader;
+import javax.enterprise.inject.se.SeContainer;
+import javax.enterprise.inject.se.SeContainerInitializer;
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -34,40 +35,40 @@ import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraInt
  */
 public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest {
 
-	private static CdiTestContainer cdiContainer;
+	private static SeContainer cdiContainer;
+
 	private CdiUserRepository repository;
 	private SamplePersonRepository personRepository;
 	private QualifiedUserRepository qualifiedUserRepository;
 
 	@BeforeClass
 	public static void init() throws Exception {
+
 		// CDI container is booted before the @Rule can be triggered.
 		// Ensure that we have a usable Cassandra instance otherwise the container won't boot
 		// because it needs a CassandraOperations with a working Session/Cluster
 
-		cdiContainer = CdiTestContainerLoader.getCdiContainer();
-		cdiContainer.startApplicationScope();
-		cdiContainer.startContexts();
-		cdiContainer.bootContainer();
+		cdiContainer = SeContainerInitializer.newInstance() //
+				.disableDiscovery() //
+				.addPackages(CdiRepositoryClient.class) //
+				.initialize();
 	}
 
 	@AfterClass
 	public static void shutdown() throws Exception {
-
-		cdiContainer.stopContexts();
-		cdiContainer.shutdownContainer();
+		cdiContainer.close();
 	}
 
 	@Before
 	public void setUp() {
 
-		CdiRepositoryClient client = cdiContainer.getInstance(CdiRepositoryClient.class);
+		CdiRepositoryClient client = cdiContainer.select(CdiRepositoryClient.class).get();
 		repository = client.getRepository();
 		personRepository = client.getSamplePersonRepository();
 		qualifiedUserRepository = client.getQualifiedUserRepository();
 	}
 
-	@Test // DATACASS-149
+	@Test // DATACASS-149, DATACASS-495
 	public void testCdiRepository() {
 
 		assertThat(repository).isNotNull();
@@ -100,7 +101,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 		assertThat(repository.findById(bean.getId())).isNotPresent();
 	}
 
-	@Test // DATACASS-249
+	@Test // DATACASS-249, DATACASS-495
 	public void testQualifiedCdiRepository() {
 
 		assertThat(qualifiedUserRepository).isNotNull();
@@ -116,9 +117,8 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 		assertThat(qualifiedUserRepository.existsById(bean.getId())).isTrue();
 	}
 
-	@Test // DATACASS-149
+	@Test // DATACASS-149, DATACASS-495
 	public void returnOneFromCustomImpl() {
-
 		assertThat(personRepository.returnOne()).isEqualTo(1);
 	}
 }

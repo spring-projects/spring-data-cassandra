@@ -119,21 +119,22 @@
 		<dependency>
 			<groupId>javax.enterprise</groupId>
 			<artifactId>cdi-api</artifactId>
+			<version>${cdi}</version>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.openwebbeans.test</groupId>
-			<artifactId>cditest-owb</artifactId>
-			<version>${webbeans}</version>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>${javax-annotation-api}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>3.0-alpha-1</version>
+			<groupId>org.apache.openwebbeans</groupId>
+			<artifactId>openwebbeans-se</artifactId>
+			<version>${webbeans}</version>
 			<scope>test</scope>
 		</dependency>
 
