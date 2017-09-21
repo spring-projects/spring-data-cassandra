@@ -20,6 +20,7 @@
 
 	<properties>
 		<validation>1.1.0.Final</validation>
+		<java-module-name>spring.data.cassandra</java-module-name>
 	</properties>
 
 	<dependencies>
