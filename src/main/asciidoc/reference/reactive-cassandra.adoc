@@ -7,8 +7,8 @@ The reactive Cassandra support contains a wide range of features which are summa
 * `ReactiveCqlTemplate` helper class that increases productivity by handling common Cassandra data access operations properly.
 * `ReactiveCassandraTemplate` helper class that increases productivity using `ReactiveCassandraOperations in a reactive manner.
 Includes integrated object mapping between tables and POJOs.
-* Exception translation into Spring's portable http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[Data Access Exception Hierarchy].
-* Feature rich object mapping integrated with Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#core-convert[Conversion Service].
+* Exception translation into Spring's portable {spring-framework-docs}data-access.html#dao-exceptions[Data Access Exception Hierarchy].
+* Feature rich object mapping integrated with Spring's {spring-framework-docs}core.html#core-convert[Conversion Service].
 * Java-based Query, Criteria, and Update DSLs.
 * Automatic implementation of `Repository` interfaces including support for custom finder methods.
 
@@ -201,7 +201,7 @@ bean metadata. These are discussed in the following sections.
 NOTE: For those not familiar with how to configure the Spring container using Java-based bean metadata instead of
 XML-based metadata, see the high-level introduction in the reference docs
 http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/new-in-3.0.html#new-java-configuration[here]
-as well as the detailed documentation http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/html/beans.html#beans-java-instantiating-container[here].
+as well as the detailed documentation {spring-framework-docs}core.html#beans-java-instantiating-container[here].
 
 
 [[cassandra.cassandra-reactive-java-config]]

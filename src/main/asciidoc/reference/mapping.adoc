@@ -562,7 +562,7 @@ instances with the `CassandraConverter`.
 
 NOTE: Spring 3.0 introduced a `o.s.core.convert` package that provides a general type conversion system.
 This is described in detail in the Spring reference documentation section entitled
-http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/html/validation.html#core-convert[Spring Type Conversion].
+{spring-framework-docs}core.html#core-convert[Spring Type Conversion].
 
 Below is an example of a Spring `Converter` implementation that converts from a Row to a Person POJO.
 

@@ -6,8 +6,8 @@ Spring Data support for Apache Cassandra contains a wide range of features which
 * _Spring_ configuration support using Java-based `@Configuration` classes or the XML namespace.
 * `CqlTemplate` helper class that increases productivity by handling common Cassandra data access operations properly.
 * `CassandraTemplate` helper class providing object mapping between CQL Tables and POJOs.
-* Exception translation into _Spring's_ portable http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[Data Access Exception Hierarchy].
-* Feature rich object mapping integrated with _Spring's_ http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#core-convert[Conversion Service].
+* Exception translation into _Spring's_ portable {spring-framework-docs}data-access.html#dao-exceptions[Data Access Exception Hierarchy].
+* Feature rich object mapping integrated with _Spring's_ {spring-framework-docs}core.html#core-convert[Conversion Service].
 * Annotation-based mapping metadata that is extensible to support other metadata formats.
 * Java-based Query, Criteria, and Update DSLs.
 * Automatic implementation of `Repository` interfaces including support for custom finder methods.
@@ -191,7 +191,7 @@ bean metadata. These are discussed in the following sections.
 NOTE: For those not familiar with how to configure the Spring container using Java-based bean metadata instead of
 XML-based metadata, see the high-level introduction in the reference docs
 http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/new-in-3.0.html#new-java-configuration[here]
-as well as the detailed documentation http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/html/beans.html#beans-java-instantiating-container[here].
+as well as the detailed documentation {spring-framework-docs}core.html#beans-java-instantiating-container[here].
 
 [[cassandra.cassandra-java-config]]
 === Registering a Session instance using Java-based metadata
@@ -225,7 +225,7 @@ using Spring's `CassandraCqlSessionFactoryBean` and `CassandraCqlClusterFactoryB
 a `com.datastax.driver.core.Session` instance directly, the `FactoryBean` approach has the added advantage of also
 providing the container with an `ExceptionTranslator` implementation that translates Cassandra exceptions to exceptions
 in Spring's portable `DataAccessException` hierarchy for data access classes annotated. This hierarchy and use of
-`@Repository` is described in http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/html/dao.html[Spring's DAO support features].
+`@Repository` is described in {spring-framework-docs}data-access.html[Spring's DAO support features].
 
 An example of a Java-based bean metadata that supports exception translation on `@Repository` annotated classes
 is shown below:

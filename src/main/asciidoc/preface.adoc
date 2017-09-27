@@ -3,7 +3,7 @@
 
 The Spring Data for Apache Cassandra project applies core Spring concepts to the development of solutions using
 the Cassandra Columnar data store.  A "template" is provided as a high-level abstraction for storing
-and querying documents. You will notice similarities to the http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#jdbc[JDBC support]
+and querying documents. You will notice similarities to the {spring-framework-docs}data-access.html#jdbc[JDBC support]
 in the core Spring Framework.
 
 This document is the reference guide for Spring Data support for Cassandra. It explains Cassandra module concepts,
@@ -16,14 +16,14 @@ core Spring concepts.
 [[get-started:first-steps:spring]]
 == Knowing Spring
 
-Spring Data uses the Spring Framework's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/[core]
-functionality, such as the http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans[IoC] container,
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#validation[validation, type conversion and data binding],
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#expressions[expression language],
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#aop[AOP],
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#jmx[JMX integration],
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao[DAO support], and specifically
-the http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[DAO Exception Hierarchy].
+Spring Data uses the Spring Framework's {spring-framework-docs}core.html[core]
+functionality, such as the {spring-framework-docs}core.html#beans[IoC] container,
+{spring-framework-docs}core.html#validation[validation, type conversion and data binding],
+{spring-framework-docs}core.html#expressions[expression language],
+{spring-framework-docs}core.html#aop[AOP],
+{spring-framework-docs}integration.html#jmx[JMX integration],
+{spring-framework-docs}data-access.html[DAO support], and specifically
+the {spring-framework-docs}data-access.html#dao-exceptions[DAO Exception Hierarchy].
 
 While it is not important to know the Spring APIs, understanding the concepts behind them is. At a minimum, the idea
 behind IoC should be familiar no matter what IoC container you choose to use.
@@ -33,7 +33,7 @@ of the Spring container. This is much like `JdbcTemplate`, which can be used 'st
 of the Spring container. To leverage all the features of Spring Data for Apache Cassandra, such as the repository support,
 you will need to configure some parts of the library using Spring.
 
-To learn more about Spring, you can refer to the comprehensive (and sometimes disarming) http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/[documentation]
+To learn more about Spring, you can refer to the comprehensive (and sometimes disarming) {spring-framework-docs}[documentation]
 that explains in detail the Spring Framework. There are a lot of articles, blog entries and books on the matter.
 Take a look at the Spring Framework http://projects.spring.io/spring-framework/[home page] for more information.
 

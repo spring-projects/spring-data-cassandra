@@ -11,7 +11,7 @@ need to create an implementation of the Spring `Converter` interface and then re
 the `MappingCassandraConverter`.
 
 NOTE: For more information on Spring's type conversion service, see the reference docs
-http://docs.spring.io/spring/docs/current/spring-framework-reference/html/validation.html#core-convert[here].
+{spring-framework-docs}core.html#core-convert[here].
 
 [[cassandra.custom-converters.writer]]
 === Saving using a registered Spring Converter
