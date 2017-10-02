@@ -1,6 +1,20 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.0.RELEASE (2017-10-02)
+---------------------------------------------
+* DATACASS-499 - Adapt to changed Spring Framework 5 documentation structure.
+* DATACASS-496 - Add explicit automatic module name for Java 9.
+* DATACASS-495 - Upgrade to OpenWebBeans 2.0.1.
+* DATACASS-494 - Upgrade to embedded Apache Cassandra 3.11.
+* DATACASS-493 - Update reference documentation for 2.0.
+* DATACASS-492 - Release 2.0 GA (Kay).
+* DATACASS-489 - Document SessionFactory in reference docs.
+* DATACASS-467 - Provide migration guide for breaking changes.
+* DATACASS-145 - Support for QueryOptions and WriteOptions with repository query methods.
+* DATACASS-56 - Support pagination feature in Cassandra.
+
+
 Changes in version 2.0.0.RC3 (2017-09-11)
 -----------------------------------------
 * DATACASS-490 - Switch to VM-based TravisCI build.
