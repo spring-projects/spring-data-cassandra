@@ -23,10 +23,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
+import org.springframework.data.cassandra.core.cql.keyspace.AlterKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DataCenterReplication;
 import org.springframework.data.cassandra.core.cql.keyspace.DefaultOption;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
@@ -83,25 +85,77 @@ class KeyspaceActionSpecificationFactory {
 		CreateKeyspaceSpecification create = CreateKeyspaceSpecification.createKeyspace(name).ifNotExists(ifNotExists)
 				.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 
-		Map<Option, Object> replicationStrategyMap = new HashMap<>();
-		replicationStrategyMap.put(new DefaultOption("class", String.class, true, false, true),
-				replicationStrategy.getValue());
+		Map<Option, Object> replication = getReplication();
 
-		if (replicationStrategy == ReplicationStrategy.SIMPLE_STRATEGY) {
-			replicationStrategyMap.put(new DefaultOption("replication_factor", Long.class, true, false, false),
-					replicationFactor);
+		if (!replication.isEmpty()) {
+			create.with(KeyspaceOption.REPLICATION, replication);
 		}
 
-		if (replicationStrategy == ReplicationStrategy.NETWORK_TOPOLOGY_STRATEGY) {
-			for (DataCenterReplication datacenter : replications) {
-				replicationStrategyMap.put(new DefaultOption(datacenter.getDataCenter(), Long.class, true, false, false),
-						datacenter.getReplicationFactor());
+		return create;
+	}
+
+	/**
+	 * Generate a {@link AlterKeyspaceSpecification} for the keyspace.
+	 *
+	 * @return the {@link AlterKeyspaceSpecification}.
+	 * @since 2.0.1
+	 */
+	public KeyspaceActionSpecification alter() {
+
+		AlterKeyspaceSpecification alter = AlterKeyspaceSpecification.alterKeyspace(name)
+				.with(KeyspaceOption.DURABLE_WRITES, durableWrites);
+
+		Map<Option, Object> replication = getReplication();
+
+		if (!replication.isEmpty()) {
+			alter.with(KeyspaceOption.REPLICATION, replication);
+		}
+
+		return alter;
+	}
+
+	/**
+	 * Create replication options represented as {@link Map}.
+	 *
+	 * @return the replication options represented as {@link Map}.
+	 * @since 2.0.1
+	 */
+	protected Map<Option, Object> getReplication() {
+
+		Map<Option, Object> replicationStrategyMap = new HashMap<>();
+
+		if (hasReplicationOptions()) {
+
+			replicationStrategyMap.put(new DefaultOption("class", String.class, true, false, true),
+					replicationStrategy.getValue());
+
+			if (replicationStrategy == ReplicationStrategy.SIMPLE_STRATEGY) {
+				replicationStrategyMap.put(new DefaultOption("replication_factor", Long.class, true, false, false),
+						replicationFactor);
+			}
+
+			if (replicationStrategy == ReplicationStrategy.NETWORK_TOPOLOGY_STRATEGY) {
+				for (DataCenterReplication datacenter : replications) {
+					replicationStrategyMap.put(new DefaultOption(datacenter.getDataCenter(), Long.class, true, false, false),
+							datacenter.getReplicationFactor());
+				}
 			}
 		}
 
-		create.with(KeyspaceOption.REPLICATION, replicationStrategyMap);
+		return replicationStrategyMap;
+	}
 
-		return create;
+	private boolean hasReplicationOptions() {
+
+		if (replicationStrategy == ReplicationStrategy.SIMPLE_STRATEGY && replicationFactor > 0) {
+			return true;
+		}
+
+		if (replicationStrategy == ReplicationStrategy.NETWORK_TOPOLOGY_STRATEGY && !replications.isEmpty()) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

@@ -63,8 +63,8 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 	@Override
 	public void afterPropertiesSet() {
 
-		Assert.hasText(name, "Keyspace Name is required for a Keyspace Action");
-		Assert.notNull(action, "Keyspace Action is required for a Keyspace Action");
+		Assert.hasText(name, "Keyspace name is required for a keyspace action");
+		Assert.notNull(action, "Keyspace action is required for a keyspace action");
 
 		KeyspaceActionSpecificationFactoryBuilder builder = KeyspaceActionSpecificationFactory.builder(name)
 				.durableWrites(durableWrites);
@@ -84,16 +84,20 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 
 		KeyspaceActionSpecificationFactory factory = builder.build();
 
+		this.actions = createActions(factory);
+	}
+
+	private KeyspaceActions createActions(KeyspaceActionSpecificationFactory factory) {
+
 		switch (action) {
 			case NONE:
-				this.actions = new KeyspaceActions();
-				break;
+				return new KeyspaceActions();
 			case CREATE_DROP:
-				this.actions = new KeyspaceActions(factory.create(ifNotExists), factory.drop(ifNotExists));
-				break;
+				return new KeyspaceActions(factory.create(ifNotExists), factory.drop(ifNotExists));
 			case CREATE:
-				this.actions = new KeyspaceActions(factory.create(ifNotExists));
-				break;
+				return new KeyspaceActions(factory.create(ifNotExists));
+			case ALTER:
+				return new KeyspaceActions(factory.alter());
 			default:
 				throw new IllegalStateException(String.format("KeyspaceAction %s not supported", action));
 		}

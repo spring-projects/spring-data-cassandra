@@ -20,11 +20,15 @@
 				<cass:data-center name="bar" replication-factor="2" />
 			</cass:replication>
 		</cass:keyspace>
-		<cass:keyspace action="CREATE_DROP" durable-writes="true"
-			name="full2">
-			<cass:replication class="SIMPLE_STRATEGY">
-				<cass:data-center name="foo" replication-factor="1" />
-				<cass:data-center name="bar" replication-factor="2" />
+		<cass:keyspace action="CREATE_DROP" durable-writes="false"
+					   name="full2">
+			<cass:replication class="SIMPLE_STRATEGY" replication-factor="2"/>
+		</cass:keyspace>
+		<cass:keyspace action="ALTER" durable-writes="true"
+					   name="full2">
+			<cass:replication class="NETWORK_TOPOLOGY_STRATEGY">
+				<cass:data-center name="foo" replication-factor="4"/>
+				<cass:data-center name="bar" replication-factor="4"/>
 			</cass:replication>
 		</cass:keyspace>
 		<cass:startup-cql><![CDATA[
