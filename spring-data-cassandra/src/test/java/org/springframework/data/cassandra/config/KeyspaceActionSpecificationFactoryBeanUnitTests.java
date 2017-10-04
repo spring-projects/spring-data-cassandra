@@ -23,6 +23,8 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.AlterKeyspaceSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
 
@@ -34,6 +36,44 @@ import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.Repli
 public class KeyspaceActionSpecificationFactoryBeanUnitTests {
 
 	KeyspaceActionSpecificationFactoryBean bean = new KeyspaceActionSpecificationFactoryBean();
+
+	@Test // DATACASS-502
+	public void shouldCreateKeyspace() {
+
+		bean.setAction(KeyspaceAction.CREATE);
+		bean.setName("my_keyspace");
+		bean.setReplicationStrategy(ReplicationStrategy.SIMPLE_STRATEGY);
+		bean.setReplicationFactor(1);
+
+		bean.afterPropertiesSet();
+
+		List<KeyspaceActionSpecification> actions = bean.getObject().getActions();
+
+		assertThat(actions).hasSize(1).hasAtLeastOneElementOfType(CreateKeyspaceSpecification.class);
+
+		CreateKeyspaceSpecification create = (CreateKeyspaceSpecification) actions.get(0);
+
+		assertThat(create.getName()).isEqualTo(KeyspaceIdentifier.of("my_keyspace"));
+		assertThat(create.getOptions()).containsKeys("durable_writes", "replication");
+	}
+
+	@Test // DATACASS-502
+	public void shouldCreateAndDropKeyspace() {
+
+		bean.setAction(KeyspaceAction.CREATE_DROP);
+		bean.setName("my_keyspace");
+
+		bean.afterPropertiesSet();
+
+		List<KeyspaceActionSpecification> actions = bean.getObject().getActions();
+
+		assertThat(actions).hasSize(2).hasAtLeastOneElementOfType(CreateKeyspaceSpecification.class)
+				.hasAtLeastOneElementOfType(DropKeyspaceSpecification.class);
+
+		DropKeyspaceSpecification drop = (DropKeyspaceSpecification) actions.get(1);
+
+		assertThat(drop.getName()).isEqualTo(KeyspaceIdentifier.of("my_keyspace"));
+	}
 
 	@Test // DATACASS-502
 	public void shouldAlterKeyspace() {
