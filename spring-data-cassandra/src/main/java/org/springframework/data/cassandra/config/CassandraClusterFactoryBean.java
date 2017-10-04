@@ -34,13 +34,16 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.core.cql.CassandraExceptionTranslator;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
+import org.springframework.data.cassandra.core.cql.generator.AlterKeyspaceCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
+import org.springframework.data.cassandra.core.cql.keyspace.AlterKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -131,6 +134,7 @@ public class CassandraClusterFactoryBean
 	private @Nullable LatencyTracker latencyTracker;
 
 	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<>();
+	private List<AlterKeyspaceSpecification> keyspaceAlterations = new ArrayList<>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<>();
 	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
 	private List<KeyspaceActions> keyspaceActions = new ArrayList<>();
@@ -219,7 +223,12 @@ public class CassandraClusterFactoryBean
 		Optional.ofNullable(latencyTracker).ifPresent(cluster::register);
 
 		generateSpecificationsFromFactoryBeans();
-		executeSpecsAndScripts(keyspaceCreations, startupScripts, cluster);
+
+		List<KeyspaceActionSpecification> startup = new ArrayList<>(keyspaceCreations.size() + keyspaceAlterations.size());
+		startup.addAll(keyspaceCreations);
+		startup.addAll(keyspaceAlterations);
+
+		executeSpecsAndScripts(startup, startupScripts, cluster);
 	}
 
 	/*
@@ -307,6 +316,10 @@ public class CassandraClusterFactoryBean
 			if (keyspaceActionSpecification instanceof DropKeyspaceSpecification) {
 				keyspaceDrops.add((DropKeyspaceSpecification) keyspaceActionSpecification);
 			}
+
+			if (keyspaceActionSpecification instanceof AlterKeyspaceSpecification) {
+				keyspaceAlterations.add((AlterKeyspaceSpecification) keyspaceActionSpecification);
+			}
 		});
 	}
 
@@ -332,11 +345,22 @@ public class CassandraClusterFactoryBean
 		}
 	}
 
-	private String toCql(KeyspaceActionSpecification keyspaceActionSpecification) {
+	private String toCql(KeyspaceActionSpecification specification) {
 
-		return (keyspaceActionSpecification instanceof CreateKeyspaceSpecification
-				? new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) keyspaceActionSpecification).toCql()
-				: new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) keyspaceActionSpecification).toCql());
+		if (specification instanceof CreateKeyspaceSpecification) {
+			return new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) specification).toCql();
+		}
+
+		if (specification instanceof DropKeyspaceSpecification) {
+			return new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) specification).toCql();
+		}
+
+		if (specification instanceof AlterKeyspaceSpecification) {
+			return new AlterKeyspaceCqlGenerator((AlterKeyspaceSpecification) specification).toCql();
+		}
+
+		throw new IllegalArgumentException(
+				"Unsupported specification type: " + ClassUtils.getQualifiedName(specification.getClass()));
 	}
 
 	/*
