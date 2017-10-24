@@ -57,6 +57,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Default implementation of a {@link MappingContext} for Cassandra using {@link CassandraPersistentEntity} and
@@ -489,6 +490,25 @@ public class CassandraMappingContext
 			DataTypeProvider dataTypeProvider) {
 
 		if (property.isAnnotationPresent(CassandraType.class)) {
+
+			CassandraType annotation = property.getRequiredAnnotation(CassandraType.class);
+
+			if (annotation.type() == Name.UDT) {
+
+				CqlIdentifier userTypeName = CqlIdentifier.of(annotation.userTypeName());
+				DataType userType = dataTypeProvider.getUserType(userTypeName, userTypeResolver);
+
+				if (userType == null) {
+					throw new MappingException(String.format("User type [%s] not found", userTypeName));
+				}
+
+				DataType dataType = getUserDataType(property, userType);
+
+				if (dataType != null) {
+					return dataType;
+				}
+			}
+
 			return property.getDataType();
 		}
 
@@ -496,7 +516,7 @@ public class CassandraMappingContext
 
 		if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
 
-			DataType dataType = getUserDataType(property, dataTypeProvider, persistentEntity);
+			DataType dataType = getUserDataType(property, dataTypeProvider.getDataType(persistentEntity));
 
 			if (dataType != null) {
 				return dataType;
@@ -542,10 +562,7 @@ public class CassandraMappingContext
 	}
 
 	@Nullable
-	private DataType getUserDataType(CassandraPersistentProperty property, DataTypeProvider dataTypeProvider,
-			CassandraPersistentEntity<?> persistentEntity) {
-
-		DataType elementType = dataTypeProvider.getDataType(persistentEntity);
+	private DataType getUserDataType(CassandraPersistentProperty property, DataType elementType) {
 
 		if (property.isCollectionLike()) {
 
@@ -583,6 +600,7 @@ public class CassandraMappingContext
 
 	/**
 	 * @author Jens Schauder
+	 * @author Mark Paluch
 	 * @since 1.5.1
 	 */
 	enum DataTypeProvider {
@@ -593,6 +611,11 @@ public class CassandraMappingContext
 			public DataType getDataType(CassandraPersistentEntity<?> entity) {
 				return entity.getUserType();
 			}
+
+			@Override
+			DataType getUserType(CqlIdentifier userTypeName, UserTypeResolver userTypeResolver) {
+				return userTypeResolver.resolveType(userTypeName);
+			}
 		},
 
 		FrozenLiteral {
@@ -600,6 +623,11 @@ public class CassandraMappingContext
 			@Override
 			public DataType getDataType(CassandraPersistentEntity<?> entity) {
 				return new FrozenLiteralDataType(entity.getTableName());
+			}
+
+			@Override
+			DataType getUserType(CqlIdentifier userTypeName, UserTypeResolver userTypeResolver) {
+				return new FrozenLiteralDataType(userTypeName);
 			}
 		};
 
@@ -609,6 +637,18 @@ public class CassandraMappingContext
 		 * @param entity must not be {@literal null}.
 		 * @return the {@link DataType}.
 		 */
+		@Nullable
 		abstract DataType getDataType(CassandraPersistentEntity<?> entity);
+
+		/**
+		 * Return the user-defined type {@code userTypeName}.
+		 *
+		 * @param userTypeName must not be {@literal null}.
+		 * @param userTypeResolver must not be {@literal null}.
+		 * @return the {@link DataType}.
+		 * @since 2.0.1
+		 */
+		@Nullable
+		abstract DataType getUserType(CqlIdentifier userTypeName, UserTypeResolver userTypeResolver);
 	}
 }

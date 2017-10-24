@@ -118,12 +118,13 @@ public class ConvertingParameterAccessorUnitTests {
 		assertThat(list.get(0)).isInstanceOf(com.datastax.driver.core.LocalDate.class);
 	}
 
-	@Test // DATACASS-7
+	@Test // DATACASS-7, DATACASS-506
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldProvideTypeBasedOnPropertyType() {
 
 		when(mockProperty.getDataType()).thenReturn(DataType.varchar());
 		when(mockProperty.isAnnotationPresent(CassandraType.class)).thenReturn(true);
+		when(mockProperty.getRequiredAnnotation(CassandraType.class)).thenReturn(mock(CassandraType.class));
 		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) String.class);
 
 		assertThat(convertingParameterAccessor.getDataType(0, mockProperty)).isEqualTo(DataType.varchar());

@@ -304,8 +304,8 @@ public class CassandraMappingContextUnitTests {
 	@Test // DATACASS-213
 	public void createIndexShouldConsiderAnnotatedProperties() {
 
-		List<CreateIndexSpecification> specifications = mappingContext.getCreateIndexSpecificationsFor(
-				mappingContext.getRequiredPersistentEntity(IndexedType.class));
+		List<CreateIndexSpecification> specifications = mappingContext
+				.getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(IndexedType.class));
 
 		CreateIndexSpecification firstname = getSpecificationFor("first_name", specifications);
 
@@ -473,6 +473,17 @@ public class CassandraMappingContextUnitTests {
 		assertThat(mappingContext.usesUserType(CqlIdentifier.of("mappedudt"))).isTrue();
 	}
 
+	@Test // DATACASS-506
+	public void shouldCreatedUserTypeSpecificationsWithAnnotatedTypeName() {
+
+		assertThat(
+				mappingContext.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(WithUdt.class)))
+						.isNotNull();
+		assertThat(
+				mappingContext.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(Nested.class)))
+						.isNotNull();
+	}
+
 	@Test // DATACASS-172
 	public void createTableForComplexPrimaryKeyShouldFail() {
 
@@ -573,6 +584,8 @@ public class CassandraMappingContextUnitTests {
 		@Id String id;
 
 		@CassandraType(type = DataType.Name.UDT, userTypeName = "mappedudt") UDTValue udtValue;
+
+		@CassandraType(type = DataType.Name.UDT, userTypeName = "NestedType") Nested nested;
 	}
 
 	enum HumanToStringConverter implements Converter<Human, String> {
@@ -610,5 +623,17 @@ public class CassandraMappingContextUnitTests {
 		public String convert(Map<String, Collection<String>> source) {
 			return "serialized";
 		}
+	}
+
+	@UserDefinedType(value = "NestedType")
+	public static class Nested {
+		String s1;
+
+		@CassandraType(type = Name.UDT, userTypeName = "AnotherNestedType") AnotherNested anotherNested;
+	}
+
+	@UserDefinedType(value = "AnotherNestedType")
+	public static class AnotherNested {
+		String str;
 	}
 }
