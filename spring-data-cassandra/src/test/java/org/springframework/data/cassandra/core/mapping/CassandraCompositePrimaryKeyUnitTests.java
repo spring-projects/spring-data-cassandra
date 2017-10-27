@@ -57,11 +57,12 @@ public class CassandraCompositePrimaryKeyUnitTests {
 		key = context.getRequiredPersistentEntity(ClassTypeInformation.from(CompositeKey.class));
 	}
 
-	@Test
+	@Test // DATACASS-507
 	public void validateMappingInfo() {
 
 		Field field = ReflectionUtils.findField(TypeWithCompositeKey.class, "id");
-		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(Property.of(field), entity,
+		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(
+				Property.of(ClassTypeInformation.from(TypeWithCompositeKey.class), field), entity,
 				CassandraSimpleTypeHolder.HOLDER);
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();
