@@ -1,6 +1,14 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.1.RELEASE (2017-10-27)
+---------------------------------------------
+* DATACASS-507 - Adapt API changes in Property in test cases.
+* DATACASS-506 - Nested User defined type not supported.
+* DATACASS-502 - KeyspaceAction ALTER not supported.
+* DATACASS-500 - Release 2.0.1 (Kay SR1).
+
+
 Changes in version 1.5.8.RELEASE (2017-10-11)
 ---------------------------------------------
 * DATACASS-491 - Release 1.5.8 (Ingalls SR8).
