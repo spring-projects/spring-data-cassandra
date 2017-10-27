@@ -60,10 +60,10 @@ public class CompoundPrimaryKeyUnitTests {
 		entity = new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Timeline.class));
 	}
 
-	@Test
+	@Test // DATACASS-507
 	public void checkIdProperty() {
 		Field id = ReflectionUtils.findField(Timeline.class, "id");
-		CassandraPersistentProperty property = getPropertyFor(Property.of(id));
+		CassandraPersistentProperty property = getPropertyFor(Property.of(ClassTypeInformation.from(Timeline.class), id));
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();
 	}
