@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.config;
 
-import reactor.core.scheduler.Schedulers;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
@@ -47,7 +45,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 */
 	@Bean
 	public ReactiveSession reactiveSession() {
-		return new DefaultBridgedReactiveSession(getRequiredSession(), Schedulers.elastic());
+		return new DefaultBridgedReactiveSession(getRequiredSession());
 	}
 
 	/**
