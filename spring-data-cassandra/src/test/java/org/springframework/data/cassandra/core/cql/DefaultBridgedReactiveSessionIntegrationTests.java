@@ -21,6 +21,11 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.cassandra.ReactiveResultSet;
@@ -28,6 +33,8 @@ import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiv
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.QueryLogger;
+import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.exceptions.SyntaxError;
 
 /**
@@ -40,7 +47,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 	DefaultBridgedReactiveSession reactiveSession;
 
 	@Before
-	public void before() throws Exception {
+	public void before() {
 
 		this.session.execute("DROP TABLE IF EXISTS users;");
 
@@ -48,7 +55,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 	}
 
 	@Test // DATACASS-335
-	public void executeShouldExecuteDeferred() throws Exception {
+	public void executeShouldExecuteDeferred() {
 
 		String query = "CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");";
 
@@ -72,7 +79,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 	}
 
 	@Test // DATACASS-335
-	public void executeShouldReturnRows() throws Exception {
+	public void executeShouldReturnRows() {
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 		session.execute("INSERT INTO users (userid, first_name) VALUES ('White', 'Walter');");
@@ -87,7 +94,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 	}
 
 	@Test // DATACASS-335
-	public void executeShouldPrepareStatement() throws Exception {
+	public void executeShouldPrepareStatement() {
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 
@@ -96,6 +103,37 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 					assertThat(actual.getQueryString()).isEqualTo("INSERT INTO users (userid, first_name) VALUES (?, ?);");
 				}).verifyComplete();
+	}
+
+	@Test // DATACASS-509
+	public void shouldFetchBatches() {
+
+		String createTable = "CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");";
+		this.session.execute(createTable);
+
+		List<String> keys = new ArrayList<>();
+		for (int i = 0; i < 100; i++) {
+
+			String key = String.format("u-03%d", i);
+			String value = "v-" + i;
+			keys.add(key);
+
+			this.session.execute(String.format("INSERT INTO users (userid,first_name) VALUES ('%s', '%s');", key, value));
+		}
+
+		session.getCluster().register(QueryLogger.builder().build());
+
+		SimpleStatement statement = new SimpleStatement("SELECT * FROM users;");
+		statement.setFetchSize(10);
+
+		Mono<ReactiveResultSet> execution = reactiveSession.execute(statement);
+
+		Collection<String> received = new ConcurrentLinkedQueue<>();
+		StepVerifier.create(execution.flatMapMany(ReactiveResultSet::rows).map(row -> row.getString(0))) //
+				.recordWith(() -> received) //
+				.expectNextCount(100).verifyComplete();
+
+		assertThat(received).containsAll(keys).hasSize(100);
 	}
 
 	private KeyspaceMetadata getKeyspaceMetadata() {
