@@ -17,12 +17,13 @@ package org.springframework.data.cassandra.core.cql.session;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
+import reactor.core.publisher.MonoSink;
 import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.*;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -40,13 +42,12 @@ import com.google.common.util.concurrent.ListenableFuture;
  * Calls are deferred until a subscriber subscribes to the resulting {@link org.reactivestreams.Publisher}. The calls
  * are executed by subscribing to {@link ListenableFuture} and returning the result as calls complete.
  * <p>
- * {@link ResultSet} implements transparent paging that invokes in the middle of result streaming blocking calls to
- * Cassandra. {@link DefaultBridgedReactiveSession} uses therefore {@link ReactiveResultSet} to avoid client thread
- * blocking. Elements are emitted on netty EventLoop threads and transported by the provided {@link Scheduler}. However,
- * this is an intermediate solution until Datastax can provide a fully reactive driver.
+ * Elements are emitted on netty EventLoop threads. {@link ResultSet} allows {@link ResultSet#fetchMoreResults()
+ * asynchronous requesting} of subsequent pages. The next page is requested after emitting all elements of the previous
+ * page. However, this is an intermediate solution until Datastax can provide a fully reactive driver.
  * <p>
  * All CQL operations performed by this class are logged at debug level, using
- * "org.springframework.data.cassandra.core.cql.DefaultBridgedReactiveSession" as log category.
+ * {@code org.springframework.data.cassandra.core.cql.DefaultBridgedReactiveSession} as log category.
  * <p>
  *
  * @author Mark Paluch
@@ -61,21 +62,31 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private final Session session;
-	private final Scheduler scheduler;
+
+	/**
+	 * Create a new {@link DefaultBridgedReactiveSession} for a {@link Session}.
+	 *
+	 * @param session must not be {@literal null}.
+	 * @since 2.1
+	 */
+	public DefaultBridgedReactiveSession(Session session) {
+
+		Assert.notNull(session, "Session must not be null");
+
+		this.session = session;
+	}
 
 	/**
 	 * Create a new {@link DefaultBridgedReactiveSession} for a {@link Session} and {@link Scheduler}.
 	 *
 	 * @param session must not be {@literal null}.
 	 * @param scheduler must not be {@literal null}.
+	 * @deprecated since 2.1. Use {@link #DefaultBridgedReactiveSession(Session)} as a {@link Scheduler} is no longer
+	 *             required to off-load {@link ResultSet}'s blocking behavior.
 	 */
+	@Deprecated
 	public DefaultBridgedReactiveSession(Session session, Scheduler scheduler) {
-
-		Assert.notNull(session, "Session must not be null");
-		Assert.notNull(scheduler, "Scheduler must not be null");
-
-		this.session = session;
-		this.scheduler = scheduler;
+		this(session);
 	}
 
 	/* (non-Javadoc)
@@ -119,33 +130,21 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		Assert.notNull(statement, "Statement must not be null");
 
-		return Mono.defer(() -> {
+		return Mono.create(sink -> {
+
 			try {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Executing Statement [{}]", statement);
 				}
 
-				CompletableFuture<ReactiveResultSet> future = new CompletableFuture<>();
-				ResultSetFuture resultSetFuture = session.executeAsync(statement);
+				ListenableFuture<ResultSet> future = session.executeAsync(statement);
+				ListenableFuture<ReactiveResultSet> resultSetFuture = Futures.transform(future, DefaultReactiveResultSet::new);
 
-				resultSetFuture.addListener(() -> {
-
-					if (resultSetFuture.isDone()) {
-
-						try {
-							future.complete(new DefaultReactiveResultSet(resultSetFuture.getUninterruptibly(), scheduler));
-						} catch (Exception e) {
-							future.completeExceptionally(e);
-						}
-					}
-				}, Runnable::run);
-
-				return Mono.fromFuture(future);
+				adaptFuture(resultSetFuture, sink);
 			} catch (Exception e) {
-				return Mono.error(e);
+				sink.error(e);
 			}
-
-		}).subscribeOn(scheduler);
+		});
 	}
 
 	/* (non-Javadoc)
@@ -167,32 +166,20 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		Assert.notNull(statement, "Statement must not be null");
 
-		return Mono.defer(() -> {
+		return Mono.create(sink -> {
+
 			try {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Preparing Statement [{}]", statement);
 				}
 
-				CompletableFuture<PreparedStatement> future = new CompletableFuture<>();
 				ListenableFuture<PreparedStatement> resultSetFuture = session.prepareAsync(statement);
 
-				resultSetFuture.addListener(() -> {
-
-					if (resultSetFuture.isDone()) {
-						try {
-							future.complete(resultSetFuture.get());
-						} catch (Exception e) {
-							future.completeExceptionally(e);
-						}
-					}
-				}, Runnable::run);
-
-				return Mono.fromFuture(future);
+				adaptFuture(resultSetFuture, sink);
 			} catch (Exception e) {
-				return Mono.error(e);
+				sink.error(e);
 			}
-
-		}).subscribeOn(scheduler);
+		});
 	}
 
 	/* (non-Javadoc)
@@ -219,14 +206,34 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return session.getCluster();
 	}
 
-	private static class DefaultReactiveResultSet implements ReactiveResultSet {
+	/**
+	 * Adapt {@link ListenableFuture} signals (completion, error) and propagate these to {@link MonoSink}.
+	 *
+	 * @param future the originating future.
+	 * @param sink the sink receiving signals.
+	 */
+	private static <T> void adaptFuture(ListenableFuture<T> future, MonoSink<T> sink) {
+
+		future.addListener(() -> {
+
+			if (future.isDone()) {
+				try {
+					sink.success(future.get());
+				} catch (ExecutionException e) {
+					sink.error(e.getCause());
+				} catch (Exception e) {
+					sink.error(e);
+				}
+			}
+		}, Runnable::run);
+	}
+
+	static class DefaultReactiveResultSet implements ReactiveResultSet {
 
 		private final ResultSet resultSet;
-		private final Scheduler scheduler;
 
-		DefaultReactiveResultSet(ResultSet resultSet, Scheduler scheduler) {
+		DefaultReactiveResultSet(ResultSet resultSet) {
 			this.resultSet = resultSet;
-			this.scheduler = scheduler;
 		}
 
 		/* (non-Javadoc)
@@ -234,12 +241,52 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public Flux<Row> rows() {
+			return getRows(Mono.just(resultSet));
+		}
+
+		Flux<Row> getRows(Mono<ResultSet> nextResults) {
+
+			return nextResults.flatMapMany(it -> {
+
+				Flux<Row> rows = toRows(it);
+
+				if (it.isFullyFetched()) {
+					return rows;
+				}
+
+				MonoProcessor<ResultSet> processor = MonoProcessor.create();
+				return rows //
+						.doOnComplete(() -> fetchMore(it.fetchMoreResults(), processor)) //
+						.concatWith(getRows(processor));
+			});
+		}
+
+		static Flux<Row> toRows(ResultSet resultSet) {
 
 			int prefetch = Math.max(1, resultSet.getAvailableWithoutFetching());
+			return Flux.fromIterable(resultSet).take(prefetch);
+		}
 
-			return Flux.fromIterable(resultSet) //
-					.subscribeOn(scheduler) //
-					.publishOn(Schedulers.immediate(), prefetch); // limit prefetching to available size
+		static void fetchMore(ListenableFuture<ResultSet> future, MonoProcessor<ResultSet> sink) {
+
+			try {
+
+				future.addListener(() -> {
+
+					try {
+
+						sink.onNext(future.get());
+						sink.onComplete();
+					} catch (ExecutionException e) {
+						sink.onError(e.getCause());
+					} catch (Exception e) {
+						sink.onError(e);
+					}
+				}, Runnable::run);
+
+			} catch (Exception e) {
+				sink.onError(e);
+			}
 		}
 
 		/* (non-Javadoc)
