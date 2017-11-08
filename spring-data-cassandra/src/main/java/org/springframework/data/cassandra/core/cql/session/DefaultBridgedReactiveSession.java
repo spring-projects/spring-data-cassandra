@@ -18,11 +18,12 @@ package org.springframework.data.cassandra.core.cql.session;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
+import reactor.core.publisher.MonoSink;
 import reactor.core.scheduler.Scheduler;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.*;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -128,30 +130,19 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		Assert.notNull(statement, "Statement must not be null");
 
-		return Mono.defer(() -> {
+		return Mono.create(sink -> {
+
 			try {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Executing Statement [{}]", statement);
 				}
 
-				CompletableFuture<ReactiveResultSet> future = new CompletableFuture<>();
-				ResultSetFuture resultSetFuture = session.executeAsync(statement);
+				ListenableFuture<ResultSet> future = session.executeAsync(statement);
+				ListenableFuture<ReactiveResultSet> resultSetFuture = Futures.transform(future, DefaultReactiveResultSet::new);
 
-				resultSetFuture.addListener(() -> {
-
-					if (resultSetFuture.isDone()) {
-
-						try {
-							future.complete(new DefaultReactiveResultSet(resultSetFuture.getUninterruptibly()));
-						} catch (Exception e) {
-							future.completeExceptionally(e);
-						}
-					}
-				}, Runnable::run);
-
-				return Mono.fromFuture(future);
+				adaptFuture(resultSetFuture, sink);
 			} catch (Exception e) {
-				return Mono.error(e);
+				sink.error(e);
 			}
 		});
 	}
@@ -175,29 +166,18 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		Assert.notNull(statement, "Statement must not be null");
 
-		return Mono.defer(() -> {
+		return Mono.create(sink -> {
+
 			try {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Preparing Statement [{}]", statement);
 				}
 
-				CompletableFuture<PreparedStatement> future = new CompletableFuture<>();
 				ListenableFuture<PreparedStatement> resultSetFuture = session.prepareAsync(statement);
 
-				resultSetFuture.addListener(() -> {
-
-					if (resultSetFuture.isDone()) {
-						try {
-							future.complete(resultSetFuture.get());
-						} catch (Exception e) {
-							future.completeExceptionally(e);
-						}
-					}
-				}, Runnable::run);
-
-				return Mono.fromFuture(future);
+				adaptFuture(resultSetFuture, sink);
 			} catch (Exception e) {
-				return Mono.error(e);
+				sink.error(e);
 			}
 		});
 	}
@@ -224,6 +204,28 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	@Override
 	public Cluster getCluster() {
 		return session.getCluster();
+	}
+
+	/**
+	 * Adapt {@link ListenableFuture} signals (completion, error) and propagate these to {@link MonoSink}.
+	 *
+	 * @param future the originating future.
+	 * @param sink the sink receiving signals.
+	 */
+	private static <T> void adaptFuture(ListenableFuture<T> future, MonoSink<T> sink) {
+
+		future.addListener(() -> {
+
+			if (future.isDone()) {
+				try {
+					sink.success(future.get());
+				} catch (ExecutionException e) {
+					sink.error(e.getCause());
+				} catch (Exception e) {
+					sink.error(e);
+				}
+			}
+		}, Runnable::run);
 	}
 
 	static class DefaultReactiveResultSet implements ReactiveResultSet {
@@ -275,6 +277,8 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 						sink.onNext(future.get());
 						sink.onComplete();
+					} catch (ExecutionException e) {
+						sink.onError(e.getCause());
 					} catch (Exception e) {
 						sink.onError(e);
 					}
