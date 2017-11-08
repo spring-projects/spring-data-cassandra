@@ -168,8 +168,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 			return null;
 		}).when(future).addListener(any(), any());
 
-		when(future.getUninterruptibly()).thenReturn(resultSet);
-		when(future.isDone()).thenReturn(true);
+		when(future.get()).thenReturn(resultSet);
 		when(resultSet.isFullyFetched()).thenReturn(true);
 
 		reactiveSession.execute(new SimpleStatement("")).flatMapMany(ReactiveResultSet::rows).collectList().subscribe();
@@ -199,8 +198,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 			return null;
 		}).when(future).addListener(any(), any());
 
-		when(future.getUninterruptibly()).thenReturn(resultSet);
-		when(future.isDone()).thenReturn(true);
+		when(future.get()).thenReturn(resultSet);
 		when(resultSet.isFullyFetched()).thenReturn(false, true);
 		when(resultSet.fetchMoreResults()).thenReturn(Futures.immediateFuture(emptyResultSet));
 
@@ -228,9 +226,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 			return null;
 		}).when(future).addListener(any(), any());
 
-		when(future.getUninterruptibly()).thenReturn(resultSet);
 		when(future.get()).thenReturn(resultSet);
-		when(future.isDone()).thenReturn(true);
 		when(resultSet.isFullyFetched()).thenReturn(false, false, true);
 		when(resultSet.fetchMoreResults()).thenReturn(future);
 
