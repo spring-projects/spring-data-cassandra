@@ -15,23 +15,33 @@
  */
 package org.springframework.data.cassandra.core.cql.session;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.MonoSink;
 import reactor.core.scheduler.Scheduler;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.ExecutionInfo;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -90,6 +100,22 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.ReactiveSession#isClosed()
+	 */
+	@Override
+	public boolean isClosed() {
+		return this.session.isClosed();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.ReactiveSession#getCluster()
+	 */
+	@Override
+	public Cluster getCluster() {
+		return this.session.getCluster();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.ReactiveSession#execute(java.lang.String)
 	 */
 	@Override
@@ -137,12 +163,15 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 					logger.debug("Executing Statement [{}]", statement);
 				}
 
-				ListenableFuture<ResultSet> future = session.executeAsync(statement);
-				ListenableFuture<ReactiveResultSet> resultSetFuture = Futures.transform(future, DefaultReactiveResultSet::new);
+				ListenableFuture<ResultSet> future = this.session.executeAsync(statement);
+
+				ListenableFuture<ReactiveResultSet> resultSetFuture =
+					Futures.transform(future, DefaultReactiveResultSet::new);
 
 				adaptFuture(resultSetFuture, sink);
-			} catch (Exception e) {
-				sink.error(e);
+			}
+			catch (Exception cause) {
+				sink.error(cause);
 			}
 		});
 	}
@@ -173,11 +202,12 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 					logger.debug("Preparing Statement [{}]", statement);
 				}
 
-				ListenableFuture<PreparedStatement> resultSetFuture = session.prepareAsync(statement);
+				ListenableFuture<PreparedStatement> resultSetFuture = this.session.prepareAsync(statement);
 
 				adaptFuture(resultSetFuture, sink);
-			} catch (Exception e) {
-				sink.error(e);
+			}
+			catch (Exception cause) {
+				sink.error(cause);
 			}
 		});
 	}
@@ -187,23 +217,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	 */
 	@Override
 	public void close() {
-		session.close();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#isClosed()
-	 */
-	@Override
-	public boolean isClosed() {
-		return session.isClosed();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#getCluster()
-	 */
-	@Override
-	public Cluster getCluster() {
-		return session.getCluster();
+		this.session.close();
 	}
 
 	/**
@@ -219,10 +233,12 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			if (future.isDone()) {
 				try {
 					sink.success(future.get());
-				} catch (ExecutionException e) {
-					sink.error(e.getCause());
-				} catch (Exception e) {
-					sink.error(e);
+				}
+				catch (ExecutionException cause) {
+					sink.error(cause.getCause());
+				}
+				catch (Exception cause) {
+					sink.error(cause);
 				}
 			}
 		}, Runnable::run);
@@ -241,7 +257,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public Flux<Row> rows() {
-			return getRows(Mono.just(resultSet));
+			return getRows(Mono.just(this.resultSet));
 		}
 
 		Flux<Row> getRows(Mono<ResultSet> nextResults) {
@@ -255,15 +271,17 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 				}
 
 				MonoProcessor<ResultSet> processor = MonoProcessor.create();
-				return rows //
-						.doOnComplete(() -> fetchMore(it.fetchMoreResults(), processor)) //
-						.concatWith(getRows(processor));
+
+				return rows
+					.doOnComplete(() -> fetchMore(it.fetchMoreResults(), processor))
+					.concatWith(getRows(processor));
 			});
 		}
 
 		static Flux<Row> toRows(ResultSet resultSet) {
 
 			int prefetch = Math.max(1, resultSet.getAvailableWithoutFetching());
+
 			return Flux.fromIterable(resultSet).take(prefetch);
 		}
 
@@ -274,18 +292,20 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 				future.addListener(() -> {
 
 					try {
-
 						sink.onNext(future.get());
 						sink.onComplete();
-					} catch (ExecutionException e) {
-						sink.onError(e.getCause());
-					} catch (Exception e) {
-						sink.onError(e);
+					}
+					catch (ExecutionException cause) {
+						sink.onError(cause.getCause());
+					}
+					catch (Exception cause) {
+						sink.onError(cause);
 					}
 				}, Runnable::run);
 
-			} catch (Exception e) {
-				sink.onError(e);
+			}
+			catch (Exception cause) {
+				sink.onError(cause);
 			}
 		}
 
@@ -294,7 +314,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public ColumnDefinitions getColumnDefinitions() {
-			return resultSet.getColumnDefinitions();
+			return this.resultSet.getColumnDefinitions();
 		}
 
 		/* (non-Javadoc)
@@ -302,7 +322,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public boolean wasApplied() {
-			return resultSet.wasApplied();
+			return this.resultSet.wasApplied();
 		}
 
 		/* (non-Javadoc)
@@ -310,7 +330,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public ExecutionInfo getExecutionInfo() {
-			return resultSet.getExecutionInfo();
+			return this.resultSet.getExecutionInfo();
 		}
 
 		/* (non-Javadoc)
@@ -318,7 +338,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public List<ExecutionInfo> getAllExecutionInfo() {
-			return resultSet.getAllExecutionInfo();
+			return this.resultSet.getAllExecutionInfo();
 		}
 	}
 }

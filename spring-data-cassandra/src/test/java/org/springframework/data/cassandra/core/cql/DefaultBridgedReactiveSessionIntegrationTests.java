@@ -15,19 +15,20 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import static org.assertj.core.api.Assertions.*;
-
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import reactor.test.StepVerifier;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
@@ -65,10 +66,9 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 		assertThat(keyspace.getTable("users")).isNull();
 
-		StepVerifier.create(execution).consumeNextWith(actual -> {
-
-			assertThat(actual.wasApplied()).isTrue();
-		}).verifyComplete();
+		StepVerifier.create(execution)
+			.consumeNextWith(actual -> assertThat(actual.wasApplied()).isTrue())
+			.verifyComplete();
 
 		assertThat(keyspace.getTable("users")).isNotNull();
 	}
@@ -84,13 +84,9 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 		session.execute("INSERT INTO users (userid, first_name) VALUES ('White', 'Walter');");
 
-		StepVerifier.create(reactiveSession.execute("SELECT * FROM users;")).consumeNextWith(actual -> {
-
-			StepVerifier.create(actual.rows()).consumeNextWith(row -> {
-
-				assertThat(row.getString("userid")).isEqualTo("White");
-			}).verifyComplete();
-		}).verifyComplete();
+		StepVerifier.create(reactiveSession.execute("SELECT * FROM users;")).consumeNextWith(actual ->
+			StepVerifier.create(actual.rows()).consumeNextWith(row ->
+				assertThat(row.getString("userid")).isEqualTo("White")).verifyComplete()).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -99,39 +95,44 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 
 		StepVerifier.create(reactiveSession.prepare("INSERT INTO users (userid, first_name) VALUES (?, ?);"))
-				.consumeNextWith(actual -> {
-
-					assertThat(actual.getQueryString()).isEqualTo("INSERT INTO users (userid, first_name) VALUES (?, ?);");
-				}).verifyComplete();
+			.consumeNextWith(actual ->
+				assertThat(actual.getQueryString()).isEqualTo("INSERT INTO users (userid, first_name) VALUES (?, ?);"))
+			.verifyComplete();
 	}
 
 	@Test // DATACASS-509
 	public void shouldFetchBatches() {
 
 		String createTable = "CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");";
+
 		this.session.execute(createTable);
 
 		List<String> keys = new ArrayList<>();
+
 		for (int i = 0; i < 100; i++) {
 
 			String key = String.format("u-03%d", i);
 			String value = "v-" + i;
+
 			keys.add(key);
 
-			this.session.execute(String.format("INSERT INTO users (userid,first_name) VALUES ('%s', '%s');", key, value));
+			this.session.execute(String.format("INSERT INTO users (userid, first_name) VALUES ('%s', '%s');", key, value));
 		}
 
-		session.getCluster().register(QueryLogger.builder().build());
+		this.session.getCluster().register(QueryLogger.builder().build());
 
 		SimpleStatement statement = new SimpleStatement("SELECT * FROM users;");
+
 		statement.setFetchSize(10);
 
 		Mono<ReactiveResultSet> execution = reactiveSession.execute(statement);
 
 		Collection<String> received = new ConcurrentLinkedQueue<>();
-		StepVerifier.create(execution.flatMapMany(ReactiveResultSet::rows).map(row -> row.getString(0))) //
-				.recordWith(() -> received) //
-				.expectNextCount(100).verifyComplete();
+
+		StepVerifier.create(execution.flatMapMany(ReactiveResultSet::rows).map(row -> row.getString(0)))
+				.recordWith(() -> received)
+				.expectNextCount(100)
+				.verifyComplete();
 
 		assertThat(received).containsAll(keys).hasSize(100);
 	}

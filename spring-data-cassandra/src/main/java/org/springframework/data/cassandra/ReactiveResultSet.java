@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra;
 
-import reactor.core.publisher.Flux;
-
 import java.util.List;
+
+import reactor.core.publisher.Flux;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ExecutionInfo;
@@ -105,4 +105,5 @@ public interface ReactiveResultSet {
 	 * @return a list of the execution info for all the queries made for this result set.
 	 */
 	List<ExecutionInfo> getAllExecutionInfo();
+
 }

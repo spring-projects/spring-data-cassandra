@@ -53,6 +53,25 @@ import com.datastax.driver.core.exceptions.UnsupportedFeatureException;
 public interface ReactiveSession extends Closeable {
 
 	/**
+	 * Whether this Session instance has been closed.
+	 * <p/>
+	 * Note that this method returns true as soon as the closing of this Session has started but it does not guarantee
+	 * that the closing is done. If you want to guarantee that the closing is done, you can call {@code close()} and wait
+	 * until it returns (or call the get method on {@code closeAsync()} with a very short timeout and check this doesn't
+	 * timeout).
+	 *
+	 * @return {@code true} if this Session instance has been closed, {@code false} otherwise.
+	 */
+	boolean isClosed();
+
+	/**
+	 * Returns the {@code Cluster} object this session is part of.
+	 *
+	 * @return the {@code Cluster} object this session is part of.
+	 */
+	Cluster getCluster();
+
+	/**
 	 * Executes the provided query.
 	 * <p/>
 	 * This is a convenience method for {@code execute(new SimpleStatement(query))}.
@@ -179,22 +198,4 @@ public interface ReactiveSession extends Closeable {
 	@Override
 	void close();
 
-	/**
-	 * Whether this Session instance has been closed.
-	 * <p/>
-	 * Note that this method returns true as soon as the closing of this Session has started but it does not guarantee
-	 * that the closing is done. If you want to guarantee that the closing is done, you can call {@code close()} and wait
-	 * until it returns (or call the get method on {@code closeAsync()} with a very short timeout and check this doesn't
-	 * timeout).
-	 *
-	 * @return {@code true} if this Session instance has been closed, {@code false} otherwise.
-	 */
-	boolean isClosed();
-
-	/**
-	 * Returns the {@code Cluster} object this session is part of.
-	 *
-	 * @return the {@code Cluster} object this session is part of.
-	 */
-	Cluster getCluster();
 }
