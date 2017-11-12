@@ -130,19 +130,6 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	}
 
 	/**
-	 * Register custom {@link Converter}s in a {@link CustomConversions} object if required. These
-	 * {@link CustomConversions} will be registered with the {@link #cassandraConverter()} and {@link #cassandraMapping()}
-	 * . Returns an empty {@link CustomConversions} instance by default.
-	 *
-	 * @return must not be {@literal null}.
-	 * @since 1.5
-	 */
-	@Bean
-	public CustomConversions customConversions() {
-		return new CassandraCustomConversions(Collections.emptyList());
-	}
-
-	/**
 	 * Return the {@link MappingContext} instance to map Entities to properties.
 	 *
 	 * @throws ClassNotFoundException if the Cassandra Entity class type identified by name cannot be found during the
@@ -167,6 +154,19 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(getRequiredCluster(), getKeyspaceName()));
 
 		return mappingContext;
+	}
+
+	/**
+	 * Register custom {@link Converter}s in a {@link CustomConversions} object if required. These
+	 * {@link CustomConversions} will be registered with the {@link #cassandraConverter()} and {@link #cassandraMapping()}
+	 * . Returns an empty {@link CustomConversions} instance by default.
+	 *
+	 * @return must not be {@literal null}.
+	 * @since 1.5
+	 */
+	@Bean
+	public CustomConversions customConversions() {
+		return new CassandraCustomConversions(Collections.emptyList());
 	}
 
 	/**
