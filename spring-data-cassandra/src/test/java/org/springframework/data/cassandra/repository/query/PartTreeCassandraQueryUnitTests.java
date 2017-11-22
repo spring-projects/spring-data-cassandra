@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -30,7 +30,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -92,6 +91,14 @@ public class PartTreeCassandraQueryUnitTests {
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo';");
+	}
+
+	@Test // DATACASS-511
+	public void shouldDeriveLimitingQuery() {
+
+		String query = deriveQueryFromMethod("findTop3By");
+
+		assertThat(query).isEqualTo("SELECT * FROM person LIMIT 3;");
 	}
 
 	@Test // DATACASS-7
@@ -250,6 +257,8 @@ public class PartTreeCassandraQueryUnitTests {
 
 		@Query()
 		Person findByLastname(String lastname);
+
+		Person findTop3By();
 
 		Person findByFirstnameAndLastname(String firstname, String lastname);
 
