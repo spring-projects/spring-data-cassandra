@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.9.9.BUILD-SNAPSHOT</version>
+		<version>1.9.9.RELEASE</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
@@ -97,14 +97,14 @@
 		<failsafe.version>2.16</failsafe.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<project.type>multi</project.type>
-		<springdata.commons>1.13.9.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.13.9.RELEASE</springdata.commons>
 		<assertj>3.5.2</assertj>
 	</properties>
 
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/libs-snapshot</url>
+			<id>spring-libs-release</id>
+			<url>https://repo.spring.io/libs-release</url>
 		</repository>
 	</repositories>
 
