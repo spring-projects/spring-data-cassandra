@@ -345,7 +345,7 @@ public class AppConfig extends AbstractCassandraConfiguration {
   /*
    * Provide a keyspace name to the configuration.
    */
-  public getKeyspaceName() {
+  public String getKeyspaceName() {
     return "mykeyspace";
   }
 }
