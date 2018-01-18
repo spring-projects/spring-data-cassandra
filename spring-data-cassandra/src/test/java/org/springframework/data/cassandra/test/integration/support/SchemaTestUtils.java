@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,14 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 /**
  * {@link SchemaTestUtils} is a collection of reflection-based utility methods for use in unit and integration testing
  * scenarios.
- * 
+ *
  * @author Mark Paluch
  */
 public class SchemaTestUtils {
 
 	/**
 	 * Create a table for {@code entityClass} if it not exists.
-	 * 
+	 *
 	 * @param entityClass must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
 	 */
@@ -54,7 +54,7 @@ public class SchemaTestUtils {
 
 	/**
 	 * Truncate table for {@code entityClass}.
-	 * 
+	 *
 	 * @param entityClass must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
 	 */

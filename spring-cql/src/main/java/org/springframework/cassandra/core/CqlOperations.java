@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 the original author or authors.
- * 
+ * Copyright 2013-2018 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ import com.datastax.driver.core.querybuilder.Update;
 
 /**
  * Operations for interacting with Cassandra at the lowest level. This interface provides Exception Translation.
- * 
+ *
  * @author David Webb
  * @author Matthew Adams
  * @author John Blum
@@ -57,7 +57,7 @@ public interface CqlOperations {
 	/**
 	 * Convenient method that delegates to {@link ResultSetFuture#getUninterruptibly()} but translates exceptions if any
 	 * are thrown.
-	 * 
+	 *
 	 * @param rsf The {@link ResultSetFuture} from which to get the {@link ResultSet}.
 	 * @return The {@link ResultSet}
 	 */
@@ -66,7 +66,7 @@ public interface CqlOperations {
 	/**
 	 * Convenient method that delegates to {@link ResultSetFuture#getUninterruptibly()} but translates exceptions if any
 	 * are thrown.
-	 * 
+	 *
 	 * @param rsf The {@link ResultSetFuture} from which to get the {@link ResultSet}.
 	 * @param timeout The timeout to wait in milliseconds. A nonpositive value means wait indefinitely.
 	 * @return The {@link ResultSet}
@@ -76,7 +76,7 @@ public interface CqlOperations {
 	/**
 	 * Convenient method that delegates to {@link ResultSetFuture#getUninterruptibly()} but translates exceptions if any
 	 * are thrown.
-	 * 
+	 *
 	 * @param rsf The {@link ResultSetFuture} from which to get the {@link ResultSet}.
 	 * @param timeout The timeout to wait. A nonpositive value means wait indefinitely.
 	 * @param unit The {@link TimeUnit} of the timeout.
@@ -87,7 +87,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the supplied {@link SessionCallback} in the current Template Session. The implementation of
 	 * SessionCallback can decide whether or not to <code>execute()</code> or <code>executeAsync()</code> the operation.
-	 * 
+	 *
 	 * @param sessionCallback
 	 * @return Type<T> defined in the SessionCallback
 	 */
@@ -95,14 +95,14 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Query and returns nothing.
-	 * 
+	 *
 	 * @param cql
 	 */
 	void execute(String cql) throws DataAccessException;
 
 	/**
 	 * Executes the supplied CQL Query and returns nothing.
-	 * 
+	 *
 	 * @param cql
 	 * @param options may be null
 	 */
@@ -110,49 +110,49 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied Query and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Statement} to execute
 	 */
 	void execute(Statement query) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Delete Query and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Delete} to execute
 	 */
 	void execute(Delete delete) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Insert Query and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Insert} to execute
 	 */
 	void execute(Insert insert) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Update Query and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Update} to execute
 	 */
 	void execute(Update update) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Batch Query and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Batch} to execute
 	 */
 	void execute(Batch batch) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Truncate Query and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Truncate} to execute
 	 */
 	void execute(Truncate truncate) throws DataAccessException;
 
 	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param cql The CQL String to execute
 	 * @return A {@link ResultSetFuture} that can be used to cancel the query.
 	 */
@@ -160,7 +160,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param cql The CQL String to execute
 	 * @param options The {@link QueryOptions} to use. Only applies to cql statements that can use QueryOptions.
 	 * @return A {@link ResultSetFuture} that can be used to cancel the query.
@@ -169,7 +169,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
 	 * @return A {@link Cancellable} that can be used to cancel the query.
@@ -179,7 +179,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link Runnable} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
@@ -190,7 +190,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
 	 * @return A {@link Cancellable} that can be used to cancel the query.
@@ -200,7 +200,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param cql The CQL String to execute
 	 * @param listener The {@link AsynchronousQueryListener} to register with the {@link ResultSetFuture}
 	 * @param executor The {@link Executor} to regsiter with the {@link ResultSetFuture}
@@ -212,7 +212,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Truncate Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Truncate} to execute
 	 * @return A {@link ResultSetFuture} that can be used to cancel the query.
 	 */
@@ -220,7 +220,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Delete Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Delete} to execute
 	 * @return A {@link ResultSetFuture} that can be used to cancel the query.
 	 */
@@ -228,7 +228,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Insert Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Insert} to execute
 	 * @return A {@link ResultSetFuture} that can be used to cancel the query.
 	 */
@@ -236,7 +236,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Update Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Update} to execute
 	 * @return A {@link ResultSetFuture} that can be used to cancel the query.
 	 */
@@ -244,7 +244,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Batch Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Batch} to execute
 	 * @return A {@link ResultSetFuture} that can be used to cancel the query.
 	 */
@@ -262,7 +262,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Statement} to execute
 	 * @return A {@link ResultSetFuture} that can be used to cancel the query.
 	 */
@@ -270,7 +270,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Statement} to execute
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
@@ -278,7 +278,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Statement} to execute
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
@@ -286,7 +286,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Statement} to execute
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
@@ -294,7 +294,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the supplied CQL Query Asynchronously and returns nothing.
-	 * 
+	 *
 	 * @param query The {@link Statement} to execute
 	 * @return A {@link Cancellable} that can be used to cancel the query.
 	 */
@@ -304,7 +304,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor. This uses default Query
 	 * Options when extracting the ResultSet.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
 	 * @param timeout Time to wait for results
@@ -315,7 +315,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
 	 * @param timeout Time to wait for results
@@ -328,7 +328,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query and returns the ResultSetFuture for user processing.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @return
 	 */
@@ -336,7 +336,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Select and returns the ResultSetFuture for user processing.
-	 * 
+	 *
 	 * @param cql The {@link Select}
 	 * @return
 	 */
@@ -344,7 +344,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query and returns the ResultSetFuture for user processing.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param options Query Options
 	 * @return
@@ -356,7 +356,7 @@ public interface CqlOperations {
 	 * <p/>
 	 * A more useful method than this one is {@link #queryAsynchronously(String, AsynchronousQueryListener)}, where you're
 	 * given the {@link ResultSetFuture} after the query has been executed.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param listener {@link Runnable} listener for handling the query in a separate thread
 	 * @return A {@link Cancellable} that can be used to cancel the query.
@@ -370,7 +370,7 @@ public interface CqlOperations {
 	 * <p/>
 	 * A more useful method than this one is {@link #queryAsynchronously(Select, AsynchronousQueryListener)}, where you're
 	 * given the {@link ResultSetFuture} after the query has been executed.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @param listener {@link Runnable} listener for handling the query in a separate thread
 	 * @return A {@link Cancellable} that can be used to cancel the query.
@@ -382,7 +382,7 @@ public interface CqlOperations {
 	 * Executes the provided CQL Query with the provided listener. This is preferred over the same method that takes a
 	 * {@link Runnable}. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the
 	 * query is completed for optimal flexibility.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param listener {@link AsynchronousQueryListener} for handling the query's {@link ResultSetFuture} in a separate
 	 *          thread
@@ -394,7 +394,7 @@ public interface CqlOperations {
 	 * Executes the provided CQL Select with the provided listener. This is preferred over the same method that takes a
 	 * {@link Runnable}. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture} once the
 	 * query is completed for optimal flexibility.
-	 * 
+	 *
 	 * @param select The Select
 	 * @param listener {@link AsynchronousQueryListener} for handling the query's {@link ResultSetFuture} in a separate
 	 *          thread
@@ -404,7 +404,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query with the Runnable implementations using the Query Options.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
@@ -416,7 +416,7 @@ public interface CqlOperations {
 	 * Executes the provided CQL Query with the provided Listener and Query Options. This is preferred over the same
 	 * method that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the
 	 * {@link ResultSetFuture} once the query is completed for optimal flexibility.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
@@ -426,7 +426,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
@@ -436,7 +436,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Select with the provided Executor and Runnable implementations.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
@@ -448,7 +448,7 @@ public interface CqlOperations {
 	 * Executes the provided CQL Query with the provided listener and executor. This is preferred over the same method
 	 * that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture}
 	 * once the query is completed for optimal flexibility.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
@@ -461,7 +461,7 @@ public interface CqlOperations {
 	 * Executes the provided Select Query with the provided listener and executor. This is preferred over the same method
 	 * that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the {@link ResultSetFuture}
 	 * once the query is completed for optimal flexibility.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @param listener Runnable Listener for handling the query in a separate thread
 	 * @param executor To execute the Runnable Listener
@@ -471,7 +471,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query with the provided Executor and Runnable implementations.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param options Query Option
 	 * @param listener Runnable Listener for handling the query in a separate thread
@@ -484,7 +484,7 @@ public interface CqlOperations {
 	 * Executes the provided CQL Query with the provided Listener, Executor and Query Options. This is preferred over the
 	 * same method that takes a plain Runnable. The {@link AsynchronousQueryListener} gives you access to the
 	 * {@link ResultSetFuture} once the query is completed for optimal flexibility.
-	 * 
+	 *
 	 * @param cql
 	 * @param listener
 	 * @param options
@@ -496,7 +496,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL query and returns the {@link ResultSet}.
-	 * 
+	 *
 	 * @param cql The query
 	 * @return The {@link ResultSet}
 	 */
@@ -504,7 +504,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided Select query and returns the {@link ResultSet}.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @return The {@link ResultSet}
 	 */
@@ -512,7 +512,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL query with the given {@link QueryOptions} and returns the {@link ResultSet}.
-	 * 
+	 *
 	 * @param cql The query
 	 * @param options The {@link QueryOptions}; may be null.
 	 * @return The {@link ResultSet}
@@ -521,7 +521,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
 	 * @return Type <T> specified in the ResultSetExtractor
@@ -531,7 +531,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided Select Query, and extracts the results with the ResultSetExtractor.
-	 * 
+	 *
 	 * @param select The SelectQuery
 	 * @param rse The implementation for extracting the ResultSet
 	 * @return Type <T> specified in the ResultSetExtractor
@@ -541,7 +541,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query, and extracts the results with the ResultSetExtractor.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param rse The implementation for extracting the ResultSet
 	 * @param options Query Options
@@ -552,7 +552,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param rch The implementation for processing the rows returned.
 	 * @throws DataAccessException
@@ -561,7 +561,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided Select Query, and then processes the results with the <code>RowCallbackHandler</code>.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @param rch The implementation for processing the rows returned.
 	 * @throws DataAccessException
@@ -570,7 +570,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query, and then processes the results with the <code>RowCallbackHandler</code>.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param rch The implementation for processing the rows returned.
 	 * @param options Query Options Object
@@ -582,7 +582,7 @@ public interface CqlOperations {
 	 * Processes the ResultSet through the RowCallbackHandler and return nothing. This is used internal to the Template
 	 * for core operations, but is made available through Operations in the event you have a ResultSet to process. The
 	 * ResultsSet could come from a ResultSetFuture after an asynchronous query.
-	 * 
+	 *
 	 * @param resultSet Results to process
 	 * @param rch RowCallbackHandler with the processing implementation
 	 * @throws DataAccessException
@@ -591,7 +591,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param rowMapper The implementation for mapping all rows
 	 * @return List of <T> processed by the RowMapper
@@ -601,7 +601,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided Select Query, and maps all Rows returned with the supplied RowMapper.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @param rowMapper The implementation for mapping all rows
 	 * @return List of <T> processed by the RowMapper
@@ -611,7 +611,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided CQL Query, and maps all Rows returned with the supplied RowMapper.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param rowMapper The implementation for mapping all rows
 	 * @param options Query Options Object
@@ -624,7 +624,7 @@ public interface CqlOperations {
 	 * Processes the ResultSet through the RowMapper and returns the List of mapped Rows. This is used internal to the
 	 * Template for core operations, but is made available through Operations in the event you have a ResultSet to
 	 * process. The ResultsSet could come from a ResultSetFuture after an asynchronous query.
-	 * 
+	 *
 	 * @param resultSet Results to process
 	 * @param rowMapper RowMapper with the processing implementation
 	 * @return List of <T> generated by the RowMapper
@@ -634,7 +634,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided string CQL query, and maps the first row returned with the supplied {@link RowMapper}.
-	 * 
+	 *
 	 * @param cql The string query CQL.
 	 * @param rowMapper The {@link RowMapper} to convert the row into an object of type <code>T</code>.
 	 * @param listener The listener that receives the results upon completion.
@@ -646,7 +646,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided string CQL query, and maps the first row returned with the supplied {@link RowMapper}.
-	 * 
+	 *
 	 * @param cql The string query CQL.
 	 * @param rowMapper The {@link RowMapper} to convert the row into an object of type <code>T</code>.
 	 * @param listener The listener that receives the results upon completion.
@@ -659,7 +659,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided {@link Select} query, and maps the first row returned with the supplied {@link RowMapper}.
-	 * 
+	 *
 	 * @param select The {@link Select} query to execute.
 	 * @param rowMapper The {@link RowMapper} to convert the row into an object of type <code>T</code>.
 	 * @param listener The listener that receives the results upon completion.
@@ -674,7 +674,7 @@ public interface CqlOperations {
 	 * <p>
 	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
 	 * </p>
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param rowMapper The implementation for convert the Row to <T>
 	 * @return Object<T>
@@ -687,7 +687,7 @@ public interface CqlOperations {
 	 * <p>
 	 * This expects only ONE row to be returned. More than one Row will cause an Exception to be thrown.
 	 * </p>
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @param rowMapper The implementation for convert the Row to <T>
 	 * @return Object<T>
@@ -709,7 +709,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided query and tries to return the first column of the first Row as a Class<T>.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param requiredType Valid Class that Cassandra Data Types can be converted to.
 	 * @return The Object<T> - item [0,0] in the result table of the query.
@@ -720,7 +720,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided {@link Select} query and returns the first column of the first Row as an object of type
 	 * <code>T</code>.
-	 * 
+	 *
 	 * @param select The {@link Select} query
 	 * @param requiredType Type that Cassandra data types can be converted to.
 	 * @return A {@link Cancellable} that can be used to cancel the query if necessary.
@@ -732,7 +732,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided select CQL query and returns the first column of the first Row as an object of type
 	 * <code>T</code>.
-	 * 
+	 *
 	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
 	 * @param requiredType The type to convert the first column of the first row to. Must not be <code>null</code>.
 	 * @return A {@link Cancellable} that can be used to cancel the query if necessary. Must not be <code>null</code>.
@@ -744,7 +744,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided select CQL query and returns the first column of the first Row as an object of type
 	 * <code>T</code>.
-	 * 
+	 *
 	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
 	 * @param requiredType The type to convert the first column of the first row to. Must not be <code>null</code>.
 	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
@@ -756,7 +756,7 @@ public interface CqlOperations {
 
 	/**
 	 * Executes the provided Select query and tries to return the first column of the first Row as a Class<T>.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @param requiredType Valid Class that Cassandra Data Types can be converted to.
 	 * @return The Object<T> - item [0,0] in the result table of the query.
@@ -768,7 +768,7 @@ public interface CqlOperations {
 	 * Process a ResultSet, trying to convert the first columns of the first Row to Class<T>. This is used internal to the
 	 * Template for core operations, but is made available through Operations in the event you have a ResultSet to
 	 * process. The ResultsSet could come from a ResultSetFuture after an asynchronous query.
-	 * 
+	 *
 	 * @param resultSet
 	 * @param requiredType
 	 * @return
@@ -779,7 +779,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided CQL Query and maps <b>ONE</b> Row to a basic Map of Strings and Objects. If more than one Row
 	 * is returned from the Query, an exception will be thrown.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @return Map representing the results of the Query
 	 * @throws DataAccessException
@@ -789,7 +789,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided Select Query and maps <b>ONE</b> Row to a basic Map of Strings and Objects. If more than one
 	 * Row is returned from the Query, an exception will be thrown.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @return Map representing the results of the Query
 	 * @throws DataAccessException
@@ -799,7 +799,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided CQL query asynchronously and maps the first row to a {@link Map}&lt;String,Object&gt;.
 	 * Additional rows are ignored.
-	 * 
+	 *
 	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
 	 * @param listener The {@link QueryForMapListener} that will recieve the results upon query completion. Must not be
 	 *          <code>null</code>.
@@ -811,7 +811,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided CQL query asynchronously and maps the first row to a {@link Map}&lt;String,Object&gt;.
 	 * Additional rows are ignored.
-	 * 
+	 *
 	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
 	 * @param listener The {@link QueryForMapListener} that will recieve the results upon query completion. Must not be
 	 *          <code>null</code>.
@@ -825,7 +825,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided {@link Select} query asynchronously and maps the first row to a {@link Map}
 	 * &lt;String,Object&gt;. Additional rows are ignored.
-	 * 
+	 *
 	 * @param cql The select query CQL. Must not be <code>null</code> or blank.
 	 * @param listener The {@link QueryForMapListener} that will recieve the results upon query completion. Must not be
 	 *          <code>null</code>.
@@ -838,7 +838,7 @@ public interface CqlOperations {
 	 * Process a ResultSet with <b>ONE</b> Row and convert to a Map. This is used internal to the Template for core
 	 * operations, but is made available through Operations in the event you have a ResultSet to process. The ResultsSet
 	 * could come from a ResultSetFuture after an asynchronous query.
-	 * 
+	 *
 	 * @param resultSet
 	 * @return
 	 * @throws DataAccessException
@@ -848,7 +848,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided CQL and returns all values in the first column of the Results as a List of the Type in the
 	 * second argument.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @param elementType Type to cast the data values to
 	 * @return List of elementType
@@ -859,7 +859,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided Select Query and returns all values in the first column of the Results as a List of the Type
 	 * in the second argument.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @param elementType Type to cast the data values to
 	 * @return List of elementType
@@ -870,7 +870,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided {@link Select} query asynchronously and returns all values in the first column of the results
 	 * as a {@link List} of the type in the second argument.
-	 * 
+	 *
 	 * @param select The {@link Select} query
 	 * @param elementType The type to cast the data values to
 	 * @param listener The listener to receive the results asynchronously. Must not be <code>null</code>.
@@ -883,7 +883,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided {@link Select} query asynchronously and returns all values in the first column of the results
 	 * as a {@link List} of the type in the second argument.
-	 * 
+	 *
 	 * @param select The select query CQL
 	 * @param elementType The type to cast the data values to
 	 * @param listener The listener to receive the results asynchronously. Must not be <code>null</code>.
@@ -897,7 +897,7 @@ public interface CqlOperations {
 	 * Process a ResultSet and convert the first column of the results to a List. This is used internal to the Template
 	 * for core operations, but is made available through Operations in the event you have a ResultSet to process. The
 	 * ResultsSet could come from a ResultSetFuture after an asynchronous query.
-	 * 
+	 *
 	 * @param resultSet
 	 * @param elementType
 	 * @return
@@ -908,7 +908,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided CQL and converts the results to a basic List of Maps. Each element in the List represents a
 	 * Row returned from the Query. Each Row's columns are put into the map as column/value.
-	 * 
+	 *
 	 * @param cql The Query
 	 * @return List of Maps with the query results
 	 * @throws DataAccessException
@@ -919,7 +919,7 @@ public interface CqlOperations {
 	 * Executes the provided {@link Select} query and converts the results to a {@link List} of {@link Map}s. Each element
 	 * in the {@link List} represents a row returned from the query. Each row's column(s) are put into a {@link Map} as
 	 * values keyed by column name.
-	 * 
+	 *
 	 * @param select The {@link Select} query. Must not be <code>null</code>.
 	 * @param listener The listener that will receive the results upon query completion. Must not be <code>null</code>.
 	 * @return A {@link Cancellable} that can be used to cancel the query. Must not be <code>null</code>.
@@ -932,7 +932,7 @@ public interface CqlOperations {
 	 * Executes the provided select CQL query and converts the results to a {@link List} of {@link Map}s. Each element in
 	 * the {@link List} represents a row returned from the query. Each row's column(s) are put into a {@link Map} as
 	 * values keyed by column name.
-	 * 
+	 *
 	 * @param select The select query CQL. Must not be <code>null</code> or blank.
 	 * @param listener The listener that will receive the results upon query completion. Must not be <code>null</code>.
 	 * @return A {@link Cancellable} that can be used to cancel the query. Must not be <code>null</code>.
@@ -945,7 +945,7 @@ public interface CqlOperations {
 	 * Executes the provided select CQL query and converts the results to a {@link List} of {@link Map}s. Each element in
 	 * the {@link List} represents a row returned from the query. Each row's column(s) are put into a {@link Map} as
 	 * values keyed by column name.
-	 * 
+	 *
 	 * @param select The select query CQL. Must not be <code>null</code> or blank.
 	 * @param listener The listener that will receive the results upon query completion. Must not be <code>null</code>.
 	 * @param options The {@link QueryOptions} to use. May be <code>null</code>.
@@ -958,7 +958,7 @@ public interface CqlOperations {
 	/**
 	 * Executes the provided Select Query and converts the results to a basic List of Maps. Each element in the List
 	 * represents a Row returned from the Query. Each Row's columns are put into the map as column/value.
-	 * 
+	 *
 	 * @param select The Select Query
 	 * @return List of Maps with the query results
 	 * @throws DataAccessException
@@ -969,7 +969,7 @@ public interface CqlOperations {
 	 * Process a ResultSet and convert it to a List of Maps with column/value. This is used internal to the Template for
 	 * core operations, but is made available through Operations in the event you have a ResultSet to process. The
 	 * ResultsSet could come from a ResultSetFuture after an asynchronous query.
-	 * 
+	 *
 	 * @param resultSet
 	 * @return
 	 * @throws DataAccessException
@@ -979,7 +979,7 @@ public interface CqlOperations {
 	/**
 	 * Creates and caches a {@link PreparedStatement} from the given CQL, invokes the {@link PreparedStatementCallback}
 	 * with that {@link PreparedStatement}, then returns the value returned by the {@link PreparedStatementCallback}.
-	 * 
+	 *
 	 * @param cql The CQL statement from which to create and cache a {@link PreparedStatement}
 	 * @param action The callback that is given the {@link PreparedStatement}
 	 * @return The value returned by the given {@link PreparedStatementCallback}
@@ -990,7 +990,7 @@ public interface CqlOperations {
 	/**
 	 * Uses the provided {@link PreparedStatementCreator} to create a {@link PreparedStatement} in the current
 	 * {@link Session}, then passes that {@link PreparedStatement} to the given {@link PreparedStatementCallback}.
-	 * 
+	 *
 	 * @param psc The {@link PreparedStatementCreator}
 	 * @param action The callback that receives the {@link PreparedStatement}
 	 * @return The value returned by the given {@link PreparedStatementCallback}
@@ -1003,7 +1003,7 @@ public interface CqlOperations {
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the ResultSetExtractor implementation provided by the Application Code. The can return any object,
 	 * including a List of Objects to support the ResultSet processing.
-	 * 
+	 *
 	 * @param cql The Query to Prepare
 	 * @param psb The Binding implementation
 	 * @param rse The implementation for extracting the results of the query.
@@ -1017,7 +1017,7 @@ public interface CqlOperations {
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the ResultSetExtractor implementation provided by the Application Code. The can return any object,
 	 * including a List of Objects to support the ResultSet processing.
-	 * 
+	 *
 	 * @param cql The Query to Prepare
 	 * @param psb The Binding implementation
 	 * @param rse The implementation for extracting the results of the query.
@@ -1032,7 +1032,7 @@ public interface CqlOperations {
 	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the RowCallbackHandler implementation provided and nothing is returned.
-	 * 
+	 *
 	 * @param cql The Query to Prepare
 	 * @param psb The Binding implementation
 	 * @param rch The RowCallbackHandler for processing the ResultSet
@@ -1044,7 +1044,7 @@ public interface CqlOperations {
 	 * Converts the CQL provided into a {@link CachedPreparedStatementCreator}. Then, the PreparedStatementBinder will
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the RowCallbackHandler implementation provided and nothing is returned.
-	 * 
+	 *
 	 * @param cql The Query to Prepare
 	 * @param psb The Binding implementation
 	 * @param rch The RowCallbackHandler for processing the ResultSet
@@ -1059,7 +1059,7 @@ public interface CqlOperations {
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the RowMapper implementation provided and a List is returned with elements of Type <T> for each Row
 	 * returned.
-	 * 
+	 *
 	 * @param cql The Query to Prepare
 	 * @param psb The Binding implementation
 	 * @param rowMapper The implementation for Mapping a Row to Type <T>
@@ -1073,7 +1073,7 @@ public interface CqlOperations {
 	 * bind its values to the bind variables in the provided CQL String. The results of the PreparedStatement are
 	 * processed with the RowMapper implementation provided and a List is returned with elements of Type <T> for each Row
 	 * returned.
-	 * 
+	 *
 	 * @param cql The Query to Prepare
 	 * @param psb The Binding implementation
 	 * @param rowMapper The implementation for Mapping a Row to Type <T>
@@ -1088,7 +1088,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
 	 * ResultSetExtractor implementation provided by the Application Code.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param rse Implementation for extracting from the ResultSet
 	 * @return Type <T> which is the output of the ResultSetExtractor
@@ -1100,7 +1100,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
 	 * ResultSetExtractor implementation provided by the Application Code.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param rse Implementation for extracting from the ResultSet
 	 * @param options The Query Options Object
@@ -1113,7 +1113,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
 	 * RowCallbackHandler and nothing is returned.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param rch The implementation to process Results
 	 * @throws DataAccessException
@@ -1124,7 +1124,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with
 	 * RowCallbackHandler and nothing is returned.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param rch The implementation to process Results
 	 * @param options The Query Options Object
@@ -1136,7 +1136,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with RowMapper
 	 * implementation provided and a List is returned with elements of Type <T> for each Row returned.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param rowMapper The implementation for mapping each Row returned.
 	 * @return List of Type <T> mapped from each Row in the Results
@@ -1148,7 +1148,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. <b>This can only be used for CQL
 	 * Statements that do not have data binding.</b> The results of the PreparedStatement are processed with RowMapper
 	 * implementation provided and a List is returned with elements of Type <T> for each Row returned.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param rowMapper The implementation for mapping each Row returned.
 	 * @param options The Query Options Object
@@ -1162,7 +1162,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
 	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
 	 * ResultSetExtractor implementation provided by the Application Code.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param psb The implementation to bind variables to values
 	 * @param rse Implementation for extracting from the ResultSet
@@ -1177,7 +1177,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
 	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
 	 * ResultSetExtractor implementation provided by the Application Code.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param psb The implementation to bind variables to values
 	 * @param rse Implementation for extracting from the ResultSet
@@ -1191,7 +1191,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
 	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
 	 * RowCallbackHandler and nothing is returned.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param psb The implementation to bind variables to values
 	 * @param rch The implementation to process Results
@@ -1206,7 +1206,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
 	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
 	 * RowCallbackHandler and nothing is returned.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param psb The implementation to bind variables to values
 	 * @param rch The implementation to process Results
@@ -1220,7 +1220,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
 	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
 	 * RowMapper implementation provided and a List is returned with elements of Type <T> for each Row returned.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param psb The implementation to bind variables to values
 	 * @param rowMapper The implementation for mapping each Row returned.
@@ -1235,7 +1235,7 @@ public interface CqlOperations {
 	 * Uses the provided PreparedStatementCreator to prepare a new Session call. Binds the values from the
 	 * PreparedStatementBinder to the available bind variables. The results of the PreparedStatement are processed with
 	 * RowMapper implementation provided and a List is returned with elements of Type <T> for each Row returned.
-	 * 
+	 *
 	 * @param psc The implementation to create the PreparedStatement
 	 * @param psb The implementation to bind variables to values
 	 * @param rowMapper The implementation for mapping each Row returned.
@@ -1248,7 +1248,7 @@ public interface CqlOperations {
 	/**
 	 * Describe the current Ring. This uses the provided {@link RingMemberHostMapper} to provide the basics of the
 	 * Cassandra Ring topology.
-	 * 
+	 *
 	 * @return The list of ring tokens that are active in the cluster
 	 */
 	List<RingMember> describeRing() throws DataAccessException;
@@ -1256,7 +1256,7 @@ public interface CqlOperations {
 	/**
 	 * Describe the current Ring. Application code must provide its own {@link HostMapper} implementation to process the
 	 * lists of hosts returned by the Cassandra Cluster Metadata.
-	 * 
+	 *
 	 * @param hostMapper The implementation to use for host mapping.
 	 * @return Collection generated by the provided HostMapper.
 	 * @throws DataAccessException
@@ -1265,7 +1265,7 @@ public interface CqlOperations {
 
 	/**
 	 * Get the current Session used for operations in the implementing class.
-	 * 
+	 *
 	 * @return The DataStax Driver Session Object
 	 */
 	Session getSession();
@@ -1277,7 +1277,7 @@ public interface CqlOperations {
 	 * This is used internally by the other ingest() methods, but can be used if you want to write your own RowIterator.
 	 * The Object[] length returned by the next() implementation must match the number of bind variables in the CQL.
 	 * </p>
-	 * 
+	 *
 	 * @param cql The CQL
 	 * @param rowIterator Implementation to provide the Object[] to be bound to the CQL.
 	 * @param options The Query Options Object
@@ -1291,7 +1291,7 @@ public interface CqlOperations {
 	 * This is used internally by the other ingest() methods, but can be used if you want to write your own RowIterator.
 	 * The Object[] length returned by the next() implementation must match the number of bind variables in the CQL.
 	 * </p>
-	 * 
+	 *
 	 * @param cql The CQL
 	 * @param rowIterator Implementation to provide the Object[] to be bound to the CQL.
 	 */
@@ -1303,7 +1303,7 @@ public interface CqlOperations {
 	 * <p>
 	 * The List<?> length must match the number of bind variables in the CQL.
 	 * </p>
-	 * 
+	 *
 	 * @param cql The CQL
 	 * @param rows List of List<?> with data to bind to the CQL.
 	 * @param options The Query Options Object
@@ -1316,7 +1316,7 @@ public interface CqlOperations {
 	 * <p>
 	 * The lengths of the nested {@link List}s must not be less than the number of bind variables in the CQL.
 	 * </p>
-	 * 
+	 *
 	 * @param cql The CQL
 	 * @param rows The data to bind to the CQL statement
 	 */
@@ -1328,7 +1328,7 @@ public interface CqlOperations {
 	 * <p>
 	 * The lengths of the nested object arrays must not be less than the number of bind variables in the CQL.
 	 * </p>
-	 * 
+	 *
 	 * @param cql The CQL
 	 * @param rows The data to bind to the CQL statement
 	 */
@@ -1340,7 +1340,7 @@ public interface CqlOperations {
 	 * <p>
 	 * The lengths of the nested object arrays must not be less than the number of bind variables in the CQL.
 	 * </p>
-	 * 
+	 *
 	 * @param cql The CQL
 	 * @param rows The data to bind to the CQL statement
 	 * @param options The Query Options Object
@@ -1349,21 +1349,21 @@ public interface CqlOperations {
 
 	/**
 	 * Delete all rows in the table
-	 * 
+	 *
 	 * @param tableName
 	 */
 	void truncate(CqlIdentifier tableName);
 
 	/**
 	 * Delete all rows in the table
-	 * 
+	 *
 	 * @param tableName
 	 */
 	void truncate(String tableName);
 
 	/**
 	 * Counts all rows for given table
-	 * 
+	 *
 	 * @param tableName
 	 * @return
 	 */
@@ -1371,7 +1371,7 @@ public interface CqlOperations {
 
 	/**
 	 * Counts all rows for given table
-	 * 
+	 *
 	 * @param tableName
 	 * @return
 	 */
@@ -1379,56 +1379,56 @@ public interface CqlOperations {
 
 	/**
 	 * Convenience method to convert the given specification to CQL and execute it.
-	 * 
+	 *
 	 * @param specification The specification to execute; must not be null.
 	 */
 	ResultSet execute(DropTableSpecification specification);
 
 	/**
 	 * Convenience method to convert the given specification to CQL and execute it.
-	 * 
+	 *
 	 * @param specification The specification to execute; must not be null.
 	 */
 	ResultSet execute(CreateTableSpecification specification);
 
 	/**
 	 * Convenience method to convert the given specification to CQL and execute it.
-	 * 
+	 *
 	 * @param specification The specification to execute; must not be null.
 	 */
 	ResultSet execute(AlterTableSpecification specification);
 
 	/**
 	 * Convenience method to convert the given specification to CQL and execute it.
-	 * 
+	 *
 	 * @param specification The specification to execute; must not be null.
 	 */
 	ResultSet execute(DropKeyspaceSpecification specification);
 
 	/**
 	 * Convenience method to convert the given specification to CQL and execute it.
-	 * 
+	 *
 	 * @param specification The specification to execute; must not be null.
 	 */
 	ResultSet execute(CreateKeyspaceSpecification specification);
 
 	/**
 	 * Convenience method to convert the given specification to CQL and execute it.
-	 * 
+	 *
 	 * @param specification The specification to execute; must not be null.
 	 */
 	ResultSet execute(AlterKeyspaceSpecification specification);
 
 	/**
 	 * Convenience method to convert the given specification to CQL and execute it.
-	 * 
+	 *
 	 * @param specification The specification to execute; must not be null.
 	 */
 	ResultSet execute(DropIndexSpecification specification);
 
 	/**
 	 * Convenience method to convert the given specification to CQL and execute it.
-	 * 
+	 *
 	 * @param specification The specification to execute; must not be null.
 	 */
 	ResultSet execute(CreateIndexSpecification specification);

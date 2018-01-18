@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public abstract class CallbackSynchronizationSupport {
 
 	/**
 	 * Creates a new {@link CallbackSynchronizationSupport} for a given {@code latchCount} of callbacks.
-	 * 
+	 *
 	 * @param latchCount {@link CallbackSynchronizationSupport} for a given {@code latchCount} of callbacks
 	 */
 	protected CallbackSynchronizationSupport(int latchCount) {
@@ -49,7 +49,7 @@ public abstract class CallbackSynchronizationSupport {
 
 	/**
 	 * Await results without a timeout.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 */
 	public final void await() throws InterruptedException {
@@ -58,7 +58,7 @@ public abstract class CallbackSynchronizationSupport {
 
 	/**
 	 * Await the results with a timeout.
-	 * 
+	 *
 	 * @param timeout must be greater or equal to 0
 	 * @param timeUnit must not be {@literal null}.
 	 * @throws InterruptedException

@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2014 the original author or authors.
- * 
+ * Copyright 2013-2018 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Builder for maps, which also conveniently implements {@link Map} via delegation for convenience so you don't have to
  * actually {@link #build()} it.
- * 
+ *
  * @author Matthew T. Adams
  * @param <K> The key type of the map.
  * @param <V> The value type of the map.
@@ -66,7 +66,7 @@ public class MapBuilder<K, V> implements Map<K, V> {
 
 	/**
 	 * Adds an entry to this map, then returns <code>this</code>.
-	 * 
+	 *
 	 * @return this
 	 */
 	public MapBuilder<K, V> entry(K key, V value) {
@@ -76,7 +76,7 @@ public class MapBuilder<K, V> implements Map<K, V> {
 
 	/**
 	 * Returns a new map based on the current state of this builder's map.
-	 * 
+	 *
 	 * @return A new Map<K, V> with this builder's map's current content.
 	 */
 	public Map<K, V> build() {

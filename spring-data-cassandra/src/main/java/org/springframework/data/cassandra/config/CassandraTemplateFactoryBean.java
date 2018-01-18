@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2017 the original author or authors
- * 
+ * Copyright 2013-2018 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,7 +35,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 
 	protected CassandraConverter converter;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
@@ -46,7 +46,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 		Assert.notNull(converter, "Converter must not be null");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
@@ -55,7 +55,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 		return new CassandraTemplate(session, converter);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
@@ -64,7 +64,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 		return CassandraTemplate.class;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
 	 */
@@ -77,7 +77,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 	 * Sets the Cassandra {@link Session} to use. The {@link CassandraTemplate} will use the logged keyspace of the
 	 * underlying {@link Session}. Don't change the keyspace using CQL but use multiple {@link Session} and
 	 * {@link CassandraTemplate} beans.
-	 * 
+	 *
 	 * @param session must not be {@literal null}.
 	 */
 	public void setSession(Session session) {
@@ -89,7 +89,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 
 	/**
 	 * Set the {@link CassandraConverter} to use.
-	 * 
+	 *
 	 * @param converter must not be {@literal null}.
 	 */
 	public void setConverter(CassandraConverter converter) {

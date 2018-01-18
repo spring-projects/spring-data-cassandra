@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 the original author or authors
- * 
+ * Copyright 2013-2018 the original author or authors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,7 +40,7 @@ public class BeanDefinitionUtils {
 	/**
 	 * Returns a {@link BeanDefinitionBuilder} iff no {@link BeanDefinition} of the required type is found in the given
 	 * {@link ListableBeanFactory}, otherwise returns <code>null</code>, indicating that at least one existed.
-	 * 
+	 *
 	 * @param factory The {@link ListableBeanFactory} in which to look for the {@link BeanDefinition}, including
 	 *          ancestors.
 	 * @param requiredType The {@link BeanDefinition}'s required type.
@@ -81,7 +81,7 @@ public class BeanDefinitionUtils {
 	/**
 	 * Returns the single {@link BeanDefinitionHolder} with the given type, or null of none were found and
 	 * <code>required</code> was <code>false</code>, otherwise throws {@link IllegalArgumentException}.
-	 * 
+	 *
 	 * @param registry The {@link BeanDefinitionRegistry}, often the very same instance as the <code>factor</code>
 	 *          parameter.
 	 * @param factory The {@link ListableBeanFactory}, often the very same instance as the <code>registry</code>
@@ -119,7 +119,7 @@ public class BeanDefinitionUtils {
 
 	/**
 	 * Returns all {@link BeanDefinitionHolder}s with the given type.
-	 * 
+	 *
 	 * @param registry The {@link BeanDefinitionRegistry}, often the very same instance as the <code>factor</code>
 	 *          parameter.
 	 * @param factory The {@link ListableBeanFactory}, often the very same instance as the <code>registry</code>

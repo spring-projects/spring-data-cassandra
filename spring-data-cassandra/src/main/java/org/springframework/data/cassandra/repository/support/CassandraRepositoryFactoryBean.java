@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors
+ * Copyright 2013-2018 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,10 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID e
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
 	private CassandraTemplate cassandraTemplate;
-	
+
 	/**
 	 * Creates a new {@link CassandraRepositoryFactoryBean} for the given repository interface.
-	 * 
+	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
 	public CassandraRepositoryFactoryBean(Class<? extends T> repositoryInterface) {

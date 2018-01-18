@@ -1,12 +1,12 @@
 /*
- * Copyright 2013-2016 the original author or authors.
- * 
+ * Copyright 2013-2018 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ import com.datastax.driver.core.Session;
 
 /**
  * Factory for configuring a {@link CqlTemplate}.
- * 
+ *
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
@@ -33,7 +33,7 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 	private CqlTemplate template;
 	private Session session;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
@@ -42,7 +42,7 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 		return template;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
@@ -51,7 +51,7 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 		return CqlTemplate.class;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
 	 */
@@ -60,7 +60,7 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 		return true;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
@@ -76,7 +76,7 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 	 * Sets the Cassandra {@link Session} to use. The {@link CqlTemplate} will use the logged keyspace of the underlying
 	 * {@link Session}. Don't change the keyspace using CQL but use multiple {@link Session} and
 	 * {@link CqlTemplate} beans.
-	 * 
+	 *
 	 * @param session must not be {@literal null}.
 	 */
 	public void setSession(Session session) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecificati
 
 	/**
 	 * Creates a new {@link UserTypeNameCqlGenerator}.
-	 * 
+	 *
 	 * @param specification must not be {@literal null}.
 	 */
 	public UserTypeNameCqlGenerator(UserTypeNameSpecification<T> specification) {
@@ -44,7 +44,7 @@ public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecificati
 
 	/**
 	 * Sets the {@link UserTypeNameSpecification}.
-	 * 
+	 *
 	 * @param specification must not be {@literal null}.
 	 */
 	protected final void setSpecification(UserTypeNameSpecification<T> specification) {

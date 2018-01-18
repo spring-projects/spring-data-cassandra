@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import com.datastax.driver.core.ResultSet;
 
 /**
  * Listener used to receive asynchronous results expected as an object of type <code>T</code> or an {@link Exception}.
- * 
+ *
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @param <T>
@@ -28,14 +28,14 @@ public interface QueryForObjectListener<T> {
 
 	/**
 	 * Called upon query completion.
-	 * 
+	 *
 	 * @param result the result, can be {@literal null} for empty single-record results.
 	 */
 	void onQueryComplete(T result);
 
 	/**
 	 * Called if an exception is raised while getting or converting the {@link ResultSet}.
-	 * 
+	 *
 	 * @param ex the exception that triggered the failure, never {@link null}.
 	 */
 	void onException(Exception ex);

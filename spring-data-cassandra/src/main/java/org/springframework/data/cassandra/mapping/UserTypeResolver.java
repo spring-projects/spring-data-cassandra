@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import com.datastax.driver.core.UserType;
 
 /**
  * Strategy interface to resolve {@link UserType} by its name.
- * 
+ *
  * @author Mark Paluch
  * @since 1.5
  */
@@ -29,7 +29,7 @@ public interface UserTypeResolver {
 
 	/**
 	 * Resolve a {@link UserType} by its name.
-	 * 
+	 *
 	 * @param typeName must not be {@literal null}.
 	 * @return the type or {@literal null}, if not found.
 	 */

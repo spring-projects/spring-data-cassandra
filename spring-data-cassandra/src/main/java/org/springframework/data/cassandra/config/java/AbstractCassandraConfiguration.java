@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors
+ * Copyright 2013-2018 the original author or authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 * Creates a {@link CassandraSessionFactoryBean} that provides a Cassandra {@link com.datastax.driver.core.Session}.
 	 * The lifecycle of {@link CassandraSessionFactoryBean} initializes the {@link #getSchemaAction() schema} in the
 	 * {@link #getKeyspaceName() configured keyspace}.
-	 * 
+	 *
 	 * @return the {@link CassandraSessionFactoryBean}.
 	 * @throws ClassNotFoundException if an error occurs initializing the initial entity set, see
 	 *           {@link #cassandraMapping()}
