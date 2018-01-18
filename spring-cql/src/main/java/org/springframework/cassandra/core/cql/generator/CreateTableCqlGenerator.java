@@ -15,9 +15,8 @@
  */
 package org.springframework.cassandra.core.cql.generator;
 
-import static org.springframework.cassandra.core.cql.CqlStringUtils.noNull;
-import static org.springframework.cassandra.core.PrimaryKeyType.PARTITIONED;
-import static org.springframework.cassandra.core.PrimaryKeyType.CLUSTERED;
+import static org.springframework.cassandra.core.PrimaryKeyType.*;
+import static org.springframework.cassandra.core.cql.CqlStringUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +25,14 @@ import java.util.Map;
 import org.springframework.cassandra.core.keyspace.ColumnSpecification;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.Option;
+import org.springframework.util.StringUtils;
 
 /**
  * CQL generator for generating a <code>CREATE TABLE</code> statement.
  *
  * @author Matthew T. Adams
  * @author Alex Shvid
+ * @author Mark Paluch
  */
 public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecification> {
 
@@ -113,17 +114,18 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 		// begin option clause
 		Map<String, Object> options = spec().getOptions();
 
-		if (ordering != null || !options.isEmpty()) {
+		if (!options.isEmpty() || ordering.length() != 0) {
 
 			// option preamble
 			boolean first = true;
 			cql.append(" WITH ");
 			// end option preamble
 
-			if (ordering != null) {
+			if (StringUtils.hasText(ordering)) {
 				cql.append(ordering);
 				first = false;
 			}
+
 			if (!options.isEmpty()) {
 				for (String name : options.keySet()) {
 					// append AND if we're not on first option
@@ -159,12 +161,13 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 	}
 
 	private static StringBuilder createOrderingClause(List<ColumnSpecification> columns) {
-		StringBuilder ordering = null;
+
+		StringBuilder ordering = new StringBuilder();
 		boolean first = true;
 		for (ColumnSpecification col : columns) {
 
 			if (col.getOrdering() != null) { // then ordering specified
-				if (ordering == null) { // then initialize ordering clause
+				if (!StringUtils.hasText(ordering)) { // then initialize ordering clause
 					ordering = new StringBuilder().append("CLUSTERING ORDER BY (");
 				}
 				if (first) {
@@ -175,9 +178,11 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 				ordering.append(col.getName()).append(" ").append(col.getOrdering().cql());
 			}
 		}
-		if (ordering != null) { // then end ordering option
+
+		if (StringUtils.hasText(ordering)) { // then end ordering option
 			ordering.append(")");
 		}
+
 		return ordering;
 	}
 
@@ -191,9 +196,6 @@ public class CreateTableCqlGenerator extends TableCqlGenerator<CreateTableSpecif
 				str.append(", ");
 			}
 			str.append(col.getName());
-
 		}
-
 	}
-
 }

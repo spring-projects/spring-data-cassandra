@@ -17,6 +17,7 @@ package org.springframework.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.cassandra.core.cql.generator.CreateTableCqlGenerator.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.ReservedKeyword;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
@@ -45,10 +47,37 @@ import com.datastax.driver.core.DataType;
  *
  * @author Matthew T. Adams
  * @author David Webb
+ * @author Mark Paluch
  */
 public class CreateTableCqlGeneratorUnitTests {
 
 	private static final Logger log = LoggerFactory.getLogger(CreateTableCqlGeneratorUnitTests.class);
+
+	@Test // DATACASS-518
+	public void createTableWithOrderedClustering() {
+
+		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
+				.partitionKeyColumn("id", DataType.ascii()) //
+				.clusteredKeyColumn("date_of_birth", DataType.date(), Ordering.ASCENDING) //
+				.column("name", DataType.ascii());
+
+		assertThat(toCql(table)).isEqualTo("CREATE TABLE person (id ascii, date_of_birth date, name ascii, " //
+				+ "PRIMARY KEY (id, date_of_birth)) " //
+				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC);");
+	}
+
+	@Test // DATACASS-518
+	public void createTableWithOrderedClusteringAndOptions() {
+
+		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
+				.partitionKeyColumn("id", DataType.ascii()) //
+				.clusteredKeyColumn("date_of_birth", DataType.date(), Ordering.ASCENDING) //
+				.column("name", DataType.ascii()).with(TableOption.COMPACT_STORAGE);
+
+		assertThat(toCql(table)).isEqualTo("CREATE TABLE person (id ascii, date_of_birth date, name ascii, " //
+				+ "PRIMARY KEY (id, date_of_birth)) " //
+				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC) AND COMPACT STORAGE;");
+	}
 
 	/**
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
