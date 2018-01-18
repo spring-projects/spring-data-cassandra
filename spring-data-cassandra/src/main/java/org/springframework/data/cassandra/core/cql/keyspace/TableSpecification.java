@@ -130,6 +130,24 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @param name The column name; must be a valid unquoted or quoted identifier without the surrounding double quotes,
 	 *          must not be {@literal null}.
 	 * @param type The data type of the column, must not be {@literal null}.
+	 * @param ordering The data type of the column, must not be {@literal null}.
+	 * @return this
+	 * @since 2.1
+	 */
+	public T clusteredKeyColumn(String name, DataType type, Ordering ordering) {
+
+		Assert.notNull(ordering, "Ordering must not be null");
+
+		return column(CqlIdentifier.of(name), type, Optional.of(CLUSTERED), Optional.of(ordering));
+	}
+
+	/**
+	 * Adds the given primary key column to the table with ascending ordering. Must be specified after all partition key
+	 * columns and before any non-key columns.
+	 *
+	 * @param name The column name; must be a valid unquoted or quoted identifier without the surrounding double quotes,
+	 *          must not be {@literal null}.
+	 * @param type The data type of the column, must not be {@literal null}.
 	 * @return this
 	 */
 	public T clusteredKeyColumn(CqlIdentifier name, DataType type) {
