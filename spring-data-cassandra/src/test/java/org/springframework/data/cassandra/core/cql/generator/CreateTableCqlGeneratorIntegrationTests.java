@@ -15,57 +15,74 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
+import static org.assertj.core.api.Assertions.*;
+
+import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGeneratorUnitTests.BasicTest;
-import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGeneratorUnitTests.CompositePartitionKeyTest;
-import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGeneratorUnitTests.CreateTableTest;
+import org.springframework.data.cassandra.core.cql.Ordering;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.TableMetadata;
+
 /**
- * Integration tests that reuse unit tests.
+ * Integration tests for {@link CreateTableCqlGenerator}.
  *
  * @author Matthew T. Adams
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
-public class CreateTableCqlGeneratorIntegrationTests {
+public class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	/**
-	 * Integration test base class that knows how to do everything except instantiate the concrete unit test type T.
-	 *
-	 * @author Matthew T. Adams
-	 * @param <T> The concrete unit test class to which this integration test corresponds.
-	 */
-	public static abstract class Base<T extends CreateTableTest> extends AbstractKeyspaceCreatingIntegrationTest {
+	@Before
+	public void setUp() {
 
-		T unit;
-
-		public abstract T unit();
-
-		@Test
-		public void test() {
-
-			unit = unit();
-			unit.prepare();
-
-			session.execute(unit.cql);
-
-			CqlTableSpecificationAssertions.assertTable(unit.specification, keyspace, session);
-		}
+		session.execute("DROP TABLE IF EXISTS person;");
+		session.execute("DROP TABLE IF EXISTS address;");
 	}
 
-	public static class BasicIntegrationTest extends Base<BasicTest> {
+	@Test // DATACASS-518
+	public void shouldGenerateSimpleTable() {
 
-		@Override
-		public BasicTest unit() {
-			return new BasicTest();
-		}
+		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
+				.partitionKeyColumn("id", DataType.ascii()) //
+				.clusteredKeyColumn("date_of_birth", DataType.date()) //
+				.column("name", DataType.ascii());
+
+		session.execute(CreateTableCqlGenerator.toCql(table));
 	}
 
-	public static class CompositePartitionKeyIntegrationTest extends Base<CompositePartitionKeyTest> {
+	@Test // DATACASS-518
+	public void shouldGenerateTableWithClusterKeyOrdering() {
 
-		@Override
-		public CompositePartitionKeyTest unit() {
-			return new CompositePartitionKeyTest();
-		}
+		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
+				.partitionKeyColumn("id", DataType.ascii()) //
+				.partitionKeyColumn("country", DataType.ascii()) //
+				.clusteredKeyColumn("date_of_birth", DataType.date(), Ordering.ASCENDING) //
+				.clusteredKeyColumn("age", DataType.smallint()) //
+				.column("name", DataType.ascii());
+
+		TableMetadata person = cluster.getMetadata().getKeyspace(getKeyspace()).getTable("person");
+		assertThat(person.getPartitionKey()).hasSize(2);
+		assertThat(person.getClusteringColumns()).hasSize(2);
+
+		session.execute(CreateTableCqlGenerator.toCql(table));
+	}
+
+	@Test // DATACASS-518
+	public void shouldGenerateTableWithClusterKeyAndOptions() {
+
+		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
+				.partitionKeyColumn("id", DataType.ascii()) //
+				.clusteredKeyColumn("date_of_birth", DataType.date(), Ordering.ASCENDING) //
+				.column("name", DataType.ascii()).with(TableOption.COMPACT_STORAGE);
+
+		session.execute(CreateTableCqlGenerator.toCql(table));
+
+		TableMetadata person = cluster.getMetadata().getKeyspace(getKeyspace()).getTable("person");
+		assertThat(person.getPartitionKey()).hasSize(1);
+		assertThat(person.getClusteringColumns()).hasSize(1);
 	}
 }

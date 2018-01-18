@@ -32,6 +32,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Matthew T. Adams
  * @author Alex Shvid
+ * @author Mark Paluch
  */
 public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpecification<CreateTableSpecification>> {
 
@@ -43,6 +44,9 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 		return new CreateTableCqlGenerator(specification).toCql();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cql.generator.TableOptionsCqlGenerator#spec()
+	 */
 	@Override
 	protected CreateTableSpecification spec() {
 		return (CreateTableSpecification) super.spec();
@@ -113,7 +117,7 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 		// begin option clause
 		Map<String, Object> options = spec().getOptions();
 
-		if (!options.isEmpty()) {
+		if (!options.isEmpty() || StringUtils.hasText(ordering)) {
 
 			// option preamble
 			boolean first = true;
@@ -164,8 +168,8 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 		for (ColumnSpecification col : columns) {
 
 			if (col.getOrdering() != null) { // then ordering specified
-				if (StringUtils.isEmpty(ordering)) { // then initialize ordering clause
-					ordering = new StringBuilder().append("CLUSTERING ORDER BY (");
+				if (!StringUtils.hasText(ordering)) { // then initialize ordering clause
+					ordering.append("CLUSTERING ORDER BY (");
 				}
 				if (first) {
 					first = false;
@@ -193,7 +197,6 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 				str.append(", ");
 			}
 			str.append(col.getName());
-
 		}
 	}
 }
