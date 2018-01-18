@@ -64,11 +64,11 @@ public class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCre
 				.clusteredKeyColumn("age", DataType.smallint()) //
 				.column("name", DataType.ascii());
 
+		session.execute(CreateTableCqlGenerator.toCql(table));
+
 		TableMetadata person = cluster.getMetadata().getKeyspace(getKeyspace()).getTable("person");
 		assertThat(person.getPartitionKey()).hasSize(2);
 		assertThat(person.getClusteringColumns()).hasSize(2);
-
-		session.execute(CreateTableCqlGenerator.toCql(table));
 	}
 
 	@Test // DATACASS-518
