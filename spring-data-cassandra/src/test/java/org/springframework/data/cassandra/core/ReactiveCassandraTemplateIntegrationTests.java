@@ -50,7 +50,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	ReactiveCassandraTemplate template;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
 		CassandraTemplate cassandraTemplate = new CassandraTemplate(this.session, converter);

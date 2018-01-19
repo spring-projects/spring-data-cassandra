@@ -51,7 +51,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	private AsyncCassandraTemplate template;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
 		CassandraTemplate cassandraTemplate = new CassandraTemplate(session, converter);
@@ -142,7 +142,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-292
-	public void shouldInsertAndCountEntities() throws Exception {
+	public void shouldInsertAndCountEntities() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -175,7 +175,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-292
-	public void updateShouldUpdateEntity() throws Exception {
+	public void updateShouldUpdateEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 		getUninterruptibly(template.insert(user));
@@ -218,10 +218,10 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-343
-	public void updateShouldUpdateEntityByQuery() throws Exception {
+	public void updateShouldUpdateEntityByQuery() {
 
 		User user = new User("heisenberg", "Walter", "White");
-		template.insert(user).get();
+		getUninterruptibly(template.insert(user));
 
 		Query query = Query.query(where("id").is("heisenberg"));
 		boolean result = getUninterruptibly(
@@ -232,10 +232,10 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-343
-	public void deleteByQueryShouldRemoveEntity() throws Exception {
+	public void deleteByQueryShouldRemoveEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
-		template.insert(user).get();
+		getUninterruptibly(template.insert(user));
 
 		Query query = Query.query(where("id").is("heisenberg"));
 		assertThat(getUninterruptibly(template.delete(query, User.class))).isTrue();
@@ -244,10 +244,10 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-343
-	public void deleteColumnsByQueryShouldRemoveColumn() throws Exception {
+	public void deleteColumnsByQueryShouldRemoveColumn() {
 
 		User user = new User("heisenberg", "Walter", "White");
-		template.insert(user).get();
+		getUninterruptibly(template.insert(user));
 
 		Query query = Query.query(where("id").is("heisenberg")).columns(Columns.from("lastname"));
 
@@ -259,7 +259,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-292
-	public void deleteShouldRemoveEntity() throws Exception {
+	public void deleteShouldRemoveEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 		getUninterruptibly(template.insert(user));
@@ -271,7 +271,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-292
-	public void deleteByIdShouldRemoveEntity() throws Exception {
+	public void deleteByIdShouldRemoveEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 		getUninterruptibly(template.insert(user));
