@@ -36,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.User;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -149,6 +150,28 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
 	}
 
+	@Test // DATACASS-512
+	public void existsByQueryShouldReturnExistingElement() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		StepVerifier.create(template.exists(Query.empty(), User.class)).expectNext(true).verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users LIMIT 1;");
+	}
+
+	@Test // DATACASS-512
+	public void existsByQueryShouldReturnNonExistingElement() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
+
+		StepVerifier.create(template.exists(Query.empty(), User.class)).expectNext(false).verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users LIMIT 1;");
+	}
+
 	@Test // DATACASS-335
 	public void countShouldExecuteCountQueryElement() {
 
@@ -160,6 +183,19 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM users;");
+	}
+
+	@Test // DATACASS-512
+	public void countByQueryShouldExecuteCountQueryElement() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+		when(row.getLong(0)).thenReturn(42L);
+		when(columnDefinitions.size()).thenReturn(1);
+
+		StepVerifier.create(template.count(Query.empty(), User.class)).expectNext(42L).verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT COUNT(1) FROM users;");
 	}
 
 	@Test // DATACASS-335

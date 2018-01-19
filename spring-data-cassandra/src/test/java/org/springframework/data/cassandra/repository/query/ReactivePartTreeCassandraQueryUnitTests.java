@@ -15,14 +15,15 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import rx.Single;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,7 +32,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -48,8 +48,6 @@ import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Statement;
-
-import rx.Single;
 
 /**
  * Unit tests for {@link ReactivePartTreeCassandraQuery}.
@@ -135,6 +133,22 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		assertThat(statement.getConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_ONE);
 	}
 
+	@Test // DATACASS-512
+	public void shouldCreateCountQuery() {
+
+		Statement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "countBy", new Class[0]);
+
+		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person;");
+	}
+
+	@Test // DATACASS-512
+	public void shouldCreateExistsQuery() {
+
+		Statement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "existsBy", new Class[0]);
+
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person LIMIT 1;");
+	}
+
 	private String deriveQueryFromMethod(String method, Object... args) {
 
 		Class<?>[] types = new Class<?>[args.length];
@@ -185,6 +199,10 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		Flux<Person> findPersonByFirstnameAndLastname(String firstname, String lastname);
 
 		Flux<Person> findByFirstname(QueryOptions queryOptions, String firstname);
+
+		Mono<Long> countBy();
+
+		Mono<Boolean> existsBy();
 
 		@Consistency(ConsistencyLevel.LOCAL_ONE)
 		Flux<Person> findPersonBy();

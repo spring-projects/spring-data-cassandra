@@ -95,6 +95,31 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	 */
 	@Override
 	protected Statement createQuery(CassandraParameterAccessor parameterAccessor) {
-		return getQueryStatementCreator().select(getStatementFactory(), getTree(), getMappingContext(), parameterAccessor);
+
+		if (isCountQuery()) {
+			return getQueryStatementCreator().count(getStatementFactory(), getTree(), parameterAccessor);
+		}
+
+		if (isExistsQuery()) {
+			return getQueryStatementCreator().exists(getStatementFactory(), getTree(), parameterAccessor);
+		}
+
+		return getQueryStatementCreator().select(getStatementFactory(), getTree(), parameterAccessor);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isCountQuery()
+	 */
+	@Override
+	protected boolean isCountQuery() {
+		return tree.isCountProjection();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isExistsQuery()
+	 */
+	@Override
+	protected boolean isExistsQuery() {
+		return tree.isExistsProjection();
 	}
 }

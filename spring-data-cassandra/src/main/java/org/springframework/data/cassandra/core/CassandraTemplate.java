@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.core;
 
+import lombok.NonNull;
+import lombok.Value;
+
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import lombok.NonNull;
-import lombok.Value;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.SessionFactory;
@@ -45,6 +45,7 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
@@ -387,6 +388,23 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public long count(Query query, Class<?> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		RegularStatement count = statementFactory.count(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass));
+
+		Long result = getCqlOperations().queryForObject(count, Long.class);
+
+		return result != null ? result : 0L;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#exists(java.lang.Object, java.lang.Class)
 	 */
 	@Override
@@ -400,6 +418,21 @@ public class CassandraTemplate implements CassandraOperations {
 		Select select = QueryBuilder.select().from(entity.getTableName().toCql());
 
 		getConverter().write(id, select.where(), entity);
+
+		return getCqlOperations().queryForResultSet(select).iterator().hasNext();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#exists(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public boolean exists(Query query, Class<?> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		RegularStatement select = statementFactory.select(query.limit(1),
+				getMappingContext().getRequiredPersistentEntity(entityClass));
 
 		return getCqlOperations().queryForResultSet(select).iterator().hasNext();
 	}
@@ -549,8 +582,8 @@ public class CassandraTemplate implements CassandraOperations {
 			}
 		}
 
-		return getCqlOperations().execute((SessionCallback<Integer>) session ->
-				session.getCluster().getConfiguration().getQueryOptions().getFetchSize());
+		return getCqlOperations().execute(
+				(SessionCallback<Integer>) session -> session.getCluster().getConfiguration().getQueryOptions().getFetchSize());
 	}
 
 	/* (non-Javadoc)

@@ -35,6 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
+import org.springframework.data.cassandra.repository.CountQuery;
+import org.springframework.data.cassandra.repository.ExistsQuery;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
@@ -269,6 +271,29 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 		assertThat(result.get("biginteger")).isEqualTo((Object) BigInteger.ONE);
 	}
 
+	@Test // DATACASS-512
+	public void shouldApplyCountProjection() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("123");
+		allPossibleTypesRepository.save(entity);
+
+		assertThat(allPossibleTypesRepository.countById(entity.getId())).isOne();
+		assertThat(allPossibleTypesRepository.countById("foo")).isZero();
+	}
+
+	@Test // DATACASS-512
+	public void shouldApplyExistsProjection() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("123");
+		allPossibleTypesRepository.save(entity);
+
+		assertThat(allPossibleTypesRepository.existsUsingCountProjectionById(entity.getId())).isTrue();
+		assertThat(allPossibleTypesRepository.existsUsingCountProjectionById("foo")).isFalse();
+
+		assertThat(allPossibleTypesRepository.existsWithRowsById(entity.getId())).isTrue();
+		assertThat(allPossibleTypesRepository.existsWithRowsById("foo")).isFalse();
+	}
+
 	public interface AllPossibleTypesRepository extends CrudRepository<AllPossibleTypes, String> {
 
 		// blob/byte-buffer result do not work yet.
@@ -325,5 +350,14 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 
 		@Query("select * from allpossibletypes where id = ?0")
 		Map<String, Object> findEntityAsMapById(String id);
+
+		@CountQuery("select COUNT(*) from allpossibletypes where id = ?0")
+		long countById(String id);
+
+		@ExistsQuery("select COUNT(*) from allpossibletypes where id = ?0")
+		boolean existsUsingCountProjectionById(String id);
+
+		@ExistsQuery("select * from allpossibletypes where id = ?0")
+		boolean existsWithRowsById(String id);
 	}
 }

@@ -15,10 +15,13 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.Optional;
-
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
@@ -28,9 +31,6 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.parser.PartTree;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.SimpleStatement;
@@ -50,18 +50,103 @@ class QueryStatementCreator {
 
 	private final CassandraQueryMethod queryMethod;
 
+	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
 	/**
 	 * Create a {@literal SELECT} {@link Statement} from a {@link PartTree} and apply query options.
 	 *
 	 * @param statementFactory must not be {@literal null}.
 	 * @param tree must not be {@literal null}.
-	 * @param mappingContext must not be {@literal null}.
 	 * @param parameterAccessor must not be {@literal null}.
 	 * @return the {@literal SELECT} {@link Statement}.
 	 */
 	Statement select(StatementFactory statementFactory, PartTree tree,
-			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
 			CassandraParameterAccessor parameterAccessor) {
+
+		Function<Query, Statement> function = query -> {
+
+			CassandraPersistentEntity<?> persistentEntity = mappingContext
+					.getRequiredPersistentEntity(queryMethod.getDomainClass());
+
+			RegularStatement statement = statementFactory.select(query, persistentEntity);
+
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(String.format("Created query [%s].", statement));
+			}
+
+			return statement;
+		};
+
+		return doWithQuery(parameterAccessor, tree, function);
+	}
+
+	/**
+	 * Create a {@literal COUNT} {@link Statement} from a {@link PartTree} and apply query options.
+	 *
+	 * @param statementFactory must not be {@literal null}.
+	 * @param tree must not be {@literal null}.
+	 * @param parameterAccessor must not be {@literal null}.
+	 * @return the {@literal SELECT} {@link Statement}.
+	 * @since 2.1
+	 */
+	Statement count(StatementFactory statementFactory, PartTree tree, CassandraParameterAccessor parameterAccessor) {
+
+		Function<Query, Statement> function = query -> {
+
+			CassandraPersistentEntity<?> persistentEntity = mappingContext
+					.getRequiredPersistentEntity(queryMethod.getDomainClass());
+
+			RegularStatement statement = statementFactory.count(query, persistentEntity);
+
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(String.format("Created query [%s].", statement));
+			}
+
+			return statement;
+		};
+
+		return doWithQuery(parameterAccessor, tree, function);
+	}
+
+	/**
+	 * Create a {@literal SELECT} {@link Statement} from a {@link PartTree} and apply query options for exists query
+	 * execution. Limit results to a single row.
+	 *
+	 * @param statementFactory must not be {@literal null}.
+	 * @param tree must not be {@literal null}.
+	 * @param parameterAccessor must not be {@literal null}.
+	 * @return the {@literal SELECT} {@link Statement}.
+	 * @since 2.1
+	 */
+	Statement exists(StatementFactory statementFactory, PartTree tree, CassandraParameterAccessor parameterAccessor) {
+
+		Function<Query, Statement> function = query -> {
+
+			CassandraPersistentEntity<?> persistentEntity = mappingContext
+					.getRequiredPersistentEntity(queryMethod.getDomainClass());
+
+			RegularStatement statement = statementFactory.select(query.limit(1), persistentEntity);
+
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(String.format("Created query [%s].", statement));
+			}
+
+			return statement;
+		};
+
+		return doWithQuery(parameterAccessor, tree, function);
+	}
+
+	/**
+	 * A {@link Function} to {@link Query} derived from a {@link PartTree} and apply query options.
+	 *
+	 * @param parameterAccessor must not be {@literal null}.
+	 * @param tree must not be {@literal null}.
+	 * @param function callback function must not be {@literal null}.
+	 * @return the {@literal SELECT} {@link Statement}.
+	 */
+	<T> T doWithQuery(CassandraParameterAccessor parameterAccessor, PartTree tree,
+			Function<Query, ? extends T> function) {
 
 		CassandraQueryCreator queryCreator = new CassandraQueryCreator(tree, parameterAccessor, mappingContext);
 
@@ -89,17 +174,7 @@ class QueryStatementCreator {
 						.build());
 			}
 
-			CassandraPersistentEntity<?> persistentEntity =
-					mappingContext.getRequiredPersistentEntity(queryMethod.getDomainClass());
-
-			RegularStatement statement = statementFactory.select(query, persistentEntity);
-
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", statement));
-			}
-
-			return statement;
-
+			return function.apply(query);
 		} catch (RuntimeException e) {
 			throw QueryCreationException.create(queryMethod, e);
 		}

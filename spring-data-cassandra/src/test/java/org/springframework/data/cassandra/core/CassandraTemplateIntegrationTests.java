@@ -15,8 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,13 +30,11 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Columns;
-import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.BookReference;
@@ -93,8 +92,8 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		template.insert(userToken);
 
-		Query query = Query.query(Criteria.where("userId").is(userToken.getUserId()))
-				.and(Criteria.where("userComment").is("cook")).withAllowFiltering();
+		Query query = Query.query(where("userId").is(userToken.getUserId())).and(where("userComment").is("cook"))
+				.withAllowFiltering();
 		UserToken loaded = template.selectOne(query, UserToken.class);
 
 		assertThat(loaded).isNotNull();
@@ -117,7 +116,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		template.insert(token1);
 		template.insert(token2);
 
-		Query query = Query.query(Criteria.where("userId").is(token1.getUserId())).sort(Sort.by("token"));
+		Query query = Query.query(where("userId").is(token1.getUserId())).sort(Sort.by("token"));
 		List<UserToken> loaded = template.select(query, UserToken.class);
 
 		assertThat(loaded).containsSequence(token1, token2);
@@ -133,7 +132,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		template.insert(token1);
 
-		Query query = Query.query(Criteria.where("userId").is(token1.getUserId()));
+		Query query = Query.query(where("userId").is(token1.getUserId()));
 		UserToken loaded = template.selectOne(query, UserToken.class);
 
 		assertThat(loaded).isEqualTo(token1);
@@ -191,6 +190,28 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assertThat(count).isEqualTo(1L);
 	}
 
+	@Test // DATACASS-512
+	public void shouldInsertEntityAndCountByQuery() {
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		template.insert(user);
+
+		assertThat(template.count(Query.query(where("id").is("heisenberg")), User.class)).isOne();
+		assertThat(template.count(Query.query(where("id").is("foo")), User.class)).isZero();
+	}
+
+	@Test // DATACASS-512
+	public void shouldInsertEntityAndExistsByQuery() {
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		template.insert(user);
+
+		assertThat(template.exists(Query.query(where("id").is("heisenberg")), User.class)).isTrue();
+		assertThat(template.exists(Query.query(where("id").is("foo")), User.class)).isFalse();
+	}
+
 	@Test // DATACASS-292
 	public void updateShouldUpdateEntity() {
 
@@ -240,7 +261,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		User person = new User("heisenberg", "Walter", "White");
 		template.insert(person);
 
-		Query query = Query.query(Criteria.where("id").is("heisenberg"));
+		Query query = Query.query(where("id").is("heisenberg"));
 		boolean result = template.update(query, Update.empty().set("firstname", "Walter Hartwell"), User.class);
 		assertThat(result).isTrue();
 
@@ -253,7 +274,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user);
 
-		Query query = Query.query(Criteria.where("id").is("heisenberg"));
+		Query query = Query.query(where("id").is("heisenberg"));
 		assertThat(template.delete(query, User.class)).isTrue();
 
 		assertThat(template.selectOneById(user.getId(), User.class)).isNull();
@@ -265,7 +286,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user);
 
-		Query query = Query.query(Criteria.where("id").is("heisenberg")).columns(Columns.from("lastname"));
+		Query query = Query.query(where("id").is("heisenberg")).columns(Columns.from("lastname"));
 
 		assertThat(template.delete(query, User.class)).isTrue();
 
@@ -314,7 +335,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		User person = new User("heisenberg", "Walter", "White");
 		template.insert(person);
 
-		Query query = Query.query(Criteria.where("id").is("heisenberg"));
+		Query query = Query.query(where("id").is("heisenberg"));
 
 		Stream<User> stream = template.stream(query, User.class);
 

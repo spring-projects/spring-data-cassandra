@@ -34,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.User;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -175,6 +176,18 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
 	}
 
+	@Test // DATACASS-512
+	public void existsByQueryShouldReturnExistingElement() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+
+		boolean exists = template.exists(Query.empty(), User.class);
+
+		assertThat(exists).isTrue();
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users LIMIT 1;");
+	}
+
 	@Test // DATACASS-292
 	public void countShouldExecuteCountQueryElement() {
 
@@ -187,6 +200,20 @@ public class CassandraTemplateUnitTests {
 		assertThat(count).isEqualTo(42L);
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM users;");
+	}
+
+	@Test // DATACASS-512
+	public void countByQueryShouldExecuteCountQueryElement() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(row.getLong(0)).thenReturn(42L);
+		when(columnDefinitions.size()).thenReturn(1);
+
+		long count = template.count(Query.empty(), User.class);
+
+		assertThat(count).isEqualTo(42L);
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT COUNT(1) FROM users;");
 	}
 
 	@Test // DATACASS-292

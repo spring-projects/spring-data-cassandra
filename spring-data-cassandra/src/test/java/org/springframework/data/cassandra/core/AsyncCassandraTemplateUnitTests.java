@@ -37,6 +37,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -208,6 +209,18 @@ public class AsyncCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
 	}
 
+	@Test // DATACASS-512
+	public void existsByQueryShouldReturnExistingElement() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+
+		ListenableFuture<Boolean> future = template.exists(Query.empty(), User.class);
+
+		assertThat(getUninterruptibly(future)).isTrue();
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users LIMIT 1;");
+	}
+
 	@Test // DATACASS-292
 	public void countShouldExecuteCountQueryElement() {
 
@@ -220,6 +233,20 @@ public class AsyncCassandraTemplateUnitTests {
 		assertThat(getUninterruptibly(future)).isEqualTo(42L);
 		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM users;");
+	}
+
+	@Test // DATACASS-292
+	public void countByQueryShouldExecuteCountQueryElement() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(row.getLong(0)).thenReturn(42L);
+		when(columnDefinitions.size()).thenReturn(1);
+
+		ListenableFuture<Long> future = template.count(Query.empty(), User.class);
+
+		assertThat(getUninterruptibly(future)).isEqualTo(42L);
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT COUNT(1) FROM users;");
 	}
 
 	@Test // DATACASS-292
