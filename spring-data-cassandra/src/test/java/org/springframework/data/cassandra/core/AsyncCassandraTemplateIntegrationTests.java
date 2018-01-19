@@ -15,7 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -24,12 +25,10 @@ import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Columns;
-import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.User;
@@ -80,7 +79,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		getUninterruptibly(template.insert(token1));
 		getUninterruptibly(template.insert(token2));
 
-		Query query = Query.query(Criteria.where("userId").is(token1.getUserId())).sort(Sort.by("token"));
+		Query query = Query.query(where("userId").is(token1.getUserId())).sort(Sort.by("token"));
 
 		assertThat(getUninterruptibly(template.select(query, UserToken.class))).containsSequence(token1, token2);
 	}
@@ -95,7 +94,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		getUninterruptibly(template.insert(token1));
 
-		Query query = Query.query(Criteria.where("userId").is(token1.getUserId()));
+		Query query = Query.query(where("userId").is(token1.getUserId()));
 
 		assertThat(getUninterruptibly(template.selectOne(query, UserToken.class))).isEqualTo(token1);
 	}
@@ -153,6 +152,28 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(getUninterruptibly(count)).isEqualTo(1L);
 	}
 
+	@Test // DATACASS-512
+	public void shouldInsertEntityAndCountByQuery() {
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		getUninterruptibly(template.insert(user));
+
+		assertThat(getUninterruptibly(template.count(Query.query(where("id").is("heisenberg")), User.class))).isOne();
+		assertThat(getUninterruptibly(template.count(Query.query(where("id").is("foo")), User.class))).isZero();
+	}
+
+	@Test // DATACASS-512
+	public void shouldInsertEntityAndExistsByQuery() {
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		getUninterruptibly(template.insert(user));
+
+		assertThat(getUninterruptibly(template.exists(Query.query(where("id").is("heisenberg")), User.class))).isTrue();
+		assertThat(getUninterruptibly(template.exists(Query.query(where("id").is("foo")), User.class))).isFalse();
+	}
+
 	@Test // DATACASS-292
 	public void updateShouldUpdateEntity() throws Exception {
 
@@ -202,7 +223,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user).get();
 
-		Query query = Query.query(Criteria.where("id").is("heisenberg"));
+		Query query = Query.query(where("id").is("heisenberg"));
 		boolean result = getUninterruptibly(
 				template.update(query, Update.empty().set("firstname", "Walter Hartwell"), User.class));
 		assertThat(result).isTrue();
@@ -216,7 +237,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user).get();
 
-		Query query = Query.query(Criteria.where("id").is("heisenberg"));
+		Query query = Query.query(where("id").is("heisenberg"));
 		assertThat(getUninterruptibly(template.delete(query, User.class))).isTrue();
 
 		assertThat(getUser(user.getId())).isNull();
@@ -228,7 +249,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user).get();
 
-		Query query = Query.query(Criteria.where("id").is("heisenberg")).columns(Columns.from("lastname"));
+		Query query = Query.query(where("id").is("heisenberg")).columns(Columns.from("lastname"));
 
 		assertThat(getUninterruptibly(template.delete(query, User.class))).isTrue();
 

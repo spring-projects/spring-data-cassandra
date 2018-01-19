@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -140,10 +141,36 @@ public class StatementFactory {
 
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(query.getColumns(), entity);
 
+		return createSelect(query, entity, filter, selectors);
+	}
+
+	/**
+	 * Create a {@literal COUNT} statement by mapping {@link Query} to {@link Select}.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @return the rendered {@link RegularStatement}.
+	 * @since 2.1
+	 */
+	public RegularStatement count(Query query, CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entity, "Entity must not be null");
+
+		Filter filter = getQueryMapper().getMappedObject(query, entity);
+
+		List<Selector> selectors = Collections.singletonList(FunctionCall.from("COUNT", 1L));
+
+		return createSelect(query, entity, filter, selectors);
+	}
+
+	private Select createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter,
+			List<Selector> selectors) {
+
 		Sort sort = Optional.of(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
 				.orElse(Sort.unsorted());
 
-		Select select = select(selectors, entity.getTableName(), filter, sort);
+		Select select = createSelectAndOrder(selectors, entity.getTableName(), filter, sort);
 
 		query.getQueryOptions().ifPresent(queryOptions -> QueryOptionsUtil.addQueryOptions(select, queryOptions));
 
@@ -160,7 +187,7 @@ public class StatementFactory {
 		return select;
 	}
 
-	private static Select select(List<Selector> selectors, CqlIdentifier from, Filter filter, Sort sort) {
+	private static Select createSelectAndOrder(List<Selector> selectors, CqlIdentifier from, Filter filter, Sort sort) {
 
 		Select select;
 

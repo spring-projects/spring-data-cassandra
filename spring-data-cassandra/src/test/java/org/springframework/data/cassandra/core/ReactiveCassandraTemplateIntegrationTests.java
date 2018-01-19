@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -107,13 +108,45 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-335
-	public void shouldInsertAndCountEntities() {
+	public void shouldInsertEntityAndCount() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
 		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
 
 		StepVerifier.create(template.count(User.class)).expectNext(1L).verifyComplete();
+	}
+
+	@Test // DATACASS-335
+	public void shouldInsertEntityAndCountByQuery() {
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+
+		StepVerifier.create(template.count(Query.query(where("id").is("heisenberg")), User.class)) //
+				.expectNext(1L) //
+				.verifyComplete();
+
+		StepVerifier.create(template.count(Query.query(where("id").is("foo")), User.class)) //
+				.expectNext(0L) //
+				.verifyComplete();
+	}
+
+	@Test // DATACASS-335
+	public void shouldInsertAndExistsByQueryEntities() {
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+
+		StepVerifier.create(template.exists(Query.query(where("id").is("heisenberg")), User.class)) //
+				.expectNext(true) //
+				.verifyComplete();
+
+		StepVerifier.create(template.exists(Query.query(where("id").is("foo")), User.class)) //
+				.expectNext(false) //
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335

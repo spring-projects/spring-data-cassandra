@@ -15,20 +15,23 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityInstantiators;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Base class for Cassandra {@link RepositoryQuery} implementations providing common infrastructure such as
@@ -53,15 +56,35 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 	 * {@link CassandraOperations}.
 	 *
 	 * @param queryMethod must not be {@literal null}.
-	 * @param operations must not be {@literal null}.
+	 * @deprecated use {@link #CassandraRepositoryQuerySupport(CassandraQueryMethod, MappingContext)}
 	 */
+	@Deprecated
 	public CassandraRepositoryQuerySupport(CassandraQueryMethod queryMethod) {
 
 		Assert.notNull(queryMethod, "CassandraQueryMethod must not be null");
 
 		this.queryMethod = queryMethod;
 		this.instantiators = new EntityInstantiators();
-		this.queryStatementCreator = new QueryStatementCreator(queryMethod);
+		this.queryStatementCreator = new QueryStatementCreator(queryMethod, new CassandraMappingContext());
+	}
+
+	/**
+	 * Create a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
+	 * {@link CassandraOperations}.
+	 *
+	 * @param queryMethod must not be {@literal null}.
+	 * @param mappingContext must not be {@literal null}.
+	 * @since 2.1
+	 */
+	public CassandraRepositoryQuerySupport(CassandraQueryMethod queryMethod,
+			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+
+		Assert.notNull(queryMethod, "CassandraQueryMethod must not be null");
+		Assert.notNull(mappingContext, "CassandraMappingContext must not be null");
+
+		this.queryMethod = queryMethod;
+		this.instantiators = new EntityInstantiators();
+		this.queryStatementCreator = new QueryStatementCreator(queryMethod, mappingContext);
 	}
 
 	/* (non-Javadoc)
