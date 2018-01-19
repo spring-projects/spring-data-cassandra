@@ -165,7 +165,18 @@ public interface ReactiveCassandraOperations {
 	Mono<Long> count(Class<?> entityClass) throws DataAccessException;
 
 	/**
-	 * Determine whether the row {@code entityClass} with the given {@code id} exists.
+	 * Returns the number of rows for the given entity class applying {@link Query}.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass must not be {@literal null}.
+	 * @return the number of existing entities.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 2.1
+	 */
+	Mono<Long> count(Query query, Class<?> entityClass) throws DataAccessException;
+
+	/**
+	 * Determine whether a row of {@code entityClass} with the given {@code id} exists.
 	 *
 	 * @param id the Id value. For single primary keys it's the plain value. For composite primary keys either the
 	 *          {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass} or
@@ -175,6 +186,17 @@ public interface ReactiveCassandraOperations {
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
 	Mono<Boolean> exists(Object id, Class<?> entityClass) throws DataAccessException;
+
+	/**
+	 * Determine whether the result for {@code entityClass} {@link Query} yields at least one row.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return true, if the object exists.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 2.1
+	 */
+	Mono<Boolean> exists(Query query, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute the Select by {@code id} for the given {@code entityClass}.

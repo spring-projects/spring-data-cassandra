@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.repository.query;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Iterator;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -31,6 +33,8 @@ import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 
 /**
@@ -129,6 +133,44 @@ interface CassandraQueryExecution {
 		@Override
 		public Object execute(Statement statement, Class<?> type) {
 			return operations.selectOne(statement, type);
+		}
+	}
+
+	/**
+	 * {@link CassandraQueryExecution} for an Exists query supporting count and regular row-data for exists calculation.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.1
+	 */
+	@RequiredArgsConstructor
+	final class ExistsExecution implements CassandraQueryExecution {
+
+		private final @NonNull CassandraOperations operations;
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
+		 */
+		@Override
+		public Object execute(Statement statement, Class<?> type) {
+
+			ResultSet resultSet = operations.getCqlOperations().queryForResultSet(statement);
+
+			Iterator<Row> iterator = resultSet.iterator();
+
+			if (iterator.hasNext()) {
+
+				Row row = iterator.next();
+
+				if (!iterator.hasNext() && ProjectionUtil.isCountProjection(row)) {
+
+					Object object = row.getObject(0);
+					return ((Number) object).longValue() > 0;
+				}
+
+				return true;
+			}
+
+			return false;
 		}
 	}
 

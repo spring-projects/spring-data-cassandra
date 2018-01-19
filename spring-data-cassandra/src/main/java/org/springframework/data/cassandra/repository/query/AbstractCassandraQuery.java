@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ExistsExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingConverter;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultSetQuery;
@@ -52,7 +53,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	 */
 	public AbstractCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations) {
 
-		super(queryMethod);
+		super(queryMethod, operations.getConverter().getMappingContext());
 
 		Assert.notNull(operations, "CassandraOperations must not be null");
 
@@ -123,8 +124,28 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 			return new ResultSetQuery(getOperations());
 		} else if (getQueryMethod().isStreamQuery()) {
 			return new StreamExecution(getOperations(), resultProcessing);
+		} else if (isCountQuery()) {
+			return ((statement, type) -> new SingleEntityExecution(getOperations()).execute(statement, Long.class));
+		} else if (isExistsQuery()) {
+			return new ExistsExecution(getOperations());
 		} else {
 			return new SingleEntityExecution(getOperations());
 		}
 	}
+
+	/**
+	 * Returns whether the query should get a count projection applied.
+	 *
+	 * @return
+	 * @since 2.1
+	 */
+	protected abstract boolean isCountQuery();
+
+	/**
+	 * Returns whether the query should get an exists projection applied.
+	 *
+	 * @return
+	 * @since 2.1
+	 */
+	protected abstract boolean isExistsQuery();
 }

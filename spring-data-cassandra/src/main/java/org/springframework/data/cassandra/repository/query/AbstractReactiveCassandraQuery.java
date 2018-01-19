@@ -18,10 +18,12 @@ package org.springframework.data.cassandra.repository.query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import org.reactivestreams.Publisher;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.CollectionExecution;
+import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ExistsExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingConverter;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SingleEntityExecution;
@@ -29,8 +31,6 @@ import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.util.Assert;
-
-import org.reactivestreams.Publisher;
 
 import com.datastax.driver.core.Statement;
 
@@ -54,7 +54,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 */
 	public AbstractReactiveCassandraQuery(ReactiveCassandraQueryMethod method, ReactiveCassandraOperations operations) {
 
-		super(method);
+		super(method, operations.getConverter().getMappingContext());
 
 		Assert.notNull(operations, "ReactiveCassandraOperations must not be null");
 
@@ -134,9 +134,33 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		return new ResultProcessingExecution(getExecutionToWrap(), resultProcessing);
 	}
 
-	/* (non-Javadoc) */
 	private ReactiveCassandraQueryExecution getExecutionToWrap() {
-		return (getQueryMethod().isCollectionQuery() ? new CollectionExecution(getReactiveCassandraOperations())
-				: new SingleEntityExecution(getReactiveCassandraOperations()));
+
+		if (getQueryMethod().isCollectionQuery()) {
+			return new CollectionExecution(getReactiveCassandraOperations());
+		} else if (isCountQuery()) {
+			return ((statement, type) -> new SingleEntityExecution(getReactiveCassandraOperations()).execute(statement,
+					Long.class));
+		} else if (isExistsQuery()) {
+			return new ExistsExecution(getReactiveCassandraOperations());
+		} else {
+			return new SingleEntityExecution(getReactiveCassandraOperations());
+		}
 	}
+
+	/**
+	 * Returns whether the query should get a count projection applied.
+	 *
+	 * @return
+	 * @since 2.1
+	 */
+	protected abstract boolean isCountQuery();
+
+	/**
+	 * Returns whether the query should get an exists projection applied.
+	 *
+	 * @return
+	 * @since 2.1
+	 */
+	protected abstract boolean isExistsQuery();
 }

@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,10 +26,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -54,8 +54,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.assertj.core.api.Assertions;
 
 import com.datastax.driver.core.Session;
 
@@ -183,7 +181,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Collection<PersonProjection> collection = personRepository.findPersonProjectedBy();
 
-		Assertions.assertThat(collection).hasSize(3).extracting("firstname").contains(flynn.getFirstname(),
+		assertThat(collection).hasSize(3).extracting("firstname").contains(flynn.getFirstname(),
 				skyler.getFirstname(), walter.getFirstname());
 	}
 
@@ -192,7 +190,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Collection<PersonDto> collection = personRepository.findPersonDtoBy();
 
-		Assertions.assertThat(collection).hasSize(3).extracting("firstname").contains(flynn.getFirstname(),
+		assertThat(collection).hasSize(3).extracting("firstname").contains(flynn.getFirstname(),
 				skyler.getFirstname(), walter.getFirstname());
 	}
 
@@ -320,6 +318,21 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		assertThat(result).contains(walter, skyler, flynn);
 	}
 
+	@Test // DATACASS-512
+	public void shouldCountRecords() {
+
+		long count = personRepository.countByLastname("White");
+
+		assertThat(count).isEqualTo(3);
+	}
+
+	@Test // DATACASS-512
+	public void shouldApplyExistsProjection() {
+
+		assertThat(personRepository.existsByLastname("White")).isTrue();
+		assertThat(personRepository.existsByLastname("Schrader")).isFalse();
+	}
+
 	/**
 	 * @author Mark Paluch
 	 */
@@ -345,6 +358,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		Person findByNicknameContains(String contains);
 
 		Person findByNumberOfChildren(NumberOfChildren numberOfChildren);
+
+		long countByLastname(String lastname);
+
+		boolean existsByLastname(String lastname);
 
 		Slice<Person> findAllSlicedByLastname(String lastname, Pageable pageable);
 

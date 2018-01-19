@@ -229,6 +229,17 @@ public class StatementFactoryUnitTests {
 		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number-1;");
 	}
 
+	@Test // DATACASS-512
+	public void shouldCreateCountQuery() {
+
+		Query query = Query.query(Criteria.where("foo").is("bar"));
+
+		Statement count = statementFactory.count(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		assertThat(count.toString()).isEqualTo("SELECT COUNT(1) FROM group WHERE foo='bar';");
+	}
+
 	static class Person {
 
 		@Id String id;

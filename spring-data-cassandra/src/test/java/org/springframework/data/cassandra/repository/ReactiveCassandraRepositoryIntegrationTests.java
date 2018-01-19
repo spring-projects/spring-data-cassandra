@@ -164,6 +164,26 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 				.verifyComplete();
 	}
 
+	@Test // DATACASS-512
+	public void shouldCountRecords() {
+
+		StepVerifier.create(repository.countByLastname("Matthews")).expectNext(2L).verifyComplete();
+		StepVerifier.create(repository.countByLastname("None")).expectNext(0L).verifyComplete();
+
+		StepVerifier.create(repository.countQueryByLastname("Matthews")).expectNext(2L).verifyComplete();
+		StepVerifier.create(repository.countQueryByLastname("None")).expectNext(0L).verifyComplete();
+	}
+
+	@Test // DATACASS-512
+	public void shouldApplyExistsProjection() {
+
+		StepVerifier.create(repository.existsByLastname("Matthews")).expectNext(true).verifyComplete();
+		StepVerifier.create(repository.existsByLastname("None")).expectNext(false).verifyComplete();
+
+		StepVerifier.create(repository.existsQueryByLastname("Matthews")).expectNext(true).verifyComplete();
+		StepVerifier.create(repository.existsQueryByLastname("None")).expectNext(false).verifyComplete();
+	}
+
 	interface UserRepository extends ReactiveCassandraRepository<User, String> {
 
 		Flux<User> findByLastname(String lastname);
@@ -172,8 +192,18 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 
 		Mono<User> findByLastname(Publisher<String> lastname);
 
+		Mono<Long> countByLastname(String lastname);
+
+		Mono<Boolean> existsByLastname(String lastname);
+
 		@Query("SELECT * FROM users WHERE lastname = ?0")
 		Flux<User> findStringQuery(Mono<String> lastname);
+
+		@CountQuery("SELECT COUNT(*) from users WHERE lastname = ?0")
+		Mono<Long> countQueryByLastname(String lastname);
+
+		@ExistsQuery("SELECT * from users WHERE lastname = ?0")
+		Mono<Boolean> existsQueryByLastname(String lastname);
 	}
 
 	interface GroupRepository extends ReactiveCassandraRepository<Group, GroupKey> {

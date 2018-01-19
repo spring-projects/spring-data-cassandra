@@ -207,6 +207,22 @@ public class PartTreeCassandraQueryUnitTests {
 		assertThat(statement.getConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_ONE);
 	}
 
+	@Test // DATACASS-512
+	public void shouldCreateCountQuery() {
+
+		Statement statement = deriveQueryFromMethod(Repo.class, "countBy", new Class[0]);
+
+		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person;");
+	}
+
+	@Test // DATACASS-512
+	public void shouldCreateExistsQuery() {
+
+		Statement statement = deriveQueryFromMethod(Repo.class, "existsBy", new Class[0]);
+
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person LIMIT 1;");
+	}
+
 	private String deriveQueryFromMethod(String method, Object... args) {
 
 		Class<?>[] types = new Class<?>[args.length];
@@ -276,6 +292,10 @@ public class PartTreeCassandraQueryUnitTests {
 		Person findByMainAddressIn(Collection<AddressType> address);
 
 		Person findByFirstnameIn(Collection<String> firstname);
+
+		long countBy();
+
+		boolean existsBy();
 
 		@AllowFiltering
 		Person findByFirstname(String firstname);

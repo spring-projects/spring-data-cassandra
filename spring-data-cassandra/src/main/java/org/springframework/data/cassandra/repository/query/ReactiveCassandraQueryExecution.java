@@ -17,6 +17,9 @@ package org.springframework.data.cassandra.repository.query;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
@@ -28,6 +31,7 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.ClassUtils;
 
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 
 /**
@@ -78,6 +82,48 @@ interface ReactiveCassandraQueryExecution {
 		@Override
 		public Object execute(Statement statement, Class<?> type) {
 			return operations.selectOne(statement, type);
+		}
+	}
+
+	/**
+	 * {@link ReactiveCassandraQueryExecution} for an Exists query supporting count and regular row-data for exists
+	 * calculation.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.1
+	 */
+	@RequiredArgsConstructor
+	final class ExistsExecution implements ReactiveCassandraQueryExecution {
+
+		private final @NonNull ReactiveCassandraOperations operations;
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(com.datastax.driver.core.Statement, java.lang.Class)
+		 */
+		@Override
+		public Object execute(Statement statement, Class<?> type) {
+
+			Mono<List<Row>> rows = operations.getReactiveCqlOperations().queryForRows(statement).buffer(2).next();
+
+			return rows.map(it -> {
+
+				if (it.isEmpty()) {
+					return false;
+				}
+
+				if (it.size() == 1) {
+
+					Row row = it.get(0);
+
+					if (ProjectionUtil.isCountProjection(row)) {
+
+						Object object = row.getObject(0);
+						return ((Number) object).longValue() > 0;
+					}
+				}
+
+				return true;
+			}).switchIfEmpty(Mono.just(false));
 		}
 	}
 

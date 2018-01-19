@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
+import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
@@ -36,7 +37,13 @@ import com.datastax.driver.core.SimpleStatement;
  */
 public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandraQuery {
 
+	private static final String COUNT_AND_EXISTS = "Manually defined query for %s cannot be a count and exists query at the same time!";
+
 	private final StringBasedQuery stringBasedQuery;
+
+	private final boolean isCountQuery;
+
+	private final boolean isExistsQuery;
 
 	/**
 	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
@@ -59,22 +66,38 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@code query}, {@link CassandraQueryMethod},
 	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
 	 *
-	 * @param queryMethod {@link ReactiveCassandraQueryMethod} on which this query is based.
+	 * @param method {@link ReactiveCassandraQueryMethod} on which this query is based.
 	 * @param operations {@link ReactiveCassandraOperations} used to perform data access in Cassandra.
 	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
 	 * @param evaluationContextProvider {@link EvaluationContextProvider} used to access the potentially shared
 	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
 	 */
-	public ReactiveStringBasedCassandraQuery(String query, ReactiveCassandraQueryMethod queryMethod,
+	public ReactiveStringBasedCassandraQuery(String query, ReactiveCassandraQueryMethod method,
 			ReactiveCassandraOperations operations, SpelExpressionParser expressionParser,
 			EvaluationContextProvider evaluationContextProvider) {
 
-		super(queryMethod, operations);
+		super(method, operations);
 
 		Assert.hasText(query, "Query must not be empty");
 
 		this.stringBasedQuery = new StringBasedQuery(query,
 				new ExpressionEvaluatingParameterBinder(expressionParser, evaluationContextProvider));
+
+		if (method.hasAnnotatedQuery()) {
+
+			Query queryAnnotation = method.getQueryAnnotation().get();
+
+			this.isCountQuery = queryAnnotation.count();
+			this.isExistsQuery = queryAnnotation.exists();
+
+			if (ProjectionUtil.hasAmbiguousProjectionFlags(this.isCountQuery, this.isExistsQuery)) {
+				throw new IllegalArgumentException(String.format(COUNT_AND_EXISTS, method));
+			}
+		} else {
+
+			this.isCountQuery = false;
+			this.isExistsQuery = false;
+		}
 	}
 
 	protected StringBasedQuery getStringBasedQuery() {
@@ -87,5 +110,21 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	@Override
 	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
 		return getQueryStatementCreator().select(getStringBasedQuery(), parameterAccessor);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isCountQuery()
+	 */
+	@Override
+	protected boolean isCountQuery() {
+		return isCountQuery;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isExistsQuery()
+	 */
+	@Override
+	protected boolean isExistsQuery() {
+		return isExistsQuery;
 	}
 }
