@@ -250,19 +250,22 @@ public interface CassandraOperations {
 	/**
 	 * Returns the number of rows for the given entity class.
 	 *
-	 * @param entityClass must not be {@literal null}.
+	 * @param entityClass {@link Class type} of the entity; must not be {@literal null}.
 	 * @return the number of existing entities.
-	 * @throws DataAccessException if there is any problem executing the query.
+	 * @throws DataAccessException if any problem occurs while executing the query.
 	 */
 	long count(Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Returns the number of rows for the given entity class applying {@link Query}.
 	 *
-	 * @param query must not be {@literal null}.
-	 * @param entityClass must not be {@literal null}.
+	 * This overridden method allows users to further refine the selection criteria using a {@link Query} predicate
+	 * to determine how many entities of the given {@link Class type} match the criteria.
+	 *
+	 * @param query user-defined count {@link Query} to execute; must not be {@literal null}.
+	 * @param entityClass {@link Class type} of the entity; must not be {@literal null}.
 	 * @return the number of existing entities.
-	 * @throws DataAccessException if there is any problem executing the query.
+	 * @throws DataAccessException if any problem occurs while executing the query.
 	 * @since 2.1
 	 */
 	long count(Query query, Class<?> entityClass) throws DataAccessException;
@@ -270,22 +273,22 @@ public interface CassandraOperations {
 	/**
 	 * Determine whether a row of {@code entityClass} with the given {@code id} exists.
 	 *
-	 * @param id the Id value. For single primary keys it's the plain value. For composite primary keys either the
-	 *          {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass} or
-	 *          {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return true, if the object exists.
-	 * @throws DataAccessException if there is any problem executing the query.
+	 * @param id Id value. For single primary keys it's the plain value. For composite primary keys either, it's
+	 * an instance of either {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass}
+	 * or {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
+	 * @param entityClass {@link Class type} of the entity; must not be {@literal null}.
+	 * @return {@literal true} if the object exists.
+	 * @throws DataAccessException if any problem occurs while executing the query.
 	 */
 	boolean exists(Object id, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Determine whether the result for {@code entityClass} {@link Query} yields at least one row.
 	 *
-	 * @param query must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return true, if the object exists.
-	 * @throws DataAccessException if there is any problem executing the query.
+	 * @param query user-defined exists {@link Query} to execute; must not be {@literal null}.
+	 * @param entityClass {@link Class type} of the entity; must not be {@literal null}.
+	 * @return {@literal true} if the object exists.
+	 * @throws DataAccessException if any problem occurs while executing the query.
 	 * @since 2.1
 	 */
 	boolean exists(Query query, Class<?> entityClass) throws DataAccessException;

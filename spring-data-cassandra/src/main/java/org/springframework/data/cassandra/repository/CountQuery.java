@@ -30,8 +30,8 @@ import org.springframework.core.annotation.AliasFor;
  * @author Mark Paluch
  * @since 2.1
  */
-@Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+@Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Query(count = true)
 public @interface CountQuery {
@@ -42,4 +42,5 @@ public @interface CountQuery {
 	 */
 	@AliasFor(annotation = Query.class)
 	String value() default "";
+
 }

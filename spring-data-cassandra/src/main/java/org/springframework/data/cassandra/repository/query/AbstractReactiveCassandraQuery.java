@@ -22,6 +22,8 @@ import org.reactivestreams.Publisher;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.CollectionExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ExistsExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingConverter;
@@ -45,6 +47,17 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 	private final ReactiveCassandraOperations operations;
 
+	private static CassandraConverter toConverter(ReactiveCassandraOperations operations) {
+
+		Assert.notNull(operations, "ReactiveCassandraOperations must not be null");
+
+		return operations.getConverter();
+	}
+
+	private static CassandraMappingContext toMappingContext(ReactiveCassandraOperations operations) {
+		return toConverter(operations).getMappingContext();
+	}
+
 	/**
 	 * Create a new {@link AbstractReactiveCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
@@ -54,9 +67,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 */
 	public AbstractReactiveCassandraQuery(ReactiveCassandraQueryMethod method, ReactiveCassandraOperations operations) {
 
-		super(method, operations.getConverter().getMappingContext());
-
-		Assert.notNull(operations, "ReactiveCassandraOperations must not be null");
+		super(method, toMappingContext(operations));
 
 		this.operations = operations;
 	}
@@ -80,22 +91,27 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 */
 	@Override
 	public Object execute(Object[] parameters) {
-		return (getQueryMethod().hasReactiveWrapperParameter() ? executeDeferred(parameters) : executeNow(parameters));
+
+		return getQueryMethod().hasReactiveWrapperParameter()
+				? executeDeferred(parameters)
+				: executeNow(parameters);
 	}
 
 	@SuppressWarnings("unchecked")
 	private Object executeDeferred(Object[] parameters) {
-		return (getQueryMethod().isCollectionQuery() ? Flux.defer(() -> (Publisher<Object>) execute(parameters))
-				: Mono.defer(() -> (Mono<Object>) execute(parameters)));
+
+		return getQueryMethod().isCollectionQuery()
+				? Flux.defer(() -> (Publisher<Object>) execute(parameters))
+				: Mono.defer(() -> (Mono<Object>) execute(parameters));
 	}
 
 	private Object executeNow(Object[] parameters) {
 
 		ReactiveCassandraParameterAccessor parameterAccessor =
-			new ReactiveCassandraParameterAccessor(getQueryMethod(), parameters);
+				new ReactiveCassandraParameterAccessor(getQueryMethod(), parameters);
 
 		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(
-				getReactiveCassandraOperations().getConverter(), parameterAccessor);
+				toConverter(getReactiveCassandraOperations()), parameterAccessor);
 
 		Statement statement = createQuery(convertingParameterAccessor);
 
@@ -103,7 +119,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 				.withDynamicProjection(convertingParameterAccessor);
 
 		ReactiveCassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(resultProcessor,
-				getReactiveCassandraOperations().getConverter().getMappingContext(), getEntityInstantiators()));
+				toMappingContext(getReactiveCassandraOperations()), getEntityInstantiators()));
 
 		Class<?> resultType = resolveResultType(resultProcessor);
 
@@ -113,7 +129,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	private Class<?> resolveResultType(ResultProcessor resultProcessor) {
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
-				getReactiveCassandraOperations().getConverter().getCustomConversions());
+				toConverter(getReactiveCassandraOperations()).getCustomConversions());
 
 		return (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
 	}
@@ -139,8 +155,8 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		if (getQueryMethod().isCollectionQuery()) {
 			return new CollectionExecution(getReactiveCassandraOperations());
 		} else if (isCountQuery()) {
-			return ((statement, type) -> new SingleEntityExecution(getReactiveCassandraOperations()).execute(statement,
-					Long.class));
+			return ((statement, type) ->
+					new SingleEntityExecution(getReactiveCassandraOperations()).execute(statement, Long.class));
 		} else if (isExistsQuery()) {
 			return new ExistsExecution(getReactiveCassandraOperations());
 		} else {
@@ -151,7 +167,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	/**
 	 * Returns whether the query should get a count projection applied.
 	 *
-	 * @return
+	 * @return a boolean value indicating whether the query is a count projection.
 	 * @since 2.1
 	 */
 	protected abstract boolean isCountQuery();
@@ -159,8 +175,9 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	/**
 	 * Returns whether the query should get an exists projection applied.
 	 *
-	 * @return
+	 * @return a boolean value indicating whether the query is an exists projection.
 	 * @since 2.1
 	 */
 	protected abstract boolean isExistsQuery();
+
 }

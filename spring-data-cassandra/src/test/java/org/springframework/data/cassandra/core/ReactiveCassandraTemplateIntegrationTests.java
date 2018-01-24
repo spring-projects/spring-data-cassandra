@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -25,6 +25,7 @@ import reactor.test.StepVerifier.FirstStep;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;

@@ -30,8 +30,8 @@ import org.springframework.core.annotation.AliasFor;
  * @author Mark Paluch
  * @since 2.1
  */
-@Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+@Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Query(exists = true)
 public @interface ExistsQuery {
@@ -42,4 +42,5 @@ public @interface ExistsQuery {
 	 */
 	@AliasFor(annotation = Query.class)
 	String value() default "";
+
 }

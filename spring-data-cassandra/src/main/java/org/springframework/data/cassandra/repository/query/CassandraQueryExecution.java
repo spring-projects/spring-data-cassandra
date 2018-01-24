@@ -153,7 +153,7 @@ interface CassandraQueryExecution {
 		@Override
 		public Object execute(Statement statement, Class<?> type) {
 
-			ResultSet resultSet = operations.getCqlOperations().queryForResultSet(statement);
+			ResultSet resultSet = this.operations.getCqlOperations().queryForResultSet(statement);
 
 			Iterator<Row> iterator = resultSet.iterator();
 
@@ -161,9 +161,10 @@ interface CassandraQueryExecution {
 
 				Row row = iterator.next();
 
-				if (!iterator.hasNext() && ProjectionUtil.isCountProjection(row)) {
+				if (!iterator.hasNext() && ProjectionUtil.qualifiesAsCountProjection(row)) {
 
 					Object object = row.getObject(0);
+
 					return ((Number) object).longValue() > 0;
 				}
 

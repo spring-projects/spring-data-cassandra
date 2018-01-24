@@ -15,7 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.isolated;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -31,6 +32,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;

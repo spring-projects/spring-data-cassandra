@@ -112,7 +112,7 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	 */
 	@Override
 	protected boolean isCountQuery() {
-		return tree.isCountProjection();
+		return getTree().isCountProjection();
 	}
 
 	/* (non-Javadoc)
@@ -120,6 +120,6 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	 */
 	@Override
 	protected boolean isExistsQuery() {
-		return tree.isExistsProjection();
+		return getTree().isExistsProjection();
 	}
 }

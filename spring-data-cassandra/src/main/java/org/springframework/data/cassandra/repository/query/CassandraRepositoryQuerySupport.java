@@ -60,12 +60,7 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 	 */
 	@Deprecated
 	public CassandraRepositoryQuerySupport(CassandraQueryMethod queryMethod) {
-
-		Assert.notNull(queryMethod, "CassandraQueryMethod must not be null");
-
-		this.queryMethod = queryMethod;
-		this.instantiators = new EntityInstantiators();
-		this.queryStatementCreator = new QueryStatementCreator(queryMethod, new CassandraMappingContext());
+		this(queryMethod, new CassandraMappingContext());
 	}
 
 	/**
@@ -100,7 +95,7 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 	}
 
 	protected QueryStatementCreator getQueryStatementCreator() {
-		return queryStatementCreator;
+		return this.queryStatementCreator;
 	}
 
 	@RequiredArgsConstructor

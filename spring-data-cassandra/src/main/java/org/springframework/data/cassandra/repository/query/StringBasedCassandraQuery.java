@@ -57,7 +57,8 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	public StringBasedCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations,
 			SpelExpressionParser expressionParser, EvaluationContextProvider evaluationContextProvider) {
 
-		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser, evaluationContextProvider);
+		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser,
+				evaluationContextProvider);
 	}
 
 	/**
@@ -90,7 +91,6 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 				throw new IllegalArgumentException(String.format(COUNT_AND_EXISTS, method));
 			}
 		} else {
-
 			this.isCountQuery = false;
 			this.isExistsQuery = false;
 		}
@@ -113,7 +113,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 */
 	@Override
 	protected boolean isCountQuery() {
-		return isCountQuery;
+		return this.isCountQuery;
 	}
 
 	/* (non-Javadoc)
@@ -121,6 +121,6 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 */
 	@Override
 	protected boolean isExistsQuery() {
-		return isExistsQuery;
+		return this.isExistsQuery;
 	}
 }

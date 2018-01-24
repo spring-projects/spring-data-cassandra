@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import lombok.NonNull;
 import lombok.Value;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -189,6 +190,14 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return this.cqlOperations;
 	}
 
+	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Object entity) {
+		return getRequiredPersistentEntity(entity.getClass());
+	}
+
+	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
+		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entityType));
+	}
+
 	/**
 	 * Returns the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
 	 *
@@ -199,9 +208,12 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return this.statementFactory;
 	}
 
-	/* (non-Javadoc) */
 	private CqlIdentifier getTableName(Object entity) {
-		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entity)).getTableName();
+		return getRequiredPersistentEntity(entity).getTableName();
+	}
+
+	private CqlIdentifier getTableName(Class<?> entityType) {
+		return getRequiredPersistentEntity(entityType).getTableName();
 	}
 
 	// -------------------------------------------------------------------------
@@ -322,8 +334,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Select select = QueryBuilder.select().countAll()
-				.from(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Select select = QueryBuilder.select().countAll().from(getTableName(entityClass).toCql());
 
 		return getReactiveCqlOperations().queryForObject(select, Long.class);
 	}
@@ -337,8 +348,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		RegularStatement count = statementFactory.count(query,
-				getMappingContext().getRequiredPersistentEntity(entityClass));
+		RegularStatement count = getStatementFactory().count(query, getRequiredPersistentEntity(entityClass));
 
 		return getReactiveCqlOperations().queryForObject(count, Long.class);
 	}
@@ -352,7 +362,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(entityClass);
+		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
 		Select select = QueryBuilder.select().from(entity.getTableName().toCql());
 
@@ -370,8 +380,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		RegularStatement select = statementFactory.select(query.limit(1),
-				getMappingContext().getRequiredPersistentEntity(entityClass));
+		RegularStatement select = getStatementFactory()
+				.select(query.limit(1), getRequiredPersistentEntity(entityClass));
 
 		return getReactiveCqlOperations().queryForRows(select).hasElements();
 	}
@@ -385,7 +395,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(entityClass);
+		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
 
@@ -433,7 +443,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "UpdateOptions must not be null");
 
-		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, converter);
+		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
 		return getReactiveCqlOperations().execute(new StatementCallback(update)).next();
 	}
@@ -469,7 +479,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(entityClass);
+		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
 		Delete delete = QueryBuilder.delete().from(entity.getTableName().toCql());
 
@@ -486,8 +496,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Truncate truncate = QueryBuilder
-				.truncate(getMappingContext().getRequiredPersistentEntity(entityClass).getTableName().toCql());
+		Truncate truncate = QueryBuilder.truncate(getTableName(entityClass).toCql());
 
 		return getReactiveCqlOperations().execute(truncate).then();
 	}

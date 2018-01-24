@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.repository.query;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ExistsExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingConverter;
@@ -44,6 +46,17 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 
 	private final CassandraOperations operations;
 
+	private static CassandraConverter toConverter(CassandraOperations operations) {
+
+		Assert.notNull(operations, "CassandraOperations must not be null");
+
+		return operations.getConverter();
+	}
+
+	private static CassandraMappingContext toMappingContext(CassandraOperations operations) {
+		return toConverter(operations).getMappingContext();
+	}
+
 	/**
 	 * Create a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
@@ -53,13 +66,17 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	 */
 	public AbstractCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations) {
 
-		super(queryMethod, operations.getConverter().getMappingContext());
-
-		Assert.notNull(operations, "CassandraOperations must not be null");
+		super(queryMethod, toMappingContext(operations));
 
 		this.operations = operations;
 	}
 
+	/**
+	 * Return a reference to the {@link CassandraOperations} used to execute this Cassandra query.
+	 *
+	 * @return a reference to the {@link CassandraOperations} used to execute this Cassandra query.
+	 * @see org.springframework.data.cassandra.core.CassandraOperations
+	 */
 	protected CassandraOperations getOperations() {
 		return this.operations;
 	}
@@ -71,7 +88,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	@Override
 	public Object execute(Object[] parameters) {
 
-		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(getOperations().getConverter(),
+		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(toConverter(getOperations()),
 				new CassandraParametersParameterAccessor(getQueryMethod(), parameters));
 
 		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor().withDynamicProjection(parameterAccessor);
@@ -79,7 +96,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		Statement statement = createQuery(parameterAccessor);
 
 		CassandraQueryExecution queryExecution = getExecution(parameterAccessor, new ResultProcessingConverter(
-				resultProcessor, getOperations().getConverter().getMappingContext(), getEntityInstantiators()));
+				resultProcessor, toMappingContext(getOperations()), getEntityInstantiators()));
 
 		Class<?> resultType = resolveResultType(resultProcessor);
 
@@ -91,7 +108,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				getOperations().getConverter().getCustomConversions());
 
-		return (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
+		return returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType();
 	}
 
 	/**
@@ -110,6 +127,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	 */
 	private CassandraQueryExecution getExecution(CassandraParameterAccessor parameterAccessor,
 			Converter<Object, Object> resultProcessing) {
+
 		return new ResultProcessingExecution(getExecutionToWrap(parameterAccessor, resultProcessing), resultProcessing);
 	}
 
@@ -136,7 +154,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	/**
 	 * Returns whether the query should get a count projection applied.
 	 *
-	 * @return
+	 * @return a boolean value indicating whether the query is a count projection.
 	 * @since 2.1
 	 */
 	protected abstract boolean isCountQuery();
@@ -144,8 +162,9 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	/**
 	 * Returns whether the query should get an exists projection applied.
 	 *
-	 * @return
+	 * @return a boolean value indicating whether the query is an exists projection.
 	 * @since 2.1
 	 */
 	protected abstract boolean isExistsQuery();
+
 }

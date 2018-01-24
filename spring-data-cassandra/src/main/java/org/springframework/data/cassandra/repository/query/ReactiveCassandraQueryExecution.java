@@ -15,11 +15,12 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import java.util.List;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Mono;
 
-import java.util.List;
+import reactor.core.publisher.Mono;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
@@ -103,7 +104,7 @@ interface ReactiveCassandraQueryExecution {
 		@Override
 		public Object execute(Statement statement, Class<?> type) {
 
-			Mono<List<Row>> rows = operations.getReactiveCqlOperations().queryForRows(statement).buffer(2).next();
+			Mono<List<Row>> rows = this.operations.getReactiveCqlOperations().queryForRows(statement).buffer(2).next();
 
 			return rows.map(it -> {
 
@@ -115,9 +116,10 @@ interface ReactiveCassandraQueryExecution {
 
 					Row row = it.get(0);
 
-					if (ProjectionUtil.isCountProjection(row)) {
+					if (ProjectionUtil.qualifiesAsCountProjection(row)) {
 
 						Object object = row.getObject(0);
+
 						return ((Number) object).longValue() > 0;
 					}
 				}

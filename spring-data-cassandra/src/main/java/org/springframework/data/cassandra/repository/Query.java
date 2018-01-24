@@ -50,16 +50,17 @@ public @interface Query {
 	boolean allowFiltering() default false;
 
 	/**
-	 * Returns whether the query defined should be executed as count projection.
+	 * Returns whether the defined query should be executed as a count projection.
 	 *
 	 * @since 2.1
 	 */
 	boolean count() default false;
 
 	/**
-	 * Returns whether the query defined should be executed as exists projection.
+	 * Returns whether the defined query should be executed as an exists projection.
 	 *
 	 * @since 2.1
 	 */
 	boolean exists() default false;
+
 }

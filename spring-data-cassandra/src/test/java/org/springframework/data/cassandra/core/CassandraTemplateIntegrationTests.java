@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;

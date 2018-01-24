@@ -126,6 +126,26 @@ public class StatementFactory {
 	}
 
 	/**
+	 * Create a {@literal COUNT} statement by mapping {@link Query} to {@link Select}.
+	 *
+	 * @param query user-defined count {@link Query} to execute; must not be {@literal null}.
+	 * @param entity {@link CassandraPersistentEntity entity} to count; must not be {@literal null}.
+	 * @return the rendered {@link RegularStatement}.
+	 * @since 2.1
+	 */
+	public RegularStatement count(Query query, CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entity, "Entity must not be null");
+
+		Filter filter = getQueryMapper().getMappedObject(query, entity);
+
+		List<Selector> selectors = Collections.singletonList(FunctionCall.from("COUNT", 1L));
+
+		return createSelect(query, entity, filter, selectors);
+	}
+
+	/**
 	 * Create a {@literal SELECT} statement by mapping {@link Query} to {@link Select}.
 	 *
 	 * @param query must not be {@literal null}.
@@ -140,26 +160,6 @@ public class StatementFactory {
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
 
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(query.getColumns(), entity);
-
-		return createSelect(query, entity, filter, selectors);
-	}
-
-	/**
-	 * Create a {@literal COUNT} statement by mapping {@link Query} to {@link Select}.
-	 *
-	 * @param query must not be {@literal null}.
-	 * @param entity must not be {@literal null}.
-	 * @return the rendered {@link RegularStatement}.
-	 * @since 2.1
-	 */
-	public RegularStatement count(Query query, CassandraPersistentEntity<?> entity) {
-
-		Assert.notNull(query, "Query must not be null");
-		Assert.notNull(entity, "Entity must not be null");
-
-		Filter filter = getQueryMapper().getMappedObject(query, entity);
-
-		List<Selector> selectors = Collections.singletonList(FunctionCall.from("COUNT", 1L));
 
 		return createSelect(query, entity, filter, selectors);
 	}
@@ -194,10 +194,11 @@ public class StatementFactory {
 		if (selectors.isEmpty()) {
 			select = QueryBuilder.select().all().from(from.toCql());
 		} else {
+
 			Selection selection = QueryBuilder.select();
-			selectors.forEach(selector -> {
-				selector.getAlias().map(CqlIdentifier::toCql).ifPresent(getSelection(selection, selector)::as);
-			});
+
+			selectors.forEach(selector ->
+				selector.getAlias().map(CqlIdentifier::toCql).ifPresent(getSelection(selection, selector)::as));
 			select = selection.from(from.toCql());
 		}
 
@@ -206,6 +207,7 @@ public class StatementFactory {
 		}
 
 		if (sort.isSorted()) {
+
 			List<Ordering> orderings = new ArrayList<>();
 
 			for (Order order : sort) {
@@ -459,7 +461,7 @@ public class StatementFactory {
 				return QueryBuilder.containsKey(columnName, predicate.getValue());
 		}
 
-		throw new IllegalArgumentException(
-				String.format("Criteria %s %s %s not supported", columnName, predicate.getOperator(), predicate.getValue()));
+		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported",
+				columnName, predicate.getOperator(), predicate.getValue()));
 	}
 }

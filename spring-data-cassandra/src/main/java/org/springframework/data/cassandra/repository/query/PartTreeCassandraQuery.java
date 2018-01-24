@@ -112,7 +112,7 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	 */
 	@Override
 	protected boolean isCountQuery() {
-		return tree.isCountProjection();
+		return getTree().isCountProjection();
 	}
 
 	/* (non-Javadoc)
@@ -120,6 +120,6 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	 */
 	@Override
 	protected boolean isExistsQuery() {
-		return tree.isExistsProjection();
+		return getTree().isExistsProjection();
 	}
 }

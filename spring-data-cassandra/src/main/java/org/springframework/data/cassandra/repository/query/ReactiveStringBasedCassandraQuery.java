@@ -59,7 +59,8 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 			ReactiveCassandraOperations operations, SpelExpressionParser expressionParser,
 			EvaluationContextProvider evaluationContextProvider) {
 
-		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser, evaluationContextProvider);
+		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser,
+				evaluationContextProvider);
 	}
 
 	/**
@@ -94,7 +95,6 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 				throw new IllegalArgumentException(String.format(COUNT_AND_EXISTS, method));
 			}
 		} else {
-
 			this.isCountQuery = false;
 			this.isExistsQuery = false;
 		}
@@ -117,7 +117,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 */
 	@Override
 	protected boolean isCountQuery() {
-		return isCountQuery;
+		return this.isCountQuery;
 	}
 
 	/* (non-Javadoc)
@@ -125,6 +125,6 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 */
 	@Override
 	protected boolean isExistsQuery() {
-		return isExistsQuery;
+		return this.isExistsQuery;
 	}
 }
