@@ -34,8 +34,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.domain.Person.Kindness;
+import org.springframework.data.cassandra.domain.Person.KindnessToStringConverter;
+import org.springframework.data.cassandra.domain.Person.StringToKindnessConverter;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.repository.Query;
@@ -90,8 +94,12 @@ public class StringBasedCassandraQueryUnitTests {
 	@Before
 	public void setUp() {
 
+		CustomConversions conversions = new CustomConversions(
+				Arrays.asList(KindnessToStringConverter.INSTANCE, StringToKindnessConverter.INSTANCE));
 		BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+		mappingContext.setCustomConversions(conversions);
 		mappingContext.setUserTypeResolver(userTypeResolver);
+		mappingContext.afterPropertiesSet();
 
 		when(operations.getConverter()).thenReturn(converter);
 		when(operations.getSession()).thenReturn(session);
@@ -104,6 +112,7 @@ public class StringBasedCassandraQueryUnitTests {
 		this.converter = new MappingCassandraConverter(mappingContext);
 		this.factory = new SpelAwareProxyProjectionFactory();
 
+		this.converter.setCustomConversions(conversions);
 		this.converter.afterPropertiesSet();
 	}
 
@@ -344,6 +353,19 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(stringQuery).isEqualTo("SELECT * FROM person WHERE address={city:NULL,country:NULL};");
 	}
 
+	@Test // DATACASS-521
+	public void convertsEnumValueCorrectly() {
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByCondition", Kindness.class);
+
+		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), Kindness.Nice));
+
+		String query = cassandraQuery.createQuery(accessor);
+
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE kindness='+';");
+	}
+
 	private StringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
 		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
@@ -420,6 +442,9 @@ public class StringBasedCassandraQueryUnitTests {
 		@Query("SELECT * FROM person WHERE address=?0;")
 		Person findByMainAddress(UDTValue udtValue);
 
+		@Query("SELECT * FROM person WHERE kindness=?0;")
+		Person findByCondition(Kindness udtValue);
+
 		@ComposedQueryAnnotation
 		Person findByComposedQueryAnnotation(String lastname);
 	}
@@ -428,4 +453,5 @@ public class StringBasedCassandraQueryUnitTests {
 	@Query("SELECT * FROM person WHERE lastname = ?0;")
 	@interface ComposedQueryAnnotation {
 	}
+
 }

@@ -19,8 +19,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.data.convert.WritingConverter;
 
 /**
  * @author Mark Paluch
@@ -34,4 +37,43 @@ public class Person {
 	@Id String id;
 	String firstname;
 	String lastname;
+
+	private Kindness kindness;
+
+	public enum Kindness {
+
+		Nice("+"), Rude("-");
+
+		private final String identifier;
+
+		Kindness(String identifier) {
+			this.identifier = identifier;
+		}
+
+		public String getIdentifier() {
+			return identifier;
+		}
+	}
+
+	@WritingConverter
+	public enum KindnessToStringConverter implements Converter<Kindness, String> {
+
+		INSTANCE;
+
+		@Override
+		public String convert(Kindness source) {
+			return source.getIdentifier();
+		}
+	}
+
+	@ReadingConverter
+	public enum StringToKindnessConverter implements Converter<String, Kindness> {
+
+		INSTANCE;
+
+		@Override
+		public Kindness convert(String source) {
+			return "+".equals(source) ? Kindness.Nice : Kindness.Rude;
+		}
+	}
 }

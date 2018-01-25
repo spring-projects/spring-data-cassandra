@@ -31,6 +31,7 @@ import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIn
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.cassandra.domain.Person.Kindness;
 import org.springframework.data.cassandra.repository.TypedIdCassandraRepository;
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
@@ -88,10 +89,10 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.deleteAll();
 
-		dave = new Person("42", "Dave", "Matthews");
-		oliver = new Person("4", "Oliver August", "Matthews");
-		carter = new Person("49", "Carter", "Beauford");
-		boyd = new Person("45", "Boyd", "Tinsley");
+		dave = new Person("42", "Dave", "Matthews", Kindness.Nice);
+		oliver = new Person("4", "Oliver August", "Matthews", Kindness.Nice);
+		carter = new Person("49", "Carter", "Beauford", Kindness.Nice);
+		boyd = new Person("45", "Boyd", "Tinsley", Kindness.Nice);
 
 		repository.save(Arrays.asList(oliver, dave, carter, boyd));
 	}
@@ -165,7 +166,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		repository.deleteAll();
 
-		Person person = new Person("36", "Homer", "Simpson");
+		Person person = new Person("36", "Homer", "Simpson", Kindness.Nice);
 
 		repository.insert(person);
 
@@ -201,7 +202,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-445
 	public void saveEntityShouldInsertPartialEntity() {
 
-		Person justId = new Person("foo", null, null);
+		Person justId = new Person("foo", null, null, Kindness.Nice);
 		Person saved = repository.save(justId);
 
 		assertThat(saved).isEqualTo(saved);
@@ -215,7 +216,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-445
 	public void saveEntityShouldInsertNewEntity() {
 
-		Person person = new Person("36", "Homer", "Simpson");
+		Person person = new Person("36", "Homer", "Simpson", Kindness.Nice);
 
 		Person saved = repository.save(person);
 
@@ -241,7 +242,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-445
 	public void saveIterableOfMixedEntitiesShouldInsertEntity() {
 
-		Person person = new Person("36", "Homer", "Simpson");
+		Person person = new Person("36", "Homer", "Simpson", Kindness.Nice);
 
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");

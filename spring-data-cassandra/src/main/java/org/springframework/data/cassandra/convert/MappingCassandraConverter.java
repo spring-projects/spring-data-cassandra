@@ -737,13 +737,20 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return null;
 		}
 
-		if (getCustomConversions().isSimpleType(value.getClass())) {
-			// Doesn't need conversion
-			return getPotentiallyConvertedSimpleValue(value, typeInformation.getType());
+		Class<?> requestedTargetType = typeInformation != null ? typeInformation.getType() : Object.class;
+
+		if (getCustomConversions().hasCustomWriteTarget(value.getClass(), requestedTargetType)) {
+			return getConversionService().convert(value,
+					getCustomConversions().getCustomWriteTarget(value.getClass(), requestedTargetType));
 		}
 
 		if (getCustomConversions().hasCustomWriteTarget(value.getClass())) {
 			return getConversionService().convert(value, getCustomConversions().getCustomWriteTarget(value.getClass()));
+		}
+
+		if (getCustomConversions().isSimpleType(value.getClass())) {
+			// Doesn't need conversion
+			return getPotentiallyConvertedSimpleValue(value, typeInformation.getType());
 		}
 
 		TypeInformation<?> type = (typeInformation != null ? typeInformation : ClassTypeInformation.from(value.getClass()));

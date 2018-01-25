@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +29,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.domain.Person.Kindness;
+import org.springframework.data.cassandra.domain.Person.KindnessToStringConverter;
+import org.springframework.data.cassandra.domain.Person.StringToKindnessConverter;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.mapping.CassandraType;
@@ -43,7 +48,6 @@ import com.datastax.driver.core.DataType;
  *
  * @author Mark Paluch
  */
-@SuppressWarnings("Since15")
 @RunWith(MockitoJUnitRunner.class)
 public class ConvertingParameterAccessorUnitTests {
 
@@ -56,7 +60,11 @@ public class ConvertingParameterAccessorUnitTests {
 	@Before
 	public void setUp() {
 
+		CustomConversions conversions = new CustomConversions(
+				Arrays.asList(KindnessToStringConverter.INSTANCE, StringToKindnessConverter.INSTANCE));
+
 		this.converter = new MappingCassandraConverter(new BasicCassandraMappingContext());
+		this.converter.setCustomConversions(conversions);
 		this.converter.afterPropertiesSet();
 		this.convertingParameterAccessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
 	}
@@ -67,6 +75,16 @@ public class ConvertingParameterAccessorUnitTests {
 		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
 
 		assertThat(accessor.getBindableValue(0)).isNull();
+	}
+
+	@Test // DATACASS-521
+	public void shouldApplyCustomConverters() {
+
+		when(mockParameterAccessor.getBindableValue(0)).thenReturn(Kindness.Nice);
+
+		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
+
+		assertThat(accessor.getBindableValue(0)).isEqualTo("+");
 	}
 
 	@Test // DATACASS-296
