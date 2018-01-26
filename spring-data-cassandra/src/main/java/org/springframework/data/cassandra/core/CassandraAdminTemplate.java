@@ -90,7 +90,13 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 */
 	@Override
 	public void dropTable(CqlIdentifier tableName) {
-		getCqlOperations().execute(DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName)));
+		dropTable(false, tableName);
+	}
+
+	@Override
+	public void dropTable(boolean ifExists, CqlIdentifier tableName) {
+		getCqlOperations()
+				.execute(DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName).ifExists(ifExists)));
 	}
 
 	/*
