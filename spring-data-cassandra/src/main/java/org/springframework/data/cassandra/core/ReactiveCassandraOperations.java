@@ -42,7 +42,7 @@ import com.datastax.driver.core.Statement;
  * @see Flux
  * @see Mono
  */
-public interface ReactiveCassandraOperations {
+public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOperations {
 
 	/**
 	 * Returns the underlying {@link CassandraConverter}.
