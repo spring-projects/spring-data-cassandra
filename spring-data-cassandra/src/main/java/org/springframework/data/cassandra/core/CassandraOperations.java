@@ -47,7 +47,7 @@ import com.datastax.driver.core.Statement;
  * @see InsertOptions
  * @see UpdateOptions
  */
-public interface CassandraOperations {
+public interface CassandraOperations extends FluentCassandraOperations {
 
 	/**
 	 * Returns a new {@link CassandraBatchOperations}. Each {@link CassandraBatchOperations} instance can be executed only

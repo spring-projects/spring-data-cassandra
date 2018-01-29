@@ -25,6 +25,8 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
  */
 public class DropTableSpecification extends TableNameSpecification {
 
+	private boolean ifExists = false;
+
 	private DropTableSpecification(CqlIdentifier name) {
 		super(name);
 	}
@@ -49,5 +51,32 @@ public class DropTableSpecification extends TableNameSpecification {
 	 */
 	public static DropTableSpecification dropTable(CqlIdentifier tableName) {
 		return new DropTableSpecification(tableName);
+	}
+
+	/**
+	 * Causes the inclusion of an {@code IF EXISTS} clause.
+	 *
+	 * @return this
+	 * @since 2.1
+	 */
+	public DropTableSpecification ifExists() {
+		return ifExists(true);
+	}
+
+	/**
+	 * Toggles the inclusion of an {@code IF EXISTS} clause.
+	 *
+	 * @return this
+	 * @since 2.1
+	 */
+	public DropTableSpecification ifExists(boolean ifExists) {
+
+		this.ifExists = ifExists;
+
+		return this;
+	}
+
+	public boolean getIfExists() {
+		return ifExists;
 	}
 }

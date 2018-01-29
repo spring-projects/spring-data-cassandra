@@ -15,12 +15,13 @@
  */
 package org.springframework.data.cassandra.core;
 
-import java.util.List;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.SessionFactory;
@@ -35,6 +36,7 @@ import org.springframework.data.cassandra.core.cql.CqlProvider;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -42,11 +44,13 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentProper
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
@@ -84,6 +88,8 @@ public class CassandraTemplate implements CassandraOperations {
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final StatementFactory statementFactory;
+
+	private final SpelAwareProxyProjectionFactory projectionFactory;
 
 	/**
 	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link Session} and a default
@@ -144,6 +150,7 @@ public class CassandraTemplate implements CassandraOperations {
 		this.cqlOperations = cqlOperations;
 		this.mappingContext = converter.getMappingContext();
 		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
+		this.projectionFactory = new SpelAwareProxyProjectionFactory();
 	}
 
 	/* (non-Javadoc)
@@ -172,8 +179,8 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	/**
-	 * Returns the {@link CassandraMappingContext} used by this template to access mapping meta-data
-	 * in order to store (map) object to Cassandra tables.
+	 * Returns the {@link CassandraMappingContext} used by this template to access mapping meta-data in order to store
+	 * (map) object to Cassandra tables.
 	 *
 	 * @return the {@link CassandraMappingContext} used by this template.
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
@@ -264,7 +271,9 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getCqlOperations().query(statement, (row, rowNum) -> getConverter().read(entityClass, row));
+		Function<Row, T> mapper = getMapper(entityClass, entityClass);
+
+		return getCqlOperations().query(statement, (row, rowNum) -> mapper.apply(row));
 	}
 
 	/* (non-Javadoc)
@@ -278,10 +287,9 @@ public class CassandraTemplate implements CassandraOperations {
 
 		ResultSet resultSet = getCqlOperations().queryForResultSet(statement);
 
-		CassandraConverter converter = getConverter();
+		Function<Row, T> mapper = getMapper(entityClass, entityClass);
 
-		return QueryUtils.readSlice(resultSet, (row, rowNum) -> converter.read(entityClass, row), 0,
-				getEffectiveFetchSize(statement));
+		return QueryUtils.readSlice(resultSet, (row, rowNum) -> mapper.apply(row), 0, getEffectiveFetchSize(statement));
 	}
 
 	/* (non-Javadoc)
@@ -294,7 +302,7 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		return StreamSupport.stream(getCqlOperations().queryForResultSet(statement).spliterator(), false)
-				.map(row -> getConverter().read(entityClass, row));
+				.map(getMapper(entityClass, entityClass));
 	}
 
 	/* (non-Javadoc)
@@ -318,8 +326,16 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return doSelect(query, entityClass, getTableName(entityClass), entityClass);
+	}
+
+	<T> List<T> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
+
+		Function<Row, T> mapper = getMapper(entityClass, returnType);
+
+		RegularStatement select = getStatementFactory().select(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass), tableName);
+		return getCqlOperations().query(select, (row, rowNum) -> mapper.apply(row));
 	}
 
 	/* (non-Javadoc)
@@ -344,8 +360,16 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return stream(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return doStream(query, entityClass, getTableName(entityClass), entityClass);
+	}
+
+	<T> Stream<T> doStream(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
+
+		RegularStatement statement = getStatementFactory().select(query,
+				getMappingContext().getRequiredPersistentEntity(entityClass), tableName);
+
+		return StreamSupport.stream(getCqlOperations().queryForResultSet(statement).spliterator(), false)
+				.map(getMapper(entityClass, returnType));
 	}
 
 	/* (non-Javadoc)
@@ -374,6 +398,14 @@ public class CassandraTemplate implements CassandraOperations {
 				getStatementFactory().update(query, update, getMappingContext().getRequiredPersistentEntity(entityClass)));
 	}
 
+	WriteResult doUpdate(Query query, org.springframework.data.cassandra.core.query.Update update, Class<?> entityClass,
+			CqlIdentifier tableName) {
+
+		RegularStatement statement = getStatementFactory().update(query, update,
+				getMappingContext().getRequiredPersistentEntity(entityClass), tableName);
+		return getCqlOperations().execute(new StatementCallback(statement));
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
 	 */
@@ -383,8 +415,14 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getCqlOperations()
-				.execute(getStatementFactory().delete(query, getMappingContext().getRequiredPersistentEntity(entityClass)));
+		return doDelete(query, entityClass, getTableName(entityClass)).wasApplied();
+	}
+
+	WriteResult doDelete(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+
+		RegularStatement delete = getStatementFactory().delete(query, getRequiredPersistentEntity(entityClass), tableName);
+
+		return getCqlOperations().execute(new StatementCallback(delete));
 	}
 
 	// -------------------------------------------------------------------------
@@ -415,7 +453,12 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		RegularStatement count = getStatementFactory().count(query, getRequiredPersistentEntity(entityClass));
+		return doCount(query, entityClass, getTableName(entityClass));
+	}
+
+	long doCount(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+
+		RegularStatement count = getStatementFactory().count(query, getRequiredPersistentEntity(entityClass), tableName);
 
 		Long result = getCqlOperations().queryForObject(count, Long.class);
 
@@ -433,7 +476,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
-		Select select = QueryBuilder.select().from(entity.getTableName().toCql());
+		Select select = QueryBuilder.select().from(getTableName(entityClass).toCql());
 
 		getConverter().write(id, select.where(), entity);
 
@@ -449,8 +492,13 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		RegularStatement select = getStatementFactory()
-				.select(query.limit(1), getRequiredPersistentEntity(entityClass));
+		return doExists(query, entityClass, getTableName(entityClass));
+	}
+
+	boolean doExists(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+
+		RegularStatement select = getStatementFactory().select(query.limit(1), getRequiredPersistentEntity(entityClass),
+				tableName);
 
 		return getCqlOperations().queryForResultSet(select).iterator().hasNext();
 	}
@@ -490,7 +538,13 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
 
-		Insert insert = QueryUtils.createInsertQuery(getTableName(entity).toCql(), entity, options, getConverter());
+		CqlIdentifier tableName = getTableName(entity);
+		return doInsert(entity, options, tableName);
+	}
+
+	WriteResult doInsert(Object entity, WriteOptions options, CqlIdentifier tableName) {
+
+		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter());
 
 		// noinspection ConstantConditions
 		return getCqlOperations().execute(new StatementCallback(insert));
@@ -574,8 +628,57 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	// -------------------------------------------------------------------------
+	// Fluent API entry points
+	// -------------------------------------------------------------------------
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation#query(java.lang.Class)
+	 */
+	@Override
+	public <T> ExecutableSelect<T> query(Class<T> domainType) {
+		return new ExecutableSelectOperationSupport(this).query(domainType);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation#insert(java.lang.Class)
+	 */
+	@Override
+	public <T> ExecutableInsert<T> insert(Class<T> domainType) {
+		return new ExecutableInsertOperationSupport(this).insert(domainType);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation#update(java.lang.Class)
+	 */
+	@Override
+	public <T> ExecutableUpdate<T> update(Class<T> domainType) {
+		return new ExecutableUpdateOperationSupport(this).update(domainType);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation#remove(java.lang.Class)
+	 */
+	@Override
+	public ExecutableDelete delete(Class<?> domainType) {
+		return new ExecutableDeleteOperationSupport(this).delete(domainType);
+	}
+
+	// -------------------------------------------------------------------------
 	// Implementation hooks and helper methods
 	// -------------------------------------------------------------------------
+
+	@SuppressWarnings("unchecked")
+	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType) {
+
+		Class<?> typeToRead = targetType.isInterface() || targetType.isAssignableFrom(entityType) ? entityType : targetType;
+
+		return row -> {
+
+			Object source = getConverter().read(typeToRead, row);
+
+			return (T) (targetType.isInterface() ? projectionFactory.createProjection(targetType, source) : source);
+		};
+	}
 
 	private int getConfiguredFetchSize(Session session) {
 		return session.getCluster().getConfiguration().getQueryOptions().getFetchSize();

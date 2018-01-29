@@ -39,7 +39,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * doesn't exist, parameter {@code ifNotExists} is ignored, the table is created and {@literal true} is returned.
 	 *
 	 * @param ifNotExists If true, will only create the table if it doesn't exist, else the create operation will be
-	 *          ignored and the method will return {@literal false}.
+	 *          ignored.
 	 * @param tableName The name of the table.
 	 * @param entityClass The class whose fields determine the columns created.
 	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
@@ -53,6 +53,15 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @param tableName The name of the table.
 	 */
 	void dropTable(CqlIdentifier tableName);
+
+	/**
+	 * Drops the named table.
+	 *
+	 * @param ifExists If true, will only drop the table if it exists, else the create operation will be ignored.
+	 * @param tableName The name of the table.
+	 * @since 2.1
+	 */
+	void dropTable(boolean ifExists, CqlIdentifier tableName);
 
 	/**
 	 * Lookup {@link TableMetadata}.

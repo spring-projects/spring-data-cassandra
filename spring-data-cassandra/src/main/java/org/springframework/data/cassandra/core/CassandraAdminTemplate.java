@@ -64,8 +64,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		super(sessionFactory, converter);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, org.springframework.data.cassandra.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
 	 */
 	@Override
@@ -84,17 +83,24 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		dropTable(getTableName(entityClass));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
 	public void dropTable(CqlIdentifier tableName) {
-		getCqlOperations().execute(DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName)));
+		dropTable(false, tableName);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(boolean, CqlIdentifier)
+	 */
+	@Override
+	public void dropTable(boolean ifExists, CqlIdentifier tableName) {
+		getCqlOperations()
+				.execute(DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName).ifExists(ifExists)));
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropUserType(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
@@ -105,8 +111,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		getCqlOperations().execute(DropUserTypeCqlGenerator.toCql(DropUserTypeSpecification.dropType(typeName)));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(java.lang.String, org.springframework.data.cassandra.core.cql.CqlIdentifier)
 	 */
 	@Override
@@ -119,8 +124,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 				.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName.toCql())));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getKeyspaceMetadata()
 	 */
 	@Override

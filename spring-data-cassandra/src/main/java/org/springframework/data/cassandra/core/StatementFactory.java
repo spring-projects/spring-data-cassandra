@@ -138,11 +138,25 @@ public class StatementFactory {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entity, "Entity must not be null");
 
+		return count(query, entity, entity.getTableName());
+	}
+
+	/**
+	 * Create a {@literal COUNT} statement by mapping {@link Query} to {@link Select}.
+	 *
+	 * @param query user-defined count {@link Query} to execute; must not be {@literal null}.
+	 * @param entity {@link CassandraPersistentEntity entity} to count; must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the rendered {@link RegularStatement}.
+	 * @since 2.1
+	 */
+	public RegularStatement count(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
 
 		List<Selector> selectors = Collections.singletonList(FunctionCall.from("COUNT", 1L));
 
-		return createSelect(query, entity, filter, selectors);
+		return createSelect(query, entity, filter, selectors, tableName);
 	}
 
 	/**
@@ -157,20 +171,38 @@ public class StatementFactory {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entity, "Entity must not be null");
 
+		return select(query, entity, entity.getTableName());
+	}
+
+	/**
+	 * Create a {@literal SELECT} statement by mapping {@link Query} to {@link Select}.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the rendered {@link RegularStatement}.
+	 * @since 2.1
+	 */
+	public RegularStatement select(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(entity, "Table name must not be null");
+
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
 
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(query.getColumns(), entity);
 
-		return createSelect(query, entity, filter, selectors);
+		return createSelect(query, entity, filter, selectors, tableName);
 	}
 
 	private Select createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter,
-			List<Selector> selectors) {
+			List<Selector> selectors, CqlIdentifier tableName) {
 
 		Sort sort = Optional.of(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
 				.orElse(Sort.unsorted());
 
-		Select select = createSelectAndOrder(selectors, entity.getTableName(), filter, sort);
+		Select select = createSelectAndOrder(selectors, tableName, filter, sort);
 
 		query.getQueryOptions().ifPresent(queryOptions -> QueryOptionsUtil.addQueryOptions(select, queryOptions));
 
@@ -253,16 +285,37 @@ public class StatementFactory {
 	 * @param entity must not be {@literal null}.
 	 * @return the rendered {@link RegularStatement}.
 	 */
-	public RegularStatement update(Query query, Update updateObj, CassandraPersistentEntity<?> entity) {
+	public RegularStatement update(Query query, Update update, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(update, "Update must not be null");
 		Assert.notNull(entity, "Entity must not be null");
+
+		return update(query, update, entity, entity.getTableName());
+	}
+
+	/**
+	 * Create an {@literal UPDATE} statement by mapping {@link Query} to {@link Update}.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param updateObj must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the rendered {@link RegularStatement}.
+	 * @since 2.1
+	 */
+	RegularStatement update(Query query, Update updateObj, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(updateObj, "Update must not be null");
+		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(tableName, "Table name must not be null");
 
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
 
 		Update mappedUpdate = getUpdateMapper().getMappedObject(updateObj, entity);
 
-		com.datastax.driver.core.querybuilder.Update update = update(entity.getTableName(), mappedUpdate, filter);
+		com.datastax.driver.core.querybuilder.Update update = update(tableName, mappedUpdate, filter);
 
 		query.getQueryOptions().ifPresent(queryOptions -> {
 			if (queryOptions instanceof WriteOptions) {
@@ -381,11 +434,29 @@ public class StatementFactory {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entity, "Entity must not be null");
 
+		return delete(query, entity, entity.getTableName());
+	}
+
+	/**
+	 * Create a {@literal DELETE} statement by mapping {@link Query} to {@link Delete}.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the rendered {@link RegularStatement}.
+	 * @see 2.1
+	 */
+	public RegularStatement delete(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(tableName, "Table name must not be null");
+
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
 
 		List<String> columnNames = getQueryMapper().getMappedColumnNames(query.getColumns(), entity);
 
-		Delete delete = delete(columnNames, entity.getTableName(), filter);
+		Delete delete = delete(columnNames, tableName, filter);
 
 		query.getQueryOptions().ifPresent(queryOptions -> QueryOptionsUtil.addQueryOptions(delete, queryOptions));
 

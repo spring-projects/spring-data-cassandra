@@ -21,6 +21,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecificati
  * CQL generator for generating a {@code DROP TABLE} statement.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class DropTableCqlGenerator extends TableNameCqlGenerator<DropTableSpecification> {
 
@@ -35,7 +36,7 @@ public class DropTableCqlGenerator extends TableNameCqlGenerator<DropTableSpecif
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		return cql.append("DROP TABLE ")
-				// .append(spec().getIfExists() ? "IF EXISTS " : "")
+				.append(spec().getIfExists() ? "IF EXISTS " : "")
 				.append(spec().getName()).append(";");
 	}
 }
