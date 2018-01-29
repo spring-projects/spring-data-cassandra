@@ -1188,3 +1188,39 @@ The query methods need to specify the target type T that will be returned.
 * `T` *selectOneById* `(String cql, Class<T> entityClass)` Ad-hoc query for a single object of type T from the table providing a CQL statement.
 * `Stream<T>` *stream* `(String cql, Class<T> entityClass)` Ad-hoc query for a stream of objects of type T from the table providing a CQL statement.
 
+[[cassandra.template.query.fluent-template-api]]
+=== Fluent Template API
+
+The `CassandraOperations` interface is one of the central components when it comes to more low level interaction with Apache Cassandra. It offers a wide range of methods.
+One can find multiple overloads for each and every method. Most of them just cover optional (nullable) parts of the API.
+
+`FluentCassandraOperations` provide a more narrow interface for common methods of `CassandraOperations` providing a more readable, fluent API.
+The entry points `query(…)`, `insert(…)`, `update(…)`, and `delete(…)` follow a natural naming schema based on the operation to execute. Moving on from the entry point the API is designed to only offer context dependent methods guiding towards a terminating method that invokes the actual `CassandraOperations` counterpart.
+
+====
+[source,java]
+----
+List<SWCharacter> all = ops.query(SWCharacter.class)
+  .inTable("star_wars")                        <1>
+  .all();
+----
+<1> Skip this step if `SWCharacter` defines the table name via `@Table` or if using the class name as table name is just fine.
+====
+
+If a table in Cassandra holds entities of different types, like a `Jedi` within a Table of `SWCharacters`, you can use different types to map the query and to map result. Use `as(Class<?> targetType)` to map results to a different target type while `query(Class<?> entityType)` still applies to the query and table name.
+
+====
+[source,java]
+----
+List<Jedi> all = ops.query(SWCharacter.class)    <1>
+  .as(Jedi.class)                                <2>
+  .matching(query(where("jedi").is(true)))
+  .all();
+----
+<1> The query fields are mapped against the `SWCharacter` type.
+<2> Resulting rows are mapped into `Jedi`.
+====
+
+TIP: It is possible to directly apply <<projections>> to resulting documents by providing just the `interface` type via `as(Class<?>)`.
+
+Switching between retrieving a single entity, multiple ones as `List` or `Stream` like is done via the terminating methods `first()`, `one()`, `all()` or `stream()`.
