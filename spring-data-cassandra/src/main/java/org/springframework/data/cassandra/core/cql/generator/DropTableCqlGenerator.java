@@ -22,6 +22,8 @@ import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecificati
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.core.cql.generator.TableNameCqlGenerator
+ * @see org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification
  */
 public class DropTableCqlGenerator extends TableNameCqlGenerator<DropTableSpecification> {
 
@@ -35,8 +37,11 @@ public class DropTableCqlGenerator extends TableNameCqlGenerator<DropTableSpecif
 
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
+
+		DropTableSpecification specification = spec();
+
 		return cql.append("DROP TABLE ")
-				.append(spec().getIfExists() ? "IF EXISTS " : "")
-				.append(spec().getName()).append(";");
+				.append(specification.getIfExists() ? "IF EXISTS " : "")
+				.append(specification.getName()).append(";");
 	}
 }

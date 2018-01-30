@@ -77,6 +77,6 @@ public class DropTableSpecification extends TableNameSpecification {
 	}
 
 	public boolean getIfExists() {
-		return ifExists;
+		return this.ifExists;
 	}
 }

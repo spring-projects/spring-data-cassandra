@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.mapping.Table;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -48,29 +49,40 @@ public interface CassandraAdminOperations extends CassandraOperations {
 			Map<String, Object> optionsByName);
 
 	/**
-	 * Drops the named table.
+	 * Drops a table based on the given {@link Class entity type}.
 	 *
-	 * @param tableName The name of the table.
+	 * The name of the table is derived from either the simple name of the {@link Class entity class}
+	 * or name of the table specified with the {@link Table} mapping annotation.
+	 *
+	 * @param entityType {@link Class type} of the entity for which the table will be dropped.
+	 */
+	void dropTable(Class<?> entityType);
+
+	/**
+	 * Drops the {@link String named} table.
+	 *
+	 * @param tableName {@link String Name} of the table to drop.
+	 * @see #dropTable(boolean, CqlIdentifier)
 	 */
 	void dropTable(CqlIdentifier tableName);
 
 	/**
-	 * Drops the named table.
+	 * Drops the {@link String named} table.
 	 *
-	 * @param ifExists If true, will only drop the table if it exists, else the create operation will be ignored.
-	 * @param tableName The name of the table.
+	 * @param ifExists If {@literal true}, will only drop the table if it exists,
+	 * else the drop operation will be ignored.
+	 * @param tableName {@link String Name} of the table to drop.
 	 * @since 2.1
 	 */
 	void dropTable(boolean ifExists, CqlIdentifier tableName);
 
 	/**
-	 * Lookup {@link TableMetadata}.
+	 * Drops a user type.
 	 *
-	 * @param keyspace must not be empty or {@literal null}.
-	 * @param tableName must not be {@literal null}.
-	 * @return the {@link TableMetadata} or {@literal null}.
+	 * @param typeName must not be {@literal null}.
+	 * @since 1.5
 	 */
-	Optional<TableMetadata> getTableMetadata(String keyspace, CqlIdentifier tableName);
+	void dropUserType(CqlIdentifier typeName);
 
 	/**
 	 * Returns {@link KeyspaceMetadata} for the current keyspace.
@@ -81,10 +93,12 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	KeyspaceMetadata getKeyspaceMetadata();
 
 	/**
-	 * Drops a user type.
+	 * Lookup {@link TableMetadata}.
 	 *
-	 * @param typeName must not be {@literal null}.
-	 * @since 1.5
+	 * @param keyspace must not be empty or {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the {@link TableMetadata} or {@literal null}.
 	 */
-	void dropUserType(CqlIdentifier typeName);
+	Optional<TableMetadata> getTableMetadata(String keyspace, CqlIdentifier tableName);
+
 }

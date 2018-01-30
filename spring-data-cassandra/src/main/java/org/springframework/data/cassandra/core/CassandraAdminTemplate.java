@@ -44,6 +44,8 @@ import com.datastax.driver.core.TableMetadata;
  */
 public class CassandraAdminTemplate extends CassandraTemplate implements CassandraAdminOperations {
 
+	protected static final boolean DEFAULT_DROP_TABLE_IF_EXISTS = false;
+
 	/**
 	 * Constructor used for a basic template configuration.
 	 *
@@ -79,6 +81,10 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		getCqlOperations().execute(CreateTableCqlGenerator.toCql(createTableSpecification));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(java.lang.Class)
+	 */
+	@Override
 	public void dropTable(Class<?> entityClass) {
 		dropTable(getTableName(entityClass));
 	}
@@ -88,7 +94,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 */
 	@Override
 	public void dropTable(CqlIdentifier tableName) {
-		dropTable(false, tableName);
+		dropTable(DEFAULT_DROP_TABLE_IF_EXISTS, tableName);
 	}
 
 	/* (non-Javadoc)
@@ -96,8 +102,11 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 */
 	@Override
 	public void dropTable(boolean ifExists, CqlIdentifier tableName) {
-		getCqlOperations()
-				.execute(DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName).ifExists(ifExists)));
+
+		String dropTableCql =
+				DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName).ifExists(ifExists));
+
+		getCqlOperations().execute(dropTableCql);
 	}
 
 	/* (non-Javadoc)
@@ -108,7 +117,10 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 		Assert.notNull(typeName, "Type name must not be null");
 
-		getCqlOperations().execute(DropUserTypeCqlGenerator.toCql(DropUserTypeSpecification.dropType(typeName)));
+		String dropUserTypeCql =
+				DropUserTypeCqlGenerator.toCql(DropUserTypeSpecification.dropType(typeName));
+
+		getCqlOperations().execute(dropUserTypeCql);
 	}
 
 	/* (non-Javadoc)
