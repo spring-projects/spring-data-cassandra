@@ -42,9 +42,13 @@ import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.TupleType;
+import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
 
@@ -334,6 +338,27 @@ public class CassandraMappingContextUnitTests {
 		assertThat(entries.getTableName()).isEqualTo(CqlIdentifier.of("compositekeyentity"));
 		assertThat(entries.getName()).isEqualTo(CqlIdentifier.of("my_index"));
 		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+	}
+
+	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACASS-284
+	public void shouldRejectUntypedTuples() {
+
+		mappingContext.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(UntypedTupleEntity.class));
+	}
+
+	@Test // DATACASS-284
+	public void shouldCreateTableForTypedTupleType() {
+
+		CreateTableSpecification tableSpecification = mappingContext
+				.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(TypedTupleEntity.class));
+
+		assertThat(tableSpecification.getColumns()).hasSize(2);
+
+		ColumnSpecification column = tableSpecification.getColumns().get(1);
+
+		assertThat(column.getType()).isInstanceOf(TupleType.class);
+		assertThat(column.getType()).isEqualTo(TupleType.of(ProtocolVersion.NEWEST_SUPPORTED,
+				CodecRegistry.DEFAULT_INSTANCE, DataType.varchar(), DataType.bigint()));
 	}
 
 	private static CreateIndexSpecification getSpecificationFor(String column,
@@ -635,5 +660,19 @@ public class CassandraMappingContextUnitTests {
 	@UserDefinedType(value = "AnotherNestedType")
 	public static class AnotherNested {
 		String str;
+	}
+
+	@Table
+	static class UntypedTupleEntity {
+
+		@Id String id;
+		TupleType untyped;
+	}
+
+	@Table
+	static class TypedTupleEntity {
+
+		@Id String id;
+		@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue typed;
 	}
 }

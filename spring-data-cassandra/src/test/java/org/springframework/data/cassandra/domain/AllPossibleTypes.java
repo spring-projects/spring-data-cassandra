@@ -15,6 +15,11 @@
  */
 package org.springframework.data.cassandra.domain;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -25,17 +30,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.cassandra.core.convert.CassandraTypeMappingIntegrationTest.Condition;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.TupleValue;
 
 /**
  * @author Mark Paluch
@@ -46,50 +47,52 @@ import com.datastax.driver.core.DataType.Name;
 @RequiredArgsConstructor
 public class AllPossibleTypes {
 
-	@PrimaryKey @NonNull private String id;
+	@PrimaryKey @NonNull String id;
 
-	private InetAddress inet;
+	InetAddress inet;
 
-	private UUID uuid;
+	UUID uuid;
 
-	@CassandraType(type = Name.INT) private Number justNumber;
+	@CassandraType(type = Name.INT) Number justNumber;
 
-	private Byte boxedByte;
-	private byte primitiveByte;
+	Byte boxedByte;
+	byte primitiveByte;
 
-	private Short boxedShort;
-	private short primitiveShort;
+	Short boxedShort;
+	short primitiveShort;
 
-	private Long boxedLong;
-	private long primitiveLong;
+	Long boxedLong;
+	long primitiveLong;
 
-	private Integer boxedInteger;
-	private int primitiveInteger;
+	Integer boxedInteger;
+	int primitiveInteger;
 
-	private Float boxedFloat;
-	private float primitiveFloat;
+	Float boxedFloat;
+	float primitiveFloat;
 
-	private Double boxedDouble;
-	private double primitiveDouble;
+	Double boxedDouble;
+	double primitiveDouble;
 
-	private Boolean boxedBoolean;
-	private boolean primitiveBoolean;
+	Boolean boxedBoolean;
+	boolean primitiveBoolean;
 
-	private com.datastax.driver.core.LocalDate date;
+	com.datastax.driver.core.LocalDate date;
 
-	private Date timestamp;
+	Date timestamp;
 
-	private BigDecimal bigDecimal;
-	private BigInteger bigInteger;
-	private ByteBuffer blob;
+	BigDecimal bigDecimal;
+	BigInteger bigInteger;
+	ByteBuffer blob;
 
-	private Set<String> setOfString;
-	private List<String> listOfString;
-	private Map<String, String> mapOfString;
+	Set<String> setOfString;
+	List<String> listOfString;
+	Map<String, String> mapOfString;
 
-	private Condition anEnum;
-	private Set<Condition> setOfEnum;
-	private List<Condition> listOfEnum;
+	Condition anEnum;
+	Set<Condition> setOfEnum;
+	List<Condition> listOfEnum;
+
+	@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue tupleValue;
 
 	// supported by conversion
 	java.time.Instant instant;
