@@ -19,16 +19,7 @@ import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
 import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import org.springframework.beans.BeansException;
@@ -56,8 +47,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.TupleType;
 
 /**
  * Default implementation of a {@link MappingContext} for Cassandra using {@link CassandraPersistentEntity} and
@@ -507,6 +501,14 @@ public class CassandraMappingContext
 				if (dataType != null) {
 					return dataType;
 				}
+			}
+
+			if (annotation.type() == Name.TUPLE) {
+
+				DataType[] dataTypes = Arrays.stream(annotation.typeArguments()) //
+						.map(CassandraSimpleTypeHolder::getDataTypeFor) //
+						.toArray(DataType[]::new);
+				return TupleType.of(ProtocolVersion.NEWEST_SUPPORTED, CodecRegistry.DEFAULT_INSTANCE, dataTypes);
 			}
 
 			return property.getDataType();
