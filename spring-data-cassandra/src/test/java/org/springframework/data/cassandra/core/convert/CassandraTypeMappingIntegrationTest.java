@@ -20,16 +20,19 @@ import static org.junit.Assume.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 import org.assertj.core.api.Assertions;
@@ -45,9 +48,12 @@ import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.util.Version;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Duration;
 import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.TupleType;
+import com.datastax.driver.core.TupleValue;
 
 /**
  * Integration tests for type mapping using {@link CassandraOperations}.
@@ -72,8 +78,13 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		SchemaTestUtils.potentiallyCreateTableFor(AllPossibleTypes.class, operations);
 		SchemaTestUtils.potentiallyCreateTableFor(TimeEntity.class, operations);
 
+		operations.getCqlOperations().execute("DROP TABLE IF EXISTS ListOfTuples;");
+		operations.getCqlOperations()
+				.execute("CREATE TABLE ListOfTuples (id varchar PRIMARY KEY, tuples frozen<list<tuple<varchar, bigint>>>);");
+
 		SchemaTestUtils.truncate(AllPossibleTypes.class, operations);
 		SchemaTestUtils.truncate(TimeEntity.class, operations);
+		SchemaTestUtils.truncate(ListOfTuples.class, operations);
 
 		if (cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10)) {
 
@@ -445,6 +456,38 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		assertThat(loaded.getSetOfEnum()).contains(Condition.MINT);
 	}
 
+	@Test // DATACASS-284
+	public void shouldReadAndWriteTupleType() {
+
+		TupleType tupleType = cluster.getMetadata().newTupleType(DataType.varchar(), DataType.bigint());
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+
+		entity.setTupleValue(tupleType.newValue("foo", 23L));
+
+		operations.insert(entity);
+		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
+
+		assertThat(loaded.getTupleValue().getObject(0)).isEqualTo("foo");
+		assertThat(loaded.getTupleValue().getObject(1)).isEqualTo(23L);
+	}
+
+	@Test // DATACASS-284
+	public void shouldReadAndWriteListOfTuples() {
+
+		TupleType tupleType = cluster.getMetadata().newTupleType(DataType.varchar(), DataType.bigint());
+
+		ListOfTuples entity = new ListOfTuples();
+		entity.setId("foo");
+
+		entity.setTuples(Arrays.asList(tupleType.newValue("foo", 23L), tupleType.newValue("bar", 42L)));
+
+		operations.insert(entity);
+		ListOfTuples loaded = operations.selectOneById(entity.getId(), ListOfTuples.class);
+
+		assertThat(loaded.getTuples().get(0).getObject(0)).isEqualTo("foo");
+		assertThat(loaded.getTuples().get(1).getObject(0)).isEqualTo("bar");
+	}
+
 	@Test // DATACASS-271
 	public void shouldReadAndWriteTime() {
 
@@ -646,5 +689,13 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 
 		@Id String id;
 		Duration duration;
+	}
+
+	@Data
+	@NoArgsConstructor
+	static class ListOfTuples {
+
+		@Id String id;
+		List<TupleValue> tuples;
 	}
 }

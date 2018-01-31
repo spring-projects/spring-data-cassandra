@@ -73,6 +73,9 @@ for further details.
 | `java.util.UUID`
 | `timeuuid`
 
+| `TupleValue`
+| `tuple<…>`
+
 | `UDTValue`, mapped User-Defined Types
 | user type
 

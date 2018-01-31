@@ -30,6 +30,7 @@ import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.UDTValue;
 import com.google.common.reflect.TypeToken;
@@ -73,6 +74,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		simpleTypes.add(Number.class);
 		simpleTypes.add(Row.class);
 		simpleTypes.add(UDTValue.class);
+		simpleTypes.add(TupleValue.class);
 
 		classToDataType = Collections.unmodifiableMap(classToDataType(codecRegistry, primitiveWrappers));
 		nameToDataType = Collections.unmodifiableMap(nameToDataType());
