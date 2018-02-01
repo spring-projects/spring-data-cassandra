@@ -7,6 +7,7 @@ This chapter summarizes changes and new features for each release.
 == What's new in Spring Data for Apache Cassandra 2.1
 * New annotations for `@CountQuery` and `@ExistsQuery`.
 * Template API extended with `count(…)` and `exists(…)` methods accepting `Query`.
+* Support for `map` columns using User-defined/converted types.
 
 [[new-features.2-0-0]]
 == What's new in Spring Data for Apache Cassandra 2.0

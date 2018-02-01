@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
@@ -116,12 +117,17 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 			session.execute("CREATE TYPE IF NOT EXISTS engine (manufacturer FROZEN<manufacturer>);");
 			session.execute("CREATE TABLE car (id text PRIMARY KEY, engine FROZEN<engine>);");
 
+			session.execute("DROP TABLE IF EXISTS supplier;");
+			session.execute(
+					"CREATE TABLE supplier (id text PRIMARY KEY, acceptedCurrencies frozen<map<manufacturer, list<currency>>>);");
+
 		} else {
 
 			session.execute("TRUNCATE addressbook;");
 			session.execute("TRUNCATE bank;");
 			session.execute("TRUNCATE money;");
 			session.execute("TRUNCATE car;");
+			session.execute("TRUNCATE supplier;");
 		}
 	}
 
@@ -379,8 +385,6 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	@Test // DATACASS-172, DATACASS-400
 	public void shouldWriteNestedUdt() {
 
-		session.execute("INSERT INTO car (id, engine)  VALUES ('1',  {manufacturer: {name:'a good one'}});");
-
 		Engine engine = new Engine(new Manufacturer("a good one"));
 
 		Car car = new Car("1", engine);
@@ -390,6 +394,22 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		assertThat(insert.toString())
 				.isEqualTo("INSERT INTO car (engine,id) VALUES ({manufacturer:{name:'a good one'}},'1');");
+	}
+
+	@Test // DATACASS-487
+	public void shouldReadUdtInMap() {
+
+		session.execute("INSERT INTO supplier (id,acceptedCurrencies) VALUES ('1',"
+				+ "{{name:'a good one'}:[{currency:'EUR'},{currency:'USD'}]});");
+
+		ResultSet resultSet = session.execute("SELECT * FROM supplier");
+		Supplier supplier = converter.read(Supplier.class, resultSet.one());
+
+		assertThat(supplier.getAcceptedCurrencies()).isNotEmpty();
+
+		List<Currency> currencies = supplier.getAcceptedCurrencies().get(new Manufacturer("a good one"));
+
+		assertThat(currencies).contains(Currency.getInstance("EUR"), Currency.getInstance("USD"));
 	}
 
 	@Table
@@ -435,10 +455,19 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@UserDefinedType
-	@Getter
+	@Data
 	@AllArgsConstructor
 	private static class Manufacturer {
 		String name;
+	}
+
+	@Table
+	@Data
+	@AllArgsConstructor
+	private static class Supplier {
+
+		@Id String id;
+		Map<Manufacturer, List<Currency>> acceptedCurrencies;
 	}
 
 	@Data

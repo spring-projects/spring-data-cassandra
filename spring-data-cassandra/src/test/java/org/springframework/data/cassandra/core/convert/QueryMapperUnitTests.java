@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -75,7 +76,7 @@ public class QueryMapperUnitTests {
 	UserType userType = UserTypeBuilder.forName("address").withField("street", DataType.varchar()).build();
 
 	@Before
-	public void before() throws Exception {
+	public void before() {
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(
 				Collections.singletonList(CurrencyConverter.INSTANCE));
@@ -212,6 +213,34 @@ public class QueryMapperUnitTests {
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("[{street:'21 Jump-Street'}]");
 	}
 
+	@Test // DATACASS-487
+	public void shouldMapUdtMapContainsKey() {
+
+		Query query = Query.query(Criteria.where("relocations").containsKey(new Address("21 Jump-Street")));
+
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
+
+		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
+
+		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.CONTAINS_KEY);
+		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UDTValue.class);
+		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("{street:'21 Jump-Street'}");
+	}
+
+	@Test // DATACASS-487
+	public void shouldMapUdtMapContains() {
+
+		Query query = Query.query(Criteria.where("relocations").contains(new Address("21 Jump-Street")));
+
+		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
+
+		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
+
+		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.CONTAINS);
+		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UDTValue.class);
+		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("{street:'21 Jump-Street'}");
+	}
+
 	@Test // DATACASS-343
 	public void shouldMapPropertyToColumnName() {
 
@@ -300,6 +329,7 @@ public class QueryMapperUnitTests {
 
 		Address address;
 		List<Address> addresses;
+		Map<Address, Address> relocations;
 		Currency currency;
 		State state;
 

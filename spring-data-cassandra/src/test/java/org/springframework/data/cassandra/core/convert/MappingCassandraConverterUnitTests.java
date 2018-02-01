@@ -33,15 +33,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -910,6 +902,46 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(delete.toString()).isEqualTo("DELETE FROM foo WHERE first_name='first' AND lastname='last';");
 	}
 
+	@Test // DATACASS-487
+	public void shouldReadConvertedMap() {
+
+		LocalDate date1 = LocalDate.fromYearMonthDay(2018, 1, 1);
+		LocalDate date2 = LocalDate.fromYearMonthDay(2019, 1, 1);
+		Map<String, List<LocalDate>> times = Collections.singletonMap("Europe/Paris", Arrays.asList(date1, date2));
+		rowMock = RowMockUtil.newRowMock(
+				RowMockUtil.column("times", times, DataType.map(DataType.varchar(), DataType.list(DataType.date()))));
+
+		TypeWithConvertedMap converted = mappingCassandraConverter.read(TypeWithConvertedMap.class, rowMock);
+
+		assertThat(converted.times).containsKeys(ZoneId.of("Europe/Paris"));
+
+		List<java.time.LocalDate> convertedTimes = converted.times.get(ZoneId.of("Europe/Paris"));
+		assertThat(convertedTimes).hasSize(2).hasOnlyElementsOfType(java.time.LocalDate.class);
+	}
+
+	@Test // DATACASS-487
+	public void shouldWriteConvertedMap() {
+
+		java.time.LocalDate date1 = java.time.LocalDate.of(2018, 1, 1);
+		java.time.LocalDate date2 = java.time.LocalDate.of(2019, 1, 1);
+
+		TypeWithConvertedMap typeWithConvertedMap = new TypeWithConvertedMap();
+		typeWithConvertedMap.times = Collections.singletonMap(ZoneId.of("Europe/Paris"), Arrays.asList(date1, date2));
+
+		Insert insert = QueryBuilder.insertInto("table");
+
+		mappingCassandraConverter.write(typeWithConvertedMap, insert);
+
+		List<Object> values = getValues(insert);
+		assertThat(values).hasSize(1);
+		assertThat(values.get(0)).isInstanceOf(Map.class);
+
+		Map<String, List<LocalDate>> map = (Map) values.get(0);
+
+		assertThat(map).containsKey("Europe/Paris");
+		assertThat(map.get("Europe/Paris")).hasOnlyElementsOfType(LocalDate.class);
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> List<T> getListValue(Insert statement) {
 
@@ -1162,5 +1194,13 @@ public class MappingCassandraConverterUnitTests {
 		@PrimaryKey private String id;
 
 		ZoneId zoneId;
+	}
+
+	@Table
+	public static class TypeWithConvertedMap {
+
+		@PrimaryKey private String id;
+
+		Map<ZoneId, List<java.time.LocalDate>> times;
 	}
 }
