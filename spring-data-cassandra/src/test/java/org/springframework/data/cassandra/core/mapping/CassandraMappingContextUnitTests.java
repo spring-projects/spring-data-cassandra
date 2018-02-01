@@ -38,6 +38,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.support.UserTypeBuilder;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
@@ -62,13 +63,6 @@ public class CassandraMappingContextUnitTests {
 	public void before() {
 		mappingContext.setUserTypeResolver(typeName -> null);
 	}
-
-	@Test
-	public void testgetRequiredPersistentEntityOfTransientType() {
-		mappingContext.getRequiredPersistentEntity(Transient.class);
-	}
-
-	private static class Transient {}
 
 	@Test // DATACASS-282, DATACASS-455
 	public void testGetExistingPersistentEntityHappyPath() {
@@ -235,6 +229,25 @@ public class CassandraMappingContextUnitTests {
 		ColumnSpecification kind = tableSpecification.getClusteredKeyColumns().get(2);
 		assertThat(kind.getName().toCql()).isEqualTo("kind");
 		assertThat(kind.getOrdering()).isEqualTo(Ordering.ASCENDING);
+	}
+
+	@Test // DATACASS-487
+	public void shouldCreateTableForMappedAndConvertedColumn() {
+
+		UserType mappedudt = UserTypeBuilder.forName("mappedudt").withField("foo", DataType.ascii()).build();
+		mappingContext.setUserTypeResolver(typeName -> mappedudt);
+		mappingContext.setCustomConversions(
+				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
+				.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
+
+		CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
+
+		assertThat(tableSpecification.getColumns()).hasSize(2);
+		ColumnSpecification column = tableSpecification.getColumns().get(1);
+
+		assertThat(column.getType().toString()).isEqualTo("map<frozen<mappedudt>, list<text>>");
 	}
 
 	@Table
@@ -586,6 +599,14 @@ public class CassandraMappingContextUnitTests {
 		@CassandraType(type = DataType.Name.UDT, userTypeName = "mappedudt") UDTValue udtValue;
 
 		@CassandraType(type = DataType.Name.UDT, userTypeName = "NestedType") Nested nested;
+	}
+
+	@Table
+	private static class WithMapOfMixedTypes {
+
+		@Id String id;
+
+		Map<MappedUdt, List<Human>> people;
 	}
 
 	enum HumanToStringConverter implements Converter<Human, String> {

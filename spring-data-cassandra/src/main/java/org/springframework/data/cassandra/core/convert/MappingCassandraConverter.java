@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import lombok.AllArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import lombok.AllArgsConstructor;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -53,9 +55,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
@@ -746,20 +745,15 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		TypeInformation<?> type = typeInformation != null ? typeInformation
 				: ClassTypeInformation.from((Class) value.getClass());
 
-		TypeInformation<?> actualType = type.getRequiredActualType();
-
 		if (value instanceof Collection) {
-
-			Collection<Object> original = (Collection<Object>) value;
-			Collection<Object> converted = CollectionFactory.createCollection(getCollectionType(type), original.size());
-
-			for (Object element : original) {
-				converted.add(convertToColumnType(element, actualType));
-			}
-
-			return converted;
+			return writeCollectionInternal((Collection<Object>) value, type);
 		}
 
+		if (value instanceof Map) {
+			return writeMapInternal((Map<Object, Object>) value, type);
+		}
+
+		TypeInformation<?> actualType = type.getRequiredActualType();
 		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(actualType.getType());
 
 		if (entity != null && entity.isUserDefinedType()) {
@@ -772,6 +766,34 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		return value;
+	}
+
+	private Object writeCollectionInternal(Collection<Object> source, TypeInformation<?> type) {
+
+		Collection<Object> converted = CollectionFactory.createCollection(getCollectionType(type), source.size());
+		TypeInformation<?> actualType = type.getRequiredActualType();
+
+		for (Object element : source) {
+			converted.add(convertToColumnType(element, actualType));
+		}
+
+		return converted;
+	}
+
+	private Object writeMapInternal(Map<Object, Object> source, TypeInformation<?> type) {
+
+		Map<Object, Object> converted = CollectionFactory.createMap(type.getType(), source.size());
+
+		TypeInformation<?> keyType = type.getRequiredComponentType();
+		TypeInformation<?> valueType = type.getRequiredMapValueType();
+
+		for (Entry<Object, Object> entry : source.entrySet()) {
+
+			Object key = convertToColumnType(entry.getKey(), keyType);
+			converted.put(key, convertToColumnType(entry.getValue(), valueType));
+		}
+
+		return converted;
 	}
 
 	/**
@@ -876,46 +898,57 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return null;
 		}
 
-		if (getCustomConversions().hasCustomWriteTarget(property.getActualType()) && property.isCollectionLike()) {
+		return convertReadValue(value, property.getTypeInformation());
+	}
+
+	@Nullable
+	private Object convertReadValue(Object value, TypeInformation<?> typeInformation) {
+
+		if (getCustomConversions().hasCustomWriteTarget(typeInformation.getRequiredActualType().getType())
+				&& typeInformation.isCollectionLike()) {
 
 			if (value instanceof Collection) {
 
 				Collection<Object> original = (Collection<Object>) value;
 
-				Collection<Object> converted = CollectionFactory.createCollection(property.getType(), original.size());
+				Collection<Object> converted = CollectionFactory.createCollection(typeInformation.getType(), original.size());
 
 				for (Object element : original) {
-					converted.add(getConversionService().convert(element, property.getActualType()));
+					converted.add(getConversionService().convert(element, typeInformation.getRequiredActualType().getType()));
 				}
 
 				return converted;
 			}
 		}
 
-		if (property.isCollectionLike() && value instanceof Collection) {
-			return readCollectionOrArray(property.getTypeInformation(), (Collection<?>) value);
+		if (typeInformation.isCollectionLike() && value instanceof Collection) {
+			return readCollectionOrArrayInternal((Collection<?>) value, typeInformation);
+		}
+
+		if (typeInformation.isMap() && value instanceof Map) {
+			return readMapInternal((Map<Object, Object>) value, typeInformation);
 		}
 
 		BasicCassandraPersistentEntity<?> persistentEntity = getMappingContext()
-				.getPersistentEntity(property.getActualType());
+				.getPersistentEntity(typeInformation.getRequiredActualType());
 
 		if (persistentEntity != null && persistentEntity.isUserDefinedType() && value instanceof UDTValue) {
 			return readEntityFromUdt(persistentEntity, (UDTValue) value);
 		}
 
-		return getPotentiallyConvertedSimpleRead(value, property.getType());
+		return getPotentiallyConvertedSimpleRead(value, typeInformation.getType());
 	}
 
 	/**
 	 * Reads the given {@link Collection} into a collection of the given {@link TypeInformation}.
 	 *
-	 * @param targetType must not be {@literal null}.
 	 * @param sourceValue must not be {@literal null}.
+	 * @param targetType must not be {@literal null}.
 	 * @return the converted {@link Collection} or array, will never be {@literal null}.
 	 */
 	@Nullable
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Object readCollectionOrArray(TypeInformation<?> targetType, Collection<?> sourceValue) {
+	private Object readCollectionOrArrayInternal(Collection<?> sourceValue, TypeInformation<?> targetType) {
 
 		Assert.notNull(targetType, "Target type must not be null!");
 
@@ -947,6 +980,44 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		return getPotentiallyConvertedSimpleRead(items, targetType.getType());
+	}
+
+	/**
+	 * Reads the given {@link Map} into a map of the given {@link TypeInformation}.
+	 *
+	 * @param sourceValue must not be {@literal null}.
+	 * @param targetType must not be {@literal null}.
+	 * @return the converted {@link Collection} or array, will never be {@literal null}.
+	 */
+	@Nullable
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private Object readMapInternal(Map<Object, Object> sourceValue, TypeInformation<?> targetType) {
+
+		Assert.notNull(targetType, "Target type must not be null!");
+
+		TypeInformation<?> keyType = targetType.getComponentType();
+		TypeInformation<?> valueType = targetType.getMapValueType();
+
+		Class<?> rawKeyType = keyType != null ? keyType.getType() : null;
+		Map<Object, Object> map = CollectionFactory.createMap(targetType.getType(), rawKeyType, sourceValue.size());
+
+		if (sourceValue.isEmpty()) {
+			return map;
+		}
+
+		for (Entry<Object, Object> entry : sourceValue.entrySet()) {
+
+			Object key = entry.getKey();
+
+			if (rawKeyType != null && !rawKeyType.isAssignableFrom(key.getClass())) {
+				key = convertReadValue(key, keyType);
+			}
+
+			Object value = entry.getValue();
+			map.put(key, convertReadValue(value, valueType));
+		}
+
+		return map;
 	}
 
 	private TypeCodec<Object> getCodec(CassandraPersistentProperty property) {

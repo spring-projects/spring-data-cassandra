@@ -130,7 +130,7 @@ public class UpdateMapper extends QueryMapper {
 			Optional<? extends TypeInformation<?>> typeInformation = field.getProperty()
 					.map(PersistentProperty::getTypeInformation);
 
-			Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getActualType);
+			Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getComponentType);
 			Optional<TypeInformation<?>> valueType = typeInformation.map(TypeInformation::getMapValueType);
 
 			Object mappedKey = keyType.map(typeInfo -> getConverter().convertToColumnType(op.getKey(), typeInfo))
@@ -219,7 +219,7 @@ public class UpdateMapper extends QueryMapper {
 		Optional<? extends TypeInformation<?>> typeInformation = field.getProperty()
 				.map(PersistentProperty::getTypeInformation);
 
-		Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getActualType);
+		Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getComponentType);
 		Optional<TypeInformation<?>> valueType = typeInformation.map(TypeInformation::getMapValueType);
 
 		Map<Object, Object> result = new LinkedHashMap<>(updateOp.getValue().size(), 1);
