@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
 import org.springframework.beans.BeansException;
@@ -90,7 +91,7 @@ public class CassandraMappingContext
 
 	private @Nullable ClassLoader beanClassLoader;
 
-	// useful caches
+	// caches
 	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
 	private final Set<BasicCassandraPersistentEntity<?>> userDefinedTypes = new HashSet<>();
 	private final Set<BasicCassandraPersistentEntity<?>> tableEntities = new HashSet<>();
@@ -542,7 +543,7 @@ public class CassandraMappingContext
 					throw new MappingException(String.format("User type [%s] not found", userTypeName));
 				}
 
-				DataType dataType = getUserDataType(property, userType);
+				DataType dataType = getUserDataType(property.getTypeInformation(), userType);
 
 				if (dataType != null) {
 					return dataType;
@@ -552,54 +553,84 @@ public class CassandraMappingContext
 			return property.getDataType();
 		}
 
-		BasicCassandraPersistentEntity<?> persistentEntity = getPersistentEntity(property.getActualType());
+		return getDataTypeWithUserTypeFactory(property.getTypeInformation(), dataTypeProvider, property::getDataType);
+	}
+
+	private DataType getDataTypeWithUserTypeFactory(TypeInformation<?> typeInformation, DataTypeProvider dataTypeProvider,
+			Supplier<DataType> fallback) {
+
+		BasicCassandraPersistentEntity<?> persistentEntity = getPersistentEntity(typeInformation.getRequiredActualType());
 
 		if (persistentEntity != null && persistentEntity.isUserDefinedType()) {
 
-			DataType dataType = getUserDataType(property, dataTypeProvider.getDataType(persistentEntity));
+			DataType dataType = getUserDataType(typeInformation, dataTypeProvider.getDataType(persistentEntity));
 
 			if (dataType != null) {
 				return dataType;
 			}
 		}
 
-		return this.customConversions.getCustomWriteTarget(property.getType())
-				.map(CassandraSimpleTypeHolder::getDataTypeFor)
-				.orElseGet(() -> this.customConversions
-						.getCustomWriteTarget(property.getActualType())
-						.filter(it -> !property.isMapLike())
-						.map(it -> {
+		Optional<DataType> customWriteTarget = customConversions.getCustomWriteTarget(typeInformation.getType())
+				.map(CassandraSimpleTypeHolder::getDataTypeFor);
 
-							if (property.isCollectionLike()) {
-								if (List.class.isAssignableFrom(property.getType())) {
-									return DataType.list(getDataTypeFor(it));
-								}
+		DataType dataType = customWriteTarget.orElseGet(() -> {
 
-								if (Set.class.isAssignableFrom(property.getType())) {
-									return DataType.set(getDataTypeFor(it));
-								}
+			return customConversions.getCustomWriteTarget(typeInformation.getRequiredActualType().getType()) //
+					.filter(it -> !typeInformation.isMap()) //
+					.map(it -> {
+
+						if (typeInformation.isCollectionLike()) {
+
+							if (List.class.isAssignableFrom(typeInformation.getType())) {
+								return DataType.list(getDataTypeFor(it));
 							}
 
-							return getDataTypeFor(it);
-
-						}).orElseGet(() -> {
-
-							if (property.isMapLike()) {
-
-								Class<?> keyType = property.getComponentType();
-								Class<?> valueType = property.getMapValueType();
-
-								return DataType.map(getDataType(keyType, dataTypeProvider),
-										getDataType(valueType, dataTypeProvider));
+							if (Set.class.isAssignableFrom(typeInformation.getType())) {
+								return DataType.set(getDataTypeFor(it));
 							}
+						}
 
-							return property.getDataType();
+						return getDataTypeFor(it);
+					}).orElse(null);
+		});
 
-						}));
+		if (dataType != null) {
+			return dataType;
+		}
+
+		return typeInformation.isMap() ? getMapDataType(typeInformation, dataTypeProvider) : fallback.get();
+	}
+
+	private DataType getMapDataType(TypeInformation<?> typeInformation, DataTypeProvider dataTypeProvider) {
+
+		TypeInformation<?> keyTypeInformation = typeInformation.getComponentType();
+		TypeInformation<?> valueTypeInformation = typeInformation.getMapValueType();
+
+		DataType keyType = getDataTypeWithUserTypeFactory(keyTypeInformation, dataTypeProvider, () -> {
+
+			DataType type = getDataTypeFor(keyTypeInformation.getType());
+			if (type != null) {
+				return type;
+			}
+
+			throw new MappingException("Cannot resolve key type for " + typeInformation + ".");
+		});
+
+		DataType valueType = getDataTypeWithUserTypeFactory(valueTypeInformation, dataTypeProvider, () -> {
+
+			DataType type = getDataTypeFor(valueTypeInformation.getType());
+			if (type != null) {
+				return type;
+			}
+
+			throw new MappingException("Cannot resolve value type for " + typeInformation + ".");
+		});
+
+		return DataType.map(keyType, valueType);
 	}
 
 	@Nullable
-	private DataType getUserDataType(CassandraPersistentProperty property, DataType elementType) {
+	private DataType getUserDataType(TypeInformation<?> property, DataType elementType) {
 
 		if (property.isCollectionLike()) {
 
@@ -612,7 +643,7 @@ public class CassandraMappingContext
 			}
 		}
 
-		return !(property.isCollectionLike() || property.isMapLike()) ? elementType : null;
+		return !(property.isCollectionLike() || property.isMap()) ? elementType : null;
 	}
 
 	/**

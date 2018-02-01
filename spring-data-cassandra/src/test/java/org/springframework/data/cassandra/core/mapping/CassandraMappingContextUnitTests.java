@@ -41,6 +41,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.support.UserTypeBuilder;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
@@ -71,7 +72,7 @@ public class CassandraMappingContextUnitTests {
 	}
 
 	@Test
-	public void testgetRequiredPersistentEntityOfTransientType() {
+	public void testGetRequiredPersistentEntityOfTransientType() {
 		this.mappingContext.getRequiredPersistentEntity(Transient.class);
 	}
 
@@ -81,6 +82,7 @@ public class CassandraMappingContextUnitTests {
 	public void testGetExistingPersistentEntityHappyPath() {
 
 		TableMetadata tableMetadata = mock(TableMetadata.class);
+
 		when(tableMetadata.getName()).thenReturn(X.class.getSimpleName().toLowerCase());
 
 		mappingContext.getRequiredPersistentEntity(X.class);
@@ -242,6 +244,25 @@ public class CassandraMappingContextUnitTests {
 		ColumnSpecification kind = tableSpecification.getClusteredKeyColumns().get(2);
 		assertThat(kind.getName().toCql()).isEqualTo("kind");
 		assertThat(kind.getOrdering()).isEqualTo(Ordering.ASCENDING);
+	}
+
+	@Test // DATACASS-487
+	public void shouldCreateTableForMappedAndConvertedColumn() {
+
+		UserType mappedudt = UserTypeBuilder.forName("mappedudt").withField("foo", DataType.ascii()).build();
+		mappingContext.setUserTypeResolver(typeName -> mappedudt);
+		mappingContext.setCustomConversions(
+				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
+				.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
+
+		CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
+
+		assertThat(tableSpecification.getColumns()).hasSize(2);
+		ColumnSpecification column = tableSpecification.getColumns().get(1);
+
+		assertThat(column.getType().toString()).isEqualTo("map<frozen<mappedudt>, list<text>>");
 	}
 
 	@Table
@@ -545,6 +566,7 @@ public class CassandraMappingContextUnitTests {
 	public void shouldNotRetainInvalidEntitiesInCache() {
 
 		TableMetadata tableMetadata = mock(TableMetadata.class);
+
 		when(tableMetadata.getName())
 				.thenReturn(InvalidEntityWithIdAndPrimaryKeyColumn.class.getSimpleName().toLowerCase());
 
@@ -563,32 +585,27 @@ public class CassandraMappingContextUnitTests {
 
 	@Table
 	private static class InvalidEntityWithIdAndPrimaryKeyColumn {
-
 		@Id String foo;
 		@PrimaryKeyColumn String bar;
 	}
 
 	@Table
 	static class EntityWithComplexPrimaryKeyColumn {
-
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object complexObject;
 	}
 
 	@Table
 	static class EntityWithComplexId {
-
 		@Id Object complexObject;
 	}
 
 	@PrimaryKeyClass
 	static class PrimaryKeyClassWithComplexId {
-
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object complexObject;
 	}
 
 	@Table
 	static class EntityWithPrimaryKeyClassWithComplexId {
-
 		@Id PrimaryKeyClassWithComplexId primaryKeyClassWithComplexId;
 	}
 
@@ -609,12 +626,15 @@ public class CassandraMappingContextUnitTests {
 
 	@Table
 	private static class WithUdt {
-
 		@Id String id;
-
 		@CassandraType(type = DataType.Name.UDT, userTypeName = "mappedudt") UDTValue udtValue;
-
 		@CassandraType(type = DataType.Name.UDT, userTypeName = "NestedType") Nested nested;
+	}
+
+	@Table
+	private static class WithMapOfMixedTypes {
+		@Id String id;
+		Map<MappedUdt, List<Human>> people;
 	}
 
 	enum HumanToStringConverter implements Converter<Human, String> {
@@ -629,16 +649,13 @@ public class CassandraMappingContextUnitTests {
 
 	@Table
 	private static class TypeWithCustomConvertedMap {
-
 		@Id String id;
 		Map<String, Collection<String>> stringMap;
-
 		@CassandraType(type = Name.ASCII) Map<String, Collection<String>> blobMap;
 	}
 
 	@Table
 	private static class TypeWithListOfHumans {
-
 		@Id String id;
 		List<Human> humans;
 	}
@@ -657,7 +674,6 @@ public class CassandraMappingContextUnitTests {
 	@UserDefinedType(value = "NestedType")
 	public static class Nested {
 		String s1;
-
 		@CassandraType(type = Name.UDT, userTypeName = "AnotherNestedType") AnotherNested anotherNested;
 	}
 

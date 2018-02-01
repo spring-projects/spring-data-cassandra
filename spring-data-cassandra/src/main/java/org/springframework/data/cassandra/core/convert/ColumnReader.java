@@ -113,14 +113,8 @@ public class ColumnReader {
 		}
 
 		// Map
-		if (collectionTypes.size() == 2) {
-
-			DataType keyType = collectionTypes.get(0);
-			TypeCodec<Object> keyTypeCodec = codecRegistry.codecFor(keyType);
-
-			DataType valueType = collectionTypes.get(1);
-			TypeCodec<Object> valueTypeCodec = codecRegistry.codecFor(valueType);
-			return row.getMap(i, keyTypeCodec.getJavaType().getRawType(), valueTypeCodec.getJavaType().getRawType());
+		if (type.getName() == Name.MAP) {
+			return row.getObject(i);
 		}
 
 		throw new IllegalStateException("Unknown Collection type encountered. Valid collections are Set, List and Map.");

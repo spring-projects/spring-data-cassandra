@@ -16,6 +16,10 @@
 package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.Collections;
 import java.util.Currency;
@@ -29,11 +33,17 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.data.cassandra.support.UserTypeBuilder;
+
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.UserType;
 
 /**
  * Unit tests for {@link UpdateMapper}.
@@ -51,9 +61,10 @@ public class UpdateMapperUnitTests {
 	@Mock UserTypeResolver userTypeResolver;
 
 	Currency currency = Currency.getInstance("EUR");
+	UserType manufacturer = UserTypeBuilder.forName("manufacturer").withField("name", DataType.varchar()).build();
 
 	@Before
-	public void before() throws Exception {
+	public void before() {
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(
 				Collections.singletonList(CurrencyConverter.INSTANCE));
@@ -68,6 +79,8 @@ public class UpdateMapperUnitTests {
 		updateMapper = new UpdateMapper(cassandraConverter);
 
 		persistentEntity = mappingContext.getRequiredPersistentEntity(Person.class);
+
+		when(userTypeResolver.resolveType(CqlIdentifier.of("manufacturer"))).thenReturn(manufacturer);
 	}
 
 	@Test // DATACASS-343
@@ -77,6 +90,18 @@ public class UpdateMapperUnitTests {
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("first_name = 'foo'");
+	}
+
+	@Test // DATACASS-487
+	public void shouldReplaceUdtMap() {
+
+		Manufacturer manufacturer = new Manufacturer("foobar");
+		Map<Manufacturer, Currency> map = Collections.singletonMap(manufacturer, currency);
+
+		Update update = updateMapper.getMappedObject(Update.empty().set("manufacturers", map), persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("manufacturers = {{name:'foobar'}:'Euro'}");
 	}
 
 	@Test // DATACASS-343
@@ -97,6 +122,17 @@ public class UpdateMapperUnitTests {
 		assertThat(update.toString()).isEqualTo("map['baz'] = 'Euro'");
 	}
 
+	@Test // DATACASS-487
+	public void shouldCreateSetAtUdtKeyUpdate() {
+
+		Manufacturer manufacturer = new Manufacturer("foobar");
+		Update update = updateMapper.getMappedObject(Update.empty().set("manufacturers").atKey(manufacturer).to(currency),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("manufacturers[{name:'foobar'}] = 'Euro'");
+	}
+
 	@Test // DATACASS-343
 	public void shouldAddToMap() {
 
@@ -104,6 +140,17 @@ public class UpdateMapperUnitTests {
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("map = map + {'foo':'Euro'}");
+	}
+
+	@Test // DATACASS-487
+	public void shouldAddUdtToMap() {
+
+		Manufacturer manufacturer = new Manufacturer("foobar");
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("manufacturers").entry(manufacturer, currency),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("manufacturers = manufacturers + {{name:'foobar'}:'Euro'}");
 	}
 
 	@Test // DATACASS-343
@@ -178,10 +225,18 @@ public class UpdateMapperUnitTests {
 		List<Currency> list;
 		@Column("set_col") Set<Currency> set;
 		Map<String, Currency> map;
+		Map<Manufacturer, Currency> manufacturers;
 		Currency currency;
 
 		Integer number;
 
 		@Column("first_name") String firstName;
+	}
+
+	@Data
+	@UserDefinedType
+	@AllArgsConstructor
+	static class Manufacturer {
+		String name;
 	}
 }
