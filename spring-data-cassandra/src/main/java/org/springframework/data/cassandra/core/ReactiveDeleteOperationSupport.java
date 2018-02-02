@@ -19,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -30,6 +31,8 @@ import org.springframework.util.Assert;
  * Implementation of {@link ReactiveDeleteOperation}.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation
+ * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
  */
 @RequiredArgsConstructor
@@ -43,14 +46,14 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 	@Override
 	public ReactiveDelete delete(Class<?> domainType) {
 
-		Assert.notNull(domainType, "DomainType must not be null!");
+		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ReactiveDeleteSupport(template, domainType, Query.empty(), null);
+		return new ReactiveDeleteSupport(this.template, domainType, Query.empty(), null);
 	}
 
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-	static class ReactiveDeleteSupport implements ReactiveDelete, DeleteWithTable, TerminatingDelete {
+	static class ReactiveDeleteSupport implements ReactiveDelete, TerminatingDelete {
 
 		@NonNull ReactiveCassandraTemplate template;
 
@@ -61,17 +64,6 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 		@Nullable CqlIdentifier tableName;
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation.DeleteWithTable#inTable(java.lang.String)
-		 */
-		@Override
-		public DeleteWithQuery inTable(String tableName) {
-
-			Assert.hasText(tableName, "Table name must not be null or empty");
-
-			return new ReactiveDeleteSupport(template, domainType, query, CqlIdentifier.of(tableName));
-		}
-
-		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation.DeleteWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 		 */
 		@Override
@@ -79,7 +71,7 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ReactiveDeleteSupport(template, domainType, query, tableName);
+			return new ReactiveDeleteSupport(this.template, this.domainType, this.query, tableName);
 		}
 
 		/* (non-Javadoc)
@@ -88,20 +80,20 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 		@Override
 		public TerminatingDelete matching(Query query) {
 
-			Assert.notNull(query, "Query must not be null!");
+			Assert.notNull(query, "Query must not be null");
 
-			return new ReactiveDeleteSupport(template, domainType, query, tableName);
+			return new ReactiveDeleteSupport(this.template, this.domainType, query, this.tableName);
 		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation.TerminatingDelete#all()
 		 */
 		public Mono<WriteResult> all() {
-			return template.doDelete(query, domainType, getTableName());
+			return this.template.doDelete(this.query, this.domainType, getTableName());
 		}
 
 		private CqlIdentifier getTableName() {
-			return tableName != null ? tableName : template.getTableName(domainType);
+			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
 	}
 }

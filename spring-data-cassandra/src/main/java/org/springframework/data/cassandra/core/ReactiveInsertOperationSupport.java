@@ -19,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -42,9 +43,9 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 	@Override
 	public <T> ReactiveInsert<T> insert(Class<T> domainType) {
 
-		Assert.notNull(domainType, "DomainType must not be null!");
+		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ReactiveInsertSupport<>(template, domainType, null, InsertOptions.empty());
+		return new ReactiveInsertSupport<>(this.template, domainType, InsertOptions.empty(), null);
 	}
 
 	@RequiredArgsConstructor
@@ -55,20 +56,9 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 
 		@NonNull Class<T> domainType;
 
-		@Nullable CqlIdentifier tableName;
-
 		@NonNull InsertOptions insertOptions;
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation.InsertWithTable#inTable(java.lang.String)
-		 */
-		@Override
-		public InsertWithOptions<T> inTable(String tableName) {
-
-			Assert.hasText(tableName, "Table name must not be null or empty");
-
-			return new ReactiveInsertSupport<>(template, domainType, CqlIdentifier.of(tableName), insertOptions);
-		}
+		@Nullable CqlIdentifier tableName;
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation.InsertWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
@@ -78,7 +68,7 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ReactiveInsertSupport<>(template, domainType, tableName, insertOptions);
+			return new ReactiveInsertSupport<>(this.template, this.domainType, this.insertOptions, tableName);
 		}
 
 		/* (non-Javadoc)
@@ -89,7 +79,7 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 
 			Assert.notNull(insertOptions, "InsertOptions must not be null");
 
-			return new ReactiveInsertSupport<>(template, domainType, tableName, insertOptions);
+			return new ReactiveInsertSupport<>(this.template, this.domainType, insertOptions, this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -98,13 +88,13 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 		@Override
 		public Mono<WriteResult> one(T object) {
 
-			Assert.notNull(object, "Object must not be null!");
+			Assert.notNull(object, "Object must not be null");
 
-			return template.doInsert(object, insertOptions, getTableName());
+			return this.template.doInsert(object, this.insertOptions, getTableName());
 		}
 
 		private CqlIdentifier getTableName() {
-			return tableName != null ? tableName : template.getTableName(domainType);
+			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
 	}
 }

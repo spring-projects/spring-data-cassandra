@@ -15,19 +15,21 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
-import static org.springframework.data.cassandra.core.query.Query.*;
-import static org.springframework.data.cassandra.core.query.Update.*;
-
-import lombok.Data;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Query.query;
+import static org.springframework.data.cassandra.core.query.Update.update;
 
 import java.util.Collections;
 
+import lombok.Data;
+
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -46,6 +48,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 public class ReactiveUpdateOperationSupportTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraAdminTemplate admin;
+
 	ReactiveCassandraTemplate template;
 
 	Person han;
@@ -74,24 +77,26 @@ public class ReactiveUpdateOperationSupportTests extends AbstractKeyspaceCreatin
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void domainTypeIsRequired() {
-		template.update(null);
+		this.template.update(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void queryIsRequired() {
-		template.update(Person.class).matching(null);
+		this.template.update(Person.class).matching(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void tableIsRequiredOnSet() {
-		template.update(Person.class).inTable((CqlIdentifier) null);
+		this.template.update(Person.class).inTable((CqlIdentifier) null);
 	}
 
 	@Test // DATACASS-485
 	public void updateAllMatching() {
 
-		Mono<WriteResult> writeResult = template.update(Person.class).matching(queryHan()).apply(update("firstname", "Han"))
-				.all();
+		Mono<WriteResult> writeResult = this.template
+				.update(Person.class)
+				.matching(queryHan())
+				.apply(update("firstname", "Han"));
 
 		StepVerifier.create(writeResult.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
 	}
@@ -99,12 +104,15 @@ public class ReactiveUpdateOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void updateWithDifferentDomainClassAndCollection() {
 
-		Mono<WriteResult> writeResult = template.update(Jedi.class).inTable("person")
-				.matching(query(where("id").is(han.getId()))).apply(update("name", "Han")).all();
+		Mono<WriteResult> writeResult = this.template
+				.update(Jedi.class).inTable("person")
+				.matching(query(where("id").is(han.getId())))
+				.apply(update("name", "Han"));
 
 		StepVerifier.create(writeResult.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
-		assertThat(admin.selectOne(queryHan(), Person.class)).isNotEqualTo(han).hasFieldOrPropertyWithValue("firstname",
-				"Han");
+
+		assertThat(this.admin.selectOne(queryHan(), Person.class))
+				.isNotEqualTo(han).hasFieldOrPropertyWithValue("firstname", "Han");
 	}
 
 	private Query queryHan() {
@@ -114,14 +122,12 @@ public class ReactiveUpdateOperationSupportTests extends AbstractKeyspaceCreatin
 	@Data
 	@Table
 	static class Person {
-
 		@Id String id;
 		@Indexed String firstname;
 	}
 
 	@Data
 	static class Jedi {
-
 		@Column("firstname") String name;
 	}
 }

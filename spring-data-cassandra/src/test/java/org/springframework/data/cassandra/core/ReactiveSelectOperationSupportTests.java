@@ -15,21 +15,23 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
-import static org.springframework.data.cassandra.core.query.Query.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Query.query;
+
+import java.util.Collections;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.Collections;
-
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.annotation.Id;
@@ -50,6 +52,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraAdminTemplate admin;
+
 	ReactiveCassandraTemplate template;
 
 	Person han;
@@ -67,35 +70,51 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 		initPersons();
 	}
 
+	private void initPersons() {
+
+		han = new Person();
+		han.firstname = "han";
+		han.lastname = "solo";
+		han.id = "id-1";
+
+		luke = new Person();
+		luke.firstname = "luke";
+		luke.lastname = "skywalker";
+		luke.id = "id-2";
+
+		admin.insert(han);
+		admin.insert(luke);
+	}
+
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void domainTypeIsRequired() {
-		template.query(null);
+		this.template.query(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void returnTypeIsRequiredOnSet() {
-		template.query(Person.class).as(null);
+		this.template.query(Person.class).as(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void tableIsRequiredOnSet() {
-		template.query(Person.class).inTable((String) null);
+		this.template.query(Person.class).inTable((String) null);
 	}
 
 	@Test // DATACASS-485
 	public void findAll() {
 
-		Flux<Person> result = template.query(Person.class).all();
+		Flux<Person> result = this.template.query(Person.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual -> {
-			assertThat(actual).containsExactlyInAnyOrder(han, luke);
-		}).verifyComplete();
+		StepVerifier.create(result.collectList()).assertNext(actual ->
+			assertThat(actual).containsExactlyInAnyOrder(han, luke)
+		).verifyComplete();
 	}
 
 	@Test // DATACASS-485
 	public void findAllWithCollection() {
 
-		Flux<Human> result = template.query(Human.class).inTable("person").all();
+		Flux<Human> result = this.template.query(Human.class).inTable("person").all();
 
 		StepVerifier.create(result).expectNextCount(2).verifyComplete();
 	}
@@ -103,27 +122,27 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void findAllWithProjection() {
 
-		Flux<Jedi> result = template.query(Person.class).as(Jedi.class).all();
+		Flux<Jedi> result = this.template.query(Person.class).as(Jedi.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual -> {
-			assertThat(actual).hasOnlyElementsOfType(Jedi.class).hasSize(2);
-		}).verifyComplete();
+		StepVerifier.create(result.collectList()).assertNext(actual ->
+			assertThat(actual).hasOnlyElementsOfType(Jedi.class).hasSize(2)
+		).verifyComplete();
 	}
 
 	@Test // DATACASS-485
 	public void findByReturningAllValuesAsClosedInterfaceProjection() {
 
-		Flux<PersonProjection> result = template.query(Person.class).as(PersonProjection.class).all();
+		Flux<PersonProjection> result = this.template.query(Person.class).as(PersonProjection.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual -> {
-			assertThat(actual).hasOnlyElementsOfType(PersonProjection.class).hasSize(2);
-		}).verifyComplete();
+		StepVerifier.create(result.collectList()).assertNext(actual ->
+			assertThat(actual).hasOnlyElementsOfType(PersonProjection.class).hasSize(2)
+		).verifyComplete();
 	}
 
 	@Test // DATACASS-485
 	public void findAllBy() {
 
-		Flux<Person> result = template.query(Person.class).matching(queryLuke()).all();
+		Flux<Person> result = this.template.query(Person.class).matching(queryLuke()).all();
 
 		StepVerifier.create(result).expectNext(luke).verifyComplete();
 	}
@@ -131,17 +150,17 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void findAllByWithCollectionUsingMappingInformation() {
 
-		Flux<Jedi> result = template.query(Jedi.class).inTable("person").all();
+		Flux<Jedi> result = this.template.query(Jedi.class).inTable("person").all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual -> {
-			assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class);
-		}).verifyComplete();
+		StepVerifier.create(result.collectList()).assertNext(actual ->
+			assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class)
+		).verifyComplete();
 	}
 
 	@Test // DATACASS-485
 	public void findAllByWithCollection() {
 
-		Flux<Human> result = template.query(Human.class).inTable("person").matching(queryLuke()).all();
+		Flux<Human> result = this.template.query(Human.class).inTable("person").matching(queryLuke()).all();
 
 		StepVerifier.create(result.collectList()).expectNextCount(1).verifyComplete();
 	}
@@ -149,17 +168,17 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void findAllByWithProjection() {
 
-		Flux<Jedi> result = template.query(Person.class).as(Jedi.class).all();
+		Flux<Jedi> result = this.template.query(Person.class).as(Jedi.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual -> {
-			assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class);
-		}).verifyComplete();
+		StepVerifier.create(result.collectList()).assertNext(actual ->
+			assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class)
+		).verifyComplete();
 	}
 
 	@Test // DATACASS-485
 	public void findBy() {
 
-		Mono<Person> result = template.query(Person.class).matching(queryLuke()).one();
+		Mono<Person> result = this.template.query(Person.class).matching(queryLuke()).one();
 
 		StepVerifier.create(result).expectNext(luke).verifyComplete();
 	}
@@ -167,7 +186,7 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void findByNoMatch() {
 
-		Mono<Person> result = template.query(Person.class).matching(querySpock()).one();
+		Mono<Person> result = this.template.query(Person.class).matching(querySpock()).one();
 
 		StepVerifier.create(result).verifyComplete();
 	}
@@ -175,60 +194,63 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void findByTooManyResults() {
 
-		Mono<Person> result = template.query(Person.class).one();
+		Mono<Person> result = this.template.query(Person.class).one();
 
 		StepVerifier.create(result).expectError(IncorrectResultSizeDataAccessException.class).verify();
 	}
 
 	@Test // DATACASS-485
-	public void findByReturningFirstValue() {
+	public void findByReturningFirst() {
 
-		Mono<Person> result = template.query(Person.class).matching(queryLuke()).first();
+		Mono<Person> result = this.template.query(Person.class).matching(queryLuke()).first();
 
 		StepVerifier.create(result).expectNext(luke).verifyComplete();
 	}
 
 	@Test // DATACASS-485
-	public void findByReturningFirstValueForManyResults() {
+	public void findByReturningFirstForManyResults() {
 
-		Mono<Person> result = template.query(Person.class).first();
+		Mono<Person> result = this.template.query(Person.class).first();
 
-		StepVerifier.create(result).assertNext(actual -> {
-
-			assertThat(actual).isIn(han, luke);
-		}).verifyComplete();
+		StepVerifier.create(result).assertNext(actual ->
+			assertThat(actual).isIn(han, luke)
+		).verifyComplete();
 	}
 
 	@Test // DATACASS-485
-	public void findByReturningFirstValueAsClosedInterfaceProjection() {
+	public void findByReturningFirstAsClosedInterfaceProjection() {
 
-		Mono<PersonProjection> result = template.query(Person.class).as(PersonProjection.class)
-				.matching(query(where("firstname").is("han")).withAllowFiltering()).first();
+		Mono<PersonProjection> result = this.template
+				.query(Person.class)
+				.as(PersonProjection.class)
+				.matching(query(where("firstname").is("han")).withAllowFiltering())
+				.first();
 
 		StepVerifier.create(result).assertNext(actual -> {
-
 			assertThat(actual).isInstanceOf(PersonProjection.class);
 			assertThat(actual.getFirstname()).isEqualTo("han");
 		}).verifyComplete();
 	}
 
 	@Test // DATACASS-485
-	public void findByReturningFirstValueAsOpenInterfaceProjection() {
+	public void findByReturningFirstAsOpenInterfaceProjection() {
 
-		Mono<PersonSpELProjection> result = template.query(Person.class).as(PersonSpELProjection.class)
-				.matching(query(where("firstname").is("han")).withAllowFiltering()).first();
+		Mono<PersonSpELProjection> result = this.template
+				.query(Person.class)
+				.as(PersonSpELProjection.class)
+				.matching(query(where("firstname").is("han")).withAllowFiltering())
+				.first();
 
 		StepVerifier.create(result).assertNext(actual -> {
-
 			assertThat(actual).isInstanceOf(PersonSpELProjection.class);
 			assertThat(actual.getName()).isEqualTo("han");
 		}).verifyComplete();
 	}
 
 	@Test // DATACASS-485
-	public void countShouldReturnNrOfElementsInCollectionWhenNoQueryPresent() {
+	public void countShouldReturnNumberOfElementsInCollectionWhenNoQueryPresent() {
 
-		Mono<Long> count = template.query(Person.class).count();
+		Mono<Long> count = this.template.query(Person.class).count();
 
 		StepVerifier.create(count).expectNext(2L).verifyComplete();
 	}
@@ -236,8 +258,10 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void countShouldReturnNrOfElementsMatchingQuery() {
 
-		Mono<Long> count = template.query(Person.class)
-				.matching(query(where("firstname").is(luke.getFirstname())).withAllowFiltering()).count();
+		Mono<Long> count = this.template
+				.query(Person.class)
+				.matching(query(where("firstname").is(luke.getFirstname())).withAllowFiltering())
+				.count();
 
 		StepVerifier.create(count).expectNext(1L).verifyComplete();
 	}
@@ -245,7 +269,7 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void existsShouldReturnTrueIfAtLeastOneElementExistsInCollection() {
 
-		Mono<Boolean> exists = template.query(Person.class).exists();
+		Mono<Boolean> exists = this.template.query(Person.class).exists();
 
 		StepVerifier.create(exists).expectNext(true).verifyComplete();
 	}
@@ -253,9 +277,9 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void existsShouldReturnFalseIfNoElementExistsInCollection() {
 
-		StepVerifier.create(template.truncate(Person.class)).verifyComplete();
+		StepVerifier.create(this.template.truncate(Person.class)).verifyComplete();
 
-		Mono<Boolean> exists = template.query(Person.class).exists();
+		Mono<Boolean> exists = this.template.query(Person.class).exists();
 
 		StepVerifier.create(exists).expectNext(false).verifyComplete();
 	}
@@ -263,7 +287,7 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void existsShouldReturnTrueIfAtLeastOneElementMatchesQuery() {
 
-		Mono<Boolean> exists = template.query(Person.class).matching(queryLuke()).exists();
+		Mono<Boolean> exists = this.template.query(Person.class).matching(queryLuke()).exists();
 
 		StepVerifier.create(exists).expectNext(true).verifyComplete();
 	}
@@ -271,7 +295,7 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void existsShouldReturnFalseWhenNoElementMatchesQuery() {
 
-		Mono<Boolean> exists = template.query(Person.class).matching(querySpock()).exists();
+		Mono<Boolean> exists = this.template.query(Person.class).matching(querySpock()).exists();
 
 		StepVerifier.create(exists).expectNext(false).verifyComplete();
 	}
@@ -279,12 +303,11 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void returnsTargetObjectDirectlyIfProjectionInterfaceIsImplemented() {
 
-		Flux<Contact> result = template.query(Person.class).as(Contact.class).all();
+		Flux<Contact> result = this.template.query(Person.class).as(Contact.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual -> {
-
-			assertThat(actual).allMatch(it -> it instanceof Person);
-		}).verifyComplete();
+		StepVerifier.create(result.collectList()).assertNext(actual ->
+			assertThat(actual).allMatch(it -> it instanceof Person)
+		).verifyComplete();
 	}
 
 	private static Query queryLuke() {
@@ -300,7 +323,6 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@Data
 	@Table
 	static class Person implements Contact {
-
 		@Id String id;
 		@Indexed String firstname;
 		@Indexed String lastname;
@@ -311,7 +333,6 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	}
 
 	public interface PersonSpELProjection {
-
 		@Value("#{target.firstname}")
 		String getName();
 	}
@@ -325,13 +346,11 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	@AllArgsConstructor
 	@NoArgsConstructor
 	static class Jedi {
-
 		@Column("firstname") String name;
 	}
 
 	@Data
 	static class Sith {
-
 		String rank;
 	}
 
@@ -340,24 +359,7 @@ public class ReactiveSelectOperationSupportTests extends AbstractKeyspaceCreatin
 	}
 
 	interface PlanetSpELProjection {
-
 		@Value("#{target.name}")
 		String getId();
-	}
-
-	private void initPersons() {
-
-		han = new Person();
-		han.firstname = "han";
-		han.lastname = "solo";
-		han.id = "id-1";
-
-		luke = new Person();
-		luke.firstname = "luke";
-		luke.lastname = "skywalker";
-		luke.id = "id-2";
-
-		admin.insert(han);
-		admin.insert(luke);
 	}
 }

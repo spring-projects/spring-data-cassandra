@@ -20,19 +20,20 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.util.Assert;
 
 /**
- * {@link ReactiveSelectOperation} allows creation and execution of Cassandra {@code SELECT} operations in a fluent API
- * style.
+ * The {@link ReactiveSelectOperation} interface allows creation and execution of Cassandra {@code SELECT} operations
+ * in a fluent API style.
  * <p>
- * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching} into the
+ * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching} int the
  * Cassandra specific representation. By default, the originating {@literal domainType} is also used for mapping back
  * the result from the {@link com.datastax.driver.core.Row}. However, it is possible to define an different
  * {@literal returnType} via {@code as} to mapping the result.
  * <p>
- * The table to operate on is by default derived from the initial {@literal domainType} and can be defined there via
- * {@link org.springframework.data.cassandra.core.mapping.Table}. Using {@code inTable} allows to override the table
- * name for the execution.
+ * By default, the table to operate on is derived from the initial {@literal domainType} and can be defined there via
+ * the {@link org.springframework.data.cassandra.core.mapping.Table} annotation. Using {@code inTable} allows
+ * a developer to override the table name for the execution.
  *
  * <pre>
  *     <code>
@@ -45,18 +46,98 @@ import org.springframework.data.cassandra.core.query.Query;
  * </pre>
  *
  * @author Mark Paluch
+ * @author John Blum
+ * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
  */
 public interface ReactiveSelectOperation {
 
 	/**
-	 * Start creating a {@code SELECT} operation for the given {@literal domainType}.
+	 * Begin creating a {@code SELECT} operation for the given {@link Class domainType}.
 	 *
-	 * @param domainType must not be {@literal null}.
+	 * @param <T> {@link Class type} of the application domain object.
+	 * @param domainType {@link Class type} of the domain object to query; must not be {@literal null}.
 	 * @return new instance of {@link ReactiveSelect}.
-	 * @throws IllegalArgumentException if domainType is {@literal null}.
+	 * @throws IllegalArgumentException if {@link Class domainType} is {@literal null}.
+	 * @see ReactiveSelect
 	 */
 	<T> ReactiveSelect<T> query(Class<T> domainType);
+
+	/**
+	 * Table override (optional).
+	 */
+	interface SelectWithTable<T> extends SelectWithQuery<T> {
+
+		/**
+		 * Explicitly set the {@link String name} of the table on which to perform the query.
+		 * <p>
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
+		 *
+		 * @param table {@link String name} of the table; must not be {@literal null} or empty.
+		 * @return new instance of {@link SelectWithProjection}.
+		 * @throws IllegalArgumentException if {@link String table} is {@literal null} or empty.
+		 * @see #inTable(CqlIdentifier)
+		 * @see SelectWithProjection
+		 */
+		default SelectWithProjection<T> inTable(String table) {
+
+			Assert.hasText(table, "Table name must not be null or empty");
+
+			return inTable(CqlIdentifier.of(table));
+		}
+
+		/**
+		 * Explicitly set the {@link CqlIdentifier name} of the table on which to perform the query.
+		 * <p>
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
+		 *
+		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
+		 * @return new instance of {@link SelectWithProjection}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+		 * @see SelectWithProjection
+		 */
+		SelectWithProjection<T> inTable(CqlIdentifier table);
+
+	}
+
+	/**
+	 * Result type override (optional).
+	 */
+	interface SelectWithProjection<T> extends SelectWithQuery<T> {
+
+		/**
+		 * Define the {@link Class result target type} that the fields should be mapped to.
+		 * <p>
+		 * Skip this step if you are only interested in the original {@link Class domain type}.
+		 *
+		 * @param <R> {@link Class type} of the result.
+		 * @param resultType desired {@link Class type} of the result; must not be {@literal null}.
+		 * @return new instance of {@link SelectWithQuery}.
+		 * @throws IllegalArgumentException if {@link Class resultType} is {@literal null}.
+		 * @see SelectWithQuery
+		 */
+		<R> SelectWithQuery<R> as(Class<R> resultType);
+
+	}
+
+	/**
+	 * Define a {@link Query} used as the filter for the {@code SELECT}.
+	 */
+	interface SelectWithQuery<T> extends TerminatingSelect<T> {
+
+		/**
+		 * Set the {@link Query} used as a filter in the {@code SELECT} statement.
+		 *
+		 * @param query {@link Query} used as a filter; must not be {@literal null}.
+		 * @return new instance of {@link TerminatingSelect}.
+		 * @throws IllegalArgumentException if {@link Query} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.query.Query
+		 * @see TerminatingSelect
+		 */
+		TerminatingSelect<T> matching(Query query);
+
+	}
 
 	/**
 	 * Trigger {@code SELECT} execution by calling one of the terminating methods.
@@ -64,104 +145,53 @@ public interface ReactiveSelectOperation {
 	interface TerminatingSelect<T> {
 
 		/**
-		 * Get exactly zero or one result.
-		 *
-		 * @return {@link Mono#empty()} if no match found. Never {@literal null}.
-		 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if more than one match found.
-		 */
-		Mono<T> one();
-
-		/**
-		 * Get the first or no result.
-		 *
-		 * @return {@link Mono#empty()} if no match found. Never {@literal null}.
-		 */
-		Mono<T> first();
-
-		/**
-		 * Get all matching elements.
-		 *
-		 * @return never {@literal null}.
-		 */
-		Flux<T> all();
-
-		/**
 		 * Get the number of matching elements.
 		 *
-		 * @return {@link Mono} emitting total number of matching elements. Never {@literal null}.
+		 * @return a {@link Mono} emitting the total number of matching elements; never {@literal null}.
+		 * @see reactor.core.publisher.Mono
 		 */
 		Mono<Long> count();
 
 		/**
 		 * Check for the presence of matching elements.
 		 *
-		 * @return {@link Mono} emitting {@literal true} if at least one matching element exists. Never {@literal null}.
+		 * @return a {@link Mono} emitting {@literal true} if at least one matching element exists;
+		 * never {@literal null}.
+		 * @see reactor.core.publisher.Mono
 		 */
 		Mono<Boolean> exists();
+
+		/**
+		 * Get the first result or no result.
+		 *
+		 * @return the first result or {@link Mono#empty()} if no match found; never {@literal null}.
+		 * @see reactor.core.publisher.Mono
+		 */
+		Mono<T> first();
+
+		/**
+		 * Get exactly zero or one result.
+		 *
+		 * @return exactly one result or {@link Mono#empty()} if no match found; never {@literal null}.
+		 * @throws org.springframework.dao.IncorrectResultSizeDataAccessException if more than one match found.
+		 * @see reactor.core.publisher.Mono
+		 */
+		Mono<T> one();
+
+		/**
+		 * Get all matching elements.
+		 *
+		 * @return all matching elements; never {@literal null}.
+		 * @see reactor.core.publisher.Flux
+		 */
+		Flux<T> all();
+
 	}
 
 	/**
-	 * Terminating operations invoking the actual query execution.
-	 */
-	interface SelectWithQuery<T> extends TerminatingSelect<T> {
-
-		/**
-		 * Set the filter query to be used.
-		 *
-		 * @param query must not be {@literal null}.
-		 * @return new instance of {@link TerminatingSelect}.
-		 * @throws IllegalArgumentException if query is {@literal null}.
-		 */
-		TerminatingSelect<T> matching(Query query);
-	}
-
-	/**
-	 * Table override (Optional).
-	 */
-	interface SelectWithTable<T> extends SelectWithQuery<T> {
-
-		/**
-		 * Explicitly set the name of the table to perform the query on.
-		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
-		 *
-		 * @param table must not be {@literal null} or empty.
-		 * @return new instance of {@link SelectWithProjection}.
-		 * @throws IllegalArgumentException if {@code table} is {@literal null} or empty.
-		 */
-		SelectWithProjection<T> inTable(String table);
-
-		/**
-		 * Explicitly set the name of the table to perform the query on.
-		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
-		 *
-		 * @param table must not be {@literal null}.
-		 * @return new instance of {@link SelectWithProjection}.
-		 * @throws IllegalArgumentException if {@link CqlIdentifier} is {@literal null}.
-		 */
-		SelectWithProjection<T> inTable(CqlIdentifier table);
-	}
-
-	/**
-	 * Result type override (Optional).
-	 */
-	interface SelectWithProjection<T> extends SelectWithQuery<T> {
-
-		/**
-		 * Define the target type fields should be mapped to. <br />
-		 * Skip this step if you are anyway only interested in the original domain type.
-		 *
-		 * @param resultType must not be {@literal null}.
-		 * @param <R> result type.
-		 * @return new instance of {@link SelectWithProjection}.
-		 * @throws IllegalArgumentException if resultType is {@literal null}.
-		 */
-		<R> SelectWithQuery<R> as(Class<R> resultType);
-	}
-
-	/**
-	 * {@link ReactiveSelect} provides methods for constructing {@code SELECT} operations in a fluent way.
+	 * The {@link ReactiveSelect} interface provides methods for constructing {@code SELECT} operations
+	 * in a fluent way.
 	 */
 	interface ReactiveSelect<T> extends SelectWithTable<T>, SelectWithProjection<T> {}
+
 }

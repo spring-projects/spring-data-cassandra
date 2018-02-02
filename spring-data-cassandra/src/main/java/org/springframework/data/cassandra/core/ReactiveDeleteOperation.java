@@ -19,15 +19,16 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.util.Assert;
 
 /**
- * {@link ReactiveDeleteOperation} allows creation and execution of Cassandra {@code DELETE} operations in a fluent API
- * style.
+ * The {@link ReactiveDeleteOperation} interface allows creation and execution of Cassandra {@code DELETE} operations
+ * in a fluent API style.
  * <p>
- * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching} into the
- * Cassandra specific representation. The table to operate on is by default derived from the initial
- * {@literal domainType} and can be defined there via {@link org.springframework.data.cassandra.core.mapping.Table}.
- * Using {@code inTable} allows to override the table name for the execution.
+ * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching}
+ * into the Cassandra specific representation. By default, the table to operate on is derived from the initial
+ * {@literal domainType} and can be defined there via {@link org.springframework.data.cassandra.core.mapping.Table}
+ * annotation. Using {@code inTable} allows a developer to override the table name for the execution.
  *
  * <pre>
  *     <code>
@@ -39,16 +40,19 @@ import org.springframework.data.cassandra.core.query.Query;
  * </pre>
  *
  * @author Mark Paluch
+ * @author John Blum
+ * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
  */
 public interface ReactiveDeleteOperation {
 
 	/**
-	 * Start creating a {@code DELETE} operation for the given {@literal domainType}.
+	 * Begin creating a {@code DELETE} operation for the given {@link Class domainType}.
 	 *
-	 * @param domainType must not be {@literal null}.
+	 * @param domainType {@link Class type} of domain object to delete; must not be {@literal null}.
 	 * @return new instance of {@link ReactiveDelete}.
-	 * @throws IllegalArgumentException if domainType is {@literal null}.
+	 * @throws IllegalArgumentException if {@link Class domainType} is {@literal null}.
+	 * @see ReactiveDelete
 	 */
 	ReactiveDelete delete(Class<?> domainType);
 
@@ -58,52 +62,74 @@ public interface ReactiveDeleteOperation {
 	interface DeleteWithTable {
 
 		/**
-		 * Explicitly set the name of the table to perform the query on.
+		 * Explicitly set the {@link String name} of the table on which to perform the delete.
 		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @param table must not be {@literal null} or empty.
-		 * @return new instance of {@link DeleteWithTable}.
-		 * @throws IllegalArgumentException if {@code table} is {@literal null} or empty.
+		 * @param table {@link String name} of the table; must not be {@literal null} or empty.
+		 * @return new instance of {@link DeleteWithQuery}.
+		 * @throws IllegalArgumentException if {@link String table} is {@literal null} or empty.
+		 * @see #inTable(CqlIdentifier)
+		 * @see DeleteWithQuery
 		 */
-		DeleteWithQuery inTable(String table);
+		default DeleteWithQuery inTable(String table) {
+
+			Assert.hasText(table, "Table name must not be null or empty");
+
+			return inTable(CqlIdentifier.of(table));
+		}
 
 		/**
-		 * Explicitly set the name of the table to perform the query on.
+		 * Explicitly set the {@link CqlIdentifier name} of the table on which to perform the delete.
 		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @param table must not be {@literal null}.
-		 * @return new instance of {@link DeleteWithTable}.
-		 * @throws IllegalArgumentException if {@link CqlIdentifier} is {@literal null}.
+		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
+		 * @return new instance of {@link DeleteWithQuery}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+		 * @see DeleteWithQuery
 		 */
 		DeleteWithQuery inTable(CqlIdentifier table);
 	}
 
+	/**
+	 * Required {@link Query filter}.
+	 */
+	interface DeleteWithQuery {
+
+		/**
+		 * Define the {@link Query} used to filter elements in the delete.
+		 *
+		 * @param query {@link Query} used as the filter in the delete; must not be {@literal null}.
+		 * @return new instance of {@link TerminatingDelete}.
+		 * @throws IllegalArgumentException if {@link Query} is {@literal null}.
+		 * @see TerminatingDelete
+		 */
+		TerminatingDelete matching(Query query);
+
+	}
+
+	/**
+	 * Trigger {@code DELETE} operation by calling one of the terminating methods.
+	 */
 	interface TerminatingDelete {
 
 		/**
 		 * Remove all matching rows.
 		 *
-		 * @return the {@link WriteResult}. Never {@literal null}.
+		 * @return the {@link WriteResult}; never {@literal null}.
+		 * @see org.springframework.data.cassandra.core.WriteResult
+		 * @see reactor.core.publisher.Mono
 		 */
 		Mono<WriteResult> all();
-	}
 
-	interface DeleteWithQuery {
-
-		/**
-		 * Define the query filtering elements.
-		 *
-		 * @param query must not be {@literal null}.
-		 * @return new instance of {@link TerminatingDelete}.
-		 * @throws IllegalArgumentException if query is {@literal null}.
-		 */
-		TerminatingDelete matching(Query query);
 	}
 
 	/**
-	 * {@link ReactiveDelete} provides methods for constructing {@code DELETE} operations in a fluent way.
+	 * The {@link ReactiveDelete} interface provides methods for constructing {@code DELETE} operations
+	 * in a fluent way.
 	 */
 	interface ReactiveDelete extends DeleteWithTable, DeleteWithQuery {}
+
 }

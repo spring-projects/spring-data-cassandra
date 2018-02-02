@@ -15,17 +15,19 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.springframework.data.cassandra.core.query.Criteria.*;
-import static org.springframework.data.cassandra.core.query.Query.*;
-
-import lombok.Data;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Query.query;
 
 import java.util.Collections;
 
+import lombok.Data;
+
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -44,6 +46,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 public class ReactiveDeleteOperationSupportTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraAdminTemplate admin;
+
 	ReactiveCassandraTemplate template;
 
 	Person han;
@@ -74,7 +77,10 @@ public class ReactiveDeleteOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void removeAllMatching() {
 
-		Mono<WriteResult> writeResult = template.delete(Person.class).matching(query(where("id").is(han.id))).all();
+		Mono<WriteResult> writeResult = this.template
+				.delete(Person.class)
+				.matching(query(where("id").is(han.id)))
+				.all();
 
 		StepVerifier.create(writeResult.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
 	}
@@ -82,8 +88,10 @@ public class ReactiveDeleteOperationSupportTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-485
 	public void removeAllMatchingWithAlternateDomainTypeAndCollection() {
 
-		Mono<WriteResult> writeResult = template.delete(Jedi.class).inTable("person")
-				.matching(query(where("id").in(han.id, luke.id))).all();
+		Mono<WriteResult> writeResult = this.template
+				.delete(Jedi.class).inTable("person")
+				.matching(query(where("id").in(han.id, luke.id)))
+				.all();
 
 		StepVerifier.create(writeResult.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
 		StepVerifier.create(template.select(Query.empty(), Person.class)).verifyComplete();
@@ -98,7 +106,6 @@ public class ReactiveDeleteOperationSupportTests extends AbstractKeyspaceCreatin
 
 	@Data
 	static class Jedi {
-
 		@Column("firstname") String name;
 	}
 }

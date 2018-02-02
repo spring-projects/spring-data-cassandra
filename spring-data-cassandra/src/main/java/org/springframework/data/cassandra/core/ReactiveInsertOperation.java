@@ -18,14 +18,15 @@ package org.springframework.data.cassandra.core;
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.util.Assert;
 
 /**
- * {@link ReactiveInsertOperation} allows creation and execution of Cassandra {@code INSERT} insert operations in a
- * fluent API style.
+ * The {@link ReactiveInsertOperation} interface allows creation and execution of Cassandra {@code INSERT} operations
+ * in a fluent API style.
  * <p>
- * The table to operate on is by default derived from the initial {@literal domainType} and can be defined there via
- * {@link org.springframework.data.cassandra.core.mapping.Table}. Using {@code inTable} allows to override the
- * collection name for the execution.
+ * By default,the table to operate on is derived from the initial {@link Class domainType} and can be defined
+ * there via {@link org.springframework.data.cassandra.core.mapping.Table} annotation. Using {@code inTable}
+ * allows a developer to override the table name for the execution.
  *
  * <pre>
  *     <code>
@@ -36,59 +37,58 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
  * </pre>
  *
  * @author Mark Paluch
+ * @author John Blum
  * @since 2.1
  */
 public interface ReactiveInsertOperation {
 
 	/**
-	 * Start creating an {@code INSERT} operation for given {@literal domainType}.
+	 * Begin creating an {@code INSERT} operation for given {@link Class domainType}.
 	 *
-	 * @param domainType must not be {@literal null}.
+	 * @param <T> {@link Class type} of the application domain object.
+	 * @param domainType {@link Class type} of the domain object to insert; must not be {@literal null}.
 	 * @return new instance of {@link ReactiveInsert}.
-	 * @throws IllegalArgumentException if domainType is {@literal null}.
+	 * @throws IllegalArgumentException if {@link Class domainType} is {@literal null}.
+	 * @see ReactiveInsert
 	 */
 	<T> ReactiveInsert<T> insert(Class<T> domainType);
 
 	/**
-	 * Trigger insert execution by calling one of the terminating methods.
-	 */
-	interface TerminatingInsert<T> {
-
-		/**
-		 * Insert exactly one object.
-		 *
-		 * @param object must not be {@literal null}.
-		 * @throws IllegalArgumentException if object is {@literal null}.
-		 */
-		Mono<WriteResult> one(T object);
-	}
-
-	/**
-	 * Collection override (optional).
+	 * Table override (optional).
 	 */
 	interface InsertWithTable<T> extends InsertWithOptions<T> {
 
 		/**
-		 * Explicitly set the name of the table.
+		 * Explicitly set the {@link String name} of the table.
 		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @param table must not be {@literal null} or empty.
-		 * @return new instance of {@link TerminatingInsert}.
-		 * @throws IllegalArgumentException if {@code table} is {@literal null} or empty.
+		 * @param table {@link String name} of the table; must not be {@literal null} or empty.
+		 * @return new instance of {@link InsertWithOptions}.
+		 * @throws IllegalArgumentException if {@link String table} is {@literal null} or empty.
+		 * @see #inTable(CqlIdentifier)
+		 * @see InsertWithOptions
 		 */
-		InsertWithOptions<T> inTable(String table);
+		default InsertWithOptions<T> inTable(String table) {
+
+			Assert.hasText(table, "Table must not be null or empty");
+
+			return inTable(CqlIdentifier.of(table));
+		}
 
 		/**
-		 * Explicitly set the name of the table.
+		 * Explicitly set the {@link String name} of the table.
 		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @param table must not be {@literal null}.
-		 * @return new instance of {@link TerminatingInsert}.
-		 * @throws IllegalArgumentException if {@link CqlIdentifier} is {@literal null}.
+		 * @param table {@link String name} of the table; must not be {@literal null}.
+		 * @return new instance of {@link InsertWithOptions}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+		 * @see InsertWithOptions
 		 */
 		InsertWithOptions<T> inTable(CqlIdentifier table);
+
 	}
 
 	/**
@@ -97,17 +97,39 @@ public interface ReactiveInsertOperation {
 	interface InsertWithOptions<T> extends TerminatingInsert<T> {
 
 		/**
-		 * Set insert options.
+		 * Set {@link InsertOptions}.
 		 *
-		 * @param insertOptions insertOptions not be {@literal null}.
+		 * @param insertOptions {@link InsertOptions options} to use on insert; must not be {@literal null}.
 		 * @return new instance of {@link TerminatingInsert}.
 		 * @throws IllegalArgumentException if {@link InsertOptions} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.InsertOptions
+		 * @see TerminatingInsert
 		 */
 		TerminatingInsert<T> withOptions(InsertOptions insertOptions);
+
 	}
 
 	/**
-	 * {@link ReactiveInsert} provides methods for constructing {@code INSERT} operations in a fluent way.
+	 * Trigger {@code INSERT} execution by calling one of the terminating methods.
 	 */
-	interface ReactiveInsert<T> extends TerminatingInsert<T>, InsertWithTable<T>, InsertWithOptions<T> {}
+	interface TerminatingInsert<T> {
+
+		/**
+		 * Insert exactly one {@link Object}.
+		 *
+		 * @param object {@link Object} to insert; must not be {@literal null}.
+		 * @throws IllegalArgumentException if {@link Object} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.WriteResult
+		 * @see reactor.core.publisher.Mono
+		 */
+		Mono<WriteResult> one(T object);
+
+	}
+
+	/**
+	 * The {@link ReactiveInsert} interface provides methods for constructing {@code INSERT} operations
+	 * in a fluent way.
+	 */
+	interface ReactiveInsert<T> extends InsertWithTable<T> {}
+
 }

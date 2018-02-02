@@ -15,12 +15,13 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.util.function.Function;
+
 import lombok.NonNull;
 import lombok.Value;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
 import org.springframework.dao.DataAccessException;
@@ -126,15 +127,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	 * @see com.datastax.driver.core.Session
 	 */
 	public ReactiveCassandraTemplate(ReactiveSessionFactory sessionFactory, CassandraConverter converter) {
-
-		Assert.notNull(sessionFactory, "ReactiveSessionFactory must not be null");
-		Assert.notNull(converter, "CassandraConverter must not be null");
-
-		this.converter = converter;
-		this.cqlOperations = new ReactiveCqlTemplate(sessionFactory);
-		this.mappingContext = this.converter.getMappingContext();
-		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
-		this.projectionFactory = new SpelAwareProxyProjectionFactory();
+		this(new ReactiveCqlTemplate(sessionFactory), converter);
 	}
 
 	/**
@@ -293,8 +286,9 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Function<Row, T> mapper = getMapper(entityClass, returnType);
 
-		RegularStatement select = getStatementFactory().select(query,
-				getMappingContext().getRequiredPersistentEntity(entityClass), tableName);
+		RegularStatement select = getStatementFactory()
+				.select(query, getRequiredPersistentEntity(entityClass), tableName);
+
 		return getReactiveCqlOperations().query(select, (row, rowNum) -> mapper.apply(row));
 	}
 
@@ -307,8 +301,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return selectOne(getStatementFactory().select(query, getMappingContext().getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return selectOne(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -328,8 +321,9 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	Mono<WriteResult> doUpdate(Query query, org.springframework.data.cassandra.core.query.Update update,
 			Class<?> entityClass, CqlIdentifier tableName) {
 
-		RegularStatement statement = getStatementFactory().update(query, update,
-				getMappingContext().getRequiredPersistentEntity(entityClass), tableName);
+		RegularStatement statement = getStatementFactory()
+				.update(query, update, getRequiredPersistentEntity(entityClass), tableName);
+
 		return getReactiveCqlOperations().execute(new StatementCallback(statement)).next();
 	}
 
@@ -349,8 +343,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		RegularStatement delete = getStatementFactory().delete(query, getRequiredPersistentEntity(entityClass), tableName);
 
-		return getReactiveCqlOperations()
-				.execute(new StatementCallback(delete)).next();
+		return getReactiveCqlOperations().execute(new StatementCallback(delete)).next();
 	}
 
 	// -------------------------------------------------------------------------
@@ -379,14 +372,13 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		RegularStatement count = getStatementFactory().count(query, getRequiredPersistentEntity(entityClass));
-
 		return doCount(query, entityClass, getTableName(entityClass));
 	}
 
 	Mono<Long> doCount(Query query, Class<?> entityClass, CqlIdentifier tableName) {
 
-		RegularStatement count = getStatementFactory().count(query, getRequiredPersistentEntity(entityClass), tableName);
+		RegularStatement count =
+				getStatementFactory().count(query, getRequiredPersistentEntity(entityClass), tableName);
 
 		return getReactiveCqlOperations().queryForObject(count, Long.class).switchIfEmpty(Mono.just(0L));
 	}
@@ -423,8 +415,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	Mono<Boolean> doExists(Query query, Class<?> entityClass, CqlIdentifier tableName) {
 
-		RegularStatement select = getStatementFactory().select(query.limit(1), getRequiredPersistentEntity(entityClass),
-				tableName);
+		RegularStatement select =
+				getStatementFactory().select(query.limit(1), getRequiredPersistentEntity(entityClass), tableName);
 
 		return getReactiveCqlOperations().queryForRows(select).hasElements();
 	}
@@ -464,8 +456,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
 
-		CqlIdentifier tableName = getTableName(entity);
-		return doInsert(entity, options, tableName);
+		return doInsert(entity, options, getTableName(entity));
 	}
 
 	Mono<WriteResult> doInsert(Object entity, WriteOptions options, CqlIdentifier tableName) {
@@ -594,14 +585,19 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	@SuppressWarnings("unchecked")
 	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType) {
 
-		Class<?> typeToRead = targetType.isInterface() || targetType.isAssignableFrom(entityType) ? entityType : targetType;
+		Class<?> typeToRead = resolveTypeToRead(entityType, targetType);
 
 		return row -> {
 
 			Object source = getConverter().read(typeToRead, row);
 
-			return (T) (targetType.isInterface() ? projectionFactory.createProjection(targetType, source) : source);
+			return (T) (targetType.isInterface()
+					? this.projectionFactory.createProjection(targetType, source) : source);
 		};
+	}
+
+	private Class<?> resolveTypeToRead(Class<?> entityType, Class<?> targetType) {
+		return targetType.isInterface() || targetType.isAssignableFrom(entityType) ? entityType : targetType;
 	}
 
 	@Value
@@ -614,7 +610,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		 */
 		@Override
 		public Publisher<WriteResult> doInSession(ReactiveSession session) throws DriverException, DataAccessException {
-			return session.execute(statement).flatMap(StatementCallback::toWriteResult);
+			return session.execute(this.statement).flatMap(StatementCallback::toWriteResult);
 		}
 
 		/* (non-Javadoc)
@@ -622,7 +618,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		 */
 		@Override
 		public String getCql() {
-			return statement.toString();
+			return this.statement.toString();
 		}
 
 		private static Mono<WriteResult> toWriteResult(ReactiveResultSet resultSet) {

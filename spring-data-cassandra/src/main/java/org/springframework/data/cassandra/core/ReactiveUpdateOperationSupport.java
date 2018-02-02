@@ -19,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -31,6 +32,9 @@ import org.springframework.util.Assert;
  * Implementation of {@link ReactiveUpdateOperation}.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation
+ * @see org.springframework.data.cassandra.core.query.Query
+ * @see org.springframework.data.cassandra.core.query.Update
  * @since 2.1
  */
 @RequiredArgsConstructor
@@ -44,15 +48,14 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 	@Override
 	public <T> ReactiveUpdate<T> update(Class<T> domainType) {
 
-		Assert.notNull(domainType, "DomainType must not be null!");
+		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ReactiveUpdateSupport<>(template, domainType, Query.empty(), null, null);
+		return new ReactiveUpdateSupport<>(this.template, domainType, Query.empty(), null);
 	}
 
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-	static class ReactiveUpdateSupport<T>
-			implements ReactiveUpdate<T>, UpdateWithTable<T>, UpdateWithQuery<T>, UpdateWithUpdate<T>, TerminatingUpdate<T> {
+	static class ReactiveUpdateSupport<T> implements ReactiveUpdate<T>, TerminatingUpdate<T> {
 
 		@NonNull ReactiveCassandraTemplate template;
 
@@ -60,31 +63,7 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 
 		@NonNull Query query;
 
-		@Nullable Update update;
-
 		@Nullable CqlIdentifier tableName;
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithUpdate#apply(org.springframework.data.cassandra.core.query.Update)
-		 */
-		@Override
-		public TerminatingUpdate<T> apply(Update update) {
-
-			Assert.notNull(update, "Update must not be null!");
-
-			return new ReactiveUpdateSupport<>(template, domainType, query, update, tableName);
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithTable#inTable(java.lang.String)
-		 */
-		@Override
-		public UpdateWithQuery<T> inTable(String tableName) {
-
-			Assert.hasText(tableName, "Table name must not be null or empty!");
-
-			return new ReactiveUpdateSupport<>(template, domainType, query, update, CqlIdentifier.of(tableName));
-		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
@@ -92,32 +71,35 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 		@Override
 		public UpdateWithQuery<T> inTable(CqlIdentifier tableName) {
 
-			Assert.notNull(tableName, "Table name must not be null!");
+			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ReactiveUpdateSupport<>(template, domainType, query, update, tableName);
+			return new ReactiveUpdateSupport<>(this.template, this.domainType, this.query, tableName);
 		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithQuery#matching(org.springframework.data.cassandra.core.query.Query)
 		 */
 		@Override
-		public UpdateWithUpdate<T> matching(Query query) {
+		public TerminatingUpdate<T> matching(Query query) {
 
-			Assert.notNull(query, "Query must not be null!");
+			Assert.notNull(query, "Query must not be null");
 
-			return new ReactiveUpdateSupport<>(template, domainType, query, update, tableName);
+			return new ReactiveUpdateSupport<>(this.template, this.domainType, query, this.tableName);
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.TerminatingUpdate#all()
+		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithUpdate#apply(org.springframework.data.cassandra.core.query.Update)
 		 */
 		@Override
-		public Mono<WriteResult> all() {
-			return template.doUpdate(query, update, domainType, getTableName());
+		public Mono<WriteResult> apply(Update update) {
+
+			Assert.notNull(update, "Update must not be null");
+
+			return this.template.doUpdate(this.query, update, this.domainType, getTableName());
 		}
 
 		private CqlIdentifier getTableName() {
-			return tableName != null ? tableName : template.getTableName(domainType);
+			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
 	}
 }
