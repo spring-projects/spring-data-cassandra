@@ -43,7 +43,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
  *
  * @author Mark Paluch
  */
-public class ReactiveDeleteOperationSupportTests extends AbstractKeyspaceCreatingIntegrationTest {
+public class ReactiveDeleteOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraAdminTemplate admin;
 
@@ -59,7 +59,7 @@ public class ReactiveDeleteOperationSupportTests extends AbstractKeyspaceCreatin
 		template = new ReactiveCassandraTemplate(new DefaultBridgedReactiveSession(session));
 
 		admin.dropTable(true, CqlIdentifier.of("person"));
-		admin.createTable(true, CqlIdentifier.of("person"), ExecutableInsertOperationSupportTests.Person.class,
+		admin.createTable(true, CqlIdentifier.of("person"), ExecutableInsertOperationSupportIntegrationTests.Person.class,
 				Collections.emptyMap());
 
 		han = new Person();

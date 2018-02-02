@@ -16,9 +16,6 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.data.cassandra.core.query.Criteria.where;
-import static org.springframework.data.cassandra.core.query.Query.query;
-import static org.springframework.data.cassandra.core.query.Update.update;
 
 import java.util.Collections;
 
@@ -30,18 +27,16 @@ import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
-import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
 /**
- * Integration tests for {@link ExecutableUpdateOperationSupport}.
+ * Integration tests for {@link ExecutableInsertOperationSupport}.
  *
  * @author Mark Paluch
  */
-public class ExecutableUpdateOperationSupportTests extends AbstractKeyspaceCreatingIntegrationTest {
+public class ExecutableInsertOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraAdminTemplate template;
 
@@ -53,73 +48,63 @@ public class ExecutableUpdateOperationSupportTests extends AbstractKeyspaceCreat
 
 		template = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 		template.dropTable(true, CqlIdentifier.of("person"));
-		template.createTable(false, CqlIdentifier.of("person"), Person.class, Collections.emptyMap());
+		template.createTable(true, CqlIdentifier.of("person"), Person.class, Collections.emptyMap());
+
+		initPersons();
+	}
+
+	private void initPersons() {
 
 		han = new Person();
 		han.firstname = "han";
+		han.lastname = "solo";
 		han.id = "id-1";
 
 		luke = new Person();
 		luke.firstname = "luke";
+		luke.lastname = "skywalker";
 		luke.id = "id-2";
-
-		template.insert(han);
-		template.insert(luke);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void domainTypeIsRequired() {
-		this.template.update(null);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
-	public void queryIsRequired() {
-		this.template.update(Person.class).matching(null);
+		this.template.insert((Class) null);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void tableIsRequiredOnSet() {
-		this.template.update(Person.class).inTable((CqlIdentifier) null);
+		this.template.insert(Person.class).inTable((String) null);
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	public void optionsIsRequiredOnSet() {
+		this.template.insert(Person.class).withOptions(null);
 	}
 
 	@Test // DATACASS-485
-	public void updateAllMatching() {
+	public void insertOne() {
 
-		WriteResult updateResult = this.template
-				.update(Person.class)
-				.matching(queryHan())
-				.apply(update("firstname", "Han"));
-
-		assertThat(updateResult).isNotNull();
-		assertThat(updateResult.wasApplied()).isTrue();
-		assertThat(this.template.selectOne(queryLuke(), Person.class)).isEqualTo(luke);
-	}
-
-	@Test // DATACASS-485
-	public void updateWithDifferentDomainClassAndCollection() {
-
-		WriteResult updateResult = this.template
-				.update(Jedi.class)
+		WriteResult insertResult = this.template
+				.insert(Person.class)
 				.inTable("person")
-				.matching(query(where("id").is(han.getId())))
-				.apply(update("name", "Han"));
+				.one(han);
 
-		assertThat(updateResult).isNotNull();
-		assertThat(updateResult.wasApplied()).isTrue();
-		assertThat(this.template.selectOne(queryHan(), Person.class))
-				.isNotEqualTo(han).hasFieldOrPropertyWithValue("firstname", "Han");
+		assertThat(insertResult.wasApplied()).isTrue();
+		assertThat(this.template.selectOneById(han.id, Person.class)).isEqualTo(han);
 	}
 
-	private Query queryHan() {
-		return queryPerson(han);
-	}
+	@Test // DATACASS-485
+	public void insertOneWithOptions() {
 
-	private Query queryLuke() {
-		return queryPerson(luke);
-	}
+		this.template.insert(Person.class).inTable("person").one(han);
 
-	private Query queryPerson(Person person) {
-		return query(where("id").is(person.getId()));
+		WriteResult insertResult = this.template
+				.insert(Person.class).inTable("person")
+				.withOptions(InsertOptions.builder().withIfNotExists().build())
+				.one(han);
+
+		assertThat(insertResult.wasApplied()).isFalse();
+		assertThat(template.selectOneById(han.id, Person.class)).isEqualTo(han);
 	}
 
 	@Data
@@ -127,10 +112,6 @@ public class ExecutableUpdateOperationSupportTests extends AbstractKeyspaceCreat
 	static class Person {
 		@Id String id;
 		@Indexed String firstname;
-	}
-
-	@Data
-	static class Jedi {
-		@Column("firstname") String name;
+		@Indexed String lastname;
 	}
 }

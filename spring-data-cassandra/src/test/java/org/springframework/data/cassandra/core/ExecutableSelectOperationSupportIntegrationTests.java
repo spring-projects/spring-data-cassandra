@@ -46,7 +46,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
  *
  * @author Mark Paluch
  */
-public class ExecutableSelectOperationSupportTests extends AbstractKeyspaceCreatingIntegrationTest {
+public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraAdminTemplate template;
 

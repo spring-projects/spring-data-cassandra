@@ -16,6 +16,8 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Query.query;
 
 import java.util.Collections;
 
@@ -27,16 +29,18 @@ import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
 /**
- * Integration tests for {@link ExecutableInsertOperationSupport}.
+ * Integration tests for {@link ExecutableDeleteOperationSupport}.
  *
  * @author Mark Paluch
  */
-public class ExecutableInsertOperationSupportTests extends AbstractKeyspaceCreatingIntegrationTest {
+public class ExecutableDeleteOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraAdminTemplate template;
 
@@ -48,63 +52,45 @@ public class ExecutableInsertOperationSupportTests extends AbstractKeyspaceCreat
 
 		template = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 		template.dropTable(true, CqlIdentifier.of("person"));
-		template.createTable(true, CqlIdentifier.of("person"), Person.class, Collections.emptyMap());
-
-		initPersons();
-	}
-
-	private void initPersons() {
+		template.createTable(true, CqlIdentifier.of("person"), ExecutableInsertOperationSupportIntegrationTests.Person.class,
+				Collections.emptyMap());
 
 		han = new Person();
 		han.firstname = "han";
-		han.lastname = "solo";
 		han.id = "id-1";
 
 		luke = new Person();
 		luke.firstname = "luke";
-		luke.lastname = "skywalker";
 		luke.id = "id-2";
-	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
-	public void domainTypeIsRequired() {
-		this.template.insert((Class) null);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
-	public void tableIsRequiredOnSet() {
-		this.template.insert(Person.class).inTable((String) null);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
-	public void optionsIsRequiredOnSet() {
-		this.template.insert(Person.class).withOptions(null);
+		template.insert(han);
+		template.insert(luke);
 	}
 
 	@Test // DATACASS-485
-	public void insertOne() {
+	public void removeAllMatching() {
 
-		WriteResult insertResult = this.template
-				.insert(Person.class)
+		WriteResult deleteResult = this.template
+				.delete(Person.class)
+				.matching(query(where("id").is(han.id)))
+				.all();
+
+		assertThat(deleteResult).isNotNull();
+		assertThat(deleteResult.wasApplied()).isTrue();
+	}
+
+	@Test // DATACASS-485
+	public void removeAllMatchingWithAlternateDomainTypeAndCollection() {
+
+		WriteResult deleteResult = this.template
+				.delete(Jedi.class)
 				.inTable("person")
-				.one(han);
+				.matching(query(where("id").in(han.id, luke.id)))
+				.all();
 
-		assertThat(insertResult.wasApplied()).isTrue();
-		assertThat(this.template.selectOneById(han.id, Person.class)).isEqualTo(han);
-	}
-
-	@Test // DATACASS-485
-	public void insertOneWithOptions() {
-
-		this.template.insert(Person.class).inTable("person").one(han);
-
-		WriteResult insertResult = this.template
-				.insert(Person.class).inTable("person")
-				.withOptions(InsertOptions.builder().withIfNotExists().build())
-				.one(han);
-
-		assertThat(insertResult.wasApplied()).isFalse();
-		assertThat(template.selectOneById(han.id, Person.class)).isEqualTo(han);
+		assertThat(deleteResult).isNotNull();
+		assertThat(deleteResult.wasApplied()).isTrue();
+		assertThat(this.template.select(Query.empty(), Person.class)).isEmpty();
 	}
 
 	@Data
@@ -112,6 +98,10 @@ public class ExecutableInsertOperationSupportTests extends AbstractKeyspaceCreat
 	static class Person {
 		@Id String id;
 		@Indexed String firstname;
-		@Indexed String lastname;
+	}
+
+	@Data
+	static class Jedi {
+		@Column("firstname") String name;
 	}
 }

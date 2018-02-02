@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.cassandra.core.query.Criteria.where;
 import static org.springframework.data.cassandra.core.query.Query.query;
+import static org.springframework.data.cassandra.core.query.Update.update;
 
 import java.util.Collections;
 
@@ -36,11 +37,11 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
 /**
- * Integration tests for {@link ExecutableDeleteOperationSupport}.
+ * Integration tests for {@link ExecutableUpdateOperationSupport}.
  *
  * @author Mark Paluch
  */
-public class ExecutableDeleteOperationSupportTests extends AbstractKeyspaceCreatingIntegrationTest {
+public class ExecutableUpdateOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	CassandraAdminTemplate template;
 
@@ -52,8 +53,7 @@ public class ExecutableDeleteOperationSupportTests extends AbstractKeyspaceCreat
 
 		template = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 		template.dropTable(true, CqlIdentifier.of("person"));
-		template.createTable(true, CqlIdentifier.of("person"), ExecutableInsertOperationSupportTests.Person.class,
-				Collections.emptyMap());
+		template.createTable(false, CqlIdentifier.of("person"), Person.class, Collections.emptyMap());
 
 		han = new Person();
 		han.firstname = "han";
@@ -67,30 +67,59 @@ public class ExecutableDeleteOperationSupportTests extends AbstractKeyspaceCreat
 		template.insert(luke);
 	}
 
-	@Test // DATACASS-485
-	public void removeAllMatching() {
+	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	public void domainTypeIsRequired() {
+		this.template.update(null);
+	}
 
-		WriteResult deleteResult = this.template
-				.delete(Person.class)
-				.matching(query(where("id").is(han.id)))
-				.all();
+	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	public void queryIsRequired() {
+		this.template.update(Person.class).matching(null);
+	}
 
-		assertThat(deleteResult).isNotNull();
-		assertThat(deleteResult.wasApplied()).isTrue();
+	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	public void tableIsRequiredOnSet() {
+		this.template.update(Person.class).inTable((CqlIdentifier) null);
 	}
 
 	@Test // DATACASS-485
-	public void removeAllMatchingWithAlternateDomainTypeAndCollection() {
+	public void updateAllMatching() {
 
-		WriteResult deleteResult = this.template
-				.delete(Jedi.class)
+		WriteResult updateResult = this.template
+				.update(Person.class)
+				.matching(queryHan())
+				.apply(update("firstname", "Han"));
+
+		assertThat(updateResult).isNotNull();
+		assertThat(updateResult.wasApplied()).isTrue();
+		assertThat(this.template.selectOne(queryLuke(), Person.class)).isEqualTo(luke);
+	}
+
+	@Test // DATACASS-485
+	public void updateWithDifferentDomainClassAndCollection() {
+
+		WriteResult updateResult = this.template
+				.update(Jedi.class)
 				.inTable("person")
-				.matching(query(where("id").in(han.id, luke.id)))
-				.all();
+				.matching(query(where("id").is(han.getId())))
+				.apply(update("name", "Han"));
 
-		assertThat(deleteResult).isNotNull();
-		assertThat(deleteResult.wasApplied()).isTrue();
-		assertThat(this.template.select(Query.empty(), Person.class)).isEmpty();
+		assertThat(updateResult).isNotNull();
+		assertThat(updateResult.wasApplied()).isTrue();
+		assertThat(this.template.selectOne(queryHan(), Person.class))
+				.isNotEqualTo(han).hasFieldOrPropertyWithValue("firstname", "Han");
+	}
+
+	private Query queryHan() {
+		return queryPerson(han);
+	}
+
+	private Query queryLuke() {
+		return queryPerson(luke);
+	}
+
+	private Query queryPerson(Person person) {
+		return query(where("id").is(person.getId()));
 	}
 
 	@Data
