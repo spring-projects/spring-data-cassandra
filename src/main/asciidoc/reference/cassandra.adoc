@@ -1191,11 +1191,15 @@ The query methods need to specify the target type T that will be returned.
 [[cassandra.template.query.fluent-template-api]]
 === Fluent Template API
 
-The `CassandraOperations` interface is one of the central components when it comes to more low level interaction with Apache Cassandra. It offers a wide range of methods.
-One can find multiple overloads for each and every method. Most of them just cover optional (nullable) parts of the API.
+The `CassandraOperations` interface is one of the central components when it comes to more low-level interaction
+with Apache Cassandra. It offers a wide range of methods. One can find multiple overloads for each and every method.
+Most of them just cover optional (nullable) parts of the API.
 
-`FluentCassandraOperations` provide a more narrow interface for common methods of `CassandraOperations` providing a more readable, fluent API.
-The entry points `query(…)`, `insert(…)`, `update(…)`, and `delete(…)` follow a natural naming schema based on the operation to execute. Moving on from the entry point the API is designed to only offer context dependent methods guiding towards a terminating method that invokes the actual `CassandraOperations` counterpart.
+`FluentCassandraOperations` provide a more narrow interface for common methods of `CassandraOperations`
+providing a more readable, fluent API. The entry points `query(…)`, `insert(…)`, `update(…)`, and `delete(…)`
+follow a natural naming scheme based on the operation to execute. Moving on from the entry point, the API
+is designed to only offer context dependent methods guiding the developer towards a terminating method
+that invokes the actual `CassandraOperation`.
 
 ====
 [source,java]
@@ -1207,7 +1211,9 @@ List<SWCharacter> all = ops.query(SWCharacter.class)
 <1> Skip this step if `SWCharacter` defines the table name via `@Table` or if using the class name as table name is just fine.
 ====
 
-If a table in Cassandra holds entities of different types, like a `Jedi` within a Table of `SWCharacters`, you can use different types to map the query and to map result. Use `as(Class<?> targetType)` to map results to a different target type while `query(Class<?> entityType)` still applies to the query and table name.
+If a table in Cassandra holds entities of different types, like a `Jedi` within a Table of `SWCharacters`, you can use
+different types to map the query result. Use `as(Class<?> targetType)` to map results to a different target type
+while `query(Class<?> entityType)` still applies to the query and table name.
 
 ====
 [source,java]
@@ -1221,6 +1227,14 @@ List<Jedi> all = ops.query(SWCharacter.class)    <1>
 <2> Resulting rows are mapped into `Jedi`.
 ====
 
-TIP: It is possible to directly apply <<projections>> to resulting documents by providing just the `interface` type via `as(Class<?>)`.
+TIP: It is possible to directly apply <<projections>> to resulting documents by providing just the `interface` type
+via `as(Class<?>)`.
 
-Switching between retrieving a single entity, multiple ones as `List` or `Stream` like is done via the terminating methods `first()`, `one()`, `all()` or `stream()`.
+Switching between retrieving a single entity, multiple entities as `List` or `Stream`, and the like is done
+via the terminating methods `first()`, `one()`, `all()` or `stream()`.
+
+WARNING: The new fluent template API methods (i.e. `query(..)`, `insert(..)`, `update(..)` and `delete(..)`)
+makes use of effectively Thread-safe supporting objects to compose the CQL statement.  However, it comes
+at the added cost of additional young-gen JVM heap overhead since the design is based on final fields
+for the various CQL statement components and construction on mutation.  You should be careful when possibly
+inserting or deleting a large number of object, such as inside a loop, for instance.
