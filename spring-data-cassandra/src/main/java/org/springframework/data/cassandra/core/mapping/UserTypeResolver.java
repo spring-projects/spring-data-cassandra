@@ -21,20 +21,25 @@ import org.springframework.lang.Nullable;
 import com.datastax.driver.core.UserType;
 
 /**
- * Strategy interface to resolve {@link UserType} by its name.
+ * Strategy interface to resolve {@link UserType} by {@link String name}.
  *
  * @author Mark Paluch
+ * @see com.datastax.driver.core.DataType
+ * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
  * @since 1.5
  */
 @FunctionalInterface
 public interface UserTypeResolver {
 
 	/**
-	 * Resolve a {@link UserType} by its name.
+	 * Resolve a {@link UserType} by {@link String name}.
 	 *
-	 * @param typeName must not be {@literal null}.
-	 * @return the type or {@literal null}, if not found.
+	 * @param typeName {@link String name} of the {@link UserType} to resolve; must not be {@literal null}.
+	 * @return the resolved {@link UserType} or {@literal null} if not found.
+	 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+	 * @see com.datastax.driver.core.DataType
 	 */
 	@Nullable
 	UserType resolveType(CqlIdentifier typeName);
+
 }

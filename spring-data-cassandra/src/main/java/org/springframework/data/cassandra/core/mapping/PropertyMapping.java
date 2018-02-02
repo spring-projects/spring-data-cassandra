@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import lombok.EqualsAndHashCode;
 
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -46,9 +47,10 @@ public class PropertyMapping {
 		this(propertyName, columnName, "false");
 	}
 
-	public PropertyMapping(String propertyName, String columnName, String forceQuote) {
+	public PropertyMapping(@NonNull String propertyName, @NonNull String columnName, String forceQuote) {
 
 		Assert.notNull(propertyName, "Property name must not be null");
+
 		this.propertyName = propertyName;
 
 		setColumnName(columnName);
@@ -57,18 +59,19 @@ public class PropertyMapping {
 
 	@Nullable
 	public String getColumnName() {
-		return columnName;
+		return this.columnName;
 	}
 
-	public void setColumnName(String columnName) {
+	public void setColumnName(@NonNull String columnName) {
 
 		Assert.notNull(columnName, "Column name must not be null");
+
 		this.columnName = columnName;
 	}
 
 	@Nullable
 	public String getForceQuote() {
-		return forceQuote;
+		return this.forceQuote;
 	}
 
 	public void setForceQuote(String forceQuote) {
@@ -76,7 +79,7 @@ public class PropertyMapping {
 	}
 
 	public String getPropertyName() {
-		return propertyName;
+		return this.propertyName;
 	}
 
 	/* (non-Javadoc)

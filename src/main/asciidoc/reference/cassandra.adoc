@@ -613,7 +613,12 @@ NOTE: `SchemaAction.RECREATE`/`SchemaAction.RECREATE_DROP_UNUSED` will drop your
 
 ==== Enabling Tables and User-Defined Types for Schema Management
 
-<<mapping.usage>> explains object mapping using conventions and annotations. Schema management is only active for entities annotated with `@Table` and user-defined types annotated with `@UserDefinedType` to prevent unwanted classes from being created as table/type. Entities are discovered by scanning the class path. Entity scanning requires one or more base packages. Tuple typed columns using `TupleValue` do not provide any typing details hences you must annotate such column properties with `@CassandraType(type = TUPLE, typeArguments = …)` to specify the desired column type.
+<<mapping.usage>> explains object mapping using conventions and annotations. Schema management is only active
+for entities annotated with `@Table` and user-defined types annotated with `@UserDefinedType` to prevent
+unwanted classes from being created as table/type. Entities are discovered by scanning the classpath.
+Entity scanning requires one or more base packages. Tuple typed columns using `TupleValue` do not provide
+any typing details hences you must annotate such column properties with `@CassandraType(type = TUPLE, typeArguments = …)`
+to specify the desired column type.
 
 .Specifying Entity Base Packages via XML
 ====

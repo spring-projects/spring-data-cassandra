@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.springframework.data.cassandra.core.convert.CassandraTypeMappingIntegrationTest.Condition;
+import org.springframework.data.cassandra.core.convert.CassandraTypeMappingIntegrationTests.Condition;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;

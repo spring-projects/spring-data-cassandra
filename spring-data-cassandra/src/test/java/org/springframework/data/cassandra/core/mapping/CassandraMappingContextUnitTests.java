@@ -15,8 +15,10 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -27,6 +29,7 @@ import java.util.NoSuchElementException;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
@@ -64,12 +67,12 @@ public class CassandraMappingContextUnitTests {
 
 	@Before
 	public void before() {
-		mappingContext.setUserTypeResolver(typeName -> null);
+		this.mappingContext.setUserTypeResolver(typeName -> null);
 	}
 
 	@Test
 	public void testgetRequiredPersistentEntityOfTransientType() {
-		mappingContext.getRequiredPersistentEntity(Transient.class);
+		this.mappingContext.getRequiredPersistentEntity(Transient.class);
 	}
 
 	private static class Transient {}
@@ -342,15 +345,16 @@ public class CassandraMappingContextUnitTests {
 
 	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACASS-284
 	public void shouldRejectUntypedTuples() {
-
-		mappingContext.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(UntypedTupleEntity.class));
+		this.mappingContext.getCreateTableSpecificationFor(
+				this.mappingContext.getRequiredPersistentEntity(UntypedTupleEntity.class));
 	}
 
 	@Test // DATACASS-284
 	public void shouldCreateTableForTypedTupleType() {
 
-		CreateTableSpecification tableSpecification = mappingContext
-				.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(TypedTupleEntity.class));
+		CreateTableSpecification tableSpecification =
+				this.mappingContext.getCreateTableSpecificationFor(
+					this.mappingContext.getRequiredPersistentEntity(TypedTupleEntity.class));
 
 		assertThat(tableSpecification.getColumns()).hasSize(2);
 
@@ -663,16 +667,14 @@ public class CassandraMappingContextUnitTests {
 	}
 
 	@Table
-	static class UntypedTupleEntity {
-
+	static class TypedTupleEntity {
 		@Id String id;
-		TupleType untyped;
+		@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue typed;
 	}
 
 	@Table
-	static class TypedTupleEntity {
-
+	static class UntypedTupleEntity {
 		@Id String id;
-		@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue typed;
+		TupleType untyped;
 	}
 }

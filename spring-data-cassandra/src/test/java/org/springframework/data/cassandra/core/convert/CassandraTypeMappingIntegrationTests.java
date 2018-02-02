@@ -15,12 +15,8 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -35,10 +31,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import org.assertj.core.api.Assertions;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -47,6 +47,8 @@ import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.util.Version;
+
+import org.assertj.core.api.Assertions;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Duration;
@@ -62,7 +64,7 @@ import com.datastax.driver.core.TupleValue;
  * @soundtrack DJ THT meets Scarlet - Live 2 Dance (Extended Mix) (Zgin Remix)
  */
 @SuppressWarnings("Since15")
-public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
+public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	static final Version VERSION_3_10 = Version.parse("3.10");
 
@@ -460,11 +462,13 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 	public void shouldReadAndWriteTupleType() {
 
 		TupleType tupleType = cluster.getMetadata().newTupleType(DataType.varchar(), DataType.bigint());
+
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
 		entity.setTupleValue(tupleType.newValue("foo", 23L));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = operations.selectOneById(entity.getId(), AllPossibleTypes.class);
 
 		assertThat(loaded.getTupleValue().getObject(0)).isEqualTo("foo");
@@ -477,11 +481,12 @@ public class CassandraTypeMappingIntegrationTest extends AbstractKeyspaceCreatin
 		TupleType tupleType = cluster.getMetadata().newTupleType(DataType.varchar(), DataType.bigint());
 
 		ListOfTuples entity = new ListOfTuples();
-		entity.setId("foo");
 
+		entity.setId("foo");
 		entity.setTuples(Arrays.asList(tupleType.newValue("foo", 23L), tupleType.newValue("bar", 42L)));
 
 		operations.insert(entity);
+
 		ListOfTuples loaded = operations.selectOneById(entity.getId(), ListOfTuples.class);
 
 		assertThat(loaded.getTuples().get(0).getObject(0)).isEqualTo("foo");

@@ -63,40 +63,43 @@ public class EntityMapping {
 
 	@Nullable
 	public String getEntityClassName() {
-		return entityClassName;
+		return this.entityClassName;
 	}
 
 	public void setEntityClassName(String entityClassName) {
 
 		Assert.hasText(entityClassName, "Entity class name must not be null or empty");
+
 		this.entityClassName = entityClassName;
 	}
 
 	public String getForceQuote() {
-		return forceQuote;
+		return this.forceQuote;
 	}
 
 	public void setForceQuote(String forceQuote) {
 
 		Assert.notNull(forceQuote, "Force quote must not be null or empty");
+
 		this.forceQuote = forceQuote;
 	}
 
 	public Map<String, PropertyMapping> getPropertyMappings() {
-		return Collections.unmodifiableMap(propertyMappings);
+		return Collections.unmodifiableMap(this.propertyMappings);
 	}
 
 	public void setPropertyMappings(@Nullable Map<String, PropertyMapping> propertyMappings) {
-		this.propertyMappings = (propertyMappings != null ? new HashMap<>(propertyMappings) : Collections.emptyMap());
+		this.propertyMappings = propertyMappings != null ? new HashMap<>(propertyMappings) : Collections.emptyMap();
 	}
 
 	public String getTableName() {
-		return tableName;
+		return this.tableName;
 	}
 
 	public void setTableName(String tableName) {
 
 		Assert.notNull(tableName, "Table name must not be null or empty");
+
 		this.tableName = tableName;
 	}
 
@@ -105,6 +108,7 @@ public class EntityMapping {
 	 */
 	@Override
 	public boolean equals(Object obj) {
+
 		if (this == obj) {
 			return true;
 		}
@@ -127,9 +131,11 @@ public class EntityMapping {
 	public int hashCode() {
 
 		int hashValue = 17;
+
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getEntityClassName());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getForceQuote());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getTableName());
+
 		return hashValue;
 	}
 
@@ -139,12 +145,14 @@ public class EntityMapping {
 	@Override
 	public String toString() {
 		return String.format(
-				"{ @type = %1$s, entityClassName = %2$s, tableName = %3$s, forceQuote = %4$s, propertyMappings = %5$s }",
+			"{ @type = %1$s, entityClassName = %2$s, tableName = %3$s, forceQuote = %4$s, propertyMappings = %5$s }",
 				getClass().getName(), getEntityClassName(), getTableName(), getForceQuote(), toString(getPropertyMappings()));
 	}
 
 	private String toString(Map<?, ?> map) {
+
 		StringBuilder builder = new StringBuilder("[");
+
 		int count = 0;
 
 		for (Map.Entry<?, ?> entry : map.entrySet()) {

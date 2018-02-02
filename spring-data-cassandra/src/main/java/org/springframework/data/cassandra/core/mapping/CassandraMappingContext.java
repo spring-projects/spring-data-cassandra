@@ -15,11 +15,20 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
-import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
-import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.*;
+import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.createTable;
+import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.getDataTypeFor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.StreamSupport;
 
 import org.springframework.beans.BeansException;
@@ -42,6 +51,7 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -76,7 +86,7 @@ public class CassandraMappingContext
 
 	private @Nullable UserTypeResolver userTypeResolver;
 
-	private @Nullable ApplicationContext context;
+	private @Nullable ApplicationContext applicationContext;
 
 	private @Nullable ClassLoader beanClassLoader;
 
@@ -90,8 +100,9 @@ public class CassandraMappingContext
 	 */
 	public CassandraMappingContext() {
 
-		setCustomConversions(
-				new CustomConversions(StoreConversions.of(CassandraSimpleTypeHolder.HOLDER), Collections.emptyList()));
+		setCustomConversions(new CustomConversions(
+				StoreConversions.of(CassandraSimpleTypeHolder.HOLDER), Collections.emptyList()));
+
 		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
 	}
 
@@ -104,34 +115,38 @@ public class CassandraMappingContext
 		processMappingOverrides();
 	}
 
+	@SuppressWarnings("all")
 	private void processMappingOverrides() {
 
 		this.mapping.getEntityMappings().stream().filter(Objects::nonNull).forEach(entityMapping -> {
 
 			Class<?> entityClass = getEntityClass(entityMapping.getEntityClassName());
+
 			CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
 			String entityTableName = entityMapping.getTableName();
 
 			if (StringUtils.hasText(entityTableName)) {
-				entity.setTableName(of(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
+				entity.setTableName(CqlIdentifier.of(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
 			}
 
 			processMappingOverrides(entity, entityMapping);
+
 		});
 	}
 
 	private Class<?> getEntityClass(String entityClassName) {
 
 		try {
-			return ClassUtils.forName(entityClassName, beanClassLoader);
-		} catch (ClassNotFoundException e) {
-			throw new IllegalStateException(String.format("Unknown persistent entity name [%s]", entityClassName), e);
+			return ClassUtils.forName(entityClassName, this.beanClassLoader);
+		}
+		catch (ClassNotFoundException cause) {
+			throw new IllegalStateException(
+					String.format("Unknown persistent entity name [%s]", entityClassName), cause);
 		}
 	}
 
 	private static void processMappingOverrides(CassandraPersistentEntity<?> entity, EntityMapping entityMapping) {
-
 		entityMapping.getPropertyMappings()
 				.forEach((key, propertyMapping) -> processMappingOverride(entity, propertyMapping));
 	}
@@ -145,7 +160,7 @@ public class CassandraMappingContext
 		property.setForceQuote(forceQuote);
 
 		if (StringUtils.hasText(mapping.getColumnName())) {
-			property.setColumnName(of(mapping.getColumnName(), forceQuote));
+			property.setColumnName(CqlIdentifier.of(mapping.getColumnName(), forceQuote));
 		}
 	}
 
@@ -154,7 +169,7 @@ public class CassandraMappingContext
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.context = applicationContext;
+		this.applicationContext = applicationContext;
 	}
 
 	/* (non-Javadoc)
@@ -190,6 +205,24 @@ public class CassandraMappingContext
 	}
 
 	/**
+	 * Returns only {@link Table} entities.
+	 *
+	 * @since 1.5
+	 */
+	public Collection<BasicCassandraPersistentEntity<?>> getTableEntities() {
+		return Collections.unmodifiableCollection(this.tableEntities);
+	}
+
+	/**
+	 * Returns only those entities representing a user defined type.
+	 *
+	 * @since 1.5
+	 */
+	public Collection<CassandraPersistentEntity<?>> getUserDefinedTypeEntities() {
+		return Collections.unmodifiableSet(this.userDefinedTypes);
+	}
+
+	/**
 	 * Sets the {@link UserTypeResolver}.
 	 *
 	 * @param userTypeResolver must not be {@literal null}.
@@ -213,25 +246,7 @@ public class CassandraMappingContext
 	 * @return Returns the verifier.
 	 */
 	public CassandraPersistentEntityMetadataVerifier getVerifier() {
-		return verifier;
-	}
-
-	/**
-	 * Returns only {@link Table} entities.
-	 *
-	 * @since 1.5
-	 */
-	public Collection<BasicCassandraPersistentEntity<?>> getTableEntities() {
-		return Collections.unmodifiableCollection(this.tableEntities);
-	}
-
-	/**
-	 * Returns only those entities representing a user defined type.
-	 *
-	 * @since 1.5
-	 */
-	public Collection<CassandraPersistentEntity<?>> getUserDefinedTypeEntities() {
-		return Collections.unmodifiableSet(this.userDefinedTypes);
+		return this.verifier;
 	}
 
 	/* (non-Javadoc)
@@ -252,14 +267,15 @@ public class CassandraMappingContext
 			}
 			// now do some caching of the entity
 
-			Set<CassandraPersistentEntity<?>> entities = this.entitySetsByTableName.computeIfAbsent(entity.getTableName(),
-					cqlIdentifier -> new HashSet<>());
+			Set<CassandraPersistentEntity<?>> entities = this.entitySetsByTableName
+					.computeIfAbsent(entity.getTableName(), cqlIdentifier -> new HashSet<>());
 
 			entities.add(entity);
 
 			if (!entity.isUserDefinedType() && entity.isAnnotationPresent(Table.class)) {
 				this.tableEntities.add(entity);
 			}
+
 		});
 
 		return optional;
@@ -270,8 +286,8 @@ public class CassandraMappingContext
 	 */
 	@Override
 	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> typeInfo) {
-		return (!this.customConversions.hasCustomWriteTarget(typeInfo.getType())
-				&& super.shouldCreatePersistentEntityFor(typeInfo));
+		return !this.customConversions.hasCustomWriteTarget(typeInfo.getType())
+				&& super.shouldCreatePersistentEntityFor(typeInfo);
 	}
 
 	/* (non-Javadoc)
@@ -280,25 +296,30 @@ public class CassandraMappingContext
 	@Override
 	protected <T> BasicCassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 
-		UserDefinedType userDefinedType = AnnotatedElementUtils.findMergedAnnotation(typeInformation.getType(),
-				UserDefinedType.class);
+		BasicCassandraPersistentEntity<T> entity = Optional.ofNullable(resolveUserDefinedType(typeInformation))
+				.<BasicCassandraPersistentEntity<T>>map(resolvedUserDefinedType ->
+					new CassandraUserTypePersistentEntity<>(typeInformation, getVerifier(), resolveUserTypeResolver()))
+				.orElseGet(() ->
+					new BasicCassandraPersistentEntity<>(typeInformation, getVerifier()));
 
-		BasicCassandraPersistentEntity<T> entity;
-
-		if (userDefinedType != null) {
-			Assert.state(this.userTypeResolver != null, "UserTypeResolver must not be null");
-
-			entity = new CassandraUserTypePersistentEntity<>(typeInformation, this.verifier, this.userTypeResolver);
-
-		} else {
-			entity = new BasicCassandraPersistentEntity<>(typeInformation, this.verifier);
-		}
-
-		if (this.context != null) {
-			entity.setApplicationContext(this.context);
-		}
+		Optional.ofNullable(this.applicationContext).ifPresent(entity::setApplicationContext);
 
 		return entity;
+	}
+
+	@Nullable
+	private UserDefinedType resolveUserDefinedType(TypeInformation typeInformation) {
+		return AnnotatedElementUtils.findMergedAnnotation(typeInformation.getType(), UserDefinedType.class);
+	}
+
+	@NonNull
+	private UserTypeResolver resolveUserTypeResolver() {
+
+		UserTypeResolver resolvedUserTypeResolver = this.userTypeResolver;
+
+		Assert.state(resolvedUserTypeResolver != null, "UserTypeResolver must not be null");
+
+		return resolvedUserTypeResolver;
 	}
 
 	/* (non-Javadoc)
@@ -308,14 +329,12 @@ public class CassandraMappingContext
 	protected CassandraPersistentProperty createPersistentProperty(Property property,
 			BasicCassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
 
-		BasicCassandraPersistentProperty cassandraProperty = new BasicCassandraPersistentProperty(property, owner,
-				simpleTypeHolder, this.userTypeResolver);
+		BasicCassandraPersistentProperty persistentProperty =
+				new BasicCassandraPersistentProperty(property, owner, simpleTypeHolder, this.userTypeResolver);
 
-		if (this.context != null) {
-			cassandraProperty.setApplicationContext(this.context);
-		}
+		Optional.ofNullable(this.applicationContext).ifPresent(persistentProperty::setApplicationContext);
 
-		return cassandraProperty;
+		return persistentProperty;
 	}
 
 	/**
@@ -326,7 +345,7 @@ public class CassandraMappingContext
 	 */
 	public boolean usesTable(CqlIdentifier name) {
 
-		Assert.notNull(name, "Table name must not be null!");
+		Assert.notNull(name, "Table name must not be null");
 
 		return this.entitySetsByTableName.containsKey(name);
 	}
@@ -340,21 +359,24 @@ public class CassandraMappingContext
 	 */
 	public boolean usesUserType(CqlIdentifier name) {
 
-		Assert.notNull(name, "User type name must not be null!");
+		Assert.notNull(name, "User type name must not be null");
 
 		return hasMappedUserType(name) || hasReferencedUserType(name);
 	}
 
-	private boolean hasReferencedUserType(CqlIdentifier identifier) {
-
-		return getPersistentEntities().stream().flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
-				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class))))
-				.map(CassandraType::userTypeName).filter(StringUtils::hasText).map(CqlIdentifier::of)
-				.anyMatch(identifier::equals);
-	}
-
 	private boolean hasMappedUserType(CqlIdentifier identifier) {
 		return this.userDefinedTypes.stream().map(CassandraPersistentEntity::getTableName).anyMatch(identifier::equals);
+	}
+
+	private boolean hasReferencedUserType(CqlIdentifier identifier) {
+
+		return getPersistentEntities().stream()
+				.flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
+				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class))))
+				.map(CassandraType::userTypeName)
+				.filter(StringUtils::hasText)
+				.map(CqlIdentifier::of)
+				.anyMatch(identifier::equals);
 	}
 
 	/**
@@ -370,36 +392,31 @@ public class CassandraMappingContext
 
 		for (CassandraPersistentProperty property : entity) {
 
-			if (!property.isCompositePrimaryKey()) {
-				continue;
-			}
+			if (property.isCompositePrimaryKey()) {
 
-			CassandraPersistentEntity<?> primaryKeyEntity = getRequiredPersistentEntity(property.getRawType());
+				CassandraPersistentEntity<?> primaryKeyEntity = getRequiredPersistentEntity(property.getRawType());
 
-			for (CassandraPersistentProperty primaryKeyProperty : primaryKeyEntity) {
-				if (primaryKeyProperty.isPartitionKeyColumn()) {
-					specification.partitionKeyColumn(primaryKeyProperty.getColumnName(), getDataType(primaryKeyProperty));
-				} else { // it's a cluster column
-					specification.clusteredKeyColumn(primaryKeyProperty.getColumnName(), getDataType(primaryKeyProperty),
-							primaryKeyProperty.getPrimaryKeyOrdering());
+				for (CassandraPersistentProperty primaryKeyProperty : primaryKeyEntity) {
+					if (primaryKeyProperty.isPartitionKeyColumn()) {
+						specification.partitionKeyColumn(primaryKeyProperty.getColumnName(),
+								getDataType(primaryKeyProperty));
+					} else { // cluster column
+						specification.clusteredKeyColumn(primaryKeyProperty.getColumnName(),
+								getDataType(primaryKeyProperty), primaryKeyProperty.getPrimaryKeyOrdering());
+					}
 				}
 			}
-		}
-
-		for (CassandraPersistentProperty property : entity) {
-
-			if (property.isCompositePrimaryKey()) {
-				continue;
-			}
-
-			if (property.isIdProperty() || property.isPartitionKeyColumn()) {
-				specification.partitionKeyColumn(property.getColumnName(),
-						UserTypeUtil.potentiallyFreeze(getDataType(property)));
-			} else if (property.isClusterKeyColumn()) {
-				specification.clusteredKeyColumn(property.getColumnName(),
-						UserTypeUtil.potentiallyFreeze(getDataType(property)), property.getPrimaryKeyOrdering());
-			} else {
-				specification.column(property.getColumnName(), UserTypeUtil.potentiallyFreeze(getDataType(property)));
+			else {
+				if (property.isIdProperty() || property.isPartitionKeyColumn()) {
+					specification.partitionKeyColumn(property.getColumnName(),
+							UserTypeUtil.potentiallyFreeze(getDataType(property)));
+				} else if (property.isClusterKeyColumn()) {
+					specification.clusteredKeyColumn(property.getColumnName(),
+							UserTypeUtil.potentiallyFreeze(getDataType(property)), property.getPrimaryKeyOrdering());
+				} else {
+					specification.column(property.getColumnName(),
+							UserTypeUtil.potentiallyFreeze(getDataType(property)));
+				}
 			}
 		}
 
@@ -419,17 +436,11 @@ public class CassandraMappingContext
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		return getCreateIndexSpecifications(entity.getTableName(), entity);
-	}
-
-	private List<CreateIndexSpecification> getCreateIndexSpecifications(CqlIdentifier tableName,
-			CassandraPersistentEntity<?> entity) {
-
 		List<CreateIndexSpecification> indexes = new ArrayList<>();
 
 		for (CassandraPersistentProperty property : entity) {
 			if (property.isCompositePrimaryKey()) {
-				indexes.addAll(getCreateIndexSpecifications(tableName, getRequiredPersistentEntity(property)));
+				indexes.addAll(getCreateIndexSpecificationsFor(getRequiredPersistentEntity(property)));
 			} else {
 				indexes.addAll(IndexSpecificationFactory.createIndexSpecifications(property));
 			}
@@ -467,6 +478,31 @@ public class CassandraMappingContext
 	}
 
 	/**
+	 * Retrieve the data type based on the given {@code type}. Cassandra {@link DataType types} are determined using
+	 * simple types and configured {@link org.springframework.data.convert.CustomConversions}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return the Cassandra {@link DataType type}.
+	 * @see org.springframework.data.convert.CustomConversions
+	 * @see CassandraSimpleTypeHolder
+	 * @since 1.5
+	 */
+	public DataType getDataType(Class<?> type) {
+
+		return this.customConversions.getCustomWriteTarget(type)
+			.map(CassandraSimpleTypeHolder::getDataTypeFor)
+			.orElseGet(() -> getDataTypeFor(type));
+	}
+
+	@Nullable
+	private DataType getDataType(@NonNull Class<?> type, DataTypeProvider dataTypeProvider) {
+
+		BasicCassandraPersistentEntity<?> entity = getPersistentEntity(type);
+
+		return entity != null && entity.isUserDefinedType() ? dataTypeProvider.getDataType(entity) : getDataType(type);
+	}
+
+	/**
 	 * Retrieve the data type of the property. Cassandra {@link DataType types} are determined using simple types and
 	 * configured {@link org.springframework.data.convert.CustomConversions}.
 	 *
@@ -487,10 +523,20 @@ public class CassandraMappingContext
 
 			CassandraType annotation = property.getRequiredAnnotation(CassandraType.class);
 
+			if (annotation.type() == Name.TUPLE) {
+
+				DataType[] dataTypes = Arrays.stream(annotation.typeArguments())
+					.map(CassandraSimpleTypeHolder::getDataTypeFor)
+					.toArray(DataType[]::new);
+
+				return TupleType.of(ProtocolVersion.NEWEST_SUPPORTED, CodecRegistry.DEFAULT_INSTANCE, dataTypes);
+			}
+
 			if (annotation.type() == Name.UDT) {
 
 				CqlIdentifier userTypeName = CqlIdentifier.of(annotation.userTypeName());
-				DataType userType = dataTypeProvider.getUserType(userTypeName, userTypeResolver);
+
+				DataType userType = dataTypeProvider.getUserType(userTypeName, resolveUserTypeResolver());
 
 				if (userType == null) {
 					throw new MappingException(String.format("User type [%s] not found", userTypeName));
@@ -501,14 +547,6 @@ public class CassandraMappingContext
 				if (dataType != null) {
 					return dataType;
 				}
-			}
-
-			if (annotation.type() == Name.TUPLE) {
-
-				DataType[] dataTypes = Arrays.stream(annotation.typeArguments()) //
-						.map(CassandraSimpleTypeHolder::getDataTypeFor) //
-						.toArray(DataType[]::new);
-				return TupleType.of(ProtocolVersion.NEWEST_SUPPORTED, CodecRegistry.DEFAULT_INSTANCE, dataTypes);
 			}
 
 			return property.getDataType();
@@ -526,11 +564,13 @@ public class CassandraMappingContext
 		}
 
 		return this.customConversions.getCustomWriteTarget(property.getType())
-				.map(CassandraSimpleTypeHolder::getDataTypeFor).orElseGet(() -> this.customConversions
-						.getCustomWriteTarget(property.getActualType()).filter(it -> !property.isMapLike()).map(it -> {
+				.map(CassandraSimpleTypeHolder::getDataTypeFor)
+				.orElseGet(() -> this.customConversions
+						.getCustomWriteTarget(property.getActualType())
+						.filter(it -> !property.isMapLike())
+						.map(it -> {
 
 							if (property.isCollectionLike()) {
-
 								if (List.class.isAssignableFrom(property.getType())) {
 									return DataType.list(getDataTypeFor(it));
 								}
@@ -541,6 +581,7 @@ public class CassandraMappingContext
 							}
 
 							return getDataTypeFor(it);
+
 						}).orElseGet(() -> {
 
 							if (property.isMapLike()) {
@@ -548,19 +589,13 @@ public class CassandraMappingContext
 								Class<?> keyType = property.getComponentType();
 								Class<?> valueType = property.getMapValueType();
 
-								return DataType.map(getDataType(keyType, dataTypeProvider), getDataType(valueType, dataTypeProvider));
+								return DataType.map(getDataType(keyType, dataTypeProvider),
+										getDataType(valueType, dataTypeProvider));
 							}
 
 							return property.getDataType();
+
 						}));
-
-	}
-
-	private DataType getDataType(Class<?> type, DataTypeProvider dataTypeProvider) {
-
-		BasicCassandraPersistentEntity<?> entity = getPersistentEntity(type);
-
-		return entity != null && entity.isUserDefinedType() ? dataTypeProvider.getDataType(entity) : getDataType(type);
 	}
 
 	@Nullable
@@ -568,36 +603,16 @@ public class CassandraMappingContext
 
 		if (property.isCollectionLike()) {
 
-			if (Set.class.isAssignableFrom(property.getType())) {
-				return DataType.set(elementType);
-			}
-
 			if (List.class.isAssignableFrom(property.getType())) {
 				return DataType.list(elementType);
 			}
+
+			if (Set.class.isAssignableFrom(property.getType())) {
+				return DataType.set(elementType);
+			}
 		}
 
-		if (!property.isCollectionLike() && !property.isMapLike()) {
-			return elementType;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Retrieve the data type based on the given {@code type}. Cassandra {@link DataType types} are determined using
-	 * simple types and configured {@link org.springframework.data.convert.CustomConversions}.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @return the Cassandra {@link DataType type}.
-	 * @see org.springframework.data.convert.CustomConversions
-	 * @see CassandraSimpleTypeHolder
-	 * @since 1.5
-	 */
-	public DataType getDataType(Class<?> type) {
-
-		return this.customConversions.getCustomWriteTarget(type).map(CassandraSimpleTypeHolder::getDataTypeFor)
-				.orElseGet(() -> getDataTypeFor(type));
+		return !(property.isCollectionLike() || property.isMapLike()) ? elementType : null;
 	}
 
 	/**
@@ -652,5 +667,6 @@ public class CassandraMappingContext
 		 */
 		@Nullable
 		abstract DataType getUserType(CqlIdentifier userTypeName, UserTypeResolver userTypeResolver);
+
 	}
 }
