@@ -15,16 +15,17 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
-import static org.springframework.data.cassandra.core.query.Query.*;
-
-import lombok.Data;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Query.query;
 
 import java.util.Collections;
 
+import lombok.Data;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -69,20 +70,27 @@ public class ExecutableDeleteOperationSupportTests extends AbstractKeyspaceCreat
 	@Test // DATACASS-485
 	public void removeAllMatching() {
 
-		WriteResult writeResult = template.delete(Person.class).matching(query(where("id").is(han.id))).all();
+		WriteResult deleteResult = this.template
+				.delete(Person.class)
+				.matching(query(where("id").is(han.id)))
+				.all();
 
-		assertThat(writeResult.wasApplied()).isTrue();
+		assertThat(deleteResult).isNotNull();
+		assertThat(deleteResult.wasApplied()).isTrue();
 	}
 
 	@Test // DATACASS-485
 	public void removeAllMatchingWithAlternateDomainTypeAndCollection() {
 
-		WriteResult writeResult = template.delete(Jedi.class).inTable("person")
+		WriteResult deleteResult = this.template
+				.delete(Jedi.class)
+				.inTable("person")
 				.matching(query(where("id").in(han.id, luke.id)))
 				.all();
 
-		assertThat(writeResult.wasApplied()).isTrue();
-		assertThat(template.select(Query.empty(), Person.class)).isEmpty();
+		assertThat(deleteResult).isNotNull();
+		assertThat(deleteResult.wasApplied()).isTrue();
+		assertThat(this.template.select(Query.empty(), Person.class)).isEmpty();
 	}
 
 	@Data
@@ -94,7 +102,6 @@ public class ExecutableDeleteOperationSupportTests extends AbstractKeyspaceCreat
 
 	@Data
 	static class Jedi {
-
 		@Column("firstname") String name;
 	}
 }

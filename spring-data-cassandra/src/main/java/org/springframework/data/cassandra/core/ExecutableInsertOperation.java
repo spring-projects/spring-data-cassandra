@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.util.Assert;
 
 /**
  * {@link ExecutableInsertOperation} allows creation and execution of Cassandra {@code INSERT} insert operations in a
@@ -34,59 +35,56 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
  * </pre>
  *
  * @author Mark Paluch
+ * @author John Blum
  * @since 2.1
  */
 public interface ExecutableInsertOperation {
 
 	/**
-	 * Start creating an {@code INSERT} operation for given {@literal domainType}.
+	 * Begin creating an {@code INSERT} operation for given {@link Class domainType}.
 	 *
-	 * @param domainType must not be {@literal null}.
+	 * @param domainType {@link Class type} of domain object to insert; must not be {@literal null}.
 	 * @return new instance of {@link ExecutableInsert}.
-	 * @throws IllegalArgumentException if domainType is {@literal null}.
+	 * @throws IllegalArgumentException if {@link Class domainType} is {@literal null}.
+	 * @see ExecutableInsert
 	 */
 	<T> ExecutableInsert<T> insert(Class<T> domainType);
 
 	/**
-	 * Trigger insert execution by calling one of the terminating methods.
-	 */
-	interface TerminatingInsert<T> {
-
-		/**
-		 * Insert exactly one object.
-		 *
-		 * @param object must not be {@literal null}.
-		 * @throws IllegalArgumentException if object is {@literal null}.
-		 */
-		WriteResult one(T object);
-	}
-
-	/**
-	 * Collection override (optional).
+	 * Table override (optional).
 	 */
 	interface InsertWithTable<T> extends InsertWithOptions<T> {
 
 		/**
-		 * Explicitly set the name of the table.
+		 * Explicitly set the {@link String name} of the table.
 		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @param table must not be {@literal null} or empty.
-		 * @return new instance of {@link TerminatingInsert}.
-		 * @throws IllegalArgumentException if {@code table} is {@literal null} or empty.
+		 * @param table {@link String name} of the table; must not be {@literal null} or empty.
+		 * @return new instance of {@link InsertWithOptions}.
+		 * @throws IllegalArgumentException if {@link String table} is {@literal null} or empty.
+		 * @see InsertWithOptions
 		 */
-		InsertWithOptions<T> inTable(String table);
+		default InsertWithOptions<T> inTable(String table) {
+
+			Assert.hasText(table, "Table name must not be null or empty");
+
+			return inTable(CqlIdentifier.of(table));
+		}
 
 		/**
-		 * Explicitly set the name of the table.
+		 * Explicitly set the {@link CqlIdentifier name} of the table.
 		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @param table must not be {@literal null}.
-		 * @return new instance of {@link TerminatingInsert}.
-		 * @throws IllegalArgumentException if {@link CqlIdentifier} is {@literal null}.
+		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
+		 * @return new instance of {@link InsertWithOptions}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+		 * @see InsertWithOptions
 		 */
 		InsertWithOptions<T> inTable(CqlIdentifier table);
+
 	}
 
 	/**
@@ -95,17 +93,38 @@ public interface ExecutableInsertOperation {
 	interface InsertWithOptions<T> extends TerminatingInsert<T> {
 
 		/**
-		 * Set insert options.
+		 * Set {@link InsertOptions}.
 		 *
-		 * @param insertOptions insertOptions not be {@literal null}.
+		 * @param insertOptions {@link InsertOptions} to set; must not be {@literal null}.
 		 * @return new instance of {@link TerminatingInsert}.
 		 * @throws IllegalArgumentException if {@link InsertOptions} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.InsertOptions
+		 * @see TerminatingInsert
 		 */
 		TerminatingInsert<T> withOptions(InsertOptions insertOptions);
+
 	}
 
 	/**
-	 * {@link ExecutableInsert} provides methods for constructing {@code INSERT} operations in a fluent way.
+	 * Trigger {@code INSERT} execution by calling one of the terminating methods.
 	 */
-	interface ExecutableInsert<T> extends TerminatingInsert<T>, InsertWithTable<T>, InsertWithOptions<T> {}
+	interface TerminatingInsert<T> {
+
+		/**
+		 * Insert exactly one {@link Object}.
+		 *
+		 * @param object {@link Object} to insert; must not be {@literal null}.
+		 * @throws IllegalArgumentException if {@link Object} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.WriteResult
+		 */
+		WriteResult one(T object);
+
+	}
+
+	/**
+	 * The {@link ExecutableInsert} interface provides methods for constructing {@code INSERT} operations
+	 * in a fluent way.
+	 */
+	interface ExecutableInsert<T> extends InsertWithTable<T> {}
+
 }

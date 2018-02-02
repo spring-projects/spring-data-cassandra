@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
  * Implementation of {@link ExecutableInsertOperation}.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.core.ExecutableInsertOperation
  * @since 2.1
  */
 @RequiredArgsConstructor
@@ -41,10 +42,16 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 	@Override
 	public <T> ExecutableInsert<T> insert(Class<T> domainType) {
 
-		Assert.notNull(domainType, "DomainType must not be null!");
+		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ExecutableInsertSupport<>(template, domainType, null, InsertOptions.empty());
+		return new ExecutableInsertSupport<>(this.template, domainType, InsertOptions.empty(), null);
 	}
+
+	// TODO: rethink the implementation
+	// While the use of final fields and construction on mutation effectively makes this class Thread-safe,
+	// it is possible this implementation could generate a high-level of young-gen garbage on the JVM heap,
+	// particularly if the template insert(..) (and this class) are used inside of a loop for a large number
+	// of domain types.  Of course, this assumption is highly contingent on the user's  application design.
 
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -54,20 +61,9 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
 		@NonNull Class<T> domainType;
 
-		@Nullable CqlIdentifier tableName;
-
 		@NonNull InsertOptions insertOptions;
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.InsertWithTable#inTable(java.lang.String)
-		 */
-		@Override
-		public InsertWithOptions<T> inTable(String tableName) {
-
-			Assert.hasText(tableName, "Table name must not be null or empty");
-
-			return new ExecutableInsertSupport<>(template, domainType, CqlIdentifier.of(tableName), insertOptions);
-		}
+		@Nullable CqlIdentifier tableName;
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.InsertWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
@@ -77,7 +73,7 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ExecutableInsertSupport<>(template, domainType, tableName, insertOptions);
+			return new ExecutableInsertSupport<>(this.template, this.domainType, this.insertOptions, tableName);
 		}
 
 		/* (non-Javadoc)
@@ -88,7 +84,7 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
 			Assert.notNull(insertOptions, "InsertOptions must not be null");
 
-			return new ExecutableInsertSupport<>(template, domainType, tableName, insertOptions);
+			return new ExecutableInsertSupport<>(this.template, this.domainType, insertOptions, this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -97,13 +93,13 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 		@Override
 		public WriteResult one(T object) {
 
-			Assert.notNull(object, "Object must not be null!");
+			Assert.notNull(object, "Object must not be null");
 
-			return template.doInsert(object, insertOptions, getTableName());
+			return this.template.doInsert(object, this.insertOptions, getTableName());
 		}
 
 		private CqlIdentifier getTableName() {
-			return tableName != null ? tableName : template.getTableName(domainType);
+			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
 	}
 }

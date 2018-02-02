@@ -29,6 +29,8 @@ import org.springframework.util.Assert;
  * Implementation of {@link ExecutableDeleteOperation}.
  *
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation
+ * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
  */
 @RequiredArgsConstructor
@@ -42,14 +44,21 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 	@Override
 	public ExecutableDelete delete(Class<?> domainType) {
 
-		Assert.notNull(domainType, "DomainType must not be null!");
+		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ExecutableDeleteSupport(template, domainType, Query.empty(), null);
+		return new ExecutableDeleteSupport(this.template, domainType, Query.empty(), null);
 	}
+
+	// TODO: rethink the implementation
+	// While the use of final fields and construction on mutation effectively makes this class Thread-safe,
+	// it is possible this implementation could generate a high-level of young-gen garbage on the JVM heap,
+	// particularly if the template delete(..) (and this class) are used inside of a loop for a large number
+	// of domain types.  Of course, this assumption is highly contingent on the user's `Query`
+	// in addition to his/her application design.
 
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-	static class ExecutableDeleteSupport implements ExecutableDelete, DeleteWithTable, TerminatingDelete {
+	static class ExecutableDeleteSupport implements ExecutableDelete, TerminatingDelete {
 
 		@NonNull CassandraTemplate template;
 
@@ -60,17 +69,6 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 		@Nullable CqlIdentifier tableName;
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation.DeleteWithTable#inTable(java.lang.String)
-		 */
-		@Override
-		public DeleteWithQuery inTable(String tableName) {
-
-			Assert.hasText(tableName, "Table name must not be null or empty");
-
-			return new ExecutableDeleteSupport(template, domainType, query, CqlIdentifier.of(tableName));
-		}
-
-		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation.DeleteWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 		 */
 		@Override
@@ -78,7 +76,7 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ExecutableDeleteSupport(template, domainType, query, tableName);
+			return new ExecutableDeleteSupport(this.template, this.domainType, this.query, tableName);
 		}
 
 		/* (non-Javadoc)
@@ -87,20 +85,20 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 		@Override
 		public TerminatingDelete matching(Query query) {
 
-			Assert.notNull(query, "Query must not be null!");
+			Assert.notNull(query, "Query must not be null");
 
-			return new ExecutableDeleteSupport(template, domainType, query, tableName);
+			return new ExecutableDeleteSupport(this.template, this.domainType, query, this.tableName);
 		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation.TerminatingDelete#all()
 		 */
 		public WriteResult all() {
-			return template.doDelete(query, domainType, getTableName());
+			return this.template.doDelete(this.query, this.domainType, getTableName());
 		}
 
 		private CqlIdentifier getTableName() {
-			return tableName != null ? tableName : template.getTableName(domainType);
+			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
 	}
 }

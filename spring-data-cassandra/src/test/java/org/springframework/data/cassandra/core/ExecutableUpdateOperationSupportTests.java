@@ -15,17 +15,18 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
-import static org.springframework.data.cassandra.core.query.Query.*;
-import static org.springframework.data.cassandra.core.query.Update.*;
-
-import lombok.Data;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Query.query;
+import static org.springframework.data.cassandra.core.query.Update.update;
 
 import java.util.Collections;
 
+import lombok.Data;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -68,54 +69,68 @@ public class ExecutableUpdateOperationSupportTests extends AbstractKeyspaceCreat
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void domainTypeIsRequired() {
-		template.update(null);
+		this.template.update(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void queryIsRequired() {
-		template.update(Person.class).matching(null);
+		this.template.update(Person.class).matching(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-485
 	public void tableIsRequiredOnSet() {
-		template.update(Person.class).inTable((CqlIdentifier) null);
+		this.template.update(Person.class).inTable((CqlIdentifier) null);
 	}
 
 	@Test // DATACASS-485
 	public void updateAllMatching() {
 
-		WriteResult writeResult = template.update(Person.class).matching(queryHan()).apply(update("firstname", "Han"))
-				.all();
+		WriteResult updateResult = this.template
+				.update(Person.class)
+				.matching(queryHan())
+				.apply(update("firstname", "Han"));
 
-		assertThat(writeResult.wasApplied()).isTrue();
+		assertThat(updateResult).isNotNull();
+		assertThat(updateResult.wasApplied()).isTrue();
+		assertThat(this.template.selectOne(queryLuke(), Person.class)).isEqualTo(luke);
 	}
 
 	@Test // DATACASS-485
 	public void updateWithDifferentDomainClassAndCollection() {
 
-		WriteResult writeResult = template.update(Jedi.class).inTable("person").matching(query(where("id").is(han.getId())))
-				.apply(update("name", "Han")).all();
+		WriteResult updateResult = this.template
+				.update(Jedi.class)
+				.inTable("person")
+				.matching(query(where("id").is(han.getId())))
+				.apply(update("name", "Han"));
 
-		assertThat(writeResult.wasApplied()).isTrue();
-		assertThat(template.selectOne(queryHan(), Person.class)).isNotEqualTo(han).hasFieldOrPropertyWithValue("firstname",
-				"Han");
+		assertThat(updateResult).isNotNull();
+		assertThat(updateResult.wasApplied()).isTrue();
+		assertThat(this.template.selectOne(queryHan(), Person.class))
+				.isNotEqualTo(han).hasFieldOrPropertyWithValue("firstname", "Han");
 	}
 
 	private Query queryHan() {
-		return query(where("id").is(han.getId()));
+		return queryPerson(han);
+	}
+
+	private Query queryLuke() {
+		return queryPerson(luke);
+	}
+
+	private Query queryPerson(Person person) {
+		return query(where("id").is(person.getId()));
 	}
 
 	@Data
 	@Table
 	static class Person {
-
 		@Id String id;
 		@Indexed String firstname;
 	}
 
 	@Data
 	static class Jedi {
-
 		@Column("firstname") String name;
 	}
 }

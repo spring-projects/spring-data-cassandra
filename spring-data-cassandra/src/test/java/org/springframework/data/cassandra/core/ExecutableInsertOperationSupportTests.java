@@ -15,14 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-
-import lombok.Data;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 
+import lombok.Data;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -52,51 +53,6 @@ public class ExecutableInsertOperationSupportTests extends AbstractKeyspaceCreat
 		initPersons();
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
-	public void domainTypeIsRequired() {
-		template.insert((Class) null);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
-	public void tableIsRequiredOnSet() {
-		template.insert(Person.class).inTable((String) null);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
-	public void optionsIsRequiredOnSet() {
-		template.insert(Person.class).withOptions(null);
-	}
-
-	@Test // DATACASS-485
-	public void insertOne() {
-
-		WriteResult writeResult = template.insert(Person.class).inTable("person").one(han);
-
-		assertThat(writeResult.wasApplied()).isTrue();
-		assertThat(template.selectOneById(han.id, Person.class)).isEqualTo(han);
-	}
-
-	@Test // DATACASS-485
-	public void insertOneWithOptions() {
-
-		template.insert(Person.class).inTable("person").one(han);
-
-		WriteResult writeResult = template.insert(Person.class).inTable("person")
-				.withOptions(InsertOptions.builder().withIfNotExists().build()).one(han);
-
-		assertThat(writeResult.wasApplied()).isFalse();
-		assertThat(template.selectOneById(han.id, Person.class)).isEqualTo(han);
-	}
-
-	@Data
-	@Table
-	static class Person {
-
-		@Id String id;
-		@Indexed String firstname;
-		@Indexed String lastname;
-	}
-
 	private void initPersons() {
 
 		han = new Person();
@@ -108,5 +64,54 @@ public class ExecutableInsertOperationSupportTests extends AbstractKeyspaceCreat
 		luke.firstname = "luke";
 		luke.lastname = "skywalker";
 		luke.id = "id-2";
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	public void domainTypeIsRequired() {
+		this.template.insert((Class) null);
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	public void tableIsRequiredOnSet() {
+		this.template.insert(Person.class).inTable((String) null);
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	public void optionsIsRequiredOnSet() {
+		this.template.insert(Person.class).withOptions(null);
+	}
+
+	@Test // DATACASS-485
+	public void insertOne() {
+
+		WriteResult insertResult = this.template
+				.insert(Person.class)
+				.inTable("person")
+				.one(han);
+
+		assertThat(insertResult.wasApplied()).isTrue();
+		assertThat(this.template.selectOneById(han.id, Person.class)).isEqualTo(han);
+	}
+
+	@Test // DATACASS-485
+	public void insertOneWithOptions() {
+
+		this.template.insert(Person.class).inTable("person").one(han);
+
+		WriteResult insertResult = this.template
+				.insert(Person.class).inTable("person")
+				.withOptions(InsertOptions.builder().withIfNotExists().build())
+				.one(han);
+
+		assertThat(insertResult.wasApplied()).isFalse();
+		assertThat(template.selectOneById(han.id, Person.class)).isEqualTo(han);
+	}
+
+	@Data
+	@Table
+	static class Person {
+		@Id String id;
+		@Indexed String firstname;
+		@Indexed String lastname;
 	}
 }

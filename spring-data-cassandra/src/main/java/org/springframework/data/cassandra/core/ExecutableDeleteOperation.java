@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.util.Assert;
 
 /**
  * {@link ExecutableDeleteOperation} allows creation and execution of Cassandra {@code DELETE} operations in a fluent
@@ -42,11 +43,12 @@ import org.springframework.data.cassandra.core.query.Query;
 public interface ExecutableDeleteOperation {
 
 	/**
-	 * Start creating a {@code DELETE} operation for the given {@literal domainType}.
+	 * Begin creating a {@code DELETE} operation for the given {@link Class domainType}.
 	 *
-	 * @param domainType must not be {@literal null}.
+	 * @param domainType {@link Class type} of domain object to delete; must not be {@literal null}.
 	 * @return new instance of {@link ExecutableDelete}.
-	 * @throws IllegalArgumentException if domainType is {@literal null}.
+	 * @throws IllegalArgumentException if {@link Class domainType} is {@literal null}.
+	 * @see ExecutableDelete
 	 */
 	ExecutableDelete delete(Class<?> domainType);
 
@@ -56,52 +58,73 @@ public interface ExecutableDeleteOperation {
 	interface DeleteWithTable {
 
 		/**
-		 * Explicitly set the name of the table to perform the query on.
+		 * Explicitly set the {@link String name} of the table on which to execute the delete.
 		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @param table must not be {@literal null} or empty.
-		 * @return new instance of {@link DeleteWithTable}.
-		 * @throws IllegalArgumentException if {@code table} is {@literal null} or empty.
+		 * @param table {@link String name} of the table; must not be {@literal null} or empty.
+		 * @return new instance of {@link DeleteWithQuery}.
+		 * @throws IllegalArgumentException if {@link String table} is {@literal null} or empty.
+		 * @see #inTable(CqlIdentifier)
+		 * @see DeleteWithQuery
 		 */
-		DeleteWithQuery inTable(String table);
+		default DeleteWithQuery inTable(String table) {
+
+			Assert.hasText(table, "Table name must not be null or empty");
+
+			return inTable(CqlIdentifier.of(table));
+		}
 
 		/**
-		 * Explicitly set the name of the table to perform the query on.
+		 * Explicitly set the {@link CqlIdentifier name} of the table on which to execute the delete.
 		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @param table must not be {@literal null}.
-		 * @return new instance of {@link DeleteWithTable}.
-		 * @throws IllegalArgumentException if {@link CqlIdentifier} is {@literal null}.
+		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
+		 * @return new instance of {@link DeleteWithQuery}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+		 * @see DeleteWithQuery
 		 */
 		DeleteWithQuery inTable(CqlIdentifier table);
+
 	}
 
+	/**
+	 * Filtering (optional).
+	 */
+	interface DeleteWithQuery {
+
+		/**
+		 * Define the {@link Query} filtering elements to delete.
+		 *
+		 * @param query {@link Query} used to filter the elements to delete; must not be {@literal null}.
+		 * @return new instance of {@link TerminatingDelete}.
+		 * @throws IllegalArgumentException if {@link Query} is {@literal null}.
+		 * @see TerminatingDelete
+		 */
+		TerminatingDelete matching(Query query);
+
+	}
+
+	/**
+	 * Trigger {@code DELETE} execution by calling one of the terminating methods.
+	 */
 	interface TerminatingDelete {
 
 		/**
 		 * Remove all matching rows.
 		 *
-		 * @return the {@link WriteResult}. Never {@literal null}.
+		 * @return the {@link WriteResult}; never {@literal null}.
 		 */
 		WriteResult all();
-	}
 
-	interface DeleteWithQuery {
-
-		/**
-		 * Define the query filtering elements.
-		 *
-		 * @param query must not be {@literal null}.
-		 * @return new instance of {@link TerminatingDelete}.
-		 * @throws IllegalArgumentException if query is {@literal null}.
-		 */
-		TerminatingDelete matching(Query query);
 	}
 
 	/**
-	 * {@link ExecutableDelete} provides methods for constructing {@code DELETE} operations in a fluent way.
+	 * the {@link ExecutableDelete} interface provides methods for constructing {@code DELETE} operations
+	 * in a fluent way.
 	 */
 	interface ExecutableDelete extends DeleteWithTable, DeleteWithQuery {}
+
 }

@@ -18,16 +18,17 @@ package org.springframework.data.cassandra.core;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.util.Assert;
 
 /**
- * {@link ExecutableUpdateOperation} allows creation and execution of Cassandra {@code UPDATE} operation in a fluent API
- * style.
+ * {@link ExecutableUpdateOperation} allows creation and execution of Cassandra {@code UPDATE} operation
+ * in a fluent API style.
  * <p>
- * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching}, as well as
- * the {@link Update} via {@code apply} into the Cassandra specific representations. The table to operate on is by
- * default derived from the initial {@literal domainType} and can be defined there via
- * {@link org.springframework.data.cassandra.core.mapping.Table}. Using {@code inTable} allows to override the table
- * name for the execution.
+ * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching},
+ * as well as the {@link Update} provided via {@code apply} into the Cassandra specific representations.
+ * The table to operate on is by default derived from the initial {@literal domainType} and can be defined
+ * there via {@link org.springframework.data.cassandra.core.mapping.Table}. Using {@code inTable} allows
+ * the developer to override the table name for the execution.
  *
  * <pre>
  *     <code>
@@ -40,92 +41,99 @@ import org.springframework.data.cassandra.core.query.Update;
  * </pre>
  *
  * @author Mark Paluch
+ * @author John Blum
+ * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation
+ * @see org.springframework.data.cassandra.core.query.Query
+ * @see org.springframework.data.cassandra.core.query.Update
  * @since 2.1
  */
 public interface ExecutableUpdateOperation {
 
 	/**
-	 * Start creating an {@code UPDATE} operation for the given {@literal domainType}.
+	 * Begin creating an {@code UPDATE} operation for the given {@link Class domainType}.
 	 *
-	 * @param domainType must not be {@literal null}.
+	 * @param domainType {@link Class type} of domain object to update; must not be {@literal null}.
 	 * @return new instance of {@link ExecutableUpdate}.
-	 * @throws IllegalArgumentException if domainType is {@literal null}.
+	 * @throws IllegalArgumentException if {@link Class domainType} is {@literal null}.
 	 */
-	<T> ExecutableUpdate<T> update(Class<T> domainType);
+	ExecutableUpdate update(Class<?> domainType);
 
 	/**
-	 * Declare the {@link Update} to apply.
+	 * Table override (optional).
 	 */
-	interface UpdateWithUpdate<T> {
+	interface UpdateWithTable {
 
 		/**
-		 * Set the {@link Update} to be applied.
-		 *
-		 * @param update must not be {@literal null}.
-		 * @return new instance of {@link TerminatingUpdate}.
-		 * @throws IllegalArgumentException if update is {@literal null}.
-		 */
-		TerminatingUpdate<T> apply(Update update);
-	}
-
-	/**
-	 * Explicitly define the name of the table to perform operation in.
-	 */
-	interface UpdateWithTable<T> {
-
-		/**
-		 * Explicitly set the name of the table to perform the query on.
+		 * Explicitly set the {@link String name} of the table on which to execute the update.
 		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @param table must not be {@literal null} or empty.
-		 * @return new instance of {@link UpdateWithTable}.
-		 * @throws IllegalArgumentException if {@code table} is {@literal null} or empty.
-		 */
-		UpdateWithQuery<T> inTable(String table);
-
-		/**
-		 * Explicitly set the name of the table to perform the query on.
-		 * <p>
-		 * Skip this step to use the default table derived from the domain type.
-		 *
-		 * @param table must not be {@literal null}.
-		 * @return new instance of {@link UpdateWithTable}.
-		 * @throws IllegalArgumentException if {@link CqlIdentifier} is {@literal null}.
-		 */
-		UpdateWithQuery<T> inTable(CqlIdentifier table);
-	}
-
-	/**
-	 * Define a filter query for the {@link Update}.
-	 */
-	interface UpdateWithQuery<T> {
-
-		/**
-		 * Filter documents by given {@literal query}.
-		 *
-		 * @param query must not be {@literal null}.
+		 * @param table {@link String name} of the table; must not be {@literal null} or empty.
 		 * @return new instance of {@link UpdateWithQuery}.
-		 * @throws IllegalArgumentException if query is {@literal null}.
+		 * @throws IllegalArgumentException if {@link String table} is {@literal null} or empty.
+		 * @see #inTable(CqlIdentifier)
+		 * @see UpdateWithQuery
 		 */
-		UpdateWithUpdate<T> matching(Query query);
-	}
+		default UpdateWithQuery inTable(String table) {
 
-	/**
-	 * Trigger update execution by calling one of the terminating methods.
-	 */
-	interface TerminatingUpdate<T> {
+			Assert.hasText(table, "Table name must not be null or empty");
+
+			return inTable(CqlIdentifier.of(table));
+		}
 
 		/**
-		 * Update all matching rows in the table.
+		 * Explicitly set the {@link CqlIdentifier name} of the table on which to execute the update.
+		 * <p>
+		 * Skip this step to use the default table derived from the {@link Class domain type}.
 		 *
-		 * @return never {@literal null}.
+		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
+		 * @return new instance of {@link UpdateWithQuery}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+		 * @see UpdateWithQuery
 		 */
-		WriteResult all();
+		UpdateWithQuery inTable(CqlIdentifier table);
+
 	}
 
 	/**
-	 * {@link ExecutableUpdate} provides methods for constructing {@code UPDATE} operations in a fluent way.
+	 * Filtering (optional).
 	 */
-	interface ExecutableUpdate<T> extends UpdateWithTable<T>, UpdateWithQuery<T> {}
+	interface UpdateWithQuery {
+
+		/**
+		 * Filter rows with the given {@link Query}.
+		 *
+		 * @param query {@link Query} used to filter rows; must not be {@literal null}.
+		 * @return new instance of {@link TerminatingUpdate}.
+		 * @throws IllegalArgumentException if {@link Query} is {@literal null}.
+		 * @see TerminatingUpdate
+		 */
+		TerminatingUpdate matching(Query query);
+
+	}
+
+	/**
+	 * Set the {@link Update} to apply and execute the complete Cassandra {@link Update} statement.
+	 */
+	interface TerminatingUpdate {
+
+		/**
+		 * Apply the given {@link Update} and execute the complete Cassandra {@link Update} statement.
+		 *
+		 * @param update {@link Update} to apply; must not be {@literal null}.
+		 * @return the {@link WriteResult result} of the update; never {@literal null}.
+		 * @throws IllegalArgumentException if {@link Update} is {@literal null}.
+		 * @see org.springframework.data.cassandra.core.WriteResult
+		 */
+		WriteResult apply(Update update);
+
+	}
+
+	/**
+	 * The {@link ExecutableUpdate} interface provides methods for constructing {@code UPDATE} operations
+	 * in a fluent way.
+	 */
+	interface ExecutableUpdate extends UpdateWithTable, UpdateWithQuery {}
+
 }
