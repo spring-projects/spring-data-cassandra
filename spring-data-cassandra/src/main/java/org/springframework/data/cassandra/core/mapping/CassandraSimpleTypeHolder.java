@@ -91,21 +91,6 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	}
 
 	/**
-	 * @return the map between {@link Name} and {@link DataType}.
-	 */
-	private static Map<Name, DataType> nameToDataType() {
-
-		Map<Name, DataType> nameToDataType = new HashMap<>(16);
-
-		DataType.allPrimitiveTypes().forEach(dataType -> nameToDataType.put(dataType.getName(), dataType));
-
-		nameToDataType.put(Name.VARCHAR, DataType.varchar());
-		nameToDataType.put(Name.TEXT, DataType.text());
-
-		return nameToDataType;
-	}
-
-	/**
 	 * @return the map between {@link Class} and {@link DataType}.
 	 * @param codecRegistry the Cassandra codec registry.
 	 * @param primitiveWrappers map of primitive to wrapper type.
@@ -140,6 +125,21 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	}
 
 	/**
+	 * @return the map between {@link Name} and {@link DataType}.
+	 */
+	private static Map<Name, DataType> nameToDataType() {
+
+		Map<Name, DataType> nameToDataType = new HashMap<>(16);
+
+		DataType.allPrimitiveTypes().forEach(dataType -> nameToDataType.put(dataType.getName(), dataType));
+
+		nameToDataType.put(Name.VARCHAR, DataType.varchar());
+		nameToDataType.put(Name.TEXT, DataType.text());
+
+		return nameToDataType;
+	}
+
+	/**
 	 * Returns a {@link Set} containing all Cassandra primitive types.
 	 *
 	 * @param codecRegistry the Cassandra codec registry.
@@ -147,29 +147,32 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	private static Set<Class<?>> getCassandraPrimitiveTypes(CodecRegistry codecRegistry) {
 
-		return DataType.allPrimitiveTypes().stream().map(codecRegistry::codecFor).map(TypeCodec::getJavaType)
-				.map(TypeToken::getRawType).collect(Collectors.toSet());
-	}
-
-	/**
-	 * Returns the {@link DataType} for a {@link DataType.Name}.
-	 *
-	 * @param name must not be {@literal null}.
-	 * @return the {@link DataType} for {@link DataType.Name}.
-	 */
-	public static DataType getDataTypeFor(DataType.Name name) {
-		return nameToDataType.get(name);
+		return DataType.allPrimitiveTypes().stream()
+				.map(codecRegistry::codecFor)
+				.map(TypeCodec::getJavaType)
+				.map(TypeToken::getRawType)
+				.collect(Collectors.toSet());
 	}
 
 	/**
 	 * Returns the default {@link DataType} for a {@link Class}. This method resolves only simple types to a Cassandra
 	 * {@link DataType}. Other types are resolved to {@literal null}.
 	 *
-	 * @param javaClass must not be {@literal null}.
+	 * @param javaType must not be {@literal null}.
 	 * @return the {@link DataType} for {@code javaClass} if resolvable, otherwise {@literal null}.
 	 */
 	@Nullable
-	public static DataType getDataTypeFor(Class<?> javaClass) {
-		return (javaClass.isEnum() ? DataType.varchar() : classToDataType.get(javaClass));
+	public static DataType getDataTypeFor(Class<?> javaType) {
+		return javaType.isEnum() ? DataType.varchar() : classToDataType.get(javaType);
+	}
+
+	/**
+	 * Returns the {@link DataType} for a {@link DataType.Name}.
+	 *
+	 * @param dataTypeName must not be {@literal null}.
+	 * @return the {@link DataType} for {@link DataType.Name}.
+	 */
+	public static DataType getDataTypeFor(DataType.Name dataTypeName) {
+		return nameToDataType.get(dataTypeName);
 	}
 }

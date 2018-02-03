@@ -15,18 +15,18 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import static org.springframework.data.cassandra.test.util.RowMockUtil.column;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,6 +35,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
@@ -55,7 +56,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.Silent.class) // there are some unused stubbings in RowMockUtil but they're used in other
-																					// tests
 public class MappingCassandraConverterUDTUnitTests {
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
@@ -90,16 +90,17 @@ public class MappingCassandraConverterUDTUnitTests {
 		UDTValue value2 = currency.newValue().setString("currency", "USD");
 
 		Map<UDTValue, List<UDTValue>> map = new HashMap<>();
+
 		map.put(key, Arrays.asList(value1, value2));
 
-		rowMock = RowMockUtil
-				.newRowMock(column("acceptedCurrencies", map, DataType.map(manufacturer, DataType.list(currency))));
+		rowMock = RowMockUtil.newRowMock(column("acceptedCurrencies", map, DataType.map(manufacturer, DataType.list(currency))));
 
 		Supplier supplier = mappingCassandraConverter.read(Supplier.class, rowMock);
 
 		assertThat(supplier.getAcceptedCurrencies()).isNotEmpty();
 
 		List<Currency> currencies = supplier.getAcceptedCurrencies().get(new Manufacturer("a good one"));
+
 		assertThat(currencies).contains(new Currency("EUR"), new Currency("USD"));
 	}
 
@@ -110,7 +111,9 @@ public class MappingCassandraConverterUDTUnitTests {
 				Arrays.asList(new Currency("EUR"), new Currency("USD")));
 
 		Supplier supplier = new Supplier(currencies);
+
 		Insert insert = QueryBuilder.insertInto("table");
+
 		mappingCassandraConverter.write(supplier, insert);
 
 		assertThat(insert.toString()).contains("VALUES ({{name:'a good one'}:[{currency:'EUR'},{currency:'USD'}]}");

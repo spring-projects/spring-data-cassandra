@@ -15,14 +15,16 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.BDDMockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -52,7 +54,7 @@ public class ColumnReaderUnitTests {
 		underTest = new ColumnReader(row);
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void throwsIllegalArgumentExceptionIfColumnDoesNotExistByName() {
 
 		when(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
@@ -60,34 +62,47 @@ public class ColumnReaderUnitTests {
 		try {
 			underTest.get(NON_EXISTENT_COLUMN);
 			fail("Expected illegal argument exception");
-		} catch (IllegalArgumentException e) {
-			assertThat(e.getMessage()).isEqualTo("Column does not exist in Cassandra table: " + NON_EXISTENT_COLUMN);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
+			assertThat(expected).hasNoCause();
+
+			throw expected;
 		}
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void throwsIllegalArgumentExceptionIfColumnDoesNotExistByCqlIdentifier() {
 
 		when(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
 		try {
 			underTest.get(CqlIdentifier.of(NON_EXISTENT_COLUMN));
-			fail("Expected illegal argument exception");
-		} catch (IllegalArgumentException e) {
-			assertThat(e.getMessage()).isEqualTo("Column does not exist in Cassandra table: " + NON_EXISTENT_COLUMN);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
+			assertThat(expected).hasNoCause();
+
+			throw expected;
 		}
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void throwsIllegalArgumentExceptionIfColumnDoesNotExistByCqlIdentifierAndType() {
 
 		when(columnDefinitions.getIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
 		try {
 			underTest.get(CqlIdentifier.of(NON_EXISTENT_COLUMN), String.class);
-			fail("Expected illegal argument exception");
-		} catch (IllegalArgumentException e) {
-			assertThat(e.getMessage()).isEqualTo("Column does not exist in Cassandra table: " + NON_EXISTENT_COLUMN);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
+			assertThat(expected).hasNoCause();
+
+			throw expected;
 		}
 	}
 }

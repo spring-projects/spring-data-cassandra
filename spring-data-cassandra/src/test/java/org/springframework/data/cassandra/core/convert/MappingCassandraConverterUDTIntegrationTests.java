@@ -15,11 +15,7 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,9 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -399,11 +400,11 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	@Test // DATACASS-487
 	public void shouldReadUdtInMap() {
 
-		session.execute("INSERT INTO supplier (id,acceptedCurrencies) VALUES ('1',"
-				+ "{{name:'a good one'}:[{currency:'EUR'},{currency:'USD'}]});");
+		this.session.execute("INSERT INTO supplier (id, acceptedCurrencies)"
+			+ " VALUES ('1', {{name:'a good one'}:[{currency:'EUR'},{currency:'USD'}]});");
 
-		ResultSet resultSet = session.execute("SELECT * FROM supplier");
-		Supplier supplier = converter.read(Supplier.class, resultSet.one());
+		ResultSet resultSet = this.session.execute("SELECT * FROM supplier");
+		Supplier supplier = this.converter.read(Supplier.class, resultSet.one());
 
 		assertThat(supplier.getAcceptedCurrencies()).isNotEmpty();
 

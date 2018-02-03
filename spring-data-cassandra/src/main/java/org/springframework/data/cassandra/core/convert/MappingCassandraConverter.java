@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import lombok.AllArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.AllArgsConstructor;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -55,6 +53,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
@@ -116,6 +117,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private static CassandraMappingContext createMappingContext() {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
+
 		mappingContext.setCustomConversions(new CassandraCustomConversions(Collections.emptyList()));
 
 		return mappingContext;
@@ -142,7 +144,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	@Override
 	public CassandraMappingContext getMappingContext() {
-		return mappingContext;
+		return this.mappingContext;
 	}
 
 	/**
@@ -173,8 +175,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return getConversionService().convert(row, type);
 		}
 
-		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>) getMappingContext()
-				.getRequiredPersistentEntity(typeInfo);
+		CassandraPersistentEntity<R> persistentEntity =
+				(CassandraPersistentEntity<R>) getMappingContext().getRequiredPersistentEntity(typeInfo);
 
 		return readEntityFromRow(persistentEntity, row);
 	}
@@ -185,10 +187,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		BasicCassandraRowValueProvider rowValueProvider = new BasicCassandraRowValueProvider(row, expressionEvaluator);
 
-		PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = new PersistentEntityParameterValueProvider<>(
-				entity, new MappingAndConvertingValueProvider(rowValueProvider), null);
+		PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider =
+				getParameterValueProvider(entity, rowValueProvider);
 
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
+
 		S instance = instantiator.createInstance(entity, parameterValueProvider);
 
 		readPropertiesFromRow(entity, rowValueProvider, getConvertingAccessor(instance, entity));
@@ -200,13 +203,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		DefaultSpELExpressionEvaluator expressionEvaluator = new DefaultSpELExpressionEvaluator(udtValue, spELContext);
 
-		CassandraUDTValueProvider valueProvider = new CassandraUDTValueProvider(udtValue, CodecRegistry.DEFAULT_INSTANCE,
-				expressionEvaluator);
+		CassandraUDTValueProvider valueProvider =
+				new CassandraUDTValueProvider(udtValue, CodecRegistry.DEFAULT_INSTANCE, expressionEvaluator);
 
-		PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = getParameterValueProvider(
-				entity, valueProvider);
+		PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider =
+				getParameterValueProvider(entity, valueProvider);
 
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(entity);
+
 		S instance = instantiator.createInstance(entity, parameterValueProvider);
 
 		readProperties(entity, valueProvider, getConvertingAccessor(instance, entity));
@@ -216,8 +220,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private <S> PersistentEntityParameterValueProvider<CassandraPersistentProperty> getParameterValueProvider(
 			CassandraPersistentEntity<S> entity, CassandraValueProvider valueProvider) {
-		return new PersistentEntityParameterValueProvider<>(entity, new MappingAndConvertingValueProvider(valueProvider),
-				null);
+
+		return new PersistentEntityParameterValueProvider<>(entity,
+				new MappingAndConvertingValueProvider(valueProvider), null);
 	}
 
 	protected void readPropertiesFromRow(CassandraPersistentEntity<?> entity, CassandraRowValueProvider row,
@@ -244,7 +249,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (property.isCompositePrimaryKey()) {
 
-			CassandraPersistentEntity<?> keyEntity = mappingContext.getRequiredPersistentEntity(property);
+			CassandraPersistentEntity<?> keyEntity = getMappingContext().getRequiredPersistentEntity(property);
+
 			Object key = propertyAccessor.getProperty(property);
 
 			if (key == null) {
@@ -270,7 +276,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	protected Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
 			CassandraValueProvider propertyProvider) {
 
-		return instantiators.getInstantiatorFor(entity).createInstance(entity,
+		return this.instantiators.getInstantiatorFor(entity).createInstance(entity,
 				getParameterValueProvider(entity, propertyProvider));
 	}
 
@@ -314,6 +320,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Assert.notNull(source, "Value must not be null");
 
 		Class<?> beanClassLoaderClass = transformClassToBeanClassLoaderClass(source.getClass());
+
 		CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(beanClassLoaderClass);
 
 		write(source, sink, entity);
@@ -321,9 +328,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	@SuppressWarnings("unchecked")
 	private <T> Class<T> transformClassToBeanClassLoaderClass(Class<T> entity) {
+
 		try {
-			return (Class<T>) ClassUtils.forName(entity.getName(), beanClassLoader);
-		} catch (ClassNotFoundException | LinkageError e) {
+			return (Class<T>) ClassUtils.forName(entity.getName(), this.beanClassLoader);
+		}
+		catch (ClassNotFoundException | LinkageError ignore) {
 			return entity;
 		}
 	}
@@ -359,6 +368,47 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		writeInsertFromWrapper(getConvertingAccessor(object, entity), insert, entity);
 	}
 
+	protected void writeInsertFromWrapper(ConvertingPropertyAccessor accessor, Insert insert,
+			CassandraPersistentEntity<?> entity) {
+
+		for (CassandraPersistentProperty property : entity) {
+
+			Object value = getWriteValue(property, accessor);
+
+			if (log.isDebugEnabled()) {
+				log.debug("doWithProperties Property.type {}, Property.value {}", property.getType().getName(), value);
+			}
+
+			if (property.isCompositePrimaryKey()) {
+
+				if (log.isDebugEnabled()) {
+					log.debug("Property is a compositeKey");
+				}
+
+				if (value == null) {
+					continue;
+				}
+
+				CassandraPersistentEntity<?> compositePrimaryKey =
+					getMappingContext().getRequiredPersistentEntity(property);
+
+				writeInsertFromWrapper(getConvertingAccessor(value, compositePrimaryKey), insert, compositePrimaryKey);
+
+				continue;
+			}
+
+			if (value == null) {
+				continue;
+			}
+
+			if (log.isDebugEnabled()) {
+				log.debug("Adding insert.value [{}] - [{}]", property.getColumnName().toCql(), value);
+			}
+
+			insert.value(property.getColumnName().toCql(), value);
+		}
+	}
+
 	private void writeMapFromWrapper(ConvertingPropertyAccessor accessor, Map<String, Object> insert,
 			CassandraPersistentEntity<?> entity) {
 
@@ -380,7 +430,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 					continue;
 				}
 
-				CassandraPersistentEntity<?> compositePrimaryKey = mappingContext.getRequiredPersistentEntity(property);
+				CassandraPersistentEntity<?> compositePrimaryKey =
+						getMappingContext().getRequiredPersistentEntity(property);
+
 				writeMapFromWrapper(getConvertingAccessor(value, compositePrimaryKey), insert, compositePrimaryKey);
 
 				continue;
@@ -394,59 +446,21 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	protected void writeInsertFromWrapper(final ConvertingPropertyAccessor accessor, final Insert insert,
+	protected void writeUpdateFromObject(Object object, Update update, CassandraPersistentEntity<?> entity) {
+		writeUpdateFromWrapper(getConvertingAccessor(object, entity), update, entity);
+	}
+
+	protected void writeUpdateFromWrapper(ConvertingPropertyAccessor accessor, Update update,
 			CassandraPersistentEntity<?> entity) {
 
 		for (CassandraPersistentProperty property : entity) {
 
 			Object value = getWriteValue(property, accessor);
 
-			if (log.isDebugEnabled()) {
-				log.debug("doWithProperties Property.type {}, Property.value {}", property.getType().getName(), value);
-			}
-
 			if (property.isCompositePrimaryKey()) {
 
-				if (log.isDebugEnabled()) {
-					log.debug("Property is a compositeKey");
-				}
-
-				if (value == null) {
-					continue;
-				}
-
-				CassandraPersistentEntity<?> compositePrimaryKey = mappingContext.getRequiredPersistentEntity(property);
-				writeInsertFromWrapper(getConvertingAccessor(value, compositePrimaryKey), insert, compositePrimaryKey);
-
-				continue;
-			}
-
-			if (value == null) {
-				continue;
-			}
-
-			if (log.isDebugEnabled()) {
-				log.debug("Adding insert.value [{}] - [{}]", property.getColumnName().toCql(), value);
-			}
-
-			insert.value(property.getColumnName().toCql(), value);
-		}
-	}
-
-	protected void writeUpdateFromObject(final Object object, final Update update, CassandraPersistentEntity<?> entity) {
-		writeUpdateFromWrapper(getConvertingAccessor(object, entity), update, entity);
-	}
-
-	protected void writeUpdateFromWrapper(final ConvertingPropertyAccessor accessor, final Update update,
-			final CassandraPersistentEntity<?> entity) {
-
-		for (CassandraPersistentProperty property : entity) {
-
-			Object value = getWriteValue(property, accessor);
-
-			if (property.isCompositePrimaryKey()) {
-
-				CassandraPersistentEntity<?> compositePrimaryKey = mappingContext.getRequiredPersistentEntity(property);
+				CassandraPersistentEntity<?> compositePrimaryKey =
+						getMappingContext().getRequiredPersistentEntity(property);
 
 				if (value == null) {
 					continue;
@@ -481,8 +495,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			Object value = getWriteValue(property, accessor);
 
 			if (log.isDebugEnabled()) {
-				log.debug("writeUDTValueWhereFromObject Property.type {}, Property.value {}", property.getType().getName(),
-						value);
+				log.debug("writeUDTValueWhereFromObject Property.type {}, Property.value {}", property.getType().getName(), value);
 			}
 
 			if (log.isDebugEnabled()) {
@@ -513,7 +526,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (id instanceof MapId) {
 
 			CassandraPersistentEntity<?> whereEntity = compositeIdProperty != null
-					? mappingContext.getRequiredPersistentEntity(compositeIdProperty)
+					? getMappingContext().getRequiredPersistentEntity(compositeIdProperty)
 					: entity;
 
 			return getWhereClauses(MapId.class.cast(id), whereEntity);
@@ -531,8 +544,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 						String.format("Cannot use [%s] as composite Id for [%s]", id, entity.getName()));
 			}
 
-			CassandraPersistentEntity<?> compositePrimaryKey = mappingContext
-					.getRequiredPersistentEntity(compositeIdProperty);
+			CassandraPersistentEntity<?> compositePrimaryKey =
+					getMappingContext().getRequiredPersistentEntity(compositeIdProperty);
 
 			return getWhereClauses(getConvertingAccessor(id, compositePrimaryKey), compositePrimaryKey);
 		}
@@ -557,7 +570,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return source;
 	}
 
-	private Collection<Clause> getWhereClauses(final ConvertingPropertyAccessor accessor,
+	private Collection<Clause> getWhereClauses(ConvertingPropertyAccessor accessor,
 			CassandraPersistentEntity<?> entity) {
 
 		Assert.isTrue(entity.isCompositePrimaryKey(),
@@ -586,7 +599,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			if (persistentProperty == null) {
 				throw new IllegalArgumentException(String.format(
-						"MapId contains references [%s] that is an unknown property of [%s]", entry.getKey(), entity.getName()));
+						"MapId contains references [%s] that is an unknown property of [%s]",
+								entry.getKey(), entity.getName()));
 			}
 
 			Object writeValue = getWriteValue(entry.getValue(), persistentProperty.getTypeInformation());
@@ -647,9 +661,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	private ConvertingPropertyAccessor getConvertingAccessor(Object source, CassandraPersistentEntity<?> entity) {
 
-		PersistentPropertyAccessor propertyAccessor = (source instanceof PersistentPropertyAccessor
+		PersistentPropertyAccessor propertyAccessor = source instanceof PersistentPropertyAccessor
 				? (PersistentPropertyAccessor) source
-				: entity.getPropertyAccessor(source));
+				: entity.getPropertyAccessor(source);
 
 		return new ConvertingPropertyAccessor(propertyAccessor, getConversionService());
 	}
@@ -730,12 +744,23 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Class<?> requestedTargetType = typeInformation != null ? typeInformation.getType() : Object.class;
 
 		if (getCustomConversions().hasCustomWriteTarget(value.getClass(), requestedTargetType)) {
-			return getConversionService().convert(value, getCustomConversions()
-					.getCustomWriteTarget(value.getClass(), requestedTargetType).orElse(requestedTargetType));
+
+			Class<?> resolvedTargetType = getCustomConversions()
+					.getCustomWriteTarget(value.getClass(), requestedTargetType)
+					.orElse(requestedTargetType);
+
+			return getConversionService().convert(value, resolvedTargetType);
 		}
 
 		if (getCustomConversions().hasCustomWriteTarget(value.getClass())) {
-			return getConversionService().convert(value, getCustomConversions().getCustomWriteTarget(value.getClass()).get());
+
+			Class<?> resolvedTargetType = getCustomConversions()
+					.getCustomWriteTarget(value.getClass())
+					.orElseThrow(() -> new IllegalStateException(
+							String.format("Unable to determined custom write target for value type [%s]",
+									value.getClass().getName())));
+
+			return getConversionService().convert(value, resolvedTargetType);
 		}
 
 		if (getCustomConversions().isSimpleType(value.getClass())) {
@@ -743,7 +768,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		TypeInformation<?> type = typeInformation != null ? typeInformation
-				: ClassTypeInformation.from((Class) value.getClass());
+			: ClassTypeInformation.from((Class) value.getClass());
 
 		if (value instanceof Collection) {
 			return writeCollectionInternal((Collection<Object>) value, type);
@@ -754,6 +779,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		TypeInformation<?> actualType = type.getRequiredActualType();
+
 		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(actualType.getType());
 
 		if (entity != null && entity.isUserDefinedType()) {
@@ -771,6 +797,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private Object writeCollectionInternal(Collection<Object> source, TypeInformation<?> type) {
 
 		Collection<Object> converted = CollectionFactory.createCollection(getCollectionType(type), source.size());
+
 		TypeInformation<?> actualType = type.getRequiredActualType();
 
 		for (Object element : source) {
@@ -788,9 +815,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		TypeInformation<?> valueType = type.getRequiredMapValueType();
 
 		for (Entry<Object, Object> entry : source.entrySet()) {
-
-			Object key = convertToColumnType(entry.getKey(), keyType);
-			converted.put(key, convertToColumnType(entry.getValue(), valueType));
+			converted.put(convertToColumnType(entry.getKey(), keyType),
+				convertToColumnType(entry.getValue(), valueType));
 		}
 
 		return converted;
@@ -888,20 +914,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (property.isCompositePrimaryKey()) {
 
-			CassandraPersistentEntity<?> keyEntity = mappingContext.getRequiredPersistentEntity(property);
+			CassandraPersistentEntity<?> keyEntity = getMappingContext().getRequiredPersistentEntity(property);
+
 			return instantiatePrimaryKey(keyEntity, property, row);
 		}
 
 		Object value = row.getPropertyValue(property);
 
-		if (value == null) {
-			return null;
-		}
-
-		return convertReadValue(value, property.getTypeInformation());
+		return value == null ? null : convertReadValue(value, property.getTypeInformation());
 	}
 
 	@Nullable
+	@SuppressWarnings("unchecked")
 	private Object convertReadValue(Object value, TypeInformation<?> typeInformation) {
 
 		if (getCustomConversions().hasCustomWriteTarget(typeInformation.getRequiredActualType().getType())
@@ -911,7 +935,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 				Collection<Object> original = (Collection<Object>) value;
 
-				Collection<Object> converted = CollectionFactory.createCollection(typeInformation.getType(), original.size());
+				Collection<Object> converted =
+						CollectionFactory.createCollection(typeInformation.getType(), original.size());
 
 				for (Object element : original) {
 					converted.add(getConversionService().convert(element, typeInformation.getRequiredActualType().getType()));
@@ -929,8 +954,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return readMapInternal((Map<Object, Object>) value, typeInformation);
 		}
 
-		BasicCassandraPersistentEntity<?> persistentEntity = getMappingContext()
-				.getPersistentEntity(typeInformation.getRequiredActualType());
+		BasicCassandraPersistentEntity<?> persistentEntity =
+				getMappingContext().getPersistentEntity(typeInformation.getRequiredActualType());
 
 		if (persistentEntity != null && persistentEntity.isUserDefinedType() && value instanceof UDTValue) {
 			return readEntityFromUdt(persistentEntity, (UDTValue) value);
@@ -942,82 +967,100 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	/**
 	 * Reads the given {@link Collection} into a collection of the given {@link TypeInformation}.
 	 *
-	 * @param sourceValue must not be {@literal null}.
+	 * @param source must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
 	 * @return the converted {@link Collection} or array, will never be {@literal null}.
 	 */
 	@Nullable
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Object readCollectionOrArrayInternal(Collection<?> sourceValue, TypeInformation<?> targetType) {
+	private Object readCollectionOrArrayInternal(Collection<?> source, TypeInformation<?> targetType) {
 
-		Assert.notNull(targetType, "Target type must not be null!");
+		Assert.notNull(targetType, "Target type must not be null");
 
-		Class<?> collectionType = targetType.getType();
+		Class<?> collectionType = resolveCollectionType(targetType);
+		Class<?> elementType = resolveElementType(targetType);
 
-		TypeInformation<?> componentType = targetType.getComponentType();
-		Class<?> rawComponentType = componentType != null ? componentType.getType() : List.class;
+		Collection<Object> collection = targetType.getType().isArray() ? new ArrayList<>()
+				: CollectionFactory.createCollection(collectionType, elementType, source.size());
 
-		collectionType = Collection.class.isAssignableFrom(collectionType) ? collectionType : List.class;
-		Collection<Object> items = targetType.getType().isArray() ? new ArrayList<>()
-				: CollectionFactory.createCollection(collectionType, rawComponentType, sourceValue.size());
-
-		if (sourceValue.isEmpty()) {
-			return getPotentiallyConvertedSimpleRead(items, collectionType);
+		if (source.isEmpty()) {
+			return getPotentiallyConvertedSimpleRead(collection, collectionType);
 		}
 
-		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(rawComponentType);
+		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(elementType);
 
 		if (entity != null && entity.isUserDefinedType()) {
-
-			for (Object udtValue : sourceValue) {
-				items.add(readEntityFromUdt(entity, (UDTValue) udtValue));
+			for (Object udtValue : source) {
+				collection.add(readEntityFromUdt(entity, (UDTValue) udtValue));
 			}
 
 		} else {
-			for (Object item : sourceValue) {
-				items.add(getPotentiallyConvertedSimpleRead(item, rawComponentType));
+			for (Object element : source) {
+				collection.add(getPotentiallyConvertedSimpleRead(element, elementType));
 			}
 		}
 
-		return getPotentiallyConvertedSimpleRead(items, targetType.getType());
+		return getPotentiallyConvertedSimpleRead(collection, targetType.getType());
+	}
+
+	private Class<?> resolveCollectionType(TypeInformation typeInformation) {
+
+		Class<?> collectionType = typeInformation.getType();
+
+		return Collection.class.isAssignableFrom(collectionType) ? collectionType : List.class;
+	}
+
+	private Class<?> resolveElementType(TypeInformation typeInformation) {
+
+		TypeInformation<?> componentType = typeInformation.getComponentType();
+
+		return componentType != null ? componentType.getType() : Object.class;
 	}
 
 	/**
 	 * Reads the given {@link Map} into a map of the given {@link TypeInformation}.
 	 *
-	 * @param sourceValue must not be {@literal null}.
+	 * @param source must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
 	 * @return the converted {@link Collection} or array, will never be {@literal null}.
 	 */
-	@Nullable
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Object readMapInternal(Map<Object, Object> sourceValue, TypeInformation<?> targetType) {
+	private Object readMapInternal(Map<Object, Object> source, TypeInformation<?> targetType) {
 
-		Assert.notNull(targetType, "Target type must not be null!");
+		Assert.notNull(targetType, "Target type must not be null");
 
 		TypeInformation<?> keyType = targetType.getComponentType();
 		TypeInformation<?> valueType = targetType.getMapValueType();
 
 		Class<?> rawKeyType = keyType != null ? keyType.getType() : null;
-		Map<Object, Object> map = CollectionFactory.createMap(targetType.getType(), rawKeyType, sourceValue.size());
 
-		if (sourceValue.isEmpty()) {
+		Map<Object, Object> map = CollectionFactory.createMap(resolveMapType(targetType), rawKeyType, source.size());
+
+		if (source.isEmpty()) {
 			return map;
 		}
 
-		for (Entry<Object, Object> entry : sourceValue.entrySet()) {
+		for (Entry<Object, Object> entry : source.entrySet()) {
 
 			Object key = entry.getKey();
 
-			if (rawKeyType != null && !rawKeyType.isAssignableFrom(key.getClass())) {
+			if (key != null && rawKeyType != null && !rawKeyType.isAssignableFrom(key.getClass())) {
 				key = convertReadValue(key, keyType);
 			}
 
 			Object value = entry.getValue();
+
 			map.put(key, convertReadValue(value, valueType));
 		}
 
 		return map;
+	}
+
+	private Class<?> resolveMapType(TypeInformation<?> typeInformation) {
+
+		Class<?> mapType = typeInformation.getType();
+
+		return Map.class.isAssignableFrom(mapType) ? mapType : Map.class;
 	}
 
 	private TypeCodec<Object> getCodec(CassandraPersistentProperty property) {
@@ -1041,7 +1084,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		 */
 		@Override
 		public boolean hasProperty(CassandraPersistentProperty property) {
-			return parent.hasProperty(property);
+			return this.parent.hasProperty(property);
 		}
 
 		/* (non-Javadoc)
@@ -1051,7 +1094,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		@Override
 		@SuppressWarnings("unchecked")
 		public <T> T getPropertyValue(CassandraPersistentProperty property) {
-			return (T) getReadValue(parent, property);
+			return (T) getReadValue(this.parent, property);
 		}
 	}
 }

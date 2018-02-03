@@ -250,16 +250,19 @@ public class CassandraMappingContextUnitTests {
 	public void shouldCreateTableForMappedAndConvertedColumn() {
 
 		UserType mappedudt = UserTypeBuilder.forName("mappedudt").withField("foo", DataType.ascii()).build();
-		mappingContext.setUserTypeResolver(typeName -> mappedudt);
-		mappingContext.setCustomConversions(
-				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
-		CassandraPersistentEntity<?> persistentEntity = mappingContext
-				.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
+		this.mappingContext.setUserTypeResolver(typeName -> mappedudt);
+		this.mappingContext.setCustomConversions(new CassandraCustomConversions(
+				Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
-		CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
+		CassandraPersistentEntity<?> persistentEntity =
+				this.mappingContext.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
+
+		CreateTableSpecification tableSpecification =
+				this.mappingContext.getCreateTableSpecificationFor(persistentEntity);
 
 		assertThat(tableSpecification.getColumns()).hasSize(2);
+
 		ColumnSpecification column = tableSpecification.getColumns().get(1);
 
 		assertThat(column.getType().toString()).isEqualTo("map<frozen<mappedudt>, list<text>>");

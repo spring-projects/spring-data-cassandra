@@ -15,11 +15,9 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-import lombok.AllArgsConstructor;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,11 +26,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.AllArgsConstructor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -348,5 +349,4 @@ public class QueryMapperUnitTests {
 	enum State {
 		Active, Inactive;
 	}
-
 }

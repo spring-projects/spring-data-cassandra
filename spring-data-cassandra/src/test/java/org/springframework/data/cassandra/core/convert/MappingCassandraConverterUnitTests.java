@@ -15,14 +15,10 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
-import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
-import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
-
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
+import static org.springframework.data.cassandra.core.mapping.BasicMapId.id;
+import static org.springframework.data.cassandra.test.util.RowMockUtil.column;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -33,12 +29,26 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -95,10 +105,10 @@ public class MappingCassandraConverterUnitTests {
 	@Before
 	public void setUp() throws Exception {
 
-		mappingContext = new CassandraMappingContext();
+		this.mappingContext = new CassandraMappingContext();
 
-		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
-		mappingCassandraConverter.afterPropertiesSet();
+		this.mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
+		this.mappingCassandraConverter.afterPropertiesSet();
 	}
 
 	@Test // DATACASS-260
@@ -907,15 +917,18 @@ public class MappingCassandraConverterUnitTests {
 
 		LocalDate date1 = LocalDate.fromYearMonthDay(2018, 1, 1);
 		LocalDate date2 = LocalDate.fromYearMonthDay(2019, 1, 1);
+
 		Map<String, List<LocalDate>> times = Collections.singletonMap("Europe/Paris", Arrays.asList(date1, date2));
+
 		rowMock = RowMockUtil.newRowMock(
 				RowMockUtil.column("times", times, DataType.map(DataType.varchar(), DataType.list(DataType.date()))));
 
-		TypeWithConvertedMap converted = mappingCassandraConverter.read(TypeWithConvertedMap.class, rowMock);
+		TypeWithConvertedMap converted = this.mappingCassandraConverter.read(TypeWithConvertedMap.class, rowMock);
 
 		assertThat(converted.times).containsKeys(ZoneId.of("Europe/Paris"));
 
 		List<java.time.LocalDate> convertedTimes = converted.times.get(ZoneId.of("Europe/Paris"));
+
 		assertThat(convertedTimes).hasSize(2).hasOnlyElementsOfType(java.time.LocalDate.class);
 	}
 
@@ -926,13 +939,15 @@ public class MappingCassandraConverterUnitTests {
 		java.time.LocalDate date2 = java.time.LocalDate.of(2019, 1, 1);
 
 		TypeWithConvertedMap typeWithConvertedMap = new TypeWithConvertedMap();
+
 		typeWithConvertedMap.times = Collections.singletonMap(ZoneId.of("Europe/Paris"), Arrays.asList(date1, date2));
 
 		Insert insert = QueryBuilder.insertInto("table");
 
-		mappingCassandraConverter.write(typeWithConvertedMap, insert);
+		this.mappingCassandraConverter.write(typeWithConvertedMap, insert);
 
 		List<Object> values = getValues(insert);
+
 		assertThat(values).hasSize(1);
 		assertThat(values.get(0)).isInstanceOf(Map.class);
 

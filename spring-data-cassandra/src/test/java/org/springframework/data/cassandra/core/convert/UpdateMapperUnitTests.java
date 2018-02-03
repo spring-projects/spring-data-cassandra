@@ -15,11 +15,8 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.Currency;
@@ -27,11 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -96,6 +97,7 @@ public class UpdateMapperUnitTests {
 	public void shouldReplaceUdtMap() {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
+
 		Map<Manufacturer, Currency> map = Collections.singletonMap(manufacturer, currency);
 
 		Update update = updateMapper.getMappedObject(Update.empty().set("manufacturers", map), persistentEntity);
@@ -126,6 +128,7 @@ public class UpdateMapperUnitTests {
 	public void shouldCreateSetAtUdtKeyUpdate() {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
+
 		Update update = updateMapper.getMappedObject(Update.empty().set("manufacturers").atKey(manufacturer).to(currency),
 				persistentEntity);
 
@@ -146,6 +149,7 @@ public class UpdateMapperUnitTests {
 	public void shouldAddUdtToMap() {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
+
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("manufacturers").entry(manufacturer, currency),
 				persistentEntity);
 
