@@ -1,6 +1,24 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.0.M1 (2018-02-06)
+----------------------------------------
+* DATACASS-522 - Allow for conditionally dropping a table iff the table exists.
+* DATACASS-518 - CreateTableCqlGenerator generates invalid statements when options are added.
+* DATACASS-517 - Update copyright years to 2018.
+* DATACASS-516 - Missing return type in reference code sample code.
+* DATACASS-513 - Upgrade to Cassandra Driver 3.3.2.
+* DATACASS-512 - Support exists and count projections.
+* DATACASS-509 - Improve page fetching of DefaultBridgedReactiveSession.
+* DATACASS-507 - Adapt API changes in Property in test cases.
+* DATACASS-506 - Nested User defined type not supported.
+* DATACASS-502 - KeyspaceAction ALTER not supported.
+* DATACASS-501 - Release 2.1 M1 (Lovelace).
+* DATACASS-487 - Support Maps with mapped and converted key/value types.
+* DATACASS-485 - Add fluent alternative for CassandraTemplateOperations.
+* DATACASS-284 - Add support for TupleType/TupleValue.
+
+
 Changes in version 2.0.3.RELEASE (2018-01-24)
 ---------------------------------------------
 * DATACASS-518 - CreateTableCqlGenerator generates invalid statements when options are added.
