@@ -191,7 +191,7 @@ There is a https://github.com/spring-projects/spring-data-examples[Github reposi
 can download and play around with to get a feel for how the library works.
 
 
-[[cassandra.connectors]]
+[[cassandra.reactive.connectors]]
 == Connecting to Cassandra with Spring
 
 One of the first tasks when using Apache Cassandra and Spring is to create a `com.datastax.driver.core.Session` object
