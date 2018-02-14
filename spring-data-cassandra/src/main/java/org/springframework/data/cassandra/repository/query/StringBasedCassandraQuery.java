@@ -123,4 +123,12 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	protected boolean isExistsQuery() {
 		return this.isExistsQuery;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isLimiting()
+	 */
+	@Override
+	protected boolean isLimiting() {
+		return false;
+	}
 }

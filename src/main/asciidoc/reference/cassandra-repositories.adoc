@@ -186,7 +186,9 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 
     Person findByShippingAddress(Address address);                          <5>
 
-    Stream<Person> findAllBy();                                             <6>
+    Person findFirstByShippingAddress(Address address);                     <6>
+
+    Stream<Person> findAllBy();                                             <7>
 }
 ----
 <1> The method shows a query for all people with the given `lastname`. The query will be derived from parsing
@@ -196,9 +198,11 @@ a query expression of `SELECT * from person WHERE lastname = 'lastname'`.
 <3> Passing a `QueryOptions` object will apply the query options to the resulting query before it's execution.
 <4> Applies dynamic sorting to a query. Just add a `Sort` parameter to your method signature and Spring Data
 will automatically apply ordering to the query accordingly.
-<5> Shows that you can query based on properties which are not a primitive type using registered `Converter`'s
-in `CustomConversions`.
-<6> Uses a Java 8 `Stream` which reads and converts individual elements while iterating the stream.
+<5> Shows that you can query based on properties which are not a primitive type using registered ``Converter``'s
+in `CustomConversions`. Throws `IncorrectResultSizeDataAccessException` if more than one match found.
+<6> Uses the `First` keyword to restrict the query to the very first result. Unlike 5, this method does
+not throw an exception if more than one match was found.
+<7> Uses a Java 8 `Stream` which reads and converts individual elements while iterating the stream.
 ====
 
 NOTE: Querying non-primary key properties requires secondary indexes.

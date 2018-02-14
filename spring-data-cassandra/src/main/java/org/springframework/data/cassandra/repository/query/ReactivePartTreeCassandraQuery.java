@@ -122,4 +122,12 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	protected boolean isExistsQuery() {
 		return getTree().isExistsProjection();
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isLimiting()
+	 */
+	@Override
+	protected boolean isLimiting() {
+		return getTree().isLimiting();
+	}
 }

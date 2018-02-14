@@ -76,16 +76,19 @@ regards properties named "id" as the row id.
 ----
 public interface ReactivePersonRepository extends ReactiveSortingRepository<Person, Long> {
 
-  @AllowFiltering
-  Flux<Person> findByFirstname(String firstname);
+  Flux<Person> findByFirstname(String firstname);                                <1>
 
-  @AllowFiltering
-  Flux<Person> findByFirstname(Publisher<String> firstname);
+  Flux<Person> findByFirstname(Publisher<String> firstname);                     <2>
 
-  @AllowFiltering
-  Mono<Person> findByFirstnameAndLastname(String firstname, String lastname);
+  Mono<Person> findByFirstnameAndLastname(String firstname, String lastname);    <3>
+
+  Mono<Person> findFirstByFirstname(String firstname);                           <4>
 }
 ----
+<1> The method shows a query for all people with the given firstname. The query will be derived parsing the method name for constraints which can be concatenated with And and Or. Thus the method name will result in a query expression of `SELECT * FROM person WHERE firstname = :firstname`.
+<2> The method shows a query for all people with the given firstname once the firstname is emitted via the given `Publisher`.
+<3> Find a single entity for given criteria. Completes with `IncorrectResultSizeDataAccessException` on non unique results.
+<4> Unlike 3, the first entity is always emitted even if the query yields more result rows.
 ====
 
 For JavaConfig, use the `@EnableReactiveCassandraRepositories` annotation. The annotation carries the very same attributes
@@ -144,4 +147,3 @@ The following features are supported:
 * <<projections>>
 
 NOTE: Query methods must return a reactive type. Resolved types (`User` vs. `Mono<User>`) are not supported.
-

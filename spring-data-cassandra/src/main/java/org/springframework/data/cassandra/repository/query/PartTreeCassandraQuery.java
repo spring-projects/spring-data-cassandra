@@ -122,4 +122,12 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 	protected boolean isExistsQuery() {
 		return getTree().isExistsProjection();
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isLimiting()
+	 */
+	@Override
+	protected boolean isLimiting() {
+		return getTree().isLimiting();
+	}
 }

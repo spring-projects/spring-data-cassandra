@@ -127,4 +127,12 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	protected boolean isExistsQuery() {
 		return this.isExistsQuery;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isLimiting()
+	 */
+	@Override
+	protected boolean isLimiting() {
+		return false;
+	}
 }

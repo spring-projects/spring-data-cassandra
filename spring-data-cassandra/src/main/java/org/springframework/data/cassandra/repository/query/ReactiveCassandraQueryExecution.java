@@ -15,14 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.List;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -75,6 +75,7 @@ interface ReactiveCassandraQueryExecution {
 	final class SingleEntityExecution implements ReactiveCassandraQueryExecution {
 
 		private final @NonNull ReactiveCassandraOperations operations;
+		private final boolean limiting;
 
 		/*
 		 * (non-Javadoc)
@@ -82,7 +83,19 @@ interface ReactiveCassandraQueryExecution {
 		 */
 		@Override
 		public Object execute(Statement statement, Class<?> type) {
-			return operations.selectOne(statement, type);
+
+			return operations.select(statement, type).buffer(2).map(objects -> {
+
+				if (objects.isEmpty()) {
+					return null;
+				}
+
+				if (objects.size() == 1 || limiting) {
+					return objects.get(0);
+				}
+
+				throw new IncorrectResultSizeDataAccessException(1, objects.size());
+			});
 		}
 	}
 

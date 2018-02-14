@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,14 +26,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
@@ -52,10 +53,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
+import org.springframework.lang.Nullable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.assertj.core.api.Assertions;
 
 import com.datastax.driver.core.Session;
 
@@ -120,6 +120,21 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		List<Person> result = personRepository.findByLastname("White");
 
 		assertThat(result).contains(walter, skyler, flynn);
+	}
+
+	@Test(expected = IncorrectResultSizeDataAccessException.class) // DATACASS-525
+	public void findOneWithManyResultsShouldFail() {
+		personRepository.findSomeByLastname("White");
+	}
+
+	@Test // DATACASS-525
+	public void findOneWithNoResultsShouldReturnNull() {
+		assertThat(personRepository.findSomeByLastname("Foo")).isNull();
+	}
+
+	@Test // DATACASS-525
+	public void findFirstWithManyResultsShouldReturnResult() {
+		assertThat(personRepository.findFirstByLastname("White")).isNotNull();
 	}
 
 	@Test // DATACASS-7
@@ -341,6 +356,11 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	static interface PersonRepository extends MapIdCassandraRepository<Person> {
 
 		List<Person> findByLastname(String lastname);
+
+		@Nullable
+		Person findSomeByLastname(String lastname);
+
+		Person findFirstByLastname(String lastname);
 
 		List<Person> findByLastname(String lastname, Sort sort);
 

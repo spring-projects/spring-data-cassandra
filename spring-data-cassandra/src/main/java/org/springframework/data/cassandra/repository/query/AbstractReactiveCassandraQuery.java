@@ -156,11 +156,11 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 			return new CollectionExecution(getReactiveCassandraOperations());
 		} else if (isCountQuery()) {
 			return ((statement, type) ->
-					new SingleEntityExecution(getReactiveCassandraOperations()).execute(statement, Long.class));
+			new SingleEntityExecution(getReactiveCassandraOperations(), false).execute(statement, Long.class));
 		} else if (isExistsQuery()) {
 			return new ExistsExecution(getReactiveCassandraOperations());
 		} else {
-			return new SingleEntityExecution(getReactiveCassandraOperations());
+			return new SingleEntityExecution(getReactiveCassandraOperations(), isLimiting());
 		}
 	}
 
@@ -180,4 +180,11 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 */
 	protected abstract boolean isExistsQuery();
 
+	/**
+	 * Return whether the query has an explicit limit set.
+	 *
+	 * @return a boolean value indicating whether the query has an explicit limit set.
+	 * @since 2.0.4
+	 */
+	protected abstract boolean isLimiting();
 }

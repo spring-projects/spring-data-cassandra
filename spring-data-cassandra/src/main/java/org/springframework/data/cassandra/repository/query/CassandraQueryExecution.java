@@ -19,8 +19,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -126,13 +128,26 @@ interface CassandraQueryExecution {
 	final class SingleEntityExecution implements CassandraQueryExecution {
 
 		private final @NonNull CassandraOperations operations;
+		private final boolean limiting;
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
+		@SuppressWarnings("unchecked")
 		public Object execute(Statement statement, Class<?> type) {
-			return operations.selectOne(statement, type);
+
+			List<Object> objects = operations.select(statement, (Class) type);
+
+			if (objects.isEmpty()) {
+				return null;
+			}
+
+			if (objects.size() == 1 || limiting) {
+				return objects.get(0);
+			}
+
+			throw new IncorrectResultSizeDataAccessException(1, objects.size());
 		}
 	}
 
