@@ -97,4 +97,12 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	protected Statement createQuery(CassandraParameterAccessor parameterAccessor) {
 		return getQueryStatementCreator().select(getStatementFactory(), getTree(), getMappingContext(), parameterAccessor);
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isLimiting()
+	 */
+	@Override
+	protected boolean isLimiting() {
+		return getTree().isLimiting();
+	}
 }

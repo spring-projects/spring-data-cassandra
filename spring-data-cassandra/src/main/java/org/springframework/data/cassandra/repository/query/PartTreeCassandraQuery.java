@@ -98,4 +98,12 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 		return getQueryStatementCreator().select(getStatementFactory(), getTree(), getMappingContext(),
 				parameterAccessor);
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isLimiting()
+	 */
+	@Override
+	protected boolean isLimiting() {
+		return getTree().isLimiting();
+	}
 }

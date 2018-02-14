@@ -33,6 +33,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.GroupKey;
@@ -127,6 +128,22 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		StepVerifier.create(repository.findByLastname(dave.getLastname())).expectNextCount(2).verifyComplete();
 	}
 
+	@Test // DATACASS-525
+	public void findOneWithManyResultsShouldFail() {
+		StepVerifier.create(repository.findOneByLastname(dave.getLastname()))
+				.expectError(IncorrectResultSizeDataAccessException.class).verify();
+	}
+
+	@Test // DATACASS-525
+	public void findOneWithNoResultsShouldNotEmitItem() {
+		StepVerifier.create(repository.findByLastname("foo")).verifyComplete();
+	}
+
+	@Test // DATACASS-525
+	public void findFirstWithManyResultsShouldEmitFirstItem() {
+		StepVerifier.create(repository.findFirstByLastname(dave.getLastname())).expectNextCount(1).verifyComplete();
+	}
+
 	@Test // DATACASS-335
 	public void shouldFindByIdByLastName() {
 		StepVerifier.create(repository.findOneByLastname(carter.getLastname())).expectNext(carter).verifyComplete();
@@ -167,6 +184,8 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	interface UserRepository extends ReactiveCassandraRepository<User, String> {
 
 		Flux<User> findByLastname(String lastname);
+
+		Mono<User> findFirstByLastname(String lastname);
 
 		Mono<User> findOneByLastname(String lastname);
 

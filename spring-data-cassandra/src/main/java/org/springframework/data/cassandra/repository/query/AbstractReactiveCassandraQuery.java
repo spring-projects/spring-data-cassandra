@@ -137,6 +137,14 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	/* (non-Javadoc) */
 	private ReactiveCassandraQueryExecution getExecutionToWrap() {
 		return (getQueryMethod().isCollectionQuery() ? new CollectionExecution(getReactiveCassandraOperations())
-				: new SingleEntityExecution(getReactiveCassandraOperations()));
+				: new SingleEntityExecution(getReactiveCassandraOperations(), isLimiting()));
 	}
+
+	/**
+	 * Return whether the query has an explicit limit set.
+	 *
+	 * @return a boolean value indicating whether the query has an explicit limit set.
+	 * @since 2.0.4
+	 */
+	protected abstract boolean isLimiting();
 }

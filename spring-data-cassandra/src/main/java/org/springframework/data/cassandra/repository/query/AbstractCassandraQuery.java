@@ -124,7 +124,15 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		} else if (getQueryMethod().isStreamQuery()) {
 			return new StreamExecution(getOperations(), resultProcessing);
 		} else {
-			return new SingleEntityExecution(getOperations());
+			return new SingleEntityExecution(getOperations(), isLimiting());
 		}
 	}
+
+	/**
+	 * Return whether the query has an explicit limit set.
+	 *
+	 * @return a boolean value indicating whether the query has an explicit limit set.
+	 * @since 2.0.4
+	 */
+	protected abstract boolean isLimiting();
 }

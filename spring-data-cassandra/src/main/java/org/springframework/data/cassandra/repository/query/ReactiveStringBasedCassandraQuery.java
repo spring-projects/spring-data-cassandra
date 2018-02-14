@@ -88,4 +88,12 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
 		return getQueryStatementCreator().select(getStringBasedQuery(), parameterAccessor);
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isLimiting()
+	 */
+	@Override
+	protected boolean isLimiting() {
+		return false;
+	}
 }
