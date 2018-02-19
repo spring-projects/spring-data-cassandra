@@ -15,16 +15,17 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
@@ -52,7 +53,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	private AsyncCassandraTemplate template;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
 		CassandraTemplate cassandraTemplate = new CassandraTemplate(session, converter);
@@ -265,12 +266,15 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	public void shouldPageRequests() {
 
 		Set<String> expectedIds = new LinkedHashSet<>();
+		List<ListenableFuture<User>> futures = new ArrayList<>();
 
 		for (int count = 0; count < 100; count++) {
 			User user = new User("heisenberg" + count, "Walter", "White");
 			expectedIds.add(user.getId());
-			template.insert(user);
+			futures.add(template.insert(user));
 		}
+
+		futures.forEach(AsyncCassandraTemplateIntegrationTests::getUninterruptibly);
 
 		Set<String> ids = new HashSet<>();
 
