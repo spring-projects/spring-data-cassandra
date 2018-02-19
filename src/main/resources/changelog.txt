@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.4.RELEASE (2018-02-19)
+---------------------------------------------
+* DATACASS-525 - Throw IncorrectResultSizeDataAccessException for repository query methods returning a single element.
+* DATACASS-520 - Release 2.0.4 (Kay SR4).
+
+
 Changes in version 2.1.0.M1 (2018-02-06)
 ----------------------------------------
 * DATACASS-522 - Allow for conditionally dropping a table iff the table exists.
