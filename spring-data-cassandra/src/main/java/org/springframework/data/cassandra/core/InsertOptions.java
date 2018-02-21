@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 import lombok.EqualsAndHashCode;
@@ -40,9 +41,9 @@ public class InsertOptions extends WriteOptions {
 	private boolean ifNotExists;
 
 	private InsertOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
-			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl, boolean ifNotExists) {
+			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl, Long timestamp, boolean ifNotExists) {
 
-		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl);
+		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, timestamp);
 
 		this.ifNotExists = ifNotExists;
 	}
@@ -152,6 +153,16 @@ public class InsertOptions extends WriteOptions {
 			return (InsertOptionsBuilder) super.ttl(ttl);
 		}
 
+		@Override
+		public InsertOptionsBuilder timestamp(long timestamp) {
+			return (InsertOptionsBuilder) super.timestamp(timestamp);
+		}
+
+		@Override
+		public InsertOptionsBuilder timestamp(Instant timestamp) {
+			return (InsertOptionsBuilder) super.timestamp(timestamp);
+		}
+
 		/**
 		 * Use light-weight transactions by applying {@code IF NOT EXISTS}.
 		 *
@@ -181,7 +192,7 @@ public class InsertOptions extends WriteOptions {
 		 */
 		public InsertOptions build() {
 			return new InsertOptions(this.consistencyLevel, this.retryPolicy, this.tracing,
-					this.fetchSize, this.readTimeout, this.ttl, this.ifNotExists);
+					this.fetchSize, this.readTimeout, this.ttl, this.timestamp, this.ifNotExists);
 		}
 	}
 }

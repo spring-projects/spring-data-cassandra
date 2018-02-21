@@ -18,6 +18,9 @@ package org.springframework.data.cassandra.core.cql;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import org.junit.Test;
 
@@ -38,6 +41,7 @@ public class WriteOptionsUnitTests {
 		WriteOptions writeOptions = WriteOptions.builder()
 				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY)
 				.ttl(123)
+				.timestamp(1519000753)
 				.retryPolicy(FallthroughRetryPolicy.INSTANCE)
 				.readTimeout(1)
 				.fetchSize(10)
@@ -45,6 +49,7 @@ public class WriteOptionsUnitTests {
 				.build();
 
 		assertThat(writeOptions.getTtl()).isEqualTo(Duration.ofSeconds(123));
+		assertThat(writeOptions.getTimestamp()).isEqualTo(1519000753);
 		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
 		assertThat(writeOptions.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
 		assertThat(writeOptions.getReadTimeout()).isEqualTo(Duration.ofMillis(1));
@@ -80,10 +85,12 @@ public class WriteOptionsUnitTests {
 
 	@Test // DATACASS-56
 	public void buildWriteOptionsMutate() {
+		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
 		WriteOptions writeOptions = WriteOptions.builder()
 				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY)
 				.ttl(123)
+				.timestamp(now)
 				.retryPolicy(FallthroughRetryPolicy.INSTANCE)
 				.readTimeout(1)
 				.fetchSize(10)
@@ -95,6 +102,7 @@ public class WriteOptionsUnitTests {
 		assertThat(mutated).isNotNull();
 		assertThat(mutated).isNotSameAs(writeOptions);
 		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(123));
+		assertThat(mutated.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
 		assertThat(mutated.getRetryPolicy()).isEqualTo(DowngradingConsistencyRetryPolicy.INSTANCE);
 		assertThat(mutated.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
 		assertThat(mutated.getReadTimeout()).isEqualTo(Duration.ofMillis(1));
