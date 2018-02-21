@@ -18,6 +18,9 @@ package org.springframework.data.cassandra.core;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import org.junit.Test;
 
@@ -30,13 +33,16 @@ public class InsertOptionsUnitTests {
 
 	@Test // DATACASS-250
 	public void shouldConfigureInsertOptions() {
+		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
 		InsertOptions insertOptions = InsertOptions.builder()
 				.ttl(10)
+				.timestamp(now)
 				.withIfNotExists()
 				.build();
 
 		assertThat(insertOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
+		assertThat(insertOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
 		assertThat(insertOptions.isIfNotExists()).isTrue();
 	}
 
@@ -45,14 +51,16 @@ public class InsertOptionsUnitTests {
 
 		InsertOptions insertOptions = InsertOptions.builder()
 				.ttl(10)
+				.timestamp(1519222753)
 				.withIfNotExists()
 				.build();
 
-		InsertOptions mutated = insertOptions.mutate().ttl(Duration.ofSeconds(5)).build();
+		InsertOptions mutated = insertOptions.mutate().ttl(Duration.ofSeconds(5)).timestamp(1519200753).build();
 
 		assertThat(mutated).isNotNull();
 		assertThat(mutated).isNotSameAs(insertOptions);
 		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(5));
+		assertThat(mutated.getTimestamp()).isEqualTo(1519200753);
 		assertThat(mutated.isIfNotExists()).isTrue();
 	}
 }

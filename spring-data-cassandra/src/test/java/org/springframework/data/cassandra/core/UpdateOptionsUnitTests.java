@@ -18,6 +18,9 @@ package org.springframework.data.cassandra.core;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import org.junit.Test;
 
@@ -30,13 +33,16 @@ public class UpdateOptionsUnitTests {
 
 	@Test // DATACASS-250
 	public void shouldConfigureUpdateOptions() {
+		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
 		UpdateOptions updateOptions = UpdateOptions.builder()
 				.ttl(10)
+				.timestamp(now)
 				.withIfExists()
 				.build();
 
 		assertThat(updateOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
+		assertThat(updateOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
 		assertThat(updateOptions.isIfExists()).isTrue();
 	}
 
@@ -45,14 +51,16 @@ public class UpdateOptionsUnitTests {
 
 		UpdateOptions updateOptions = UpdateOptions.builder()
 				.ttl(10)
+				.timestamp(1519222753)
 				.withIfExists()
 				.build();
 
-		UpdateOptions mutated = updateOptions.mutate().ttl(20).build();
+		UpdateOptions mutated = updateOptions.mutate().ttl(20).timestamp(1519000753).build();
 
 		assertThat(mutated).isNotNull();
 		assertThat(mutated).isNotSameAs(updateOptions);
 		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(20));
+		assertThat(mutated.getTimestamp()).isEqualTo(1519000753);
 		assertThat(mutated.isIfExists()).isTrue();
 	}
 }

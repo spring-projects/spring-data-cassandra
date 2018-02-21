@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.cql;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 import lombok.EqualsAndHashCode;
@@ -40,6 +41,7 @@ public class WriteOptions extends QueryOptions {
 	private static final WriteOptions EMPTY = new WriteOptionsBuilder().build();
 
 	private final Duration ttl;
+	private final @Nullable Long timestamp;
 
 	/**
 	 * Creates new {@link WriteOptions} for the given {@link ConsistencyLevel} and {@link RetryPolicy}.
@@ -68,14 +70,16 @@ public class WriteOptions extends QueryOptions {
 		super(consistencyLevel, retryPolicy);
 
 		this.ttl = ttl == null ? Duration.ofMillis(-1) : Duration.ofSeconds(ttl);
+		this.timestamp = null;
 	}
 
 	protected WriteOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
-			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl) {
+			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl, Long timestamp) {
 
 		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout);
 
 		this.ttl = ttl;
+		this.timestamp = timestamp;
 	}
 
 	/**
@@ -117,6 +121,13 @@ public class WriteOptions extends QueryOptions {
 	}
 
 	/**
+	 * @return mutation timestamp in microseconds.
+	 */
+	public Long getTimestamp() {
+		return this.timestamp;
+	}
+
+	/**
 	 * Builder for {@link WriteOptions}.
 	 *
 	 * @author Mark Paluch
@@ -125,6 +136,7 @@ public class WriteOptions extends QueryOptions {
 	public static class WriteOptionsBuilder extends QueryOptionsBuilder {
 
 		protected Duration ttl = Duration.ofMillis(-1);
+		protected Long timestamp = null;
 
 		protected WriteOptionsBuilder() {}
 
@@ -133,6 +145,7 @@ public class WriteOptions extends QueryOptions {
 			super(writeOptions);
 
 			this.ttl = writeOptions.ttl;
+			this.timestamp = writeOptions.timestamp;
 		}
 
 		/*
@@ -237,13 +250,37 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		/**
+		 * Sets the timestamp of write operations.
+		 *
+		 * @param timestamp mutation timestamp in microseconds.
+		 * @return {@code this} {@link WriteOptionsBuilder}
+		 */
+		public WriteOptionsBuilder timestamp(long timestamp) {
+			Assert.isTrue(timestamp >= 0, "Timestamp must be greater than equal to zero");
+			this.timestamp = timestamp;
+			return this;
+		}
+
+		/**
+		 * Sets the timestamp of write operations.
+		 *
+		 * @param timestamp mutation date time.
+		 * @return {@code this} {@link WriteOptionsBuilder}
+		 */
+		public WriteOptionsBuilder timestamp(Instant timestamp) {
+			Assert.notNull(timestamp, "Timestamp must not be null");
+			this.timestamp = TimeUnit.MILLISECONDS.toMicros(timestamp.toEpochMilli());
+			return this;
+		}
+
+		/**
 		 * Builds a new {@link WriteOptions} with the configured values.
 		 *
 		 * @return a new {@link WriteOptions} with the configured values
 		 */
 		public WriteOptions build() {
 			return new WriteOptions(this.consistencyLevel, this.retryPolicy, this.tracing,
-					this.fetchSize, this.readTimeout, this.ttl);
+					this.fetchSize, this.readTimeout, this.ttl, this.timestamp);
 		}
 	}
 }
