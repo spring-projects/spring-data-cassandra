@@ -5,7 +5,7 @@ jdk:
 
 env:
   global:
-    - CASSANDRA_VERSION=3.11.0
+    - CASSANDRA_VERSION=3.11.2
   matrix:
     - PROFILE=ci
     - PROFILE=spring5-next
