@@ -23,6 +23,11 @@ import java.util.stream.StreamSupport;
 import lombok.NonNull;
 import lombok.Value;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -41,6 +46,11 @@ import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.event.AfterDeleteEvent;
+import org.springframework.data.cassandra.core.mapping.event.AfterLoadEvent;
+import org.springframework.data.cassandra.core.mapping.event.AfterSaveEvent;
+import org.springframework.data.cassandra.core.mapping.event.BeforeDeleteEvent;
+import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.MappingContext;
@@ -81,7 +91,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @see org.springframework.data.cassandra.core.CassandraOperations
  * @since 2.0
  */
-public class CassandraTemplate implements CassandraOperations {
+public class CassandraTemplate implements CassandraOperations, ApplicationContextAware {
 
 	private final CassandraConverter converter;
 
@@ -92,6 +102,8 @@ public class CassandraTemplate implements CassandraOperations {
 	private final SpelAwareProxyProjectionFactory projectionFactory;
 
 	private final StatementFactory statementFactory;
+
+	private @Nullable ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * Creates an instance of {@link CassandraTemplate} initialized with the given {@link Session} and a default
@@ -202,6 +214,15 @@ public class CassandraTemplate implements CassandraOperations {
 		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entityType));
 	}
 
+	@org.springframework.lang.Nullable
+	private String guessTableName(Object entity) {
+		if (getMappingContext().hasPersistentEntityFor(entity.getClass())) {
+			return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entity.getClass())).getTableName().toCql();
+		}
+		// Not an entity.
+		return null;
+	}
+
 	/**
 	 * Returns a reference to the configured {@link ProjectionFactory} used by this template
 	 * to process CQL query projections.
@@ -290,7 +311,7 @@ public class CassandraTemplate implements CassandraOperations {
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass);
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, true);
 
 		return getCqlOperations().query(statement, (row, rowNum) -> mapper.apply(row));
 	}
@@ -306,7 +327,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		ResultSet resultSet = getCqlOperations().queryForResultSet(statement);
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass);
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, true);
 
 		return QueryUtils.readSlice(resultSet, (row, rowNum) -> mapper.apply(row),
 				0, getEffectiveFetchSize(statement));
@@ -323,7 +344,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		ResultSet resultSet = getCqlOperations().queryForResultSet(statement);
 
-		return StreamSupport.stream(resultSet.spliterator(), false).map(getMapper(entityClass, entityClass));
+		return StreamSupport.stream(resultSet.spliterator(), false).map(getMapper(entityClass, entityClass, true));
 	}
 
 	/* (non-Javadoc)
@@ -352,7 +373,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 	<T> List<T> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
 
-		Function<Row, T> mapper = getMapper(entityClass, returnType);
+		Function<Row, T> mapper = getMapper(entityClass, returnType, true);
 
 		RegularStatement select = getStatementFactory()
 				.select(query, getRequiredPersistentEntity(entityClass), tableName);
@@ -393,7 +414,7 @@ public class CassandraTemplate implements CassandraOperations {
 
 		ResultSet resultSet = getCqlOperations().queryForResultSet(statement);
 
-		return StreamSupport.stream(resultSet.spliterator(), false).map(getMapper(entityClass, returnType));
+		return StreamSupport.stream(resultSet.spliterator(), false).map(getMapper(entityClass, returnType, true));
 	}
 
 	/* (non-Javadoc)
@@ -578,8 +599,14 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter());
 
+		maybeEmitEvent(new BeforeSaveEvent<Object>(entity, tableName.toCql(), insert));
+
 		// noinspection ConstantConditions
-		return getCqlOperations().execute(new StatementCallback(insert));
+		WriteResult result = getCqlOperations().execute(new StatementCallback(insert));
+
+		maybeEmitEvent(new AfterSaveEvent<Object>(entity, tableName.toCql()));
+
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -601,8 +628,14 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
+		maybeEmitEvent(new BeforeSaveEvent<Object>(entity, guessTableName(entity), update));
+
 		// noinspection ConstantConditions
-		return getCqlOperations().execute(new StatementCallback(update));
+		WriteResult result = getCqlOperations().execute(new StatementCallback(update));
+
+		maybeEmitEvent(new AfterSaveEvent<Object>(entity, guessTableName(entity)));
+
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -624,8 +657,14 @@ public class CassandraTemplate implements CassandraOperations {
 
 		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
+		maybeEmitEvent(new BeforeDeleteEvent<Object>(entity, guessTableName(entity), delete));
+
 		// noinspection ConstantConditions
-		return getCqlOperations().execute(new StatementCallback(delete));
+		WriteResult result = getCqlOperations().execute(new StatementCallback(delete));
+
+		maybeEmitEvent(new AfterDeleteEvent<Object>(entity, guessTableName(entity)));
+
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -723,7 +762,7 @@ public class CassandraTemplate implements CassandraOperations {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType) {
+	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType, boolean emitEvents) {
 
 		Class<?> typeToRead = resolveTypeToRead(entityType, targetType);
 
@@ -731,8 +770,13 @@ public class CassandraTemplate implements CassandraOperations {
 
 			Object source = getConverter().read(typeToRead, row);
 
-			return (T) (targetType.isInterface()
-					? getProjectionFactory().createProjection(targetType, source) : source);
+			T result = (T) (targetType.isInterface() ? getProjectionFactory().createProjection(targetType, source) : source);
+
+			if (emitEvents) {
+				maybeEmitEvent(new AfterLoadEvent<T>(result, guessTableName(result)));
+			}
+
+			return result;
 		};
 	}
 
@@ -746,6 +790,17 @@ public class CassandraTemplate implements CassandraOperations {
 	@Override
 	public CassandraBatchOperations batchOps() {
 		return new CassandraBatchTemplate(this);
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.eventPublisher = applicationContext;
+	}
+
+	private void maybeEmitEvent(ApplicationEvent event) {
+		if (eventPublisher != null) {
+			eventPublisher.publishEvent(event);
+		}
 	}
 
 	@Value

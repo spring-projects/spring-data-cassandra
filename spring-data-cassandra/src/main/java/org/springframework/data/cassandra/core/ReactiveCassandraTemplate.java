@@ -20,6 +20,17 @@ import java.util.function.Function;
 import lombok.NonNull;
 import lombok.Value;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.cassandra.core.mapping.event.AfterDeleteEvent;
+import org.springframework.data.cassandra.core.mapping.event.AfterLoadEvent;
+import org.springframework.data.cassandra.core.mapping.event.AfterSaveEvent;
+import org.springframework.data.cassandra.core.mapping.event.BeforeDeleteEvent;
+import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
+import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -78,7 +89,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author John Blum
  * @since 2.0
  */
-public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
+public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, ApplicationContextAware {
 
 	private final CassandraConverter converter;
 
@@ -89,6 +100,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 	private final StatementFactory statementFactory;
 
 	private final SpelAwareProxyProjectionFactory projectionFactory;
+
+	private @Nullable ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * Creates an instance of {@link ReactiveCassandraTemplate} initialized with the given {@link ReactiveSession} and a
@@ -213,6 +226,15 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return getRequiredPersistentEntity(entity).getTableName();
 	}
 
+	@org.springframework.lang.Nullable
+	private String guessTableName(Object entity) {
+		if (getMappingContext().hasPersistentEntityFor(entity.getClass())) {
+			return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entity.getClass())).getTableName().toCql();
+		}
+		// Not an entity.
+		return null;
+	}
+
 	CqlIdentifier getTableName(Class<?> entityType) {
 		return getRequiredPersistentEntity(entityType).getTableName();
 	}
@@ -253,7 +275,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		Assert.notNull(cql, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass);
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, true);
 
 		return getReactiveCqlOperations().query(cql, (row, rowNum) -> mapper.apply(row));
 	}
@@ -284,7 +306,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 	<T> Flux<T> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
 
-		Function<Row, T> mapper = getMapper(entityClass, returnType);
+		Function<Row, T> mapper = getMapper(entityClass, returnType, true);
 
 		RegularStatement select = getStatementFactory()
 				.select(query, getRequiredPersistentEntity(entityClass), tableName);
@@ -463,8 +485,14 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter());
 
+		maybeEmitEvent(new BeforeSaveEvent<Object>(entity, tableName.toCql(), insert));
+
 		// noinspection ConstantConditions
-		return getReactiveCqlOperations().execute(new StatementCallback(insert)).next();
+		Mono<WriteResult> result = getReactiveCqlOperations().execute(new StatementCallback(insert)).next();
+
+		maybeEmitEvent(new AfterSaveEvent<Object>(entity, tableName.toCql()));
+
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -486,7 +514,13 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Update update = QueryUtils.createUpdateQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
-		return getReactiveCqlOperations().execute(new StatementCallback(update)).next();
+		maybeEmitEvent(new BeforeSaveEvent<Object>(entity, guessTableName(entity), update));
+
+		Mono<WriteResult> result = getReactiveCqlOperations().execute(new StatementCallback(update)).next();
+
+		maybeEmitEvent(new AfterSaveEvent<Object>(entity, guessTableName(entity)));
+
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -508,7 +542,13 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		Delete delete = QueryUtils.createDeleteQuery(getTableName(entity).toCql(), entity, options, getConverter());
 
-		return getReactiveCqlOperations().execute(new StatementCallback(delete)).next();
+		maybeEmitEvent(new BeforeDeleteEvent<Object>(entity, guessTableName(entity), delete));
+
+		Mono<WriteResult> result = getReactiveCqlOperations().execute(new StatementCallback(delete)).next();
+
+		maybeEmitEvent(new AfterDeleteEvent<Object>(entity, guessTableName(entity)));
+
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -578,12 +618,23 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return new ReactiveDeleteOperationSupport(this).delete(domainType);
 	}
 
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.eventPublisher = applicationContext;
+	}
+
 	// -------------------------------------------------------------------------
 	// Implementation hooks and helper methods
 	// -------------------------------------------------------------------------
 
+	private void maybeEmitEvent(ApplicationEvent event) {
+		if (eventPublisher != null) {
+			eventPublisher.publishEvent(event);
+		}
+	}
+
 	@SuppressWarnings("unchecked")
-	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType) {
+	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType, boolean emitEvents) {
 
 		Class<?> typeToRead = resolveTypeToRead(entityType, targetType);
 
@@ -591,8 +642,13 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 			Object source = getConverter().read(typeToRead, row);
 
-			return (T) (targetType.isInterface()
-					? this.projectionFactory.createProjection(targetType, source) : source);
+			T result = (T) (targetType.isInterface() ? this.projectionFactory.createProjection(targetType, source) : source);
+
+			if (emitEvents) {
+				maybeEmitEvent(new AfterLoadEvent<T>(result, guessTableName(result)));
+			}
+
+			return result;
 		};
 	}
 
