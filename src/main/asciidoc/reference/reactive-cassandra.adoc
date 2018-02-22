@@ -159,7 +159,7 @@ public class CassandraApplication {
     Cluster cluster = Cluster.builder().addContactPoints("localhost").build();
     Session session = cluster.connect("mykeyspace");
 
-    ReactiveCassandraOperations template = new ReactiveCassandraTemplate(session);
+    ReactiveCassandraOperations template = new ReactiveCassandraTemplate(new DefaultBridgedReactiveSession(session));
 
     Mono<Person> jonDoe = template.insert(newPerson("Jon Doe", 40));
 
