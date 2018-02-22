@@ -106,6 +106,9 @@ public abstract class QueryOptionsUtil {
 		if (!writeOptions.getTtl().isNegative()) {
 			insert.using(QueryBuilder.ttl(Math.toIntExact(writeOptions.getTtl().getSeconds())));
 		}
+		if (writeOptions.getTimestamp() != null) {
+			insert.using(QueryBuilder.timestamp(writeOptions.getTimestamp()));
+		}
 
 		return insert;
 	}
@@ -125,6 +128,9 @@ public abstract class QueryOptionsUtil {
 
 		if (!writeOptions.getTtl().isNegative()) {
 			update.using(QueryBuilder.ttl(Math.toIntExact(writeOptions.getTtl().getSeconds())));
+		}
+		if (writeOptions.getTimestamp() != null) {
+			update.using(QueryBuilder.timestamp(writeOptions.getTimestamp()));
 		}
 
 		return update;

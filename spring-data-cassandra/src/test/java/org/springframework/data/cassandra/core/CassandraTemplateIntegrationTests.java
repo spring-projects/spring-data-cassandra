@@ -19,6 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.springframework.data.cassandra.core.query.Criteria.where;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -189,6 +192,24 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		long count = template.count(User.class);
 		assertThat(count).isEqualTo(1L);
+	}
+
+	@Test // DATACASS-155
+	public void shouldNotOverrideLaterMutation() {
+		Instant now = LocalDateTime.now().atZone( ZoneId.systemDefault() ).toInstant();
+		User user = new User("heisenberg", "Walter", "White");
+		template.insert(user);
+
+		// more recent mutation
+		user.setFirstname("John");
+		template.update(user);
+
+		// previous mutation
+		user.setFirstname("Greg");
+		template.update(user, UpdateOptions.builder().timestamp(now.minusSeconds(10)).build());
+
+		User loaded = template.selectOneById(user.getId(), User.class);
+		assertThat(loaded.getFirstname()).isEqualTo("John");
 	}
 
 	@Test // DATACASS-512
