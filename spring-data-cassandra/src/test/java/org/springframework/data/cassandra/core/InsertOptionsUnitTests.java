@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -28,18 +28,16 @@ import org.junit.Test;
  * Unit tests for {@link InsertOptions}.
  *
  * @author Mark Paluch
+ * @author Lukasz Antoniak
  */
 public class InsertOptionsUnitTests {
 
-	@Test // DATACASS-250
+	@Test // DATACASS-250, DATACASS-155
 	public void shouldConfigureInsertOptions() {
+
 		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
-		InsertOptions insertOptions = InsertOptions.builder()
-				.ttl(10)
-				.timestamp(now)
-				.withIfNotExists()
-				.build();
+		InsertOptions insertOptions = InsertOptions.builder().ttl(10).timestamp(now).withIfNotExists().build();
 
 		assertThat(insertOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
 		assertThat(insertOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
@@ -49,11 +47,7 @@ public class InsertOptionsUnitTests {
 	@Test // DATACASS-56
 	public void buildInsertOptionsMutate() {
 
-		InsertOptions insertOptions = InsertOptions.builder()
-				.ttl(10)
-				.timestamp(1519222753)
-				.withIfNotExists()
-				.build();
+		InsertOptions insertOptions = InsertOptions.builder().ttl(10).timestamp(1519222753).withIfNotExists().build();
 
 		InsertOptions mutated = insertOptions.mutate().ttl(Duration.ofSeconds(5)).timestamp(1519200753).build();
 

@@ -132,7 +132,14 @@ class QueryUtils {
 
 		Delete.Selection deleteSelection = QueryBuilder.delete();
 		Delete delete = deleteSelection.from(tableName);
-		Where where = QueryOptionsUtil.addQueryOptions(delete.where(), options);
+
+		if (options instanceof WriteOptions) {
+			QueryOptionsUtil.addWriteOptions(delete, (WriteOptions) options);
+		} else {
+			QueryOptionsUtil.addQueryOptions(delete, options);
+		}
+
+		Where where = delete.where();
 
 		entityWriter.write(objectToDelete, where);
 

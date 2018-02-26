@@ -19,6 +19,7 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Update;
@@ -27,6 +28,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * Utility class to associate {@link QueryOptions} and {@link WriteOptions} with QueryBuilder {@link Statement}s.
  *
  * @author Mark Paluch
+ * @author Lukasz Antoniak
  * @since 2.0
  */
 public abstract class QueryOptionsUtil {
@@ -106,11 +108,33 @@ public abstract class QueryOptionsUtil {
 		if (!writeOptions.getTtl().isNegative()) {
 			insert.using(QueryBuilder.ttl(Math.toIntExact(writeOptions.getTtl().getSeconds())));
 		}
+
 		if (writeOptions.getTimestamp() != null) {
 			insert.using(QueryBuilder.timestamp(writeOptions.getTimestamp()));
 		}
 
 		return insert;
+	}
+
+	/**
+	 * Add common {@link WriteOptions} options to {@link Delete} CQL statements.
+	 *
+	 * @param delete {@link Delete} CQL statement, must not be {@literal null}.
+	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
+	 * @return the given {@link Delete}.
+	 * @since 2.1
+	 */
+	public static Delete addWriteOptions(Delete delete, WriteOptions writeOptions) {
+
+		Assert.notNull(delete, "Update must not be null");
+
+		addQueryOptions(delete, writeOptions);
+
+		if (writeOptions.getTimestamp() != null) {
+			delete.using(QueryBuilder.timestamp(writeOptions.getTimestamp()));
+		}
+
+		return delete;
 	}
 
 	/**

@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core;
 
+import lombok.EqualsAndHashCode;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-
-import lombok.EqualsAndHashCode;
 
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.lang.Nullable;
@@ -31,6 +31,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * Extension to {@link WriteOptions} for use with {@code INSERT} operations.
  *
  * @author Mark Paluch
+ * @author Lukasz Antoniak
  * @since 2.0
  */
 @EqualsAndHashCode(callSuper = true)
@@ -41,7 +42,8 @@ public class InsertOptions extends WriteOptions {
 	private boolean ifNotExists;
 
 	private InsertOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
-			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl, Long timestamp, boolean ifNotExists) {
+			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl,
+			@Nullable Long timestamp, boolean ifNotExists) {
 
 		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, timestamp);
 
@@ -88,6 +90,7 @@ public class InsertOptions extends WriteOptions {
 	 * Builder for {@link InsertOptions}.
 	 *
 	 * @author Mark Paluch
+	 * @author Lukasz Antoniak
 	 * @since 2.0
 	 */
 	public static class InsertOptionsBuilder extends WriteOptionsBuilder {
@@ -103,64 +106,123 @@ public class InsertOptions extends WriteOptions {
 			this.ifNotExists = insertOptions.ifNotExists;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
+		 */
 		@Override
 		public InsertOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {
-			return (InsertOptionsBuilder) super.consistencyLevel(consistencyLevel);
+
+			super.consistencyLevel(consistencyLevel);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#retryPolicy(com.datastax.driver.core.policies.RetryPolicy)
+		 */
 		@Override
 		public InsertOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
-			return (InsertOptionsBuilder) super.retryPolicy(driverRetryPolicy);
+
+			super.retryPolicy(driverRetryPolicy);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#fetchSize(int)
+		 */
 		@Override
 		public InsertOptionsBuilder fetchSize(int fetchSize) {
 			return (InsertOptionsBuilder) super.fetchSize(fetchSize);
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long)
+		 */
 		@Override
 		public InsertOptionsBuilder readTimeout(long readTimeout) {
-			return (InsertOptionsBuilder) super.readTimeout(readTimeout);
+
+			super.readTimeout(readTimeout);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
+		 */
 		@Override
 		@Deprecated
 		public InsertOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
-			return (InsertOptionsBuilder) super.readTimeout(readTimeout, timeUnit);
+
+			super.readTimeout(readTimeout, timeUnit);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(java.time.Duration)
+		 */
 		@Override
 		public InsertOptionsBuilder readTimeout(Duration readTimeout) {
-			return (InsertOptionsBuilder) super.readTimeout(readTimeout);
+
+			super.readTimeout(readTimeout);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(java.time.Duration)
+		 */
 		@Override
 		public InsertOptionsBuilder ttl(Duration ttl) {
-			return (InsertOptionsBuilder) super.ttl(ttl);
+
+			super.ttl(ttl);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#tracing(boolean)
+		 */
 		@Override
 		public InsertOptionsBuilder tracing(boolean tracing) {
-			return (InsertOptionsBuilder) super.tracing(tracing);
+
+			super.tracing(tracing);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#withTracing()
+		 */
 		@Override
 		public InsertOptionsBuilder withTracing() {
-			return (InsertOptionsBuilder) super.withTracing();
+
+			super.withTracing();
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
+		 */
+		@Override
 		public InsertOptionsBuilder ttl(int ttl) {
-			return (InsertOptionsBuilder) super.ttl(ttl);
+
+			super.ttl(ttl);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(long)
+		 */
 		@Override
 		public InsertOptionsBuilder timestamp(long timestamp) {
-			return (InsertOptionsBuilder) super.timestamp(timestamp);
+
+			super.timestamp(timestamp);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(java.time.Instant)
+		 */
 		@Override
 		public InsertOptionsBuilder timestamp(Instant timestamp) {
-			return (InsertOptionsBuilder) super.timestamp(timestamp);
+
+			super.timestamp(timestamp);
+			return this;
 		}
 
 		/**
@@ -191,8 +253,8 @@ public class InsertOptions extends WriteOptions {
 		 * @return a new {@link InsertOptions} with the configured values
 		 */
 		public InsertOptions build() {
-			return new InsertOptions(this.consistencyLevel, this.retryPolicy, this.tracing,
-					this.fetchSize, this.readTimeout, this.ttl, this.timestamp, this.ifNotExists);
+			return new InsertOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout,
+					this.ttl, this.timestamp, this.ifNotExists);
 		}
 	}
 }

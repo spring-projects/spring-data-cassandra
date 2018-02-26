@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
-import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -33,7 +33,6 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
@@ -196,6 +195,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 	@Test // DATACASS-155
 	public void shouldNotOverrideLaterMutation() {
+
 		Instant now = LocalDateTime.now().atZone( ZoneId.systemDefault() ).toInstant();
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user);
@@ -206,7 +206,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		// previous mutation
 		user.setFirstname("Greg");
-		template.update(user, UpdateOptions.builder().timestamp(now.minusSeconds(10)).build());
+		template.update(user, UpdateOptions.builder().timestamp(now.minusSeconds(120)).build());
 
 		User loaded = template.selectOneById(user.getId(), User.class);
 		assertThat(loaded.getFirstname()).isEqualTo("John");

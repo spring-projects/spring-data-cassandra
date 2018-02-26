@@ -15,12 +15,10 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 import org.junit.Test;
 
@@ -28,12 +26,14 @@ import org.junit.Test;
  * Unit tests for {@link UpdateOptions}.
  *
  * @author Mark Paluch
+ * @author Lukasz Antoniak
  */
 public class UpdateOptionsUnitTests {
 
-	@Test // DATACASS-250
+	@Test // DATACASS-250, DATACASS-155
 	public void shouldConfigureUpdateOptions() {
-		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
+
+		Instant now = Instant.ofEpochSecond(1234);
 
 		UpdateOptions updateOptions = UpdateOptions.builder()
 				.ttl(10)
@@ -46,7 +46,7 @@ public class UpdateOptionsUnitTests {
 		assertThat(updateOptions.isIfExists()).isTrue();
 	}
 
-	@Test // DATACASS-56
+	@Test // DATACASS-56, DATACASS-155
 	public void buildUpdateOptionsMutate() {
 
 		UpdateOptions updateOptions = UpdateOptions.builder()

@@ -32,6 +32,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.policies.FallthroughRetryPolicy;
+import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Using;
@@ -53,6 +54,7 @@ public class QueryOptionsUtilUnitTests {
 	@Mock Session mockSession;
 	@Mock Statement mockStatement;
 	@Mock Update mockUpdate;
+	@Mock Delete mockDelete;
 
 	@Test // DATACASS-202
 	public void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
@@ -164,5 +166,22 @@ public class QueryOptionsUtilUnitTests {
 		verify(mockUpdate).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
 		verify(mockUpdate).using(Mockito.any(Using.class));
 		verify(mockUpdate).disableTracing();
+	}
+
+	@Test // DATACASS-155
+	public void addDeleteWriteOptionsShouldAddDriverQueryOptions() {
+
+		WriteOptions writeOptions = WriteOptions.builder() //
+				.consistencyLevel(ConsistencyLevel.EACH_QUORUM) //
+				.retryPolicy(FallthroughRetryPolicy.INSTANCE) //
+				.timestamp(42) //
+				.tracing(false).build();
+
+		QueryOptionsUtil.addWriteOptions(mockDelete, writeOptions);
+
+		verify(mockDelete).setConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
+		verify(mockDelete).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+		verify(mockDelete).using(Mockito.any(Using.class));
+		verify(mockDelete).disableTracing();
 	}
 }

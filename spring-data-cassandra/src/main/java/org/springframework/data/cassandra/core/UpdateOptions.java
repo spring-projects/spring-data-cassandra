@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core;
 
+import lombok.EqualsAndHashCode;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-
-import lombok.EqualsAndHashCode;
 
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.lang.Nullable;
@@ -31,6 +31,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * Extension to {@link WriteOptions} for use with {@code UPDATE} operations.
  *
  * @author Mark Paluch
+ * @author Lukasz Antoniak
  * @since 2.0
  */
 @EqualsAndHashCode(callSuper = true)
@@ -41,7 +42,8 @@ public class UpdateOptions extends WriteOptions {
 	private boolean ifExists;
 
 	private UpdateOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
-			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl, Long timestamp, boolean ifExists) {
+			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl,
+			@Nullable Long timestamp, boolean ifExists) {
 
 		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, timestamp);
 
@@ -88,6 +90,7 @@ public class UpdateOptions extends WriteOptions {
 	 * Builder for {@link UpdateOptions}.
 	 *
 	 * @author Mark Paluch
+	 * @author Lukasz Antoniak
 	 * @since 2.0
 	 */
 	public static class UpdateOptionsBuilder extends WriteOptionsBuilder {
@@ -103,64 +106,124 @@ public class UpdateOptions extends WriteOptions {
 			this.ifExists = updateOptions.ifExists;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
+		 */
 		@Override
 		public UpdateOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {
-			return (UpdateOptionsBuilder) super.consistencyLevel(consistencyLevel);
+
+			super.consistencyLevel(consistencyLevel);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#retryPolicy(com.datastax.driver.core.policies.RetryPolicy)
+		 */
 		@Override
 		public UpdateOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
-			return (UpdateOptionsBuilder) super.retryPolicy(driverRetryPolicy);
+
+			super.retryPolicy(driverRetryPolicy);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#fetchSize(int)
+		 */
 		@Override
 		public UpdateOptionsBuilder fetchSize(int fetchSize) {
-			return (UpdateOptionsBuilder) super.fetchSize(fetchSize);
+
+			super.fetchSize(fetchSize);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long)
+		 */
 		@Override
 		public UpdateOptionsBuilder readTimeout(long readTimeout) {
-			return (UpdateOptionsBuilder) super.readTimeout(readTimeout);
+
+			super.readTimeout(readTimeout);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
+		 */
 		@Override
 		@Deprecated
 		public UpdateOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
-			return (UpdateOptionsBuilder) super.readTimeout(readTimeout, timeUnit);
+
+			super.readTimeout(readTimeout, timeUnit);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(java.time.Duration)
+		 */
 		@Override
 		public UpdateOptionsBuilder readTimeout(Duration readTimeout) {
-			return (UpdateOptionsBuilder) super.readTimeout(readTimeout);
+
+			super.readTimeout(readTimeout);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(java.time.Duration)
+		 */
 		@Override
 		public UpdateOptionsBuilder ttl(Duration ttl) {
-			return (UpdateOptionsBuilder) super.ttl(ttl);
+
+			super.ttl(ttl);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#tracing(boolean)
+		 */
 		@Override
 		public UpdateOptionsBuilder tracing(boolean tracing) {
-			return (UpdateOptionsBuilder) super.tracing(tracing);
+
+			super.tracing(tracing);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#withTracing()
+		 */
 		@Override
 		public UpdateOptionsBuilder withTracing() {
-			return (UpdateOptionsBuilder) super.withTracing();
+
+			super.withTracing();
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
+		 */
 		public UpdateOptionsBuilder ttl(int ttl) {
-			return (UpdateOptionsBuilder) super.ttl(ttl);
+
+			super.ttl(ttl);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(long)
+		 */
 		@Override
 		public UpdateOptionsBuilder timestamp(long timestamp) {
-			return (UpdateOptionsBuilder) super.timestamp(timestamp);
+
+			super.timestamp(timestamp);
+			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(java.time.Instant)
+		 */
 		@Override
 		public UpdateOptionsBuilder timestamp(Instant timestamp) {
-			return (UpdateOptionsBuilder) super.timestamp(timestamp);
+
+			super.timestamp(timestamp);
+			return this;
 		}
 
 		/**
@@ -191,8 +254,8 @@ public class UpdateOptions extends WriteOptions {
 		 * @return a new {@link UpdateOptions} with the configured values
 		 */
 		public UpdateOptions build() {
-			return new UpdateOptions(this.consistencyLevel, this.retryPolicy, this.tracing,
-					this.fetchSize, this.readTimeout, this.ttl, this.timestamp, this.ifExists);
+			return new UpdateOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout,
+					this.ttl, this.timestamp, this.ifExists);
 		}
 	}
 }

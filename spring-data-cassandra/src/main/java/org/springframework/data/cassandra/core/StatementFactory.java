@@ -458,7 +458,13 @@ public class StatementFactory {
 
 		Delete delete = delete(columnNames, tableName, filter);
 
-		query.getQueryOptions().ifPresent(queryOptions -> QueryOptionsUtil.addQueryOptions(delete, queryOptions));
+		query.getQueryOptions().ifPresent(queryOptions -> {
+			if (queryOptions instanceof WriteOptions) {
+				QueryOptionsUtil.addWriteOptions(delete, (WriteOptions) queryOptions);
+			} else {
+				QueryOptionsUtil.addQueryOptions(delete, queryOptions);
+			}
+		});
 
 		query.getPagingState().ifPresent(delete::setPagingState);
 
