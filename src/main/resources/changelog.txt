@@ -1,6 +1,13 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.5.RELEASE (2018-02-28)
+---------------------------------------------
+* DATACASS-528 - Upgrade to Cassandra 3.11.2.
+* DATACASS-527 - Reactive example from documentation is not working.
+* DATACASS-526 - Release 2.0.5 (Kay SR5).
+
+
 Changes in version 2.0.4.RELEASE (2018-02-19)
 ---------------------------------------------
 * DATACASS-525 - Throw IncorrectResultSizeDataAccessException for repository query methods returning a single element.
