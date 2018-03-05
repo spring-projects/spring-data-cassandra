@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,29 @@
  */
 package org.springframework.data.cassandra.core.mapping.event;
 
-import org.springframework.lang.Nullable;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+
+import com.datastax.driver.core.Statement;
 
 /**
- * Event thrown after a single row has been deleted.
+ * Event being thrown after a single or a set of rows has/have been deleted.
  *
  * @author Lukasz Antoniak
+ * @author Mark Paluch
+ * @since 2.1
  */
-public class AfterDeleteEvent<E> extends CassandraMappingEvent<E> {
+public class AfterDeleteEvent<T> extends AbstractDeleteEvent<T> {
+
 	private static final long serialVersionUID = 1L;
 
-	public AfterDeleteEvent(E source, @Nullable String table) {
-		super(source, table);
+	/**
+	 * Create a new {@link AfterDeleteEvent}.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 */
+	public AfterDeleteEvent(Statement source, Class<T> type, CqlIdentifier tableName) {
+		super(source, type, tableName);
 	}
 }

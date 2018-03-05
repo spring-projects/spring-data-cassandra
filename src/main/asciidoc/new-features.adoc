@@ -10,6 +10,7 @@ This chapter summarizes changes and new features for each release.
 * <<cassandra.template.query.fluent-template-api,Fluent API>> for CRUD operations.
 * Cassandra Tuple support via `TupleValue`.
 * Support for `map` columns using User-defined/converted types.
+* <<cassandra.mapping-usage.events>>
 
 [[new-features.2-0-0]]
 == What's new in Spring Data for Apache Cassandra 2.0

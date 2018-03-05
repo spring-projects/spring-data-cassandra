@@ -21,39 +21,37 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.Row;
 
 /**
- * Event to be triggered after loading {@link com.datastax.driver.core.Row}s to be mapped onto a given type.
+ * Event to be triggered after converting a {@link Row}.
  *
- * @author Lukasz Antoniak
  * @author Mark Paluch
  * @since 2.1
  */
-public class AfterLoadEvent<T> extends CassandraMappingEvent<Row> {
+public class AfterConvertEvent<E> extends CassandraMappingEvent<E> {
 
 	private static final long serialVersionUID = 1L;
 
-	private final Class<T> type;
+	private final Row row;
 
 	/**
-	 * Creates a new {@link AfterLoadEvent} for the given {@link Row}, type and {@link CqlIdentifier tableName}.
+	 * Creates a new {@link AfterConvertEvent} for the given {@code source} and {@link CqlIdentifier tableName}.
 	 *
 	 * @param source must not be {@literal null}.
-	 * @param type must not be {@literal null}.
 	 * @param tableName must not be {@literal null}.
 	 */
-	public AfterLoadEvent(Row source, Class<T> type, CqlIdentifier tableName) {
+	public AfterConvertEvent(Row row, E source, CqlIdentifier tableName) {
 
 		super(source, tableName);
 
-		Assert.notNull(type, "Type must not be null!");
-		this.type = type;
+		Assert.notNull(row, "Row must not be null");
+		this.row = row;
 	}
 
 	/**
-	 * Returns the type for which the {@link AfterLoadEvent} shall be invoked for.
+	 * Returns the {@link Row} from which this {@link AfterConvertEvent} was derived.
 	 *
 	 * @return
 	 */
-	public Class<T> getType() {
-		return type;
+	public Row getRow() {
+		return row;
 	}
 }

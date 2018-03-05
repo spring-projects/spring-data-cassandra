@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,41 @@
 package org.springframework.data.cassandra.core.mapping.event;
 
 import org.springframework.context.ApplicationEvent;
-import org.springframework.lang.Nullable;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.util.Assert;
 
 /**
  * Base {@link ApplicationEvent} triggered by Spring Data Cassandra.
  *
  * @author Lukasz Antoniak
+ * @author Mark Paluch
+ * @since 2.1
  */
 public class CassandraMappingEvent<T> extends ApplicationEvent {
+
 	private static final long serialVersionUID = 1L;
-	private final @Nullable String table;
+
+	private final CqlIdentifier tableName;
 
 	/**
 	 * Creates new {@link CassandraMappingEvent}.
 	 *
 	 * @param source must not be {@literal null}.
-	 * @param table may be {@literal null}.
+	 * @param tableName must not be {@literal null}.
 	 */
-	public CassandraMappingEvent(T source, @Nullable String table) {
+	public CassandraMappingEvent(T source, CqlIdentifier tableName) {
+
 		super(source);
-		this.table = table;
+
+		Assert.notNull(tableName, "Table name must not be null!");
+		this.tableName = tableName;
 	}
 
 	/**
-	 * @return Table that event refers to. May return {@literal null} for not entity objects.
+	 * @return table name that event refers to. May return {@literal null} for non-entity objects.
 	 */
-	@Nullable
-	public String getTable() {
-		return table;
+	public CqlIdentifier getTableName() {
+		return tableName;
 	}
 
 	/*

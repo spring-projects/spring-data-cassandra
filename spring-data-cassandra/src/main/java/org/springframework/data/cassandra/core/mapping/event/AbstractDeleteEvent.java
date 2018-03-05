@@ -18,38 +18,35 @@ package org.springframework.data.cassandra.core.mapping.event;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Statement;
 
 /**
- * Event to be triggered after loading {@link com.datastax.driver.core.Row}s to be mapped onto a given type.
+ * Base class for delete events.
  *
- * @author Lukasz Antoniak
  * @author Mark Paluch
  * @since 2.1
  */
-public class AfterLoadEvent<T> extends CassandraMappingEvent<Row> {
-
-	private static final long serialVersionUID = 1L;
+public class AbstractDeleteEvent<T> extends AbstractStatementAwareMappingEvent<Statement> {
 
 	private final Class<T> type;
 
 	/**
-	 * Creates a new {@link AfterLoadEvent} for the given {@link Row}, type and {@link CqlIdentifier tableName}.
+	 * Creates new {@link AbstractDeleteEvent}.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param type must not be {@literal null}.
-	 * @param tableName must not be {@literal null}.
+	 * @param tableName may be {@literal null}.
 	 */
-	public AfterLoadEvent(Row source, Class<T> type, CqlIdentifier tableName) {
+	public AbstractDeleteEvent(Statement source, Class<T> type, CqlIdentifier tableName) {
 
-		super(source, tableName);
+		super(source, source, tableName);
 
 		Assert.notNull(type, "Type must not be null!");
 		this.type = type;
 	}
 
 	/**
-	 * Returns the type for which the {@link AfterLoadEvent} shall be invoked for.
+	 * Returns the type for which the {@link AbstractDeleteEvent} shall be invoked for.
 	 *
 	 * @return
 	 */

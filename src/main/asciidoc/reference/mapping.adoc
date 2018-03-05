@@ -588,7 +588,7 @@ Below is an example of a Spring `Converter` implementation that converts from a 
 
 Built into the Cassandra mapping framework are several `org.springframework.context.ApplicationEvent` events that your application can respond to by registering special beans in the `ApplicationContext`. By being based on Spring's application context event infrastructure this enables other products, such as Spring Integration, to easily receive these events as they are a well known eventing mechanism in Spring based applications.
 
-To intercept an object before it goes into the database, you'd register a subclass of `org.springframework.data.cassandra.core.mapping.event.AbstractCassandraEventListener` that overrides the `onBeforeSave` method. When the event is dispatched, your listener will be called and passed the domain object (Java entity).
+To intercept an object before it goes into the database, you'd register a subclass of `org.springframework.data.cassandra.core.mapping.event.AbstractCassandraEventListener` that overrides the `onBeforeSave(…)` method. When the event is dispatched, your listener will be called and passed the domain object (Java entity).
 
 ====
 [source,java]
@@ -596,7 +596,7 @@ To intercept an object before it goes into the database, you'd register a subcla
 public class BeforeSaveListener extends AbstractCassandraEventListener<Person> {
   @Override
   public void onBeforeSave(BeforeSaveEvent<Person> event) {
-    ... change values, delete them, whatever ...
+    … change values, delete them, whatever …
   }
 }
 ----
@@ -604,11 +604,14 @@ public class BeforeSaveListener extends AbstractCassandraEventListener<Person> {
 
 Simply declaring these beans in your Spring `ApplicationContext` will cause them to be invoked whenever the event is dispatched.
 
-The list of callback methods that are present in AbstractMappingEventListener are:
+The list of callback methods that are present in `AbstractCassandraEventListener` are:
 
-* `onBeforeSave` - called in `CassandraTemplate#insert(...)` and `#update(...)` operations *before* inserting/updating record in the database.
-* `onAfterSave` - called in `CassandraTemplate#insert(...)` and `#update(...)` operations *after* inserting/updating record in the database.
-* `onBeforeDelete` - called in `CassandraTemplate#delete(Object, QueryOptions)` and `#delete(Object)` operations *before* deleting record from the database.
-* `onAfterDelete` - called in `CassandraTemplate#delete(Object, QueryOptions)` and `#delete(Object)` operations *after* deleting record from the database.
-* `onAfterLoad` - called in `CassandraTemplate#select(...)`, `#slice(...)`, and `#stream(...)` methods after record is retrieved from the database.
+* `onBeforeSave` - called in `CassandraTemplate.insert(…)` and `.update(…)` operations *before* inserting/updating a row in the database.
+* `onAfterSave` - called in `CassandraTemplate…insert(…)` and `.update(…)` operations *after* inserting/updating a row in the database.
+* `onBeforeDelete` - called in `CassandraTemplate.delete(…)` operations *before* deleting row from the database.
+* `onAfterDelete` - called in `CassandraTemplate.delete(…)` operations *after* deleting row from the database.
+* `onAfterLoad` - called in `CassandraTemplate.#select(…)`, `.slice(…)`, and `.stream(…)` methods after each row retrieved from the database.
+* `onAfterConvert` - called in `CassandraTemplate.#select(…)`, `.slice(…)`, and `.stream(…)` methods after converting a row retrieved from the database to a POJO.
+
+NOTE: Lifecycle events are only emitted for root level types. Complex types used as properties within an aggregate root are not subject of event publication.
 

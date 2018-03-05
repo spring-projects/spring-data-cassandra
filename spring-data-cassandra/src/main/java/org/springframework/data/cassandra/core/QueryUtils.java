@@ -17,7 +17,11 @@ package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.springframework.beans.DirectFieldAccessor;
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.cql.RowMapper;
@@ -32,10 +36,12 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
 
 /**
@@ -47,6 +53,9 @@ import com.datastax.driver.core.querybuilder.Update;
  * @since 2.0
  */
 class QueryUtils {
+
+	private static final Pattern FROM_REGEX = Pattern.compile(" FROM ([\"]?[\\w]*[\\\\.]?[\\w]*[\"]?)[\\s]?",
+			Pattern.CASE_INSENSITIVE);
 
 	/**
 	 * Creates a Query Object for an insert.
@@ -171,5 +180,48 @@ class QueryUtils {
 		CassandraPageRequest pageRequest = CassandraPageRequest.of(PageRequest.of(page, pageSize), pagingState);
 
 		return new SliceImpl<>(result, pageRequest, pagingState != null);
+	}
+
+	/**
+	 * Extract the table name from a {@link Statement}.
+	 *
+	 * @param statement
+	 * @return
+	 * @since 2.1
+	 */
+	static CqlIdentifier getTableName(Statement statement) {
+
+		if (statement instanceof Select) {
+
+			Select select = (Select) statement;
+
+			DirectFieldAccessor accessor = new DirectFieldAccessor(select);
+			String table = (String) accessor.getPropertyValue("table");
+
+			if (table != null) {
+				return CqlIdentifier.of(table);
+			}
+		}
+
+		String cql = statement.toString();
+		Matcher matcher = FROM_REGEX.matcher(cql);
+
+		if (matcher.find()) {
+
+			String cqlTableName = matcher.group(1);
+			if (cqlTableName.startsWith("\"")) {
+				return CqlIdentifier.quoted(cqlTableName.substring(1, cqlTableName.length() - 1));
+			}
+
+			int separator = cqlTableName.indexOf('.');
+
+			if (separator != -1) {
+				return CqlIdentifier.of(cqlTableName.substring(separator + 1));
+			}
+
+			return CqlIdentifier.of(cqlTableName);
+		}
+
+		return CqlIdentifier.of("unknown");
 	}
 }

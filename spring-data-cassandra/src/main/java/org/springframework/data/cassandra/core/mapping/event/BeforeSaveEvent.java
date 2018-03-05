@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,29 @@
  */
 package org.springframework.data.cassandra.core.mapping.event;
 
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+
 import com.datastax.driver.core.Statement;
-import org.springframework.lang.Nullable;
 
 /**
- * Event thrown before a single row has been inserted.
+ * {@link CassandraMappingEvent} triggered before save of an object.
  *
  * @author Lukasz Antoniak
+ * @author Mark Paluch
+ * @since 2.1
  */
 public class BeforeSaveEvent<E> extends AbstractStatementAwareMappingEvent<E> {
+
 	private static final long serialVersionUID = 1L;
 
-	public BeforeSaveEvent(E source, @Nullable String table, Statement statement) {
-		super(source, table, statement);
+	/**
+	 * Create a new {@link BeforeSaveEvent}.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @param table must not be {@literal null}.
+	 * @param statement must not be {@literal null}.
+	 */
+	public BeforeSaveEvent(E source, CqlIdentifier table, Statement statement) {
+		super(source, statement, table);
 	}
 }
