@@ -59,19 +59,14 @@ public class CassandraRepositoryBean<T> extends CdiRepositoryBean<T> {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.cdi.CdiRepositoryBean#create(javax.enterprise.context.spi.CreationalContext, java.lang.Class, java.util.Optional)
+	 * @see org.springframework.data.repository.cdi.CdiRepositoryBean#create(javax.enterprise.context.spi.CreationalContext, java.lang.Class)
 	 */
 	@Override
-	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
-			Optional<Object> customImplementation) {
+	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
 
 		CassandraOperations cassandraOperations = getDependencyInstance(cassandraOperationsBean, CassandraOperations.class);
 
-		CassandraRepositoryFactory factory = new CassandraRepositoryFactory(cassandraOperations);
-
-		return customImplementation //
-				.map(o -> factory.getRepository(repositoryType, o)) //
-				.orElseGet(() -> factory.getRepository(repositoryType));
+		return create(() -> new CassandraRepositoryFactory(cassandraOperations), repositoryType);
 	}
 
 	@Override

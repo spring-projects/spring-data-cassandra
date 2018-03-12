@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.repository.cdi;
 
 import org.springframework.data.cassandra.domain.Person;
@@ -22,6 +21,6 @@ import org.springframework.data.repository.Repository;
 /**
  * @author Mark Paluch
  */
-public interface SamplePersonRepository extends Repository<Person, Long>, SamplePersonRepositoryCustom {
+public interface SamplePersonRepository extends Repository<Person, Long>, SamplePersonFragment {
 
 }
