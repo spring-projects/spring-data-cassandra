@@ -73,7 +73,7 @@ for further details.
 | `java.util.UUID`
 | `timeuuid`
 
-| `TupleValue`
+| `TupleValue`,  mapped Tuple Types
 | `tuple<…>`
 
 | `UDTValue`, mapped User-Defined Types
@@ -412,9 +412,12 @@ thus allowing the name to be different than the field name of the class.
 * `@Indexed` - applied at the field level. Describes the index to be created at session initialization.
 * `@SASI` - applied at the field level. Allows SASI index creation during session initialization.
 * `@CassandraType` - applied at the field level to specify a Cassandra data type.
-Types are derived from the declaration by default.
+Types are derived from the property declaration by default.
 * `@UserDefinedType` - applied at the type level to specify a Cassandra User-defined Data Type (UDT).
 Types are derived from the declaration by default.
+* `@Tuple` - applied at the type level to use a type as mapped tuple.
+* `@Element` - applied at the field level to specify element/field ordinals within a mapped tuple.
+Types are derived from the property declaration by default.
 
 The mapping metadata infrastructure is defined in the separate, spring-data-commons project that is both
 technology and data store agnostic.
@@ -460,6 +463,8 @@ public class Person {
 
   @CassandraType(type = Name.UDT, userTypeName = "myusertype")
   private UDTValue usertype;
+
+  private Coordinates coordinates;
 
   @Transient
   private Integer accountTotal;
@@ -512,6 +517,28 @@ public class Address {
 
 NOTE: Working with User-Defined Types requires a `UserTypeResolver` configured with the mapping context.
 See the <<cassandra.connectors,configuration chapter>> for how to configure a `UserTypeResolver`.
+
+.Mapped Tuple
+====
+[source,java]
+----
+@Tuple
+public class Coordinates {
+
+  @Element(0)
+  @CassandraType(type = Name.VARCHAR)
+  private String description;
+
+  @Element(1)
+  private long longitude;
+
+  @Element(2)
+  private long latitude;
+
+  // other getters/setters ommitted
+}
+----
+====
 
 ==== Index creation
 
