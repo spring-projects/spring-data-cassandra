@@ -19,6 +19,7 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.lang.Nullable;
 
+import com.datastax.driver.core.TupleType;
 import com.datastax.driver.core.UserType;
 
 /**
@@ -55,7 +56,7 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	void setForceQuote(boolean forceQuote);
 
 	/**
-	 * @return {@literal true} if the type is a mapped user defined type
+	 * @return {@literal true} if the type is a mapped user defined type.
 	 * @since 1.5
 	 * @see UserDefinedType
 	 */
@@ -68,4 +69,19 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 */
 	@Nullable
 	UserType getUserType();
+
+	/**
+	 * @return {@literal true} if the type is a mapped tuple type.
+	 * @since 2.1
+	 * @see Tuple
+	 */
+	boolean isTupleType();
+
+	/**
+	 * @return the {@link TupleType} matching the data types from {@link BasicCassandraPersistentTupleProperty mapped
+	 *         tuple elements}.
+	 * @since 2.1
+	 */
+	@Nullable
+	TupleType getTupleType();
 }

@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
+import java.util.Comparator;
 import java.util.Optional;
 
 import org.springframework.beans.BeansException;
@@ -36,6 +37,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.TupleType;
 import com.datastax.driver.core.UserType;
 
 /**
@@ -79,6 +81,23 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			CassandraPersistentEntityMetadataVerifier verifier) {
 
 		super(typeInformation, CassandraPersistentPropertyComparator.INSTANCE);
+
+		setVerifier(verifier);
+	}
+
+	/**
+	 * Create a new {@link BasicCassandraPersistentEntity} with the given {@link TypeInformation}. Will default the table
+	 * name to the entity's simple type name.
+	 *
+	 * @param typeInformation must not be {@literal null}.
+	 * @param verifier must not be {@literal null}.
+	 * @param comparator must not be {@literal null}.
+	 * @since 2.1
+	 */
+	protected BasicCassandraPersistentEntity(TypeInformation<T> typeInformation,
+			CassandraPersistentEntityMetadataVerifier verifier, Comparator<CassandraPersistentProperty> comparator) {
+
+		super(typeInformation, comparator);
 
 		setVerifier(verifier);
 	}
@@ -221,6 +240,23 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	@Nullable
 	public UserType getUserType() {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#isTupleType()
+	 */
+	@Override
+	public boolean isTupleType() {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#getTupleType()
+	 */
+	@Override
+	@Nullable
+	public TupleType getTupleType() {
 		return null;
 	}
 }

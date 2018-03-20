@@ -77,6 +77,8 @@ public class RowMockUtil {
 		when(rowMock.getTimestamp(anyInt()))
 				.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
 		when(rowMock.getUUID(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(rowMock.getTupleValue(anyInt()))
+				.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
 
 		return rowMock;
 	}

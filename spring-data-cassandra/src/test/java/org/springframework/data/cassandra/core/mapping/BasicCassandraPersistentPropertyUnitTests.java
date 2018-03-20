@@ -42,7 +42,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	@Test
 	public void usesAnnotatedColumnName() {
-		assertThat(getPropertyFor(Timeline.class, "text").getColumnName().toCql()).isEqualTo("message");
+		assertThat(getPropertyFor(Timeline.class, "text").getRequiredColumnName().toCql()).isEqualTo("message");
 	}
 
 	@Test
@@ -55,7 +55,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	@Test
 	public void returnsPropertyNameForUnannotatedProperty() {
-		assertThat(getPropertyFor(Timeline.class, "time").getColumnName().toCql()).isEqualTo("time");
+		assertThat(getPropertyFor(Timeline.class, "time").getRequiredColumnName().toCql()).isEqualTo("time");
 	}
 
 	@Test // DATACASS-259
@@ -63,7 +63,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedColumnAnnotation.class, "column");
 
-		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.of("mycolumn", true));
+		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.of("mycolumn", true));
 	}
 
 	@Test // DATACASS-259
@@ -72,7 +72,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class,
 				"column");
 
-		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.of("primary-key", true));
+		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.of("primary-key", true));
 		assertThat(persistentProperty.isIdProperty()).isTrue();
 	}
 
@@ -82,7 +82,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyColumnAnnotation.class,
 				"column");
 
-		assertThat(persistentProperty.getColumnName()).isEqualTo(CqlIdentifier.of("mycolumn", true));
+		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.of("mycolumn", true));
 		assertThat(persistentProperty.isPrimaryKeyColumn()).isTrue();
 	}
 
@@ -113,7 +113,6 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		return new BasicCassandraPersistentProperty(Property.of(ClassTypeInformation.from(type), field), getEntity(type),
 				CassandraSimpleTypeHolder.HOLDER);
 	}
-
 	private <T> BasicCassandraPersistentEntity<T> getEntity(Class<T> type) {
 		return new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(type));
 	}

@@ -30,6 +30,7 @@ import org.springframework.data.cassandra.core.convert.CassandraCustomConversion
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.SimpleTupleTypeFactory;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.convert.CustomConversions;
@@ -37,6 +38,7 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 /**
@@ -139,7 +141,10 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	@Bean
 	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
 
-		CassandraMappingContext mappingContext = new CassandraMappingContext();
+		Cluster cluster = getRequiredCluster();
+
+		CassandraMappingContext mappingContext = new CassandraMappingContext(
+				new SimpleUserTypeResolver(cluster, getKeyspaceName()), new SimpleTupleTypeFactory(cluster));
 
 		if (beanClassLoader != null) {
 			mappingContext.setBeanClassLoader(beanClassLoader);
@@ -151,7 +156,6 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
-		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(getRequiredCluster(), getKeyspaceName()));
 
 		return mappingContext;
 	}

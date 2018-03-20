@@ -147,6 +147,15 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#getOrdinal()
+	 */
+	@Nullable
+	@Override
+	public Integer getOrdinal() {
+		return null;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#getPrimaryKeyOrdering()
 	 */
 	@Nullable
@@ -397,7 +406,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (changed) {
 
-			CqlIdentifier columnName = getColumnName();
+			CqlIdentifier columnName = getRequiredColumnName();
 			setColumnName(of(columnName.getUnquoted(), forceQuote));
 		}
 	}

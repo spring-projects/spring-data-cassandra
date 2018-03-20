@@ -85,6 +85,11 @@ public class UpdateMapper extends QueryMapper {
 
 			Field field = createPropertyField(entity, assignmentOp.getColumnName());
 
+			field.getProperty().filter(it -> it.getOrdinal() != null).ifPresent(it -> {
+				throw new IllegalArgumentException(
+						String.format("Cannot reference tuple value elements, property [%s]", field.getMappedKey()));
+			});
+
 			mapped.add(getMappedUpdateOperation(assignmentOp, field));
 		}
 
@@ -127,8 +132,8 @@ public class UpdateMapper extends QueryMapper {
 			Assert.state(op.getValue() != null,
 					() -> String.format("SetAtKeyOp for %s attempts to set null", field.getProperty()));
 
-			Optional<? extends TypeInformation<?>> typeInformation =
-					field.getProperty().map(PersistentProperty::getTypeInformation);
+			Optional<? extends TypeInformation<?>> typeInformation = field.getProperty()
+					.map(PersistentProperty::getTypeInformation);
 
 			Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getComponentType);
 			Optional<TypeInformation<?>> valueType = typeInformation.map(TypeInformation::getMapValueType);
@@ -162,8 +167,8 @@ public class UpdateMapper extends QueryMapper {
 
 			if (collection.isEmpty()) {
 
-				DataType.Name dataType = field.getProperty().map(property ->
-						getMappingContext().getDataType(property)).map(DataType::getName).orElse(Name.LIST);
+				DataType.Name dataType = field.getProperty().map(property -> getMappingContext().getDataType(property))
+						.map(DataType::getName).orElse(Name.LIST);
 
 				if (dataType == Name.SET) {
 					return new SetOp(field.getMappedKey(), Collections.emptySet());

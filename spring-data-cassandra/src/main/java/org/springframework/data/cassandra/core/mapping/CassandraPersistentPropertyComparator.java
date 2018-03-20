@@ -92,6 +92,6 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 		}
 
 		// else, neither property is a composite primary key nor a primary key; compare @Column annotations
-		return left.getColumnName().compareTo(right.getColumnName());
+		return left.getRequiredColumnName().compareTo(right.getRequiredColumnName());
 	}
 }

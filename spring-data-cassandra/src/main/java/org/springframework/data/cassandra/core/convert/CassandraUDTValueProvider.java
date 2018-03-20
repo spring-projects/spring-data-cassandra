@@ -40,15 +40,15 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	private final SpELExpressionEvaluator evaluator;
 
 	/**
-	 * Create a new {@link CassandraUDTValueProvider} with the given {@link UDTValue} and
-	 * {@link DefaultSpELExpressionEvaluator}.
+	 * Create a new {@link CassandraUDTValueProvider} with the given {@link UDTValue} and {@link SpELExpressionEvaluator}.
 	 *
 	 * @param udtValue must not be {@literal null}.
 	 * @param codecRegistry must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
+	 * @since 2.1
 	 */
 	public CassandraUDTValueProvider(UDTValue udtValue, CodecRegistry codecRegistry,
-			DefaultSpELExpressionEvaluator evaluator) {
+			SpELExpressionEvaluator evaluator) {
 
 		Assert.notNull(udtValue, "UDTValue must not be null");
 		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
@@ -57,6 +57,21 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 		this.udtValue = udtValue;
 		this.codecRegistry = codecRegistry;
 		this.evaluator = evaluator;
+	}
+
+	/**
+	 * Create a new {@link CassandraUDTValueProvider} with the given {@link UDTValue} and
+	 * {@link DefaultSpELExpressionEvaluator}.
+	 *
+	 * @param udtValue must not be {@literal null}.
+	 * @param codecRegistry must not be {@literal null}.
+	 * @param evaluator must not be {@literal null}.
+	 * @deprecated since 2.1, use {@link #CassandraUDTValueProvider(UDTValue, CodecRegistry, SpELExpressionEvaluator)}
+	 */
+	@Deprecated
+	public CassandraUDTValueProvider(UDTValue udtValue, CodecRegistry codecRegistry,
+			DefaultSpELExpressionEvaluator evaluator) {
+		this(udtValue, codecRegistry, (SpELExpressionEvaluator) evaluator);
 	}
 
 	/* (non-Javadoc)
@@ -71,7 +86,7 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 			return evaluator.evaluate(spelExpression);
 		}
 
-		String name = property.getColumnName().toCql();
+		String name = property.getRequiredColumnName().toCql();
 		DataType fieldType = udtValue.getType().getFieldType(name);
 
 		return udtValue.get(name, codecRegistry.codecFor(fieldType));
@@ -82,6 +97,6 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	 */
 	@Override
 	public boolean hasProperty(CassandraPersistentProperty property) {
-		return udtValue.getType().contains(property.getColumnName().toCql());
+		return udtValue.getType().contains(property.getRequiredColumnName().toCql());
 	}
 }

@@ -38,19 +38,32 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	private final SpELExpressionEvaluator evaluator;
 
 	/**
+	 * Create a new {@link BasicCassandraRowValueProvider} with the given {@link Row} and {@link SpELExpressionEvaluator}.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @param evaluator must not be {@literal null}.
+	 * @since 2.1
+	 */
+	public BasicCassandraRowValueProvider(Row source, SpELExpressionEvaluator evaluator) {
+
+		Assert.notNull(source, "Source Row must not be null");
+		Assert.notNull(evaluator, "SpELExpressionEvaluator must not be null");
+
+		this.reader = new ColumnReader(source);
+		this.evaluator = evaluator;
+	}
+
+	/**
 	 * Create a new {@link BasicCassandraRowValueProvider} with the given {@link Row} and
 	 * {@link DefaultSpELExpressionEvaluator}.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
+	 * @deprecated since 2.1, use {@link #BasicCassandraRowValueProvider(Row, SpELExpressionEvaluator)}
 	 */
+	@Deprecated
 	public BasicCassandraRowValueProvider(Row source, DefaultSpELExpressionEvaluator evaluator) {
-
-		Assert.notNull(source, "Source Row must not be null");
-		Assert.notNull(evaluator, "DefaultSpELExpressionEvaluator must not be null");
-
-		this.reader = new ColumnReader(source);
-		this.evaluator = evaluator;
+		this(source, (SpELExpressionEvaluator) evaluator);
 	}
 
 	/* (non-Javadoc)
@@ -66,7 +79,7 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 			return evaluator.evaluate(spelExpression);
 		}
 
-		return (T) reader.get(property.getColumnName());
+		return (T) reader.get(property.getRequiredColumnName());
 	}
 
 	/* (non-Javadoc)
@@ -85,6 +98,6 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 
 		Assert.notNull(property, "CassandraPersistentProperty must not be null");
 
-		return getRow().getColumnDefinitions().contains(property.getColumnName().toCql());
+		return getRow().getColumnDefinitions().contains(property.getRequiredColumnName().toCql());
 	}
 }
