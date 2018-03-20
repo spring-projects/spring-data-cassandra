@@ -125,6 +125,11 @@ public class QueryMapper {
 						"Cannot use composite primary key directly. Reference a property of the composite primary key");
 			});
 
+			field.getProperty().filter(it -> it.getOrdinal() != null).ifPresent(it -> {
+				throw new IllegalArgumentException(
+						String.format("Cannot reference tuple value elements, property [%s]", field.getMappedKey()));
+			});
+
 			Object value = predicate.getValue();
 			TypeInformation<?> typeInformation = getTypeInformation(field, value);
 			Object mappedValue = value != null ? getConverter().convertToColumnType(value, typeInformation) : null;
@@ -182,7 +187,7 @@ public class QueryMapper {
 				CassandraPersistentEntity<?> primaryKeyEntity = mappingContext.getRequiredPersistentEntity(property);
 				addColumns(primaryKeyEntity, selectors);
 			} else {
-				selectors.add(ColumnSelector.from(property.getColumnName().toCql()));
+				selectors.add(ColumnSelector.from(property.getRequiredColumnName().toCql()));
 			}
 		});
 	}
@@ -265,7 +270,7 @@ public class QueryMapper {
 				}
 
 				if (seen.add(property)) {
-					columnNames.add(property.getColumnName().toCql());
+					columnNames.add(property.getRequiredColumnName().toCql());
 				}
 			});
 		}
@@ -309,7 +314,7 @@ public class QueryMapper {
 						throw new IllegalArgumentException(
 								"Cannot use composite primary key directly. Reference a property of the composite primary key");
 					}
-					return cassandraPersistentProperty.getColumnName();
+					return cassandraPersistentProperty.getRequiredColumnName();
 				});
 			}
 

@@ -42,7 +42,48 @@ public interface CassandraPersistentProperty
 	/**
 	 * The name of the single column to which the property is persisted.
 	 */
+	@Nullable
 	CqlIdentifier getColumnName();
+
+	/**
+	 * The name of the single column to which the property is persisted.
+	 *
+	 * @throws IllegalStateException if the required column name is not available.
+	 * @since 2.1
+	 */
+	default CqlIdentifier getRequiredColumnName() {
+
+		CqlIdentifier columnName = getColumnName();
+
+		if (columnName == null) {
+			throw new IllegalStateException("No column name available for this persistent property");
+		}
+
+		return columnName;
+	}
+
+	/**
+	 * The name of the element ordinal to which the property is persisted when the owning type is a mapped tuple.
+	 */
+	@Nullable
+	Integer getOrdinal();
+
+	/**
+	 * The required element ordinal to which the property is persisted when the owning type is a mapped tuple.
+	 *
+	 * @throws IllegalStateException if the required ordinal is not available.
+	 * @since 2.1
+	 */
+	default int getRequiredOrdinal() {
+
+		Integer ordinal = getOrdinal();
+
+		if (ordinal == null) {
+			throw new IllegalStateException("No ordinal available for this persistent property");
+		}
+
+		return ordinal;
+	}
 
 	/**
 	 * The ordering (ascending or descending) for the column. Valid only for primary key columns; returns null for

@@ -15,8 +15,11 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.Collections;
 import java.util.Currency;
@@ -24,20 +27,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.Element;
+import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.core.query.Update;
@@ -222,6 +223,20 @@ public class UpdateMapperUnitTests {
 		assertThat(update.toString()).isEqualTo("number = number - 1");
 	}
 
+	@Test // DATACASS-523
+	public void shouldMapTuple() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().set("tuple", new MappedTuple("foo")), persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("tuple = ('foo')");
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATACASS-523
+	public void referencingTupleElementsInQueryShouldFail() {
+		updateMapper.getMappedObject(Update.empty().set("tuple.zip", "bar"), persistentEntity);
+	}
+
 	static class Person {
 
 		@Id String id;
@@ -233,8 +248,15 @@ public class UpdateMapperUnitTests {
 		Currency currency;
 
 		Integer number;
+		MappedTuple tuple;
 
 		@Column("first_name") String firstName;
+	}
+
+	@Tuple
+	@AllArgsConstructor
+	static class MappedTuple {
+		@Element(0) String zip;
 	}
 
 	@Data

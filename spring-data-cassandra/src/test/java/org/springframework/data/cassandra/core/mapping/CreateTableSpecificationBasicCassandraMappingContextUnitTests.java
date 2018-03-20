@@ -40,9 +40,12 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecifica
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.CollectionType;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.TupleType;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,6 +69,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(converters);
 		ctx.setCustomConversions(customConversions);
+		ctx.setTupleTypeFactory(types -> TupleType.of(ProtocolVersion.NEWEST_SUPPORTED, CodecRegistry.DEFAULT_INSTANCE,
+				types.toArray(new DataType[0])));
 	}
 
 	@Test // DATACASS-296
@@ -275,7 +280,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void columnsShouldMapToMapped() {
+	public void columnsShouldMapToMappedUserType() {
 
 		final UserType mappedUdt = mock(UserType.class, "mappedudt");
 
@@ -294,6 +299,36 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		assertThat(getColumnType("people", specification)).isEqualTo(DataType.set(mappedUdt));
 		assertThat(getColumnType("stringToUdt", specification)).isEqualTo(DataType.map(DataType.varchar(), mappedUdt));
 		assertThat(getColumnType("udtToString", specification)).isEqualTo(DataType.map(mappedUdt, DataType.varchar()));
+	}
+
+	@Test // DATACASS-523
+	public void columnsShouldMapToTuple() {
+
+		UserType mappedUdt = mock(UserType.class, "mappedudt");
+		UserType human_udt = mock(UserType.class, "human_udt");
+
+		when(mappedUdt.asFunctionParameterString()).thenReturn("mappedudt");
+		when(human_udt.asFunctionParameterString()).thenReturn("human_udt");
+
+		ctx.setUserTypeResolver(typeName -> {
+
+			if (typeName.toCql().equals(mappedUdt.toString())) {
+				return mappedUdt;
+			}
+
+			if (typeName.toCql().equals(human_udt.toString())) {
+				return human_udt;
+			}
+			return null;
+		});
+
+		CreateTableSpecification specification = getCreateTableSpecificationFor(WithMappedTuple.class);
+
+		assertThat(getColumnType("mappedTuple", specification).toString())
+				.isEqualTo("frozen<tuple<mappedudt, human_udt, text>>");
+
+		assertThat(getColumnType("mappedTuples", specification).toString())
+				.isEqualTo("list<frozen<tuple<mappedudt, human_udt, text>>>");
 	}
 
 	private CreateTableSpecification getCreateTableSpecificationFor(Class<?> persistentEntityClass) {
@@ -333,6 +368,23 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		@CassandraType(type = Name.FLOAT) Human floater;
 		@CassandraType(type = Name.SET, typeArguments = Name.BIGINT) List<Human> enemies;
+	}
+
+	@Data
+	@Table
+	private static class WithMappedTuple {
+
+		@Id String id;
+		MappedTuple mappedTuple;
+		List<MappedTuple> mappedTuples;
+	}
+
+	@Tuple
+	private static class MappedTuple {
+
+		@Element(0) MappedUdt mappedUdt;
+		@Element(1) @CassandraType(type = Name.UDT, userTypeName = "human_udt") UDTValue human;
+		@Element(2) String text;
 	}
 
 	@Data

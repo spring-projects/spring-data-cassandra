@@ -160,17 +160,17 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		when(left.isPrimaryKeyColumn()).thenReturn(true);
 		when(right.isCompositePrimaryKey()).thenReturn(true);
 		when(right.isPrimaryKeyColumn()).thenReturn(false);
-		when(left.getColumnName()).thenReturn(CqlIdentifier.of("left"));
-		when(right.getColumnName()).thenReturn(CqlIdentifier.of("right"));
+		when(left.getRequiredColumnName()).thenReturn(CqlIdentifier.of("left"));
+		when(right.getRequiredColumnName()).thenReturn(CqlIdentifier.of("right"));
 
 		assertThat(INSTANCE.compare(left, right)).isLessThan(0);
 
 		verify(left, times(1)).isCompositePrimaryKey();
 		verify(left, times(1)).isPrimaryKeyColumn();
-		verify(left, times(1)).getColumnName();
+		verify(left, times(1)).getRequiredColumnName();
 		verify(right, times(1)).isCompositePrimaryKey();
 		verify(right, times(1)).isPrimaryKeyColumn();
-		verify(right, times(1)).getColumnName();
+		verify(right, times(1)).getRequiredColumnName();
 	}
 
 	@Test // DATACASS-352

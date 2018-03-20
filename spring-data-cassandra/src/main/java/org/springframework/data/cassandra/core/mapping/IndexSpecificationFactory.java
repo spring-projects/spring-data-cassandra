@@ -131,7 +131,7 @@ class IndexSpecificationFactory {
 			index = CreateIndexSpecification.createIndex();
 		}
 
-		return index.columnName(property.getColumnName());
+		return index.columnName(property.getRequiredColumnName());
 	}
 
 	private static CreateIndexSpecification createIndexSpecification(SASI annotation,
@@ -146,7 +146,7 @@ class IndexSpecificationFactory {
 		}
 
 		index.using("org.apache.cassandra.index.sasi.SASIIndex") //
-				.columnName(property.getColumnName()) //
+				.columnName(property.getRequiredColumnName()) //
 				.withOption("mode", annotation.indexMode().name());
 
 		long analyzerCount = INDEX_CONFIGURERS.keySet().stream().filter(property::isAnnotationPresent).count();

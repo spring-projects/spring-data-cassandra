@@ -15,10 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -29,7 +27,6 @@ import java.util.NoSuchElementException;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
@@ -252,14 +249,13 @@ public class CassandraMappingContextUnitTests {
 		UserType mappedudt = UserTypeBuilder.forName("mappedudt").withField("foo", DataType.ascii()).build();
 
 		this.mappingContext.setUserTypeResolver(typeName -> mappedudt);
-		this.mappingContext.setCustomConversions(new CassandraCustomConversions(
-				Collections.singletonList(HumanToStringConverter.INSTANCE)));
+		this.mappingContext.setCustomConversions(
+				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
-		CassandraPersistentEntity<?> persistentEntity =
-				this.mappingContext.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
+		CassandraPersistentEntity<?> persistentEntity = this.mappingContext
+				.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
 
-		CreateTableSpecification tableSpecification =
-				this.mappingContext.getCreateTableSpecificationFor(persistentEntity);
+		CreateTableSpecification tableSpecification = this.mappingContext.getCreateTableSpecificationFor(persistentEntity);
 
 		assertThat(tableSpecification.getColumns()).hasSize(2);
 
@@ -369,16 +365,15 @@ public class CassandraMappingContextUnitTests {
 
 	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACASS-284
 	public void shouldRejectUntypedTuples() {
-		this.mappingContext.getCreateTableSpecificationFor(
-				this.mappingContext.getRequiredPersistentEntity(UntypedTupleEntity.class));
+		this.mappingContext
+				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(UntypedTupleEntity.class));
 	}
 
 	@Test // DATACASS-284
 	public void shouldCreateTableForTypedTupleType() {
 
-		CreateTableSpecification tableSpecification =
-				this.mappingContext.getCreateTableSpecificationFor(
-					this.mappingContext.getRequiredPersistentEntity(TypedTupleEntity.class));
+		CreateTableSpecification tableSpecification = this.mappingContext
+				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(TypedTupleEntity.class));
 
 		assertThat(tableSpecification.getColumns()).hasSize(2);
 
@@ -475,6 +470,18 @@ public class CassandraMappingContextUnitTests {
 		assertThat(mappingContext.getUserDefinedTypeEntities()).hasSize(1);
 		assertThat(mappingContext.getPersistentEntities()).hasSize(1);
 		assertThat(mappingContext.getTableEntities()).hasSize(0);
+	}
+
+	@Test // DATACASS-523
+	public void shouldCreateMappedTupleType() {
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(MappedTuple.class);
+
+		assertThat(persistentEntity).isInstanceOf(BasicCassandraPersistentTupleEntity.class);
+
+		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
+		assertThat(mappingContext.getPersistentEntities()).hasSize(1);
+		assertThat(mappingContext.getTableEntities()).isEmpty();
 	}
 
 	@Test // DATACASS-172
@@ -622,6 +629,11 @@ public class CassandraMappingContextUnitTests {
 	@Table
 	private static class Y {
 		@PrimaryKey String key;
+	}
+
+	@Tuple
+	private static class MappedTuple {
+		@Element(0) String name;
 	}
 
 	@UserDefinedType
