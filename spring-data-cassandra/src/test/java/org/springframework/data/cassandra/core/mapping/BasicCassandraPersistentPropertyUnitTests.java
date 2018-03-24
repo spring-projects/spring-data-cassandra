@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.junit.Test;
+
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.model.Property;

@@ -24,6 +24,7 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 import com.datastax.driver.core.DataType;
 
@@ -38,6 +39,15 @@ import com.datastax.driver.core.DataType;
  */
 public interface CassandraPersistentProperty
 		extends PersistentProperty<CassandraPersistentProperty>, ApplicationContextAware {
+
+	/**
+	 * If this property is mapped with a single column, set the column name to the given {@link CqlIdentifier}. If this
+	 * property is not mapped by a single column, throws {@link IllegalStateException}. If the given column name is null,
+	 * {@link IllegalArgumentException} is thrown.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 */
+	void setColumnName(CqlIdentifier columnName);
 
 	/**
 	 * The name of the single column to which the property is persisted.
@@ -55,12 +65,29 @@ public interface CassandraPersistentProperty
 
 		CqlIdentifier columnName = getColumnName();
 
-		if (columnName == null) {
-			throw new IllegalStateException("No column name available for this persistent property");
-		}
+		Assert.state(columnName != null,
+			String.format("No column name available for this persistent property [%1$s.%2$s]",
+				getOwner().getName(), getName()));
 
 		return columnName;
 	}
+
+	/**
+	 * The column's data type. Not valid for a composite primary key.
+	 *
+	 * @return the Cassandra {@link DataType}
+	 * @throws InvalidDataAccessApiUsageException if the {@link DataType} cannot be resolved
+	 * @see CassandraType
+	 */
+	DataType getDataType();
+
+	/**
+	 * Whether to force-quote the column names of this property.
+	 *
+	 * @param forceQuote {@literal true} to enforce quoting.
+	 * @see CassandraPersistentProperty#getColumnName()
+	 */
+	void setForceQuote(boolean forceQuote);
 
 	/**
 	 * The name of the element ordinal to which the property is persisted when the owning type is a mapped tuple.
@@ -78,9 +105,9 @@ public interface CassandraPersistentProperty
 
 		Integer ordinal = getOrdinal();
 
-		if (ordinal == null) {
-			throw new IllegalStateException("No ordinal available for this persistent property");
-		}
+		Assert.state(ordinal != null ,
+			String.format("No ordinal available for this persistent property [%1$s.%2$s]",
+				getOwner().getName(), getName()));
 
 		return ordinal;
 	}
@@ -93,18 +120,26 @@ public interface CassandraPersistentProperty
 	Ordering getPrimaryKeyOrdering();
 
 	/**
-	 * The column's data type. Not valid for a composite primary key.
-	 *
-	 * @return the Cassandra {@link DataType}
-	 * @throws InvalidDataAccessApiUsageException if the {@link DataType} cannot be resolved
-	 * @see CassandraType
+	 * Whether the property is a cluster key column.
 	 */
-	DataType getDataType();
+	boolean isClusterKeyColumn();
 
 	/**
 	 * Whether the property is a composite primary key.
 	 */
 	boolean isCompositePrimaryKey();
+
+	/**
+	 * Returns whether the property is a {@link java.util.Map}.
+	 *
+	 * @return a boolean indicating whether this property type is a {@link java.util.Map}.
+	 */
+	boolean isMapLike();
+
+	/**
+	 * Whether the property is a partition key column.
+	 */
+	boolean isPartitionKeyColumn();
 
 	/**
 	 * Whether the property is a partition key column or a cluster key column
@@ -113,40 +148,6 @@ public interface CassandraPersistentProperty
 	 * @see #isClusterKeyColumn()
 	 */
 	boolean isPrimaryKeyColumn();
-
-	/**
-	 * Whether the property is a partition key column.
-	 */
-	boolean isPartitionKeyColumn();
-
-	/**
-	 * Whether the property is a cluster key column.
-	 */
-	boolean isClusterKeyColumn();
-
-	/**
-	 * Whether to force-quote the column names of this property.
-	 *
-	 * @param forceQuote {@literal true} to enforce quoting.
-	 * @see CassandraPersistentProperty#getColumnName()
-	 */
-	void setForceQuote(boolean forceQuote);
-
-	/**
-	 * If this property is mapped with a single column, set the column name to the given {@link CqlIdentifier}. If this
-	 * property is not mapped by a single column, throws {@link IllegalStateException}. If the given column name is null,
-	 * {@link IllegalArgumentException} is thrown.
-	 *
-	 * @param columnName must not be {@literal null}.
-	 */
-	void setColumnName(CqlIdentifier columnName);
-
-	/**
-	 * Returns whether the property is a {@link java.util.Map}.
-	 *
-	 * @return a boolean indicating whether this property type is a {@link java.util.Map}.
-	 */
-	boolean isMapLike();
 
 	/**
 	 * Find an {@link AnnotatedType} by {@code annotationType} derived from the property type. Annotated type is looked up
@@ -159,4 +160,5 @@ public interface CassandraPersistentProperty
 	 */
 	@Nullable
 	AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType);
+
 }

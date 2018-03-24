@@ -15,8 +15,11 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.MappingException;
 
@@ -49,13 +53,15 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 
 	@Before
 	public void before() {
-		mappingContext.setTupleTypeFactory(tupleTypeFactory);
+		this.mappingContext.setTupleTypeFactory(tupleTypeFactory);
 	}
 
 	@Test // DATACASS-523
 	public void shouldCreatePersistentTupleEntity() {
 
-		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Address.class);
+		BasicCassandraPersistentEntity<?> entity = this.mappingContext.getRequiredPersistentEntity(Address.class);
+
+		assertThat(entity).isInstanceOf(BasicCassandraPersistentTupleEntity.class);
 
 		entity.verify();
 	}
@@ -65,12 +71,11 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 
 		List<String> propertyNames = new ArrayList<>();
 
-		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Address.class);
+		BasicCassandraPersistentEntity<?> entity = this.mappingContext.getRequiredPersistentEntity(Address.class);
+
 		entity.verify();
 
-		entity.forEach(it -> {
-			propertyNames.add(it.getName());
-		});
+		entity.forEach(it -> propertyNames.add(it.getName()));
 
 		assertThat(propertyNames).containsSequence("street", "city", "sortOrder");
 	}
@@ -78,10 +83,11 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	@Test // DATACASS-523
 	public void shouldCreateTupleType() {
 
-		when(tupleTypeFactory.create(anyList())).thenReturn(TupleType.of(ProtocolVersion.NEWEST_SUPPORTED,
+		when(this.tupleTypeFactory.create(anyList())).thenReturn(TupleType.of(ProtocolVersion.NEWEST_SUPPORTED,
 				CodecRegistry.DEFAULT_INSTANCE, DataType.text(), DataType.text(), DataType.cint()));
 
-		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Address.class);
+		BasicCassandraPersistentEntity<?> entity = this.mappingContext.getRequiredPersistentEntity(Address.class);
+
 		entity.verify();
 
 		entity.getTupleType();
@@ -92,14 +98,14 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	@Test // DATACASS-523
 	public void shouldReportDuplicateMappings() {
 
-		assertThatThrownBy(() -> mappingContext.getRequiredPersistentEntity(DuplicateElement.class))
+		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(DuplicateElement.class))
 				.isInstanceOf(MappingException.class).hasMessageContaining("Duplicate ordinal [0]");
 	}
 
 	@Test // DATACASS-523
 	public void shouldReportMissingOrdinalMappings() {
 
-		assertThatThrownBy(() -> mappingContext.getRequiredPersistentEntity(MissingElementOrdinals.class))
+		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(MissingElementOrdinals.class))
 				.isInstanceOf(MappingException.class).hasMessageContaining("Mapped tuple has no")
 				.hasMessageContaining("for ordinal(s): 0");
 	}
@@ -107,7 +113,7 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	@Test // DATACASS-523
 	public void shouldReportNegativeOrdinalIndex() {
 
-		assertThatThrownBy(() -> mappingContext.getRequiredPersistentEntity(NegativeIndex.class))
+		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(NegativeIndex.class))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Element ordinal must be greater or equal to zero for property [street] in entity");
 	}
@@ -115,7 +121,7 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	@Test // DATACASS-523
 	public void shouldReportNoElements() {
 
-		assertThatThrownBy(() -> mappingContext.getRequiredPersistentEntity(NoElements.class))
+		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(NoElements.class))
 				.isInstanceOf(MappingException.class)
 				.hasMessageContaining("Mapped tuple contains no persistent elements annotated");
 	}
@@ -123,7 +129,7 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	@Test // DATACASS-523
 	public void shouldReportMissingAnnotations() {
 
-		assertThatThrownBy(() -> mappingContext.getRequiredPersistentEntity(MissingAnnotation.class))
+		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(MissingAnnotation.class))
 				.isInstanceOf(MappingException.class)
 				.hasMessageContaining("Missing @Element annotation in mapped tuple type for property [street]");
 	}

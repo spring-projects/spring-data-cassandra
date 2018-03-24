@@ -15,11 +15,9 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-import lombok.AllArgsConstructor;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,11 +26,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.AllArgsConstructor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -70,13 +71,16 @@ import com.datastax.driver.core.UserType;
 public class QueryMapperUnitTests {
 
 	CassandraMappingContext mappingContext = new CassandraMappingContext();
+
 	CassandraPersistentEntity<?> persistentEntity;
+
 	MappingCassandraConverter cassandraConverter;
+
 	QueryMapper queryMapper;
 
-	@Mock UserTypeResolver userTypeResolver;
-
 	UserType userType = UserTypeBuilder.forName("address").withField("street", DataType.varchar()).build();
+
+	@Mock UserTypeResolver userTypeResolver;
 
 	@Before
 	public void before() {
@@ -333,18 +337,22 @@ public class QueryMapperUnitTests {
 
 		Filter filter = Filter.from(Criteria.where("tuple").is(tuple));
 
-		Filter mappedObject = queryMapper.getMappedObject(filter, mappingContext.getRequiredPersistentEntity(Person.class));
+		Filter mappedObject = this.queryMapper.getMappedObject(filter,
+				this.mappingContext.getRequiredPersistentEntity(Person.class));
 
-		TupleValue tupleValue = mappingContext.getRequiredPersistentEntity(MappedTuple.class).getTupleType().newValue();
+		TupleValue tupleValue = this.mappingContext.getRequiredPersistentEntity(MappedTuple.class)
+				.getTupleType().newValue();
+
 		tupleValue.setString(0, "foo");
+
 		assertThat(mappedObject).contains(Criteria.where("tuple").is(tupleValue));
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-523
 	public void referencingTupleElementsInQueryShouldFail() {
 
-		queryMapper.getMappedObject(Filter.from(Criteria.where("tuple.zip").is("")),
-				mappingContext.getRequiredPersistentEntity(Person.class));
+		this.queryMapper.getMappedObject(Filter.from(Criteria.where("tuple.zip").is("123")),
+				this.mappingContext.getRequiredPersistentEntity(Person.class));
 	}
 
 	static class Person {
@@ -367,14 +375,12 @@ public class QueryMapperUnitTests {
 	@Tuple
 	@AllArgsConstructor
 	static class MappedTuple {
-
 		@Element(0) String zip;
 	}
 
 	@UserDefinedType
 	@AllArgsConstructor
 	static class Address {
-
 		String street;
 	}
 

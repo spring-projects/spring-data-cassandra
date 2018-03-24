@@ -54,14 +54,14 @@ public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersis
 
 		Assert.notNull(tupleTypeFactory, "TupleTypeFactory must not be null");
 
-		this.tupleType = Lazy.of(() -> tupleTypeFactory.create(getTupleFieldTypes()));
+		this.tupleType = Lazy.of(() -> tupleTypeFactory.create(getTupleFieldDataTypes()));
 	}
 
-	private List<DataType> getTupleFieldTypes() {
+	private List<DataType> getTupleFieldDataTypes() {
 
-		return StreamSupport.stream(spliterator(), false) //
-				.sorted(TuplePropertyComparator.INSTANCE) //
-				.map(CassandraPersistentProperty::getDataType) //
+		return StreamSupport.stream(spliterator(), false)
+				.sorted(TuplePropertyComparator.INSTANCE)
+				.map(CassandraPersistentProperty::getDataType)
 				.collect(Collectors.toList());
 	}
 
@@ -89,7 +89,7 @@ public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersis
 	 */
 	@Override
 	public TupleType getTupleType() {
-		return tupleType.get();
+		return this.tupleType.get();
 	}
 
 	/**
@@ -106,8 +106,8 @@ public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersis
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
 		@Override
-		public int compare(CassandraPersistentProperty o1, CassandraPersistentProperty o2) {
-			return Integer.compare(o1.getRequiredOrdinal(), o2.getRequiredOrdinal());
+		public int compare(CassandraPersistentProperty propertyOne, CassandraPersistentProperty propertyTwo) {
+			return Integer.compare(propertyOne.getRequiredOrdinal(), propertyTwo.getRequiredOrdinal());
 		}
 	}
 }

@@ -15,7 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
@@ -42,10 +43,10 @@ public class SimpleTupleTypeFactoryUnitTests {
 	@Test // DATACASS-523
 	public void shouldCreateTupleTypes() {
 
-		when(cluster.getMetadata()).thenReturn(metadata);
+		when(this.cluster.getMetadata()).thenReturn(this.metadata);
 
-		new SimpleTupleTypeFactory(cluster).create(DataType.varchar());
+		new SimpleTupleTypeFactory(this.cluster).create(DataType.varchar());
 
-		verify(metadata).newTupleType(Collections.singletonList(DataType.varchar()));
+		verify(this.metadata).newTupleType(Collections.singletonList(DataType.varchar()));
 	}
 }

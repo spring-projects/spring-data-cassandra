@@ -32,11 +32,11 @@ import com.datastax.driver.core.TupleValue;
  */
 public class CassandraTupleValueProvider implements CassandraValueProvider {
 
-	private final TupleValue tupleValue;
-
 	private final CodecRegistry codecRegistry;
 
 	private final SpELExpressionEvaluator evaluator;
+
+	private final TupleValue tupleValue;
 
 	/**
 	 * Create a new {@link CassandraTupleValueProvider} with the given {@link TupleValue} and
@@ -59,14 +59,6 @@ public class CassandraTupleValueProvider implements CassandraValueProvider {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
-	 */
-	@Override
-	public boolean hasProperty(CassandraPersistentProperty property) {
-		return tupleValue.getType().getComponentTypes().size() >= property.getRequiredOrdinal();
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Nullable
@@ -74,6 +66,7 @@ public class CassandraTupleValueProvider implements CassandraValueProvider {
 	public <T> T getPropertyValue(CassandraPersistentProperty property) {
 
 		String spelExpression = property.getSpelExpression();
+
 		if (spelExpression != null) {
 			return evaluator.evaluate(spelExpression);
 		}
@@ -82,5 +75,13 @@ public class CassandraTupleValueProvider implements CassandraValueProvider {
 		DataType elementType = tupleValue.getType().getComponentTypes().get(ordinal);
 
 		return tupleValue.get(ordinal, codecRegistry.codecFor(elementType));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
+	 */
+	@Override
+	public boolean hasProperty(CassandraPersistentProperty property) {
+		return this.tupleValue.getType().getComponentTypes().size() >= property.getRequiredOrdinal();
 	}
 }

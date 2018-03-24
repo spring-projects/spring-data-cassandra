@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.config;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -64,9 +65,12 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	protected Session getRequiredSession() {
 
 		CassandraSessionFactoryBean factoryBean = session();
-		Assert.state(factoryBean.getObject() != null, "Session factory not initialized");
 
-		return factoryBean.getObject();
+		Session session = factoryBean.getObject();
+
+		Assert.state(session != null, "Session factory not initialized");
+
+		return session;
 	}
 
 	/**
@@ -126,8 +130,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 			mappingCassandraConverter.setCustomConversions(customConversions());
 
 			return mappingCassandraConverter;
-		} catch (ClassNotFoundException e) {
-			throw new IllegalStateException(e);
+		} catch (ClassNotFoundException cause) {
+			throw new IllegalStateException(cause);
 		}
 	}
 
@@ -146,9 +150,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 		CassandraMappingContext mappingContext = new CassandraMappingContext(
 				new SimpleUserTypeResolver(cluster, getKeyspaceName()), new SimpleTupleTypeFactory(cluster));
 
-		if (beanClassLoader != null) {
-			mappingContext.setBeanClassLoader(beanClassLoader);
-		}
+		Optional.ofNullable(this.beanClassLoader).ifPresent(mappingContext::setBeanClassLoader);
 
 		mappingContext.setInitialEntitySet(getInitialEntitySet());
 

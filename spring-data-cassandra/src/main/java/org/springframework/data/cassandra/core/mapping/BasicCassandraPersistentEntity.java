@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.of;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -51,15 +51,16 @@ import com.datastax.driver.core.UserType;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty>
 		implements CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	private static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
+	private static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER =
+			new CompositeCassandraPersistentEntityMetadataVerifier();
+
+	private Boolean forceQuote;
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
+	private CqlIdentifier tableName;
+
 	private @Nullable StandardEvaluationContext spelContext;
-
-	private Optional<Boolean> forceQuote = Optional.empty();
-
-	private Optional<CqlIdentifier> tableName = Optional.empty();
 
 	/**
 	 * Create a new {@link BasicCassandraPersistentEntity} given {@link TypeInformation}.
@@ -102,6 +103,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		setVerifier(verifier);
 	}
 
+
 	protected CqlIdentifier determineTableName() {
 
 		Table annotation = findAnnotation(Table.class);
@@ -119,11 +121,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return of(getType().getSimpleName(), forceQuote);
 		}
 
-		String name = spelContext == null ? value : SpelUtils.evaluate(value, spelContext);
+		String name = Optional.ofNullable(this.spelContext)
+				.map(it -> SpelUtils.evaluate(value, it))
+				.orElse(value);
 
 		Assert.state(name != null, () -> String.format("Cannot determine default name for %s", this));
 
-		return of(name, forceQuote);
+		return CqlIdentifier.of(name, forceQuote);
 	}
 
 	/* (non-Javadoc)
@@ -158,9 +162,9 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		super.verify();
 
-		verifier.verify(this);
+		this.verifier.verify(this);
 
-		if (!tableName.isPresent()) {
+		if (this.tableName == null) {
 			setTableName(determineTableName());
 		}
 	}
@@ -185,9 +189,9 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public void setForceQuote(boolean forceQuote) {
 
-		boolean changed = !this.forceQuote.isPresent() || this.forceQuote.filter(v -> v != forceQuote).isPresent();
+		boolean changed = !Boolean.valueOf(forceQuote).equals(this.forceQuote);
 
-		this.forceQuote = Optional.of(forceQuote);
+		this.forceQuote = forceQuote;
 
 		if (changed) {
 			setTableName(of(getTableName().getUnquoted(), forceQuote));
@@ -201,7 +205,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	public void setTableName(CqlIdentifier tableName) {
 
 		Assert.notNull(tableName, "CqlIdentifier must not be null");
-		this.tableName = Optional.of(tableName);
+
+		this.tableName = tableName;
 	}
 
 	/* (non-Javadoc)
@@ -209,7 +214,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	@Override
 	public CqlIdentifier getTableName() {
-		return tableName.orElseGet(this::determineTableName);
+		return Optional.ofNullable(this.tableName).orElseGet(this::determineTableName);
 	}
 
 	/**
@@ -222,25 +227,9 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	/**
 	 * @return the verifier.
 	 */
+	@SuppressWarnings("unused")
 	public CassandraPersistentEntityMetadataVerifier getVerifier() {
-		return verifier;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#isUserDefinedType()
-	 */
-	@Override
-	public boolean isUserDefinedType() {
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#getUserType()
-	 */
-	@Override
-	@Nullable
-	public UserType getUserType() {
-		return null;
+		return this.verifier;
 	}
 
 	/* (non-Javadoc)
@@ -257,6 +246,23 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	@Nullable
 	public TupleType getTupleType() {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#isUserDefinedType()
+	 */
+	@Override
+	public boolean isUserDefinedType() {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#getUserType()
+	 */
+	@Override
+	@Nullable
+	public UserType getUserType() {
 		return null;
 	}
 }

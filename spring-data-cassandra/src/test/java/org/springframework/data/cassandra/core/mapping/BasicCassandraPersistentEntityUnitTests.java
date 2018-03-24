@@ -15,9 +15,13 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -29,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AliasFor;
@@ -51,17 +56,20 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test
 	public void subclassInheritsAtDocumentAnnotation() {
 
-		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(Notification.class));
+		BasicCassandraPersistentEntity<Notification> entity =
+				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Notification.class));
+
 		assertThat(entity.getTableName().toCql()).isEqualTo("messages");
 	}
 
 	@Test
 	public void evaluatesSpELExpression() {
 
-		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(Area.class));
-		entity.setApplicationContext(context);
+		BasicCassandraPersistentEntity<Area> entity =
+				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Area.class));
+
+		entity.setApplicationContext(this.context);
+
 		assertThat(entity.getTableName().toCql()).isEqualTo("a123");
 	}
 
@@ -71,8 +79,8 @@ public class BasicCassandraPersistentEntityUnitTests {
 		TableNameHolderThingy bean = new TableNameHolderThingy();
 		bean.tableName = "my_user_line";
 
-		when(context.getBean("tableNameHolderThingy")).thenReturn(bean);
-		when(context.containsBean("tableNameHolderThingy")).thenReturn(true);
+		when(this.context.getBean("tableNameHolderThingy")).thenReturn(bean);
+		when(this.context.containsBean("tableNameHolderThingy")).thenReturn(true);
 
 		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(UserLine.class));
@@ -84,32 +92,34 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test
 	public void setForceQuoteCallsSetTableName() {
 
-		BasicCassandraPersistentEntity<Message> entitySpy = spy(
-				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
+		BasicCassandraPersistentEntity<Message> entitySpy =
+				spy(new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
 
-		DirectFieldAccessor dfa = new DirectFieldAccessor(entitySpy);
+		DirectFieldAccessor directFieldAccessor = new DirectFieldAccessor(entitySpy);
 
 		entitySpy.setTableName(CqlIdentifier.of("Messages", false));
 
-		assertThat((Optional) dfa.getPropertyValue("forceQuote")).isNotPresent();
+		assertThat(directFieldAccessor.getPropertyValue("forceQuote")).isNull();
 
 		entitySpy.setForceQuote(true);
 
-		assertThat((Optional) dfa.getPropertyValue("forceQuote")).contains(true);
+		assertThat(directFieldAccessor.getPropertyValue("forceQuote")).isEqualTo(true);
 
 		verify(entitySpy, times(2)).setTableName(isA(CqlIdentifier.class));
 	}
 
 	@Test
 	public void setForceQuoteDoesNothing() {
-		BasicCassandraPersistentEntity<Message> entitySpy = spy(
-				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
 
-		DirectFieldAccessor dfa = new DirectFieldAccessor(entitySpy);
-		dfa.setPropertyValue("forceQuote", Optional.of(true));
+		BasicCassandraPersistentEntity<Message> entitySpy =
+				spy(new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
+
+		DirectFieldAccessor directFieldAccessor = new DirectFieldAccessor(entitySpy);
+
+		directFieldAccessor.setPropertyValue("forceQuote", true);
 		entitySpy.setForceQuote(true);
 
-		assertThat((Optional) dfa.getPropertyValue("forceQuote")).contains(true);
+		assertThat(directFieldAccessor.getPropertyValue("forceQuote")).isEqualTo(true);
 
 		verify(entitySpy, never()).setTableName(isA(CqlIdentifier.class));
 	}
@@ -117,8 +127,8 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test // DATACASS-172
 	public void isUserDefinedTypeShouldReturnFalse() {
 
-		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(UserLine.class));
+		BasicCassandraPersistentEntity<UserLine> entity =
+				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(UserLine.class));
 
 		assertThat(entity.isUserDefinedType()).isFalse();
 	}
@@ -126,8 +136,8 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test // DATACASS-259
 	public void shouldConsiderComposedTableAnnotation() {
 
-		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(TableWithComposedAnnotation.class));
+		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity =
+				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(TableWithComposedAnnotation.class));
 
 		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.of("mytable", true));
 	}
@@ -135,8 +145,8 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test // DATACASS-259
 	public void shouldConsiderComposedPrimaryKeyClassAnnotation() {
 
-		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
+		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity =
+				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
 
 		assertThat(entity.isCompositePrimaryKey()).isTrue();
 	}

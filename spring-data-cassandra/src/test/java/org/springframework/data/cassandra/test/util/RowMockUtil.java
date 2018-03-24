@@ -17,7 +17,8 @@ package org.springframework.data.cassandra.test.util;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
@@ -41,46 +42,49 @@ public class RowMockUtil {
 	 * @param columns
 	 * @return
 	 */
-	public static Row newRowMock(final Column... columns) {
+	public static Row newRowMock(Column... columns) {
 
 		Assert.notNull(columns, "Columns must not be null");
 
-		Row rowMock = mock(Row.class);
-		ColumnDefinitions columnDefinitionsMock = mock(ColumnDefinitions.class);
+		Row mockRow = mock(Row.class);
 
-		when(rowMock.getColumnDefinitions()).thenReturn(columnDefinitionsMock);
+		ColumnDefinitions mockColumnDefinitions = mock(ColumnDefinitions.class);
 
-		when(columnDefinitionsMock.contains(anyString())).thenAnswer(invocation -> Arrays.stream(columns)
+		when(mockRow.getColumnDefinitions()).thenReturn(mockColumnDefinitions);
+
+		when(mockColumnDefinitions.contains(anyString())).thenAnswer(invocation -> Arrays.stream(columns)
 				.anyMatch(column -> column.name.equalsIgnoreCase((String) invocation.getArguments()[0])));
 
-		when(columnDefinitionsMock.getIndexOf(anyString())).thenAnswer(invocation -> {
+		when(mockColumnDefinitions.getIndexOf(anyString())).thenAnswer(invocation -> {
 
 			int counter = 0;
+
 			for (Column column : columns) {
 				if (column.name.equalsIgnoreCase((String) invocation.getArguments()[0])) {
 					return counter;
 				}
+
 				counter++;
 			}
 
 			return -1;
 		});
 
-		when(columnDefinitionsMock.getType(anyInt()))
+		when(mockColumnDefinitions.getType(anyInt()))
 				.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].type);
 
-		when(rowMock.getObject(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
-		when(rowMock.getString(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
-		when(rowMock.getDate(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
-		when(rowMock.getBool(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
-		when(rowMock.getInet(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
-		when(rowMock.getTimestamp(anyInt()))
+		when(mockRow.getBool(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(mockRow.getDate(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(mockRow.getInet(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(mockRow.getObject(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(mockRow.getString(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(mockRow.getTimestamp(anyInt()))
 				.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
-		when(rowMock.getUUID(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
-		when(rowMock.getTupleValue(anyInt()))
-				.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(mockRow.getTupleValue(anyInt()))
+			.thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
+		when(mockRow.getUUID(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
 
-		return rowMock;
+		return mockRow;
 	}
 
 	/**
@@ -111,5 +115,4 @@ public class RowMockUtil {
 			this.type = type;
 		}
 	}
-
 }

@@ -75,11 +75,10 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	public <T> T getPropertyValue(CassandraPersistentProperty property) {
 
 		String spelExpression = property.getSpelExpression();
-		if (spelExpression != null) {
-			return evaluator.evaluate(spelExpression);
-		}
 
-		return (T) reader.get(property.getRequiredColumnName());
+		return spelExpression != null
+			? this.evaluator.evaluate(spelExpression)
+			: (T) this.reader.get(property.getRequiredColumnName());
 	}
 
 	/* (non-Javadoc)
@@ -87,7 +86,7 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	 */
 	@Override
 	public Row getRow() {
-		return reader.getRow();
+		return this.reader.getRow();
 	}
 
 	/* (non-Javadoc)

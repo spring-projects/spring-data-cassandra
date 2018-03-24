@@ -39,9 +39,9 @@ public class CodecRegistryTupleTypeFactory implements TupleTypeFactory {
 	 */
 	public static final CodecRegistryTupleTypeFactory DEFAULT = new CodecRegistryTupleTypeFactory();
 
-	private final ProtocolVersion protocolVersion;
-
 	private final CodecRegistry codecRegistry;
+
+	private final ProtocolVersion protocolVersion;
 
 	/**
 	 * Creates a new {@link CodecRegistryTupleTypeFactory} using newest protocol version and the default
@@ -67,18 +67,18 @@ public class CodecRegistryTupleTypeFactory implements TupleTypeFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.TupleTypeFactory#create(java.util.List)
-	 */
-	@Override
-	public TupleType create(List<DataType> types) {
-		return create(types.toArray(new DataType[0]));
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.mapping.TupleTypeFactory#create(com.datastax.driver.core.DataType[])
 	 */
 	@Override
 	public TupleType create(DataType... types) {
-		return TupleType.of(protocolVersion, codecRegistry, types);
+		return TupleType.of(this.protocolVersion, this.codecRegistry, types);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.TupleTypeFactory#create(java.util.List)
+	 */
+	@Override
+	public TupleType create(List<DataType> types) {
+		return create(types.toArray(new DataType[types.size()]));
 	}
 }

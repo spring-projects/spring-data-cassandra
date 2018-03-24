@@ -415,7 +415,7 @@ thus allowing the name to be different than the field name of the class.
 Types are derived from the property declaration by default.
 * `@UserDefinedType` - applied at the type level to specify a Cassandra User-defined Data Type (UDT).
 Types are derived from the declaration by default.
-* `@Tuple` - applied at the type level to use a type as mapped tuple.
+* `@Tuple` - applied at the type level to use a type as a mapped tuple.
 * `@Element` - applied at the field level to specify element/field ordinals within a mapped tuple.
 Types are derived from the property declaration by default.
 

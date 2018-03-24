@@ -15,10 +15,20 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
-import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.*;
+import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.createTable;
+import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.getDataTypeFor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
@@ -67,18 +77,19 @@ public class CassandraMappingContext
 
 	private @Nullable ApplicationContext applicationContext;
 
+	private CassandraPersistentEntityMetadataVerifier verifier =
+			new CompositeCassandraPersistentEntityMetadataVerifier();
+
 	private @Nullable ClassLoader beanClassLoader;
 
-	private CassandraPersistentEntityMetadataVerifier verifier = new CompositeCassandraPersistentEntityMetadataVerifier();
-
-	private CustomConversions customConversions = new CustomConversions(
-			StoreConversions.of(CassandraSimpleTypeHolder.HOLDER), Collections.emptyList());
+	private CustomConversions customConversions =
+			new CustomConversions(StoreConversions.of(CassandraSimpleTypeHolder.HOLDER), Collections.emptyList());
 
 	private Mapping mapping = new Mapping();
 
-	private @Nullable UserTypeResolver userTypeResolver;
-
 	private TupleTypeFactory tupleTypeFactory = CodecRegistryTupleTypeFactory.DEFAULT;
+
+	private @Nullable UserTypeResolver userTypeResolver;
 
 	// caches
 	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
@@ -90,10 +101,6 @@ public class CassandraMappingContext
 	 * Create a new {@link CassandraMappingContext}.
 	 */
 	public CassandraMappingContext() {
-
-		StoreConversions storeConversions = StoreConversions.of(CassandraSimpleTypeHolder.HOLDER);
-
-		setCustomConversions(new CustomConversions(storeConversions, Collections.emptyList()));
 		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
 	}
 
@@ -106,15 +113,8 @@ public class CassandraMappingContext
 	 */
 	public CassandraMappingContext(UserTypeResolver userTypeResolver, TupleTypeFactory tupleTypeFactory) {
 
-		Assert.notNull(userTypeResolver, "UserTypeResolver must not be null");
-		Assert.notNull(tupleTypeFactory, "TupleTypeFactory must not be null");
-
-		StoreConversions storeConversions = StoreConversions.of(CassandraSimpleTypeHolder.HOLDER);
-
 		setUserTypeResolver(userTypeResolver);
 		setTupleTypeFactory(tupleTypeFactory);
-
-		setCustomConversions(new CustomConversions(storeConversions, Collections.emptyList()));
 		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
 	}
 
@@ -123,7 +123,9 @@ public class CassandraMappingContext
 	 */
 	@Override
 	public void initialize() {
+
 		super.initialize();
+
 		processMappingOverrides();
 	}
 
@@ -158,6 +160,7 @@ public class CassandraMappingContext
 	}
 
 	private static void processMappingOverrides(CassandraPersistentEntity<?> entity, EntityMapping entityMapping) {
+
 		entityMapping.getPropertyMappings()
 				.forEach((key, propertyMapping) -> processMappingOverride(entity, propertyMapping));
 	}
@@ -234,6 +237,24 @@ public class CassandraMappingContext
 	}
 
 	/**
+	 * Sets the {@link TupleTypeFactory}.
+	 *
+	 * @param tupleTypeFactory must not be {@literal null}.
+	 * @since 2.1
+	 */
+	public void setTupleTypeFactory(TupleTypeFactory tupleTypeFactory) {
+
+		Assert.notNull(tupleTypeFactory, "TupleTypeFactory must not be null");
+
+		this.tupleTypeFactory = tupleTypeFactory;
+	}
+
+	@NonNull
+	protected TupleTypeFactory getTupleTypeFactory() {
+		return this.tupleTypeFactory;
+	}
+
+	/**
 	 * Sets the {@link UserTypeResolver}.
 	 *
 	 * @param userTypeResolver must not be {@literal null}.
@@ -246,17 +267,9 @@ public class CassandraMappingContext
 		this.userTypeResolver = userTypeResolver;
 	}
 
-	/**
-	 * Sets the {@link TupleTypeFactory}.
-	 *
-	 * @param tupleTypeFactory must not be {@literal null}.
-	 * @since 2.1
-	 */
-	public void setTupleTypeFactory(TupleTypeFactory tupleTypeFactory) {
-
-		Assert.notNull(tupleTypeFactory, "TupleTypeFactory must not be null");
-
-		this.tupleTypeFactory = tupleTypeFactory;
+	@Nullable
+	protected UserTypeResolver getUserTypeResolver() {
+		return this.userTypeResolver;
 	}
 
 	/**
@@ -291,8 +304,8 @@ public class CassandraMappingContext
 			}
 			// now do some caching of the entity
 
-			Set<CassandraPersistentEntity<?>> entities = this.entitySetsByTableName.computeIfAbsent(entity.getTableName(),
-					cqlIdentifier -> new HashSet<>());
+			Set<CassandraPersistentEntity<?>> entities =
+					this.entitySetsByTableName.computeIfAbsent(entity.getTableName(), cqlIdentifier -> new HashSet<>());
 
 			entities.add(entity);
 
@@ -320,33 +333,29 @@ public class CassandraMappingContext
 	@Override
 	protected <T> BasicCassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 
-		BasicCassandraPersistentEntity<T> entity = Optional.ofNullable(resolveUserDefinedType(typeInformation))
-				.<BasicCassandraPersistentEntity<T>> map(resolvedUserDefinedType -> new CassandraUserTypePersistentEntity<>(
-						typeInformation, getVerifier(), resolveUserTypeResolver()))
-				.orElseGet(() -> {
-					boolean tuple = AnnotatedElementUtils.hasAnnotation(typeInformation.getType(), Tuple.class);
-
-					if (tuple) {
-						return new BasicCassandraPersistentTupleEntity<>(typeInformation, tupleTypeFactory);
-					}
-
-					return new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
-				});
+		BasicCassandraPersistentEntity<T> entity = isUserDefinedType(typeInformation)
+			? new CassandraUserTypePersistentEntity<>(typeInformation, getVerifier(), resolveUserTypeResolver())
+			: isTuple(typeInformation)
+				? new BasicCassandraPersistentTupleEntity<>(typeInformation, getTupleTypeFactory())
+				: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
 
 		Optional.ofNullable(this.applicationContext).ifPresent(entity::setApplicationContext);
 
 		return entity;
 	}
 
-	@Nullable
-	private UserDefinedType resolveUserDefinedType(TypeInformation typeInformation) {
-		return AnnotatedElementUtils.findMergedAnnotation(typeInformation.getType(), UserDefinedType.class);
+	private boolean isTuple(TypeInformation<?> typeInformation) {
+		return AnnotatedElementUtils.hasAnnotation(typeInformation.getType(), Tuple.class);
+	}
+
+	private boolean isUserDefinedType(TypeInformation<?> typeInformation) {
+		return AnnotatedElementUtils.hasAnnotation(typeInformation.getType(), UserDefinedType.class);
 	}
 
 	@NonNull
 	private UserTypeResolver resolveUserTypeResolver() {
 
-		UserTypeResolver resolvedUserTypeResolver = this.userTypeResolver;
+		UserTypeResolver resolvedUserTypeResolver = getUserTypeResolver();
 
 		Assert.state(resolvedUserTypeResolver != null, "UserTypeResolver must not be null");
 
@@ -360,15 +369,9 @@ public class CassandraMappingContext
 	protected CassandraPersistentProperty createPersistentProperty(Property property,
 			BasicCassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
 
-		BasicCassandraPersistentProperty persistentProperty;
-
-		if (owner.isTupleType()) {
-			persistentProperty = new BasicCassandraPersistentTupleProperty(property, owner, simpleTypeHolder,
-					this.userTypeResolver);
-		} else {
-			persistentProperty = new BasicCassandraPersistentProperty(property, owner, simpleTypeHolder,
-					this.userTypeResolver);
-		}
+		BasicCassandraPersistentProperty persistentProperty = owner.isTupleType()
+			? new BasicCassandraPersistentTupleProperty(property, owner, simpleTypeHolder, getUserTypeResolver())
+			: new BasicCassandraPersistentProperty(property, owner, simpleTypeHolder, getUserTypeResolver());
 
 		Optional.ofNullable(this.applicationContext).ifPresent(persistentProperty::setApplicationContext);
 
@@ -410,7 +413,9 @@ public class CassandraMappingContext
 
 		return getPersistentEntities().stream().flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
 				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class))))
-				.map(CassandraType::userTypeName).filter(StringUtils::hasText).map(CqlIdentifier::of)
+				.map(CassandraType::userTypeName)
+				.filter(StringUtils::hasText)
+				.map(CqlIdentifier::of)
 				.anyMatch(identifier::equals);
 	}
 
@@ -520,7 +525,8 @@ public class CassandraMappingContext
 	 */
 	public DataType getDataType(Class<?> type) {
 
-		return this.customConversions.getCustomWriteTarget(type).map(CassandraSimpleTypeHolder::getDataTypeFor)
+		return this.customConversions.getCustomWriteTarget(type)
+				.map(CassandraSimpleTypeHolder::getDataTypeFor)
 				.orElseGet(() -> getDataTypeFor(type));
 	}
 
@@ -555,10 +561,11 @@ public class CassandraMappingContext
 
 			if (annotation.type() == Name.TUPLE) {
 
-				DataType[] dataTypes = Arrays.stream(annotation.typeArguments()).map(CassandraSimpleTypeHolder::getDataTypeFor)
+				DataType[] dataTypes = Arrays.stream(annotation.typeArguments())
+						.map(CassandraSimpleTypeHolder::getDataTypeFor)
 						.toArray(DataType[]::new);
 
-				return tupleTypeFactory.create(dataTypes);
+				return getTupleTypeFactory().create(dataTypes);
 			}
 
 			if (annotation.type() == Name.UDT) {
@@ -633,11 +640,12 @@ public class CassandraMappingContext
 	private TupleType getTupleType(DataTypeProvider dataTypeProvider, CassandraPersistentEntity<?> persistentEntity) {
 
 		List<DataType> types = new ArrayList<>();
+
 		for (CassandraPersistentProperty persistentProperty : persistentEntity) {
 			types.add(getDataTypeWithUserTypeFactory(persistentProperty, dataTypeProvider));
 		}
 
-		return tupleTypeFactory.create(types);
+		return getTupleTypeFactory().create(types);
 	}
 
 	@SuppressWarnings("all")

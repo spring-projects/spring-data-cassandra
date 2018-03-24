@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.convert;
 
 import java.util.Collections;
 
+import lombok.NonNull;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -64,6 +66,12 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 		this.instantiators = instantiators;
 	}
 
+	@NonNull
+	@Override
+	public ConversionService getConversionService() {
+		return this.conversionService;
+	}
+
 	/**
 	 * Registers the given custom conversions with the converter.
 	 */
@@ -76,7 +84,7 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 	 */
 	@Override
 	public CustomConversions getCustomConversions() {
-		return conversions;
+		return this.conversions;
 	}
 
 	/* (non-Javadoc)
@@ -93,13 +101,10 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 	 */
 	private void initializeConverters() {
 
-		if (conversionService instanceof GenericConversionService) {
-			conversions.registerConvertersIn((GenericConversionService) conversionService);
-		}
-	}
+		ConversionService conversionService = getConversionService();
 
-	@Override
-	public ConversionService getConversionService() {
-		return conversionService;
+		if (conversionService instanceof GenericConversionService) {
+			getCustomConversions().registerConvertersIn((GenericConversionService) conversionService);
+		}
 	}
 }

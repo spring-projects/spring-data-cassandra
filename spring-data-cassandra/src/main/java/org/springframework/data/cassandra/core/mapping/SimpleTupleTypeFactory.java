@@ -51,6 +51,6 @@ public class SimpleTupleTypeFactory implements TupleTypeFactory {
 	 */
 	@Override
 	public TupleType create(List<DataType> types) {
-		return cluster.getMetadata().newTupleType(types);
+		return this.cluster.getMetadata().newTupleType(types);
 	}
 }

@@ -15,24 +15,24 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.cassandra.test.util.RowMockUtil.column;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Element;
 import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -46,32 +46,36 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class MappingCassandraConverterMappedTupleUnitTests {
 
-	@Rule public final ExpectedException expectedException = ExpectedException.none();
+	CassandraMappingContext mappingContext;
+
+	MappingCassandraConverter mappingCassandraConverter;
 
 	Row rowMock;
-
-	CassandraMappingContext mappingContext;
-	MappingCassandraConverter mappingCassandraConverter;
 
 	@Before
 	public void setUp() {
 
-		mappingContext = new CassandraMappingContext();
-
-		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
-		mappingCassandraConverter.afterPropertiesSet();
+		this.mappingContext = new CassandraMappingContext();
+		this.mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
+		this.mappingCassandraConverter.afterPropertiesSet();
 	}
 
 	@Test // DATACASS-523
 	public void shouldReadMappedTupleValue() {
 
-		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(MappedTuple.class);
+		BasicCassandraPersistentEntity<?> entity = this.mappingContext.getRequiredPersistentEntity(MappedTuple.class);
 
 		TupleValue value = entity.getTupleType().newValue("hello", 1);
 
-		rowMock = RowMockUtil.newRowMock(column("tuple", value, entity.getTupleType()));
+		this.rowMock = RowMockUtil.newRowMock(
+			column("name", "Jon Doe", DataType.text()),
+			column("tuple", value, entity.getTupleType())
+		);
 
-		Person person = mappingCassandraConverter.read(Person.class, rowMock);
+		Person person = this.mappingCassandraConverter.read(Person.class, rowMock);
+
+		assertThat(person).isNotNull();
+		assertThat(person.getName()).isEqualTo("Jon Doe");
 
 		MappedTuple tuple = person.getTuple();
 
@@ -83,18 +87,19 @@ public class MappingCassandraConverterMappedTupleUnitTests {
 	public void shouldWriteMappedTuple() {
 
 		MappedTuple tuple = new MappedTuple("hello", 1);
-		Person person = new Person(tuple);
+		Person person = new Person("Jon Doe", tuple);
 
 		Insert insert = QueryBuilder.insertInto("table");
 
-		mappingCassandraConverter.write(person, insert);
+		this.mappingCassandraConverter.write(person, insert);
 
-		assertThat(insert.toString()).contains("VALUES (('hello',1))");
+		assertThat(insert.toString()).contains("VALUES ('Jon Doe',('hello',1))");
 	}
 
 	@Data
 	@AllArgsConstructor
 	private static class Person {
+		String name;
 		MappedTuple tuple;
 	}
 
@@ -102,9 +107,7 @@ public class MappingCassandraConverterMappedTupleUnitTests {
 	@Data
 	@AllArgsConstructor
 	private static class MappedTuple {
-
 		@Element(0) String name;
 		@Element(1) int position;
 	}
-
 }

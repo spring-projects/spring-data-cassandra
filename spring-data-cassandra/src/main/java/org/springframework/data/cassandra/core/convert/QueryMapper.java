@@ -118,8 +118,6 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, criteriaDefinition.getColumnName());
 
-			Predicate predicate = criteriaDefinition.getPredicate();
-
 			field.getProperty().filter(CassandraPersistentProperty::isCompositePrimaryKey).ifPresent(it -> {
 				throw new IllegalArgumentException(
 						"Cannot use composite primary key directly. Reference a property of the composite primary key");
@@ -130,9 +128,13 @@ public class QueryMapper {
 						String.format("Cannot reference tuple value elements, property [%s]", field.getMappedKey()));
 			});
 
+			Predicate predicate = criteriaDefinition.getPredicate();
+
 			Object value = predicate.getValue();
-			TypeInformation<?> typeInformation = getTypeInformation(field, value);
-			Object mappedValue = value != null ? getConverter().convertToColumnType(value, typeInformation) : null;
+
+			Object mappedValue = value != null
+				? getConverter().convertToColumnType(value, getTypeInformation(field, value))
+				: null;
 
 			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue);
 
@@ -164,11 +166,9 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, column);
 
-			columns.getSelector(column).ifPresent(selector -> {
-				getCqlIdentifier(column, field).ifPresent(cqlIdentifier -> {
-					selectors.add(getMappedSelector(selector, cqlIdentifier));
-				});
-			});
+			columns.getSelector(column).ifPresent(selector ->
+				getCqlIdentifier(column, field).ifPresent(cqlIdentifier ->
+					selectors.add(getMappedSelector(selector, cqlIdentifier))));
 		}
 
 		if (columns.isEmpty()) {
@@ -208,6 +208,7 @@ public class QueryMapper {
 			FunctionCall functionCall = (FunctionCall) selector;
 
 			List<Object> mappedParameters = functionCall.getParameters().stream().map(obj -> {
+
 				if (obj instanceof Selector) {
 					return getMappedSelector((Selector) obj, cqlIdentifier);
 				}
@@ -254,11 +255,10 @@ public class QueryMapper {
 
 			field.getProperty().ifPresent(seen::add);
 
-			columns.getSelector(column) //
-					.filter(selector -> selector instanceof ColumnSelector) //
-					.ifPresent(columnSelector -> {
-						getCqlIdentifier(column, field).map(CqlIdentifier::toCql).ifPresent(columnNames::add);
-					});
+			columns.getSelector(column)
+					.filter(selector -> selector instanceof ColumnSelector)
+					.ifPresent(columnSelector ->
+						getCqlIdentifier(column, field).map(CqlIdentifier::toCql).ifPresent(columnNames::add));
 		}
 
 		if (columns.isEmpty()) {
@@ -308,12 +308,14 @@ public class QueryMapper {
 
 		try {
 			if (field.getProperty().isPresent()) {
+
 				return field.getProperty().map(cassandraPersistentProperty -> {
 
 					if (cassandraPersistentProperty.isCompositePrimaryKey()) {
 						throw new IllegalArgumentException(
 								"Cannot use composite primary key directly. Reference a property of the composite primary key");
 					}
+
 					return cassandraPersistentProperty.getRequiredColumnName();
 				});
 			}
@@ -324,13 +326,14 @@ public class QueryMapper {
 
 			return column.getCqlIdentifier();
 
-		} catch (IllegalStateException e) {
-			throw new IllegalArgumentException(e.getMessage(), e);
+		} catch (IllegalStateException cause) {
+			throw new IllegalArgumentException(cause.getMessage(), cause);
 		}
 	}
 
-	Field createPropertyField(CassandraPersistentEntity<?> entity, ColumnName key) {
-		return Optional.of(entity).<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
+	Field createPropertyField(@Nullable CassandraPersistentEntity<?> entity, ColumnName key) {
+
+		return Optional.ofNullable(entity).<Field>map(e -> new MetadataBackedField(key, e, getMappingContext()))
 				.orElseGet(() -> new Field(key));
 	}
 
@@ -452,17 +455,17 @@ public class QueryMapper {
 		/**
 		 * Returns the {@link PersistentPropertyPath} for the given {@code pathExpression}.
 		 *
-		 * @param pathExpression
-		 * @return
+		 * @param pathExpression {@link String} containing the path expression to evaluate
+		 * @return the {@link PersistentPropertyPath} for the given {@code pathExpression}.
 		 */
 		private Optional<PersistentPropertyPath<CassandraPersistentProperty>> getPath(String pathExpression) {
 
 			try {
 				PropertyPath propertyPath = PropertyPath.from(pathExpression.replaceAll("\\.\\d", ""),
-						entity.getTypeInformation());
+						this.entity.getTypeInformation());
 
-				PersistentPropertyPath<CassandraPersistentProperty> persistentPropertyPath = mappingContext
-						.getPersistentPropertyPath(propertyPath);
+				PersistentPropertyPath<CassandraPersistentProperty> persistentPropertyPath =
+						this.mappingContext.getPersistentPropertyPath(propertyPath);
 
 				return Optional.of(persistentPropertyPath);
 			} catch (PropertyReferenceException e) {
@@ -485,7 +488,7 @@ public class QueryMapper {
 		 */
 		@Override
 		public Optional<CassandraPersistentProperty> getProperty() {
-			return optionalProperty;
+			return this.optionalProperty;
 		}
 
 		/*

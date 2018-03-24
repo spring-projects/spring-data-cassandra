@@ -55,4 +55,5 @@ public interface TupleTypeFactory {
 	 * @return the {@link TupleType} representing the given {@link DataType tuple element types}.
 	 */
 	TupleType create(List<DataType> types);
+
 }

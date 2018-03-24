@@ -42,6 +42,7 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	 */
 	public BasicCassandraPersistentTupleProperty(Property property, CassandraPersistentEntity<?> owner,
 			SimpleTypeHolder simpleTypeHolder) {
+
 		this(property, owner, simpleTypeHolder, null);
 	}
 
@@ -72,16 +73,15 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 
 		try {
 			ordinal = getRequiredAnnotation(Element.class).value();
-		} catch (IllegalStateException e) {
+		} catch (IllegalStateException cause) {
 			throw new MappingException(
-					String.format("Missing @Element annotation in mapped tuple type for property [%s] in entity [%s]", getName(),
-							getOwner().getName()),
-					e);
+					String.format("Missing @Element annotation in mapped tuple type for property [%s] in entity [%s]",
+							getName(), getOwner().getName()), cause);
 		}
 
 		Assert.isTrue(ordinal >= 0,
-				String.format("Element ordinal must be greater or equal to zero for property [%s] in entity [%s]", getName(),
-						getOwner().getName()));
+				String.format("Element ordinal must be greater or equal to zero for property [%s] in entity [%s]",
+						getName(), getOwner().getName()));
 
 		return ordinal;
 	}
@@ -100,7 +100,15 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	@Nullable
 	@Override
 	public Integer getOrdinal() {
-		return ordinal;
+		return this.ordinal;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isClusterKeyColumn()
+	 */
+	@Override
+	public boolean isClusterKeyColumn() {
+		return false;
 	}
 
 	/* (non-Javadoc)
@@ -108,14 +116,6 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isPrimaryKeyColumn()
-	 */
-	@Override
-	public boolean isPrimaryKeyColumn() {
 		return false;
 	}
 
@@ -128,10 +128,10 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isClusterKeyColumn()
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isPrimaryKeyColumn()
 	 */
 	@Override
-	public boolean isClusterKeyColumn() {
+	public boolean isPrimaryKeyColumn() {
 		return false;
 	}
 

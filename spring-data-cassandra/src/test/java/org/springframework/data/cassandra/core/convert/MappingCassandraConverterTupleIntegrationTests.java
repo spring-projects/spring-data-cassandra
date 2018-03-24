@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import lombok.Data;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -84,30 +85,30 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 		}
 	}
 
-	@Autowired Session session;
 	@Autowired MappingCassandraConverter converter;
+	@Autowired Session session;
 
 	@Before
 	public void setUp() {
 
 		if (initialized.compareAndSet(false, true)) {
 
-			session.execute("DROP TYPE IF EXISTS address;");
-			session.execute("DROP TABLE IF EXISTS person;");
+			this.session.execute("DROP TYPE IF EXISTS address;");
+			this.session.execute("DROP TABLE IF EXISTS person;");
 
 			CassandraMappingContext mappingContext = converter.getMappingContext();
 
 			CreateUserTypeSpecification createAddress = mappingContext
 					.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(AddressUserType.class));
 
-			session.execute(CreateUserTypeCqlGenerator.toCql(createAddress));
+			this.session.execute(CreateUserTypeCqlGenerator.toCql(createAddress));
 
 			CreateTableSpecification createPerson = mappingContext
 					.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(Person.class));
 
-			session.execute(CreateTableCqlGenerator.toCql(createPerson));
+			this.session.execute(CreateTableCqlGenerator.toCql(createPerson));
 		} else {
-			session.execute("TRUNCATE person;");
+			this.session.execute("TRUNCATE person;");
 		}
 	}
 
@@ -115,35 +116,39 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	public void shouldInsertRowWithComplexTuple() {
 
 		Person person = new Person();
+
 		person.setId("foo");
 
-		MappedTuple tuple = new MappedTuple();
 		AddressUserType userType = new AddressUserType();
+
 		userType.setZip("myzip");
+
+		MappedTuple tuple = new MappedTuple();
+
 		tuple.setAddressUserType(userType);
 		tuple.setCurrency(Arrays.asList(Currency.getInstance("EUR"), Currency.getInstance("USD")));
 		tuple.setName("bar");
 
 		person.setMappedTuple(tuple);
-		person.setMappedTuples(Arrays.asList(tuple));
+		person.setMappedTuples(Collections.singletonList(tuple));
 
 		Insert insert = QueryBuilder.insertInto("person");
-		converter.write(person, insert);
 
-		session.execute(insert);
+		this.converter.write(person, insert);
+		this.session.execute(insert);
 	}
 
 	@Test // DATACASS-523
 	public void shouldReadRowWithComplexTuple() {
 
-		session.execute("INSERT INTO person (id,mappedtuple,mappedtuples) VALUES (" + //
-				"'foo'," //
+		this.session.execute("INSERT INTO person (id,mappedtuple,mappedtuples) VALUES ("
+				+ "'foo'," //
 				+ "({zip:'myzip'},['EUR','USD'],'bar')," //
 				+ "[({zip:'myzip'},['EUR','USD'],'bar')]);\n");
 
-		ResultSet resultSet = session.execute("SELECT * FROM person;");
+		ResultSet resultSet = this.session.execute("SELECT * FROM person;");
 
-		Person person = converter.read(Person.class, resultSet.one());
+		Person person = this.converter.read(Person.class, resultSet.one());
 
 		assertThat(person.getMappedTuples()).hasSize(1);
 		assertThat(person.getMappedTuple()).isNotNull();

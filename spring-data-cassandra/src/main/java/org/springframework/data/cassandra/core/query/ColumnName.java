@@ -58,8 +58,7 @@ public abstract class ColumnName {
 	 */
 	public static ColumnName from(String columnName) {
 
-		Assert.notNull(columnName, "Column name must not be null");
-		Assert.hasText(columnName, "Column name must not be empty");
+		Assert.hasText(columnName, "Column name must not be null or empty");
 
 		return new StringColumnName(columnName);
 	}
@@ -144,7 +143,7 @@ public abstract class ColumnName {
 		 */
 		@Override
 		public String toCql() {
-			return columnName;
+			return this.columnName;
 		}
 
 		/* (non-Javadoc)
@@ -152,7 +151,7 @@ public abstract class ColumnName {
 		 */
 		@Override
 		public String toString() {
-			return columnName;
+			return this.columnName;
 		}
 	}
 
@@ -182,7 +181,7 @@ public abstract class ColumnName {
 		 */
 		@Override
 		public Optional<CqlIdentifier> getCqlIdentifier() {
-			return Optional.of(cqlIdentifier);
+			return Optional.of(this.cqlIdentifier);
 		}
 
 		/* (non-Javadoc)
@@ -190,7 +189,7 @@ public abstract class ColumnName {
 		 */
 		@Override
 		public String toCql() {
-			return cqlIdentifier.toCql();
+			return this.cqlIdentifier.toCql();
 		}
 
 		/* (non-Javadoc)
@@ -198,7 +197,7 @@ public abstract class ColumnName {
 		 */
 		@Override
 		public String toString() {
-			return cqlIdentifier.toString();
+			return this.cqlIdentifier.toString();
 		}
 	}
 }

@@ -73,8 +73,8 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		simpleTypes.add(Number.class);
 		simpleTypes.add(Row.class);
-		simpleTypes.add(UDTValue.class);
 		simpleTypes.add(TupleValue.class);
+		simpleTypes.add(UDTValue.class);
 
 		classToDataType = Collections.unmodifiableMap(classToDataType(codecRegistry, primitiveWrappers));
 		nameToDataType = Collections.unmodifiableMap(nameToDataType());

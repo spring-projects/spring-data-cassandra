@@ -71,6 +71,7 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	@Deprecated
 	public CassandraUDTValueProvider(UDTValue udtValue, CodecRegistry codecRegistry,
 			DefaultSpELExpressionEvaluator evaluator) {
+
 		this(udtValue, codecRegistry, (SpELExpressionEvaluator) evaluator);
 	}
 
@@ -82,14 +83,15 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	public <T> T getPropertyValue(CassandraPersistentProperty property) {
 
 		String spelExpression = property.getSpelExpression();
+
 		if (spelExpression != null) {
-			return evaluator.evaluate(spelExpression);
+			return this.evaluator.evaluate(spelExpression);
 		}
 
 		String name = property.getRequiredColumnName().toCql();
-		DataType fieldType = udtValue.getType().getFieldType(name);
+		DataType fieldType = this.udtValue.getType().getFieldType(name);
 
-		return udtValue.get(name, codecRegistry.codecFor(fieldType));
+		return this.udtValue.get(name, this.codecRegistry.codecFor(fieldType));
 	}
 
 	/* (non-Javadoc)
@@ -97,6 +99,6 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	 */
 	@Override
 	public boolean hasProperty(CassandraPersistentProperty property) {
-		return udtValue.getType().contains(property.getRequiredColumnName().toCql());
+		return this.udtValue.getType().contains(property.getRequiredColumnName().toCql());
 	}
 }

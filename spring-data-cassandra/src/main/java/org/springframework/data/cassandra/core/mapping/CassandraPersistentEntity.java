@@ -37,6 +37,13 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	boolean isCompositePrimaryKey();
 
 	/**
+	 * Sets whether to enforce quoting when using the {@link #getTableName()} in CQL.
+	 *
+	 * @param forceQuote {@literal true} to enforce quoting; {@literal false} to disable enforced quoting usage.
+	 */
+	void setForceQuote(boolean forceQuote);
+
+	/**
 	 * Returns the table name to which the entity shall be persisted.
 	 */
 	CqlIdentifier getTableName();
@@ -49,11 +56,19 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	void setTableName(CqlIdentifier tableName);
 
 	/**
-	 * Sets whether to enforce quoting when using the {@link #getTableName()} in CQL.
-	 *
-	 * @param forceQuote {@literal true} to enforce quoting; {@literal false} to disable enforced quoting usage.
+	 * @return {@literal true} if the type is a mapped tuple type.
+	 * @since 2.1
+	 * @see Tuple
 	 */
-	void setForceQuote(boolean forceQuote);
+	boolean isTupleType();
+
+	/**
+	 * @return the {@link TupleType} matching the data types from {@link BasicCassandraPersistentTupleProperty mapped
+	 *         tuple elements}.
+	 * @since 2.1
+	 */
+	@Nullable
+	TupleType getTupleType();
 
 	/**
 	 * @return {@literal true} if the type is a mapped user defined type.
@@ -70,18 +85,4 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	@Nullable
 	UserType getUserType();
 
-	/**
-	 * @return {@literal true} if the type is a mapped tuple type.
-	 * @since 2.1
-	 * @see Tuple
-	 */
-	boolean isTupleType();
-
-	/**
-	 * @return the {@link TupleType} matching the data types from {@link BasicCassandraPersistentTupleProperty mapped
-	 *         tuple elements}.
-	 * @since 2.1
-	 */
-	@Nullable
-	TupleType getTupleType();
 }
