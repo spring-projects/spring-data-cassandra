@@ -556,7 +556,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 	 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation#update(java.lang.Class)
 	 */
 	@Override
-	public <T> ReactiveUpdate<T> update(Class<T> domainType) {
+	public ReactiveUpdate update(Class<?> domainType) {
 		return new ReactiveUpdateOperationSupport(this).update(domainType);
 	}
 

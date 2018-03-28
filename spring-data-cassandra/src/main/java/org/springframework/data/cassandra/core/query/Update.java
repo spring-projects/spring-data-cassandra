@@ -41,6 +41,8 @@ import org.springframework.util.StringUtils;
  */
 public class Update {
 
+	private static final Update EMPTY = new Update(Collections.emptyMap());
+
 	private final Map<ColumnName, AssignmentOp> updateOperations;
 
 	private Update(Map<ColumnName, AssignmentOp> updateOperations) {
@@ -53,7 +55,7 @@ public class Update {
 	 * @return a new {@link Update}.
 	 */
 	public static Update empty() {
-		return new Update(Collections.emptyMap());
+		return EMPTY;
 	}
 
 	/**
