@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static java.util.stream.StreamSupport.stream;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-import static org.springframework.util.ObjectUtils.nullSafeHashCode;
+import static java.util.stream.StreamSupport.*;
+import static org.springframework.util.ObjectUtils.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +44,9 @@ import com.datastax.driver.core.PagingState;
  * @since 2.0
  */
 public class Query implements Filter {
+
+	private static final Query EMPTY = new Query(Collections.emptyList(), Columns.empty(), Sort.unsorted(),
+			Optional.empty(), Optional.empty(), Optional.empty(), false);
 
 	private final boolean allowFiltering;
 
@@ -79,8 +81,7 @@ public class Query implements Filter {
 	 * @return the new {@link Query}.
 	 */
 	public static Query empty() {
-		return new Query(Collections.emptyList(), Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(),
-				Optional.empty(), false);
+		return EMPTY;
 	}
 
 	/**

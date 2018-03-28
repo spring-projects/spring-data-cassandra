@@ -46,20 +46,20 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 	 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation#update(java.lang.Class)
 	 */
 	@Override
-	public <T> ReactiveUpdate<T> update(Class<T> domainType) {
+	public ReactiveUpdate update(Class<?> domainType) {
 
 		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ReactiveUpdateSupport<>(this.template, domainType, Query.empty(), null);
+		return new ReactiveUpdateSupport(this.template, domainType, Query.empty(), null);
 	}
 
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-	static class ReactiveUpdateSupport<T> implements ReactiveUpdate<T>, TerminatingUpdate<T> {
+	static class ReactiveUpdateSupport implements ReactiveUpdate, TerminatingUpdate {
 
 		@NonNull ReactiveCassandraTemplate template;
 
-		@NonNull Class<T> domainType;
+		@NonNull Class<?> domainType;
 
 		@NonNull Query query;
 
@@ -69,22 +69,22 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
 		 */
 		@Override
-		public UpdateWithQuery<T> inTable(CqlIdentifier tableName) {
+		public UpdateWithQuery inTable(CqlIdentifier tableName) {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ReactiveUpdateSupport<>(this.template, this.domainType, this.query, tableName);
+			return new ReactiveUpdateSupport(this.template, this.domainType, this.query, tableName);
 		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithQuery#matching(org.springframework.data.cassandra.core.query.Query)
 		 */
 		@Override
-		public TerminatingUpdate<T> matching(Query query) {
+		public TerminatingUpdate matching(Query query) {
 
 			Assert.notNull(query, "Query must not be null");
 
-			return new ReactiveUpdateSupport<>(this.template, this.domainType, query, this.tableName);
+			return new ReactiveUpdateSupport(this.template, this.domainType, query, this.tableName);
 		}
 
 		/* (non-Javadoc)

@@ -60,12 +60,12 @@ public interface ReactiveUpdateOperation {
 	 * @throws IllegalArgumentException if {@link Class domainType} is {@literal null}.
 	 * @see ReactiveUpdate
 	 */
-	<T> ReactiveUpdate<T> update(Class<T> domainType);
+	ReactiveUpdate update(Class<?> domainType);
 
 	/**
 	 * Table override (optional).
 	 */
-	interface UpdateWithTable<T> {
+	interface UpdateWithTable {
 
 		/**
 		 * Explicitly set the {@link String name} of the table on which to perform the update.
@@ -78,7 +78,7 @@ public interface ReactiveUpdateOperation {
 		 * @see #inTable(CqlIdentifier)
 		 * @see UpdateWithQuery
 		 */
-		default UpdateWithQuery<T> inTable(String table) {
+		default UpdateWithQuery inTable(String table) {
 
 			Assert.hasText(table, "Table name must not be null or empty");
 
@@ -96,14 +96,14 @@ public interface ReactiveUpdateOperation {
 		 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
 		 * @see UpdateWithQuery
 		 */
-		UpdateWithQuery<T> inTable(CqlIdentifier table);
+		UpdateWithQuery inTable(CqlIdentifier table);
 
 	}
 
 	/**
 	 * Define a {@link Query} used as the filter for the {@link Update}.
 	 */
-	interface UpdateWithQuery<T> {
+	interface UpdateWithQuery {
 
 		/**
 		 * Filter rows to update by the given {@link Query}.
@@ -114,14 +114,14 @@ public interface ReactiveUpdateOperation {
 		 * @see org.springframework.data.cassandra.core.query.Query
 		 * @see TerminatingUpdate
 		 */
-		TerminatingUpdate<T> matching(Query query);
+		TerminatingUpdate matching(Query query);
 
 	}
 
 	/**
 	 * Trigger {@code UPDATE} execution by calling one of the terminating methods.
 	 */
-	interface TerminatingUpdate<T> {
+	interface TerminatingUpdate {
 
 		/**
 		 * Update all matching rows in the table.
@@ -132,13 +132,12 @@ public interface ReactiveUpdateOperation {
 		 * @see reactor.core.publisher.Mono
 		 */
 		Mono<WriteResult> apply(Update update);
-
 	}
 
 	/**
 	 * The {@link ReactiveUpdate} interface provides methods for constructing {@code UPDATE} operations
 	 * in a fluent way.
 	 */
-	interface ReactiveUpdate<T> extends UpdateWithTable<T>, UpdateWithQuery<T> {}
+	interface ReactiveUpdate extends UpdateWithTable, UpdateWithQuery {}
 
 }
