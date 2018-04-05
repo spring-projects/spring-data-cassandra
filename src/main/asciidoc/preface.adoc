@@ -50,13 +50,12 @@ and if you are coming from a RDBMS background, many times these exercises can be
 The starting ground for learning about Cassandra is http://cassandra.apache.org/[cassandra.apache.org]. Also, here is
 a list of other useful resources:
 
-* http://planetcassandra.org/[Planet Cassandra] site has many valuable resources for Cassandra best practices.
 * The http://datastax.com/[DataStax] site offers http://www.datastax.com/what-we-offer/products-services/support[commercial support]
 and many resources, including, but not limited to, http://docs.datastax.com/en/landing_page/doc/landing_page/current.html[documentation],
 http://docs.datastax.com/en/landing_page/doc/landing_page/current.html[DataStax Academy], a http://www.datastax.com/dev/blog[Tech Blog]
 and so on.
-* The http://www.planetcassandra.org/try-cassandra/[Cassandra Quick Start] provides a convenient way to interact
-with a Apache Cassandra instance in combination with the online shell.
+* The https://academy.datastax.com/resources/ds101-introduction-cassandra[DataStax Academy introduction to cassandra]
+* The http://cassandra.apache.org/doc/latest/getting_started/index.html[Cassandra Quick Start Guide].
 
 [[requirements]]
 == Requirements
