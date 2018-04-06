@@ -95,6 +95,10 @@ for further details.
 (Joda, Java 8, JSR310-BackPort)
 | `date`
 
+|  `LocalTime`+
+(Joda, Java 8, JSR310-BackPort)
+| `time`
+
 | `LocalDateTime`, `LocalTime`, `Instant` +
 (Joda, Java 8, JSR310-BackPort)
 | `timestamp`

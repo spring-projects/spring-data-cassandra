@@ -19,8 +19,11 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 
+import lombok.Data;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +36,7 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
@@ -78,6 +82,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		SchemaTestUtils.potentiallyCreateTableFor(User.class, template);
 		SchemaTestUtils.potentiallyCreateTableFor(UserToken.class, template);
 		SchemaTestUtils.potentiallyCreateTableFor(BookReference.class, template);
+		SchemaTestUtils.potentiallyCreateTableFor(TimeClass.class, template);
 		SchemaTestUtils.truncate(User.class, template);
 		SchemaTestUtils.truncate(UserToken.class, template);
 		SchemaTestUtils.truncate(BookReference.class, template);
@@ -477,5 +482,12 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		assertThat(ids).containsAll(expectedIds);
 		assertThat(iterations).isEqualTo(10);
+	}
+
+	@Data
+	static class TimeClass {
+
+		@Id LocalTime id;
+		LocalTime bar;
 	}
 }

@@ -29,7 +29,6 @@ import java.util.NoSuchElementException;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
@@ -41,6 +40,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.support.UserTypeBuilder;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mapping.MappingException;
@@ -461,6 +461,17 @@ public class CassandraMappingContextUnitTests {
 
 		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("humans")))
 				.isEqualTo(DataType.list(DataType.varchar()));
+	}
+
+	@Test // DATACASS-302
+	public void propertyTypeShouldMapToTime() {
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(AllPossibleTypes.class);
+
+		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("localTime")))
+				.isEqualTo(DataType.time());
+		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("jodaLocalTime")))
+				.isEqualTo(DataType.time());
 	}
 
 	@Test // DATACASS-172, DATACASS-455

@@ -19,11 +19,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
+import org.springframework.data.convert.WritingConverter;
 import org.springframework.util.ClassUtils;
 import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalTime;
+import org.threeten.bp.temporal.ChronoField;
+
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Helper class to register {@link Converter} implementations for the ThreeTen Backport project in case it's present on
@@ -56,6 +63,8 @@ public abstract class CassandraThreeTenBackPortConverters {
 
 		converters.add(CassandraLocalDateToLocalDateConverter.INSTANCE);
 		converters.add(LocalDateToCassandraLocalDateConverter.INSTANCE);
+		converters.add(MillisOfDayToLocalTimeConverter.INSTANCE);
+		converters.add(LocalTimeToMillisOfDayConverter.INSTANCE);
 
 		return converters;
 	}
@@ -90,6 +99,41 @@ public abstract class CassandraThreeTenBackPortConverters {
 		public com.datastax.driver.core.LocalDate convert(LocalDate source) {
 			return com.datastax.driver.core.LocalDate.fromYearMonthDay(source.getYear(), source.getMonthValue(),
 					source.getDayOfMonth());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link Long}s to their {@link LocalTime} representation.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.1
+	 */
+
+	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalTime convert(Long source) {
+			return LocalTime.ofNanoOfDay(TimeUnit.MILLISECONDS.toNanos(source));
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalTime}s to their {@link Long} representation.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.1
+	 */
+	@WritingConverter
+	@CassandraType(type = Name.TIME)
+	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
+
+		INSTANCE;
+
+		@Override
+		public Long convert(LocalTime source) {
+			return source.getLong(ChronoField.MILLI_OF_DAY);
 		}
 	}
 }

@@ -27,13 +27,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
-
+import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -348,6 +348,17 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject).contains(Criteria.where("tuple").is(tupleValue));
 	}
 
+	@Test // DATACASS-302
+	public void shouldMapTime() {
+
+		Filter filter = Filter.from(Criteria.where("localDate").gt(LocalTime.fromMillisOfDay(1000)));
+
+		Filter mappedObject = this.queryMapper.getMappedObject(filter,
+				this.mappingContext.getRequiredPersistentEntity(Person.class));
+
+		assertThat(mappedObject).contains(Criteria.where("localdate").gt(1000L));
+	}
+
 	@Test(expected = IllegalArgumentException.class) // DATACASS-523
 	public void referencingTupleElementsInQueryShouldFail() {
 
@@ -366,6 +377,8 @@ public class QueryMapperUnitTests {
 		State state;
 
 		Integer number;
+
+		LocalDate localDate;
 
 		MappedTuple tuple;
 

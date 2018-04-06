@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,6 +121,9 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		// override UUID to timeuuid as regular uuid as the favored default
 		classToDataType.put(UUID.class, DataType.uuid());
+
+		// override LocalTime to time as time columns are mapped to long by default
+		classToDataType.put(LocalTime.class, DataType.time());
 
 		return classToDataType;
 	}
