@@ -21,8 +21,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.convert.WritingConverter;
 import org.springframework.util.ClassUtils;
+
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Helper class to register JSR-310 specific {@link Converter} implementations to convert between Cassandra types in
@@ -53,6 +58,8 @@ public abstract class CassandraJodaTimeConverters {
 
 		converters.add(CassandraLocalDateToLocalDateConverter.INSTANCE);
 		converters.add(LocalDateToCassandraLocalDateConverter.INSTANCE);
+		converters.add(MillisOfDayToLocalTimeConverter.INSTANCE);
+		converters.add(LocalTimeToMillisOfDayConverter.INSTANCE);
 
 		return converters;
 	}
@@ -87,6 +94,38 @@ public abstract class CassandraJodaTimeConverters {
 		public com.datastax.driver.core.LocalDate convert(LocalDate source) {
 			return com.datastax.driver.core.LocalDate.fromYearMonthDay(source.getYear(), source.getMonthOfYear(),
 					source.getDayOfMonth());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link Long}s to their {@link LocalTime} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalTime convert(Long source) {
+			return LocalTime.fromMillisOfDay(source);
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalTime}s to their {@link Long} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	@WritingConverter
+	@CassandraType(type = Name.TIME)
+	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
+
+		INSTANCE;
+
+		@Override
+		public Long convert(LocalTime source) {
+			return (long) source.getMillisOfDay();
 		}
 	}
 }

@@ -9,6 +9,7 @@ This chapter summarizes changes and new features for each release.
 * Template API extended with `count(…)` and `exists(…)` methods accepting `Query`.
 * <<cassandra.template.query.fluent-template-api,Fluent API>> for CRUD operations.
 * Cassandra Mapped Tuple support via `@Tuple`.
+* Support for Cassandra `time` columns via `LocalTime`.
 * Support for `map` columns using User-defined/converted types.
 * <<cassandra.mapping-usage.events>>
 
