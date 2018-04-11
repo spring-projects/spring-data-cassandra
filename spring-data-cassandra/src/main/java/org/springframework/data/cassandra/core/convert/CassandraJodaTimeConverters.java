@@ -46,7 +46,10 @@ public abstract class CassandraJodaTimeConverters {
 	/**
 	 * Returns the converters to be registered. Will only return converters in case JodaTime is present on the class path.
 	 *
-	 * @return
+	 * @return a {@link Collection} of Joda Time {@link Converter Converters} to register.
+	 * @see org.springframework.core.convert.converter.Converter
+	 * @see java.util.Collection
+	 * @see org.joda.time
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
 

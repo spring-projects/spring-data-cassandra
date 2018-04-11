@@ -15,12 +15,13 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+
+import org.threeten.bp.LocalTime;
 import org.springframework.data.cassandra.core.convert.CassandraThreeTenBackPortConverters.LocalTimeToMillisOfDayConverter;
 import org.springframework.data.cassandra.core.convert.CassandraThreeTenBackPortConverters.MillisOfDayToLocalTimeConverter;
-import org.threeten.bp.LocalTime;
 
 /**
  * Unit tests for {@link CassandraThreeTenBackPortConverters}.
@@ -30,15 +31,17 @@ import org.threeten.bp.LocalTime;
 public class CassandraThreeTenBackPortConvertersUnitTests {
 
 	@Test // DATACASS-302
-	public void shouldConvertLocalTimeToLong() {
+	public void shouldConvertLongToLocalTime() {
 
-		assertThat(MillisOfDayToLocalTimeConverter.INSTANCE.convert(3723000L)).isEqualTo(LocalTime.of(1, 2, 3));
+		assertThat(MillisOfDayToLocalTimeConverter.INSTANCE.convert(3723000L))
+				.isEqualTo(LocalTime.of(1, 2, 3));
 	}
 
 	@Test // DATACASS-302
-	public void shouldConvertLongToLocalTime() {
+	public void shouldConvertLocalTimeToLong() {
 
 		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.MIDNIGHT)).isZero();
-		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.of(1, 2, 3))).isEqualTo(3723000L);
+		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.of(1, 2, 3)))
+				.isEqualTo(3723000L);
 	}
 }

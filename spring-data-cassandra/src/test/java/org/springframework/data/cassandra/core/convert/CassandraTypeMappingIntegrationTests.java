@@ -35,10 +35,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -511,9 +511,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteLocalDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setLocalDate(java.time.LocalDate.of(2010, 7, 4));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getLocalDate()).isEqualTo(entity.getLocalDate());
@@ -523,9 +525,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteLocalDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setLocalDateTime(java.time.LocalDateTime.of(2010, 7, 4, 1, 2, 3));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getLocalDateTime()).isEqualTo(entity.getLocalDateTime());
@@ -535,9 +539,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteLocalTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setLocalTime(java.time.LocalTime.of(1, 2, 3));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getLocalTime()).isEqualTo(entity.getLocalTime());
@@ -547,9 +553,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteJodaLocalTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setJodaLocalTime(org.joda.time.LocalTime.fromMillisOfDay(50000));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getJodaLocalTime()).isEqualTo(entity.getJodaLocalTime());
@@ -559,9 +567,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteInstant() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setInstant(java.time.Instant.now());
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getInstant()).isEqualTo(entity.getInstant());
@@ -571,9 +581,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteZoneId() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setZoneId(java.time.ZoneId.of("Europe/Paris"));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getZoneId()).isEqualTo(entity.getZoneId());
@@ -583,9 +595,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteJodaLocalDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setJodaLocalDate(new org.joda.time.LocalDate(2010, 7, 4));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getJodaLocalDate()).isEqualTo(entity.getJodaLocalDate());
@@ -595,9 +609,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteJodaDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setJodaDateTime(new org.joda.time.DateTime(2010, 7, 4, 1, 2, 3));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getJodaDateTime()).isEqualTo(entity.getJodaDateTime());
@@ -607,9 +623,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteBpLocalDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setBpLocalDate(org.threeten.bp.LocalDate.of(2010, 7, 4));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getBpLocalDate()).isEqualTo(entity.getBpLocalDate());
@@ -619,9 +637,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteBpLocalDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setBpLocalDateTime(org.threeten.bp.LocalDateTime.of(2010, 7, 4, 1, 2, 3));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getBpLocalDateTime()).isEqualTo(entity.getBpLocalDateTime());
@@ -631,9 +651,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteBpLocalTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setBpLocalTime(org.threeten.bp.LocalTime.of(1, 2, 3));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getBpLocalTime()).isEqualTo(entity.getBpLocalTime());
@@ -643,9 +665,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteBpInstant() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setBpInstant(org.threeten.bp.Instant.now());
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getBpZoneId()).isEqualTo(entity.getBpZoneId());
@@ -655,9 +679,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteBpZoneId() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
+
 		entity.setBpZoneId(org.threeten.bp.ZoneId.of("Europe/Paris"));
 
 		operations.insert(entity);
+
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getBpZoneId()).isEqualTo(entity.getBpZoneId());
@@ -668,9 +694,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteCounter() {
 
 		CounterEntity entity = new CounterEntity("1");
+
 		entity.setCount(1);
 
 		operations.update(entity);
+
 		CounterEntity loaded = operations.selectOneById(entity.getId(), CounterEntity.class);
 
 		assertThat(loaded.getCount()).isEqualTo(entity.getCount());

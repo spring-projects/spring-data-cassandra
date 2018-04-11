@@ -37,13 +37,14 @@ import com.datastax.driver.core.DataType.Name;
  * the classpath.
  *
  * @author Mark Paluch
- * @see http://www.threeten.org/threetenbp
+ * @see <a href="http://www.threeten.org/threetenbp">Threeten Backport</a>
  * @since 1.5
  */
 public abstract class CassandraThreeTenBackPortConverters {
 
-	private static final boolean THREE_TEN_BACK_PORT_IS_PRESENT = ClassUtils.isPresent("org.threeten.bp.LocalDateTime",
-			ThreeTenBackPortConverters.class.getClassLoader());
+	private static final boolean THREE_TEN_BACK_PORT_IS_PRESENT =
+			ClassUtils.isPresent("org.threeten.bp.LocalDateTime",
+					ThreeTenBackPortConverters.class.getClassLoader());
 
 	private CassandraThreeTenBackPortConverters() {}
 
@@ -51,7 +52,10 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * Returns the converters to be registered. Will only return converters in case ThreeTen Backport is on the class
 	 * path.
 	 *
-	 * @return
+	 * @return a {@link Collection} of ThreeTen Backport {@link Converter Converters} to register.
+	 * @see org.springframework.core.convert.converter.Converter
+	 * @see java.util.Collection
+	 * @see org.joda.time
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
 

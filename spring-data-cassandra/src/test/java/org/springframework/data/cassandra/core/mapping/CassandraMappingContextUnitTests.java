@@ -456,8 +456,8 @@ public class CassandraMappingContextUnitTests {
 		mappingContext.setCustomConversions(
 				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
-		CassandraPersistentEntity<?> persistentEntity = mappingContext
-				.getRequiredPersistentEntity(TypeWithListOfHumans.class);
+		CassandraPersistentEntity<?> persistentEntity =
+				mappingContext.getRequiredPersistentEntity(TypeWithListOfHumans.class);
 
 		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("humans")))
 				.isEqualTo(DataType.list(DataType.varchar()));
@@ -466,7 +466,8 @@ public class CassandraMappingContextUnitTests {
 	@Test // DATACASS-302
 	public void propertyTypeShouldMapToTime() {
 
-		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(AllPossibleTypes.class);
+		CassandraPersistentEntity<?> persistentEntity =
+				mappingContext.getRequiredPersistentEntity(AllPossibleTypes.class);
 
 		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("localTime")))
 				.isEqualTo(DataType.time());

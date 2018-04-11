@@ -242,7 +242,8 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-302
 	public void shouldMapTime() {
 
-		Update update = this.updateMapper.getMappedObject(Update.empty().set("localTime", LocalTime.of(1, 2, 3)),
+		Update update = this.updateMapper.getMappedObject(Update.empty()
+				.set("localTime", LocalTime.of(1, 2, 3)),
 				this.persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);

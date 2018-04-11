@@ -45,8 +45,6 @@ import com.datastax.driver.core.DataType.Name;
  */
 public class CassandraCustomConversions extends org.springframework.data.convert.CustomConversions {
 
-	private static final StoreConversions STORE_CONVERSIONS;
-
 	private static final List<Object> STORE_CONVERTERS;
 
 	/**
@@ -54,6 +52,8 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 	 * from an artificial simple type.
 	 */
 	private final static Set<Class<?>> NATIVE_TIME_TYPE_MARKERS;
+
+	private static final StoreConversions STORE_CONVERSIONS;
 
 	static {
 
@@ -74,13 +74,16 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 				.filter(it -> {
 
 					CassandraType annotation = AnnotatedElementUtils.getMergedAnnotation(it, CassandraType.class);
+
 					return annotation != null && annotation.type() == Name.TIME;
 				}) //
 				.map(it -> {
 
 					ResolvableType classType = ResolvableType.forClass(it).as(Converter.class).getGeneric(0);
+
 					return classType.getRawClass();
-				}).collect(Collectors.toList());
+				})
+				.collect(Collectors.toList());
 
 		NATIVE_TIME_TYPE_MARKERS = new HashSet<>(timeMarkers);
 	}

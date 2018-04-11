@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.createTable;
-import static org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.getDataTypeFor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -615,7 +614,9 @@ public class CassandraMappingContext
 
 		DataType dataType = customWriteTarget
 				.orElseGet(() -> {
+
 					Class<?> propertyType = typeInformation.getRequiredActualType().getType();
+
 					return this.customConversions.getCustomWriteTarget(propertyType).filter(it -> !typeInformation.isMap())
 							.map(it -> {
 
@@ -648,12 +649,13 @@ public class CassandraMappingContext
 	@Nullable
 	private DataType doGetDataType(Class<?> propertyType, Class<?> converted) {
 
-		if (customConversions instanceof CassandraCustomConversions) {
+		if (this.customConversions instanceof CassandraCustomConversions) {
 
-			CassandraCustomConversions conversions = (CassandraCustomConversions) customConversions;
+			CassandraCustomConversions conversions = (CassandraCustomConversions) this.customConversions;
 
 			if (conversions.isNativeTimeTypeMarker(converted)
 					|| (conversions.isNativeTimeTypeMarker(propertyType) && Long.class.equals(converted))) {
+
 				return DataType.time();
 			}
 		}
