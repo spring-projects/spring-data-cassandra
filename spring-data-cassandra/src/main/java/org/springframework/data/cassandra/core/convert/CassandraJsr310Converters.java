@@ -16,11 +16,18 @@
 package org.springframework.data.cassandra.core.convert;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.convert.WritingConverter;
+
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Helper class to register JodaTime specific {@link Converter} implementations in case the library is present on the
@@ -44,6 +51,8 @@ public abstract class CassandraJsr310Converters {
 
 		converters.add(CassandraLocalDateToLocalDateConverter.INSTANCE);
 		converters.add(LocalDateToCassandraLocalDateConverter.INSTANCE);
+		converters.add(MillisOfDayToLocalTimeConverter.INSTANCE);
+		converters.add(LocalTimeToMillisOfDayConverter.INSTANCE);
 
 		return converters;
 	}
@@ -78,6 +87,40 @@ public abstract class CassandraJsr310Converters {
 		public com.datastax.driver.core.LocalDate convert(LocalDate source) {
 			return com.datastax.driver.core.LocalDate.fromYearMonthDay(source.getYear(), source.getMonthValue(),
 					source.getDayOfMonth());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link Long}s to their {@link LocalTime} representation.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.1
+	 */
+	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalTime convert(Long source) {
+			return LocalTime.ofNanoOfDay(TimeUnit.MILLISECONDS.toNanos(source));
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalTime}s to their {@link Long} representation.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.1
+	 */
+	@WritingConverter
+	@CassandraType(type = Name.TIME)
+	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
+
+		INSTANCE;
+
+		@Override
+		public Long convert(LocalTime source) {
+			return source.getLong(ChronoField.MILLI_OF_DAY);
 		}
 	}
 }

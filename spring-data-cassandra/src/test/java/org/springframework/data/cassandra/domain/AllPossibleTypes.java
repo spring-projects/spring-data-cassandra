@@ -104,6 +104,7 @@ public class AllPossibleTypes {
 	org.joda.time.DateTime jodaDateTime;
 	org.joda.time.LocalDate jodaLocalDate;
 	org.joda.time.LocalDateTime jodaLocalDateTime;
+	org.joda.time.LocalTime jodaLocalTime;
 
 	org.threeten.bp.Instant bpInstant;
 	org.threeten.bp.LocalDate bpLocalDate;

@@ -35,10 +35,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -47,8 +47,6 @@ import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.util.Version;
-
-import org.assertj.core.api.Assertions;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Duration;
@@ -431,7 +429,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		operations.insert(entity);
 		AllPossibleTypes loaded = load(entity);
 
-		Assertions.assertThat(loaded.getAnEnum()).isEqualTo(entity.getAnEnum());
+		assertThat(loaded.getAnEnum()).isEqualTo(entity.getAnEnum());
 	}
 
 	@Test // DATACASS-280
@@ -543,6 +541,18 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getLocalTime()).isEqualTo(entity.getLocalTime());
+	}
+
+	@Test // DATACASS-296
+	public void shouldReadAndWriteJodaLocalTime() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setJodaLocalTime(org.joda.time.LocalTime.fromMillisOfDay(50000));
+
+		operations.insert(entity);
+		AllPossibleTypes loaded = load(entity);
+
+		assertThat(loaded.getJodaLocalTime()).isEqualTo(entity.getJodaLocalTime());
 	}
 
 	@Test // DATACASS-296

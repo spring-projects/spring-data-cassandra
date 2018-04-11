@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.convert;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
@@ -238,6 +239,16 @@ public class UpdateMapperUnitTests {
 		assertThat(update.toString()).isEqualTo("tuple = ('foo')");
 	}
 
+	@Test // DATACASS-302
+	public void shouldMapTime() {
+
+		Update update = this.updateMapper.getMappedObject(Update.empty().set("localTime", LocalTime.of(1, 2, 3)),
+				this.persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("localtime = 3723000");
+	}
+
 	@Test(expected = IllegalArgumentException.class) // DATACASS-523
 	public void referencingTupleElementsInQueryShouldFail() {
 		this.updateMapper.getMappedObject(Update.empty().set("tuple.zip", "bar"), this.persistentEntity);
@@ -252,6 +263,7 @@ public class UpdateMapperUnitTests {
 		Map<String, Currency> map;
 		Map<Manufacturer, Currency> manufacturers;
 		Currency currency;
+		LocalTime localTime;
 
 		Integer number;
 		MappedTuple tuple;

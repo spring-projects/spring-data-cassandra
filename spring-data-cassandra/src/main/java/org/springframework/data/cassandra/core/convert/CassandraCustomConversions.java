@@ -17,10 +17,22 @@ package org.springframework.data.cassandra.core.convert;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+
+import com.datastax.driver.core.DataType.Name;
 
 /**
  * Value object to capture custom conversion. {@link CassandraCustomConversions} also act as factory for
@@ -37,6 +49,12 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 
 	private static final List<Object> STORE_CONVERTERS;
 
+	/**
+	 * Set of types that indicate usage of Cassandra's time type. Time is represented as long so we need to imply the type
+	 * from an artificial simple type.
+	 */
+	private final static Set<Class<?>> NATIVE_TIME_TYPE_MARKERS;
+
 	static {
 
 		List<Object> converters = new ArrayList<>();
@@ -48,6 +66,23 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 
 		STORE_CONVERTERS = Collections.unmodifiableList(converters);
 		STORE_CONVERSIONS = StoreConversions.of(CassandraSimpleTypeHolder.HOLDER, STORE_CONVERTERS);
+
+		List<? extends Class<?>> timeMarkers = STORE_CONVERTERS.stream() //
+				.filter(Converter.class::isInstance) //
+				.map(Object::getClass) //
+				.filter(it -> AnnotatedElementUtils.hasAnnotation(it, WritingConverter.class)) //
+				.filter(it -> {
+
+					CassandraType annotation = AnnotatedElementUtils.getMergedAnnotation(it, CassandraType.class);
+					return annotation != null && annotation.type() == Name.TIME;
+				}) //
+				.map(it -> {
+
+					ResolvableType classType = ResolvableType.forClass(it).as(Converter.class).getGeneric(0);
+					return classType.getRawClass();
+				}).collect(Collectors.toList());
+
+		NATIVE_TIME_TYPE_MARKERS = new HashSet<>(timeMarkers);
 	}
 
 	/**
@@ -57,5 +92,19 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 	 */
 	public CassandraCustomConversions(List<?> converters) {
 		super(STORE_CONVERSIONS, converters);
+	}
+
+	/**
+	 * Returns {@literal true} if the {@link Class type} is used to denote Cassandra's {@code time} column type.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return {@literal true} if the type maps to Cassandra's {@code time} column type.
+	 * @since 2.1
+	 */
+	public boolean isNativeTimeTypeMarker(Class<?> type) {
+
+		Assert.notNull(type, "Type must not be null");
+
+		return NATIVE_TIME_TYPE_MARKERS.contains(ClassUtils.getUserClass(type));
 	}
 }

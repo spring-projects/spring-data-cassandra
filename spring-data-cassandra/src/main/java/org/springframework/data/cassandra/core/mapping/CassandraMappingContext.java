@@ -37,13 +37,13 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.UserTypeUtil.FrozenLiteralDataType;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.context.MappingContext;
@@ -82,8 +82,7 @@ public class CassandraMappingContext
 
 	private @Nullable ClassLoader beanClassLoader;
 
-	private CustomConversions customConversions =
-			new CustomConversions(StoreConversions.of(CassandraSimpleTypeHolder.HOLDER), Collections.emptyList());
+	private CustomConversions customConversions = new CassandraCustomConversions(Collections.emptyList());
 
 	private Mapping mapping = new Mapping();
 
@@ -524,10 +523,7 @@ public class CassandraMappingContext
 	 * @since 1.5
 	 */
 	public DataType getDataType(Class<?> type) {
-
-		return this.customConversions.getCustomWriteTarget(type)
-				.map(CassandraSimpleTypeHolder::getDataTypeFor)
-				.orElseGet(() -> getDataTypeFor(type));
+		return doGetDataType(type, this.customConversions.getCustomWriteTarget(type).orElse(type));
 	}
 
 	public TupleType getTupleType(CassandraPersistentEntity<?> persistentEntity) {
@@ -552,6 +548,7 @@ public class CassandraMappingContext
 		return getDataTypeWithUserTypeFactory(property, DataTypeProvider.EntityUserType);
 	}
 
+	@Nullable
 	private DataType getDataTypeWithUserTypeFactory(CassandraPersistentProperty property,
 			DataTypeProvider dataTypeProvider) {
 
@@ -591,6 +588,7 @@ public class CassandraMappingContext
 		return getDataTypeWithUserTypeFactory(property.getTypeInformation(), dataTypeProvider, property::getDataType);
 	}
 
+	@Nullable
 	private DataType getDataTypeWithUserTypeFactory(TypeInformation<?> typeInformation, DataTypeProvider dataTypeProvider,
 			Supplier<DataType> fallback) {
 
@@ -613,28 +611,54 @@ public class CassandraMappingContext
 		}
 
 		Optional<DataType> customWriteTarget = this.customConversions.getCustomWriteTarget(typeInformation.getType())
-				.map(CassandraSimpleTypeHolder::getDataTypeFor);
+				.map(it -> doGetDataType(typeInformation.getType(), it));
 
 		DataType dataType = customWriteTarget
-				.orElseGet(() -> this.customConversions.getCustomWriteTarget(typeInformation.getRequiredActualType().getType())
-						.filter(it -> !typeInformation.isMap()).map(it -> {
+				.orElseGet(() -> {
+					Class<?> propertyType = typeInformation.getRequiredActualType().getType();
+					return this.customConversions.getCustomWriteTarget(propertyType).filter(it -> !typeInformation.isMap())
+							.map(it -> {
 
-							if (typeInformation.isCollectionLike()) {
-								if (List.class.isAssignableFrom(typeInformation.getType())) {
-									return DataType.list(getDataTypeFor(it));
+								if (typeInformation.isCollectionLike()) {
+									if (List.class.isAssignableFrom(typeInformation.getType())) {
+										return DataType.list(doGetDataType(propertyType, it));
+									}
+
+									if (Set.class.isAssignableFrom(typeInformation.getType())) {
+										return DataType.set(doGetDataType(propertyType, it));
+									}
 								}
 
-								if (Set.class.isAssignableFrom(typeInformation.getType())) {
-									return DataType.set(getDataTypeFor(it));
-								}
-							}
+								return doGetDataType(propertyType, it);
 
-							return getDataTypeFor(it);
-
-						}).orElse(null));
+							}).orElse(null);
+				});
 
 		return dataType != null ? dataType
 				: typeInformation.isMap() ? getMapDataType(typeInformation, dataTypeProvider) : fallback.get();
+	}
+
+	/**
+	 * Resolve Cassandra {@link DataType} with conditional handling of {@code time} data type.
+	 *
+	 * @param propertyType
+	 * @param converted
+	 * @return
+	 */
+	@Nullable
+	private DataType doGetDataType(Class<?> propertyType, Class<?> converted) {
+
+		if (customConversions instanceof CassandraCustomConversions) {
+
+			CassandraCustomConversions conversions = (CassandraCustomConversions) customConversions;
+
+			if (conversions.isNativeTimeTypeMarker(converted)
+					|| (conversions.isNativeTimeTypeMarker(propertyType) && Long.class.equals(converted))) {
+				return DataType.time();
+			}
+		}
+
+		return CassandraSimpleTypeHolder.getDataTypeFor(converted);
 	}
 
 	private TupleType getTupleType(DataTypeProvider dataTypeProvider, CassandraPersistentEntity<?> persistentEntity) {
@@ -656,7 +680,7 @@ public class CassandraMappingContext
 
 		DataType keyType = getDataTypeWithUserTypeFactory(keyTypeInformation, dataTypeProvider, () -> {
 
-			DataType type = getDataTypeFor(keyTypeInformation.getType());
+			DataType type = doGetDataType(keyTypeInformation.getType(), keyTypeInformation.getType());
 
 			if (type != null) {
 				return type;
@@ -667,7 +691,7 @@ public class CassandraMappingContext
 
 		DataType valueType = getDataTypeWithUserTypeFactory(valueTypeInformation, dataTypeProvider, () -> {
 
-			DataType type = getDataTypeFor(valueTypeInformation.getType());
+			DataType type = doGetDataType(valueTypeInformation.getType(), valueTypeInformation.getType());
 
 			if (type != null) {
 				return type;
@@ -680,7 +704,7 @@ public class CassandraMappingContext
 	}
 
 	@Nullable
-	private DataType getUserDataType(TypeInformation<?> property, DataType elementType) {
+	private DataType getUserDataType(TypeInformation<?> property, @Nullable DataType elementType) {
 
 		if (property.isCollectionLike()) {
 
