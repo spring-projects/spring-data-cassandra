@@ -1,6 +1,24 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.0.M2 (2018-04-13)
+----------------------------------------
+* DATACASS-542 - Adapt to API changes in Spring Data Commons.
+* DATACASS-541 - Remove links to decommissioned Planet Cassandra.
+* DATACASS-537 - Remove explicit declaration of Jackson libraries.
+* DATACASS-535 - Declare project.root property to make sure JavaDoc generation works.
+* DATACASS-533 - Export composable repositories via CDI.
+* DATACASS-530 - Upgrade to Cassandra Java Driver 3.4.0.
+* DATACASS-528 - Upgrade to Cassandra 3.11.2.
+* DATACASS-527 - Reactive example from documentation is not working.
+* DATACASS-525 - Throw IncorrectResultSizeDataAccessException for repository query methods returning a single element.
+* DATACASS-524 - Release 2.1 M2 (Lovelace).
+* DATACASS-523 - Add support for mapped tuples.
+* DATACASS-302 - Support Cassandra time columns.
+* DATACASS-155 - Add option for TIMESTAMP in WriteOptions.
+* DATACASS-106 - Support persistence lifecycle callbacks.
+
+
 Changes in version 2.0.6.RELEASE (2018-04-04)
 ---------------------------------------------
 * DATACASS-537 - Remove explicit declaration of Jackson libraries.
