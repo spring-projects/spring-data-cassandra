@@ -16,11 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import static org.mockito.ArgumentMatchers.matches;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-import java.util.Set;
+import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,13 +25,8 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.Indexed;
-import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaCreator}.
@@ -44,7 +35,7 @@ import org.springframework.data.cassandra.core.mapping.UserDefinedType;
  * @author Jens Schauder
  */
 @RunWith(MockitoJUnitRunner.class)
-public class CassandraPersistentEntitySchemaCreatorUnitTests {
+public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersistentEntitySchemaTestSupport {
 
 	@Mock CassandraAdminOperations adminOperations;
 	@Mock CqlOperations operations;
@@ -140,39 +131,5 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		for (String typename : typenames) {
 			inOrder.verify(operations).execute(Mockito.contains("CREATE TYPE " + typename));
 		}
-	}
-
-	@UserDefinedType
-	static class UniverseType {
-		String name;
-	}
-
-	@UserDefinedType
-	static class MoonType {
-		UniverseType universeType;
-	}
-
-	@UserDefinedType
-	static class PlanetType {
-
-		Set<MoonType> moons;
-		UniverseType universeType;
-	}
-
-	@UserDefinedType
-	static class AstronautType {
-		String name;
-	}
-
-	@UserDefinedType
-	static class SpaceAgencyType {
-		List<AstronautType> astronauts;
-	}
-
-	@Table
-	static class IndexedEntity {
-
-		@Id String id;
-		@Indexed String firstName;
 	}
 }

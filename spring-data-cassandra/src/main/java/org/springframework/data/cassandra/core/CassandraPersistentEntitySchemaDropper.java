@@ -15,15 +15,28 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import com.datastax.driver.core.AbstractTableMetadata;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.TupleType;
+import com.datastax.driver.core.UserType;
+import com.datastax.driver.core.UserType.Field;
 
 /**
  * Schema drop support for Cassandra based on {@link CassandraMappingContext} and {@link CassandraPersistentEntity}.
@@ -85,15 +98,164 @@ public class CassandraPersistentEntitySchemaDropper {
 		Set<CqlIdentifier> canRecreate = this.mappingContext.getUserDefinedTypeEntities().stream()
 				.map(CassandraPersistentEntity::getTableName).collect(Collectors.toSet());
 
-		this.cassandraAdminOperations.getKeyspaceMetadata().getUserTypes().forEach(userType -> {
+		Collection<UserType> userTypes = this.cassandraAdminOperations.getKeyspaceMetadata().getUserTypes();
+
+		getUserTypesToDrop(userTypes) //
+				.stream() //
+				.filter(it -> canRecreate.contains(it) || (dropUnused && !mappingContext.usesUserType(it))) //
+				.forEach(this.cassandraAdminOperations::dropUserType);
+	}
+
+	/**
+	 * Create {@link List} of {@link CqlIdentifier} with User-Defined type names to drop considering dependencies between
+	 * UDTs.
+	 *
+	 * @return {@link List} of {@link CqlIdentifier}.
+	 */
+	private List<CqlIdentifier> getUserTypesToDrop(Collection<UserType> knownUserTypes) {
+
+		List<CqlIdentifier> toDrop = new ArrayList<>();
+
+		UserTypeDependencyGraphBuilder builder = new UserTypeDependencyGraphBuilder();
+		knownUserTypes.forEach(builder::addUserType);
+
+		UserTypeDependencyGraph dependencyGraph = builder.build();
+
+		Set<CqlIdentifier> globalSeen = new LinkedHashSet<>();
+
+		knownUserTypes.forEach(userType -> {
+
+			CqlIdentifier typeName = CqlIdentifier.of(userType.getTypeName());
+			toDrop.addAll(dependencyGraph.getDropOrder(typeName, globalSeen::add));
+		});
+
+		return toDrop;
+	}
+
+	/**
+	 * Builder for {@link UserTypeDependencyGraph}. Introspects {@link UserType} for dependencies to other user types to
+	 * build a dependency graph between user types.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.0.7
+	 */
+	static class UserTypeDependencyGraphBuilder {
+
+		// Maps user types to other types they are referenced in.
+		private final MultiValueMap<CqlIdentifier, CqlIdentifier> dependencies = new LinkedMultiValueMap<>();
+
+		/**
+		 * Add {@link UserType} to the builder and inspect its dependencies.
+		 *
+		 * @param userType must not be {@literal null.}
+		 */
+		void addUserType(UserType userType) {
+
+			Set<CqlIdentifier> seen = new LinkedHashSet<>();
+			visitTypes(userType, seen::add);
+		}
+
+		/**
+		 * Build the {@link UserTypeDependencyGraph}.
+		 *
+		 * @return the {@link UserTypeDependencyGraph}.
+		 */
+		UserTypeDependencyGraph build() {
+			return new UserTypeDependencyGraph(new LinkedMultiValueMap<>(dependencies));
+		}
+
+		/**
+		 * Visit a {@link UserType} and its fields.
+		 *
+		 * @param userType
+		 * @param typeFilter
+		 */
+		private void visitTypes(UserType userType, Predicate<CqlIdentifier> typeFilter) {
 
 			CqlIdentifier typeName = CqlIdentifier.of(userType.getTypeName());
 
-			if (canRecreate.contains(typeName)) {
-				this.cassandraAdminOperations.dropUserType(typeName);
-			} else if (dropUnused && !mappingContext.usesUserType(typeName)) {
-				this.cassandraAdminOperations.dropUserType(typeName);
+			if (!typeFilter.test(typeName)) {
+				return;
 			}
-		});
+
+			for (Field field : userType) {
+
+				if (field.getType() instanceof UserType) {
+
+					addDependency((UserType) field.getType(), typeName, typeFilter);
+
+					return;
+				}
+
+				doWithTypeArguments(field.getType(), it -> {
+
+					if (it instanceof UserType) {
+						addDependency((UserType) it, typeName, typeFilter);
+					}
+				});
+			}
+		}
+
+		private void addDependency(UserType userType, CqlIdentifier requiredBy, Predicate<CqlIdentifier> typeFilter) {
+
+			dependencies.add(CqlIdentifier.of(userType.getTypeName()), requiredBy);
+
+			visitTypes(userType, typeFilter);
+		}
+
+		private static void doWithTypeArguments(DataType type, Consumer<DataType> callback) {
+
+			type.getTypeArguments().forEach(nested -> {
+				callback.accept(nested);
+				doWithTypeArguments(nested, callback);
+			});
+
+			if (type instanceof TupleType) {
+
+				TupleType tupleType = (TupleType) type;
+
+				tupleType.getComponentTypes().forEach(nested -> {
+					callback.accept(nested);
+					doWithTypeArguments(nested, callback);
+				});
+			}
+		}
+	}
+
+	/**
+	 * Dependency graph representing user type field dependencies to other user types.
+	 *
+	 * @author Mark Paluch
+	 * @since 2.0.7
+	 */
+	static class UserTypeDependencyGraph {
+
+		private final MultiValueMap<CqlIdentifier, CqlIdentifier> dependencies;
+
+		UserTypeDependencyGraph(MultiValueMap<CqlIdentifier, CqlIdentifier> dependencies) {
+			this.dependencies = dependencies;
+		}
+
+		/**
+		 * Returns the names of user types in the order they need to be dropped including type {@code typeName}.
+		 *
+		 * @param typeName
+		 * @param typeFilter
+		 * @return
+		 */
+		List<CqlIdentifier> getDropOrder(CqlIdentifier typeName, Predicate<CqlIdentifier> typeFilter) {
+
+			List<CqlIdentifier> toDrop = new ArrayList<>();
+
+			if (typeFilter.test(typeName)) {
+
+				List<CqlIdentifier> dependants = dependencies.getOrDefault(typeName, Collections.emptyList());
+				dependants.stream().map(dependant -> getDropOrder(dependant, typeFilter)).forEach(toDrop::addAll);
+
+				toDrop.add(typeName);
+			}
+
+			return toDrop;
+		}
 	}
 }
