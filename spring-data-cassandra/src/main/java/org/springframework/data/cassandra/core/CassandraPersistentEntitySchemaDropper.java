@@ -49,6 +49,7 @@ import com.datastax.driver.core.UserType.Field;
 public class CassandraPersistentEntitySchemaDropper {
 
 	private final CassandraAdminOperations cassandraAdminOperations;
+
 	private final CassandraMappingContext mappingContext;
 
 	/**

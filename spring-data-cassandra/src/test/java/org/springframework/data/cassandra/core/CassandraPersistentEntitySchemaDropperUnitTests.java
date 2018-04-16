@@ -60,7 +60,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 
 	// DATACASS-355
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 
 		context.setUserTypeResolver(new UserTypeResolver() {
 			@Override
@@ -75,7 +75,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-355, DATACASS-546
-	public void shouldDropTypesInOrderOfDependencies() throws Exception {
+	public void shouldDropTypesInOrderOfDependencies() {
 
 		when(metadata.getUserTypes()).thenReturn(Arrays.asList(universetype, moontype, planettype));
 
@@ -107,7 +107,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-355
-	public void shouldDropTables() throws Exception {
+	public void shouldDropTables() {
 
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.afterPropertiesSet();
@@ -126,7 +126,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 	}
 
 	@Test
-	public void dropTablesShouldRetainUnusedTables() throws Exception {
+	public void dropTablesShouldRetainUnusedTables() {
 
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.afterPropertiesSet();
@@ -153,5 +153,4 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 
 		inOrder.verifyNoMoreInteractions();
 	}
-
 }

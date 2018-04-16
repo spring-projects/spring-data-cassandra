@@ -50,6 +50,7 @@ import org.springframework.util.Assert;
 public class CassandraPersistentEntitySchemaCreator {
 
 	private final CassandraAdminOperations cassandraAdminOperations;
+
 	private final CassandraMappingContext mappingContext;
 
 	/**

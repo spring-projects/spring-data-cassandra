@@ -44,7 +44,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	BasicCassandraMappingContext context = new BasicCassandraMappingContext();
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 
 		context.setUserTypeResolver(new UserTypeResolver() {
 			@Override
