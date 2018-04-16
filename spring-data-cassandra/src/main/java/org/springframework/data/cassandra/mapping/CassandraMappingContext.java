@@ -21,6 +21,7 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.UserType;
 
+import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateTableSpecification;
 import org.springframework.cassandra.core.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.convert.CustomConversions;
@@ -112,6 +113,15 @@ public interface CassandraMappingContext
 	 * @since 1.5
 	 */
 	boolean usesUserType(UserType userType);
+
+	/**
+	 * Returns whether this mapping context has any entities using the given user type.
+	 *
+	 * @param userType must not be {@literal null}.
+	 * @return {@literal true} is this {@literal UserType} is used.
+	 * @since 1.5.12
+	 */
+	boolean usesUserType(CqlIdentifier userType);
 
 	/**
 	 * Returns the existing {@link CassandraPersistentEntity} for the given {@link Class}. If it is not yet known to this

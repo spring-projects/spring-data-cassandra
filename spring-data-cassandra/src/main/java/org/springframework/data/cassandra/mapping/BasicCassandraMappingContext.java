@@ -342,10 +342,15 @@ public class BasicCassandraMappingContext
 	 */
 	@Override
 	public boolean usesUserType(final UserType userType) {
+		return usesUserType(CqlIdentifier.cqlId(userType.getTypeName()));
+	}
 
-		CqlIdentifier identifier = CqlIdentifier.cqlId(userType.getTypeName());
-
-		return (hasMappedUserType(identifier) || hasReferencedUserType(identifier));
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.mapping.CassandraMappingContext#usesUserType(CqlIdentifier)
+	 */
+	@Override
+	public boolean usesUserType(CqlIdentifier userType) {
+		return (hasMappedUserType(userType) || hasReferencedUserType(userType));
 	}
 
 	private boolean hasReferencedUserType(final CqlIdentifier identifier) {

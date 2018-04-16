@@ -17,8 +17,6 @@ package org.springframework.data.cassandra.core;
 
 import static org.mockito.Mockito.*;
 
-import lombok.Data;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,18 +24,19 @@ import java.util.HashSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.Table;
-import org.springframework.data.cassandra.mapping.UserDefinedType;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.UserType;
+import org.springframework.data.cassandra.repository.support.UserTypeBuilder;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaDropper}.
@@ -46,13 +45,14 @@ import com.datastax.driver.core.UserType;
  */
 @SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
-public class CassandraPersistentEntitySchemaDropperUnitTests {
+public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPersistentEntitySchemaTestSupport {
 
 	@Mock CassandraAdminOperations operations;
 	@Mock KeyspaceMetadata metadata;
-	@Mock UserType universetype;
-	@Mock UserType moontype;
-	@Mock UserType planettype;
+	UserType universetype = UserTypeBuilder.forName("universetype").withField("name", DataType.varchar()).build();
+	UserType moontype = UserTypeBuilder.forName("moontype").withField("universeType", universetype).build();
+	UserType planettype = UserTypeBuilder.forName("planettype").withField("moonType", DataType.set(moontype))
+			.withField("universeType", universetype).build();
 	@Mock TableMetadata person;
 	@Mock TableMetadata contact;
 
@@ -70,18 +70,12 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 		});
 
 		when(operations.getKeyspaceMetadata()).thenReturn(metadata);
-		when(universetype.getTypeName()).thenReturn("universetype");
-		when(moontype.getTypeName()).thenReturn("moontype");
-		when(planettype.getTypeName()).thenReturn("planettype");
 		when(person.getName()).thenReturn("person");
 		when(contact.getName()).thenReturn("contact");
 	}
 
-	@Test // DATACASS-355
-	public void shouldDropTypes() throws Exception {
-
-		context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(MoonType.class, UniverseType.class)));
-		context.afterPropertiesSet();
+	@Test // DATACASS-355, DATACASS-546
+	public void shouldDropTypesInOrderOfDependencies() throws Exception {
 
 		when(metadata.getUserTypes()).thenReturn(Arrays.asList(universetype, moontype, planettype));
 
@@ -90,11 +84,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 
 		schemaDropper.dropUserTypes(true);
 
-		verify(operations).dropUserType(CqlIdentifier.cqlId("universetype"));
-		verify(operations).dropUserType(CqlIdentifier.cqlId("moontype"));
-		verify(operations).dropUserType(CqlIdentifier.cqlId("planettype"));
-		verify(operations).getKeyspaceMetadata();
-		verifyNoMoreInteractions(operations);
+		verifyTypesGetDroppedInOrderFor("planettype", "moontype", "universetype");
 	}
 
 	@Test // DATACASS-355
@@ -153,18 +143,15 @@ public class CassandraPersistentEntitySchemaDropperUnitTests {
 		verifyNoMoreInteractions(operations);
 	}
 
-	@UserDefinedType
-	@Data
-	static class UniverseType {}
+	private void verifyTypesGetDroppedInOrderFor(String... typenames) {
 
-	@UserDefinedType
-	static class MoonType {}
+		InOrder inOrder = Mockito.inOrder(operations);
 
-	@UserDefinedType
-	static class PlanetType {}
+		for (String typename : typenames) {
+			inOrder.verify(operations).dropUserType(CqlIdentifier.cqlId(typename));
+		}
 
-	@Table
-	static class Person {
-		@Id String id;
+		inOrder.verifyNoMoreInteractions();
 	}
+
 }

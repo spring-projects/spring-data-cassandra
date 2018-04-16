@@ -17,9 +17,6 @@ package org.springframework.data.cassandra.core;
 
 import static org.mockito.Mockito.*;
 
-import java.util.List;
-import java.util.Set;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +26,6 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
-import org.springframework.data.cassandra.mapping.UserDefinedType;
 import org.springframework.data.cassandra.mapping.UserTypeResolver;
 
 import com.datastax.driver.core.UserType;
@@ -41,7 +37,7 @@ import com.datastax.driver.core.UserType;
  * @author Jens Schauder
  */
 @RunWith(MockitoJUnitRunner.class)
-public class CassandraPersistentEntitySchemaCreatorUnitTests {
+public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersistentEntitySchemaTestSupport {
 
 	@Mock CassandraAdminOperations operations;
 
@@ -123,32 +119,5 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests {
 		for (String typename : typenames) {
 			inOrder.verify(operations).execute(Mockito.contains("CREATE TYPE " + typename));
 		}
-	}
-
-	@UserDefinedType
-	static class UniverseType {
-		String name;
-	}
-
-	@UserDefinedType
-	static class MoonType {
-		UniverseType universeType;
-	}
-
-	@UserDefinedType
-	static class PlanetType {
-
-		Set<MoonType> moons;
-		UniverseType universeType;
-	}
-
-	@UserDefinedType
-	static class AstronautType {
-		String name;
-	}
-
-	@UserDefinedType
-	static class SpaceAgencyType {
-		List<AstronautType> astronauts;
 	}
 }

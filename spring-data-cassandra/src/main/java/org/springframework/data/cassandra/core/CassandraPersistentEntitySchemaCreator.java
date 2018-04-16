@@ -157,7 +157,6 @@ public class CassandraPersistentEntitySchemaCreator {
 	private Map<CqlIdentifier, CassandraPersistentEntity<?>> getEntitiesByTableName(
 			Collection<? extends CassandraPersistentEntity<?>> entities) {
 
-		// TODO simplify by using Java 8 Streams API in 2.0.x
 		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName = new HashMap<CqlIdentifier, CassandraPersistentEntity<?>>();
 
 		for (CassandraPersistentEntity<?> entity : entities) {
