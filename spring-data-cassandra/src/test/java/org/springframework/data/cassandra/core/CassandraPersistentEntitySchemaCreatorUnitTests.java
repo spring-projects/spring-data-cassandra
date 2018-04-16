@@ -43,7 +43,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	CassandraMappingContext context = new CassandraMappingContext();
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 
 		context.setUserTypeResolver(typeName -> {
 			// make sure that calls to this method pop up. Calling UserTypeResolver while resolving
