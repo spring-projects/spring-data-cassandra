@@ -78,11 +78,11 @@ public class CassandraPersistentEntitySchemaDropper {
 	 */
 	public void dropTables(boolean dropUnused) {
 
-		this.cassandraAdminOperations.getKeyspaceMetadata().getTables()
-				.stream()
-				.map(AbstractTableMetadata::getName)
-				.map(CqlIdentifier::of)
-				.filter(table -> dropUnused || this.mappingContext.usesTable(table))
+		this.cassandraAdminOperations.getKeyspaceMetadata() //
+				.getTables() //
+				.stream() //
+				.map(AbstractTableMetadata::getName) //
+				.map(CqlIdentifier::of).filter(table -> dropUnused || this.mappingContext.usesTable(table)) //
 				.forEach(this.cassandraAdminOperations::dropTable);
 	}
 

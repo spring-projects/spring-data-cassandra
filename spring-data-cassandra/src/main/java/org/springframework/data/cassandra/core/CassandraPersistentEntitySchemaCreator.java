@@ -79,8 +79,9 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	public void createTables(boolean ifNotExists) {
 
-		createTableSpecifications(ifNotExists).forEach(specification -> this.cassandraAdminOperations.getCqlOperations()
-				.execute(CreateTableCqlGenerator.toCql(specification)));
+		createTableSpecifications(ifNotExists).stream() //
+				.map(CreateTableCqlGenerator::toCql) //
+				.forEach(cql -> this.cassandraAdminOperations.getCqlOperations().execute(cql));
 	}
 
 	/**
@@ -91,8 +92,9 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	protected List<CreateTableSpecification> createTableSpecifications(boolean ifNotExists) {
 
-		return this.mappingContext.getTableEntities().stream()
-				.map(entity -> this.mappingContext.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists))
+		return this.mappingContext.getTableEntities() //
+				.stream() //
+				.map(entity -> this.mappingContext.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists)) //
 				.collect(Collectors.toList());
 	}
 
@@ -103,8 +105,9 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	public void createIndexes(boolean ifNotExists) {
 
-		createIndexSpecifications(ifNotExists).forEach(specification -> this.cassandraAdminOperations.getCqlOperations()
-				.execute(CreateIndexCqlGenerator.toCql(specification)));
+		createIndexSpecifications(ifNotExists).stream() //
+				.map(CreateIndexCqlGenerator::toCql) //
+				.forEach(cql -> this.cassandraAdminOperations.getCqlOperations().execute(cql));
 	}
 
 	/**
@@ -115,9 +118,10 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	protected List<CreateIndexSpecification> createIndexSpecifications(boolean ifNotExists) {
 
-		return this.mappingContext.getTableEntities().stream()
-				.flatMap(entity -> this.mappingContext.getCreateIndexSpecificationsFor(entity).stream())
-				.peek(it -> it.ifNotExists(ifNotExists))
+		return this.mappingContext.getTableEntities() //
+				.stream() //
+				.flatMap(entity -> this.mappingContext.getCreateIndexSpecificationsFor(entity).stream()) //
+				.peek(it -> it.ifNotExists(ifNotExists)) //
 				.collect(Collectors.toList());
 	}
 
@@ -128,8 +132,9 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	public void createUserTypes(boolean ifNotExists) {
 
-		createUserTypeSpecifications(ifNotExists).forEach(specification ->
-				this.cassandraAdminOperations.getCqlOperations().execute(CreateUserTypeCqlGenerator.toCql(specification)));
+		createUserTypeSpecifications(ifNotExists).stream() //
+				.map(CreateUserTypeCqlGenerator::toCql) //
+				.forEach(cql -> this.cassandraAdminOperations.getCqlOperations().execute(cql));
 	}
 
 	/**
