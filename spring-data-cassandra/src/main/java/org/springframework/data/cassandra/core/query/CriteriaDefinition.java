@@ -93,6 +93,19 @@ public interface CriteriaDefinition {
 		 * @return the String representation of the operator.
 		 */
 		String toString();
+
+		/**
+		 * Render to a CQL-like representation. Rendering does not apply conversion via
+		 * {@link com.datastax.driver.core.CodecRegistry} therefore this output is an approximation towards CQL and not
+		 * necessarily valid CQL.
+		 *
+		 * @param value optional predicate value, can be {@literal null}.
+		 * @return A CQL-like representation.
+		 * @since 2.1
+		 */
+		default String toCql(@Nullable Object value) {
+			return String.format("%s %s", toString(), value);
+		}
 	}
 
 	/**
@@ -103,6 +116,21 @@ public interface CriteriaDefinition {
 		CONTAINS("CONTAINS"),
 		CONTAINS_KEY("CONTAINS KEY"),
 		EQ("="),
+
+		/**
+		 * @since 2.1
+		 */
+		NE("!="),
+
+		/**
+		 * @since 2.1
+		 */
+		IS_NOT_NULL("IS NOT NULL") {
+			@Override
+			public String toCql(@Nullable Object value) {
+				return toString();
+			}
+		},
 		GT(">"),
 		GTE(">="),
 		LT("<"),

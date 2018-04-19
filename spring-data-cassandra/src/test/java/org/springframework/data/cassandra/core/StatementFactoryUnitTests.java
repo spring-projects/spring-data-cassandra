@@ -15,14 +15,13 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -71,6 +70,26 @@ public class StatementFactoryUnitTests {
 		Statement select = statementFactory.select(query, groupEntity);
 
 		assertThat(select.toString()).isEqualTo("SELECT age FROM group WHERE foo='bar';");
+	}
+
+	@Test // DATACASS-549
+	public void shouldMapSelectQueryNotEquals() {
+
+		Query query = Query.query(Criteria.where("foo").ne("bar")).columns(Columns.from("age"));
+
+		Statement select = statementFactory.select(query, groupEntity);
+
+		assertThat(select.toString()).isEqualTo("SELECT age FROM group WHERE foo!='bar';");
+	}
+
+	@Test // DATACASS-549
+	public void shouldMapSelectQueryIsNotNull() {
+
+		Query query = Query.query(Criteria.where("foo").isNotNull()).columns(Columns.from("age"));
+
+		Statement select = statementFactory.select(query, groupEntity);
+
+		assertThat(select.toString()).isEqualTo("SELECT age FROM group WHERE foo IS NOT NULL;");
 	}
 
 	@Test // DATACASS-343

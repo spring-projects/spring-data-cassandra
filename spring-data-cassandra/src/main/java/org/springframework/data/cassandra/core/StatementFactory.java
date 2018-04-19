@@ -65,14 +65,8 @@ import com.google.common.primitives.Ints;
  *
  * @author Mark Paluch
  * @author John Blum
- * @see org.springframework.data.cassandra.core.query.Query
- * @see org.springframework.data.cassandra.core.query.Update
- * @see com.datastax.driver.core.querybuilder.Assignment
- * @see com.datastax.driver.core.querybuilder.Clause
- * @see com.datastax.driver.core.querybuilder.Delete
- * @see com.datastax.driver.core.querybuilder.Ordering
- * @see com.datastax.driver.core.querybuilder.QueryBuilder
- * @see com.datastax.driver.core.querybuilder.Select
+ * @see Query
+ * @see Update
  * @since 2.0
  */
 public class StatementFactory {
@@ -500,6 +494,9 @@ public class StatementFactory {
 			case "=":
 				return QueryBuilder.eq(columnName, predicate.getValue());
 
+			case "!=":
+				return QueryBuilder.ne(columnName, predicate.getValue());
+
 			case ">":
 				return QueryBuilder.gt(columnName, predicate.getValue());
 
@@ -526,6 +523,9 @@ public class StatementFactory {
 
 			case "LIKE":
 				return QueryBuilder.like(columnName, predicate.getValue());
+
+			case "IS NOT NULL":
+				return QueryBuilder.notNull(columnName);
 
 			case "CONTAINS":
 				Assert.state(predicate.getValue() != null,

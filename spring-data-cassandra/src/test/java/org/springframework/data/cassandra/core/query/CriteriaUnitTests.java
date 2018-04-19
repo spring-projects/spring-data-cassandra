@@ -38,6 +38,22 @@ public class CriteriaUnitTests {
 		assertThat(serializeToCqlSafely(criteria)).isEqualTo("foo = 'bar'");
 	}
 
+	@Test // DATACASS-549
+	public void shouldCreateIsNotEqualTo() {
+
+		CriteriaDefinition criteria = Criteria.where("foo").ne("bar");
+
+		assertThat(serializeToCqlSafely(criteria)).isEqualTo("foo != 'bar'");
+	}
+
+	@Test // DATACASS-549
+	public void shouldCreateIsNotNull() {
+
+		CriteriaDefinition criteria = Criteria.where("foo").isNotNull();
+
+		assertThat(serializeToCqlSafely(criteria)).isEqualTo("foo IS NOT NULL");
+	}
+
 	@Test // DATACASS-343
 	public void shouldCreateIsGreater() {
 

@@ -93,6 +93,31 @@ public class Criteria implements CriteriaDefinition {
 	}
 
 	/**
+	 * Create a criterion using the {@literal !=} operator.
+	 *
+	 * @param value the value to match against, may be {@literal null}.
+	 * @return {@literal this} {@link Criteria} object.
+	 * @since 2.1
+	 */
+	public CriteriaDefinition ne(@Nullable Object value) {
+
+		this.predicate = new Predicate(Operators.NE, value);
+		return this;
+	}
+
+	/**
+	 * Create a criterion using the {@literal IS NOT NULL} operator.
+	 *
+	 * @return {@literal this} {@link Criteria} object.
+	 * @since 2.1
+	 */
+	public CriteriaDefinition isNotNull() {
+
+		this.predicate = new Predicate(Operators.IS_NOT_NULL, null);
+		return this;
+	}
+
+	/**
 	 * Create a criterion using the {@literal >} operator.
 	 *
 	 * @param value the value to match against.
