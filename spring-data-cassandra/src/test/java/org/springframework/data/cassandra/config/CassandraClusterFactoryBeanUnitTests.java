@@ -125,16 +125,14 @@ public class CassandraClusterFactoryBeanUnitTests {
 		assertThat(getConfiguration(bean).getQueryOptions()).isEqualTo(queryOptions);
 	}
 
-	@Test // DATACASS-226
-	public void defaultQueryOptionsShouldHaveOwnObjectIdentity() throws Exception {
-
-		QueryOptions queryOptions = new QueryOptions();
+	@Test // DATACASS-226, DATACASS-548
+	public void shouldConfigureDefaultQueryOptions() throws Exception {
 
 		CassandraClusterFactoryBean bean = new CassandraClusterFactoryBean();
 		bean.afterPropertiesSet();
 
 		assertThat(getConfiguration(bean).getQueryOptions()).isNotNull();
-		assertThat(getConfiguration(bean).getQueryOptions()).isNotEqualTo(queryOptions);
+		assertThat(getConfiguration(bean).getQueryOptions()).isEqualTo(new QueryOptions());
 	}
 
 	@Test // DATACASS-226
