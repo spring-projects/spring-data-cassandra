@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.util.ClassUtils;
@@ -112,7 +113,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
-
+	@ReadingConverter
 	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
 
 		INSTANCE;

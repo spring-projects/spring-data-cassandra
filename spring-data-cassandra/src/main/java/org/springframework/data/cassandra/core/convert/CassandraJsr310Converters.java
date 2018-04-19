@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 
 import com.datastax.driver.core.DataType.Name;
@@ -62,6 +63,7 @@ public abstract class CassandraJsr310Converters {
 	 *
 	 * @author Mark Paluch
 	 */
+	@ReadingConverter
 	public enum CassandraLocalDateToLocalDateConverter
 			implements Converter<com.datastax.driver.core.LocalDate, LocalDate> {
 
@@ -78,6 +80,7 @@ public abstract class CassandraJsr310Converters {
 	 *
 	 * @author Mark Paluch
 	 */
+	@WritingConverter
 	public enum LocalDateToCassandraLocalDateConverter
 			implements Converter<LocalDate, com.datastax.driver.core.LocalDate> {
 
@@ -96,6 +99,7 @@ public abstract class CassandraJsr310Converters {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
+	@ReadingConverter
 	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
 
 		INSTANCE;

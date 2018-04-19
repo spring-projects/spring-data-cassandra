@@ -24,6 +24,7 @@ import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.util.ClassUtils;
 
@@ -105,6 +106,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
+	@ReadingConverter
 	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
 
 		INSTANCE;
