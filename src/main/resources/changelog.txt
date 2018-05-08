@@ -1,6 +1,14 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.5.12.RELEASE (2018-05-08)
+----------------------------------------------
+* DATACASS-547 - Annotate writing converters for Cassandra date/time conversion.
+* DATACASS-546 - Unable to delete user-defined types when one UDT references another.
+* DATACASS-541 - Remove links to decommissioned Planet Cassandra.
+* DATACASS-539 - Release 1.5.12 (Ingalls SR12).
+
+
 Changes in version 2.1.0.M2 (2018-04-13)
 ----------------------------------------
 * DATACASS-542 - Adapt to API changes in Spring Data Commons.
