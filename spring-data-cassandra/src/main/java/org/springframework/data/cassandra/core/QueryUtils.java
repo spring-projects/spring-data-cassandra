@@ -38,6 +38,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.Assert;
+import reactor.core.publisher.Mono;
 
 import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.ResultSet;

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SlicedExecution;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -118,7 +119,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor()
 				.withDynamicProjection(convertingParameterAccessor);
 
-		ReactiveCassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(resultProcessor,
+		ReactiveCassandraQueryExecution queryExecution = getExecution(parameterAccessor,new ResultProcessingConverter(resultProcessor,
 				toMappingContext(getReactiveCassandraOperations()), getEntityInstantiators()));
 
 		Class<?> resultType = resolveResultType(resultProcessor);
@@ -143,16 +144,19 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 	/**
 	 * Returns the execution instance to use.
-	 *
+	 * @param parameterAccessor must not be {@literal null}.
 	 * @param resultProcessing must not be {@literal null}. @return
 	 */
-	private ReactiveCassandraQueryExecution getExecution(Converter<Object, Object> resultProcessing) {
-		return new ResultProcessingExecution(getExecutionToWrap(), resultProcessing);
+	private ReactiveCassandraQueryExecution getExecution(CassandraParameterAccessor parameterAccessor,
+			Converter<Object, Object> resultProcessing) {
+		return new ResultProcessingExecution(getExecutionToWrap(parameterAccessor), resultProcessing);
 	}
 
 	private ReactiveCassandraQueryExecution getExecutionToWrap() {
 
-		if (getQueryMethod().isCollectionQuery()) {
+		if (getQueryMethod().isSliceQuery()) {
+			return new SlicedExecution(getReactiveCassandraOperations(), parameterAccessor.getPageable());
+		}else if (getQueryMethod().isCollectionQuery()) {
 			return new CollectionExecution(getReactiveCassandraOperations());
 		} else if (isCountQuery()) {
 			return ((statement, type) ->
